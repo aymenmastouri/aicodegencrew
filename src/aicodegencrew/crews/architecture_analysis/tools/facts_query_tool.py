@@ -7,6 +7,11 @@ This prevents token limit overflow by using smart filtering.
 Usage:
 - query_facts(category="components", stereotype="controller")
 - query_facts(category="relations", limit=20)
+
+Relevance Sorting:
+- Components are sorted by architectural layer importance
+- Backend: controller → service → repository → entity → rest
+- Frontend: component → module → service → pipe → directive → rest
 """
 
 import json
@@ -18,6 +23,9 @@ from crewai.tools import BaseTool
 from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
+
+# Priority for sorting (lower = more important, shown first)
+DEFAULT_PRIORITY = 10
 
 
 class FactsQueryInput(BaseModel):
@@ -126,8 +134,8 @@ class FactsQueryTool(BaseTool):
             if not facts:
                 return json.dumps({"error": "No facts available", "results": []})
             
-            # Cap limit at 500 for large repo support
-            limit = min(limit, 500)
+            # Cap limit at 50 to prevent context overflow
+            limit = min(limit, 50)
             offset = max(offset, 0)
             
             results = {}
@@ -256,6 +264,9 @@ class FactsQueryTool(BaseTool):
         
         total_matching = len(matching)
         
+        # Sort by layer relevance before pagination
+        matching = self._sort_by_relevance(matching)
+        
         # Apply pagination
         paginated = matching[offset:offset + limit]
         
@@ -347,3 +358,60 @@ class FactsQueryTool(BaseTool):
                 break
         
         return filtered
+    
+    def _sort_by_relevance(self, components: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Sort components by architectural layer relevance.
+        
+        Priority is determined dynamically by:
+        1. Class name suffix patterns (Controller, Service, Repository, etc.)
+        2. Package name patterns (controller, service, repository, etc.)
+        3. Stereotype as fallback
+        
+        This ensures agents see architecturally important components first.
+        """
+        def get_priority(component: Dict[str, Any]) -> tuple:
+            name = component.get("name", "").lower()
+            package = (component.get("package") or component.get("module") or "").lower()
+            stereotype = component.get("stereotype", "").lower()
+            
+            layer_priority = DEFAULT_PRIORITY
+            
+            # Check class name patterns (most reliable)
+            # Backend patterns
+            if name.endswith("controller") or name.endswith("resource") or name.endswith("restcontroller") or name.endswith("restservice"):
+                layer_priority = 1
+            elif name.endswith("service") or name.endswith("serviceimpl") or name.endswith("facade"):
+                layer_priority = 2
+            elif name.endswith("repository") or name.endswith("repositoryimpl") or name.endswith("dao") or name.endswith("daoimpl"):
+                layer_priority = 3
+            elif name.endswith("entity") or name.endswith("model") or name.endswith("dto"):
+                layer_priority = 4
+            elif name.endswith("mapper") or name.endswith("validator") or name.endswith("converter"):
+                layer_priority = 5
+            # Frontend patterns
+            elif name.endswith("component") or name.endswith("page"):
+                layer_priority = 1
+            elif name.endswith("module") or name.endswith("store"):
+                layer_priority = 2
+            elif name.endswith("guard") or name.endswith("resolver") or name.endswith("interceptor"):
+                layer_priority = 3
+            elif name.endswith("pipe") or name.endswith("directive"):
+                layer_priority = 4
+            
+            # Check package patterns if no name match
+            if layer_priority == DEFAULT_PRIORITY:
+                if any(p in package for p in ["controller", "rest", "adapter", "web", "api"]):
+                    layer_priority = 1
+                elif any(p in package for p in ["service", "logic", "business", "usecase"]):
+                    layer_priority = 2
+                elif any(p in package for p in ["repository", "dataaccess", "dao", "persistence"]):
+                    layer_priority = 3
+                elif any(p in package for p in ["entity", "domain", "model"]):
+                    layer_priority = 4
+                elif any(p in package for p in ["component", "page", "container"]):
+                    layer_priority = 1
+            
+            # Secondary sort: alphabetically by name for consistency
+            return (layer_priority, name)
+        
+        return sorted(components, key=get_priority)

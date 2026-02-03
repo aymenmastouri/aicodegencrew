@@ -155,7 +155,8 @@ class InfraCollector(BaseCollector):
             name=f"Dockerfile-{parent_dir}",
             stereotype="dockerfile",
             file_path=rel_path,
-            evidence_ids=[ev_id]
+            evidence_ids=[ev_id],
+            module=self._derive_module_from_path(rel_path)
         ))
     
     def _collect_compose_facts(self):
@@ -291,7 +292,8 @@ class InfraCollector(BaseCollector):
                 name=file_path.stem,
                 stereotype=resource_type,
                 file_path=rel_path,
-                evidence_ids=[ev_id]
+                evidence_ids=[ev_id],
+                module=self._derive_module_from_path(rel_path)
             ))
     
     def _process_helm_chart(self, chart_path: Path):
@@ -317,7 +319,8 @@ class InfraCollector(BaseCollector):
             name=chart_path.name,
             stereotype="helm-chart",
             file_path=rel_path,
-            evidence_ids=[ev_id]
+            evidence_ids=[ev_id],
+            module=self._derive_module_from_path(rel_path)
         ))
     
     def _collect_ci_facts(self):
@@ -360,7 +363,8 @@ class InfraCollector(BaseCollector):
             name=file_path.name,
             stereotype=ci_type,
             file_path=rel_path,
-            evidence_ids=[ev_id]
+            evidence_ids=[ev_id],
+            module=self._derive_module_from_path(rel_path)
         ))
     
     def _collect_db_hints(self):

@@ -11,7 +11,7 @@ Usage:
 
 import os
 from pathlib import Path
-from typing import Type, Dict, Any, Optional, List
+from typing import Type, Dict, Any, Optional, List, ClassVar
 from pydantic import BaseModel, Field
 from crewai.tools import BaseTool
 
@@ -66,8 +66,8 @@ class RAGQueryTool(BaseTool):
     _client: Optional[Any] = None
     _collection: Optional[Any] = None
     
-    # Standard locations for ChromaDB
-    CHROMA_PATHS = [
+    # Standard locations for ChromaDB (ClassVar = not a Pydantic field)
+    CHROMA_PATHS: ClassVar[List[str]] = [
         ".cache/.chroma",      # Primary location (from indexing pipeline)
         ".chroma_db",          # Legacy location
         ".chroma",             # Alternative
@@ -172,8 +172,8 @@ class RAGQueryTool(BaseTool):
                     "results": []
                 })
             
-            # Hard cap limit
-            limit = min(limit, 20)
+            # Hard cap limit - reduced to prevent context overflow
+            limit = min(limit, 10)
             
             # Build where filter if file_filter is specified
             where_filter = None
@@ -204,7 +204,7 @@ class RAGQueryTool(BaseTool):
                         "file_path": metadata.get("file_path", "unknown"),
                         "chunk_type": metadata.get("chunk_type", "code"),
                         "relevance_score": round(1 - distance, 3) if distance else 0,
-                        "content": doc[:500] if doc else "",  # Truncate for token efficiency
+                        "content": doc[:200] if doc else "",  # Reduced from 500 to prevent context overflow
                     })
             
             output = {

@@ -7,6 +7,11 @@ to reduce context size and improve agent focus.
 Usage:
 - list_components_by_stereotype(stereotype="controller")
 - list_components_by_stereotype(stereotype="service", container="backend")
+
+Relevance Sorting:
+- Components are sorted by architectural layer importance
+- Backend: controller → service → repository → entity → rest
+- Frontend: component → module → service → pipe → directive → rest
 """
 
 import json
@@ -18,6 +23,59 @@ from crewai.tools import BaseTool
 from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
+
+# Dynamic layer priority based on common patterns
+# Lower number = higher priority (shown first)
+LAYER_PRIORITY = {
+    # Backend layers (Spring/Java patterns)
+    "controller": 1,       # REST entry points - most important for understanding API
+    "rest_controller": 1,
+    "resource": 1,
+    "service": 2,          # Business logic layer
+    "facade": 2,
+    "manager": 2,
+    "repository": 3,       # Data access layer
+    "dao": 3,
+    "entity": 4,           # Domain model
+    "model": 4,
+    "dto": 4,
+    "mapper": 5,
+    "validator": 5,
+    "config": 6,
+    "configuration": 6,
+    
+    # Frontend layers (Angular/React patterns)
+    "component": 1,        # UI entry points
+    "page": 1,
+    "container": 1,
+    "module": 2,           # Feature modules
+    "service": 2,          # Shared services (also backend)
+    "store": 2,            # State management
+    "reducer": 2,
+    "guard": 3,
+    "resolver": 3,
+    "interceptor": 3,
+    "pipe": 4,
+    "directive": 4,
+    "effect": 4,
+    
+    # Infrastructure
+    "integration": 3,
+    "adapter": 3,
+    "client": 3,
+    "gateway": 3,
+    
+    # Architecture patterns
+    "design_pattern": 1,   # Show patterns first
+    "architecture_style": 1,
+    
+    # Database/Schema
+    "database_connection": 5,
+    "database_schema": 5,
+    "sql_script": 6,
+}
+
+DEFAULT_PRIORITY = 10  # Unknown stereotypes get lowest priority
 
 
 class StereotypeListInput(BaseModel):
@@ -87,7 +145,7 @@ class StereotypeListTool(BaseTool):
     ) -> str:
         """Get components by stereotype (limited to prevent token overflow)."""
         
-        MAX_RESULTS = min(limit, 500)  # Hard cap at 500 for enterprise repos
+        MAX_RESULTS = min(limit, 50)  # Hard cap at 50 to prevent context overflow
         
         facts = self._load_facts()
         components = facts.get("components", [])
@@ -107,6 +165,9 @@ class StereotypeListTool(BaseTool):
         
         total_count = len(filtered)
         
+        # SORT by layer relevance - most architecturally important first
+        filtered = self._sort_by_relevance(filtered)
+        
         # LIMIT results to prevent token overflow
         limited = filtered[:MAX_RESULTS]
         
@@ -116,7 +177,7 @@ class StereotypeListTool(BaseTool):
             "container_filter": container,
             "total_count": total_count,
             "returned_count": len(limited),
-            "note": f"Showing top {len(limited)} of {total_count}. Focus on these key components." if total_count > MAX_RESULTS else None,
+            "note": f"Sorted by layer importance. Showing top {len(limited)} of {total_count}." if total_count > MAX_RESULTS else "Sorted by layer importance.",
             "components": [
                 {
                     "name": c.get("name", "Unknown"),
@@ -129,6 +190,64 @@ class StereotypeListTool(BaseTool):
         }
         
         return json.dumps(result, indent=2, ensure_ascii=False)
+    
+    def _sort_by_relevance(self, components: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Sort components by architectural layer relevance.
+        
+        Priority is determined by:
+        1. Class name suffix patterns (Controller, Service, Repository, etc.)
+        2. Package name patterns (controller, service, repository, etc.)
+        3. Stereotype as fallback
+        """
+        def get_priority(component: Dict[str, Any]) -> tuple:
+            name = component.get("name", "").lower()
+            package = component.get("package", "").lower()
+            stereotype = component.get("stereotype", "").lower()
+            
+            # Try to detect layer from class name suffix
+            layer_priority = DEFAULT_PRIORITY
+            
+            # Check class name patterns (most reliable)
+            name_patterns = [
+                ("controller", 1), ("resource", 1), ("restcontroller", 1), ("restservice", 1),
+                ("service", 2), ("facade", 2), ("manager", 2),
+                ("repository", 3), ("dao", 3), ("repo", 3), ("daoimpl", 3),
+                ("entity", 4), ("model", 4), ("dto", 4),
+                ("mapper", 5), ("validator", 5), ("converter", 5),
+                ("component", 1), ("page", 1),  # Frontend
+                ("module", 2), ("store", 2),
+                ("guard", 3), ("resolver", 3), ("interceptor", 3),
+                ("pipe", 4), ("directive", 4),
+            ]
+            
+            for pattern, priority in name_patterns:
+                if name.endswith(pattern) or name.endswith(pattern + "impl"):
+                    layer_priority = min(layer_priority, priority)
+                    break
+            
+            # Check package patterns if no name match
+            if layer_priority == DEFAULT_PRIORITY:
+                package_patterns = [
+                    ("controller", 1), ("rest", 1), ("adapter", 1), ("web", 1),
+                    ("service", 2), ("logic", 2), ("business", 2),
+                    ("repository", 3), ("dataaccess", 3), ("dao", 3), ("persistence", 3),
+                    ("entity", 4), ("domain", 4), ("model", 4),
+                    ("component", 1), ("page", 1), ("container", 1),
+                ]
+                
+                for pattern, priority in package_patterns:
+                    if pattern in package:
+                        layer_priority = min(layer_priority, priority)
+                        break
+            
+            # Fall back to stereotype priority
+            if layer_priority == DEFAULT_PRIORITY:
+                layer_priority = LAYER_PRIORITY.get(stereotype, DEFAULT_PRIORITY)
+            
+            # Secondary sort: alphabetically by name for consistency
+            return (layer_priority, name)
+        
+        return sorted(components, key=get_priority)
     
     def get_stereotype_summary(self) -> Dict[str, int]:
         """Get count of components per stereotype."""

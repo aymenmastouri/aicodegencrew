@@ -6,6 +6,7 @@ Multi-agent crew for analyzing architecture facts and creating analyzed output.
 ANALYSIS APPROACH:
 - Input: architecture_facts.json + evidence_map.json + ChromaDB Index
 - 4 Specialized Agents: Technical, Functional, Quality, Synthesis
+- 17 Focused Tasks for token efficiency
 - Output: analyzed_architecture.json
 
 The agents use tools to DISCOVER architecture (not hardcoded).
@@ -19,7 +20,28 @@ from crewai import Agent, Crew, Task, Process
 from crewai.project import CrewBase, agent, task, crew, before_kickoff, after_kickoff
 from crewai_tools import FileWriterTool
 
-from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool
+from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool, PartialResultsTool
+
+# Import Pydantic schemas for output validation
+from ...shared.models import (
+    MacroArchitectureOutput,
+    BackendPatternOutput,
+    FrontendPatternOutput,
+    ArchitectureQualityOutput,
+    DomainModelOutput,
+    BusinessCapabilitiesOutput,
+    BoundedContextsOutput,
+    StateMachinesOutput,
+    WorkflowEnginesOutput,
+    SagaPatternsOutput,
+    RuntimeScenariosOutput,
+    ApiDesignOutput,
+    ComplexityOutput,
+    TechnicalDebtOutput,
+    SecurityOutput,
+    OperationalReadinessOutput,
+    AnalyzedArchitecture,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +84,10 @@ class ArchitectureAnalysisCrew:
         self._rag_tool = RAGQueryTool(chroma_dir=chroma_dir)
         self._stereotype_tool = StereotypeListTool(facts_path=str(self.facts_path))
         self._file_writer = FileWriterTool()
+        self._partial_results_tool = PartialResultsTool(analysis_dir=str(self.output_dir / "analysis"))
+        
+        # Directory for partial task outputs
+        self._analysis_dir = self.output_dir / "analysis"
         
     @before_kickoff
     def prepare_clean_run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
@@ -141,6 +167,15 @@ class ArchitectureAnalysisCrew:
         else:
             logger.info("   [OK] No old outputs to clean (first run)")
         
+        # Step 3: Clean partial analysis outputs
+        logger.info("[Phase2] Step 3: Cleaning partial analysis outputs...")
+        if self._analysis_dir.exists():
+            for json_file in self._analysis_dir.glob("*.json"):
+                json_file.unlink()
+                logger.info(f"   [DELETED] {json_file.name}")
+        self._analysis_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"   [OK] Analysis directory ready: {self._analysis_dir}")
+        
         logger.info("")
         
         return inputs
@@ -207,56 +242,200 @@ class ArchitectureAnalysisCrew:
         return Agent(
             config=self.agents_config['synthesis_lead'],
             tools=[
+                self._partial_results_tool,  # Read all partial analysis outputs
                 self._file_writer,
             ],
             verbose=True,
         )
     
     # =========================================================================
-    # TASKS
+    # TASKS - Tech Architect (4 independent tasks)
     # =========================================================================
     
     @task
-    def analyze_technical(self) -> Task:
-        """Technical architecture analysis task."""
+    def analyze_macro_architecture(self) -> Task:
+        """Task 1.1: Macro Architecture Analysis."""
         return Task(
-            config=self.tasks_config['analyze_technical'],
+            config=self.tasks_config['analyze_macro_architecture'],
             agent=self.tech_architect(),
-            output_file=str(self.output_dir / "analysis_technical.json"),
-            # Sequential - deep analysis takes time, no rush
+            output_pydantic=MacroArchitectureOutput,
+            output_file=str(self._analysis_dir / "01_macro_architecture.json"),
         )
     
     @task
-    def analyze_functional(self) -> Task:
-        """Functional/domain analysis task."""
+    def analyze_backend_pattern(self) -> Task:
+        """Task 1.2: Backend Pattern Analysis."""
         return Task(
-            config=self.tasks_config['analyze_functional'],
+            config=self.tasks_config['analyze_backend_pattern'],
+            agent=self.tech_architect(),
+            output_pydantic=BackendPatternOutput,
+            output_file=str(self._analysis_dir / "02_backend_pattern.json"),
+        )
+    
+    @task
+    def analyze_frontend_pattern(self) -> Task:
+        """Task 1.3: Frontend Pattern Analysis."""
+        return Task(
+            config=self.tasks_config['analyze_frontend_pattern'],
+            agent=self.tech_architect(),
+            output_pydantic=FrontendPatternOutput,
+            output_file=str(self._analysis_dir / "03_frontend_pattern.json"),
+        )
+    
+    @task
+    def analyze_architecture_quality(self) -> Task:
+        """Task 1.4: Architecture Quality Assessment."""
+        return Task(
+            config=self.tasks_config['analyze_architecture_quality'],
+            agent=self.tech_architect(),
+            output_pydantic=ArchitectureQualityOutput,
+            output_file=str(self._analysis_dir / "04_architecture_quality.json"),
+        )
+    
+    # =========================================================================
+    # TASKS - Functional Analyst (8 independent tasks)
+    # =========================================================================
+    
+    @task
+    def analyze_domain_model(self) -> Task:
+        """Task 2.1: Domain Model Assessment."""
+        return Task(
+            config=self.tasks_config['analyze_domain_model'],
             agent=self.func_analyst(),
-            output_file=str(self.output_dir / "analysis_functional.json"),
-            # Sequential - deep analysis takes time, no rush
+            output_pydantic=DomainModelOutput,
+            output_file=str(self._analysis_dir / "05_domain_model.json"),
         )
     
     @task
-    def analyze_quality(self) -> Task:
-        """Quality analysis task."""
+    def analyze_business_capabilities(self) -> Task:
+        """Task 2.2: Business Capabilities Analysis."""
         return Task(
-            config=self.tasks_config['analyze_quality'],
-            agent=self.quality_analyst(),
-            output_file=str(self.output_dir / "analysis_quality.json"),
-            # Sequential - deep analysis takes time, no rush
+            config=self.tasks_config['analyze_business_capabilities'],
+            agent=self.func_analyst(),
+            output_pydantic=BusinessCapabilitiesOutput,
+            output_file=str(self._analysis_dir / "06_business_capabilities.json"),
         )
+    
+    @task
+    def analyze_bounded_contexts(self) -> Task:
+        """Task 2.3: Bounded Context Analysis."""
+        return Task(
+            config=self.tasks_config['analyze_bounded_contexts'],
+            agent=self.func_analyst(),
+            output_pydantic=BoundedContextsOutput,
+            output_file=str(self._analysis_dir / "07_bounded_contexts.json"),
+        )
+    
+    @task
+    def analyze_state_machines(self) -> Task:
+        """Task 2.4: State Machine Detection."""
+        return Task(
+            config=self.tasks_config['analyze_state_machines'],
+            agent=self.func_analyst(),
+            output_pydantic=StateMachinesOutput,
+            output_file=str(self._analysis_dir / "08_state_machines.json"),
+        )
+    
+    @task
+    def analyze_workflow_engines(self) -> Task:
+        """Task 2.5: Workflow Engine Detection."""
+        return Task(
+            config=self.tasks_config['analyze_workflow_engines'],
+            agent=self.func_analyst(),
+            output_pydantic=WorkflowEnginesOutput,
+            output_file=str(self._analysis_dir / "09_workflow_engines.json"),
+        )
+    
+    @task
+    def analyze_saga_patterns(self) -> Task:
+        """Task 2.6: Saga Pattern Detection."""
+        return Task(
+            config=self.tasks_config['analyze_saga_patterns'],
+            agent=self.func_analyst(),
+            output_pydantic=SagaPatternsOutput,
+            output_file=str(self._analysis_dir / "10_saga_patterns.json"),
+        )
+    
+    @task
+    def analyze_runtime_scenarios(self) -> Task:
+        """Task 2.7: Runtime Scenarios (Arc42 Section 6)."""
+        return Task(
+            config=self.tasks_config['analyze_runtime_scenarios'],
+            agent=self.func_analyst(),
+            output_pydantic=RuntimeScenariosOutput,
+            output_file=str(self._analysis_dir / "11_runtime_scenarios.json"),
+        )
+    
+    @task
+    def analyze_api_design(self) -> Task:
+        """Task 2.8: API Design Quality."""
+        return Task(
+            config=self.tasks_config['analyze_api_design'],
+            agent=self.func_analyst(),
+            output_pydantic=ApiDesignOutput,
+            output_file=str(self._analysis_dir / "12_api_design.json"),
+        )
+    
+    # =========================================================================
+    # TASKS - Quality Analyst (4 independent tasks)
+    # =========================================================================
+    
+    @task
+    def analyze_complexity(self) -> Task:
+        """Task 3.1: Complexity Assessment."""
+        return Task(
+            config=self.tasks_config['analyze_complexity'],
+            agent=self.quality_analyst(),
+            output_pydantic=ComplexityOutput,
+            output_file=str(self._analysis_dir / "13_complexity.json"),
+        )
+    
+    @task
+    def analyze_technical_debt(self) -> Task:
+        """Task 3.2: Technical Debt Assessment."""
+        return Task(
+            config=self.tasks_config['analyze_technical_debt'],
+            agent=self.quality_analyst(),
+            output_pydantic=TechnicalDebtOutput,
+            output_file=str(self._analysis_dir / "14_technical_debt.json"),
+        )
+    
+    @task
+    def analyze_security(self) -> Task:
+        """Task 3.3: Security Posture Assessment."""
+        return Task(
+            config=self.tasks_config['analyze_security'],
+            agent=self.quality_analyst(),
+            output_pydantic=SecurityOutput,
+            output_file=str(self._analysis_dir / "15_security.json"),
+        )
+    
+    @task
+    def analyze_operational_readiness(self) -> Task:
+        """Task 3.4: Operational Readiness Assessment."""
+        return Task(
+            config=self.tasks_config['analyze_operational_readiness'],
+            agent=self.quality_analyst(),
+            output_pydantic=OperationalReadinessOutput,
+            output_file=str(self._analysis_dir / "16_operational_readiness.json"),
+        )
+    
+    # =========================================================================
+    # TASKS - Synthesis (merges all outputs)
+    # =========================================================================
     
     @task
     def synthesize_architecture(self) -> Task:
-        """Merge all analyses into analyzed_architecture.json."""
+        """Task 4: Merge all analyses into analyzed_architecture.json.
+        
+        Uses PartialResultsTool to read all partial analysis outputs from files
+        instead of context parameter to avoid context overflow.
+        """
         return Task(
             config=self.tasks_config['synthesize_architecture'],
             agent=self.synthesis_lead(),
-            context=[
-                self.analyze_technical(),
-                self.analyze_functional(),
-                self.analyze_quality(),
-            ],
+            # NO context parameter - uses tool to read files instead
+            output_pydantic=AnalyzedArchitecture,
             output_file=str(self.output_dir / "analyzed_architecture.json"),
         )
     
@@ -272,6 +451,8 @@ class ArchitectureAnalysisCrew:
             tasks=self.tasks,    # Automatically populated by @task decorators
             process=Process.sequential,
             verbose=True,
+            memory=False,  # Disable memory to prevent context overflow
+            full_output=False,  # Only return final result, not intermediate
         )
     
     def run(self) -> str:

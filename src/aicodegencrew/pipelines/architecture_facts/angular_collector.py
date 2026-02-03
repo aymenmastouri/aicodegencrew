@@ -154,6 +154,9 @@ class AngularCollector(BaseCollector):
                 prefix=f"ev_{stereotype}"
             )
             
+            # Derive module from file path (e.g., "workflow/components" -> "workflow.components")
+            module = self._derive_module_from_path(rel_path)
+            
             component_id = self._make_component_id(class_name, rel_path)
             self.components.append(CollectedComponent(
                 id=component_id,
@@ -161,7 +164,8 @@ class AngularCollector(BaseCollector):
                 name=class_name,
                 stereotype=stereotype,
                 file_path=rel_path,
-                evidence_ids=[ev_id]
+                evidence_ids=[ev_id],
+                module=module
             ))
     
     def _extract_routes(self, file_path: Path):
@@ -282,3 +286,154 @@ class AngularCollector(BaseCollector):
                 return i
         
         return min(start_line + 100, len(lines))
+    
+    # =========================================================================
+    # FRONTEND METADATA EXTRACTION
+    # =========================================================================
+    
+    def extract_frontend_metadata(self) -> Dict:
+        """
+        Extract additional frontend-specific metadata from the Angular project.
+        
+        Returns dict with:
+        - angular_version: Angular major version
+        - routing_strategy: lazy loading, eager, etc.
+        - state_management: NgRx, services, etc.
+        - ui_library: Material, PrimeNG, etc.
+        - i18n_config: Internationalization setup
+        - build_config: Build/bundle configuration
+        """
+        import json
+        
+        metadata = {
+            "angular_version": None,
+            "routing_strategy": "unknown",
+            "state_management": "services",  # default
+            "ui_library": None,
+            "i18n_config": {},
+            "build_config": {},
+            "environments": [],
+        }
+        
+        # Read angular.json for project config
+        angular_json = self.repo_path / "angular.json"
+        if angular_json.exists():
+            self._parse_angular_json(angular_json, metadata)
+        
+        # Read package.json for dependencies
+        package_json = self.repo_path / "package.json"
+        if not package_json.exists():
+            package_json = self.repo_path / "frontend" / "package.json"
+        
+        if package_json.exists():
+            self._parse_package_json_metadata(package_json, metadata)
+        
+        # Detect routing strategy from app-routing.module.ts
+        self._detect_routing_strategy(metadata)
+        
+        # Detect environments
+        self._detect_environments(metadata)
+        
+        logger.info(f"[AngularCollector] Extracted frontend metadata: Angular {metadata['angular_version']}, UI={metadata['ui_library']}")
+        return metadata
+    
+    def _parse_angular_json(self, angular_json: Path, metadata: Dict):
+        """Parse angular.json for build config."""
+        import json
+        try:
+            with open(angular_json, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            
+            # Get default project
+            default_project = config.get("defaultProject")
+            projects = config.get("projects", {})
+            
+            if default_project and default_project in projects:
+                project = projects[default_project]
+                architect = project.get("architect", {})
+                
+                # Build config
+                build_config = architect.get("build", {})
+                if build_config:
+                    options = build_config.get("options", {})
+                    metadata["build_config"]["output_path"] = options.get("outputPath")
+                    metadata["build_config"]["styles"] = options.get("styles", [])
+                    metadata["build_config"]["scripts"] = options.get("scripts", [])
+                
+                # Detect i18n
+                if "i18n" in project:
+                    metadata["i18n_config"]["enabled"] = True
+                    metadata["i18n_config"]["locales"] = list(project["i18n"].get("locales", {}).keys())
+        
+        except Exception as e:
+            logger.warning(f"[AngularCollector] Failed to parse angular.json: {e}")
+    
+    def _parse_package_json_metadata(self, package_json: Path, metadata: Dict):
+        """Parse package.json for frontend metadata."""
+        import json
+        try:
+            with open(package_json, 'r', encoding='utf-8') as f:
+                pkg = json.load(f)
+            
+            deps = pkg.get("dependencies", {})
+            
+            # Angular version
+            if "@angular/core" in deps:
+                version = deps["@angular/core"].lstrip("^~")
+                metadata["angular_version"] = version.split(".")[0]  # Major version
+            
+            # Detect UI library
+            ui_libs = {
+                "@angular/material": "Angular Material",
+                "primeng": "PrimeNG",
+                "ng-zorro-antd": "NG-ZORRO",
+                "@ng-bootstrap/ng-bootstrap": "ng-bootstrap",
+                "ngx-bootstrap": "ngx-bootstrap",
+            }
+            for lib, name in ui_libs.items():
+                if lib in deps:
+                    metadata["ui_library"] = name
+                    break
+            
+            # Detect state management
+            if "@ngrx/store" in deps:
+                metadata["state_management"] = "NgRx"
+            elif "ngxs" in str(deps).lower():
+                metadata["state_management"] = "NGXS"
+            elif "akita" in str(deps).lower():
+                metadata["state_management"] = "Akita"
+        
+        except Exception as e:
+            logger.warning(f"[AngularCollector] Failed to parse package.json: {e}")
+    
+    def _detect_routing_strategy(self, metadata: Dict):
+        """Detect routing strategy (lazy loading, etc.)."""
+        # Search for routing modules
+        routing_files = list(self.repo_path.rglob("*-routing.module.ts"))
+        if not routing_files:
+            routing_files = list(self.repo_path.rglob("app.routes.ts"))
+        
+        has_lazy_loading = False
+        for routing_file in routing_files:
+            try:
+                with open(routing_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                if "loadChildren" in content or "loadComponent" in content:
+                    has_lazy_loading = True
+                    break
+            except Exception:
+                continue
+        
+        metadata["routing_strategy"] = "lazy-loading" if has_lazy_loading else "eager"
+    
+    def _detect_environments(self, metadata: Dict):
+        """Detect environment configurations."""
+        env_dir = self.repo_path / "src" / "environments"
+        if not env_dir.exists():
+            env_dir = self.repo_path / "frontend" / "src" / "environments"
+        
+        if env_dir.exists():
+            for env_file in env_dir.glob("environment*.ts"):
+                env_name = env_file.stem.replace("environment.", "").replace("environment", "default")
+                metadata["environments"].append(env_name)

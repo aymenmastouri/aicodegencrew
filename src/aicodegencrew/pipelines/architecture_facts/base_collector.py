@@ -151,6 +151,33 @@ class BaseCollector(ABC):
                 files.append(path)
         return files
     
+    def _derive_module_from_path(self, file_path: str) -> str:
+        """Derive module/package name from file path.
+        
+        Examples:
+            'src/main/java/com/example/workflow/service/Foo.java' -> 'com.example.workflow.service'
+            'src/app/workflow/components/foo.component.ts' -> 'workflow.components'
+        """
+        if not file_path:
+            return ""
+        parts = file_path.replace("\\", "/").split("/")
+        
+        # Find start index after src/main/java or src/app
+        start_idx = 0
+        for i, p in enumerate(parts):
+            if p in ("java", "kotlin", "app") and i > 0:
+                start_idx = i + 1
+                break
+        
+        # Get directory parts (exclude file name)
+        dir_parts = parts[start_idx:-1] if start_idx < len(parts) - 1 else parts[:-1]
+        
+        # Filter out common non-module folders
+        skip_parts = {"src", "main", "test", "resources", "lib", "shared"}
+        filtered = [p for p in dir_parts if p and p.lower() not in skip_parts]
+        
+        return ".".join(filtered) if filtered else ""
+    
     @abstractmethod
     def collect(self) -> Tuple[List[CollectedComponent], List[CollectedInterface], List[CollectedRelation], Dict[str, CollectedEvidence]]:
         """

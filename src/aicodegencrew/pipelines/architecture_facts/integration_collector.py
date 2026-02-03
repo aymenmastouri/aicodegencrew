@@ -54,6 +54,7 @@ class IntegrationCollector(BaseCollector):
             confidence=confidence,
             layer="infrastructure",
             tags=tags or [],
+            module=self._derive_module_from_path(file_path)
         )
         self.components.append(component)
         return component
