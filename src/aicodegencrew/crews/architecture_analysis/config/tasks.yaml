@@ -1,12 +1,11 @@
 # =============================================================================
 # Phase 2: Architecture Analysis Crew - Tasks Configuration
 # =============================================================================
-# DEEP ANALYSIS MODE:
-# - Repository can have 10,000+ components
-# - Each task should take 10-15 minutes
-# - Total analysis time: 30-40 minutes
-# - Minimum 20+ tool calls per task
-# - Use limit=500 for comprehensive queries
+# SCALABLE ANALYSIS MODE:
+# - Supports small repos (100 components) to enterprise (100,000+ components)
+# - Use get_facts_statistics FIRST to understand scale
+# - Use pagination for large repos (offset/limit)
+# - Each task adapts strategy based on repo size
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -15,10 +14,19 @@
 analyze_technical:
   description: >
     Perform EXHAUSTIVE technical architecture analysis.
-    This repository may have 10,000+ components - take your time!
+    This repository may have 100,000+ components - adapt your strategy!
     
     TIME BUDGET: 10-15 minutes. DO NOT RUSH.
     MINIMUM: 20 tool calls before concluding.
+    
+    
+    PHASE 0: UNDERSTAND SCALE (MANDATORY FIRST STEP)
+    
+    STEP 0.1: Get repository statistics
+    - Call: get_facts_statistics(include_samples=true)
+    - Note the "repository_scale" and "recommendation"
+    - If enterprise scale (10,000+): Use pagination with offset/limit
+    - If medium/small: Standard queries are fine
     
     
     PHASE 1: ARCHITECTURE STYLES (3-5 queries)
@@ -59,14 +67,18 @@ analyze_technical:
     - Call: rag_query("postgresql mysql oracle") if suspected database
     
     
-    PHASE 4: LAYER STRUCTURE (8-10 queries)
+    PHASE 4: LAYER STRUCTURE (use pagination for large repos)
     
-    STEP 4.1: Query each layer with HIGH limits
+    STEP 4.1: Query each layer - USE PAGINATION IF NEEDED
+    For large repos (10,000+ components), query with offset:
+    - Call: query_facts(category="components", stereotype="controller", limit=500, offset=0)
+    - If has_more=true: query_facts(..., offset=500), then offset=1000, etc.
+    
+    For smaller repos:
     - Call: list_components_by_stereotype(stereotype="controller", limit=500)
     - Call: list_components_by_stereotype(stereotype="service", limit=500)
     - Call: list_components_by_stereotype(stereotype="repository", limit=500)
     - Call: list_components_by_stereotype(stereotype="entity", limit=500)
-    - Call: list_components_by_stereotype(stereotype="component", limit=500)
     
     STEP 4.2: Analyze component naming patterns
     - Group controllers by URL prefix pattern
@@ -76,10 +88,10 @@ analyze_technical:
     
     PHASE 5: DEPENDENCY ANALYSIS (3-5 queries)
     
-    STEP 5.1: Query all relations
-    - Call: query_facts(category="relations")
+    STEP 5.1: Query relations with pagination
+    - Call: query_facts(category="relations", limit=500, offset=0)
+    - Check pagination.relations.has_more - continue if needed
     - Count relations by type (uses, implements, extends)
-    - Identify high-dependency components
     
     STEP 5.2: Check for architectural violations
     - Controller -> Repository (should go through Service)
@@ -88,6 +100,7 @@ analyze_technical:
     
     OUTPUT FORMAT (JSON):
     {
+      "repository_scale": "<from statistics>",
       "architecture_styles": {
         "primary": "<DISCOVERED or UNKNOWN>",
         "secondary": ["<DISCOVERED>"],
@@ -134,16 +147,26 @@ analyze_technical:
 analyze_functional:
   description: >
     Perform EXHAUSTIVE functional/domain analysis.
-    This repository may have 10,000+ components - take your time!
+    This repository may have 100,000+ components - adapt your strategy!
     
     TIME BUDGET: 10-15 minutes. DO NOT RUSH.
     MINIMUM: 20 tool calls before concluding.
     
     
-    PHASE 1: ENTITY DISCOVERY (5-8 queries)
+    PHASE 0: UNDERSTAND SCALE (MANDATORY FIRST STEP)
     
-    STEP 1.1: Query ALL entities
-    - Call: list_components_by_stereotype(stereotype="entity", limit=500)
+    STEP 0.1: Get repository statistics
+    - Call: get_facts_statistics()
+    - Check components_by_stereotype breakdown
+    - If entity count > 1000: Use pagination
+    
+    
+    PHASE 1: ENTITY DISCOVERY (use pagination for large repos)
+    
+    STEP 1.1: Query ALL entities with pagination if needed
+    - Call: query_facts(category="components", stereotype="entity", limit=500, offset=0)
+    - Check pagination.components.has_more
+    - If true: Continue with offset=500, 1000, etc. until all retrieved
     - List EVERY entity name returned
     
     STEP 1.2: Analyze entity names for domain areas
@@ -254,28 +277,34 @@ analyze_functional:
 analyze_quality:
   description: >
     Perform EXHAUSTIVE quality analysis.
-    This repository may have 10,000+ components - take your time!
+    This repository may have 100,000+ components - adapt your strategy!
     
     TIME BUDGET: 10-15 minutes. DO NOT RUSH.
     MINIMUM: 20 tool calls before concluding.
     
     
-    PHASE 1: COMPLEXITY METRICS (5-8 queries)
+    PHASE 0: UNDERSTAND SCALE (MANDATORY FIRST STEP)
     
-    STEP 1.1: Count all component types
-    - Call: list_components_by_stereotype(stereotype="controller", limit=500)
-    - Call: list_components_by_stereotype(stereotype="service", limit=500)
-    - Call: list_components_by_stereotype(stereotype="repository", limit=500)
-    - Call: list_components_by_stereotype(stereotype="entity", limit=500)
-    - Record EXACT counts
-    
-    STEP 1.2: Assess complexity level
-    - < 100 components: Low complexity
-    - 100-500 components: Medium complexity
-    - > 500 components: High complexity
+    STEP 0.1: Get repository statistics
+    - Call: get_facts_statistics()
+    - Note total component count and relation count
+    - Adapt complexity thresholds based on scale
     
     
-    PHASE 2: COUPLING ANALYSIS (5-8 queries)
+    PHASE 1: COMPLEXITY METRICS (use statistics + sampling)
+    
+    STEP 1.1: Use statistics for counts
+    - From statistics: components_by_stereotype gives exact counts
+    - No need to query all if statistics available
+    
+    STEP 1.2: Assess complexity level (adjusted for enterprise)
+    - < 500 components: Low complexity
+    - 500-5000 components: Medium complexity
+    - 5000-50000 components: High complexity
+    - > 50000 components: Enterprise scale
+    
+    
+    PHASE 2: COUPLING ANALYSIS (use pagination)
     
     STEP 2.1: Query all relations
     - Call: query_facts(category="relations")
