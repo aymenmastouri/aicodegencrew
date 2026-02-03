@@ -63,10 +63,16 @@ class ArchitectureAnalysisCrew:
         self._file_writer = FileWriterTool()
         
     @before_kickoff
-    def validate_prerequisites(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate that Phase 1 output files exist before running."""
+    def prepare_clean_run(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate prerequisites and archive+clean old outputs before running."""
+        import shutil
+        from datetime import datetime
+        
         logger.info("")
-        logger.info("[Phase2] Checking Phase 1 prerequisites...")
+        logger.info("[Phase2] Preparing clean run...")
+        
+        # Step 1: Validate prerequisites
+        logger.info("[Phase2] Step 1: Checking Phase 1 prerequisites...")
         
         missing_files = []
         
@@ -100,46 +106,51 @@ class ArchitectureAnalysisCrew:
             )
         
         logger.info("   [OK] All prerequisites satisfied!")
+        
+        # Step 2: Archive and clean old outputs
+        logger.info("[Phase2] Step 2: Archive and clean old outputs...")
+        
+        output_files = [
+            "analyzed_architecture.json",
+            "analysis_technical.json",
+            "analysis_functional.json",
+            "analysis_quality.json",
+            # Legacy names
+            "temp_technical_analysis.json",
+            "temp_functional_analysis.json",
+            "temp_quality_analysis.json",
+        ]
+        
+        existing_files = [f for f in output_files if (self.output_dir / f).exists()]
+        
+        if existing_files:
+            # Archive old outputs
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
+            archive_dir.mkdir(parents=True, exist_ok=True)
+            
+            for filename in existing_files:
+                src = self.output_dir / filename
+                dst = archive_dir / filename
+                shutil.copy2(src, dst)
+                src.unlink()  # Delete after archiving
+                logger.info(f"   [ARCHIVED+DELETED] {filename}")
+            
+            logger.info(f"   [OK] {len(existing_files)} old files archived to: {archive_dir}")
+        else:
+            logger.info("   [OK] No old outputs to clean (first run)")
+        
         logger.info("")
         
         return inputs
     
     @after_kickoff
-    def archive_results(self, result):
-        """Archive analysis results with timestamp for recovery."""
-        import shutil
-        from datetime import datetime
-        
+    def log_completion(self, result):
+        """Log completion message."""
         logger.info("")
         logger.info("=" * 60)
         logger.info("PHASE 2 COMPLETE: Architecture Analysis finished")
         logger.info("=" * 60)
-        
-        # Create archive directory with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
-        archive_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Files to archive
-        files_to_archive = [
-            "analyzed_architecture.json",
-            "analysis_technical.json",
-            "analysis_functional.json", 
-            "analysis_quality.json",
-        ]
-        
-        archived_count = 0
-        for filename in files_to_archive:
-            src = self.output_dir / filename
-            if src.exists():
-                dst = archive_dir / filename
-                shutil.copy2(src, dst)
-                archived_count += 1
-                logger.info(f"   [ARCHIVED] {filename}")
-        
-        if archived_count > 0:
-            logger.info(f"   [OK] {archived_count} files archived to: {archive_dir}")
-        
         logger.info(f"Output: {self.output_dir / 'analyzed_architecture.json'}")
         return result
     

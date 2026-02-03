@@ -91,6 +91,34 @@ class ArchitectureSynthesisCrew:
         logger.info("   [OK] All prerequisites satisfied!")
         logger.info("")
     
+    def _archive_and_clean_old_outputs(self) -> None:
+        """Archive and clean old Phase 3 outputs before new run."""
+        import shutil
+        from datetime import datetime
+        
+        output_dir = self.facts_path.parent
+        
+        # Directories to archive
+        output_dirs = ["c4", "arc42", "quality"]
+        existing_dirs = [d for d in output_dirs if (output_dir / d).exists() and any((output_dir / d).iterdir())]
+        
+        if existing_dirs:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            archive_dir = output_dir / "archive" / f"run_{timestamp}"
+            archive_dir.mkdir(parents=True, exist_ok=True)
+            
+            for dirname in existing_dirs:
+                src = output_dir / dirname
+                dst = archive_dir / dirname
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+                shutil.rmtree(src)
+                src.mkdir(exist_ok=True)  # Recreate empty dir
+                logger.info(f"   [ARCHIVED+CLEANED] {dirname}/")
+            
+            logger.info(f"   [OK] {len(existing_dirs)} directories archived to: {archive_dir}")
+        else:
+            logger.info("   [OK] No old outputs to clean (first run)")
+    
     def run(self) -> str:
         """
         Execute both crews sequentially.
@@ -103,6 +131,10 @@ class ArchitectureSynthesisCrew:
         """
         # Validate prerequisites before running
         self._validate_prerequisites()
+        
+        # Archive and clean old outputs
+        logger.info("[Phase3] Archive and clean old outputs...")
+        self._archive_and_clean_old_outputs()
         
         results = []
         
@@ -140,43 +172,7 @@ class ArchitectureSynthesisCrew:
         logger.info("PHASE 3 COMPLETE: Reverse Engineering Documentation created")
         logger.info("=" * 60)
         
-        # Archive results
-        self._archive_results()
-        
         return summary
-    
-    def _archive_results(self) -> None:
-        """Archive Phase 3 results with timestamp for recovery."""
-        import shutil
-        from datetime import datetime
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_dir = self.facts_path.parent
-        archive_dir = output_dir / "archive" / f"run_{timestamp}"
-        archive_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Archive C4 outputs
-        c4_dir = output_dir / "c4"
-        if c4_dir.exists():
-            dst = archive_dir / "c4"
-            shutil.copytree(c4_dir, dst, dirs_exist_ok=True)
-            logger.info(f"   [ARCHIVED] c4/")
-        
-        # Archive Arc42 outputs
-        arc42_dir = output_dir / "arc42"
-        if arc42_dir.exists():
-            dst = archive_dir / "arc42"
-            shutil.copytree(arc42_dir, dst, dirs_exist_ok=True)
-            logger.info(f"   [ARCHIVED] arc42/")
-        
-        # Archive quality outputs
-        quality_dir = output_dir / "quality"
-        if quality_dir.exists():
-            dst = archive_dir / "quality"
-            shutil.copytree(quality_dir, dst, dirs_exist_ok=True)
-            logger.info(f"   [ARCHIVED] quality/")
-        
-        logger.info(f"   [OK] Phase 3 outputs archived to: {archive_dir}")
     
     def run_c4_only(self) -> str:
         """Run only the C4 Crew."""
