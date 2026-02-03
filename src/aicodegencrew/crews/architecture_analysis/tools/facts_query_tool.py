@@ -34,9 +34,17 @@ class FactsQueryInput(BaseModel):
         default="",
         description="Stereotype filter: 'controller', 'service', 'repository', 'entity', 'design_pattern', 'architecture_style'"
     )
+    container: str = Field(
+        default="",
+        description="Container filter: filter by container name"
+    )
     limit: int = Field(
-        default=30,
-        description="Maximum number of results (default 30, hard cap at 50)"
+        default=100,
+        description="Maximum number of results per page (default 100, max 500)"
+    )
+    offset: int = Field(
+        default=0,
+        description="Skip first N results for pagination (use with limit for large repos)"
     )
 
 
@@ -95,51 +103,76 @@ class FactsQueryTool(BaseTool):
         category: str = "all",
         query: str = "",
         stereotype: str = "",
-        limit: int = 30,
+        container: str = "",
+        limit: int = 100,
+        offset: int = 0,
     ) -> str:
         """
-        Execute facts query.
+        Execute facts query with pagination support.
         
         Args:
             category: Filter by category (components/relations/interfaces/containers/all)
             query: Search text for filtering
             stereotype: Filter by component stereotype
-            limit: Max results (hard cap at 50)
+            container: Filter by container name
+            limit: Max results per page (max 500 for large repos)
+            offset: Skip first N results for pagination
             
         Returns:
-            JSON string with matching facts
+            JSON string with matching facts and pagination info
         """
         try:
             facts = self._load_facts()
             if not facts:
                 return json.dumps({"error": "No facts available", "results": []})
             
-            # Hard cap limit to prevent token overflow
-            limit = min(limit, 50)
+            # Cap limit at 500 for large repo support
+            limit = min(limit, 500)
+            offset = max(offset, 0)
             
             results = {}
             query_lower = query.lower()
+            container_lower = container.lower() if container else ""
+            
+            # Track totals for pagination info
+            pagination_info = {}
             
             # Query components
             if category in ("components", "all"):
-                components = self._filter_components(
-                    facts.get("components", []),
+                all_components = facts.get("components", [])
+                components, total_matching = self._filter_components(
+                    all_components,
                     query_lower,
                     stereotype,
-                    limit
+                    container_lower,
+                    limit,
+                    offset
                 )
                 if components:
                     results["components"] = components
+                pagination_info["components"] = {
+                    "returned": len(components),
+                    "total_matching": total_matching,
+                    "offset": offset,
+                    "has_more": (offset + len(components)) < total_matching
+                }
             
             # Query relations
             if category in ("relations", "all"):
-                relations = self._filter_relations(
-                    facts.get("relations", []),
+                all_relations = facts.get("relations", [])
+                relations, total_rel = self._filter_relations(
+                    all_relations,
                     query_lower,
-                    limit
+                    limit,
+                    offset
                 )
                 if relations:
                     results["relations"] = relations
+                pagination_info["relations"] = {
+                    "returned": len(relations),
+                    "total_matching": total_rel,
+                    "has_more": (offset + len(relations)) < total_rel
+                }
             
             # Query interfaces
             if category in ("interfaces", "all"):
@@ -161,16 +194,19 @@ class FactsQueryTool(BaseTool):
                 if containers:
                     results["containers"] = containers
             
-            # Build output with summary
+            # Build output with summary and pagination
             total_items = sum(len(v) for v in results.values())
             output = {
                 "query_params": {
                     "category": category,
                     "search": query,
                     "stereotype": stereotype,
-                    "limit": limit
+                    "container": container,
+                    "limit": limit,
+                    "offset": offset
                 },
                 "result_count": total_items,
+                "pagination": pagination_info,
                 "results": results
             }
             
@@ -185,10 +221,17 @@ class FactsQueryTool(BaseTool):
         components: List[Dict[str, Any]],
         query: str,
         stereotype: str,
-        limit: int
-    ) -> List[Dict[str, Any]]:
-        """Filter components by query text and stereotype."""
-        filtered = []
+        container_filter: str,
+        limit: int,
+        offset: int
+    ) -> tuple[List[Dict[str, Any]], int]:
+        """Filter components by query text, stereotype, container with pagination.
+        
+        Returns:
+            Tuple of (filtered_list, total_matching_count)
+        """
+        # First pass: count all matching (for pagination info)
+        matching = []
         
         for c in components:
             # Stereotype filter
@@ -197,12 +240,28 @@ class FactsQueryTool(BaseTool):
                 if stereotype.lower() != c_stereotype:
                     continue
             
+            # Container filter
+            if container_filter:
+                c_container = (c.get("container") or "").lower()
+                if container_filter not in c_container:
+                    continue
+            
             # Text search filter
             if query:
                 searchable = f"{c.get('name', '')} {c.get('module', '')} {c.get('file_path', '')} {c.get('description', '')}".lower()
                 if query not in searchable:
                     continue
             
+            matching.append(c)
+        
+        total_matching = len(matching)
+        
+        # Apply pagination
+        paginated = matching[offset:offset + limit]
+        
+        # Transform to output format
+        filtered = []
+        for c in paginated:
             # Derive package from module or file_path
             package = c.get("module") or ""
             if not package and c.get("file_path"):
@@ -221,23 +280,25 @@ class FactsQueryTool(BaseTool):
                 "container": c.get("container"),
                 "description": (c.get("description", "") or "")[:100],  # Truncate
             })
-            
-            if len(filtered) >= limit:
-                break
         
-        return filtered
+        return filtered, total_matching
     
     def _filter_relations(
         self,
         relations: List[Dict[str, Any]],
         query: str,
-        limit: int
-    ) -> List[Dict[str, Any]]:
-        """Filter relations by query text."""
-        filtered = []
+        limit: int,
+        offset: int
+    ) -> tuple[List[Dict[str, Any]], int]:
+        """Filter relations by query text with pagination.
+        
+        Returns:
+            Tuple of (filtered_list, total_matching_count)
+        """
+        # First pass: find all matching
+        matching = []
         
         for r in relations:
-            # Facts JSON uses "from"/"to", map to "source"/"target" for clarity
             from_comp = r.get("from", "")
             to_comp = r.get("to", "")
             
@@ -246,17 +307,24 @@ class FactsQueryTool(BaseTool):
                 if query not in searchable:
                     continue
             
+            matching.append(r)
+        
+        total_matching = len(matching)
+        
+        # Apply pagination
+        paginated = matching[offset:offset + limit]
+        
+        # Transform to output format
+        filtered = []
+        for r in paginated:
             filtered.append({
-                "source": from_comp,
-                "target": to_comp,
+                "source": r.get("from", ""),
+                "target": r.get("to", ""),
                 "type": r.get("type"),
                 "description": (r.get("description", "") or "")[:80],
             })
-            
-            if len(filtered) >= limit:
-                break
         
-        return filtered
+        return filtered, total_matching
     
     def _filter_items(
         self,

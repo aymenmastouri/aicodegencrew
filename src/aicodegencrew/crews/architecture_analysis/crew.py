@@ -19,7 +19,7 @@ from crewai import Agent, Crew, Task, Process
 from crewai.project import CrewBase, agent, task, crew, before_kickoff, after_kickoff
 from crewai_tools import FileWriterTool
 
-from .tools import FactsQueryTool, RAGQueryTool, StereotypeListTool
+from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,7 @@ class ArchitectureAnalysisCrew:
         self.output_dir = Path(output_dir)
         
         # Initialize tools (shared by agents)
+        self._facts_stats_tool = FactsStatisticsTool(facts_path=str(self.facts_path))
         self._facts_tool = FactsQueryTool(facts_path=str(self.facts_path))
         self._rag_tool = RAGQueryTool(chroma_dir=chroma_dir)
         self._stereotype_tool = StereotypeListTool(facts_path=str(self.facts_path))
@@ -164,6 +165,7 @@ class ArchitectureAnalysisCrew:
         return Agent(
             config=self.agents_config['tech_architect'],
             tools=[
+                self._facts_stats_tool,  # Use FIRST for large repos
                 self._facts_tool,
                 self._rag_tool,
                 self._stereotype_tool,
@@ -177,6 +179,7 @@ class ArchitectureAnalysisCrew:
         return Agent(
             config=self.agents_config['func_analyst'],
             tools=[
+                self._facts_stats_tool,  # Use FIRST for large repos
                 self._facts_tool,
                 self._rag_tool,
                 self._stereotype_tool,
@@ -190,6 +193,7 @@ class ArchitectureAnalysisCrew:
         return Agent(
             config=self.agents_config['quality_analyst'],
             tools=[
+                self._facts_stats_tool,  # Use FIRST for large repos
                 self._facts_tool,
                 self._rag_tool,
                 self._stereotype_tool,
