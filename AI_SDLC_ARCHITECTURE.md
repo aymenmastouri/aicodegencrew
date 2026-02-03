@@ -41,12 +41,24 @@ The initial implementation focuses on architecture reverse engineering:
 |-------|------|------|--------|--------|
 | 0 | Indexing | Pipeline | `.cache/.chroma` | Implemented |
 | 1 | Architecture Facts | Pipeline (deterministic, no LLM) | `architecture_facts.json` + `evidence_map.json` | Implemented |
-| 2 | Architecture Synthesis | Crew (LLM, evidence-first) | `c4/*`, `arc42/*`, `quality/*` | Implemented |
+| 2 | Architecture Analysis | Crew (LLM, 4 agents) | `analyzed_architecture.json` | Implemented |
+| 2b | Architecture Synthesis | Crew (LLM, evidence-first) | `c4/*`, `arc42/*`, `quality/*` | Implemented |
 | 3 | Review and Consistency Guard | Crew | Quality reports, consistency checks | Planned |
 | 4 | Development Planning | Crew | Backlog items, work packages | Planned |
 | 5 | Code Generation | Crew | Feature code, refactoring PRs | Planned |
 | 6 | Test Generation | Crew | Unit tests, integration tests | Planned |
 | 7 | Deployment Automation | Pipeline | CI/CD configs, release notes | Planned |
+
+### 1.5 Enterprise-Scale Support
+
+The system supports repositories from small (100 components) to enterprise (100,000+ components):
+
+| Scale | Components | Query Strategy |
+|-------|------------|----------------|
+| Small | < 500 | Standard queries |
+| Medium | 500-5,000 | Stereotype filtering |
+| Large | 5,000-50,000 | Stereotype + Container filtering |
+| Enterprise | 50,000+ | Paginated queries (500/batch) |
 
 ---
 
@@ -418,6 +430,118 @@ knowledge/architecture/
 
 **Note:** Evidence IDs are for internal processing and quality validation.
 The final documentation should be clean and readable without `[ev_XXX]` markers.
+
+---
+
+### 4.3.1 Phase 2 Analysis: Architecture Analysis Crew
+
+| Attribute | Specification |
+|-----------|---------------|
+| Type | Crew (AI Agents) |
+| Module | `crews/architecture_analysis/crew.py` |
+| LLM Requirement | Yes |
+| Input | `architecture_facts.json` + `evidence_map.json` + ChromaDB |
+| Output | `knowledge/architecture/analyzed_architecture.json` |
+| Dependency | Phase 1 |
+| Status | Implemented |
+
+#### Purpose
+
+Deep analysis of architecture facts to produce quality metrics, insights, and structured analysis:
+
+- Technical Architecture Analysis (styles, patterns, tech stack)
+- Functional/Domain Analysis (entities, capabilities, bounded contexts)
+- Quality Analysis (complexity, coupling, tech debt indicators)
+- Synthesized JSON output for Phase 3
+
+#### Enterprise-Scale Support (100,000+ Components)
+
+The Architecture Analysis Crew supports repositories of any size through intelligent scaling:
+
+| Scale | Components | Strategy |
+|-------|------------|----------|
+| Small | < 500 | Standard queries with limit=100 |
+| Medium | 500-5,000 | Query by stereotype, limit=200 |
+| Large | 5,000-50,000 | Query by stereotype AND container, pagination |
+| Enterprise | 50,000+ | Paginated queries with offset/limit batches of 500 |
+
+#### Scaling Tools
+
+| Tool | Purpose | Usage |
+|------|---------|-------|
+| `get_facts_statistics()` | Overview without loading all data | ALWAYS call first |
+| `query_facts(limit, offset)` | Paginated component queries | For large repos |
+| `list_components_by_stereotype()` | Filter by stereotype | Max 500 per query |
+
+#### Query Strategy for Large Repos
+
+```
+1. get_facts_statistics()
+   Response: {
+     "repository_scale": "enterprise (100,000 components)",
+     "components_by_stereotype": {"service": 12500, "controller": 3200, ...},
+     "recommendation": "Use paginated_query with offset/limit..."
+   }
+
+2. query_facts(category="components", stereotype="service", limit=500, offset=0)
+   Response: {
+     "pagination": {"components": {"returned": 500, "total_matching": 12500, "has_more": true}}
+   }
+
+3. query_facts(..., offset=500)  // Continue until has_more=false
+```
+
+#### Analysis Agents (4 Agents)
+
+| Agent | Role | Focus |
+|-------|------|-------|
+| Tech Architect | Technical analysis | Styles, patterns, tech stack, layers |
+| Functional Analyst | Domain analysis | Entities, capabilities, bounded contexts |
+| Quality Analyst | Quality metrics | Complexity, coupling, debt, risks |
+| Synthesis Lead | Merge results | Create analyzed_architecture.json |
+
+#### Output Schema
+
+```json
+{
+  "metadata": {
+    "repository_scale": "enterprise (100,000 components)",
+    "analysis_timestamp": "2026-02-03T12:00:00Z",
+    "tool_calls": 85
+  },
+  "technical_analysis": {
+    "architecture_styles": {"primary": "layered_architecture", "secondary": ["microservices"]},
+    "design_patterns": [{"name": "repository", "instances": 450}],
+    "technology_stack": {...},
+    "layer_structure": {...}
+  },
+  "functional_analysis": {
+    "domain_model": {...},
+    "capabilities": [...],
+    "bounded_contexts": [...]
+  },
+  "quality_analysis": {
+    "complexity_assessment": {...},
+    "coupling_metrics": {...},
+    "tech_debt_indicators": [...]
+  }
+}
+```
+
+#### Auto-Archive Feature
+
+Before each run, old outputs are archived to prevent data loss:
+
+```
+knowledge/architecture/archive/
+    run_20260203_120000/
+        analyzed_architecture.json
+        analysis_technical.json
+        analysis_functional.json
+        analysis_quality.json
+    run_20260202_150000/
+        ...
+```
 
 ---
 
