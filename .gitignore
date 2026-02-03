@@ -133,12 +133,16 @@ SESSION_STATE.md
 # -----------------------------------------------------------------------------
 # Generated Knowledge (Runtime Output)
 # -----------------------------------------------------------------------------
-# Phase 1 outputs (regenerated each run)
-knowledge/architecture/architecture_facts.json
-knowledge/architecture/evidence_map.json
+# Phase 1 outputs - TRACKED (important for reproducibility)
+# knowledge/architecture/architecture_facts.json
+# knowledge/architecture/evidence_map.json
 knowledge/architecture/evidence/
 
-# Phase 2 outputs (regenerated each run)
+# Phase 2 outputs - TRACKED
+# knowledge/architecture/analyzed_architecture.json
+# knowledge/architecture/analysis_*.json
+
+# Phase 3 outputs (regenerated each run)
 knowledge/architecture/arc42/*.md
 knowledge/architecture/c4/*.md
 knowledge/architecture/c4/diagrams/*.drawio
