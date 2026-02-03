@@ -1,51 +1,59 @@
 # =============================================================================
 # Arc42 Crew - Task Definitions
 # =============================================================================
-# Best Practice: Analyze first, then document
+# Best Practice: Agent analyzes facts DYNAMICALLY, no hardcoded assumptions!
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# PHASE 1: ANALYSIS (Think before writing)
+# PHASE 1: ANALYSIS (Agent discovers everything from facts)
 # -----------------------------------------------------------------------------
 
 analyze_system:
   description: |
-    ANALYZE the system before writing any documentation.
+    YOU are the Software Architect. ANALYZE the system YOURSELF from the facts!
     
-    This is the THINKING task - understand the system first!
+    DO NOT assume anything. DISCOVER everything from the data!
     
-    STEP 1: Query all facts
-    - query_architecture_facts with category="containers"
-    - query_architecture_facts with category="components" 
-    - query_architecture_facts with category="interfaces"
-    - query_architecture_facts with category="relations"
+    ## STEP 1: Query Architecture Styles
+    Use list_components_by_stereotype with stereotype="architecture_style"
+    → This tells you if it's Layered, Microservices, Monolith, etc.
     
-    STEP 2: Understand the system
-    - What is the DOMAIN? (derive from entity/service names)
-    - What is the ARCHITECTURE STYLE? (layered, microservices, monolith?)
-    - What are the KEY TECHNOLOGIES?
-    - How BIG is the system? (component counts)
+    ## STEP 2: Query Design Patterns  
+    Use list_components_by_stereotype with stereotype="design_pattern"
+    → This tells you which patterns are used (Repository, Factory, etc.)
     
-    STEP 3: Identify patterns
-    - Controller→Service→Repository = layered architecture
-    - Multiple separate services = microservices
-    - Kafka/RabbitMQ = event-driven
-    - REST endpoints = API-first
+    ## STEP 3: Query Containers
+    Use query_architecture_facts with category="containers"
+    → Understand the deployment units and technologies
     
-    STEP 4: Create analysis summary
-    Write a structured analysis that will guide all following tasks.
+    ## STEP 4: Count Components by Layer
+    Use list_components_by_stereotype for each:
+    - stereotype="controller" → Presentation layer
+    - stereotype="service" → Business layer
+    - stereotype="repository" → Persistence layer
+    - stereotype="entity" → Domain layer
     
-    ## Deliverable: Internal analysis (not saved to file)
+    ## STEP 5: Query Interfaces
+    Use query_architecture_facts with category="interfaces"
+    → Understand the API surface
     
-    Provide a summary with:
-    - System name and domain
-    - Architecture style identified
-    - Key technologies and their purpose
-    - Component statistics by stereotype
-    - Main business capabilities (derived from names)
-    - Quality characteristics (derived from patterns)
-  expected_output: "System analysis summary for use by documentation tasks"
-  agent: architect
+    ## STEP 6: Query Relations
+    Use query_architecture_facts with category="relations"
+    → Understand component dependencies
+    
+    ## YOUR ANALYSIS must answer:
+    1. What ARCHITECTURE STYLE did you find in the facts?
+    2. What DESIGN PATTERNS are evidenced?
+    3. What is the TECHNOLOGY STACK?
+    4. What is the DOMAIN (derive from entity/service names)?
+    5. How is the system STRUCTURED (layers, modules)?
+    6. What are the KEY COMPONENTS per layer?
+    
+    ## Deliverable: Your analysis as structured text
+    
+    Write YOUR findings - do not copy from task description!
+  expected_output: "Complete architecture analysis discovered from facts"
+  agent: arc42_architect
 
 # -----------------------------------------------------------------------------
 # PHASE 2: DOCUMENTATION (Based on analysis)
@@ -74,7 +82,7 @@ arc42_introduction:
     ## 1.3 Stakeholders
     - Relevant stakeholders for this system type
   expected_output: "Complete arc42 Introduction chapter"
-  agent: architect
+  agent: arc42_architect
   context:
     - analyze_system
   output_file: "knowledge/architecture/arc42/01-introduction.md"
@@ -99,9 +107,7 @@ arc42_constraints:
     ## 2.2 Organizational Constraints
     ## 2.3 Convention Constraints
   expected_output: "Complete arc42 Constraints chapter"
-  agent: architect
-  context:
-    - arc42_introduction
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/02-constraints.md"
 
 arc42_context:
@@ -125,9 +131,7 @@ arc42_context:
     ## 3.2 Technical Context  
     ## 3.3 External Dependencies
   expected_output: "Complete arc42 Context chapter"
-  agent: architect
-  context:
-    - arc42_constraints
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/03-context.md"
 
 arc42_solution_strategy:
@@ -151,48 +155,125 @@ arc42_solution_strategy:
     ## 4.2 Architecture Patterns
     ## 4.3 Achieving Quality Goals
   expected_output: "Complete arc42 Solution Strategy chapter"
-  agent: architect
-  context:
-    - arc42_context
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/04-solution-strategy.md"
 
-arc42_building_blocks:
+# -----------------------------------------------------------------------------
+# BUILDING BLOCKS - Split into Sub-Tasks (Strategy 2)
+# -----------------------------------------------------------------------------
+
+bb_intro:
   description: |
-    Create arc42 Chapter 5: Building Block View.
+    Create arc42 Chapter 5 INTRO: Building Block View - Introduction and Level 1.
     
-    REVERSE ENGINEER the component structure:
-    - Level 1: Containers (deployment units)
-    - Level 2: Layers (Controller, Service, Repository, Entity)
-    - Level 3: Individual components with responsibilities
+    Write the document header and container overview.
     
-    Query architecture_facts for: containers, components by stereotype
-    
-    ANALYZE each component:
-    - What is its RESPONSIBILITY? (derive from name)
-    - What does it DEPEND on? (from relations)
-    - What LAYER does it belong to?
-
     {system_summary}
-
+    {containers_summary}
+    
     ## Deliverable: 05-building-blocks.md
-
+    
     # 05 - Building Block View
-
+    
     ## 5.1 Whitebox Overall System (Level 1)
-    Container overview with responsibilities
+    - Describe the 5 containers and their technologies
+    - Use a table format for clarity
+    - Explain container orchestration (Docker-Compose)
+  expected_output: "Building Blocks intro with Level 1 container overview"
+  agent: arc42_architect
+  output_file: "knowledge/architecture/arc42/05-building-blocks.md"
 
-    ## 5.2 Level 2 - Layer Decomposition
+bb_controllers:
+  description: |
+    Document the CONTROLLERS layer for Building Block View.
+    
+    Use list_components_by_stereotype with stereotype="controller" to get the list.
+    
+    {system_summary}
+    
+    Write output using doc_writer to: knowledge/architecture/arc42/parts/bb-controllers.md
+    
     ### 5.2.1 Presentation Layer (Controllers)
-    ### 5.2.2 Business Layer (Services)
-    ### 5.2.3 Domain Layer (Entities)
-    ### 5.2.4 Persistence Layer (Repositories)
+    - Document the controllers shown (max 30)
+    - Use a table: Controller | Primary Responsibility
+    - Focus on REST endpoints and their purpose
+  expected_output: "Controllers section written to file"
+  agent: arc42_architect
+  output_file: "knowledge/architecture/arc42/parts/bb-controllers.md"
 
+bb_services:
+  description: |
+    Document the SERVICES layer for Building Block View.
+    
+    Use list_components_by_stereotype with stereotype="service" to get the list.
+    
+    {system_summary}
+    
+    Write output using doc_writer to: knowledge/architecture/arc42/parts/bb-services.md
+    
+    ### 5.2.2 Business Layer (Services)
+    - Document the services shown (max 30)
+    - Use a table: Service | Core Responsibility
+    - Focus on business logic and workflows
+  expected_output: "Services section written to file"
+  agent: arc42_architect
+  output_file: "knowledge/architecture/arc42/parts/bb-services.md"
+
+bb_entities:
+  description: |
+    Document the ENTITIES layer for Building Block View.
+    
+    Use list_components_by_stereotype with stereotype="entity" to get the list.
+    
+    {system_summary}
+    
+    Write output using doc_writer to: knowledge/architecture/arc42/parts/bb-entities.md
+    
+    ### 5.2.3 Domain Layer (Entities)
+    - Document the entities shown (max 30)
+    - Use a table: Entity | Description
+    - Focus on core domain objects
+  expected_output: "Entities section written to file"
+  agent: arc42_architect
+  output_file: "knowledge/architecture/arc42/parts/bb-entities.md"
+
+bb_repositories:
+  description: |
+    Document the REPOSITORIES layer for Building Block View.
+    
+    Use list_components_by_stereotype with stereotype="repository" to get the list.
+    
+    {system_summary}
+    
+    Write output using doc_writer to: knowledge/architecture/arc42/parts/bb-repositories.md
+    
+    ### 5.2.4 Persistence Layer (Repositories)
+    - Document the repositories shown
+    - Use a table: Repository (DAO) | Managed Entity
+  expected_output: "Repositories section written to file"
+  agent: arc42_architect
+  output_file: "knowledge/architecture/arc42/parts/bb-repositories.md"
+
+bb_merge:
+  description: |
+    MERGE all Building Block sections into the final Chapter 5.
+    
+    READ these files using safe_file_read:
+    1. knowledge/architecture/arc42/05-building-blocks.md (intro)
+    2. knowledge/architecture/arc42/parts/bb-controllers.md
+    3. knowledge/architecture/arc42/parts/bb-services.md
+    4. knowledge/architecture/arc42/parts/bb-entities.md
+    5. knowledge/architecture/arc42/parts/bb-repositories.md
+    
+    COMBINE into one complete document and write to 05-building-blocks.md
+    
+    Add a final section:
     ## 5.3 Component Dependencies
-    Dependency matrix showing layer interactions
-  expected_output: "Complete arc42 Building Blocks chapter"
-  agent: architect
-  context:
-    - arc42_solution_strategy
+    - Summarize layer interactions (Controller→Service→Repository→Entity)
+    
+    {system_summary}
+  expected_output: "Complete arc42 Chapter 5 Building Blocks"
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/05-building-blocks.md"
 
 arc42_runtime_view:
@@ -208,9 +289,7 @@ arc42_runtime_view:
 
     ## Deliverable: 06-runtime-view.md
   expected_output: "Complete arc42 Runtime View"
-  agent: architect
-  context:
-    - arc42_building_blocks
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/06-runtime-view.md"
 
 arc42_deployment:
@@ -227,9 +306,7 @@ arc42_deployment:
 
     ## Deliverable: 07-deployment.md
   expected_output: "Complete arc42 Deployment View"
-  agent: architect
-  context:
-    - arc42_runtime_view
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/07-deployment.md"
 
 arc42_crosscutting:
@@ -246,9 +323,7 @@ arc42_crosscutting:
 
     ## Deliverable: 08-crosscutting.md
   expected_output: "Complete arc42 Cross-cutting Concepts"
-  agent: architect
-  context:
-    - arc42_deployment
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/08-crosscutting.md"
 
 arc42_decisions:
@@ -264,9 +339,7 @@ arc42_decisions:
 
     ## Deliverable: 09-decisions.md
   expected_output: "Complete arc42 Decisions chapter"
-  agent: architect
-  context:
-    - arc42_crosscutting
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/09-decisions.md"
 
 arc42_quality:
@@ -282,9 +355,7 @@ arc42_quality:
 
     ## Deliverable: 10-quality.md
   expected_output: "Complete arc42 Quality chapter"
-  agent: architect
-  context:
-    - arc42_decisions
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/10-quality.md"
 
 arc42_risks:
@@ -300,9 +371,7 @@ arc42_risks:
 
     ## Deliverable: 11-risks.md
   expected_output: "Complete arc42 Risks chapter"
-  agent: architect
-  context:
-    - arc42_quality
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/11-risks.md"
 
 arc42_glossary:
@@ -318,9 +387,7 @@ arc42_glossary:
 
     ## Deliverable: 12-glossary.md
   expected_output: "Complete arc42 Glossary"
-  agent: architect
-  context:
-    - arc42_risks
+  agent: arc42_architect
   output_file: "knowledge/architecture/arc42/12-glossary.md"
 
 quality_gate:
@@ -334,7 +401,6 @@ quality_gate:
 
     ## Deliverable: quality/arc42-report.md
   expected_output: "Quality gate report"
-  agent: architect
-  context:
-    - arc42_glossary
+  agent: arc42_architect
   output_file: "knowledge/architecture/quality/arc42-report.md"
+

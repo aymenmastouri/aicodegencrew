@@ -23,6 +23,7 @@ from ..tools import (
     DocWriterTool,
     FactsQueryTool,
     FileReadTool,  # Safe version with size limits
+    StereotypeListTool,  # Component chunking by stereotype
 )
 
 
@@ -307,6 +308,11 @@ CONTAINER RELATIONSHIPS:
         """RAG-based tool for querying architecture facts (Strategy 6)."""
         return FactsQueryTool(facts_path=str(self.facts_path))
     
+    @tool
+    def stereotype_list_tool(self) -> StereotypeListTool:
+        """Tool for listing components by stereotype (Strategy 2)."""
+        return StereotypeListTool(facts_path=str(self.facts_path))
+    
     @agent
     def c4_architect(self) -> Agent:
         """C4 Architect agent from YAML config."""
@@ -317,11 +323,17 @@ CONTAINER RELATIONSHIPS:
                 self.doc_writer_tool(),
                 self.file_read_tool(),
                 self.facts_query_tool(),
+                self.stereotype_list_tool(),
             ],
             verbose=True,
             max_iter=30,          # Allow more iterations before forcing final answer
             max_retry_limit=10,   # Retry more on LLM empty responses
         )
+    
+    @task
+    def analyze_system(self) -> Task:
+        """System analysis task (think before writing)."""
+        return Task(config=self.tasks_config['analyze_system'])  # type: ignore[index]
     
     @task
     def c4_context(self) -> Task:

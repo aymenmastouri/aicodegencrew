@@ -155,3 +155,7 @@ reports/*.md
 !knowledge/architecture/.gitkeep
 !reports/.gitkeep
 !logs/.gitkeep
+knowledge/architecture/c4/c4-component.drawio
+knowledge/architecture/c4/c4-container.drawio
+knowledge/architecture/c4/c4-context.drawio
+knowledge/architecture/c4/c4-deployment.drawio

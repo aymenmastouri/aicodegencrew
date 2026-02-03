@@ -6,36 +6,96 @@
 |-------|--------|---------|
 | Phase 0: Indexing | DONE | ChromaDB working, 2700+ files indexed |
 | Phase 1: Facts | DONE | 826 components, 108 interfaces, 120 relations extracted |
-| Phase 2: Synthesis | BLOCKED | LLM 14B unreliable, needs 32B model |
+| Phase 2: Synthesis | READY | gpt-oss-120B model configured! |
 
-## Blocker: Phase 2 LLM Issue
+## Model Status: RESOLVED ✓
 
-The current 14B model (`qwen2.5-coder:14b`) is not reliable enough for architecture synthesis.
-It produces incomplete or inconsistent documentation.
+Now using `gpt-oss-120b` from sov-ai-platform! This is a 120B model - much better than the 14B.
 
-**Solution needed:** Deploy 32B model on bmf-ai server.
+**Current .env settings:**
+```dotenv
+MODEL=gpt-oss-120b
+API_BASE=http://sov-ai-platform.nue.local.vm:4000/v1
+```
+
+---
+
+## Optimizations Applied (2026-02-03)
+
+### 🔧 Fixed: Building Blocks Task
+The `arc42_building_blocks` task was trying to document 826 components in one LLM call.
+
+**Solution:** Updated task description to use explicit chunked approach:
+1. Create skeleton with `chunked_writer(mode="create")`
+2. Query `stereotype_list_tool(stereotype="controller")` → append section
+3. Query `stereotype_list_tool(stereotype="service")` → append section
+4. Query `stereotype_list_tool(stereotype="entity")` → append section
+5. Query `stereotype_list_tool(stereotype="repository")` → append section
+6. Finalize with `chunked_writer(mode="finalize")`
+
+### 🔧 Fixed: C4 Component Task
+Added `StereotypeListTool` to C4 Crew and updated task to show layer structure (not 800 boxes).
+
+---
+
+## Next Action: Run Phase 2 with 120B Model
+
+### Quick Start
 
 ```powershell
-# Check available models
-Invoke-RestMethod -Uri "http://bmf-ai.apps.ce.capgemini.com/code/v1/models"
+# Test the model first
+python -m aicodegencrew run --phases phase2_synthesis
 
-# If 32B available, update .env:
-MODEL=openai/Qwen/Qwen2.5-Coder-32B-Instruct
+# Or run full pipeline
+python -m aicodegencrew run --preset architecture_workflow
+```
+
+### Component Chunking Strategy (Already Implemented!)
+
+The codebase already has tools for chunking by component/stereotype:
+
+| Tool | Purpose | Location |
+|------|---------|----------|
+| `ChunkedWriterTool` | Write large docs in sections | [chunked_writer_tool.py](src/aicodegencrew/crews/architecture_synthesis/tools/chunked_writer_tool.py) |
+| `StereotypeListTool` | Get components by type (controller/service/etc) | Same file |
+| `FactsQueryTool` | RAG-based facts retrieval | [facts_query_tool.py](src/aicodegencrew/crews/architecture_synthesis/tools/facts_query_tool.py) |
+
+**How it works:**
+1. `StereotypeListTool` - Query only controllers, then services, then repos
+2. `ChunkedWriterTool` - Write each section separately (create → append → append → finalize)
+3. No token overflow - each LLM call gets focused context
+
+### Batch Processing for Morning Run
+
+If you want to run everything overnight/morning, use:
+
+```powershell
+# Run Phase 2 (C4 + Arc42) - takes ~30-60 min
+python -m aicodegencrew run --phases phase2_synthesis
+
+# Or specific sub-phases
+python -m aicodegencrew run --phases phase2_c4      # Just C4 diagrams
+python -m aicodegencrew run --phases phase2_arc42   # Just arc42 docs
 ```
 
 ---
 
 ## Options for Next Work Session
 
-### Option A: Fix Phase 2 (Priority HIGH)
+### Option A: Run Phase 2 Now (Priority HIGH) ✓ READY
 
-1. Check if 32B model is now available on bmf-ai
-2. If yes: Update `.env` and test synthesis
-3. If no: Consider hybrid approach:
-   - Use Python for deterministic parts
-   - Use small LLM only for text generation (summaries, descriptions)
+Model is configured! Just run:
 
-**Deliverable:** Working C4 + arc42 documentation generation
+```powershell
+python -m aicodegencrew run --phases phase2_synthesis
+```
+
+**Expected output:**
+- 4 C4 diagrams: Context, Container, Component, Deployment
+- 12 arc42 chapters (50+ pages total)
+- DrawIO diagram files
+
+**Deliverable:** Complete architecture documentation
 
 ---
 

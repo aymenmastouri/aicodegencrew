@@ -1,49 +1,54 @@
 # =============================================================================
 # C4 Crew - Task Definitions
 # =============================================================================
-# Best Practice: Analyze first, then document
+# Best Practice: Agent discovers EVERYTHING from facts - no assumptions!
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# PHASE 1: ANALYSIS (Think before writing)
+# PHASE 1: ANALYSIS (Agent discovers from facts)
 # -----------------------------------------------------------------------------
 
 analyze_system:
   description: |
-    ANALYZE the system before creating C4 diagrams.
+    YOU are the Software Architect. DISCOVER the system architecture from facts!
     
-    This is the THINKING task - understand the system first!
+    DO NOT assume anything. USE THE TOOLS to find everything!
     
-    STEP 1: Query all facts
-    - query_architecture_facts with category="containers"
-    - query_architecture_facts with category="components" 
-    - query_architecture_facts with category="interfaces"
-    - query_architecture_facts with category="relations"
+    ## STEP 1: Discover Architecture Style
+    Use list_components_by_stereotype with stereotype="architecture_style"
+    → Find if it's Layered, Microservices, Modular Monolith, etc.
     
-    STEP 2: Identify C4 elements
-    - SYSTEM: What is the overall system? (repository name, domain)
-    - CONTAINERS: What deployable units exist? (backend, frontend, db)
-    - COMPONENTS: What are the internal building blocks?
-    - EXTERNAL: What external systems/actors interact with it?
+    ## STEP 2: Discover Design Patterns
+    Use list_components_by_stereotype with stereotype="design_pattern"
+    → Find Repository, Factory, Builder patterns, etc.
     
-    STEP 3: Map relationships
-    - Container-to-container communication
-    - Component dependencies within containers
-    - External integrations
+    ## STEP 3: Query Containers
+    Use query_architecture_facts with category="containers"
+    → Find all deployment units and their technologies
     
-    STEP 4: Create C4 mapping
-    Prepare a mental model for the 4 C4 levels.
+    ## STEP 4: Query Components per Layer
+    Use list_components_by_stereotype for:
+    - stereotype="controller"
+    - stereotype="service" 
+    - stereotype="repository"
+    - stereotype="entity"
     
-    ## Deliverable: Internal analysis (not saved to file)
+    ## STEP 5: Query Interfaces
+    Use query_architecture_facts with category="interfaces"
+    → Find the API surface
     
-    Provide:
-    - System boundary definition
-    - Container inventory with technologies
-    - Component counts per container
-    - External actors and systems identified
-    - Key relationships to show in diagrams
-  expected_output: "C4 analysis summary for use by diagram tasks"
-  agent: architect
+    ## YOUR C4 ANALYSIS must identify:
+    1. SYSTEM: What is the overall system boundary?
+    2. CONTAINERS: What deployable units exist?
+    3. COMPONENTS: Key building blocks per container
+    4. EXTERNAL: External actors/systems (derive from interfaces)
+    5. ARCHITECTURE STYLE: What did you find in the facts?
+    
+    ## Deliverable: Your C4 analysis as structured text
+    
+    Write YOUR findings - discovered from facts, not assumed!
+  expected_output: "Complete C4 analysis discovered from facts"
+  agent: c4_architect
 
 # -----------------------------------------------------------------------------
 # PHASE 2: C4 DIAGRAMS (Based on analysis)
@@ -64,7 +69,7 @@ c4_context:
     - External systems (databases, APIs, services)
     - Communication protocols
   expected_output: "Complete C4 Context with DrawIO diagram"
-  agent: architect
+  agent: c4_architect
   context:
     - analyze_system
   output_file: "knowledge/architecture/c4/c4-context.md"
@@ -85,7 +90,7 @@ c4_container:
 
     ## DELIVERABLE: c4/c4-container.md + c4-container.drawio
   expected_output: "Complete C4 Container with DrawIO diagram"
-  agent: architect
+  agent: c4_architect
   context:
     - c4_context
   output_file: "knowledge/architecture/c4/c4-container.md"
@@ -94,17 +99,27 @@ c4_component:
   description: |
     Create C4 Level 3: Component diagram.
     
+    ⚠️ This system has 800+ components! Show LAYER STRUCTURE, not all components.
+    
+    ## APPROACH:
+    1. Query facts for component counts by stereotype
+    2. Show REPRESENTATIVE components per layer (5-10 examples each)
+    3. Focus on layer boundaries and dependencies
+    
     Show internal structure of each container:
-    - Controllers (presentation layer)
-    - Services (business layer)
-    - Repositories (data access layer)
-    - Entities (domain model)
+    - Controllers (presentation layer) - show count + key examples
+    - Services (business layer) - show count + key examples
+    - Repositories (data access layer) - show count + key examples
+    - Entities (domain model) - show count + key examples
 
     {system_summary}
+    {components_summary}
 
     ## DELIVERABLE: c4/c4-component.md + c4-component.drawio
-  expected_output: "Complete C4 Component with DrawIO diagram"
-  agent: architect
+    
+    DrawIO diagram should show LAYERS with component counts, not 800 boxes!
+  expected_output: "Complete C4 Component with DrawIO diagram showing layer structure"
+  agent: c4_architect
   context:
     - c4_container
   output_file: "knowledge/architecture/c4/c4-component.md"
@@ -124,7 +139,7 @@ c4_deployment:
 
     ## DELIVERABLE: c4/c4-deployment.md + c4-deployment.drawio
   expected_output: "Complete C4 Deployment with DrawIO diagram"
-  agent: architect
+  agent: c4_architect
   context:
     - c4_component
   output_file: "knowledge/architecture/c4/c4-deployment.md"
