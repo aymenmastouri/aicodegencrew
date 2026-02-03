@@ -1,0 +1,237 @@
+# =============================================================================
+# Phase 2: Architecture Analysis Crew - Tasks Configuration
+# =============================================================================
+# 4 Analysis tasks + 1 Synthesis task
+# Each task uses tools to DISCOVER architecture (not hardcoded)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Task 1: Technical Architecture Analysis
+# -----------------------------------------------------------------------------
+analyze_technical:
+  description: >
+    Analyze the technical architecture of the system.
+    
+    Use the tools to DISCOVER (do not assume):
+    
+    1. ARCHITECTURE STYLES:
+       - Use list_components_by_stereotype(stereotype="architecture_style") to find detected styles
+       - Common styles: layered, microservices, modular_monolith, hexagonal, clean_architecture
+       - Determine PRIMARY style (most evidence) and SECONDARY styles
+    
+    2. DESIGN PATTERNS:
+       - Use list_components_by_stereotype(stereotype="design_pattern") to find patterns
+       - Common patterns: repository, factory, builder, strategy, observer, singleton
+       - Count instances and assess consistency of implementation
+    
+    3. TECHNOLOGY STACK:
+       - Use query_facts(category="containers") to find all containers
+       - Extract technologies from container metadata
+       - Note frameworks, libraries, databases
+    
+    4. LAYER STRUCTURE:
+       - Analyze component distribution across layers
+       - Use query_facts(category="components") and group by stereotype
+       - Identify: presentation, business/service, persistence, infrastructure
+    
+    5. DEPENDENCIES:
+       - Use query_facts(category="relations") to find component dependencies
+       - Identify key dependency patterns
+    
+    OUTPUT FORMAT (JSON):
+    {
+      "architecture_styles": {
+        "primary": "style_name",
+        "secondary": ["style1", "style2"],
+        "evidence_summary": "brief explanation"
+      },
+      "design_patterns": [
+        {"name": "pattern_name", "instances": 5, "quality": "consistent|inconsistent"}
+      ],
+      "technology_stack": {
+        "backend": ["Spring Boot 2.7", "Java 11"],
+        "frontend": ["Angular 14"],
+        "database": ["PostgreSQL"],
+        "infrastructure": ["Docker", "Kubernetes"]
+      },
+      "layer_structure": {
+        "layers": ["presentation", "business", "persistence"],
+        "component_distribution": {"controllers": 45, "services": 120, "repositories": 48}
+      }
+    }
+  expected_output: >
+    A JSON object with technical architecture analysis including styles, patterns,
+    technology stack, and layer structure. All findings must be based on tool queries.
+  agent: tech_architect
+
+# -----------------------------------------------------------------------------
+# Task 2: Functional/Domain Analysis
+# -----------------------------------------------------------------------------
+analyze_functional:
+  description: >
+    Analyze the functional/domain aspects of the system.
+    
+    Use the tools to DISCOVER:
+    
+    1. DOMAIN MODEL:
+       - Use list_components_by_stereotype(stereotype="entity") to find all entities
+       - Use RAG to search for Javadoc comments explaining entity purpose
+       - Group entities by domain area (e.g., Deed, Workflow, User, Document)
+    
+    2. BUSINESS CAPABILITIES:
+       - Use list_components_by_stereotype(stereotype="service") to find services
+       - Analyze service names to identify capabilities (e.g., DeedEntryService → Deed Management)
+       - Use RAG to find business logic descriptions in comments
+    
+    3. USE CASES:
+       - Use list_components_by_stereotype(stereotype="controller") to find controllers
+       - Map REST endpoints to use cases
+       - Group by functional area
+    
+    4. SERVICE RESPONSIBILITIES:
+       - For top 10 most important services, describe their responsibility
+       - Use RAG to find service documentation
+    
+    OUTPUT FORMAT (JSON):
+    {
+      "domain_model": {
+        "core_entities": ["Entity1", "Entity2"],
+        "entity_groups": {
+          "Deed Management": ["DeedEntry", "DeedRegistry"],
+          "Workflow": ["WorkflowInstance", "Action"]
+        }
+      },
+      "capabilities": [
+        {"name": "Deed Management", "description": "...", "key_services": ["DeedEntryService"]}
+      ],
+      "use_cases": [
+        {"name": "Create Deed Entry", "endpoint": "POST /deeds", "controller": "DeedController"}
+      ],
+      "service_responsibilities": [
+        {"service": "WorkflowService", "responsibility": "Manages workflow state transitions"}
+      ]
+    }
+  expected_output: >
+    A JSON object with functional analysis including domain model, capabilities,
+    use cases, and service responsibilities. All based on facts and RAG queries.
+  agent: func_analyst
+
+# -----------------------------------------------------------------------------
+# Task 3: Quality Analysis
+# -----------------------------------------------------------------------------
+analyze_quality:
+  description: >
+    Analyze quality attributes, technical debt, and risks.
+    
+    Use the tools to DISCOVER:
+    
+    1. QUALITY ATTRIBUTES:
+       - Maintainability: Check layer separation, pattern consistency
+       - Scalability: Check for stateless services, caching patterns
+       - Security: Use RAG to search for security annotations, auth patterns
+       - Testability: Check for dependency injection, interface usage
+    
+    2. TECHNICAL DEBT:
+       - Large components: Use query_facts to find components with many relations
+       - Missing patterns: Check if all services use repositories consistently
+       - Code smells: Use RAG to search for "TODO", "FIXME", "HACK"
+    
+    3. ARCHITECTURE RISKS:
+       - Monolith size: Count total components
+       - Circular dependencies: Analyze relations
+       - Missing documentation: Check Javadoc coverage via RAG
+    
+    4. RECOMMENDATIONS:
+       - Based on findings, suggest improvements
+    
+    OUTPUT FORMAT (JSON):
+    {
+      "quality_attributes": {
+        "maintainability": {"rating": "high|medium|low", "reason": "..."},
+        "scalability": {"rating": "medium", "reason": "..."},
+        "security": {"rating": "medium", "reason": "..."},
+        "testability": {"rating": "high", "reason": "..."}
+      },
+      "technical_debt": [
+        {"issue": "Large service class", "component": "XyzService", "severity": "medium"}
+      ],
+      "risks": [
+        {"name": "Monolith complexity", "severity": "medium", "mitigation": "Consider modularization"}
+      ],
+      "recommendations": [
+        "Add API documentation for all REST endpoints",
+        "Consider extracting Workflow module as separate service"
+      ]
+    }
+  expected_output: >
+    A JSON object with quality analysis including attributes, technical debt,
+    risks, and recommendations. All findings based on evidence from tools.
+  agent: quality_analyst
+
+# -----------------------------------------------------------------------------
+# Task 4: Synthesis (Merge all analyses)
+# -----------------------------------------------------------------------------
+synthesize_architecture:
+  description: >
+    Merge all agent analyses into the final synthesized_architecture.json.
+    
+    You have access to outputs from:
+    - Technical Architect: architecture styles, patterns, tech stack, layers
+    - Functional Analyst: domain model, capabilities, use cases
+    - Quality Analyst: quality attributes, risks, recommendations
+    
+    YOUR TASK:
+    1. Combine all analyses into the unified schema
+    2. Resolve any conflicts (prefer evidence with more support)
+    3. Ensure completeness (all sections filled)
+    4. Validate JSON structure
+    
+    FINAL OUTPUT SCHEMA:
+    {
+      "system": {
+        "name": "system_name",
+        "domain": "Domain Description",
+        "description": "One paragraph system description"
+      },
+      "architecture": {
+        "primary_style": "layered_architecture",
+        "secondary_styles": ["modular_monolith"],
+        "layers": ["presentation", "business", "persistence", "infrastructure"]
+      },
+      "patterns": [
+        {"name": "repository_pattern", "instances": 48, "quality": "consistent"},
+        {"name": "factory_pattern", "instances": 12, "quality": "good"}
+      ],
+      "technology": {
+        "backend": {"framework": "Spring Boot", "language": "Java 11"},
+        "frontend": {"framework": "Angular", "language": "TypeScript"},
+        "database": ["PostgreSQL"],
+        "infrastructure": ["Docker", "Kubernetes"]
+      },
+      "capabilities": [
+        {"name": "Deed Management", "description": "...", "key_components": ["DeedService"]}
+      ],
+      "quality_attributes": {
+        "maintainability": "high",
+        "scalability": "medium",
+        "security": "medium",
+        "testability": "high"
+      },
+      "risks": [
+        {"name": "Large monolith", "severity": "medium", "mitigation": "Consider modularization"}
+      ],
+      "recommendations": [
+        "Add API documentation",
+        "Extract workflow module"
+      ]
+    }
+    
+    Write the output to: knowledge/architecture/synthesized_architecture.json
+  expected_output: >
+    The complete synthesized_architecture.json file written to the knowledge folder.
+    Must be valid JSON matching the schema above.
+  agent: synthesis_lead
+  context:
+    - analyze_technical
+    - analyze_functional
+    - analyze_quality

@@ -82,12 +82,27 @@ phases:
   # - If no evidence, mark as UNKNOWN
   # - No invented containers/components
   # =========================================================================
-  phase2_architecture_synthesis:
+  
+  # =========================================================================
+  # CREW: Phase 2 - Architecture Analysis (NEW!)
+  # =========================================================================
+  # Type:      Crew (AI Agents - 4 specialized analysts)
+  # Location:  crews/architecture_analysis/
+  # Input:     architecture_facts.json + evidence_map.json + ChromaDB
+  # Output:    knowledge/architecture/synthesized_architecture.json
+  # 
+  # AGENTS:
+  # 1. Technical Architect: Styles, patterns, tech stack, layers
+  # 2. Functional Analyst: Domain model, capabilities, use cases
+  # 3. Quality Analyst: Technical debt, risks, quality attributes
+  # 4. Synthesis Lead: Merge all analyses into unified JSON
+  # =========================================================================
+  phase2_architecture_analysis:
     enabled: true
-    name: "Architecture Synthesis"
-    description: "AI synthesizes C4 and arc42 from architecture facts"
+    name: "Architecture Analysis"
+    description: "Multi-agent analysis of architecture facts"
     type: crew
-    required: false
+    required: true
     order: 2
     dependencies: [phase1_architecture_facts]
     config:
@@ -97,98 +112,129 @@ phases:
       verbose: true
 
   # =========================================================================
+  # CREW: Phase 3 - Architecture Synthesis (LLM, evidence-first)
   # =========================================================================
-  # CREW: Phase 3 - Review and Consistency Guard (PLANNED)
+  # Type:      Crew (AI Agents)
+  # Location:  crews/architecture_synthesis/
+  # Input:     architecture_facts.json + synthesized_architecture.json
+  # Output:    knowledge/architecture/c4/
+  #            knowledge/architecture/arc42/
+  #            knowledge/architecture/runtime/
+  #            knowledge/architecture/evidence/
+  # 
+  # RULES:
+  # - Only synthesize what is in architecture_facts.json
+  # - Every statement must reference evidence
+  # - If no evidence, mark as UNKNOWN
+  # - No invented containers/components
+  # =========================================================================
+  phase3_architecture_synthesis:
+    enabled: true
+    name: "Architecture Synthesis"
+    description: "AI synthesizes C4 and arc42 from architecture facts"
+    type: crew
+    required: false
+    order: 3
+    dependencies: [phase2_architecture_analysis]
+    config:
+      output_dir: "./knowledge/architecture"
+      temperature: 0.2
+      max_iterations: 15
+      verbose: true
+
+  # =========================================================================
+  # =========================================================================
+  # CREW: Phase 4 - Review and Consistency Guard (PLANNED)
   # =========================================================================
   # Type:      Crew
   # Location:  crews/review/ (planned)
   # Purpose:   Ensure consistency across outputs
   # Tasks:     Facts vs C4 vs arc42 consistency check
   # =========================================================================
-  phase3_review:
+  phase4_review:
     enabled: false
     name: "Review and Consistency Guard"
     description: "Validate consistency across generated documentation"
     type: crew
     required: false
-    order: 3
-    dependencies: [phase2_architecture_synthesis]
+    order: 4
+    dependencies: [phase3_architecture_synthesis]
     config:
       output_dir: "./knowledge/architecture/quality"
 
   # =========================================================================
-  # CREW: Phase 4 - Development Planning (PLANNED)
+  # CREW: Phase 5 - Development Planning (PLANNED)
   # =========================================================================
   # Type:      Crew (AI Agents)
   # Location:  crews/development/ (planned)
   # Purpose:   Derive work items from architecture
   # Tasks:     Architecture debt/risk, backlog items, work packages
   # =========================================================================
-  phase4_development:
+  phase5_development:
     enabled: false
     name: "Development Planning"
     description: "Generate development tasks from architecture analysis"
     type: crew
     required: false
-    order: 4
-    dependencies: [phase3_review]
+    order: 5
+    dependencies: [phase4_review]
     config:
       output_dir: "./knowledge/development"
 
   # =========================================================================
-  # CREW: Phase 5 - Code Generation (PLANNED)
+  # CREW: Phase 6 - Code Generation (PLANNED)
   # =========================================================================
   # Type:      Crew (AI Agents)
   # Location:  crews/codegen/ (planned)
   # Purpose:   Generate feature code, refactoring PRs
   # Tasks:     Feature implementation, code improvements
   # =========================================================================
-  phase5_codegen:
+  phase6_codegen:
     enabled: false
     name: "Code Generation"
     description: "Generate feature code and refactoring PRs"
     type: crew
     required: false
-    order: 5
-    dependencies: [phase4_development]
+    order: 6
+    dependencies: [phase5_development]
     config:
       output_dir: "./knowledge/codegen"
 
   # =========================================================================
-  # CREW: Phase 6 - Test Generation (PLANNED)
+  # CREW: Phase 7 - Test Generation (PLANNED)
   # =========================================================================
   # Type:      Crew (AI Agents)
   # Location:  crews/testing/ (planned)
   # Purpose:   Generate unit tests, integration tests
   # Tasks:     Test coverage analysis, test generation
   # =========================================================================
-  phase6_testing:
+  phase7_testing:
     enabled: false
     name: "Test Generation"
     description: "Generate unit tests and integration tests"
     type: crew
     required: false
-    order: 6
-    dependencies: [phase5_codegen]
+    order: 7
+    dependencies: [phase6_codegen]
     config:
       output_dir: "./knowledge/testing"
 
   # =========================================================================
-  # PIPELINE: Phase 7 - Deployment Automation (PLANNED)
+  # PIPELINE: Phase 8 - Deployment Automation (PLANNED)
   # =========================================================================
   # Type:      Pipeline (deterministic)
   # Location:  pipelines/deployment/ (planned)
   # Purpose:   CI/CD configs, release notes
   # Tasks:     Pipeline generation, release management
   # =========================================================================
-  phase7_deployment:
+  phase8_deployment:
     enabled: false
     name: "Deployment Automation"
     description: "Generate CI/CD configs and release notes"
     type: pipeline
     required: false
-    order: 7
-    dependencies: [phase6_testing]
+    order: 8
+    dependencies: [phase7_testing]
     config:
       output_dir: "./knowledge/deployment"
 
@@ -213,26 +259,35 @@ presets:
     - phase0_indexing
     - phase1_architecture_facts
 
-  # Index + facts + synthesis (full architecture documentation)
+  # Index + facts + analysis (Phase 2 only)
+  analysis_only:
+    - phase0_indexing
+    - phase1_architecture_facts
+    - phase2_architecture_analysis
+
+  # Index + facts + analysis + synthesis (full architecture documentation)
   architecture_workflow:
     - phase0_indexing
     - phase1_architecture_facts
-    - phase2_architecture_synthesis
+    - phase2_architecture_analysis
+    - phase3_architecture_synthesis
 
   # Architecture + Review (with consistency checks)
   architecture_full:
     - phase0_indexing
     - phase1_architecture_facts
-    - phase2_architecture_synthesis
-    - phase3_review
+    - phase2_architecture_analysis
+    - phase3_architecture_synthesis
+    - phase4_review
 
   # Full SDLC pipeline (all phases)
   full_pipeline:
     - phase0_indexing
     - phase1_architecture_facts
-    - phase2_architecture_synthesis
-    - phase3_review
-    - phase4_development
-    - phase5_codegen
-    - phase6_testing
-    - phase7_deployment
+    - phase2_architecture_analysis
+    - phase3_architecture_synthesis
+    - phase4_review
+    - phase5_development
+    - phase6_codegen
+    - phase7_testing
+    - phase8_deployment
