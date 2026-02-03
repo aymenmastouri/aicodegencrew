@@ -142,6 +142,9 @@ knowledge/architecture/evidence/
 # knowledge/architecture/analyzed_architecture.json
 # knowledge/architecture/analysis_*.json
 
+# Archive folder (timestamped backups for recovery)
+knowledge/architecture/archive/
+
 # Phase 3 outputs (regenerated each run)
 knowledge/architecture/arc42/*.md
 knowledge/architecture/c4/*.md
