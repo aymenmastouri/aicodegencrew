@@ -77,6 +77,34 @@ class ArchitectureFactsPipeline:
         logger.info(f"[Phase1] Repository: {self.repo_path}")
         logger.info(f"[Phase1] Output: {self.output_dir}")
     
+    def _archive_and_clean_old_outputs(self) -> None:
+        """Archive and clean old Phase 1 outputs before new run."""
+        import shutil
+        from datetime import datetime
+        
+        output_files = [
+            "architecture_facts.json",
+            "evidence_map.json",
+        ]
+        
+        existing_files = [f for f in output_files if (self.output_dir / f).exists()]
+        
+        if existing_files:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
+            archive_dir.mkdir(parents=True, exist_ok=True)
+            
+            for filename in existing_files:
+                src = self.output_dir / filename
+                dst = archive_dir / filename
+                shutil.copy2(src, dst)
+                src.unlink()
+                logger.info(f"   [ARCHIVED+DELETED] {filename}")
+            
+            logger.info(f"   [OK] {len(existing_files)} old files archived to: {archive_dir}")
+        else:
+            logger.info("   [OK] No old outputs to clean (first run)")
+    
     def kickoff(self, inputs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Execute the Architecture Facts Pipeline.
@@ -91,6 +119,10 @@ class ArchitectureFactsPipeline:
         logger.info("[Phase1] Starting Architecture Facts Extraction")
         logger.info("[Phase1] Mode: DETERMINISTIC (no LLM)")
         logger.info("=" * 60)
+        
+        # Archive and clean old outputs first
+        logger.info("[Phase1] Step 0: Archive and clean old outputs...")
+        self._archive_and_clean_old_outputs()
         
         all_components: List[CollectedComponent] = []
         all_interfaces: List[CollectedInterface] = []
@@ -228,9 +260,6 @@ class ArchitectureFactsPipeline:
             logger.info(f"[Phase1] Relations: {result['statistics']['relations']}")
             logger.info(f"[Phase1] Evidence items: {result['statistics']['evidence_items']}")
             
-            # Archive results with timestamp for recovery
-            self._archive_results(result)
-            
             return {
                 "phase": "phase1_architecture_facts",
                 "status": "success",
@@ -246,29 +275,3 @@ class ArchitectureFactsPipeline:
                 "status": "failed",
                 "error": str(e),
             }
-    
-    def _archive_results(self, result: Dict[str, Any]) -> None:
-        """Archive Phase 1 results with timestamp for recovery."""
-        import shutil
-        from datetime import datetime
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
-        archive_dir.mkdir(parents=True, exist_ok=True)
-        
-        files_to_archive = [
-            ("facts_path", "architecture_facts.json"),
-            ("evidence_path", "evidence_map.json"),
-        ]
-        
-        archived_count = 0
-        for key, filename in files_to_archive:
-            src = Path(result.get(key, ""))
-            if src.exists():
-                dst = archive_dir / filename
-                shutil.copy2(src, dst)
-                archived_count += 1
-                logger.info(f"   [ARCHIVED] {filename}")
-        
-        if archived_count > 0:
-            logger.info(f"   [OK] {archived_count} files archived to: {archive_dir}")
