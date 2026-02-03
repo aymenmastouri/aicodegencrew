@@ -228,6 +228,9 @@ class ArchitectureFactsPipeline:
             logger.info(f"[Phase1] Relations: {result['statistics']['relations']}")
             logger.info(f"[Phase1] Evidence items: {result['statistics']['evidence_items']}")
             
+            # Archive results with timestamp for recovery
+            self._archive_results(result)
+            
             return {
                 "phase": "phase1_architecture_facts",
                 "status": "success",
@@ -243,3 +246,29 @@ class ArchitectureFactsPipeline:
                 "status": "failed",
                 "error": str(e),
             }
+    
+    def _archive_results(self, result: Dict[str, Any]) -> None:
+        """Archive Phase 1 results with timestamp for recovery."""
+        import shutil
+        from datetime import datetime
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        
+        files_to_archive = [
+            ("facts_path", "architecture_facts.json"),
+            ("evidence_path", "evidence_map.json"),
+        ]
+        
+        archived_count = 0
+        for key, filename in files_to_archive:
+            src = Path(result.get(key, ""))
+            if src.exists():
+                dst = archive_dir / filename
+                shutil.copy2(src, dst)
+                archived_count += 1
+                logger.info(f"   [ARCHIVED] {filename}")
+        
+        if archived_count > 0:
+            logger.info(f"   [OK] {archived_count} files archived to: {archive_dir}")

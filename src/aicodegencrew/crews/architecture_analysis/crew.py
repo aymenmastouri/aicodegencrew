@@ -105,12 +105,41 @@ class ArchitectureAnalysisCrew:
         return inputs
     
     @after_kickoff
-    def log_results(self, result):
-        """Log analysis results."""
+    def archive_results(self, result):
+        """Archive analysis results with timestamp for recovery."""
+        import shutil
+        from datetime import datetime
+        
         logger.info("")
         logger.info("=" * 60)
         logger.info("PHASE 2 COMPLETE: Architecture Analysis finished")
         logger.info("=" * 60)
+        
+        # Create archive directory with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Files to archive
+        files_to_archive = [
+            "analyzed_architecture.json",
+            "analysis_technical.json",
+            "analysis_functional.json", 
+            "analysis_quality.json",
+        ]
+        
+        archived_count = 0
+        for filename in files_to_archive:
+            src = self.output_dir / filename
+            if src.exists():
+                dst = archive_dir / filename
+                shutil.copy2(src, dst)
+                archived_count += 1
+                logger.info(f"   [ARCHIVED] {filename}")
+        
+        if archived_count > 0:
+            logger.info(f"   [OK] {archived_count} files archived to: {archive_dir}")
+        
         logger.info(f"Output: {self.output_dir / 'analyzed_architecture.json'}")
         return result
     

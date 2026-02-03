@@ -140,7 +140,43 @@ class ArchitectureSynthesisCrew:
         logger.info("PHASE 3 COMPLETE: Reverse Engineering Documentation created")
         logger.info("=" * 60)
         
+        # Archive results
+        self._archive_results()
+        
         return summary
+    
+    def _archive_results(self) -> None:
+        """Archive Phase 3 results with timestamp for recovery."""
+        import shutil
+        from datetime import datetime
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = self.facts_path.parent
+        archive_dir = output_dir / "archive" / f"run_{timestamp}"
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Archive C4 outputs
+        c4_dir = output_dir / "c4"
+        if c4_dir.exists():
+            dst = archive_dir / "c4"
+            shutil.copytree(c4_dir, dst, dirs_exist_ok=True)
+            logger.info(f"   [ARCHIVED] c4/")
+        
+        # Archive Arc42 outputs
+        arc42_dir = output_dir / "arc42"
+        if arc42_dir.exists():
+            dst = archive_dir / "arc42"
+            shutil.copytree(arc42_dir, dst, dirs_exist_ok=True)
+            logger.info(f"   [ARCHIVED] arc42/")
+        
+        # Archive quality outputs
+        quality_dir = output_dir / "quality"
+        if quality_dir.exists():
+            dst = archive_dir / "quality"
+            shutil.copytree(quality_dir, dst, dirs_exist_ok=True)
+            logger.info(f"   [ARCHIVED] quality/")
+        
+        logger.info(f"   [OK] Phase 3 outputs archived to: {archive_dir}")
     
     def run_c4_only(self) -> str:
         """Run only the C4 Crew."""
