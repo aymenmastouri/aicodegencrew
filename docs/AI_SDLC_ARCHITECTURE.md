@@ -12,12 +12,13 @@ Establish a fully automated SDLC pipeline that covers:
 |-------|------------|----------------|
 | Phase 0: Indexing | Repository analysis, vector storage | Pipeline (ChromaDB) |
 | Phase 1: Architecture Facts | Deterministic code analysis, facts extraction | Pipeline (7 Collectors) |
-| Phase 2: Architecture Synthesis | C4 + arc42 documentation generation | Crew (Think First) |
-| Phase 3: Review | Consistency checks, quality validation | Crew (Planned) |
-| Phase 4: Development | Backlog generation, work items | Crew (Planned) |
-| Phase 5: Code Generation | Feature implementation, refactoring | Crew (Planned) |
-| Phase 6: Testing | Test generation, coverage | Crew (Planned) |
-| Phase 7: Deployment | CI/CD integration, releases | Pipeline (Planned) |
+| Phase 2: Architecture Analysis | Multi-agent analysis (Technical, Functional, Quality) | Crew (4 Agents) |
+| Phase 3: Architecture Synthesis | C4 + arc42 documentation generation | Crew (Think First) |
+| Phase 4: Review | Consistency checks, quality validation | Crew (Planned) |
+| Phase 5: Development | Backlog generation, work items | Crew (Planned) |
+| Phase 6: Code Generation | Feature implementation, refactoring | Crew (Planned) |
+| Phase 7: Testing | Test generation, coverage | Crew (Planned) |
+| Phase 8: Deployment | CI/CD integration, releases | Pipeline (Planned) |
 
 ### 1.2 Core Principles
 
@@ -47,21 +48,25 @@ The initial implementation focuses on architecture reverse engineering:
 |-------|------|------|------------|--------|--------|
 | 0 | Indexing | Pipeline | 5 tools | `.cache/.chroma` | ✅ Implemented |
 | 1 | Architecture Facts | Pipeline | 7 collectors | `architecture_facts.json` + `evidence_map.json` | ✅ Implemented |
-| 2 | Architecture Synthesis | Crew | 2 sub-crews, 1 agent each | `c4/*`, `arc42/*`, `quality/*` | ✅ Implemented |
-| 3 | Review | Crew | - | Quality reports | 📅 Planned |
-| 4 | Development | Crew | - | Backlog items | 📅 Planned |
-| 5 | Code Generation | Crew | - | Feature code | 📅 Planned |
-| 6 | Testing | Crew | - | Unit/integration tests | 📅 Planned |
-| 7 | Deployment | Pipeline | - | CI/CD configs | 📅 Planned |
+| 2 | Architecture Analysis | Crew | 4 agents | `synthesized_architecture.json` | 🔄 In Progress |
+| 3 | Architecture Synthesis | Crew | 2 sub-crews | `c4/*`, `arc42/*`, `quality/*` | ✅ Implemented |
+| 4 | Review | Crew | - | Quality reports | 📅 Planned |
+| 5 | Development | Crew | - | Backlog items | 📅 Planned |
+| 6 | Code Generation | Crew | - | Feature code | 📅 Planned |
+| 7 | Testing | Crew | - | Unit/integration tests | 📅 Planned |
+| 8 | Deployment | Pipeline | - | CI/CD configs | 📅 Planned |
 
 ---
 
 ## 2. Architecture Overview
 
 > **Reference Diagrams:**
-> - [docs/diagrams/phase-flow.drawio](docs/diagrams/phase-flow.drawio) - Pipeline Flow
-> - [docs/diagrams/evidence-flow.drawio](docs/diagrams/evidence-flow.drawio) - Evidence Data Flow
-> - [docs/diagrams/knowledge-structure.drawio](docs/diagrams/knowledge-structure.drawio) - Knowledge Base
+> - [phase-flow.drawio](diagrams/phase-flow.drawio) - Pipeline Flow (Phases 0-5)
+> - [evidence-flow.drawio](diagrams/evidence-flow.drawio) - Evidence Data Flow
+> - [knowledge-structure.drawio](diagrams/knowledge-structure.drawio) - Knowledge Base Structure
+> - [collectors.drawio](diagrams/collectors.drawio) - Phase 1 Collectors
+> - [analysis-crew.drawio](diagrams/analysis-crew.drawio) - Phase 2 Analysis Crew
+> - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - Phase 3 Synthesis Crew
 
 ### 2.1 Core Principle: Evidence-First Architecture
 
@@ -142,7 +147,17 @@ src/aicodegencrew/
     crews/
         __init__.py
         
-        architecture_synthesis/        # Phase 2: Architecture Synthesis
+        architecture_analysis/         # Phase 2: Architecture Analysis (NEW)
+            __init__.py
+            crew.py                    # ArchitectureAnalysisCrew
+            config/
+                agents.yaml            # 4 agents: tech_architect, func_analyst, quality_analyst, synthesis_lead
+                tasks.yaml             # analyze tasks per agent + merge task
+            tools/
+                __init__.py
+                rag_query_tool.py      # ChromaDB semantic search
+        
+        architecture_synthesis/        # Phase 3: Architecture Synthesis
             __init__.py
             crew.py                    # ArchitectureSynthesisCrew
             agents.py
@@ -170,7 +185,7 @@ src/aicodegencrew/
                 chunked_writer_tool.py     # includes StereotypeListTool
                 doc_quality_gate_tool.py
         
-        development/                   # Phase 4: Planned
+        development/                   # Phase 5: Planned
             __init__.py
     
     pipelines/
@@ -285,7 +300,7 @@ src/aicodegencrew/
 
 #### Collectors
 
-> **Reference Diagram:** [docs/diagrams/collectors.drawio](docs/diagrams/collectors.drawio)
+> **Reference Diagram:** [collectors.drawio](diagrams/collectors.drawio)
 
 | Collector | Technology | Extracts | Key Patterns |
 |-----------|------------|----------|--------------|
@@ -364,18 +379,92 @@ src/aicodegencrew/
 
 ---
 
-### 4.3 Phase 2: Architecture Synthesis
+### 4.3 Phase 2: Architecture Analysis (NEW)
+
+> **Reference Diagram:** [docs/diagrams/analysis-crew.drawio](diagrams/analysis-crew.drawio)
+
+| Attribute | Specification |
+|-----------|---------------|
+| Type | Crew (AI Agents) |
+| Module | `crews/architecture_analysis/crew.py` |
+| LLM Requirement | Yes |
+| Input | `architecture_facts.json` + ChromaDB Index |
+| Output | `knowledge/architecture/synthesized_architecture.json` |
+| Dependency | Phase 0 (Index) + Phase 1 (Facts) |
+| Status | 🔄 In Progress |
+
+#### Multi-Agent Analysis Pattern
+
+The Analysis Crew uses **4 specialized agents** with different perspectives.
+See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
+
+#### Agents and Responsibilities
+
+| Agent | Focus | Uses Facts For | Uses RAG For |
+|-------|-------|---------------|--------------|
+| **Technical Architect** | Technical structure | `architecture_style`, `design_pattern` | Implementation patterns in code |
+| **Functional Analyst** | Business domain | `entity`, `service` | Business logic, Javadoc, comments |
+| **Quality Analyst** | Quality attributes | All stereotypes | Error handling, logging, tests |
+| **Synthesis Lead** | Integration | All outputs | Conflict resolution |
+
+#### Output: synthesized_architecture.json
+
+```json
+{
+  "system": {
+    "name": "uvz",
+    "domain": "Deed Management Platform",
+    "description": "Notary deed registration and workflow system"
+  },
+  "architecture": {
+    "primary_style": "layered_architecture",
+    "secondary_styles": ["modular_monolith"],
+    "evidence_ids": ["ev_arch_0049", "ev_arch_0061"]
+  },
+  "patterns": [
+    {"name": "repository_pattern", "evidence_count": 4},
+    {"name": "factory_pattern", "evidence_count": 6}
+  ],
+  "capabilities": [
+    {"name": "Deed Management", "key_components": ["DeedEntryService", "DeedRegistryService"]},
+    {"name": "Workflow Processing", "key_components": ["WorkflowService", "ActionService"]}
+  ],
+  "quality_attributes": {
+    "maintainability": {"level": "high", "reason": "Layered + Repository pattern"},
+    "scalability": {"level": "medium", "reason": "Monolith, not distributed"}
+  },
+  "risks": [
+    {"name": "Large monolith", "severity": "medium", "mitigation": "Consider modularization"}
+  ]
+}
+```
+
+#### Benefits of Multi-Agent Analysis
+
+| Benefit | Description |
+|---------|-------------|
+| **Specialization** | Each agent focuses on their expertise area |
+| **Less Hallucination** | Specific tasks = better accuracy |
+| **Reusable Output** | JSON can be used by multiple downstream crews |
+| **Traceable** | Separate analyses can be reviewed individually |
+| **RAG Integration** | Semantic code search adds context beyond structure |
+
+---
+
+### 4.4 Phase 3: Architecture Synthesis
+
+> **Reference Diagram:** [synthesis-crew.drawio](diagrams/synthesis-crew.drawio)
 
 | Attribute | Specification |
 |-----------|---------------|
 | Type | Crew (AI Agents) |
 | Module | `crews/architecture_synthesis/crew.py` |
 | LLM Requirement | Yes (Ollama) |
-| Input | `architecture_facts.json` + `evidence_map.json` |
+| Input | `synthesized_architecture.json` (from Phase 2) |
 | Output | `knowledge/architecture/c4/` (Draw.io XML + Markdown) |
 |        | `knowledge/architecture/arc42/` (Markdown) |
 |        | `knowledge/architecture/quality/` (Reports) |
-| Dependency | Phase 1 |
+| Dependency | Phase 2 |
 | Status | ✅ Implemented |
 
 #### Orchestration
