@@ -89,7 +89,7 @@ phases:
   # Type:      Crew (AI Agents - 4 specialized analysts)
   # Location:  crews/architecture_analysis/
   # Input:     architecture_facts.json + evidence_map.json + ChromaDB
-  # Output:    knowledge/architecture/synthesized_architecture.json
+  # Output:    knowledge/architecture/analyzed_architecture.json
   # 
   # AGENTS:
   # 1. Technical Architect: Styles, patterns, tech stack, layers
@@ -116,7 +116,7 @@ phases:
   # =========================================================================
   # Type:      Crew (AI Agents)
   # Location:  crews/architecture_synthesis/
-  # Input:     architecture_facts.json + synthesized_architecture.json
+  # Input:     architecture_facts.json + analyzed_architecture.json (ChromaDB optional)
   # Output:    knowledge/architecture/c4/
   #            knowledge/architecture/arc42/
   #            knowledge/architecture/runtime/

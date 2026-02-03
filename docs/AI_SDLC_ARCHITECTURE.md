@@ -37,24 +37,24 @@ The initial implementation focuses on architecture reverse engineering:
 
 | Area | Implementation | Status |
 |------|----------------|--------|
-| **C4 Model** | 5 tasks (1 analyze + 4 diagrams) | ✅ Implemented |
-| **arc42 Documentation** | 14 tasks (1 analyze + 12 chapters + quality gate) | ✅ Implemented |
-| **Evidence Traceability** | evidence_map.json (internal use only) | ✅ Implemented |
-| **Think First Pattern** | analyze_system task before all documentation | ✅ Implemented |
+| **C4 Model** | 5 tasks (1 analyze + 4 diagrams) | Implemented |
+| **arc42 Documentation** | 14 tasks (1 analyze + 12 chapters + quality gate) | Implemented |
+| **Evidence Traceability** | evidence_map.json (internal use only) | Implemented |
+| **Think First Pattern** | analyze_system task before all documentation | Implemented |
 
 ### 1.4 Implementation Status
 
 | Phase | Name | Type | Components | Output | Status |
 |-------|------|------|------------|--------|--------|
-| 0 | Indexing | Pipeline | 5 tools | `.cache/.chroma` | ✅ Implemented |
-| 1 | Architecture Facts | Pipeline | 7 collectors | `architecture_facts.json` + `evidence_map.json` | ✅ Implemented |
-| 2 | Architecture Analysis | Crew | 4 agents | `synthesized_architecture.json` | 🔄 In Progress |
-| 3 | Architecture Synthesis | Crew | 2 sub-crews | `c4/*`, `arc42/*`, `quality/*` | ✅ Implemented |
-| 4 | Review | Crew | - | Quality reports | 📅 Planned |
-| 5 | Development | Crew | - | Backlog items | 📅 Planned |
-| 6 | Code Generation | Crew | - | Feature code | 📅 Planned |
-| 7 | Testing | Crew | - | Unit/integration tests | 📅 Planned |
-| 8 | Deployment | Pipeline | - | CI/CD configs | 📅 Planned |
+| 0 | Indexing | Pipeline | 5 tools | `.cache/.chroma` | Implemented |
+| 1 | Architecture Facts | Pipeline | 7 collectors | `architecture_facts.json` + `evidence_map.json` | Implemented |
+| 2 | Architecture Analysis | Crew | 4 agents | `analyzed_architecture.json` | In Progress |
+| 3 | Architecture Synthesis | Crew | 2 sub-crews | `c4/*`, `arc42/*`, `quality/*` | Implemented |
+| 4 | Review | Crew | - | Quality reports | Planned |
+| 5 | Development | Crew | - | Backlog items | Planned |
+| 6 | Code Generation | Crew | - | Feature code | Planned |
+| 7 | Testing | Crew | - | Unit/integration tests | Planned |
+| 8 | Deployment | Pipeline | - | CI/CD configs | Planned |
 
 ---
 
@@ -71,14 +71,15 @@ The initial implementation focuses on architecture reverse engineering:
 ### 2.1 Core Principle: Evidence-First Architecture
 
 ```
-Repository → Phase 0 (Indexing) → Phase 1 (Facts) → Phase 2 (Synthesis) → C4 + arc42 Output
-                                      ↓                    ↓
-                               NO LLM!              LLM + Think First
+Repository → Phase 0 (Indexing) → Phase 1 (Facts) → Phase 2 (Analysis) → Phase 3 (Synthesis) → C4 + arc42 Output
+                 ↓                     ↓                   ↓                    ↓
+            ChromaDB              NO LLM!           LLM (4 Agents)        LLM (2 Sub-Crews)
 ```
 
 **Key Rules:**
 - Phase 1 produces facts and evidence (deterministic, no LLM)
-- Phase 2 may only synthesize from Phase 1 facts
+- Phase 2 analyzes facts with 4 specialized agents, produces `analyzed_architecture.json`
+- Phase 3 may only synthesize from Phase 2 output
 - If it is not in `architecture_facts.json`, it must NOT appear in output
 - Evidence IDs are for internal processing only, NOT in final documentation
 
@@ -87,7 +88,7 @@ Repository → Phase 0 (Indexing) → Phase 1 (Facts) → Phase 2 (Synthesis) �
 | Classification | Description | LLM Requirement | Implemented |
 |----------------|-------------|-----------------|-------------|
 | Pipeline | Deterministic automated process | None (Embeddings for Phase 0) | Phase 0, Phase 1 |
-| Crew | CrewAI multi-agent workflow | Full LLM (Ollama) | Phase 2 |
+| Crew | CrewAI multi-agent workflow | Full LLM | Phase 2, Phase 3 |
 
 ### 2.3 Core Modules
 
@@ -389,9 +390,9 @@ src/aicodegencrew/
 | Module | `crews/architecture_analysis/crew.py` |
 | LLM Requirement | Yes |
 | Input | `architecture_facts.json` + ChromaDB Index |
-| Output | `knowledge/architecture/synthesized_architecture.json` |
+| Output | `knowledge/architecture/analyzed_architecture.json` |
 | Dependency | Phase 0 (Index) + Phase 1 (Facts) |
-| Status | 🔄 In Progress |
+| Status | In Progress |
 
 #### Multi-Agent Analysis Pattern
 
@@ -407,7 +408,7 @@ See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
 | **Quality Analyst** | Quality attributes | All stereotypes | Error handling, logging, tests |
 | **Synthesis Lead** | Integration | All outputs | Conflict resolution |
 
-#### Output: synthesized_architecture.json
+#### Output: analyzed_architecture.json
 
 ```json
 {
@@ -447,6 +448,50 @@ See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
 | **Less Hallucination** | Specific tasks = better accuracy |
 | **Reusable Output** | JSON can be used by multiple downstream crews |
 | **Traceable** | Separate analyses can be reviewed individually |
+
+#### Deep Analysis Mode and Token Management
+
+LLM token limits are always present. Deep Analysis does NOT mean unlimited tokens.
+Instead, it uses strategies to analyze MORE data within the same context window:
+
+| Aspect | Standard Mode | Deep Analysis Mode |
+|--------|---------------|-------------------|
+| Tool calls per agent | 5-10 | 20-50 |
+| Runtime | 2-5 minutes | 30-40 minutes |
+| max_iter (CrewAI) | 25 | 50 |
+| Query limit | 50 items | 500 items |
+
+**Token Management Strategies:**
+
+1. **Chunked Queries**: Instead of 1 query returning 10,000 items (token overflow), 
+   use 20 queries returning 500 items each. Agent processes incrementally.
+
+2. **Truncation**: Long descriptions are cut to 80-100 characters in tool output.
+   Full text remains in ChromaDB for RAG queries when needed.
+
+3. **Temp Output Files**: Each agent writes results to a file, not kept in context.
+   Synthesis agent reads files, not entire conversation history.
+
+4. **Forgetting Old Results**: CrewAI naturally "forgets" older tool results as
+   conversation grows. New queries replace old data in working memory.
+
+```
+Agent Context Window (e.g., 128K tokens)
++-- System Prompt + Task Description (~5K)
++-- Tool Result 1: 500 components (~20K)
++-- Tool Result 2: 500 relations (~15K)
++-- Tool Result 3: 200 interfaces (~10K)
++-- ... (older results fade from context)
++-- Final Output -> written to file (not in context)
+```
+
+**Configuration (agents.yaml):**
+
+```yaml
+tech_architect:
+  max_iter: 50      # Allow 50 tool calls before stopping
+  # Tool queries use limit=500 for comprehensive results
+```
 | **RAG Integration** | Semantic code search adds context beyond structure |
 
 ---
@@ -460,19 +505,20 @@ See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
 | Type | Crew (AI Agents) |
 | Module | `crews/architecture_synthesis/crew.py` |
 | LLM Requirement | Yes (Ollama) |
-| Input | `synthesized_architecture.json` (from Phase 2) |
+| Input | `architecture_facts.json` (Phase 1) + `analyzed_architecture.json` (Phase 2) |
+| Input (optional) | ChromaDB Index (for code snippets if needed) |
 | Output | `knowledge/architecture/c4/` (Draw.io XML + Markdown) |
 |        | `knowledge/architecture/arc42/` (Markdown) |
 |        | `knowledge/architecture/quality/` (Reports) |
-| Dependency | Phase 2 |
-| Status | ✅ Implemented |
+| Dependency | Phase 1 + Phase 2 |
+| Status | Implemented |
 
 #### Orchestration
 
 The `ArchitectureSynthesisCrew` orchestrates two sub-crews sequentially:
 
 ```
-Phase 2a: C4Crew → Phase 2b: Arc42Crew
+Phase 3a: C4Crew → Phase 3b: Arc42Crew
 ```
 
 Each sub-crew has exactly **1 agent** (`architect`) with multiple sequential tasks.
@@ -597,7 +643,7 @@ The final documentation should be clean and readable without `[ev_XXX]` markers.
 
 ---
 
-### 4.4 Phase 3: Review & Consistency Guard (PLANNED)
+### 4.5 Phase 4: Review & Consistency Guard (PLANNED)
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -614,7 +660,7 @@ The final documentation should be clean and readable without `[ev_XXX]` markers.
 
 ---
 
-### 4.5 Phase 4: Development / Backlog (PLANNED)
+### 4.6 Phase 5: Development / Backlog (PLANNED)
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -640,12 +686,13 @@ The final documentation should be clean and readable without `[ev_XXX]` markers.
 
 | Source Phase | Output Artifact | Consumer Phase |
 |--------------|-----------------|----------------|
-| Phase 0 | ChromaDB Vector Index | Phase 1 |
-| Phase 1 | `architecture_facts.json` | Phase 2 |
+| Phase 0 | ChromaDB Vector Index | Phase 1, Phase 2, Phase 3 (optional) |
+| Phase 1 | `architecture_facts.json` | Phase 2, Phase 3 |
 | Phase 1 | `evidence_map.json` | Phase 2 |
-| Phase 2 | `c4/*.md`, `c4/*.drawio` | Phase 3 |
-| Phase 2 | `arc42/*.md`, `arc42/diagrams/*.drawio` | Phase 3 |
-| Phase 3 | Quality Reports | Phase 4 |
+| Phase 2 | `analyzed_architecture.json` | Phase 3 |
+| Phase 3 | `c4/*.md`, `c4/*.drawio` | Phase 4 |
+| Phase 3 | `arc42/*.md`, `arc42/diagrams/*.drawio` | Phase 4 |
+| Phase 4 | Quality Reports | Phase 5 |
 
 ### 5.2 Knowledge Directory Structure
 
@@ -814,7 +861,7 @@ from .shared.utils.logger import (
     step_done,      # [DONE] ══════ Name ══════ (12.3s)
     step_fail,      # [FAIL] ══════ Name ══════
     step_info,      #        Info message
-    step_warn,      #        ⚠ Warning message
+    step_warn,      #        Warning message
     step_progress,  #        [██████░░░░] 5/10 - items
 )
 

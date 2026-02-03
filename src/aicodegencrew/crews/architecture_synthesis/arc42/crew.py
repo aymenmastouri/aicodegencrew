@@ -34,6 +34,10 @@ from ..tools import (
 class Arc42Crew:
     """
     Arc42 Crew - Creates all 12 arc42 chapters.
+    
+    Data Sources:
+    - architecture_facts.json (Phase 1): Exact component names, relations
+    - analyzed_architecture.json (Phase 2): Architecture styles, patterns, quality
     """
     
     agents_config = 'config/agents.yaml'
@@ -42,17 +46,30 @@ class Arc42Crew:
     agents: List[BaseAgent]
     tasks: List[Task]
     
-    def __init__(self, facts_path: str = "knowledge/architecture/architecture_facts.json"):
-        """Initialize crew with architecture facts."""
+    def __init__(
+        self, 
+        facts_path: str = "knowledge/architecture/architecture_facts.json",
+        analyzed_path: str = None
+    ):
+        """Initialize crew with architecture facts and analysis."""
         self.facts_path = Path(facts_path)
+        self.analyzed_path = Path(analyzed_path) if analyzed_path else self.facts_path.parent / "analyzed_architecture.json"
         self.facts = self._load_facts()
+        self.analysis = self._load_analysis()
         self.evidence_map = self._load_evidence_map()
         self.summaries = self._summarize_facts()
     
     def _load_facts(self) -> dict:
-        """Load architecture facts from JSON file."""
+        """Load architecture facts from JSON file (Phase 1)."""
         if self.facts_path.exists():
             with open(self.facts_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return {}
+
+    def _load_analysis(self) -> dict:
+        """Load architecture analysis from JSON file (Phase 2)."""
+        if self.analyzed_path.exists():
+            with open(self.analyzed_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         return {}
 
@@ -68,18 +85,24 @@ class Arc42Crew:
         return {}
     
     def _summarize_facts(self) -> dict[str, str]:
-        """Create MINIMAL summaries - Agent must discover everything else!
+        """Create summaries combining Phase 1 facts and Phase 2 analysis.
 
         IMPORTANT:
-        - Only provide RAW STATISTICS here
-        - NO interpretations, NO assumptions about architecture style
-        - Agent MUST use tools to discover architecture styles, patterns, etc.
-        - This prevents hallucination and ensures evidence-based documentation
+        - Use Phase 1 facts for exact names and counts
+        - Use Phase 2 analysis for architecture interpretation
+        - If Phase 2 analysis is empty, use tools to discover
         """
         facts = self.facts
+        analysis = self.analysis
 
         system_info = facts.get("system", {})
         system_name = system_info.get("name", "Unknown System")
+        
+        # Phase 2 analysis data
+        arch_info = analysis.get("architecture", {})
+        quality_info = analysis.get("quality_attributes", {})
+        capabilities = analysis.get("capabilities", [])
+        risks = analysis.get("risks", [])
 
         containers = facts.get("containers", [])
         components = facts.get("components", [])
@@ -87,7 +110,7 @@ class Arc42Crew:
         relations = facts.get("relations", [])
 
         # =====================================================================
-        # MINIMAL SYSTEM SUMMARY - Only statistics, no interpretations!
+        # COMBINED SUMMARY - Facts + Analysis
         # =====================================================================
         tech_stack = sorted({c.get("technology", "Unknown") for c in containers if c.get("technology")})
         
@@ -96,10 +119,18 @@ class Arc42Crew:
         for comp in components:
             stereo = comp.get("stereotype", "unknown")
             by_stereotype[stereo] = by_stereotype.get(stereo, 0) + 1
+        
+        # Architecture style from Phase 2
+        arch_style = arch_info.get("primary_style", "UNKNOWN - use tools to discover")
+        patterns = analysis.get("patterns", [])
 
         system_summary = f"""SYSTEM: {system_name}
 
-RAW STATISTICS (from architecture_facts.json):
+ARCHITECTURE (from Phase 2 analysis):
+- Primary Style: {arch_style}
+- Patterns: {', '.join([p.get('name', 'unknown') for p in patterns]) if patterns else 'Use tools to discover'}
+
+STATISTICS (from Phase 1 facts):
 - Containers: {len(containers)}
 - Components: {len(components)}
 - Interfaces: {len(interfaces)}

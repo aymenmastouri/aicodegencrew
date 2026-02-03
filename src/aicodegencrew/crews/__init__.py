@@ -3,7 +3,7 @@ Crews - CrewAI multi-agent workflows.
 
 Phase 2: Architecture Analysis (NEW)
 - Multi-agent analysis: Technical, Functional, Quality, Synthesis Lead
-- Output: synthesized_architecture.json
+- Output: analyzed_architecture.json
 
 Phase 3: Architecture Synthesis (LLM, evidence-first)
 - Synthesizes C4 diagrams and arc42 documentation from architecture facts

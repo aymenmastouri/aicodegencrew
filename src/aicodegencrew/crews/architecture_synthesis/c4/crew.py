@@ -31,6 +31,10 @@ from ..tools import (
 class C4Crew:
     """
     C4 Crew - Creates all 4 C4 Model views.
+    
+    Data Sources:
+    - architecture_facts.json (Phase 1): Exact component names, relations
+    - analyzed_architecture.json (Phase 2): Architecture styles, patterns, quality
     """
     
     agents_config = 'config/agents.yaml'
@@ -39,17 +43,30 @@ class C4Crew:
     agents: List[BaseAgent]
     tasks: List[Task]
     
-    def __init__(self, facts_path: str = "knowledge/architecture/architecture_facts.json"):
-        """Initialize crew with architecture facts."""
+    def __init__(
+        self, 
+        facts_path: str = "knowledge/architecture/architecture_facts.json",
+        analyzed_path: str = None
+    ):
+        """Initialize crew with architecture facts and analysis."""
         self.facts_path = Path(facts_path)
+        self.analyzed_path = Path(analyzed_path) if analyzed_path else self.facts_path.parent / "analyzed_architecture.json"
         self.facts = self._load_facts()
+        self.analysis = self._load_analysis()
         self.evidence_map = self._load_evidence_map()
         self.summaries = self._summarize_facts()
     
     def _load_facts(self) -> dict:
-        """Load architecture facts from JSON file."""
+        """Load architecture facts from JSON file (Phase 1)."""
         if self.facts_path.exists():
             with open(self.facts_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return {}
+
+    def _load_analysis(self) -> dict:
+        """Load architecture analysis from JSON file (Phase 2)."""
+        if self.analyzed_path.exists():
+            with open(self.analyzed_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         return {}
 
@@ -68,19 +85,22 @@ class C4Crew:
         """Create evidence-first summaries for C4 diagram generation.
 
         IMPORTANT:
-        - Phase 2 must not invent architecture.
+        - Phase 3 must not invent architecture.
         - Any statement not backed by Phase 1 facts/evidence must be marked UNKNOWN.
+        - Use Phase 2 analysis for architecture style and patterns context.
         """
         facts = self.facts
+        analysis = self.analysis
         evidence_map = self.evidence_map or {}
         
         system_info = facts.get("system", {})
         system_name = system_info.get("name", "Unknown System")
         
-        style = facts.get("architecture_style", {})
-        style_name = style.get("primary_style", "Layered Architecture")
-        layers = style.get("layers", ["controller", "service", "repository", "entity"])
-        patterns = style.get("patterns", [])
+        # Prefer Phase 2 analysis for architecture context, fallback to facts
+        arch_info = analysis.get("architecture", {})
+        style_name = arch_info.get("primary_style") or facts.get("architecture_style", {}).get("primary_style", "UNKNOWN")
+        layers = arch_info.get("layers") or facts.get("architecture_style", {}).get("layers", [])
+        patterns = analysis.get("patterns", []) or facts.get("architecture_style", {}).get("patterns", [])
         
         containers = facts.get("containers", [])
         components = facts.get("components", [])

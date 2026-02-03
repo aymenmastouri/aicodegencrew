@@ -1,58 +1,48 @@
 # =============================================================================
-# Arc42 Crew - Task Definitions
+# Arc42 Crew - Task Definitions (Phase 3)
 # =============================================================================
-# Best Practice: Agent analyzes facts DYNAMICALLY, no hardcoded assumptions!
+# INPUT:
+#   - architecture_facts.json (Phase 1): Exact component names, relations
+#   - analyzed_architecture.json (Phase 2): Architecture style, patterns, quality
+# OUTPUT:
+#   - arc42/01-introduction.md ... 12-glossary.md
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# PHASE 1: ANALYSIS (Agent discovers everything from facts)
+# PHASE 1: ANALYSIS (Use analyzed.json + query facts for details)
 # -----------------------------------------------------------------------------
 
 analyze_system:
   description: |
-    YOU are the Software Architect. ANALYZE the system YOURSELF from the facts!
+    YOU are the Software Architect. Create arc42 analysis from Phase 2 output + facts!
     
-    DO NOT assume anything. DISCOVER everything from the data!
+    DATA SOURCES:
+    - analyzed_architecture.json: Already contains style, patterns, quality, risks
+    - architecture_facts.json: Query for specific component details
     
-    ## STEP 1: Query Architecture Styles
-    Use list_components_by_stereotype with stereotype="architecture_style"
-    → This tells you if it's Layered, Microservices, Monolith, etc.
+    ## STEP 1: Read Architecture Analysis
+    The analyzed_architecture.json already contains:
+    - system.name, system.domain, system.description
+    - architecture.primary_style, architecture.layers
+    - patterns[] with names and counts
+    - technology.backend/frontend/database
+    - capabilities[] with key_components
+    - quality_attributes.maintainability/scalability/etc
+    - risks[] with severity and mitigation
     
-    ## STEP 2: Query Design Patterns  
-    Use list_components_by_stereotype with stereotype="design_pattern"
-    → This tells you which patterns are used (Repository, Factory, etc.)
+    ## STEP 2: Query Facts for Specific Details
+    Use tools to get EXACT data when needed:
+    - query_architecture_facts(category="containers") → deployment units
+    - query_architecture_facts(category="relations") → dependencies
+    - list_components_by_stereotype for component lists
     
-    ## STEP 3: Query Containers
-    Use query_architecture_facts with category="containers"
-    → Understand the deployment units and technologies
+    ## YOUR ANALYSIS must combine:
+    1. HIGH-LEVEL CONTEXT from analyzed_architecture.json
+    2. SPECIFIC DETAILS from architecture_facts.json
+    3. QUALITY/RISKS from analyzed_architecture.json
     
-    ## STEP 4: Count Components by Layer
-    Use list_components_by_stereotype for each:
-    - stereotype="controller" → Presentation layer
-    - stereotype="service" → Business layer
-    - stereotype="repository" → Persistence layer
-    - stereotype="entity" → Domain layer
-    
-    ## STEP 5: Query Interfaces
-    Use query_architecture_facts with category="interfaces"
-    → Understand the API surface
-    
-    ## STEP 6: Query Relations
-    Use query_architecture_facts with category="relations"
-    → Understand component dependencies
-    
-    ## YOUR ANALYSIS must answer:
-    1. What ARCHITECTURE STYLE did you find in the facts?
-    2. What DESIGN PATTERNS are evidenced?
-    3. What is the TECHNOLOGY STACK?
-    4. What is the DOMAIN (derive from entity/service names)?
-    5. How is the system STRUCTURED (layers, modules)?
-    6. What are the KEY COMPONENTS per layer?
-    
-    ## Deliverable: Your analysis as structured text
-    
-    Write YOUR findings - do not copy from task description!
-  expected_output: "Complete architecture analysis discovered from facts"
+    ## Deliverable: Your arc42 analysis as structured text
+  expected_output: "Complete arc42 analysis from facts and analysis"
   agent: arc42_architect
 
 # -----------------------------------------------------------------------------
