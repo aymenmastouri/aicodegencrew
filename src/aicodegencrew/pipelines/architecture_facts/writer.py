@@ -30,6 +30,17 @@ class FactsWriter:
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
+    def _derive_package(self, file_path: str) -> str:
+        """Derive package/module from file path."""
+        if not file_path:
+            return ""
+        # Remove file name, get directory path as package
+        parts = file_path.replace("\\", "/").split("/")
+        # Remove src/main/java, src/app, etc.
+        skip_parts = {"src", "main", "java", "app", "lib", "components", "services", "modules"}
+        filtered = [p for p in parts[:-1] if p and p.lower() not in skip_parts]
+        return ".".join(filtered[-3:]) if filtered else ""
+    
     def write(
         self,
         system_name: str,
@@ -65,6 +76,8 @@ class FactsWriter:
                     "confidence": getattr(c, 'confidence', 1.0),
                     "layer": getattr(c, 'layer', None),
                     "module": getattr(c, 'module', None),
+                    "package": getattr(c, 'module', None) or self._derive_package(c.file_path),
+                    "description": "",  # Populated by Phase 2
                     "tags": getattr(c, 'tags', []),
                 }
                 for c in components

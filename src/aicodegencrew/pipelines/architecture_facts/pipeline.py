@@ -139,14 +139,18 @@ class ArchitectureFactsPipeline:
             all_evidence.update(container_evidence)
             logger.info(f"[Phase1] Detected {len(detected_containers)} containers")
             
-            # Step 2: Collect Spring/Java components + Database scripts
-            logger.info("\n[Phase1] Step 2: Collecting Spring/Java components...")
+            # Step 2: Collect components based on detected technology
+            logger.info("\n[Phase1] Step 2: Collecting components per detected technology...")
             for container in detected_containers:
-                if container.get("technology") in ["Spring Boot", "Java", "Maven/Java", "Gradle/Java"]:
-                    container_path = self.repo_path / container.get("root_path", ".")
-                    container_id = container["id"]
-                    
-                    # Collect Spring components
+                technology = container.get("technology", "")
+                container_path = self.repo_path / container.get("root_path", ".")
+                container_id = container["id"]
+                
+                # ============================================================
+                # BACKEND TECHNOLOGIES (dynamically selected)
+                # ============================================================
+                if technology == "Spring Boot":
+                    # Spring Boot / Java Backend
                     spring_collector = SpringCollector(
                         self.repo_path,
                         container_id=container_id,
@@ -158,7 +162,13 @@ class ArchitectureFactsPipeline:
                     all_relations.extend(relations)
                     all_evidence.update(evidence)
                     
-                    # Collect Database/SQL scripts in same container
+                    # Extract backend metadata
+                    backend_metadata = spring_collector.extract_backend_metadata()
+                    if backend_metadata:
+                        container["backend_metadata"] = backend_metadata
+                        logger.info(f"[Phase1] {technology}: {len(backend_metadata.get('spring_profiles', []))} profiles")
+                    
+                    # Database scripts for this container
                     db_collector = DatabaseCollector(container_path, container_id=container_id)
                     db_components, db_interfaces, db_relations, db_evidence = db_collector.collect()
                     all_components.extend(db_components)
@@ -168,40 +178,45 @@ class ArchitectureFactsPipeline:
                     if db_components:
                         logger.info(f"[Phase1] Found {len(db_components)} database components in {container_id}")
                     
-                    # Collect Architecture Styles and Design Patterns
+                    # Architecture Styles for this container
                     arch_collector = ArchitectureStyleCollector(container_path, container_id=container_id)
                     arch_components, arch_interfaces, arch_relations, arch_evidence = arch_collector.collect()
                     all_components.extend(arch_components)
                     all_interfaces.extend(arch_interfaces)
                     all_relations.extend(arch_relations)
                     all_evidence.update(arch_evidence)
-                    if arch_components:
-                        styles = [c.name for c in arch_components if c.stereotype == "architecture_style"]
-                        patterns = [c.name for c in arch_components if c.stereotype == "design_pattern"]
-                        if styles:
-                            logger.info(f"[Phase1] Architecture styles: {', '.join(styles)}")
-                        if patterns:
-                            logger.info(f"[Phase1] Design patterns: {', '.join(patterns)}")
                     
-                    # Collect Cross-Container Integrations
+                    # Integrations for this container
                     int_collector = IntegrationCollector(container_path, container_id=container_id)
                     int_components, int_interfaces, int_relations, int_evidence = int_collector.collect()
                     all_components.extend(int_components)
                     all_interfaces.extend(int_interfaces)
                     all_relations.extend(int_relations)
                     all_evidence.update(int_evidence)
-                    if int_components:
-                        integrations = [c.name for c in int_components]
-                        logger.info(f"[Phase1] Integrations: {', '.join(integrations)}")
-            
-            # Step 3: Collect Angular/TypeScript components
-            logger.info("\n[Phase1] Step 3: Collecting Angular/TypeScript components...")
-            for container in detected_containers:
-                if container.get("technology") in ["Angular", "React", "Vue.js"]:
-                    container_path = self.repo_path / container.get("root_path", ".")
+                
+                # TODO: Add QuarkusCollector when needed
+                # elif technology == "Quarkus":
+                #     quarkus_collector = QuarkusCollector(...)
+                
+                # TODO: Add NodeCollector when needed (Express, NestJS, Fastify)
+                # elif technology == "Node.js":
+                #     node_collector = NodeCollector(...)
+                
+                # TODO: Add DotNetCollector when needed
+                # elif technology == ".NET":
+                #     dotnet_collector = DotNetCollector(...)
+                
+                # TODO: Add PythonCollector when needed (Flask, Django, FastAPI)
+                # elif technology == "Python":
+                #     python_collector = PythonCollector(...)
+                
+                # ============================================================
+                # FRONTEND TECHNOLOGIES (dynamically selected)
+                # ============================================================
+                elif technology == "Angular":
                     angular_collector = AngularCollector(
                         self.repo_path,
-                        container_id=container["id"],
+                        container_id=container_id,
                         angular_root=container_path / "src" / "app" if (container_path / "src" / "app").exists() else None
                     )
                     components, interfaces, relations, evidence = angular_collector.collect()
@@ -209,9 +224,26 @@ class ArchitectureFactsPipeline:
                     all_interfaces.extend(interfaces)
                     all_relations.extend(relations)
                     all_evidence.update(evidence)
+                    
+                    # Extract frontend metadata
+                    frontend_metadata = angular_collector.extract_frontend_metadata()
+                    if frontend_metadata:
+                        container["frontend_metadata"] = frontend_metadata
+                        logger.info(f"[Phase1] {technology}: version={frontend_metadata.get('angular_version')}, UI={frontend_metadata.get('ui_library')}")
+                
+                # TODO: Add ReactCollector when needed
+                # elif technology == "React":
+                #     react_collector = ReactCollector(...)
+                
+                # TODO: Add VueCollector when needed
+                # elif technology == "Vue.js":
+                #     vue_collector = VueCollector(...)
+                
+                else:
+                    logger.info(f"[Phase1] No specific collector for technology: {technology} (container: {container_id})")
             
-            # Step 4: Collect infrastructure facts
-            logger.info("\n[Phase1] Step 4: Collecting infrastructure facts...")
+            # Step 3: Collect infrastructure facts
+            logger.info("\n[Phase1] Step 3: Collecting infrastructure facts...")
             infra_collector = InfraCollector(self.repo_path, container_id="infrastructure")
             infra_components, infra_interfaces, infra_relations, infra_evidence = infra_collector.collect()
             all_components.extend(infra_components)
@@ -227,8 +259,8 @@ class ArchitectureFactsPipeline:
                 if ic["id"] not in existing_ids:
                     all_containers.append(ic)
             
-            # Step 5: Build endpoint flows (runtime workflow evidence)
-            logger.info("\n[Phase1] Step 5: Building endpoint flows...")
+            # Step 4: Build endpoint flows (runtime workflow evidence)
+            logger.info("\n[Phase1] Step 4: Building endpoint flows...")
             flow_builder = EndpointFlowBuilder(
                 components=all_components,
                 interfaces=all_interfaces,
@@ -238,8 +270,8 @@ class ArchitectureFactsPipeline:
             endpoint_flows = flow_builder.build_flows()
             logger.info(f"[Phase1] Built {len(endpoint_flows)} endpoint flows")
 
-            # Step 6: Write output
-            logger.info("\n[Phase1] Step 6: Writing output files...")
+            # Step 5: Write output
+            logger.info("\n[Phase1] Step 5: Writing output files...")
             writer = FactsWriter(self.output_dir)
             result = writer.write(
                 system_name=self.repo_path.name,

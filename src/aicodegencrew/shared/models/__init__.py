@@ -28,6 +28,30 @@ from .architecture_facts_schema import (
     ArchitectureFacts,
 )
 
+from .task_output_schemas import (
+    # Tech Architect outputs
+    MacroArchitectureOutput,
+    BackendPatternOutput,
+    FrontendPatternOutput,
+    ArchitectureQualityOutput,
+    # Func Analyst outputs
+    DomainModelOutput,
+    BusinessCapabilitiesOutput,
+    BoundedContextsOutput,
+    StateMachinesOutput,
+    WorkflowEnginesOutput,
+    SagaPatternsOutput,
+    RuntimeScenariosOutput,
+    ApiDesignOutput,
+    # Quality Analyst outputs
+    ComplexityOutput,
+    TechnicalDebtOutput,
+    SecurityOutput,
+    OperationalReadinessOutput,
+    # Synthesis output
+    AnalyzedArchitecture,
+)
+
 __all__ = [
     "Evidence",
     "Technology",
@@ -52,4 +76,22 @@ __all__ = [
     "FactInterface",
     "Relation",
     "ArchitectureFacts",
+    # Task output schemas (Phase 2)
+    "MacroArchitectureOutput",
+    "BackendPatternOutput",
+    "FrontendPatternOutput",
+    "ArchitectureQualityOutput",
+    "DomainModelOutput",
+    "BusinessCapabilitiesOutput",
+    "BoundedContextsOutput",
+    "StateMachinesOutput",
+    "WorkflowEnginesOutput",
+    "SagaPatternsOutput",
+    "RuntimeScenariosOutput",
+    "ApiDesignOutput",
+    "ComplexityOutput",
+    "TechnicalDebtOutput",
+    "SecurityOutput",
+    "OperationalReadinessOutput",
+    "AnalyzedArchitecture",
 ]

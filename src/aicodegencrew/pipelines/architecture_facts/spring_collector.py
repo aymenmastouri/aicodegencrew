@@ -181,7 +181,8 @@ class SpringCollector(BaseCollector):
                 name=class_name,
                 stereotype=stereotype,
                 file_path=rel_path,
-                evidence_ids=[ev_id]
+                evidence_ids=[ev_id],
+                module=self._derive_module_from_path(rel_path)
             ))
             self._component_names.add(class_name)
             
@@ -690,3 +691,169 @@ class SpringCollector(BaseCollector):
                             class_name,
                             mapping['match_text']
                         )
+
+    # =========================================================================
+    # BACKEND METADATA EXTRACTION
+    # =========================================================================
+    
+    def extract_backend_metadata(self) -> Dict:
+        """
+        Extract additional backend-specific metadata from the Spring Boot project.
+        
+        Returns dict with:
+        - spring_profiles: List of detected Spring profiles
+        - api_base_path: Base path for REST APIs
+        - security_config: Detected security configuration
+        - database_config: Detected database configuration
+        - messaging_config: Detected messaging configuration (Kafka, RabbitMQ)
+        """
+        metadata = {
+            "spring_profiles": [],
+            "api_base_path": None,
+            "security_config": {},
+            "database_config": {},
+            "messaging_config": {},
+            "actuator_endpoints": [],
+        }
+        
+        # Find application.yml or application.properties
+        config_files = [
+            self.repo_path / "src" / "main" / "resources" / "application.yml",
+            self.repo_path / "src" / "main" / "resources" / "application.yaml",
+            self.repo_path / "src" / "main" / "resources" / "application.properties",
+            self.repo_path / "backend" / "src" / "main" / "resources" / "application.yml",
+        ]
+        
+        for config_path in config_files:
+            if config_path.exists():
+                self._parse_spring_config(config_path, metadata)
+                break
+        
+        # Find profile-specific configs (search recursively)
+        resources_paths = [
+            self.repo_path / "src" / "main" / "resources",
+            self.repo_path / "backend" / "src" / "main" / "resources",
+            self.repo_path / "backend" / "src" / "test" / "resources",
+            self.repo_path / "resources",
+            self.repo_path / "backend" / "resources",
+            self.repo_path / "dist" / "resources",
+            self.repo_path / "backend" / "dist" / "resources",
+            self.repo_path / "distResources",
+            self.repo_path / "backend" / "distResources",
+            self.repo_path / "dist-resources",
+            self.repo_path / "backend" / "dist-resources",
+            self.repo_path / "src" / "main" / "distResources",
+            self.repo_path / "backend" / "src" / "main" / "distResources",
+            self.repo_path / "src" / "dist" / "resources",
+            self.repo_path / "backend" / "src" / "dist" / "resources",
+            self.repo_path / "config",
+            self.repo_path / "backend" / "config",
+        ]
+        
+        for resources_path in resources_paths:
+            if resources_path.exists():
+                # Search recursively with **
+                for f in resources_path.glob("**/application-*.yml"):
+                    profile = f.stem.replace("application-", "")
+                    if profile not in metadata["spring_profiles"]:
+                        metadata["spring_profiles"].append(profile)
+                for f in resources_path.glob("**/application-*.yaml"):
+                    profile = f.stem.replace("application-", "")
+                    if profile not in metadata["spring_profiles"]:
+                        metadata["spring_profiles"].append(profile)
+                for f in resources_path.glob("**/application-*.properties"):
+                    profile = f.stem.replace("application-", "")
+                    if profile not in metadata["spring_profiles"]:
+                        metadata["spring_profiles"].append(profile)
+        
+        # Detect security configuration
+        self._detect_security_config(metadata)
+        
+        # Detect messaging configuration
+        self._detect_messaging_config(metadata)
+        
+        logger.info(f"[SpringCollector] Extracted backend metadata: {len(metadata['spring_profiles'])} profiles")
+        return metadata
+    
+    def _parse_spring_config(self, config_path: Path, metadata: Dict):
+        """Parse Spring application config file."""
+        try:
+            content = self._read_file(config_path)
+            
+            # Server port
+            port_match = re.search(r'server\.port\s*[=:]\s*(\d+)', content)
+            if port_match:
+                metadata["server_port"] = int(port_match.group(1))
+            
+            # Context path / API base path
+            ctx_match = re.search(r'server\.servlet\.context-path\s*[=:]\s*([^\n\r]+)', content)
+            if ctx_match:
+                metadata["api_base_path"] = ctx_match.group(1).strip()
+            
+            # Database URL
+            db_match = re.search(r'spring\.datasource\.url\s*[=:]\s*([^\n\r]+)', content)
+            if db_match:
+                db_url = db_match.group(1).strip()
+                metadata["database_config"]["url"] = db_url
+                # Detect database type from URL
+                if "postgresql" in db_url.lower():
+                    metadata["database_config"]["type"] = "PostgreSQL"
+                elif "mysql" in db_url.lower():
+                    metadata["database_config"]["type"] = "MySQL"
+                elif "oracle" in db_url.lower():
+                    metadata["database_config"]["type"] = "Oracle"
+                elif "h2" in db_url.lower():
+                    metadata["database_config"]["type"] = "H2"
+            
+            # JPA settings
+            if "spring.jpa" in content:
+                metadata["database_config"]["orm"] = "JPA/Hibernate"
+            
+            # Actuator endpoints
+            if "management.endpoints" in content:
+                metadata["actuator_endpoints"].append("management")
+            
+        except Exception as e:
+            logger.warning(f"[SpringCollector] Failed to parse config: {e}")
+    
+    def _detect_security_config(self, metadata: Dict):
+        """Detect Spring Security configuration."""
+        if self.java_root:
+            for java_file in self.java_root.rglob("*.java"):
+                content = self._read_file(java_file)
+                
+                if "@EnableWebSecurity" in content:
+                    metadata["security_config"]["spring_security"] = True
+                    
+                    # Detect OAuth2
+                    if "oauth2" in content.lower():
+                        metadata["security_config"]["oauth2"] = True
+                    
+                    # Detect JWT
+                    if "jwt" in content.lower() or "JwtDecoder" in content:
+                        metadata["security_config"]["jwt"] = True
+                    
+                    break
+    
+    def _detect_messaging_config(self, metadata: Dict):
+        """Detect messaging configuration (Kafka, RabbitMQ)."""
+        if self.java_root:
+            for java_file in self.java_root.rglob("*.java"):
+                content = self._read_file(java_file)
+                
+                if "@KafkaListener" in content:
+                    metadata["messaging_config"]["kafka"] = True
+                
+                if "@RabbitListener" in content:
+                    metadata["messaging_config"]["rabbitmq"] = True
+                
+                if "@JmsListener" in content:
+                    metadata["messaging_config"]["jms"] = True
+    
+    def _read_file(self, file_path: Path) -> str:
+        """Read file content."""
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read()
+        except Exception:
+            return ""

@@ -58,6 +58,7 @@ class DatabaseCollector(BaseCollector):
             stereotype=stereotype,
             file_path=file_path,
             evidence_ids=evidence_ids,
+            module=self._derive_module_from_path(file_path)
         )
         self.components.append(component)
         return component
