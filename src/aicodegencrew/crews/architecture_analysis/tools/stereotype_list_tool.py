@@ -31,8 +31,8 @@ class StereotypeListInput(BaseModel):
         description="Optional container filter"
     )
     limit: int = Field(
-        default=30,
-        description="Maximum results to return (default 30)"
+        default=100,
+        description="Maximum results to return (default 100, max 500 for large repos)"
     )
 
 
@@ -83,11 +83,11 @@ class StereotypeListTool(BaseTool):
         self,
         stereotype: str,
         container: str = "",
-        limit: int = 30
+        limit: int = 100
     ) -> str:
         """Get components by stereotype (limited to prevent token overflow)."""
         
-        MAX_RESULTS = min(limit, 50)  # Hard cap
+        MAX_RESULTS = min(limit, 500)  # Hard cap at 500 for enterprise repos
         
         facts = self._load_facts()
         components = facts.get("components", [])
