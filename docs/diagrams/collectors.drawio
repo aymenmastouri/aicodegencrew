@@ -1,0 +1,175 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T12:00:00.000Z" agent="Mozilla/5.0" etag="collectors" version="22.1.0" type="device">
+  <diagram id="collectors" name="Phase 1 Collectors">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="Phase 1: Architecture Facts Pipeline - Collectors" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="500" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="subtitle" value="DETERMINISTIC - NO LLM - pipelines/architecture_facts/" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="400" y="55" width="400" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Input -->
+        <mxCell id="input" value="Source Repository" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="130" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Pipeline -->
+        <mxCell id="pipeline" value="ArchitectureFactsPipeline" style="swimlane;horizontal=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;fontStyle=1;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="230" y="100" width="900" height="360" as="geometry" />
+        </mxCell>
+        
+        <!-- Container Detector -->
+        <mxCell id="container-det" value="ContainerDetector" style="swimlane;horizontal=1;startSize=25;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontSize=11" vertex="1" parent="pipeline">
+          <mxGeometry x="20" y="50" width="200" height="140" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cd-input" value="Scans:&#xa;• pom.xml&#xa;• package.json&#xa;• angular.json&#xa;• build.gradle" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="container-det">
+          <mxGeometry x="10" y="30" width="90" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cd-output" value="Outputs:&#xa;• Container ID&#xa;• Type&#xa;• Technology&#xa;• Path" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="container-det">
+          <mxGeometry x="100" y="30" width="95" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Spring Collector -->
+        <mxCell id="spring-coll" value="SpringCollector" style="swimlane;horizontal=1;startSize=25;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontSize=11" vertex="1" parent="pipeline">
+          <mxGeometry x="240" y="50" width="200" height="280" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sc-input" value="Scans *.java for:&#xa;━━━━━━━━━━━━&#xa;@RestController&#xa;@Controller&#xa;@Service&#xa;@Repository&#xa;@Component&#xa;@Entity&#xa;@Autowired&#xa;@RequestMapping&#xa;@GetMapping&#xa;@PostMapping" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="spring-coll">
+          <mxGeometry x="10" y="30" width="90" height="160" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="sc-output" value="Outputs:&#xa;━━━━━━━━━━━━&#xa;Components:&#xa;• className&#xa;• stereotype&#xa;• container&#xa;&#xa;Interfaces:&#xa;• REST paths&#xa;• methods&#xa;&#xa;Relations:&#xa;• uses (DI)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="spring-coll">
+          <mxGeometry x="100" y="30" width="95" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- Angular Collector -->
+        <mxCell id="angular-coll" value="AngularCollector" style="swimlane;horizontal=1;startSize=25;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontSize=11" vertex="1" parent="pipeline">
+          <mxGeometry x="460" y="50" width="200" height="280" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ac-input" value="Scans *.ts for:&#xa;━━━━━━━━━━━━&#xa;@NgModule&#xa;@Component&#xa;@Injectable&#xa;@Directive&#xa;@Pipe&#xa;&#xa;Routes:&#xa;• RouterModule&#xa;• Routes[]&#xa;&#xa;HTTP:&#xa;• HttpClient" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="angular-coll">
+          <mxGeometry x="10" y="30" width="90" height="180" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ac-output" value="Outputs:&#xa;━━━━━━━━━━━━&#xa;Components:&#xa;• className&#xa;• stereotype&#xa;• container&#xa;&#xa;Interfaces:&#xa;• Routes&#xa;• HTTP calls&#xa;&#xa;Relations:&#xa;• uses (inject)&#xa;• calls backend" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="angular-coll">
+          <mxGeometry x="100" y="30" width="95" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- Infra Collector -->
+        <mxCell id="infra-coll" value="InfraCollector" style="swimlane;horizontal=1;startSize=25;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontSize=11" vertex="1" parent="pipeline">
+          <mxGeometry x="20" y="210" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ic-input" value="Scans:&#xa;docker-compose&#xa;Dockerfile&#xa;k8s/*.yaml" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="infra-coll">
+          <mxGeometry x="10" y="30" width="85" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ic-output" value="Outputs:&#xa;DB services&#xa;Infra services" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="infra-coll">
+          <mxGeometry x="100" y="30" width="95" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Database Collector (NEW) -->
+        <mxCell id="db-coll" value="DatabaseCollector" style="swimlane;horizontal=1;startSize=25;fillColor=#d4edda;strokeColor=#28a745;rounded=1;fontSize=11" vertex="1" parent="pipeline">
+          <mxGeometry x="240" y="210" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="db-input" value="Scans:&#xa;Liquibase&#xa;Flyway&#xa;*.sql scripts" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="db-coll">
+          <mxGeometry x="10" y="30" width="85" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="db-output" value="Outputs:&#xa;259 SQL scripts&#xa;DB schemas" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="db-coll">
+          <mxGeometry x="100" y="30" width="95" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Architecture Style Collector (NEW) -->
+        <mxCell id="arch-coll" value="ArchStyleCollector" style="swimlane;horizontal=1;startSize=25;fillColor=#d4edda;strokeColor=#28a745;rounded=1;fontSize=11" vertex="1" parent="pipeline">
+          <mxGeometry x="460" y="210" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arch-input" value="Detects:&#xa;Repository&#xa;Factory&#xa;Builder, etc." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="arch-coll">
+          <mxGeometry x="10" y="30" width="85" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arch-output" value="Outputs:&#xa;6 patterns&#xa;2 arch styles" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="arch-coll">
+          <mxGeometry x="100" y="30" width="95" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Integration Collector (NEW) -->
+        <mxCell id="int-coll" value="IntegrationCollector" style="swimlane;horizontal=1;startSize=25;fillColor=#d4edda;strokeColor=#28a745;rounded=1;fontSize=11" vertex="1" parent="pipeline">
+          <mxGeometry x="680" y="210" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="int-input" value="Detects:&#xa;RestTemplate&#xa;Kafka&#xa;RabbitMQ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="int-coll">
+          <mxGeometry x="10" y="30" width="85" height="70" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="int-output" value="Outputs:&#xa;Cross-container&#xa;relations" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=9" vertex="1" parent="int-coll">
+          <mxGeometry x="100" y="30" width="95" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Output -->
+        <mxCell id="output-group" value="Output (JSON)" style="swimlane;horizontal=1;startSize=25;fillColor=#ffe6cc;strokeColor=#d79b00;rounded=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1180" y="140" width="180" height="200" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="out1" value="architecture_facts.json&#xa;━━━━━━━━━━━━━━━━━━━━&#xa;{&#xa;  system: {}&#xa;  containers: []&#xa;  components: []&#xa;  interfaces: []&#xa;  relations: []&#xa;}" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10;fontFamily=Courier New" vertex="1" parent="output-group">
+          <mxGeometry x="10" y="30" width="160" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="out2" value="evidence_map.json&#xa;━━━━━━━━━━━━━━━━━━━━&#xa;{ ev_0001: {...} }" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10;fontFamily=Courier New" vertex="1" parent="output-group">
+          <mxGeometry x="10" y="145" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrows -->
+        <mxCell id="a1" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366" edge="1" parent="1" source="input" target="pipeline">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="a2" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00" edge="1" parent="1" source="pipeline" target="output-group">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Process flow arrows inside pipeline -->
+        <mxCell id="pf1" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;strokeColor=#666666" edge="1" parent="pipeline">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="120" as="sourcePoint" />
+            <mxPoint x="240" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="pf2" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;strokeColor=#666666" edge="1" parent="pipeline">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="120" as="sourcePoint" />
+            <mxPoint x="460" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="pf3" value="" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;strokeColor=#666666" edge="1" parent="pipeline">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="660" y="120" as="sourcePoint" />
+            <mxPoint x="680" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Evidence note -->
+        <mxCell id="evidence-note" value="Every fact includes:&#xa;━━━━━━━━━━━━━━━━━━━━&#xa;evidence: [&quot;ev_0001&quot;]&#xa;&#xa;Pointing to:&#xa;• file path&#xa;• line range&#xa;• reason (pattern match)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=left" vertex="1" parent="1">
+          <mxGeometry x="50" y="350" width="160" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Module path -->
+        <mxCell id="module-path" value="Module: pipelines/architecture_facts/" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=2;fontColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="230" y="460" width="250" height="20" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

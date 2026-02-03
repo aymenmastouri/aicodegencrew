@@ -1,0 +1,146 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T12:00:00.000Z" agent="Mozilla/5.0" etag="knowledge-structure" version="22.1.0" type="device">
+  <diagram id="knowledge-structure" name="Knowledge Structure">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="Knowledge Base Structure" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Root folder -->
+        <mxCell id="knowledge" value="knowledge/" style="swimlane;horizontal=1;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;rounded=1;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="1100" height="650" as="geometry" />
+        </mxCell>
+        
+        <!-- Architecture folder -->
+        <mxCell id="arch" value="architecture/" style="swimlane;horizontal=1;startSize=25;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontStyle=1" vertex="1" parent="knowledge">
+          <mxGeometry x="20" y="50" width="540" height="580" as="geometry" />
+        </mxCell>
+        
+        <!-- Phase 1 outputs -->
+        <mxCell id="phase1-section" value="From Phase 1 (Facts)" style="swimlane;horizontal=1;startSize=25;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1" vertex="1" parent="arch">
+          <mxGeometry x="15" y="35" width="250" height="130" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="facts-file" value="architecture_facts.json&#xa;   → Single source of truth&#xa;   → No LLM" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10;fontStyle=1" vertex="1" parent="phase1-section">
+          <mxGeometry x="10" y="30" width="230" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="evidence-file" value="evidence_map.json&#xa;   → Code snippets &amp; line refs&#xa;   → Internal processing only!" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10;fontStyle=1" vertex="1" parent="phase1-section">
+          <mxGeometry x="10" y="75" width="230" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Phase 2 outputs -->
+        <mxCell id="phase2-section" value="From Phase 2 (Synthesis)" style="swimlane;horizontal=1;startSize=25;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="arch">
+          <mxGeometry x="275" y="35" width="250" height="130" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="c4-desc" value="c4/&#xa;   └─ Clean markdown + diagrams&#xa;arc42/&#xa;   └─ 12 chapter docs&#xa;   └─ NO evidence IDs in output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="phase2-section">
+          <mxGeometry x="10" y="30" width="230" height="90" as="geometry" />
+        </mxCell>
+        
+        <!-- C4 folder -->
+        <mxCell id="c4" value="c4/" style="swimlane;horizontal=1;startSize=25;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="arch">
+          <mxGeometry x="15" y="175" width="250" height="170" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="c4-files" value="c4-context.md&#xa;   └─ System context diagram&#xa;   └─ External actors/systems&#xa;&#xa;c4-container.md&#xa;   └─ Container overview&#xa;   └─ Technology stack&#xa;&#xa;c4-components-backend.md&#xa;c4-components-frontend.md" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="c4">
+          <mxGeometry x="10" y="30" width="230" height="130" as="geometry" />
+        </mxCell>
+        
+        <!-- arc42 folder -->
+        <mxCell id="arc42" value="arc42/" style="swimlane;horizontal=1;startSize=25;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="arch">
+          <mxGeometry x="275" y="175" width="250" height="170" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arc42-files" value="01-introduction.md&#xa;03-context.md&#xa;   └─ Business context&#xa;   └─ Technical context&#xa;05-building-blocks.md&#xa;   └─ Component hierarchy&#xa;06-runtime.md&#xa;   └─ Runtime scenarios&#xa;07-deployment.md&#xa;   └─ Infrastructure view" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="arc42">
+          <mxGeometry x="10" y="30" width="230" height="130" as="geometry" />
+        </mxCell>
+        
+        <!-- runtime folder -->
+        <mxCell id="runtime" value="runtime/" style="swimlane;horizontal=1;startSize=25;fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1" vertex="1" parent="arch">
+          <mxGeometry x="15" y="355" width="250" height="85" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="runtime-files" value="*.md&#xa;   └─ Runtime scenarios&#xa;   └─ Sequence diagrams" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="runtime">
+          <mxGeometry x="10" y="30" width="230" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- evidence folder -->
+        <mxCell id="evidence" value="evidence/" style="swimlane;horizontal=1;startSize=25;fillColor=#ffe6cc;strokeColor=#d79b00;rounded=1" vertex="1" parent="arch">
+          <mxGeometry x="275" y="355" width="250" height="85" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="evidence-files" value="*.md&#xa;   └─ Code evidence extracts&#xa;   └─ Traceability links" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="evidence">
+          <mxGeometry x="10" y="30" width="230" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- quality folder -->
+        <mxCell id="quality" value="quality/" style="swimlane;horizontal=1;startSize=25;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1" vertex="1" parent="arch">
+          <mxGeometry x="15" y="450" width="510" height="110" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="quality-files" value="synthesis-report.md       → Phase 2 quality validation&#xa;quality-report.html       → HTML formatted report&#xa;consistency-check.md      → Phase 3 (planned) output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="quality">
+          <mxGeometry x="10" y="30" width="490" height="70" as="geometry" />
+        </mxCell>
+        
+        <!-- Analysis folder -->
+        <mxCell id="analysis" value="analysis/" style="swimlane;horizontal=1;startSize=25;fillColor=#f5f5f5;strokeColor=#666666;rounded=1;dashed=1" vertex="1" parent="knowledge">
+          <mxGeometry x="580" y="50" width="240" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="analysis-files" value="analyze.json (legacy)&#xa;adr/ → Architecture decisions&#xa;confluence/ → Export format" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="analysis">
+          <mxGeometry x="10" y="30" width="220" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Development folder -->
+        <mxCell id="development" value="development/" style="swimlane;horizontal=1;startSize=25;fillColor=#f5f5f5;strokeColor=#666666;rounded=1;dashed=1" vertex="1" parent="knowledge">
+          <mxGeometry x="580" y="165" width="240" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="dev-files" value="Phase 4 output (planned)&#xa;   → JIRA items, code proposals" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="development">
+          <mxGeometry x="10" y="30" width="220" height="45" as="geometry" />
+        </mxCell>
+        
+        <!-- Cache -->
+        <mxCell id="cache" value=".cache/.chroma/" style="swimlane;horizontal=1;startSize=25;fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1" vertex="1" parent="knowledge">
+          <mxGeometry x="580" y="260" width="240" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cache-files" value="ChromaDB Vector Store&#xa;   → From Phase 0 (Indexing)&#xa;   → Used by RAG queries" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="cache">
+          <mxGeometry x="10" y="30" width="220" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Other files -->
+        <mxCell id="other" value="README.md&#xa;user_preference.txt" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="knowledge">
+          <mxGeometry x="840" y="50" width="150" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11" vertex="1" parent="knowledge">
+          <mxGeometry x="580" y="380" width="240" height="130" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="leg1" value="Phase 1 Output (No LLM)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=10" vertex="1" parent="legend">
+          <mxGeometry y="26" width="240" height="26" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="leg2" value="Phase 2 Output (LLM)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=10" vertex="1" parent="legend">
+          <mxGeometry y="52" width="240" height="26" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="leg3" value="Vector Store (Embeddings only)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=10" vertex="1" parent="legend">
+          <mxGeometry y="78" width="240" height="26" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="leg4" value="Planned / Legacy" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=10" vertex="1" parent="legend">
+          <mxGeometry y="104" width="240" height="26" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

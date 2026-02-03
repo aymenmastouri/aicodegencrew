@@ -1,0 +1,238 @@
+# =============================================================================
+# SDLC Phase Configuration
+# =============================================================================
+# Control which phases are active and their execution order.
+#
+# ARCHITECTURE:
+#   crews/      = AI Agent Workflows (LLM required)
+#   pipelines/  = Automated Processes (deterministic, no LLM)
+#
+# INDEXING CONTROL:
+#   Indexing is controlled centrally via INDEX_MODE in .env:
+#     off   = Skip indexing (use existing index)
+#     auto  = Index only if needed (default)
+#     force = Clear cache and re-index from scratch
+#     smart = Update only changed files
+#
+#   CLI override: python run_phase.py --index-mode force
+#
+# LLM PROVIDER:
+#   LLM for AI agents is controlled via LLM_PROVIDER in .env:
+#     local  = Ollama (qwen2.5-coder:7b at localhost:11434)
+#     onprem = Capgemini (Llama-3.3-70B at bmf-ai.apps.ce.capgemini.com)
+#
+#   Embeddings always use local Ollama (all-minilm)
+# =============================================================================
+
+phases:
+  # =========================================================================
+  # PIPELINE: Phase 0 - Repository Indexing
+  # =========================================================================
+  # Type:      Pipeline (no AI, only embeddings)
+  # Location:  pipelines/indexing.py
+  # Control:   INDEX_MODE in .env (off/auto/force/smart)
+  # Output:    .cache/.chroma (ChromaDB vector store)
+  # =========================================================================
+  phase0_indexing:
+    enabled: true
+    name: "Repository Indexing"
+    description: "Index codebase into ChromaDB for RAG"
+    type: pipeline
+    required: true
+    order: 0
+    config:
+      # Controlled via .env: INDEX_MODE, EMBED_MODEL, CHROMA_DIR
+
+  # =========================================================================
+  # PIPELINE: Phase 1 - Architecture Facts (DETERMINISTIC, NO LLM!)
+  # =========================================================================
+  # Type:      Pipeline (deterministic extraction, no AI)
+  # Location:  pipelines/architecture_facts/
+  # Output:    knowledge/architecture/architecture_facts.json
+  #            knowledge/architecture/evidence_map.json
+  # 
+  # This is the SINGLE SOURCE OF TRUTH for architecture.
+  # Everything not in architecture_facts.json must NOT be written by Phase 2.
+  # =========================================================================
+  phase1_architecture_facts:
+    enabled: true
+    name: "Architecture Facts Extraction"
+    description: "Deterministic extraction of architecture facts (no LLM)"
+    type: pipeline
+    required: true
+    order: 1
+    dependencies: [phase0_indexing]
+    config:
+      output_dir: "./knowledge/architecture"
+
+  # =========================================================================
+  # CREW: Phase 2 - Architecture Synthesis (LLM, evidence-first)
+  # =========================================================================
+  # Type:      Crew (AI Agents)
+  # Location:  crews/architecture_synthesis/
+  # Input:     architecture_facts.json + evidence_map.json
+  # Output:    knowledge/architecture/c4/
+  #            knowledge/architecture/arc42/
+  #            knowledge/architecture/runtime/
+  #            knowledge/architecture/evidence/
+  # 
+  # RULES:
+  # - Only synthesize what is in architecture_facts.json
+  # - Every statement must reference evidence
+  # - If no evidence, mark as UNKNOWN
+  # - No invented containers/components
+  # =========================================================================
+  phase2_architecture_synthesis:
+    enabled: true
+    name: "Architecture Synthesis"
+    description: "AI synthesizes C4 and arc42 from architecture facts"
+    type: crew
+    required: false
+    order: 2
+    dependencies: [phase1_architecture_facts]
+    config:
+      output_dir: "./knowledge/architecture"
+      temperature: 0.2
+      max_iterations: 15
+      verbose: true
+
+  # =========================================================================
+  # =========================================================================
+  # CREW: Phase 3 - Review and Consistency Guard (PLANNED)
+  # =========================================================================
+  # Type:      Crew
+  # Location:  crews/review/ (planned)
+  # Purpose:   Ensure consistency across outputs
+  # Tasks:     Facts vs C4 vs arc42 consistency check
+  # =========================================================================
+  phase3_review:
+    enabled: false
+    name: "Review and Consistency Guard"
+    description: "Validate consistency across generated documentation"
+    type: crew
+    required: false
+    order: 3
+    dependencies: [phase2_architecture_synthesis]
+    config:
+      output_dir: "./knowledge/architecture/quality"
+
+  # =========================================================================
+  # CREW: Phase 4 - Development Planning (PLANNED)
+  # =========================================================================
+  # Type:      Crew (AI Agents)
+  # Location:  crews/development/ (planned)
+  # Purpose:   Derive work items from architecture
+  # Tasks:     Architecture debt/risk, backlog items, work packages
+  # =========================================================================
+  phase4_development:
+    enabled: false
+    name: "Development Planning"
+    description: "Generate development tasks from architecture analysis"
+    type: crew
+    required: false
+    order: 4
+    dependencies: [phase3_review]
+    config:
+      output_dir: "./knowledge/development"
+
+  # =========================================================================
+  # CREW: Phase 5 - Code Generation (PLANNED)
+  # =========================================================================
+  # Type:      Crew (AI Agents)
+  # Location:  crews/codegen/ (planned)
+  # Purpose:   Generate feature code, refactoring PRs
+  # Tasks:     Feature implementation, code improvements
+  # =========================================================================
+  phase5_codegen:
+    enabled: false
+    name: "Code Generation"
+    description: "Generate feature code and refactoring PRs"
+    type: crew
+    required: false
+    order: 5
+    dependencies: [phase4_development]
+    config:
+      output_dir: "./knowledge/codegen"
+
+  # =========================================================================
+  # CREW: Phase 6 - Test Generation (PLANNED)
+  # =========================================================================
+  # Type:      Crew (AI Agents)
+  # Location:  crews/testing/ (planned)
+  # Purpose:   Generate unit tests, integration tests
+  # Tasks:     Test coverage analysis, test generation
+  # =========================================================================
+  phase6_testing:
+    enabled: false
+    name: "Test Generation"
+    description: "Generate unit tests and integration tests"
+    type: crew
+    required: false
+    order: 6
+    dependencies: [phase5_codegen]
+    config:
+      output_dir: "./knowledge/testing"
+
+  # =========================================================================
+  # PIPELINE: Phase 7 - Deployment Automation (PLANNED)
+  # =========================================================================
+  # Type:      Pipeline (deterministic)
+  # Location:  pipelines/deployment/ (planned)
+  # Purpose:   CI/CD configs, release notes
+  # Tasks:     Pipeline generation, release management
+  # =========================================================================
+  phase7_deployment:
+    enabled: false
+    name: "Deployment Automation"
+    description: "Generate CI/CD configs and release notes"
+    type: pipeline
+    required: false
+    order: 7
+    dependencies: [phase6_testing]
+    config:
+      output_dir: "./knowledge/deployment"
+
+# =============================================================================
+# Execution Settings
+# =============================================================================
+execution:
+  mode: "architecture_workflow"
+  stop_on_error: true
+  parallel_execution: false
+
+# =============================================================================
+# Quick Presets
+# =============================================================================
+presets:
+  # Index repository only
+  indexing_only:
+    - phase0_indexing
+
+  # Index + architecture facts (deterministic, no LLM)
+  facts_only:
+    - phase0_indexing
+    - phase1_architecture_facts
+
+  # Index + facts + synthesis (full architecture documentation)
+  architecture_workflow:
+    - phase0_indexing
+    - phase1_architecture_facts
+    - phase2_architecture_synthesis
+
+  # Architecture + Review (with consistency checks)
+  architecture_full:
+    - phase0_indexing
+    - phase1_architecture_facts
+    - phase2_architecture_synthesis
+    - phase3_review
+
+  # Full SDLC pipeline (all phases)
+  full_pipeline:
+    - phase0_indexing
+    - phase1_architecture_facts
+    - phase2_architecture_synthesis
+    - phase3_review
+    - phase4_development
+    - phase5_codegen
+    - phase6_testing
+    - phase7_deployment

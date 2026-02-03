@@ -1,0 +1,217 @@
+{# C4 Model Architecture Documentation Template #}
+{# Uses Mermaid C4 diagrams for visualization #}
+
+# {{ project_name | default("Project") }} - C4 Architecture Model
+
+> Generated: {{ generation_date | default("N/A") }}
+> Version: {{ version | default("1.0") }}
+
+---
+
+## Overview
+
+This document presents the architecture using the C4 model (Context, Containers, Components, Code).
+
+---
+
+## Level 1: System Context
+
+The System Context diagram shows the big picture of the system landscape.
+
+```mermaid
+C4Context
+    title System Context Diagram - {{ project_name | default("System") }}
+    
+    {% for actor in actors | default([]) %}
+    Person({{ actor.id }}, "{{ actor.name }}", "{{ actor.description }}")
+    {% endfor %}
+    
+    System(mainSystem, "{{ project_name | default('System') }}", "{{ system_description | default('Main system under development') }}")
+    
+    {% for external in external_systems | default([]) %}
+    System_Ext({{ external.id }}, "{{ external.name }}", "{{ external.description }}")
+    {% endfor %}
+    
+    {% for db in external_databases | default([]) %}
+    SystemDb_Ext({{ db.id }}, "{{ db.name }}", "{{ db.description }}")
+    {% endfor %}
+    
+    {% for rel in context_relationships | default([]) %}
+    Rel({{ rel.from }}, {{ rel.to }}, "{{ rel.description }}"{{ ', "' + rel.technology + '"' if rel.technology else '' }})
+    {% endfor %}
+```
+
+### Context Description
+
+{{ context_description | default("The system context shows how the main system interacts with users and external systems.") }}
+
+---
+
+## Level 2: Container Diagram
+
+The Container diagram shows the high-level technology choices.
+
+```mermaid
+C4Container
+    title Container Diagram - {{ project_name | default("System") }}
+    
+    {% for actor in actors | default([]) %}
+    Person({{ actor.id }}, "{{ actor.name }}", "{{ actor.description }}")
+    {% endfor %}
+    
+    System_Boundary(systemBoundary, "{{ project_name | default('System') }}") {
+        {% for container in containers | default([]) %}
+        Container({{ container.id }}, "{{ container.name }}", "{{ container.technology }}", "{{ container.description }}")
+        {% endfor %}
+        
+        {% for db in databases | default([]) %}
+        ContainerDb({{ db.id }}, "{{ db.name }}", "{{ db.technology }}", "{{ db.description }}")
+        {% endfor %}
+    }
+    
+    {% for external in external_systems | default([]) %}
+    System_Ext({{ external.id }}, "{{ external.name }}", "{{ external.description }}")
+    {% endfor %}
+    
+    {% for rel in container_relationships | default([]) %}
+    Rel({{ rel.from }}, {{ rel.to }}, "{{ rel.description }}"{{ ', "' + rel.technology + '"' if rel.technology else '' }})
+    {% endfor %}
+```
+
+### Containers Overview
+
+| Container | Technology | Description |
+|-----------|------------|-------------|
+{% for container in containers | default([]) %}
+| {{ container.name }} | {{ container.technology }} | {{ container.description }} |
+{% endfor %}
+
+---
+
+## Level 3: Component Diagrams
+
+{% for container in containers | default([]) %}
+### {{ container.name }} - Components
+
+```mermaid
+C4Component
+    title Component Diagram - {{ container.name }}
+    
+    Container_Boundary({{ container.id }}Boundary, "{{ container.name }}") {
+        {% for component in container.components | default([]) %}
+        Component({{ component.id }}, "{{ component.name }}", "{{ component.technology | default('') }}", "{{ component.description }}")
+        {% endfor %}
+    }
+    
+    {% for rel in container.component_relationships | default([]) %}
+    Rel({{ rel.from }}, {{ rel.to }}, "{{ rel.description }}")
+    {% endfor %}
+```
+
+#### Components in {{ container.name }}
+
+| Component | Responsibility |
+|-----------|---------------|
+{% for component in container.components | default([]) %}
+| {{ component.name }} | {{ component.description }} |
+{% endfor %}
+
+{% endfor %}
+
+---
+
+## Technology Stack
+
+### Backend Technologies
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+{% for tech in backend_technologies | default([]) %}
+| {{ tech.name }} | {{ tech.version | default('N/A') }} | {{ tech.purpose }} |
+{% endfor %}
+
+### Frontend Technologies
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+{% for tech in frontend_technologies | default([]) %}
+| {{ tech.name }} | {{ tech.version | default('N/A') }} | {{ tech.purpose }} |
+{% endfor %}
+
+### Infrastructure
+
+| Component | Technology | Description |
+|-----------|------------|-------------|
+{% for infra in infrastructure | default([]) %}
+| {{ infra.name }} | {{ infra.technology }} | {{ infra.description }} |
+{% endfor %}
+
+---
+
+## Key Interfaces
+
+### External APIs
+
+{% for api in external_apis | default([]) %}
+#### {{ api.name }}
+
+- **Endpoint**: `{{ api.endpoint }}`
+- **Protocol**: {{ api.protocol | default('REST') }}
+- **Authentication**: {{ api.authentication | default('N/A') }}
+- **Description**: {{ api.description }}
+
+{% endfor %}
+
+### Internal Interfaces
+
+{% for interface in internal_interfaces | default([]) %}
+- **{{ interface.name }}**: {{ interface.description }} ({{ interface.technology | default('') }})
+{% endfor %}
+
+---
+
+## Data Flow
+
+```mermaid
+flowchart LR
+    {% for flow in data_flows | default([]) %}
+    {{ flow.from }}["{{ flow.from_label }}"] -->|{{ flow.data }}| {{ flow.to }}["{{ flow.to_label }}"]
+    {% endfor %}
+```
+
+---
+
+## Security Boundaries
+
+```mermaid
+flowchart TB
+    subgraph DMZ["DMZ"]
+        {% for component in dmz_components | default([]) %}
+        {{ component.id }}["{{ component.name }}"]
+        {% endfor %}
+    end
+    
+    subgraph Internal["Internal Network"]
+        {% for component in internal_components | default([]) %}
+        {{ component.id }}["{{ component.name }}"]
+        {% endfor %}
+    end
+    
+    subgraph Data["Data Layer"]
+        {% for component in data_components | default([]) %}
+        {{ component.id }}["{{ component.name }}"]
+        {% endfor %}
+    end
+    
+    DMZ --> Internal
+    Internal --> Data
+```
+
+---
+
+## Legend
+
+- **Person**: User or actor interacting with the system
+- **System**: The main system or external systems
+- **Container**: Deployable unit (application, service, database)
+- **Component**: Module within a container
