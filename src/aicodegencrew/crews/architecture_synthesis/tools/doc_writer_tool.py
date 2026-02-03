@@ -19,6 +19,10 @@ class DocWriterInput(BaseModel):
     content: str = Field(
         description="The content to write to the file"
     )
+    overwrite: bool = Field(
+        default=True,
+        description="Whether to overwrite existing file (default: True)"
+    )
 
 
 class DocWriterTool(BaseTool):
@@ -37,7 +41,7 @@ class DocWriterTool(BaseTool):
     )
     args_schema: Type[BaseModel] = DocWriterInput
     
-    def _run(self, file_path: str, content: str) -> str:
+    def _run(self, file_path: str, content: str, overwrite: bool = True) -> str:
         """Write content to a file."""
         try:
             # Base directory for architecture docs
@@ -45,6 +49,10 @@ class DocWriterTool(BaseTool):
             
             # Resolve the full path
             full_path = base_dir / file_path
+            
+            # Check if file exists and overwrite is False
+            if full_path.exists() and not overwrite:
+                return f"File {full_path} already exists and overwrite=False. Skipping."
             
             # Ensure parent directory exists
             full_path.parent.mkdir(parents=True, exist_ok=True)

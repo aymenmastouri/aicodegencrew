@@ -2,7 +2,7 @@
 # Arc42 Crew - Agent Definition
 # =============================================================================
 
-architect:
+arc42_architect:
   role: "Software Architect"
   goal: "Analyze facts and create arc42 documentation"
   backstory: |

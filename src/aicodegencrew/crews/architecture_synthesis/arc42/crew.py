@@ -68,181 +68,76 @@ class Arc42Crew:
         return {}
     
     def _summarize_facts(self) -> dict[str, str]:
-        """Create compact, evidence-first summaries for arc42.
+        """Create MINIMAL summaries - Agent must discover everything else!
 
-                IMPORTANT:
-                - Arc42 chapters are large; injecting huge lists can exceed model context.
-                - Provide only high-signal facts here and instruct the agent to use tools
-                    (query_architecture_facts / stereotype_list_tool / file_read_tool)
-                    to pull details on demand.
-                - Phase 2 must not invent anything not present in Phase 1 facts/evidence.
+        IMPORTANT:
+        - Only provide RAW STATISTICS here
+        - NO interpretations, NO assumptions about architecture style
+        - Agent MUST use tools to discover architecture styles, patterns, etc.
+        - This prevents hallucination and ensures evidence-based documentation
         """
         facts = self.facts
-        evidence_map = self.evidence_map or {}
 
         system_info = facts.get("system", {})
         system_name = system_info.get("name", "Unknown System")
-
-        style = facts.get("architecture_style", {})
-        style_name = style.get("primary_style", "Layered Architecture")
-        layers = style.get("layers", ["controller", "service", "repository", "entity"])
-        patterns = style.get("patterns", [])
 
         containers = facts.get("containers", [])
         components = facts.get("components", [])
         interfaces = facts.get("interfaces", [])
         relations = facts.get("relations", [])
 
-        def summarize_evidence_ids(evidence_ids: list[str] | None, max_items: int = 3) -> str:
-            if not evidence_ids:
-                return "[]"
-            ids = evidence_ids[:max_items]
-            return "[" + ", ".join(ids) + ("]" if len(evidence_ids) <= max_items else f", ... +{len(evidence_ids) - max_items}]")
-        
         # =====================================================================
-        # DETAILED SYSTEM SUMMARY
+        # MINIMAL SYSTEM SUMMARY - Only statistics, no interpretations!
         # =====================================================================
         tech_stack = sorted({c.get("technology", "Unknown") for c in containers if c.get("technology")})
+        
+        # Count by stereotype (raw data for agent)
+        by_stereotype: dict[str, int] = {}
+        for comp in components:
+            stereo = comp.get("stereotype", "unknown")
+            by_stereotype[stereo] = by_stereotype.get(stereo, 0) + 1
 
-        system_summary = f"""SYSTEM ANALYSIS FOR: {system_name}
+        system_summary = f"""SYSTEM: {system_name}
 
-ARCHITECTURE STYLE: {style_name}
-DETECTED LAYERS: {', '.join(layers) if layers else 'controller, service, repository, entity'}
-DETECTED PATTERNS: {', '.join(patterns) if patterns else 'Repository, Factory, Layered'}
-
-STATISTICS:
+RAW STATISTICS (from architecture_facts.json):
 - Containers: {len(containers)}
 - Components: {len(components)}
 - Interfaces: {len(interfaces)}
 - Relations: {len(relations)}
 
-TECHNOLOGY (from containers):
-{chr(10).join([f'- {t}' for t in tech_stack]) if tech_stack else '- UNKNOWN'}
+TECHNOLOGIES (from containers):
+{chr(10).join([f'- {t}' for t in tech_stack]) if tech_stack else '- Use tools to discover'}
 
-NOTE:
-- Do not assume messaging/ports/runtime unless backed by evidence."""
+COMPONENT COUNTS BY STEREOTYPE:
+{chr(10).join([f'- {k}: {v}' for k, v in sorted(by_stereotype.items())]) if by_stereotype else '- Use tools to discover'}
 
-        # =====================================================================
-        # CONTAINERS (compact)
-        # =====================================================================
-        container_lines: list[str] = []
-        for c in containers:
-            cid = c.get("id", "?")
-            name = c.get("name", "?")
-            ctype = c.get("type", "UNKNOWN")
-            tech = c.get("technology", "UNKNOWN")
-            root_path = c.get("root_path", "UNKNOWN")
-            ev_ids = c.get("evidence", [])
-            container_lines.append(
-                f"- {cid}: {name} | type={ctype} | tech={tech} | root={root_path} | evidence={summarize_evidence_ids(ev_ids)}"
-            )
-
-        containers_summary = f"""CONTAINER ANALYSIS (from facts)
-Total Containers: {len(containers)}
-
-{chr(10).join(container_lines) if container_lines else '- NONE'}
-
-NOTE:
-- For details, read evidence_map.json for the referenced evidence IDs."""
+IMPORTANT: 
+- Use list_components_by_stereotype with stereotype="architecture_style" to find the architecture!
+- Use list_components_by_stereotype with stereotype="design_pattern" to find patterns!
+- Do NOT assume - DISCOVER from facts!"""
 
         # =====================================================================
-        # COMPONENTS (counts only to avoid context overflow)
+        # CONTAINERS (minimal - just list for reference)
         # =====================================================================
-        by_stereotype_count: dict[str, int] = {}
-        for comp in components:
-            stereo = comp.get("stereotype", "component")
-            by_stereotype_count[stereo] = by_stereotype_count.get(stereo, 0) + 1
+        container_lines = [
+            f"- {c.get('name', '?')}: {c.get('technology', '?')}"
+            for c in containers
+        ]
+        
+        containers_summary = f"""CONTAINERS (raw data):
+{chr(10).join(container_lines) if container_lines else '- Use query_architecture_facts to discover'}"""
 
-        stereo_lines = [f"- {k}: {v}" for k, v in sorted(by_stereotype_count.items())]
-
-        components_summary = f"""COMPONENT ANALYSIS (from facts)
-Total Components: {len(components)}
-
-Counts by stereotype:
-{chr(10).join(stereo_lines) if stereo_lines else '- NONE'}
-
-NOTE:
-- Do NOT list all components here.
-- Use tools instead:
-  - stereotype_list_tool for full lists per stereotype
-  - query_architecture_facts for focused queries"""
-
-        # =====================================================================
-        # INTERFACES (compact)
-        # =====================================================================
-        by_method: dict[str, int] = {}
-        for iface in interfaces:
-            method = iface.get("method", "GET")
-            by_method[method] = by_method.get(method, 0) + 1
-        method_lines = [f"- {m}: {c}" for m, c in sorted(by_method.items())]
-
-        sample_iface_lines: list[str] = []
-        for iface in interfaces[:15]:
-            method = iface.get("method", "GET")
-            path = iface.get("path", "/unknown")
-            impl = iface.get("implemented_by", "UNKNOWN")
-            ev_ids = iface.get("evidence_ids", [])
-            sample_iface_lines.append(f"- {method} {path} (impl={impl}, evidence={summarize_evidence_ids(ev_ids)})")
-
-        interfaces_summary = f"""REST API ANALYSIS (from facts)
-Total Interfaces: {len(interfaces)}
-
-By HTTP method:
-{chr(10).join(method_lines) if method_lines else '- UNKNOWN'}
-
-Sample endpoints (with evidence IDs):
-{chr(10).join(sample_iface_lines) if sample_iface_lines else '- NONE'}"""
-
-        # =====================================================================
-        # RELATIONS (compact, correct field names: from/to)
-        # =====================================================================
-        rel_by_type_count: dict[str, int] = {}
-        for rel in relations:
-            rtype = rel.get("type", "unknown")
-            rel_by_type_count[rtype] = rel_by_type_count.get(rtype, 0) + 1
-
-        rel_type_lines = [f"- {t}: {c}" for t, c in sorted(rel_by_type_count.items())]
-
-        sample_rel_lines: list[str] = []
-        for rel in relations[:15]:
-            r_from = rel.get("from", "?")
-            r_to = rel.get("to", "?")
-            r_type = rel.get("type", "unknown")
-            ev_ids = rel.get("evidence_ids", [])
-            sample_rel_lines.append(f"- {r_from} -> {r_to} ({r_type}, evidence={summarize_evidence_ids(ev_ids)})")
-
-        relations_summary = f"""DEPENDENCY ANALYSIS (from facts)
-Total Relations: {len(relations)}
-
-Counts by type:
-{chr(10).join(rel_type_lines) if rel_type_lines else '- NONE'}
-
-Sample relations (with evidence IDs):
-{chr(10).join(sample_rel_lines) if sample_rel_lines else '- NONE'}"""
-
-        # =====================================================================
-        # BUILDING BLOCKS (tiny seed list; full lists must be queried)
-        # =====================================================================
-        def top_names(stereo: str, max_items: int = 20) -> list[str]:
-            return [c.get("name", "?") for c in components if c.get("stereotype") == stereo][:max_items]
-
-        building_blocks_data = f"""BUILDING BLOCKS (seed data)
-
-    NOTE:
-    - This list is intentionally truncated to avoid token overflow.
-    - Use stereotype_list_tool to retrieve full lists per stereotype.
-
-    Controllers (top 20):
-    {chr(10).join(['- ' + n for n in top_names('controller')]) if top_names('controller') else '- NONE'}
-
-    Services (top 20):
-    {chr(10).join(['- ' + n for n in top_names('service')]) if top_names('service') else '- NONE'}
-
-    Repositories (top 20):
-    {chr(10).join(['- ' + n for n in top_names('repository')]) if top_names('repository') else '- NONE'}
-
-    Entities (top 20):
-    {chr(10).join(['- ' + n for n in top_names('entity')]) if top_names('entity') else '- NONE'}"""
+        # Components summary already in system_summary via by_stereotype
+        components_summary = "Use list_components_by_stereotype tool to query components by type."
+        
+        # Interfaces - just count
+        interfaces_summary = f"Total interfaces: {len(interfaces)}. Use query_architecture_facts with category='interfaces' for details."
+        
+        # Relations - just count  
+        relations_summary = f"Total relations: {len(relations)}. Use query_architecture_facts with category='relations' for details."
+        
+        # Building blocks - agent must discover
+        building_blocks_data = "Use list_components_by_stereotype for each layer (controller, service, repository, entity)."
 
         def escape_braces(text: str) -> str:
             return text.replace("{", "{{").replace("}", "}}")
@@ -338,6 +233,11 @@ Sample relations (with evidence IDs):
     # -------------------------------------------------------------------------
     
     @task
+    def analyze_system(self) -> Task:
+        """System analysis task (think before writing)."""
+        return Task(config=self.tasks_config['analyze_system'])  # type: ignore[index]
+    
+    @task
     def arc42_introduction(self) -> Task:
         """arc42 Chapter 1: Introduction and Goals."""
         return Task(config=self.tasks_config['arc42_introduction'])  # type: ignore[index]
@@ -357,15 +257,44 @@ Sample relations (with evidence IDs):
         """arc42 Chapter 4: Solution Strategy."""
         return Task(config=self.tasks_config['arc42_solution_strategy'])  # type: ignore[index]
     
-    @task
-    def arc42_building_blocks(self) -> Task:
-        """arc42 Chapter 5: Building Block View."""
-        return Task(config=self.tasks_config['arc42_building_blocks'])  # type: ignore[index]
+    # -------------------------------------------------------------------------
+    # BUILDING BLOCKS - Split into Sub-Tasks (Strategy 2)
+    # -------------------------------------------------------------------------
     
     @task
-    def arc42_runtime(self) -> Task:
+    def bb_intro(self) -> Task:
+        """Building Blocks Chapter 5 - Intro and Level 1."""
+        return Task(config=self.tasks_config['bb_intro'])  # type: ignore[index]
+    
+    @task
+    def bb_controllers(self) -> Task:
+        """Building Blocks - Controllers section."""
+        return Task(config=self.tasks_config['bb_controllers'])  # type: ignore[index]
+    
+    @task
+    def bb_services(self) -> Task:
+        """Building Blocks - Services section."""
+        return Task(config=self.tasks_config['bb_services'])  # type: ignore[index]
+    
+    @task
+    def bb_entities(self) -> Task:
+        """Building Blocks - Entities section."""
+        return Task(config=self.tasks_config['bb_entities'])  # type: ignore[index]
+    
+    @task
+    def bb_repositories(self) -> Task:
+        """Building Blocks - Repositories section."""
+        return Task(config=self.tasks_config['bb_repositories'])  # type: ignore[index]
+    
+    @task
+    def bb_merge(self) -> Task:
+        """Building Blocks - Merge all sections."""
+        return Task(config=self.tasks_config['bb_merge'])  # type: ignore[index]
+    
+    @task
+    def arc42_runtime_view(self) -> Task:
         """arc42 Chapter 6: Runtime View."""
-        return Task(config=self.tasks_config['arc42_runtime'])  # type: ignore[index]
+        return Task(config=self.tasks_config['arc42_runtime_view'])  # type: ignore[index]
     
     @task
     def arc42_deployment(self) -> Task:

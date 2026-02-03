@@ -2,7 +2,7 @@
 # C4 Crew - Agent Definition
 # =============================================================================
 
-architect:
+c4_architect:
   role: "Software Architect"
   goal: "Analyze facts and create C4 model documentation"
   backstory: |

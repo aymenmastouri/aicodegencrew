@@ -280,8 +280,10 @@ class StereotypeListTool(BaseTool):
         return self._facts_cache
     
     def _run(self, stereotype: str, container: str = "") -> str:
-        """Get components by stereotype."""
+        """Get components by stereotype (limited to 30 to prevent token overflow)."""
         import json
+        
+        MAX_RESULTS = 30  # Prevent token overflow
         
         facts = self._load_facts()
         components = facts.get("components", [])
@@ -299,19 +301,26 @@ class StereotypeListTool(BaseTool):
                 if container.lower() in c.get("container", "").lower()
             ]
         
+        total_count = len(filtered)
+        
+        # LIMIT results to prevent token overflow
+        limited = filtered[:MAX_RESULTS]
+        
         # Build result
         result = {
             "stereotype": stereotype,
             "container_filter": container,
-            "count": len(filtered),
+            "total_count": total_count,
+            "returned_count": len(limited),
+            "note": f"Showing top {len(limited)} of {total_count}. Focus on these key components." if total_count > MAX_RESULTS else None,
             "components": [
                 {
                     "name": c.get("name", "Unknown"),
                     "package": c.get("package", ""),
                     "container": c.get("container", ""),
-                    "description": c.get("description", "")[:100] if c.get("description") else "",
+                    "description": c.get("description", "")[:80] if c.get("description") else "",
                 }
-                for c in filtered
+                for c in limited
             ]
         }
         
