@@ -231,7 +231,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     """Run SDLC pipeline."""
     from .orchestrator import SDLCOrchestrator
     from .pipelines import IndexingPipeline, ArchitectureFactsPipeline
-    from .crews import ArchitectureSynthesisCrew
+    from .crews import ArchitectureAnalysisCrew, ArchitectureSynthesisCrew
     
     # Clean if requested
     if config.clean:
@@ -286,19 +286,34 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     )
     orchestrator.register_phase("phase1_architecture_facts", facts_pipeline)
     
-    # --- Phase 2: Architecture Synthesis ---
-    will_run_phase2 = (
-        "phase2_architecture_synthesis" in phases_to_run
+    # --- Phase 2: Architecture Analysis (NEW!) ---
+    will_run_analysis = (
+        "phase2_architecture_analysis" in phases_to_run
+        or "analysis_only" in preset_str
         or "architecture_workflow" in preset_str
         or "planning" in preset_str
         or (not phases_to_run and not preset_str)
     )
     
-    if will_run_phase2:
+    if will_run_analysis:
+        analysis_crew = ArchitectureAnalysisCrew(
+            facts_path="./knowledge/architecture/architecture_facts.json"
+        )
+        orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
+    
+    # --- Phase 3: Architecture Synthesis ---
+    will_run_synthesis = (
+        "phase3_architecture_synthesis" in phases_to_run
+        or "architecture_workflow" in preset_str
+        or "planning" in preset_str
+        or (not phases_to_run and not preset_str)
+    )
+    
+    if will_run_synthesis:
         synthesis_crew = ArchitectureSynthesisCrew(
             facts_path="./knowledge/architecture/architecture_facts.json"
         )
-        orchestrator.register_phase("phase2_architecture_synthesis", synthesis_crew)
+        orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
     
     # Execute
     try:
@@ -338,7 +353,7 @@ def create_parser() -> argparse.ArgumentParser:
     run_parser = subparsers.add_parser("run", help="Run SDLC pipeline")
     run_parser.add_argument(
         "--preset",
-        choices=["indexing_only", "facts_only", "architecture_workflow", "planning_workflow"],
+        choices=["indexing_only", "facts_only", "analysis_only", "architecture_workflow", "architecture_full", "planning_workflow"],
         help="Run a preset combination of phases",
     )
     run_parser.add_argument(
