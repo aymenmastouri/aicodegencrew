@@ -59,18 +59,51 @@ class RAGQueryTool(BaseTool):
     )
     args_schema: Type[BaseModel] = RAGQueryInput
     
-    # Configuration
-    chroma_dir: str = ".chroma_db"
+    # Configuration - Default paths to check (in order)
+    chroma_dir: str = ""  # Will be auto-detected
     collection_name: str = "repo_docs"
     
     _client: Optional[Any] = None
     _collection: Optional[Any] = None
+    
+    # Standard locations for ChromaDB
+    CHROMA_PATHS = [
+        ".cache/.chroma",      # Primary location (from indexing pipeline)
+        ".chroma_db",          # Legacy location
+        ".chroma",             # Alternative
+    ]
     
     def __init__(self, chroma_dir: str = None, **kwargs):
         """Initialize with optional chroma dir override."""
         super().__init__(**kwargs)
         if chroma_dir:
             self.chroma_dir = chroma_dir
+    
+    def _find_chroma_path(self) -> Optional[str]:
+        """Find ChromaDB in standard locations."""
+        # Check explicit config first
+        if self.chroma_dir and Path(self.chroma_dir).exists():
+            return self.chroma_dir
+        
+        # Check environment variable
+        env_path = os.getenv("CHROMA_DIR")
+        if env_path and Path(env_path).exists():
+            return env_path
+        
+        # Check standard locations relative to knowledge dir
+        knowledge_dir = Path("knowledge/architecture")
+        if knowledge_dir.exists():
+            base_dir = Path.cwd()
+        else:
+            base_dir = Path(__file__).parent.parent.parent.parent.parent.parent  # Up to project root
+        
+        for rel_path in self.CHROMA_PATHS:
+            full_path = base_dir / rel_path
+            if full_path.exists():
+                logger.info(f"Found ChromaDB at: {full_path}")
+                return str(full_path)
+        
+        return None
     
     def _get_collection(self):
         """Get ChromaDB collection with lazy initialization."""
@@ -81,10 +114,10 @@ class RAGQueryTool(BaseTool):
             import chromadb
             from chromadb.config import Settings
             
-            chroma_path = self.chroma_dir or os.getenv("CHROMA_DIR", "./.chroma_db")
+            chroma_path = self._find_chroma_path()
             
-            if not Path(chroma_path).exists():
-                logger.warning(f"ChromaDB not found at {chroma_path}")
+            if not chroma_path or not Path(chroma_path).exists():
+                logger.warning(f"ChromaDB not found. Searched paths: {self.CHROMA_PATHS}")
                 return None
             
             self._client = chromadb.PersistentClient(
