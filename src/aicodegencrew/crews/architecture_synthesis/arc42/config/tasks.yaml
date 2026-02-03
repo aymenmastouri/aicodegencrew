@@ -1,0 +1,340 @@
+# =============================================================================
+# Arc42 Crew - Task Definitions
+# =============================================================================
+# Best Practice: Analyze first, then document
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# PHASE 1: ANALYSIS (Think before writing)
+# -----------------------------------------------------------------------------
+
+analyze_system:
+  description: |
+    ANALYZE the system before writing any documentation.
+    
+    This is the THINKING task - understand the system first!
+    
+    STEP 1: Query all facts
+    - query_architecture_facts with category="containers"
+    - query_architecture_facts with category="components" 
+    - query_architecture_facts with category="interfaces"
+    - query_architecture_facts with category="relations"
+    
+    STEP 2: Understand the system
+    - What is the DOMAIN? (derive from entity/service names)
+    - What is the ARCHITECTURE STYLE? (layered, microservices, monolith?)
+    - What are the KEY TECHNOLOGIES?
+    - How BIG is the system? (component counts)
+    
+    STEP 3: Identify patterns
+    - Controller→Service→Repository = layered architecture
+    - Multiple separate services = microservices
+    - Kafka/RabbitMQ = event-driven
+    - REST endpoints = API-first
+    
+    STEP 4: Create analysis summary
+    Write a structured analysis that will guide all following tasks.
+    
+    ## Deliverable: Internal analysis (not saved to file)
+    
+    Provide a summary with:
+    - System name and domain
+    - Architecture style identified
+    - Key technologies and their purpose
+    - Component statistics by stereotype
+    - Main business capabilities (derived from names)
+    - Quality characteristics (derived from patterns)
+  expected_output: "System analysis summary for use by documentation tasks"
+  agent: architect
+
+# -----------------------------------------------------------------------------
+# PHASE 2: DOCUMENTATION (Based on analysis)
+# -----------------------------------------------------------------------------
+
+arc42_introduction:
+  description: |
+    Create arc42 Chapter 1: Introduction and Goals.
+    
+    Use the analysis from the previous task.
+    
+    {system_summary}
+
+    ## Deliverable: 01-introduction.md
+
+    # 01 - Introduction and Goals
+
+    ## 1.1 Requirements Overview
+    - System domain and purpose
+    - Component statistics
+    - Key capabilities
+
+    ## 1.2 Quality Goals
+    - Derived from architecture patterns
+
+    ## 1.3 Stakeholders
+    - Relevant stakeholders for this system type
+  expected_output: "Complete arc42 Introduction chapter"
+  agent: architect
+  context:
+    - analyze_system
+  output_file: "knowledge/architecture/arc42/01-introduction.md"
+
+arc42_constraints:
+  description: |
+    Create arc42 Chapter 2: Architecture Constraints.
+    
+    DERIVE constraints from detected technologies:
+    - Java version → language constraints
+    - Spring Boot → framework constraints  
+    - Database type → persistence constraints
+
+    {system_summary}
+    {containers_summary}
+
+    ## Deliverable: 02-constraints.md
+
+    # 02 - Architecture Constraints
+
+    ## 2.1 Technical Constraints
+    ## 2.2 Organizational Constraints
+    ## 2.3 Convention Constraints
+  expected_output: "Complete arc42 Constraints chapter"
+  agent: architect
+  context:
+    - arc42_introduction
+  output_file: "knowledge/architecture/arc42/02-constraints.md"
+
+arc42_context:
+  description: |
+    Create arc42 Chapter 3: System Scope and Context.
+    
+    ANALYZE interfaces to understand:
+    - WHO uses the system? (external actors)
+    - WHAT does it connect to? (external systems)
+    - HOW does it communicate? (protocols, formats)
+
+    Query architecture_facts for: interfaces, external dependencies
+
+    {system_summary}
+
+    ## Deliverable: 03-context.md
+
+    # 03 - System Scope and Context
+
+    ## 3.1 Business Context
+    ## 3.2 Technical Context  
+    ## 3.3 External Dependencies
+  expected_output: "Complete arc42 Context chapter"
+  agent: architect
+  context:
+    - arc42_constraints
+  output_file: "knowledge/architecture/arc42/03-context.md"
+
+arc42_solution_strategy:
+  description: |
+    Create arc42 Chapter 4: Solution Strategy.
+    
+    THINK about WHY these technologies were chosen:
+    - What problems do they solve?
+    - What patterns are being applied?
+    - How do they achieve quality goals?
+
+    Query architecture_facts for: architecture patterns, technologies
+
+    {system_summary}
+
+    ## Deliverable: 04-solution-strategy.md
+
+    # 04 - Solution Strategy
+
+    ## 4.1 Technology Decisions
+    ## 4.2 Architecture Patterns
+    ## 4.3 Achieving Quality Goals
+  expected_output: "Complete arc42 Solution Strategy chapter"
+  agent: architect
+  context:
+    - arc42_context
+  output_file: "knowledge/architecture/arc42/04-solution-strategy.md"
+
+arc42_building_blocks:
+  description: |
+    Create arc42 Chapter 5: Building Block View.
+    
+    REVERSE ENGINEER the component structure:
+    - Level 1: Containers (deployment units)
+    - Level 2: Layers (Controller, Service, Repository, Entity)
+    - Level 3: Individual components with responsibilities
+    
+    Query architecture_facts for: containers, components by stereotype
+    
+    ANALYZE each component:
+    - What is its RESPONSIBILITY? (derive from name)
+    - What does it DEPEND on? (from relations)
+    - What LAYER does it belong to?
+
+    {system_summary}
+
+    ## Deliverable: 05-building-blocks.md
+
+    # 05 - Building Block View
+
+    ## 5.1 Whitebox Overall System (Level 1)
+    Container overview with responsibilities
+
+    ## 5.2 Level 2 - Layer Decomposition
+    ### 5.2.1 Presentation Layer (Controllers)
+    ### 5.2.2 Business Layer (Services)
+    ### 5.2.3 Domain Layer (Entities)
+    ### 5.2.4 Persistence Layer (Repositories)
+
+    ## 5.3 Component Dependencies
+    Dependency matrix showing layer interactions
+  expected_output: "Complete arc42 Building Blocks chapter"
+  agent: architect
+  context:
+    - arc42_solution_strategy
+  output_file: "knowledge/architecture/arc42/05-building-blocks.md"
+
+arc42_runtime_view:
+  description: |
+    Create arc42 Chapter 6: Runtime View.
+    
+    Document request flows through the system:
+    - Controller → Service → Repository chains
+    - Key business scenarios
+    - Error handling paths
+
+    {system_summary}
+
+    ## Deliverable: 06-runtime-view.md
+  expected_output: "Complete arc42 Runtime View"
+  agent: architect
+  context:
+    - arc42_building_blocks
+  output_file: "knowledge/architecture/arc42/06-runtime-view.md"
+
+arc42_deployment:
+  description: |
+    Create arc42 Chapter 7: Deployment View.
+    
+    Document deployment topology:
+    - Infrastructure nodes
+    - Container placement
+    - Environments (dev, test, prod)
+
+    {system_summary}
+    {containers_summary}
+
+    ## Deliverable: 07-deployment.md
+  expected_output: "Complete arc42 Deployment View"
+  agent: architect
+  context:
+    - arc42_runtime_view
+  output_file: "knowledge/architecture/arc42/07-deployment.md"
+
+arc42_crosscutting:
+  description: |
+    Create arc42 Chapter 8: Cross-cutting Concepts.
+    
+    Document patterns spanning the system:
+    - Domain model
+    - Security
+    - Persistence
+    - Error handling
+
+    {system_summary}
+
+    ## Deliverable: 08-crosscutting.md
+  expected_output: "Complete arc42 Cross-cutting Concepts"
+  agent: architect
+  context:
+    - arc42_deployment
+  output_file: "knowledge/architecture/arc42/08-crosscutting.md"
+
+arc42_decisions:
+  description: |
+    Create arc42 Chapter 9: Architecture Decisions.
+    
+    Document key decisions as ADRs:
+    - Technology choices
+    - Pattern selections
+    - Trade-offs made
+
+    {system_summary}
+
+    ## Deliverable: 09-decisions.md
+  expected_output: "Complete arc42 Decisions chapter"
+  agent: architect
+  context:
+    - arc42_crosscutting
+  output_file: "knowledge/architecture/arc42/09-decisions.md"
+
+arc42_quality:
+  description: |
+    Create arc42 Chapter 10: Quality Requirements.
+    
+    Document quality attributes:
+    - Quality tree
+    - Quality scenarios
+    - Measurable targets
+
+    {system_summary}
+
+    ## Deliverable: 10-quality.md
+  expected_output: "Complete arc42 Quality chapter"
+  agent: architect
+  context:
+    - arc42_decisions
+  output_file: "knowledge/architecture/arc42/10-quality.md"
+
+arc42_risks:
+  description: |
+    Create arc42 Chapter 11: Risks and Technical Debt.
+    
+    Identify and document:
+    - Architecture risks
+    - Technical debt items
+    - Mitigation strategies
+
+    {system_summary}
+
+    ## Deliverable: 11-risks.md
+  expected_output: "Complete arc42 Risks chapter"
+  agent: architect
+  context:
+    - arc42_quality
+  output_file: "knowledge/architecture/arc42/11-risks.md"
+
+arc42_glossary:
+  description: |
+    Create arc42 Chapter 12: Glossary.
+    
+    Extract terminology:
+    - Business terms from domain
+    - Technical terms
+    - Abbreviations
+
+    {system_summary}
+
+    ## Deliverable: 12-glossary.md
+  expected_output: "Complete arc42 Glossary"
+  agent: architect
+  context:
+    - arc42_risks
+  output_file: "knowledge/architecture/arc42/12-glossary.md"
+
+quality_gate:
+  description: |
+    Quality review of all arc42 chapters.
+    
+    Validate:
+    - All 12 chapters complete
+    - Content consistency
+    - No missing sections
+
+    ## Deliverable: quality/arc42-report.md
+  expected_output: "Quality gate report"
+  agent: architect
+  context:
+    - arc42_glossary
+  output_file: "knowledge/architecture/quality/arc42-report.md"

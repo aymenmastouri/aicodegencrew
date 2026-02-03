@@ -1,0 +1,130 @@
+# =============================================================================
+# C4 Crew - Task Definitions
+# =============================================================================
+# Best Practice: Analyze first, then document
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# PHASE 1: ANALYSIS (Think before writing)
+# -----------------------------------------------------------------------------
+
+analyze_system:
+  description: |
+    ANALYZE the system before creating C4 diagrams.
+    
+    This is the THINKING task - understand the system first!
+    
+    STEP 1: Query all facts
+    - query_architecture_facts with category="containers"
+    - query_architecture_facts with category="components" 
+    - query_architecture_facts with category="interfaces"
+    - query_architecture_facts with category="relations"
+    
+    STEP 2: Identify C4 elements
+    - SYSTEM: What is the overall system? (repository name, domain)
+    - CONTAINERS: What deployable units exist? (backend, frontend, db)
+    - COMPONENTS: What are the internal building blocks?
+    - EXTERNAL: What external systems/actors interact with it?
+    
+    STEP 3: Map relationships
+    - Container-to-container communication
+    - Component dependencies within containers
+    - External integrations
+    
+    STEP 4: Create C4 mapping
+    Prepare a mental model for the 4 C4 levels.
+    
+    ## Deliverable: Internal analysis (not saved to file)
+    
+    Provide:
+    - System boundary definition
+    - Container inventory with technologies
+    - Component counts per container
+    - External actors and systems identified
+    - Key relationships to show in diagrams
+  expected_output: "C4 analysis summary for use by diagram tasks"
+  agent: architect
+
+# -----------------------------------------------------------------------------
+# PHASE 2: C4 DIAGRAMS (Based on analysis)
+# -----------------------------------------------------------------------------
+
+c4_context:
+  description: |
+    Create C4 Level 1: System Context diagram and documentation.
+    
+    Use the analysis from the previous task.
+
+    {system_summary}
+
+    ## DELIVERABLE: c4/c4-context.md + c4-context.drawio
+
+    Show the system as a black box with:
+    - External actors (users, admins)
+    - External systems (databases, APIs, services)
+    - Communication protocols
+  expected_output: "Complete C4 Context with DrawIO diagram"
+  agent: architect
+  context:
+    - analyze_system
+  output_file: "knowledge/architecture/c4/c4-context.md"
+
+c4_container:
+  description: |
+    Create C4 Level 2: Container diagram.
+    
+    Show all deployable units from the analysis:
+    - Backend applications
+    - Frontend applications
+    - Databases
+    - Message queues
+    - External services
+
+    {system_summary}
+    {containers_summary}
+
+    ## DELIVERABLE: c4/c4-container.md + c4-container.drawio
+  expected_output: "Complete C4 Container with DrawIO diagram"
+  agent: architect
+  context:
+    - c4_context
+  output_file: "knowledge/architecture/c4/c4-container.md"
+
+c4_component:
+  description: |
+    Create C4 Level 3: Component diagram.
+    
+    Show internal structure of each container:
+    - Controllers (presentation layer)
+    - Services (business layer)
+    - Repositories (data access layer)
+    - Entities (domain model)
+
+    {system_summary}
+
+    ## DELIVERABLE: c4/c4-component.md + c4-component.drawio
+  expected_output: "Complete C4 Component with DrawIO diagram"
+  agent: architect
+  context:
+    - c4_container
+  output_file: "knowledge/architecture/c4/c4-component.md"
+
+c4_deployment:
+  description: |
+    Create C4 Level 4: Deployment diagram.
+    
+    Show infrastructure topology:
+    - Server nodes
+    - Container placement
+    - Network zones
+    - Scaling strategy
+
+    {system_summary}
+    {containers_summary}
+
+    ## DELIVERABLE: c4/c4-deployment.md + c4-deployment.drawio
+  expected_output: "Complete C4 Deployment with DrawIO diagram"
+  agent: architect
+  context:
+    - c4_component
+  output_file: "knowledge/architecture/c4/c4-deployment.md"

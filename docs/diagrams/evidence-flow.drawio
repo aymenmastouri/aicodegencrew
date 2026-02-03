@@ -1,0 +1,152 @@
+<mxfile host="app.diagrams.net" modified="2024-01-01T12:00:00.000Z" agent="Mozilla/5.0" etag="evidence-flow" version="22.1.0" type="device">
+  <diagram id="evidence-flow" name="Evidence Flow">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="Evidence-First Data Flow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Source Files Group -->
+        <mxCell id="source-group" value="Source Repository" style="swimlane;horizontal=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="200" height="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="java" value="*.java&#xa;@Controller, @Service, @Repository" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" vertex="1" parent="source-group">
+          <mxGeometry x="20" y="40" width="160" height="45" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ts" value="*.ts&#xa;@NgModule, @Component, routes" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" vertex="1" parent="source-group">
+          <mxGeometry x="20" y="95" width="160" height="45" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="build" value="pom.xml / package.json&#xa;Build configurations" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10" vertex="1" parent="source-group">
+          <mxGeometry x="20" y="150" width="160" height="45" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="infra" value="docker-compose.yml&#xa;k8s/*.yaml" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="source-group">
+          <mxGeometry x="20" y="200" width="160" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Collectors Group -->
+        <mxCell id="collectors-group" value="Phase 1: Collectors (Deterministic)" style="swimlane;horizontal=1;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="100" width="200" height="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="spring-coll" value="SpringCollector&#xa;━━━━━━━━━━━━━&#xa;AST + Regex parsing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="collectors-group">
+          <mxGeometry x="20" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="angular-coll" value="AngularCollector&#xa;━━━━━━━━━━━━━&#xa;TS parsing + routes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="collectors-group">
+          <mxGeometry x="20" y="100" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="container-det" value="ContainerDetector&#xa;━━━━━━━━━━━━━&#xa;Build file analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="collectors-group">
+          <mxGeometry x="20" y="155" width="160" height="45" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="infra-coll" value="InfraCollector&#xa;━━━━━━━━━━━━━&#xa;Docker/K8s parsing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="collectors-group">
+          <mxGeometry x="20" y="205" width="160" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Facts JSON -->
+        <mxCell id="facts-group" value="Phase 1 Output: TRUTH" style="swimlane;horizontal=1;startSize=30;fillColor=#ffe6cc;strokeColor=#d79b00;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="550" y="100" width="200" height="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="facts-json" value="architecture_facts.json&#xa;━━━━━━━━━━━━━━━━━&#xa;• system: {id, name}&#xa;• containers: [...]&#xa;• components: [...]&#xa;• interfaces: [...]&#xa;• relations: [...]" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=left" vertex="1" parent="facts-group">
+          <mxGeometry x="20" y="40" width="160" height="100" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="evidence-json" value="evidence_map.json&#xa;━━━━━━━━━━━━━━━&#xa;ev_0001: {path, lines}&#xa;ev_0002: {path, lines}&#xa;..." style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;align=left" vertex="1" parent="facts-group">
+          <mxGeometry x="20" y="150" width="160" height="85" as="geometry" />
+        </mxCell>
+        
+        <!-- Synthesis -->
+        <mxCell id="synth-group" value="Phase 2: Synthesis (LLM)" style="swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="800" y="100" width="200" height="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="analyze-synth" value="analyze_system&#xa;━━━━━━━━━━━━━&#xa;THINK FIRST!&#xa;Query facts before docs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="synth-group">
+          <mxGeometry x="20" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="c4-synth" value="C4 Crew (architect)&#xa;━━━━━━━━━━━━━&#xa;5 tasks → 4 diagrams" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="synth-group">
+          <mxGeometry x="20" y="100" width="160" height="45" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arc42-synth" value="Arc42 Crew (architect)&#xa;━━━━━━━━━━━━━&#xa;13 tasks → 12 chapters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="synth-group">
+          <mxGeometry x="20" y="150" width="160" height="45" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="quality-gate" value="Quality Gate&#xa;(Phase 3 - Planned)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;dashed=1" vertex="1" parent="synth-group">
+          <mxGeometry x="20" y="200" width="160" height="35" as="geometry" />
+        </mxCell>
+        
+        <!-- Output -->
+        <mxCell id="output-group" value="Phase 2 Output" style="swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="1050" y="100" width="200" height="250" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="c4-out" value="c4/&#xa;• c4-context.md&#xa;• c4-container.md&#xa;• c4-components-*.md" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left" vertex="1" parent="output-group">
+          <mxGeometry x="20" y="40" width="160" height="65" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="arc42-out" value="arc42/&#xa;• 01-introduction.md&#xa;• 03-context.md&#xa;• 05-building-blocks.md" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left" vertex="1" parent="output-group">
+          <mxGeometry x="20" y="115" width="160" height="65" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="quality-out" value="quality/&#xa;• synthesis-report.md" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left" vertex="1" parent="output-group">
+          <mxGeometry x="20" y="190" width="160" height="45" as="geometry" />
+        </mxCell>
+        
+        <!-- Arrows between groups -->
+        <mxCell id="a1" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="250" y="225" as="sourcePoint" />
+            <mxPoint x="300" y="225" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="a2" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#ffe6cc;strokeColor=#d79b00" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="500" y="225" as="sourcePoint" />
+            <mxPoint x="550" y="225" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="a3" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="225" as="sourcePoint" />
+            <mxPoint x="800" y="225" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="a4" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="225" as="sourcePoint" />
+            <mxPoint x="1050" y="225" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Annotation -->
+        <mxCell id="note1" value="NO LLM!" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="350" y="360" width="100" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="note2" value="SINGLE SOURCE&#xa;OF TRUTH" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;fontColor=#d79b00" vertex="1" parent="1">
+          <mxGeometry x="580" y="360" width="140" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Evidence Reference Example -->
+        <mxCell id="example-box" value="Evidence Reference Example&#xa;━━━━━━━━━━━━━━━━━━━━━━━━━━━━&#xa;&#xa;In C4 output:&#xa;&quot;Backend container uses Spring Boot [ev_0001]&quot;&#xa;&#xa;In evidence_map.json:&#xa;ev_0001: {path: &quot;pom.xml&quot;, lines: &quot;15-20&quot;}" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left" vertex="1" parent="1">
+          <mxGeometry x="550" y="410" width="280" height="130" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

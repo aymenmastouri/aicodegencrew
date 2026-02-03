@@ -1,0 +1,19 @@
+Copyright (c) 2026 Capgemini. All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL — INTERNAL USE ONLY
+
+This software and all related materials are the confidential and proprietary information of Capgemini.
+Unauthorized copying, distribution, modification, disclosure, or use outside of Capgemini is strictly prohibited.
+Use is subject to applicable Capgemini policies and internal governance.
+No license is granted to any third party.
+
+---
+
+THIRD-PARTY / OPEN SOURCE SOFTWARE
+
+This software depends on third-party open-source components.
+Each such component remains subject to its respective open-source license terms (e.g., MIT, Apache 2.0, etc.).
+
+By using this software, you agree to comply with all applicable third-party license obligations.
+License texts and attributions are available via dependency manifests (e.g., `pyproject.toml`, lock files),
+installed package metadata, and/or the documentation of the respective components.

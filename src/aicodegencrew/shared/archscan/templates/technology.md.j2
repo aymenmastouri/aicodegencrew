@@ -1,0 +1,240 @@
+{# Technology Stack Documentation Template #}
+{# Uses Mermaid diagrams for visualization #}
+
+# {{ project_name | default("Project") }} - Technology Stack
+
+> Generated: {{ generation_date | default("N/A") }}
+> Analyzed Repository: {{ repository_path | default("N/A") }}
+
+---
+
+## Technology Overview
+
+```mermaid
+mindmap
+    root((Technology Stack))
+        Backend
+            {% for tech in backend_languages | default([]) %}
+            {{ tech.name }}
+            {% endfor %}
+        Frontend
+            {% for tech in frontend_frameworks | default([]) %}
+            {{ tech.name }}
+            {% endfor %}
+        Database
+            {% for db in databases | default([]) %}
+            {{ db.name }}
+            {% endfor %}
+        Infrastructure
+            {% for infra in infrastructure | default([]) %}
+            {{ infra.name }}
+            {% endfor %}
+```
+
+---
+
+## Backend Technologies
+
+### Programming Languages
+
+| Language | Version | Files | Usage |
+|----------|---------|-------|-------|
+{% for lang in backend_languages | default([]) %}
+| {{ lang.name }} | {{ lang.version | default('N/A') }} | {{ lang.file_count | default('N/A') }} | {{ lang.usage | default('N/A') }} |
+{% endfor %}
+
+### Frameworks
+
+| Framework | Version | Source | Purpose |
+|-----------|---------|--------|---------|
+{% for fw in backend_frameworks | default([]) %}
+| {{ fw.name }} | {{ fw.version | default('N/A') }} | {{ fw.source | default('N/A') }} | {{ fw.purpose | default('N/A') }} |
+{% endfor %}
+
+### Libraries
+
+| Library | Version | Source | Purpose |
+|---------|---------|--------|---------|
+{% for lib in backend_libraries | default([]) %}
+| {{ lib.name }} | {{ lib.version | default('N/A') }} | {{ lib.source | default('N/A') }} | {{ lib.purpose | default('N/A') }} |
+{% endfor %}
+
+---
+
+## Frontend Technologies
+
+### Frameworks
+
+| Framework | Version | Source | Purpose |
+|-----------|---------|--------|---------|
+{% for fw in frontend_frameworks | default([]) %}
+| {{ fw.name }} | {{ fw.version | default('N/A') }} | {{ fw.source | default('N/A') }} | {{ fw.purpose | default('N/A') }} |
+{% endfor %}
+
+### UI Libraries
+
+| Library | Version | Purpose |
+|---------|---------|---------|
+{% for lib in ui_libraries | default([]) %}
+| {{ lib.name }} | {{ lib.version | default('N/A') }} | {{ lib.purpose | default('N/A') }} |
+{% endfor %}
+
+### Build Tools
+
+| Tool | Version | Configuration |
+|------|---------|---------------|
+{% for tool in build_tools | default([]) %}
+| {{ tool.name }} | {{ tool.version | default('N/A') }} | {{ tool.config_file | default('N/A') }} |
+{% endfor %}
+
+---
+
+## Database Technologies
+
+```mermaid
+flowchart LR
+    subgraph Databases
+        {% for db in databases | default([]) %}
+        {{ db.id }}[("{{ db.name }}<br/>{{ db.type }}")]
+        {% endfor %}
+    end
+    
+    {% for rel in database_relationships | default([]) %}
+    {{ rel.from }} -->|{{ rel.type }}| {{ rel.to }}
+    {% endfor %}
+```
+
+### Database Details
+
+| Database | Type | Version | Purpose |
+|----------|------|---------|---------|
+{% for db in databases | default([]) %}
+| {{ db.name }} | {{ db.type }} | {{ db.version | default('N/A') }} | {{ db.purpose | default('N/A') }} |
+{% endfor %}
+
+---
+
+## Infrastructure & DevOps
+
+### Containerization
+
+| Tool | Version | Configuration |
+|------|---------|---------------|
+{% for container in containerization | default([]) %}
+| {{ container.name }} | {{ container.version | default('N/A') }} | {{ container.config_file | default('N/A') }} |
+{% endfor %}
+
+### CI/CD
+
+| Platform | Configuration | Purpose |
+|----------|---------------|---------|
+{% for ci in cicd_tools | default([]) %}
+| {{ ci.name }} | {{ ci.config_file | default('N/A') }} | {{ ci.purpose | default('N/A') }} |
+{% endfor %}
+
+### Cloud Services
+
+| Service | Provider | Purpose |
+|---------|----------|---------|
+{% for cloud in cloud_services | default([]) %}
+| {{ cloud.name }} | {{ cloud.provider | default('N/A') }} | {{ cloud.purpose | default('N/A') }} |
+{% endfor %}
+
+---
+
+## Testing Technologies
+
+### Testing Frameworks
+
+| Framework | Type | Version | Configuration |
+|-----------|------|---------|---------------|
+{% for test in testing_frameworks | default([]) %}
+| {{ test.name }} | {{ test.type }} | {{ test.version | default('N/A') }} | {{ test.config_file | default('N/A') }} |
+{% endfor %}
+
+### Code Quality Tools
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+{% for tool in quality_tools | default([]) %}
+| {{ tool.name }} | {{ tool.version | default('N/A') }} | {{ tool.purpose | default('N/A') }} |
+{% endfor %}
+
+---
+
+## Dependency Management
+
+### Package Managers
+
+| Manager | Lock File | Configuration |
+|---------|-----------|---------------|
+{% for pm in package_managers | default([]) %}
+| {{ pm.name }} | {{ pm.lock_file | default('N/A') }} | {{ pm.config_file | default('N/A') }} |
+{% endfor %}
+
+### Version Sources
+
+The following files were analyzed for version information:
+
+{% for source in version_sources | default([]) %}
+- `{{ source.file }}` ({{ source.type }})
+{% endfor %}
+
+---
+
+## Technology Relationships
+
+```mermaid
+flowchart TB
+    subgraph Frontend["Frontend Layer"]
+        {% for tech in frontend_layer | default([]) %}
+        {{ tech.id }}["{{ tech.name }}"]
+        {% endfor %}
+    end
+    
+    subgraph Backend["Backend Layer"]
+        {% for tech in backend_layer | default([]) %}
+        {{ tech.id }}["{{ tech.name }}"]
+        {% endfor %}
+    end
+    
+    subgraph Data["Data Layer"]
+        {% for tech in data_layer | default([]) %}
+        {{ tech.id }}["{{ tech.name }}"]
+        {% endfor %}
+    end
+    
+    Frontend --> Backend
+    Backend --> Data
+```
+
+---
+
+## Version Summary
+
+### Critical Dependencies
+
+| Dependency | Current Version | Latest Version | Status |
+|------------|-----------------|----------------|--------|
+{% for dep in critical_dependencies | default([]) %}
+| {{ dep.name }} | {{ dep.current_version | default('N/A') }} | {{ dep.latest_version | default('N/A') }} | {{ dep.status | default('Unknown') }} |
+{% endfor %}
+
+### Security Considerations
+
+{% for concern in security_concerns | default([]) %}
+- **{{ concern.dependency }}**: {{ concern.issue }} ({{ concern.severity | default('Medium') }})
+{% endfor %}
+
+---
+
+## Recommendations
+
+{% for rec in recommendations | default([]) %}
+### {{ loop.index }}. {{ rec.title }}
+
+**Priority**: {{ rec.priority | default('Medium') }}
+
+{{ rec.description }}
+
+{% endfor %}
