@@ -1,53 +1,50 @@
 # =============================================================================
-# C4 Crew - Task Definitions
+# C4 Crew - Task Definitions (Phase 3)
 # =============================================================================
-# Best Practice: Agent discovers EVERYTHING from facts - no assumptions!
+# INPUT:
+#   - architecture_facts.json (Phase 1): Exact component names, relations
+#   - analyzed_architecture.json (Phase 2): Architecture style, patterns, quality
+# OUTPUT:
+#   - c4/c4-context.md + .drawio
+#   - c4/c4-container.md + .drawio
+#   - c4/c4-component.md + .drawio
+#   - c4/c4-deployment.md + .drawio
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# PHASE 1: ANALYSIS (Agent discovers from facts)
+# PHASE 1: ANALYSIS (Use analyzed.json + query facts for details)
 # -----------------------------------------------------------------------------
 
 analyze_system:
   description: |
-    YOU are the Software Architect. DISCOVER the system architecture from facts!
+    YOU are the Software Architect. Create C4 analysis from Phase 2 output + facts!
     
-    DO NOT assume anything. USE THE TOOLS to find everything!
+    DATA SOURCES:
+    - analyzed_architecture.json: Already contains style, patterns, quality (from Phase 2)
+    - architecture_facts.json: Query for specific details (containers, components, relations)
     
-    ## STEP 1: Discover Architecture Style
-    Use list_components_by_stereotype with stereotype="architecture_style"
-    → Find if it's Layered, Microservices, Modular Monolith, etc.
+    ## STEP 1: Read Architecture Analysis
+    The analyzed_architecture.json already contains:
+    - architecture.primary_style
+    - architecture.layers
+    - patterns[]
+    - technology.backend/frontend/database
     
-    ## STEP 2: Discover Design Patterns
-    Use list_components_by_stereotype with stereotype="design_pattern"
-    → Find Repository, Factory, Builder patterns, etc.
-    
-    ## STEP 3: Query Containers
-    Use query_architecture_facts with category="containers"
-    → Find all deployment units and their technologies
-    
-    ## STEP 4: Query Components per Layer
-    Use list_components_by_stereotype for:
-    - stereotype="controller"
-    - stereotype="service" 
-    - stereotype="repository"
-    - stereotype="entity"
-    
-    ## STEP 5: Query Interfaces
-    Use query_architecture_facts with category="interfaces"
-    → Find the API surface
+    ## STEP 2: Query Facts for Details
+    Use tools to get EXACT data:
+    - query_architecture_facts(category="containers") → deployment units
+    - query_architecture_facts(category="interfaces") → API surface
+    - list_components_by_stereotype for layer details
     
     ## YOUR C4 ANALYSIS must identify:
-    1. SYSTEM: What is the overall system boundary?
-    2. CONTAINERS: What deployable units exist?
-    3. COMPONENTS: Key building blocks per container
-    4. EXTERNAL: External actors/systems (derive from interfaces)
-    5. ARCHITECTURE STYLE: What did you find in the facts?
+    1. SYSTEM: Name and domain from analysis
+    2. CONTAINERS: From facts.json containers[]
+    3. COMPONENTS: From facts.json components[]
+    4. EXTERNAL: Derive from interfaces[]
+    5. ARCHITECTURE STYLE: From analyzed_architecture.json
     
     ## Deliverable: Your C4 analysis as structured text
-    
-    Write YOUR findings - discovered from facts, not assumed!
-  expected_output: "Complete C4 analysis discovered from facts"
+  expected_output: "Complete C4 analysis from facts and analysis"
   agent: c4_architect
 
 # -----------------------------------------------------------------------------

@@ -1,12 +1,12 @@
 """
 Architecture Analysis Crew - Phase 2
 =====================================
-Multi-agent crew for analyzing architecture facts and creating synthesized output.
+Multi-agent crew for analyzing architecture facts and creating analyzed output.
 
 ANALYSIS APPROACH:
 - Input: architecture_facts.json + evidence_map.json + ChromaDB Index
 - 4 Specialized Agents: Technical, Functional, Quality, Synthesis
-- Output: synthesized_architecture.json
+- Output: analyzed_architecture.json
 
 The agents use tools to DISCOVER architecture (not hardcoded).
 """
@@ -33,7 +33,7 @@ class ArchitectureAnalysisCrew:
     1. Tech Architect: Analyze styles, patterns, tech stack
     2. Functional Analyst: Analyze domain, capabilities, use cases
     3. Quality Analyst: Analyze quality, debt, risks
-    4. Synthesis Lead: Merge all into synthesized_architecture.json
+    4. Synthesis Lead: Merge all into analyzed_architecture.json
     
     Data Sources:
     - architecture_facts.json: Components, relations, interfaces, containers
@@ -111,7 +111,7 @@ class ArchitectureAnalysisCrew:
         logger.info("=" * 60)
         logger.info("PHASE 2 COMPLETE: Architecture Analysis finished")
         logger.info("=" * 60)
-        logger.info(f"Output: {self.output_dir / 'synthesized_architecture.json'}")
+        logger.info(f"Output: {self.output_dir / 'analyzed_architecture.json'}")
         return result
     
     # =========================================================================
@@ -178,6 +178,8 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_technical'],
             agent=self.tech_architect(),
+            output_file=str(self.output_dir / "analysis_technical.json"),
+            # Sequential - deep analysis takes time, no rush
         )
     
     @task
@@ -186,6 +188,8 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_functional'],
             agent=self.func_analyst(),
+            output_file=str(self.output_dir / "analysis_functional.json"),
+            # Sequential - deep analysis takes time, no rush
         )
     
     @task
@@ -194,11 +198,13 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_quality'],
             agent=self.quality_analyst(),
+            output_file=str(self.output_dir / "analysis_quality.json"),
+            # Sequential - deep analysis takes time, no rush
         )
     
     @task
     def synthesize_architecture(self) -> Task:
-        """Merge all analyses into synthesized_architecture.json."""
+        """Merge all analyses into analyzed_architecture.json."""
         return Task(
             config=self.tasks_config['synthesize_architecture'],
             agent=self.synthesis_lead(),
@@ -207,7 +213,7 @@ class ArchitectureAnalysisCrew:
                 self.analyze_functional(),
                 self.analyze_quality(),
             ],
-            output_file=str(self.output_dir / "synthesized_architecture.json"),
+            output_file=str(self.output_dir / "analyzed_architecture.json"),
         )
     
     # =========================================================================

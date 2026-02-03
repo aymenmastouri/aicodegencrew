@@ -1,0 +1,639 @@
+{
+  "domain_model": {
+    "core_entities": [
+      "ActionEntity",
+      "ActionStreamEntity",
+      "ChangeEntity",
+      "ConnectionEntity",
+      "CorrectionNoteEntity",
+      "DeedCreatorHandoverInfoEntity",
+      "DeedEntryEntity",
+      "DeedEntryLockEntity",
+      "DeedEntryLogEntity",
+      "DeedRegistryLockEntity",
+      "DocumentMetaDataEntity",
+      "FinalHandoverDataSetEntity",
+      "HandoverDataSetEntity",
+      "HandoverDmdWorkEntity",
+      "HandoverHistoryDeedEntity",
+      "HandoverHistoryEntity",
+      "IssuingCopyNoteEntity",
+      "ParticipantEntity",
+      "RegistrationEntity",
+      "RemarkEntity",
+      "RestrictedDeedEntryEntity",
+      "SignatureInfoEntity",
+      "SuccessorBatchEntity",
+      "SuccessorDeedSelectionEntity",
+      "SuccessorDeedSelectionMetaEntity",
+      "SuccessorDetailsEntity",
+      "SuccessorSelectionTextEntity",
+      "UvzNumberGapManagerEntity",
+      "UvzNumberManagerEntity",
+      "UvzNumberSkipManagerEntity",
+      "JobEntity",
+      "NumberFormatEntity",
+      "OrganizationEntity",
+      "ReportMetadataEntity",
+      "TaskEntity",
+      "DocumentMetaDataWorkEntity",
+      "WorkflowEntity"
+    ],
+    "entity_count": 37,
+    "domain_areas": {
+      "Action": {
+        "entities": ["ActionEntity", "ActionStreamEntity"],
+        "count": 2,
+        "description": "Represents actions and streams of actions within the system."
+      },
+      "Change": {
+        "entities": ["ChangeEntity"],
+        "count": 1,
+        "description": "Tracks change records."
+      },
+      "Connection": {
+        "entities": ["ConnectionEntity"],
+        "count": 1,
+        "description": "Holds connection information between components."
+      },
+      "CorrectionNote": {
+        "entities": ["CorrectionNoteEntity"],
+        "count": 1,
+        "description": "Stores correction notes attached to deeds."
+      },
+      "Deed": {
+        "entities": [
+          "DeedCreatorHandoverInfoEntity",
+          "DeedEntryEntity",
+          "DeedEntryLockEntity",
+          "DeedEntryLogEntity",
+          "DeedRegistryLockEntity",
+          "RestrictedDeedEntryEntity"
+        ],
+        "count": 6,
+        "description": "Core domain for deed registration, entry, locking and audit."
+      },
+      "DocumentMetaData": {
+        "entities": ["DocumentMetaDataEntity", "DocumentMetaDataWorkEntity"],
+        "count": 2,
+        "description": "Metadata relating to documents attached to deeds."
+      },
+      "FinalHandover": {
+        "entities": ["FinalHandoverDataSetEntity"],
+        "count": 1,
+        "description": "Final hand‑over data set used at the end of a deed process."
+      },
+      "Handover": {
+        "entities": [
+          "HandoverDataSetEntity",
+          "HandoverDmdWorkEntity",
+          "HandoverHistoryDeedEntity",
+          "HandoverHistoryEntity"
+        ],
+        "count": 4,
+        "description": "Data structures for the hand‑over phase of deed processing."
+      },
+      "IssuingCopy": {
+        "entities": ["IssuingCopyNoteEntity"],
+        "count": 1,
+        "description": "Notes created when issuing copy of a deed."
+      },
+      "Participant": {
+        "entities": ["ParticipantEntity"],
+        "count": 1,
+        "description": "Participants involved in a deed."
+      },
+      "Registration": {
+        "entities": ["RegistrationEntity"],
+        "count": 1,
+        "description": "Registration information for deeds."
+      },
+      "Remark": {
+        "entities": ["RemarkEntity"],
+        "count": 1,
+        "description": "General remarks attached to entities."
+      },
+      "SignatureInfo": {
+        "entities": ["SignatureInfoEntity"],
+        "count": 1,
+        "description": "Signature related data."
+      },
+      "Successor": {
+        "entities": [
+          "SuccessorBatchEntity",
+          "SuccessorDeedSelectionEntity",
+          "SuccessorDeedSelectionMetaEntity",
+          "SuccessorDetailsEntity",
+          "SuccessorSelectionTextEntity"
+        ],
+        "count": 5,
+        "description": "Information about successor deed selection and handling."
+      },
+      "UvzNumber": {
+        "entities": [
+          "UvzNumberGapManagerEntity",
+          "UvzNumberManagerEntity",
+          "UvzNumberSkipManagerEntity"
+        ],
+        "count": 3,
+        "description": "Management of UVZ numbers (unique identifiers)."
+      },
+      "Job": {
+        "entities": ["JobEntity"],
+        "count": 1,
+        "description": "Background job definitions."
+      },
+      "NumberFormat": {
+        "entities": ["NumberFormatEntity"],
+        "count": 1,
+        "description": "Formatting rules for numbers."
+      },
+      "Organization": {
+        "entities": ["OrganizationEntity"],
+        "count": 1,
+        "description": "Organization reference data."
+      },
+      "ReportMetadata": {
+        "entities": ["ReportMetadataEntity"],
+        "count": 1,
+        "description": "Metadata for reporting."
+      },
+      "Task": {
+        "entities": ["TaskEntity"],
+        "count": 1,
+        "description": "Task definitions used by the workflow engine."
+      },
+      "Workflow": {
+        "entities": ["WorkflowEntity"],
+        "count": 1,
+        "description": "Workflow definition entity."
+      }
+    }
+  },
+  "capabilities": [
+    {
+      "name": "Action",
+      "services": [
+        "ActionServiceImpl",
+        "ActionWorkerService",
+        "ActionDomainService",
+        "ActionApiConfiguration",
+        "ActionBaseService",
+        "ActionService"
+      ],
+      "service_count": 6,
+      "description": "Handles action processing, worker coordination and related API configuration.",
+      "key_operations": []
+    },
+    {
+      "name": "StaticContent",
+      "services": ["IndexHTMLResourceService"],
+      "service_count": 1,
+      "description": "Serves static HTML resources.",
+      "key_operations": []
+    },
+    {
+      "name": "Health",
+      "services": ["HealthCheck"],
+      "service_count": 1,
+      "description": "Provides health‑check endpoints.",
+      "key_operations": []
+    },
+    {
+      "name": "Archiving",
+      "services": [
+        "ArchiveManagerServiceImpl",
+        "ArchivingServiceImpl",
+        "ArchivingOperationSignerImpl"
+      ],
+      "service_count": 3,
+      "description": "Manages archiving of deeds and related signing tokens.",
+      "key_operations": []
+    },
+    {
+      "name": "KeyManagement",
+      "services": [
+        "MockKmService",
+        "XnpKmServiceImpl",
+        "KeyManagerServiceImpl"
+      ],
+      "service_count": 3,
+      "description": "Key manager and cryptographic services.",
+      "key_operations": []
+    },
+    {
+      "name": "WaWi",
+      "services": [
+        "WaWiServiceImpl",
+        "DeedWaWiServiceImpl",
+        "DeedWaWiOrchestratorServiceImpl"
+      ],
+      "service_count": 3,
+      "description": "Handles WA‑WI (external system) integration for deeds.",
+      "key_operations": []
+    },
+    {
+      "name": "Correction",
+      "services": [
+        "ApplyCorrectionNoteService",
+        "CorrectionNoteService",
+        "BusinessPurposeServiceImpl"
+      ],
+      "service_count": 3,
+      "description": "Applies correction notes and processes business purpose data.",
+      "key_operations": []
+    },
+    {
+      "name": "DeedManagement",
+      "services": [
+        "DeedEntryConnectionServiceImpl",
+        "DeedEntryLogServiceImpl",
+        "DeedEntryServiceImpl",
+        "DeedRegistryServiceImpl",
+        "DeedTypeServiceImpl",
+        "DeedWaWiServiceImpl",
+        "DeedWaWiOrchestratorServiceImpl"
+      ],
+      "service_count": 7,
+      "description": "Core deed handling – creation, logging, registry, type, WA‑WI orchestration.",
+      "key_operations": []
+    },
+    {
+      "name": "DocumentMetadata",
+      "services": [
+        "DocumentMetaDataServiceImpl",
+        "DocumentMetadataWorkService"
+      ],
+      "service_count": 2,
+      "description": "Management of document metadata and related work processing.",
+      "key_operations": []
+    },
+    {
+      "name": "Handover",
+      "services": [
+        "HandoverDataSetDaoImpl",
+        "HandoverDataSetServiceImpl"
+      ],
+      "service_count": 2,
+      "description": "Handles hand‑over data sets for deed processing.",
+      "key_operations": []
+    },
+    {
+      "name": "SignatureFolder",
+      "services": ["SignatureFolderServiceImpl"],
+      "service_count": 1,
+      "description": "Manages signature folder creation and updates.",
+      "key_operations": []
+    },
+    {
+      "name": "Reporting",
+      "services": [
+        "ReportServiceImpl",
+        "ReportMetadataServiceImpl"
+      ],
+      "service_count": 2,
+      "description": "Generation of reports and handling of report metadata.",
+      "key_operations": []
+    },
+    {
+      "name": "Job",
+      "services": ["JobServiceImpl"],
+      "service_count": 1,
+      "description": "Background job execution and status handling.",
+      "key_operations": []
+    },
+    {
+      "name": "NumberManagement",
+      "services": ["NumberManagementServiceImpl"],
+      "service_count": 1,
+      "description": "UVZ number allocation and gap/skip handling.",
+      "key_operations": []
+    },
+    {
+      "name": "OfficialActivity",
+      "services": ["OfficialActivityMetaDataServiceImpl"],
+      "service_count": 1,
+      "description": "Metadata about official activities attached to deeds.",
+      "key_operations": []
+    },
+    {
+      "name": "Task",
+      "services": ["TaskServiceImpl"],
+      "service_count": 1,
+      "description": "Task execution within the workflow engine.",
+      "key_operations": []
+    },
+    {
+      "name": "Workflow",
+      "services": [
+        "WorkflowServiceImpl",
+        "ReencryptionWorkflowStateMachine",
+        "WorkflowStateMachineProvider"
+      ],
+      "service_count": 3,
+      "description": "Workflow orchestration and state‑machine handling.",
+      "key_operations": []
+    },
+    {
+      "name": "ApplicationInitialization",
+      "services": [
+        "ApplicationInitializerService",
+        "SettingsInitializer",
+        "DocumentImportService"
+      ],
+      "service_count": 3,
+      "description": "Bootstrap of application settings and import utilities.",
+      "key_operations": []
+    }
+  ],
+  "use_cases": [
+    {
+      "name": "ActionManagement",
+      "controller": "ActionRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/action/{type} (POST)",
+        "/uvz/v1/action/{id} (GET)"
+      ],
+      "description": "Create and retrieve actions."
+    },
+    {
+      "name": "StaticContentDelivery",
+      "controller": "StaticContentController",
+      "endpoints": [
+        "/web (GET)",
+        "/web/ (GET)",
+        "/web/index.html (GET)",
+        "/web/uvz/ (GET)"
+      ],
+      "description": "Serve static HTML pages."
+    },
+    {
+      "name": "KeyManagement",
+      "controller": "KeyManagerRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/keymanager/{groupId}/reencryptable (GET)",
+        "/uvz/v1/keymanager/cryptostate (GET)"
+      ],
+      "description": "Expose key‑manager status and re‑encryption capabilities."
+    },
+    {
+      "name": "ArchivingOperations",
+      "controller": "ArchivingRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/archiving/sign-submission-token (POST)",
+        "/uvz/v1/archiving/sign-reencrytion-token (POST)",
+        "/uvz/v1/archiving/enabled (GET)"
+      ],
+      "description": "Provide tokens for archiving operations and query archiving status."
+    },
+    {
+      "name": "BusinessPurposeLookup",
+      "controller": "BusinessPurposeRestServiceImpl",
+      "endpoints": [
+        "/businesspurposes (GET)"
+      ],
+      "description": "Retrieve list of business purposes."
+    },
+    {
+      "name": "DeedEntryManagement",
+      "controller": "DeedEntryRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/deedentries (GET)",
+        "/uvz/v1/deedentries (POST)",
+        "/uvz/v1/deedentries/{id} (GET)",
+        "/uvz/v1/deedentries/{id} (PUT)",
+        "/uvz/v1/deedentries/{id} (DELETE)",
+        "/uvz/v1/deedentries/bulkcapture (POST)",
+        "/uvz/v1/deedentries/{id}/signature-folder (POST)",
+        "/uvz/v1/deedentries/{id}/correctionnote (POST)",
+        "/uvz/v1/deedentries/{id}/lock (GET,POST,PUT,DELETE)",
+        "/uvz/v1/deedentries/to-be-signed (GET)",
+        "/uvz/v1/deedentries/to-be-approved (GET)",
+        "/uvz/v1/deedentries/handover (POST)",
+        "/uvz/v1/deedentries/successordeedselection (POST)"
+      ],
+      "description": "Full CRUD and workflow actions for deed entries."
+    },
+    {
+      "name": "DeedRegistryLocks",
+      "controller": "DeedRegistryRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/deedregistry/locks (GET)",
+        "/uvz/v1/deedregistry/locks/{types} (GET)",
+        "/uvz/v1/deedregistry/lock/{type} (GET)"
+      ],
+      "description": "Read lock information for deed registry."
+    },
+    {
+      "name": "DeedTypeLookup",
+      "controller": "DeedTypeRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/deedtypes (GET)"
+      ],
+      "description": "Retrieve supported deed types."
+    },
+    {
+      "name": "ReportGeneration",
+      "controller": "ReportRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/report (GET)"
+      ],
+      "description": "Generate and retrieve reports."
+    },
+    {
+      "name": "JobControl",
+      "controller": "JobRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/job (GET,POST,DELETE)"
+      ],
+      "description": "Manage background jobs."
+    },
+    {
+      "name": "ReencryptionJobControl",
+      "controller": "ReencryptionJobRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/reencryption/job (GET,POST)"
+      ],
+      "description": "Control reencryption background jobs."
+    },
+    {
+      "name": "NotaryRepresentation",
+      "controller": "NotaryRepresentationRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/notary-representation (GET,POST)"
+      ],
+      "description": "Expose notary representation information."
+    },
+    {
+      "name": "NumberManagement",
+      "controller": "NumberManagementRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/number-management (GET,POST)"
+      ],
+      "description": "Manage UVZ number gaps and skips."
+    },
+    {
+      "name": "OfficialActivityMetadata",
+      "controller": "OfficialActivityMetadataRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/official-activity-metadata (GET)"
+      ],
+      "description": "Read official activity metadata."
+    },
+    {
+      "name": "ReportMetadata",
+      "controller": "ReportMetadataRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/report-metadata (GET)"
+      ],
+      "description": "Read report metadata."
+    },
+    {
+      "name": "TaskManagement",
+      "controller": "TaskRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/task (GET,POST,DELETE)"
+      ],
+      "description": "CRUD operations for tasks used by the workflow engine."
+    },
+    {
+      "name": "WorkflowInteraction",
+      "controller": "WorkflowRestServiceImpl",
+      "endpoints": [
+        "/uvz/v1/workflow (GET,POST)"
+      ],
+      "description": "Interact with workflow engine – start, query, and control workflows."
+    }
+  ],
+  "bounded_contexts": [
+    {
+      "name": "Deed",
+      "entities": [
+        "DeedCreatorHandoverInfoEntity",
+        "DeedEntryEntity",
+        "DeedEntryLockEntity",
+        "DeedEntryLogEntity",
+        "DeedRegistryLockEntity",
+        "RestrictedDeedEntryEntity"
+      ],
+      "services": [
+        "DeedEntryConnectionServiceImpl",
+        "DeedEntryLogServiceImpl",
+        "DeedEntryServiceImpl",
+        "DeedRegistryServiceImpl",
+        "DeedTypeServiceImpl",
+        "DeedWaWiServiceImpl",
+        "DeedWaWiOrchestratorServiceImpl"
+      ],
+      "controllers": [
+        "DeedEntryRestServiceImpl",
+        "DeedEntryConnectionRestServiceImpl",
+        "DeedEntryLogRestServiceImpl",
+        "DeedRegistryRestServiceImpl",
+        "DeedTypeRestServiceImpl"
+      ]
+    },
+    {
+      "name": "DocumentMetaData",
+      "entities": [
+        "DocumentMetaDataEntity",
+        "DocumentMetaDataWorkEntity"
+      ],
+      "services": [
+        "DocumentMetaDataServiceImpl",
+        "DocumentMetadataWorkService"
+      ],
+      "controllers": [
+        "DocumentMetaDataRestServiceImpl"
+      ]
+    },
+    {
+      "name": "Handover",
+      "entities": [
+        "HandoverDataSetEntity",
+        "HandoverDmdWorkEntity",
+        "HandoverHistoryDeedEntity",
+        "HandoverHistoryEntity"
+      ],
+      "services": [
+        "HandoverDataSetDaoImpl",
+        "HandoverDataSetServiceImpl"
+      ],
+      "controllers": [
+        "HandoverDataSetRestServiceImpl"
+      ]
+    },
+    {
+      "name": "Workflow",
+      "entities": ["WorkflowEntity"],
+      "services": [
+        "WorkflowServiceImpl",
+        "ReencryptionWorkflowStateMachine",
+        "WorkflowStateMachineProvider"
+      ],
+      "controllers": ["WorkflowRestServiceImpl"]
+    },
+    {
+      "name": "NumberManagement",
+      "entities": [
+        "UvzNumberGapManagerEntity",
+        "UvzNumberManagerEntity",
+        "UvzNumberSkipManagerEntity"
+      ],
+      "services": ["NumberManagementServiceImpl"],
+      "controllers": ["NumberManagementRestServiceImpl"]
+    },
+    {
+      "name": "Reporting",
+      "entities": ["ReportMetadataEntity"],
+      "services": ["ReportServiceImpl", "ReportMetadataServiceImpl"],
+      "controllers": ["ReportRestServiceImpl", "ReportMetadataRestServiceImpl"]
+    },
+    {
+      "name": "TaskManagement",
+      "entities": ["TaskEntity"],
+      "services": ["TaskServiceImpl"],
+      "controllers": ["TaskRestServiceImpl"]
+    },
+    {
+      "name": "KeyManagement",
+      "entities": [],
+      "services": [
+        "MockKmService",
+        "XnpKmServiceImpl",
+        "KeyManagerServiceImpl"
+      ],
+      "controllers": ["KeyManagerRestServiceImpl"]
+    },
+    {
+      "name": "Archiving",
+      "entities": [],
+      "services": [
+        "ArchiveManagerServiceImpl",
+        "ArchivingServiceImpl",
+        "ArchivingOperationSignerImpl"
+      ],
+      "controllers": ["ArchivingRestServiceImpl"]
+    },
+    {
+      "name": "Action",
+      "entities": ["ActionEntity", "ActionStreamEntity"],
+      "services": [
+        "ActionServiceImpl",
+        "ActionWorkerService",
+        "ActionDomainService",
+        "ActionApiConfiguration",
+        "ActionBaseService",
+        "ActionService"
+      ],
+      "controllers": ["ActionRestServiceImpl"]
+    }
+  ],
+  "statistics": {
+    "total_entities": 37,
+    "total_services": 233,
+    "total_controllers": 24,
+    "domain_area_count": 20,
+    "capability_count": 18
+  }
+}

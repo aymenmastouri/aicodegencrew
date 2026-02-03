@@ -312,6 +312,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     if will_run_synthesis:
         synthesis_crew = ArchitectureSynthesisCrew(
             facts_path="./knowledge/architecture/architecture_facts.json"
+            # Note: analyzed_path is auto-derived from facts_path in crew.py
         )
         orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
     
@@ -319,12 +320,12 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     try:
         result = orchestrator.run(preset=preset, phases=phases)
         
-        if result["status"] == "success":
+        if result.status == "success":
             logger.info(f"\n[OK] Pipeline successful!")
-            logger.info(f"Time: {result['execution_time']}")
+            logger.info(f"Time: {result.total_duration}")
             return 0
         else:
-            logger.error(f"\n[ERROR] Pipeline failed: {result['message']}")
+            logger.error(f"\n[ERROR] Pipeline failed: {result.message}")
             return 1
     
     except KeyboardInterrupt:

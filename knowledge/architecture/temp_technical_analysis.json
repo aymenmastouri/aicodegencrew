@@ -1,0 +1,72 @@
+{
+  "architecture_styles": {
+    "primary": "layered_architecture",
+    "secondary": ["modular_monolith_architecture"],
+    "evidence_count": 2,
+    "verification": "Found layered_architecture component in architecture_style list and backend container uses Spring Boot typical of a layered Java application."
+  },
+  "design_patterns": [
+    { "name": "repository_pattern", "instances": 1, "verified_with_rag": false },
+    { "name": "factory_pattern", "instances": 1, "verified_with_rag": false },
+    { "name": "builder_pattern", "instances": 1, "verified_with_rag": false },
+    { "name": "singleton_pattern", "instances": 1, "verified_with_rag": false },
+    { "name": "adapter_pattern", "instances": 1, "verified_with_rag": false },
+    { "name": "observer_pattern", "instances": 1, "verified_with_rag": false }
+  ],
+  "technology_stack": {
+    "backend": {
+      "framework": "Spring Boot",
+      "language": "Java",
+      "evidence": "backend container"
+    },
+    "frontend": {
+      "framework": "Angular",
+      "language": "TypeScript",
+      "evidence": "frontend container"
+    },
+    "database": ["PostgreSQL"],
+    "infrastructure": ["ubuntu (docker)", "pact-broker"]
+  },
+  "layer_structure": {
+    "layers": ["controller", "service", "repository", "entity", "component"],
+    "component_counts": {
+      "controllers": 24,
+      "services": 233,
+      "repositories": 4,
+      "entities": 37,
+      "other_components": 163
+    },
+    "total_components": 461,
+    "naming_patterns": [
+      "*RestServiceImpl (REST controllers)",
+      "*Controller (generic controllers)",
+      "*Handler (security / exception handlers)",
+      "*HealthIndicator (health‑check components)",
+      "*Endpoint (actuator endpoints)"
+    ]
+  },
+  "dependencies": {
+    "total_relations": 50,
+    "relation_types": {
+      "uses": 50,
+      "implements": 0,
+      "extends": 0
+    },
+    "high_dependency_components": [
+      "deed_entry_service_impl",
+      "document_meta_data_service_impl",
+      "xnp_meta_data_resolver_service",
+      "action_service_impl",
+      "key_manager_service_impl",
+      "archiving_service_impl",
+      "deed_entry_connection_service_impl",
+      "ready_health_indicator",
+      "wa_wi_service_impl",
+      "notary_official_title_mapper"
+    ],
+    "violations": [
+      "No direct Controller → Repository relationships detected (controllers only use services or other higher‑level components).",
+      "No obvious circular dependencies found within the sampled 50 relations."
+    ]
+  }
+}

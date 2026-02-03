@@ -199,15 +199,25 @@ class FactsQueryTool(BaseTool):
             
             # Text search filter
             if query:
-                searchable = f"{c.get('name', '')} {c.get('package', '')} {c.get('description', '')}".lower()
+                searchable = f"{c.get('name', '')} {c.get('module', '')} {c.get('file_path', '')} {c.get('description', '')}".lower()
                 if query not in searchable:
                     continue
+            
+            # Derive package from module or file_path
+            package = c.get("module") or ""
+            if not package and c.get("file_path"):
+                # Extract directory from file path as pseudo-package
+                file_path = c.get("file_path", "")
+                if "\\" in file_path:
+                    package = "\\".join(file_path.split("\\")[:-1])
+                elif "/" in file_path:
+                    package = "/".join(file_path.split("/")[:-1])
             
             # Add to results (simplified for token efficiency)
             filtered.append({
                 "name": c.get("name"),
                 "stereotype": c.get("stereotype"),
-                "package": c.get("package"),
+                "package": package,
                 "container": c.get("container"),
                 "description": (c.get("description", "") or "")[:100],  # Truncate
             })
@@ -227,14 +237,18 @@ class FactsQueryTool(BaseTool):
         filtered = []
         
         for r in relations:
+            # Facts JSON uses "from"/"to", map to "source"/"target" for clarity
+            from_comp = r.get("from", "")
+            to_comp = r.get("to", "")
+            
             if query:
-                searchable = f"{r.get('source', '')} {r.get('target', '')} {r.get('type', '')}".lower()
+                searchable = f"{from_comp} {to_comp} {r.get('type', '')}".lower()
                 if query not in searchable:
                     continue
             
             filtered.append({
-                "source": r.get("source"),
-                "target": r.get("target"),
+                "source": from_comp,
+                "target": to_comp,
                 "type": r.get("type"),
                 "description": (r.get("description", "") or "")[:80],
             })

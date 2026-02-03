@@ -8,7 +8,7 @@ Multi-agent analysis using 4 specialized agents:
 - Synthesis Lead: Merges all analyses into unified model
 
 Input: architecture_facts.json + ChromaDB (RAG)
-Output: synthesized_architecture.json
+Output: analyzed_architecture.json
 """
 
 from .crew import ArchitectureAnalysisCrew

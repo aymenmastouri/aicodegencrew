@@ -1,0 +1,93 @@
+{
+  "complexity": {
+    "total_components": 298,
+    "by_type": {
+      "controllers": 24,
+      "services": 233,
+      "repositories": 4,
+      "entities": 37
+    },
+    "level": "medium",
+    "assessment": "The system contains 298 components across the main stereotypes. The count is between 100‑500, indicating medium architectural complexity."
+  },
+  "coupling": {
+    "total_relations": 50,
+    "relations_per_component": 0.11,
+    "highly_coupled_components": [
+      {
+        "name": "deed_entry_service_impl",
+        "dependencies": 15
+      }
+    ],
+    "circular_dependencies": [],
+    "level": "low"
+  },
+  "technical_debt": {
+    "todo_count": 0,
+    "fixme_count": 0,
+    "hack_count": 0,
+    "deprecated_count": 0,
+    "debt_items": [],
+    "level": "low"
+  },
+  "security": {
+    "authentication_patterns": [],
+    "security_concerns": [],
+    "level": "UNKNOWN"
+  },
+  "testability": {
+    "test_patterns_found": [],
+    "level": "UNKNOWN"
+  },
+  "quality_attributes": {
+    "maintainability": {
+      "rating": "medium",
+      "evidence": "Low relation density (0.11) and no identified technical debt, but a single service (deed_entry_service_impl) has a large number of dependencies, which may affect maintainability."
+    },
+    "scalability": {
+      "rating": "medium",
+      "evidence": "Layered architecture with clear separation of concerns; however, the presence of a very large service could become a bottleneck under scale."
+    },
+    "security": {
+      "rating": "UNKNOWN",
+      "evidence": "No security‑related markers (authentication, authorization, vulnerability) were found in the indexed facts."
+    },
+    "testability": {
+      "rating": "UNKNOWN",
+      "evidence": "No test‑related markers (unit test, integration test, mock) were found in the indexed facts."
+    }
+  },
+  "risks": [
+    {
+      "name": "God Service – deed_entry_service_impl",
+      "severity": "high",
+      "evidence": "deed_entry_service_impl has 15 direct 'uses' dependencies, far above the >10 threshold for high coupling.",
+      "mitigation": "Refactor the service into smaller, cohesive services or introduce façade layers to reduce direct dependencies."
+    },
+    {
+      "name": "Potential hidden technical debt",
+      "severity": "medium",
+      "evidence": "Searches for TODO, FIXME, HACK and deprecated markers returned zero results, but absence may be due to limited code‑base indexing.",
+      "mitigation": "Run a full source index and enforce code‑review policies that require explicit debt tagging."
+    },
+    {
+      "name": "Missing security evidence",
+      "severity": "medium",
+      "evidence": "No authentication, authorization, or vulnerability patterns were detected.",
+      "mitigation": "Perform a dedicated security audit (static analysis, penetration testing) and ensure security annotations are present on controllers/services."
+    },
+    {
+      "name": "Lack of test artifacts",
+      "severity": "medium",
+      "evidence": "No test patterns were found in the indexed data.",
+      "mitigation": "Introduce unit and integration test suites, enforce coverage thresholds, and add test-specific annotations."
+    }
+  ],
+  "recommendations": [
+    "Refactor deed_entry_service_impl into smaller domain‑specific services to reduce coupling.",
+    "Run a comprehensive code‑base indexing (Phase 0) to ensure all TODO/FIXME/HACK markers are captured.",
+    "Introduce security annotations (e.g., @PreAuthorize) on all REST controllers and perform a static security scan.",
+    "Add unit and integration tests for each service and controller; enforce a minimum coverage of 80%.",
+    "Review the list of high_dependency_components from the architecture metadata and consider extracting shared functionality into utility services or libraries."
+  ]
+}
