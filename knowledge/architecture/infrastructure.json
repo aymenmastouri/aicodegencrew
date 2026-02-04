@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Dockerfile",
+    "type": "dockerfile",
+    "evidence": [
+      {
+        "path": "deployment\\docker\\Dockerfile",
+        "lines": "1-30",
+        "reason": "Dockerfile: Dockerfile (base: ubuntu:20.04)"
+      }
+    ]
+  }
+]
