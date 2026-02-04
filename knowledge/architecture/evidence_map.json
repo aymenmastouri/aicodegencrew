@@ -2855,116 +2855,12 @@
       "WorkflowStatusControlComponent"
     ]
   },
-  "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts:48-54": {
-    "path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
-    "lines": "48-54",
-    "reason": "@Injectable: XnpDocumentAdapterService",
+  "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts:14-20": {
+    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: ReencryptionCheckResolver",
     "referenced_by": [
-      "XnpDocumentAdapterService"
-    ]
-  },
-  "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts:8-14": {
-    "path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: ActionBaseService",
-    "referenced_by": [
-      "ActionBaseService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts:8-14": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: JobBaseService",
-    "referenced_by": [
-      "JobBaseService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts:8-14": {
-    "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: DocumentMetadataBaseService",
-    "referenced_by": [
-      "DocumentMetadataBaseService"
-    ]
-  },
-  "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts:19-25": {
-    "path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
-    "lines": "19-25",
-    "reason": "@Injectable: SettingsAdapterService",
-    "referenced_by": [
-      "SettingsAdapterService"
-    ]
-  },
-  "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts:48-54": {
-    "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
-    "lines": "48-54",
-    "reason": "@Injectable: KeyManagerAdapterService",
-    "referenced_by": [
-      "KeyManagerAdapterService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts:13-19": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot0",
-    "referenced_by": [
-      "ImportHandlerServiceVersion1Dot5Dot0"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts:18-24": {
-    "path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
-    "lines": "18-24",
-    "reason": "@Injectable: XnpDocumentsEndpoint",
-    "referenced_by": [
-      "XnpDocumentsEndpoint"
-    ]
-  },
-  "src\\app\\number-management\\services\\number-management-rest.service.ts:13-19": {
-    "path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: NumberManagementRestService",
-    "referenced_by": [
-      "NumberManagementRestService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts:32-38": {
-    "path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
-    "lines": "32-38",
-    "reason": "@Injectable: GlobalArchivingHelperService",
-    "referenced_by": [
-      "GlobalArchivingHelperService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts:10-16": {
-    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: WorkflowValidateSignatureService",
-    "referenced_by": [
-      "WorkflowValidateSignatureService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts:16-22": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
-    "lines": "16-22",
-    "reason": "@Injectable: ShortcutService",
-    "referenced_by": [
-      "ShortcutService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts:18-24": {
-    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
-    "lines": "18-24",
-    "reason": "@Injectable: LineNumberService",
-    "referenced_by": [
-      "LineNumberService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts:16-22": {
-    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
-    "lines": "16-22",
-    "reason": "@Injectable: JobFinalizeReencryptionService",
-    "referenced_by": [
-      "JobFinalizeReencryptionService"
+      "ReencryptionCheckResolver"
     ]
   },
   "src\\app\\adapters\\authentication\\xnp\\services\\notary-official-title-static-mapper.service.ts:4-10": {
@@ -2975,54 +2871,6 @@
       "NotaryOfficialTitleStaticMapperService"
     ]
   },
-  "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts:10-16": {
-    "path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: TypeaheadDomService",
-    "referenced_by": [
-      "TypeaheadDomService"
-    ]
-  },
-  "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts:28-34": {
-    "path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
-    "lines": "28-34",
-    "reason": "@Injectable: XnpStorageSettingsAdapter",
-    "referenced_by": [
-      "XnpStorageSettingsAdapter"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts:26-32": {
-    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts",
-    "lines": "26-32",
-    "reason": "@Injectable: WorkflowChangeAoidJobService",
-    "referenced_by": [
-      "WorkflowChangeAoidJobService"
-    ]
-  },
-  "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts:32-38": {
-    "path": "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts",
-    "lines": "32-38",
-    "reason": "@Injectable: DocumentAdapterHelperService",
-    "referenced_by": [
-      "DocumentAdapterHelperService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts:14-20": {
-    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: SortingService",
-    "referenced_by": [
-      "SortingService"
-    ]
-  },
-  "src\\app\\shared\\services\\button-deactivation.service.ts:4-10": {
-    "path": "src\\app\\shared\\services\\button-deactivation.service.ts",
-    "lines": "4-10",
-    "reason": "@Injectable: ButtonDeactivationService",
-    "referenced_by": [
-      "ButtonDeactivationService"
-    ]
-  },
   "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts:11-17": {
     "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts",
     "lines": "11-17",
@@ -3031,244 +2879,12 @@
       "DomainWorkflowService"
     ]
   },
-  "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts:80-86": {
-    "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
-    "lines": "80-86",
-    "reason": "@Injectable: SucessorHandoverProcessHelperService",
-    "referenced_by": [
-      "SucessorHandoverProcessHelperService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts:6-12": {
-    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
-    "lines": "6-12",
-    "reason": "@Injectable: SearchNotifyService",
-    "referenced_by": [
-      "SearchNotifyService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts:28-34": {
-    "path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
-    "lines": "28-34",
-    "reason": "@Injectable: BusinessLoggingResolverService",
-    "referenced_by": [
-      "BusinessLoggingResolverService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts:31-37": {
-    "path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
-    "lines": "31-37",
-    "reason": "@Injectable: WorkflowBroadcastService",
-    "referenced_by": [
-      "WorkflowBroadcastService"
-    ]
-  },
-  "src\\app\\adapters\\session\\native\\native-session-adapter.ts:5-11": {
-    "path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
-    "lines": "5-11",
-    "reason": "@Injectable: NativeSessionAdapter",
-    "referenced_by": [
-      "NativeSessionAdapter"
-    ]
-  },
-  "src\\app\\shared\\authorization\\activate-if-user-authorized.ts:17-23": {
-    "path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
-    "lines": "17-23",
-    "reason": "@Injectable: ActivateIfUserAuthorized",
-    "referenced_by": [
-      "ActivateIfUserAuthorized"
-    ]
-  },
-  "src\\app\\shared\\error-handling\\global-error-handler.service.ts:20-26": {
-    "path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
-    "lines": "20-26",
-    "reason": "@Injectable: GlobalErrorHandlerService",
-    "referenced_by": [
-      "GlobalErrorHandlerService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts:19-25": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
-    "lines": "19-25",
-    "reason": "@Injectable: DomainJobService",
-    "referenced_by": [
-      "DomainJobService"
-    ]
-  },
-  "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts:28-34": {
-    "path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
-    "lines": "28-34",
-    "reason": "@Injectable: BusyIndicatorInterceptor",
-    "referenced_by": [
-      "BusyIndicatorInterceptor"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts:16-22": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
-    "lines": "16-22",
-    "reason": "@Injectable: NswDeedImportService",
-    "referenced_by": [
-      "NswDeedImportService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts:26-32": {
-    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
-    "lines": "26-32",
-    "reason": "@Injectable: WorkflowArchiveJobService",
-    "referenced_by": [
-      "WorkflowArchiveJobService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts:13-19": {
-    "path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: DeedEntryPageManagerService",
-    "referenced_by": [
-      "DeedEntryPageManagerService"
-    ]
-  },
-  "src\\app\\shared\\services\\modal\\modal.service.ts:32-38": {
-    "path": "src\\app\\shared\\services\\modal\\modal.service.ts",
-    "lines": "32-38",
-    "reason": "@Injectable: ModalService",
-    "referenced_by": [
-      "ModalService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\official-activity-metadata\\official-activity-metadata.service.ts:12-18": {
-    "path": "src\\app\\deed-entry\\services\\official-activity-metadata\\official-activity-metadata.service.ts",
-    "lines": "12-18",
-    "reason": "@Injectable: OfficialActivityMetadataService",
-    "referenced_by": [
-      "OfficialActivityMetadataService"
-    ]
-  },
-  "src\\app\\report-metadata\\services\\report-metadata.service.ts:44-50": {
-    "path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
-    "lines": "44-50",
-    "reason": "@Injectable: ReportMetadataService",
-    "referenced_by": [
-      "ReportMetadataService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-modal\\reencryption-has-errors-retry\\reencryption-has-errors-retry.service.ts:14-20": {
-    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-has-errors-retry\\reencryption-has-errors-retry.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: ReencryptionHasErrorsRetryService",
-    "referenced_by": [
-      "ReencryptionHasErrorsRetryService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts:16-22": {
-    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
-    "lines": "16-22",
-    "reason": "@Injectable: HandleSearchParamHelper",
-    "referenced_by": [
-      "HandleSearchParamHelper"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts:16-22": {
-    "path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
-    "lines": "16-22",
-    "reason": "@Injectable: XnpVvzEndpoint",
-    "referenced_by": [
-      "XnpVvzEndpoint"
-    ]
-  },
-  "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts:6-12": {
-    "path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
-    "lines": "6-12",
-    "reason": "@Injectable: ReportMetadataSignatureHelperService",
-    "referenced_by": [
-      "ReportMetadataSignatureHelperService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts:10-16": {
-    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
+  "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts:10-16": {
+    "path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
     "lines": "10-16",
-    "reason": "@Injectable: WorkflowValidateSignatureTaskService",
+    "reason": "@Injectable: NotaryRepresentationService",
     "referenced_by": [
-      "WorkflowValidateSignatureTaskService"
-    ]
-  },
-  "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts:52-58": {
-    "path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
-    "lines": "52-58",
-    "reason": "@Injectable: ActionService",
-    "referenced_by": [
-      "ActionService"
-    ]
-  },
-  "src\\app\\core\\settings-initializer.ts:14-20": {
-    "path": "src\\app\\core\\settings-initializer.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: SettingsInitializer",
-    "referenced_by": [
-      "SettingsInitializer"
-    ]
-  },
-  "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts:10-16": {
-    "path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: XnpFlyInNotificationNgAdapter",
-    "referenced_by": [
-      "XnpFlyInNotificationNgAdapter"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts:153-159": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
-    "lines": "153-159",
-    "reason": "@Injectable: CorrectionChangeDisplayService",
-    "referenced_by": [
-      "CorrectionChangeDisplayService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts:19-25": {
-    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
-    "lines": "19-25",
-    "reason": "@Injectable: ReencryptionFinalizationConfirmService",
-    "referenced_by": [
-      "ReencryptionFinalizationConfirmService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts:5-11": {
-    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
-    "lines": "5-11",
-    "reason": "@Injectable: HandoverDataSetService",
-    "referenced_by": [
-      "HandoverDataSetService"
-    ]
-  },
-  "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts:2-8": {
-    "path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
-    "lines": "2-8",
-    "reason": "@Injectable: TooltipConfigService",
-    "referenced_by": [
-      "TooltipConfigService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts:71-77": {
-    "path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
-    "lines": "71-77",
-    "reason": "@Injectable: WorkflowReencryptionService",
-    "referenced_by": [
-      "WorkflowReencryptionService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts:22-28": {
-    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts",
-    "lines": "22-28",
-    "reason": "@Injectable: WorkflowDeletionTaskService",
-    "referenced_by": [
-      "WorkflowDeletionTaskService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts:10-16": {
-    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: ReencryptionFinalizationDoneService",
-    "referenced_by": [
-      "ReencryptionFinalizationDoneService"
+      "NotaryRepresentationService"
     ]
   },
   "src\\app\\nsw-document-import\\document-import.service.ts:40-46": {
@@ -3279,100 +2895,28 @@
       "DocumentImportService"
     ]
   },
-  "src\\app\\workflow\\services\\workflow-status\\workflow-status.service.ts:36-42": {
-    "path": "src\\app\\workflow\\services\\workflow-status\\workflow-status.service.ts",
-    "lines": "36-42",
-    "reason": "@Injectable: WorkflowStatusControlService",
+  "src\\app\\shared\\services\\redesign.service.ts:6-12": {
+    "path": "src\\app\\shared\\services\\redesign.service.ts",
+    "lines": "6-12",
+    "reason": "@Injectable: RedesignService",
     "referenced_by": [
-      "WorkflowStatusControlService"
+      "RedesignService"
     ]
   },
-  "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts:24-30": {
-    "path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
-    "lines": "24-30",
-    "reason": "@Injectable: UvzNumberFormatConfigurationService",
+  "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts:114-120": {
+    "path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
+    "lines": "114-120",
+    "reason": "@Injectable: PdfExportService",
     "referenced_by": [
-      "UvzNumberFormatConfigurationService"
+      "PdfExportService"
     ]
   },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts:110-116": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
-    "lines": "110-116",
-    "reason": "@Injectable: WorkflowModuleService",
+  "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts:32-38": {
+    "path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
+    "lines": "32-38",
+    "reason": "@Injectable: XnpEndpointProvider",
     "referenced_by": [
-      "WorkflowModuleService"
-    ]
-  },
-  "src\\app\\shared\\services\\injector\\injector.service.ts:3-9": {
-    "path": "src\\app\\shared\\services\\injector\\injector.service.ts",
-    "lines": "3-9",
-    "reason": "@Injectable: InjectorService",
-    "referenced_by": [
-      "InjectorService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts:12-18": {
-    "path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
-    "lines": "12-18",
-    "reason": "@Injectable: DeedRegistryDomainService",
-    "referenced_by": [
-      "DeedRegistryDomainService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts:40-46": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
-    "lines": "40-46",
-    "reason": "@Injectable: DeedFormService",
-    "referenced_by": [
-      "DeedFormService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts:20-26": {
-    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
-    "lines": "20-26",
-    "reason": "@Injectable: WorkflowArchiveWorkService",
-    "referenced_by": [
-      "WorkflowArchiveWorkService"
-    ]
-  },
-  "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts:8-14": {
-    "path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: JsonAuthorizationAdapter",
-    "referenced_by": [
-      "JsonAuthorizationAdapter"
-    ]
-  },
-  "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts:9-15": {
-    "path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: ChromePageContainerAdapterImpl",
-    "referenced_by": [
-      "ChromePageContainerAdapterImpl"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts:29-35": {
-    "path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
-    "lines": "29-35",
-    "reason": "@Injectable: DocumentArchivingRestService",
-    "referenced_by": [
-      "DocumentArchivingRestService"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts:21-27": {
-    "path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
-    "lines": "21-27",
-    "reason": "@Injectable: XnpBroadcastAdapterService",
-    "referenced_by": [
-      "XnpBroadcastAdapterService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts:7-13": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: WorkflowApiConfiguration",
-    "referenced_by": [
-      "WorkflowApiConfiguration"
+      "XnpEndpointProvider"
     ]
   },
   "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-work.service.ts:20-26": {
@@ -3383,44 +2927,396 @@
       "WorkflowReencryptionWorkService"
     ]
   },
-  "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts:6-12": {
-    "path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
+  "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts:6-12": {
+    "path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
     "lines": "6-12",
-    "reason": "@Injectable: CustomDatepickerParserFormatter",
+    "reason": "@Injectable: ReportMetadataSignatureHelperService",
     "referenced_by": [
-      "CustomDatepickerParserFormatter"
+      "ReportMetadataSignatureHelperService"
     ]
   },
-  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts:20-26": {
-    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
-    "lines": "20-26",
-    "reason": "@Injectable: WorkflowChangeAoidWorkService",
+  "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts:153-159": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
+    "lines": "153-159",
+    "reason": "@Injectable: CorrectionChangeDisplayService",
     "referenced_by": [
-      "WorkflowChangeAoidWorkService"
+      "CorrectionChangeDisplayService"
     ]
   },
-  "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts:14-20": {
-    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: WorkflowReencryptionTaskService",
+  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts:26-32": {
+    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts",
+    "lines": "26-32",
+    "reason": "@Injectable: WorkflowChangeAoidJobService",
     "referenced_by": [
-      "WorkflowReencryptionTaskService"
+      "WorkflowChangeAoidJobService"
     ]
   },
-  "src\\app\\action\\services\\action\\action-domain.service.ts:30-36": {
-    "path": "src\\app\\action\\services\\action\\action-domain.service.ts",
-    "lines": "30-36",
-    "reason": "@Injectable: ActionDomainService",
+  "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts:8-14": {
+    "path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: NativePdfAdapter",
     "referenced_by": [
-      "ActionDomainService"
+      "NativePdfAdapter"
     ]
   },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts:10-16": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
+  "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts:77-83": {
+    "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
+    "lines": "77-83",
+    "reason": "@Injectable: DeedRegistryService",
+    "referenced_by": [
+      "DeedRegistryService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts:12-18": {
+    "path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
+    "lines": "12-18",
+    "reason": "@Injectable: DeedRegistryDomainService",
+    "referenced_by": [
+      "DeedRegistryDomainService"
+    ]
+  },
+  "src\\app\\shared\\services\\button-deactivation.service.ts:4-10": {
+    "path": "src\\app\\shared\\services\\button-deactivation.service.ts",
+    "lines": "4-10",
+    "reason": "@Injectable: ButtonDeactivationService",
+    "referenced_by": [
+      "ButtonDeactivationService"
+    ]
+  },
+  "src\\app\\adapters\\json-import\\native\\native-json-import.ts:15-21": {
+    "path": "src\\app\\adapters\\json-import\\native\\native-json-import.ts",
+    "lines": "15-21",
+    "reason": "@Injectable: NativeJsonImportAdapter",
+    "referenced_by": [
+      "NativeJsonImportAdapter"
+    ]
+  },
+  "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts:28-34": {
+    "path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
+    "lines": "28-34",
+    "reason": "@Injectable: XnpStorageSettingsAdapter",
+    "referenced_by": [
+      "XnpStorageSettingsAdapter"
+    ]
+  },
+  "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts:9-15": {
+    "path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: ChromePageContainerAdapterImpl",
+    "referenced_by": [
+      "ChromePageContainerAdapterImpl"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts:73-79": {
+    "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
+    "lines": "73-79",
+    "reason": "@Injectable: DeedEntryRestService",
+    "referenced_by": [
+      "DeedEntryRestService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts:10-16": {
+    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
     "lines": "10-16",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot3Dot0",
+    "reason": "@Injectable: WorkflowValidateSignatureService",
     "referenced_by": [
-      "ImportHandlerServiceVersion1Dot3Dot0"
+      "WorkflowValidateSignatureService"
+    ]
+  },
+  "src\\app\\adapters\\authentication\\xnp\\XnpAuthenticationNgAdapter.ts:8-14": {
+    "path": "src\\app\\adapters\\authentication\\xnp\\XnpAuthenticationNgAdapter.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: XnpAuthenticationNgAdapter",
+    "referenced_by": [
+      "XnpAuthenticationNgAdapter"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts:9-15": {
+    "path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: XnpPlatformEndpoint",
+    "referenced_by": [
+      "XnpPlatformEndpoint"
+    ]
+  },
+  "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts:27-33": {
+    "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
+    "lines": "27-33",
+    "reason": "@Injectable: HtmlSignatureAdapterService",
+    "referenced_by": [
+      "HtmlSignatureAdapterService"
+    ]
+  },
+  "src\\app\\shared\\services\\modal\\modal.service.ts:32-38": {
+    "path": "src\\app\\shared\\services\\modal\\modal.service.ts",
+    "lines": "32-38",
+    "reason": "@Injectable: ModalService",
+    "referenced_by": [
+      "ModalService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts:8-14": {
+    "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: DocumentMetadataBaseService",
+    "referenced_by": [
+      "DocumentMetadataBaseService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts:5-11": {
+    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
+    "lines": "5-11",
+    "reason": "@Injectable: WorkflowDeletionService",
+    "referenced_by": [
+      "WorkflowDeletionService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts:232-238": {
+    "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
+    "lines": "232-238",
+    "reason": "@Injectable: DocumentMetaDataService",
+    "referenced_by": [
+      "DocumentMetaDataService"
+    ]
+  },
+  "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts:48-54": {
+    "path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
+    "lines": "48-54",
+    "reason": "@Injectable: XnpDocumentAdapterService",
+    "referenced_by": [
+      "XnpDocumentAdapterService"
+    ]
+  },
+  "src\\app\\adapters\\archiving\\archiving.service.ts:33-39": {
+    "path": "src\\app\\adapters\\archiving\\archiving.service.ts",
+    "lines": "33-39",
+    "reason": "@Injectable: ArchivingService",
+    "referenced_by": [
+      "ArchivingService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts:11-17": {
+    "path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
+    "lines": "11-17",
+    "reason": "@Injectable: XnpPdfsEndpoint",
+    "referenced_by": [
+      "XnpPdfsEndpoint"
+    ]
+  },
+  "src\\app\\shared\\error-handling\\global-error-handler.service.ts:20-26": {
+    "path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
+    "lines": "20-26",
+    "reason": "@Injectable: GlobalErrorHandlerService",
+    "referenced_by": [
+      "GlobalErrorHandlerService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts:26-32": {
+    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
+    "lines": "26-32",
+    "reason": "@Injectable: WorkflowArchiveJobService",
+    "referenced_by": [
+      "WorkflowArchiveJobService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-2-handler\\import-v1-6-2-handler.service.ts:13-19": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-2-handler\\import-v1-6-2-handler.service.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot2",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot6Dot2"
+    ]
+  },
+  "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts:15-21": {
+    "path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
+    "lines": "15-21",
+    "reason": "@Injectable: HtmlCustodyAdapterService",
+    "referenced_by": [
+      "HtmlCustodyAdapterService"
+    ]
+  },
+  "src\\app\\adapters\\session\\native\\native-session-adapter.ts:5-11": {
+    "path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
+    "lines": "5-11",
+    "reason": "@Injectable: NativeSessionAdapter",
+    "referenced_by": [
+      "NativeSessionAdapter"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts:8-14": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: WorkflowBaseService",
+    "referenced_by": [
+      "WorkflowBaseService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts:34-40": {
+    "path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
+    "lines": "34-40",
+    "reason": "@Injectable: DeedDeleteService",
+    "referenced_by": [
+      "DeedDeleteService"
+    ]
+  },
+  "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts:6-12": {
+    "path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
+    "lines": "6-12",
+    "reason": "@Injectable: MockKeyManagerAdapterService",
+    "referenced_by": [
+      "MockKeyManagerAdapterService"
+    ]
+  },
+  "src\\app\\report-metadata\\services\\report-metadata.service.ts:44-50": {
+    "path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
+    "lines": "44-50",
+    "reason": "@Injectable: ReportMetadataService",
+    "referenced_by": [
+      "ReportMetadataService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts:9-15": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot1Dot1",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot1Dot1"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts:28-34": {
+    "path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
+    "lines": "28-34",
+    "reason": "@Injectable: BusinessLoggingResolverService",
+    "referenced_by": [
+      "BusinessLoggingResolverService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts:16-22": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
+    "lines": "16-22",
+    "reason": "@Injectable: NswDeedImportService",
+    "referenced_by": [
+      "NswDeedImportService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts:9-15": {
+    "path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: DeedEntryLogService",
+    "referenced_by": [
+      "DeedEntryLogService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts:22-28": {
+    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts",
+    "lines": "22-28",
+    "reason": "@Injectable: WorkflowDeletionTaskService",
+    "referenced_by": [
+      "WorkflowDeletionTaskService"
+    ]
+  },
+  "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts:7-13": {
+    "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: ReencryptionApiConfiguration",
+    "referenced_by": [
+      "ReencryptionApiConfiguration"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts:31-37": {
+    "path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
+    "lines": "31-37",
+    "reason": "@Injectable: WorkflowBroadcastService",
+    "referenced_by": [
+      "WorkflowBroadcastService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts:13-19": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot0",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot5Dot0"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-1-handler\\import-v1-6-1-handler.service.ts:13-19": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-1-handler\\import-v1-6-1-handler.service.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot1",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot6Dot1"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts:5-11": {
+    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
+    "lines": "5-11",
+    "reason": "@Injectable: HandoverDataSetService",
+    "referenced_by": [
+      "HandoverDataSetService"
+    ]
+  },
+  "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerAdapter.ts:30-36": {
+    "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerAdapter.ts",
+    "lines": "30-36",
+    "reason": "@Injectable: XnpPageContainerAdapter",
+    "referenced_by": [
+      "XnpPageContainerAdapter"
+    ]
+  },
+  "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts:17-23": {
+    "path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
+    "lines": "17-23",
+    "reason": "@Injectable: BusinessPurposeResolverEnhancedSearch",
+    "referenced_by": [
+      "BusinessPurposeResolverEnhancedSearch"
+    ]
+  },
+  "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts:19-25": {
+    "path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
+    "lines": "19-25",
+    "reason": "@Injectable: TypeaheadFilterService",
+    "referenced_by": [
+      "TypeaheadFilterService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts:110-116": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
+    "lines": "110-116",
+    "reason": "@Injectable: WorkflowModuleService",
+    "referenced_by": [
+      "WorkflowModuleService"
+    ]
+  },
+  "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts:20-26": {
+    "path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
+    "lines": "20-26",
+    "reason": "@Injectable: XnpPdfAdapter",
+    "referenced_by": [
+      "XnpPdfAdapter"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts:20-26": {
+    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
+    "lines": "20-26",
+    "reason": "@Injectable: WorkflowArchiveWorkService",
+    "referenced_by": [
+      "WorkflowArchiveWorkService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts:18-24": {
+    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
+    "lines": "18-24",
+    "reason": "@Injectable: LineNumberService",
+    "referenced_by": [
+      "LineNumberService"
+    ]
+  },
+  "src\\app\\shared\\services\\redesign.service.mock.ts:2-8": {
+    "path": "src\\app\\shared\\services\\redesign.service.mock.ts",
+    "lines": "2-8",
+    "reason": "@Injectable: RedesignServiceMock",
+    "referenced_by": [
+      "RedesignServiceMock"
     ]
   },
   "src\\app\\deed-entry\\services\\deed-entry\\get-deed-entry-lock.service.ts:37-43": {
@@ -3431,6 +3327,254 @@
       "GetDeedEntryLockService"
     ]
   },
+  "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts:19-25": {
+    "path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
+    "lines": "19-25",
+    "reason": "@Injectable: SettingsAdapterService",
+    "referenced_by": [
+      "SettingsAdapterService"
+    ]
+  },
+  "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts:35-41": {
+    "path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
+    "lines": "35-41",
+    "reason": "@Injectable: UserContextPermissionCheckService",
+    "referenced_by": [
+      "UserContextPermissionCheckService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts:24-30": {
+    "path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
+    "lines": "24-30",
+    "reason": "@Injectable: UvzNumberFormatConfigurationService",
+    "referenced_by": [
+      "UvzNumberFormatConfigurationService"
+    ]
+  },
+  "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts:10-16": {
+    "path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: XnpFlyInNotificationNgAdapter",
+    "referenced_by": [
+      "XnpFlyInNotificationNgAdapter"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts:7-13": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: WorkflowApiConfiguration",
+    "referenced_by": [
+      "WorkflowApiConfiguration"
+    ]
+  },
+  "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts:8-14": {
+    "path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: JsonAuthorizationAdapter",
+    "referenced_by": [
+      "JsonAuthorizationAdapter"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts:16-22": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
+    "lines": "16-22",
+    "reason": "@Injectable: ShortcutService",
+    "referenced_by": [
+      "ShortcutService"
+    ]
+  },
+  "src\\app\\action\\services\\action\\action-domain.service.ts:30-36": {
+    "path": "src\\app\\action\\services\\action\\action-domain.service.ts",
+    "lines": "30-36",
+    "reason": "@Injectable: ActionDomainService",
+    "referenced_by": [
+      "ActionDomainService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts:29-35": {
+    "path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
+    "lines": "29-35",
+    "reason": "@Injectable: DocumentArchivingRestService",
+    "referenced_by": [
+      "DocumentArchivingRestService"
+    ]
+  },
+  "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts:26-32": {
+    "path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
+    "lines": "26-32",
+    "reason": "@Injectable: ReportMetadataRestService",
+    "referenced_by": [
+      "ReportMetadataRestService"
+    ]
+  },
+  "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts:7-13": {
+    "path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: RateLimitingInterceptor",
+    "referenced_by": [
+      "RateLimitingInterceptor"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts:20-26": {
+    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
+    "lines": "20-26",
+    "reason": "@Injectable: WorkflowChangeAoidWorkService",
+    "referenced_by": [
+      "WorkflowChangeAoidWorkService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts:19-25": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
+    "lines": "19-25",
+    "reason": "@Injectable: DomainJobService",
+    "referenced_by": [
+      "DomainJobService"
+    ]
+  },
+  "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts:19-25": {
+    "path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
+    "lines": "19-25",
+    "reason": "@Injectable: BnotkGridHelperService",
+    "referenced_by": [
+      "BnotkGridHelperService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts:26-32": {
+    "path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
+    "lines": "26-32",
+    "reason": "@Injectable: XnpArchiveManagerEndpoint",
+    "referenced_by": [
+      "XnpArchiveManagerEndpoint"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts:20-26": {
+    "path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
+    "lines": "20-26",
+    "reason": "@Injectable: AnnualReportActionResolver",
+    "referenced_by": [
+      "AnnualReportActionResolver"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts:12-18": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
+    "lines": "12-18",
+    "reason": "@Injectable: CorrectionObjectCreationService",
+    "referenced_by": [
+      "CorrectionObjectCreationService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts:16-22": {
+    "path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
+    "lines": "16-22",
+    "reason": "@Injectable: XnpVvzEndpoint",
+    "referenced_by": [
+      "XnpVvzEndpoint"
+    ]
+  },
+  "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts:8-14": {
+    "path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: MockFileAdapterService",
+    "referenced_by": [
+      "MockFileAdapterService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts:14-20": {
+    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: WorkflowFinalizeReencryptionTaskService",
+    "referenced_by": [
+      "WorkflowFinalizeReencryptionTaskService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts:6-12": {
+    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
+    "lines": "6-12",
+    "reason": "@Injectable: SearchNotifyService",
+    "referenced_by": [
+      "SearchNotifyService"
+    ]
+  },
+  "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts:6-12": {
+    "path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
+    "lines": "6-12",
+    "reason": "@Injectable: CustomDatepickerParserFormatter",
+    "referenced_by": [
+      "CustomDatepickerParserFormatter"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts:7-13": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: JobApiConfiguration",
+    "referenced_by": [
+      "JobApiConfiguration"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts:18-24": {
+    "path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
+    "lines": "18-24",
+    "reason": "@Injectable: XnpDocumentsEndpoint",
+    "referenced_by": [
+      "XnpDocumentsEndpoint"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts:18-24": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
+    "lines": "18-24",
+    "reason": "@Injectable: DocumentModalHelperService",
+    "referenced_by": [
+      "DocumentModalHelperService"
+    ]
+  },
+  "src\\app\\core\\settings-initializer.ts:14-20": {
+    "path": "src\\app\\core\\settings-initializer.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: SettingsInitializer",
+    "referenced_by": [
+      "SettingsInitializer"
+    ]
+  },
+  "src\\app\\adapters\\online-help-adapter\\xnp\\xnp-help-adapter.service.ts:8-14": {
+    "path": "src\\app\\adapters\\online-help-adapter\\xnp\\xnp-help-adapter.service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: XnpHelpAdapterService",
+    "referenced_by": [
+      "XnpHelpAdapterService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts:10-16": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot2Dot0",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot2Dot0"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts:28-34": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
+    "lines": "28-34",
+    "reason": "@Injectable: AsyncDocumentHelperService",
+    "referenced_by": [
+      "AsyncDocumentHelperService"
+    ]
+  },
+  "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts:52-58": {
+    "path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
+    "lines": "52-58",
+    "reason": "@Injectable: ActionService",
+    "referenced_by": [
+      "ActionService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-status\\workflow-status.service.ts:36-42": {
+    "path": "src\\app\\workflow\\services\\workflow-status\\workflow-status.service.ts",
+    "lines": "36-42",
+    "reason": "@Injectable: WorkflowStatusControlService",
+    "referenced_by": [
+      "WorkflowStatusControlService"
+    ]
+  },
   "src\\app\\adapters\\data-changed\\impl\\xnp\\xnp-data-changed-adapter.service.ts:11-17": {
     "path": "src\\app\\adapters\\data-changed\\impl\\xnp\\xnp-data-changed-adapter.service.ts",
     "lines": "11-17",
@@ -3439,12 +3583,340 @@
       "XnpDataChangedAdapterService"
     ]
   },
-  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts:14-20": {
-    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: WorkflowChangeAoidTaskService",
+  "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts:19-25": {
+    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
+    "lines": "19-25",
+    "reason": "@Injectable: WorkflowFinalizeReencryptionWorkService",
     "referenced_by": [
-      "WorkflowChangeAoidTaskService"
+      "WorkflowFinalizeReencryptionWorkService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-task.service.ts:61-67": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-task.service.ts",
+    "lines": "61-67",
+    "reason": "@Injectable: DomainTaskService",
+    "referenced_by": [
+      "DomainTaskService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts:8-14": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: TaskBaseService",
+    "referenced_by": [
+      "TaskBaseService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts:11-17": {
+    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
+    "lines": "11-17",
+    "reason": "@Injectable: ReencryptionConfirmService",
+    "referenced_by": [
+      "ReencryptionConfirmService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts:21-27": {
+    "path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
+    "lines": "21-27",
+    "reason": "@Injectable: XnpBroadcastAdapterService",
+    "referenced_by": [
+      "XnpBroadcastAdapterService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts:26-32": {
+    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
+    "lines": "26-32",
+    "reason": "@Injectable: WorkflowDeletionJobService",
+    "referenced_by": [
+      "WorkflowDeletionJobService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts:36-42": {
+    "path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
+    "lines": "36-42",
+    "reason": "@Injectable: MockArchivingRetrievalHelperService",
+    "referenced_by": [
+      "MockArchivingRetrievalHelperService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts:13-19": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot0",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot6Dot0"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts:12-18": {
+    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
+    "lines": "12-18",
+    "reason": "@Injectable: WorkflowChangeAoidService",
+    "referenced_by": [
+      "WorkflowChangeAoidService"
+    ]
+  },
+  "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts:29-35": {
+    "path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
+    "lines": "29-35",
+    "reason": "@Injectable: XnpAuthenticationAdapter",
+    "referenced_by": [
+      "XnpAuthenticationAdapter"
+    ]
+  },
+  "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts:10-16": {
+    "path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: TypeaheadDomService",
+    "referenced_by": [
+      "TypeaheadDomService"
+    ]
+  },
+  "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts:8-14": {
+    "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: ReencryptionBaseService",
+    "referenced_by": [
+      "ReencryptionBaseService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts:8-14": {
+    "path": "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: XnpNotificationsEndpoint",
+    "referenced_by": [
+      "XnpNotificationsEndpoint"
+    ]
+  },
+  "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts:48-54": {
+    "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
+    "lines": "48-54",
+    "reason": "@Injectable: KeyManagerAdapterService",
+    "referenced_by": [
+      "KeyManagerAdapterService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\document-metadata\\document-metadata-domain.service.ts:14-20": {
+    "path": "src\\app\\deed-entry\\services\\document-metadata\\document-metadata-domain.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: DocumentMetadataDomainService",
+    "referenced_by": [
+      "DocumentMetadataDomainService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts:155-161": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
+    "lines": "155-161",
+    "reason": "@Injectable: WorkflowModuleMockService",
+    "referenced_by": [
+      "WorkflowModuleMockService"
+    ]
+  },
+  "src\\app\\number-management\\services\\number-management-rest.service.ts:13-19": {
+    "path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: NumberManagementRestService",
+    "referenced_by": [
+      "NumberManagementRestService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts:8-14": {
+    "path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: LspSecureFrameworkEndpoint",
+    "referenced_by": [
+      "LspSecureFrameworkEndpoint"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts:7-13": {
+    "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: DeedRegistryApiConfiguration",
+    "referenced_by": [
+      "DeedRegistryApiConfiguration"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts:9-15": {
+    "path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: XnpNotaryEndpoint",
+    "referenced_by": [
+      "XnpNotaryEndpoint"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts:10-16": {
+    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: ReencryptionFinalizationDoneService",
+    "referenced_by": [
+      "ReencryptionFinalizationDoneService"
+    ]
+  },
+  "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts:6-12": {
+    "path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
+    "lines": "6-12",
+    "reason": "@Injectable: OnlineHelpAdapterService",
+    "referenced_by": [
+      "OnlineHelpAdapterService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts:40-46": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
+    "lines": "40-46",
+    "reason": "@Injectable: DeedFormService",
+    "referenced_by": [
+      "DeedFormService"
+    ]
+  },
+  "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts:28-34": {
+    "path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
+    "lines": "28-34",
+    "reason": "@Injectable: BusyIndicatorInterceptor",
+    "referenced_by": [
+      "BusyIndicatorInterceptor"
+    ]
+  },
+  "src\\app\\shared\\token-bar\\token-data-mapper.service.ts:14-20": {
+    "path": "src\\app\\shared\\token-bar\\token-data-mapper.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: TokenDataMapperService",
+    "referenced_by": [
+      "TokenDataMapperService"
+    ]
+  },
+  "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts:2-8": {
+    "path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
+    "lines": "2-8",
+    "reason": "@Injectable: TooltipConfigService",
+    "referenced_by": [
+      "TooltipConfigService"
+    ]
+  },
+  "src\\app\\core\\application-initializer.service.ts:13-19": {
+    "path": "src\\app\\core\\application-initializer.service.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: ApplicationInitializerService",
+    "referenced_by": [
+      "ApplicationInitializerService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts:62-68": {
+    "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
+    "lines": "62-68",
+    "reason": "@Injectable: ReEncryptionHelperService",
+    "referenced_by": [
+      "ReEncryptionHelperService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts:9-15": {
+    "path": "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: SelectionHelperService",
+    "referenced_by": [
+      "SelectionHelperService"
+    ]
+  },
+  "src\\app\\shared\\authentication\\auth.guard.ts:9-15": {
+    "path": "src\\app\\shared\\authentication\\auth.guard.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: AuthGuard",
+    "referenced_by": [
+      "AuthGuard"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts:31-37": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
+    "lines": "31-37",
+    "reason": "@Injectable: DocumentHelperService",
+    "referenced_by": [
+      "DocumentHelperService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts:8-14": {
+    "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: DeedTypeRestService",
+    "referenced_by": [
+      "DeedTypeRestService"
+    ]
+  },
+  "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts:8-14": {
+    "path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: ActionBaseService",
+    "referenced_by": [
+      "ActionBaseService"
+    ]
+  },
+  "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts:15-21": {
+    "path": "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts",
+    "lines": "15-21",
+    "reason": "@Injectable: XnpFileApiAdapter",
+    "referenced_by": [
+      "XnpFileApiAdapter"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts:16-22": {
+    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
+    "lines": "16-22",
+    "reason": "@Injectable: HandleSearchParamHelper",
+    "referenced_by": [
+      "HandleSearchParamHelper"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts:16-22": {
+    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
+    "lines": "16-22",
+    "reason": "@Injectable: JobFinalizeReencryptionService",
+    "referenced_by": [
+      "JobFinalizeReencryptionService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts:22-28": {
+    "path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
+    "lines": "22-28",
+    "reason": "@Injectable: DeedApprovalService",
+    "referenced_by": [
+      "DeedApprovalService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts:85-91": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
+    "lines": "85-91",
+    "reason": "@Injectable: TaskModuleMockService",
+    "referenced_by": [
+      "TaskModuleMockService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts:14-20": {
+    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: KeepUnsavedBusinessObjectsService",
+    "referenced_by": [
+      "KeepUnsavedBusinessObjectsService"
+    ]
+  },
+  "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts:25-31": {
+    "path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
+    "lines": "25-31",
+    "reason": "@Injectable: ArchiveSessionService",
+    "referenced_by": [
+      "ArchiveSessionService"
+    ]
+  },
+  "src\\app\\shared\\generic-modal-dialogs\\issue-copy-document-modal-dialog\\issue-copy-document-modal-view\\issue-copy-document-helper.ts:10-16": {
+    "path": "src\\app\\shared\\generic-modal-dialogs\\issue-copy-document-modal-dialog\\issue-copy-document-modal-view\\issue-copy-document-helper.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: IssueCopyDocumentHelper",
+    "referenced_by": [
+      "IssueCopyDocumentHelper"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts:14-20": {
+    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: WorkflowReencryptionTaskService",
+    "referenced_by": [
+      "WorkflowReencryptionTaskService"
     ]
   },
   "src\\app\\adapters\\archiving\\adapter\\mock-archiving-adapter\\mock-archiving-adapter.service.ts:26-32": {
@@ -3463,548 +3935,12 @@
       "HttpErrorInterceptor"
     ]
   },
-  "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts:85-91": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
-    "lines": "85-91",
-    "reason": "@Injectable: TaskModuleMockService",
-    "referenced_by": [
-      "TaskModuleMockService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts:62-68": {
-    "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
-    "lines": "62-68",
-    "reason": "@Injectable: ReEncryptionHelperService",
-    "referenced_by": [
-      "ReEncryptionHelperService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-task.service.ts:61-67": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-task.service.ts",
-    "lines": "61-67",
-    "reason": "@Injectable: DomainTaskService",
-    "referenced_by": [
-      "DomainTaskService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts:22-28": {
-    "path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
-    "lines": "22-28",
-    "reason": "@Injectable: DeedApprovalService",
-    "referenced_by": [
-      "DeedApprovalService"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts:9-15": {
-    "path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: XnpNotaryEndpoint",
-    "referenced_by": [
-      "XnpNotaryEndpoint"
-    ]
-  },
-  "src\\app\\adapters\\online-help-adapter\\xnp\\xnp-help-adapter.service.ts:8-14": {
-    "path": "src\\app\\adapters\\online-help-adapter\\xnp\\xnp-help-adapter.service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: XnpHelpAdapterService",
-    "referenced_by": [
-      "XnpHelpAdapterService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts:15-21": {
-    "path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
-    "lines": "15-21",
-    "reason": "@Injectable: ReportService",
-    "referenced_by": [
-      "ReportService"
-    ]
-  },
-  "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts:10-16": {
-    "path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts:10-16": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
     "lines": "10-16",
-    "reason": "@Injectable: JsonAuthenticationAdapter",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot3Dot0",
     "referenced_by": [
-      "JsonAuthenticationAdapter"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts:7-13": {
-    "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: DeedRegistryApiConfiguration",
-    "referenced_by": [
-      "DeedRegistryApiConfiguration"
-    ]
-  },
-  "src\\app\\shared\\services\\redesign.service.ts:6-12": {
-    "path": "src\\app\\shared\\services\\redesign.service.ts",
-    "lines": "6-12",
-    "reason": "@Injectable: RedesignService",
-    "referenced_by": [
-      "RedesignService"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts:9-15": {
-    "path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: XnpSettingsEndpoint",
-    "referenced_by": [
-      "XnpSettingsEndpoint"
-    ]
-  },
-  "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts:6-12": {
-    "path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
-    "lines": "6-12",
-    "reason": "@Injectable: MockKeyManagerAdapterService",
-    "referenced_by": [
-      "MockKeyManagerAdapterService"
-    ]
-  },
-  "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts:19-25": {
-    "path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
-    "lines": "19-25",
-    "reason": "@Injectable: BnotkGridHelperService",
-    "referenced_by": [
-      "BnotkGridHelperService"
-    ]
-  },
-  "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts:7-13": {
-    "path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: RateLimitingInterceptor",
-    "referenced_by": [
-      "RateLimitingInterceptor"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts:12-18": {
-    "path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
-    "lines": "12-18",
-    "reason": "@Injectable: LogData",
-    "referenced_by": [
-      "LogData"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts:327-333": {
-    "path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
-    "lines": "327-333",
-    "reason": "@Injectable: MockXnpEndpointProvider",
-    "referenced_by": [
-      "MockXnpEndpointProvider"
-    ]
-  },
-  "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts:15-21": {
-    "path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
-    "lines": "15-21",
-    "reason": "@Injectable: HtmlCustodyAdapterService",
-    "referenced_by": [
-      "HtmlCustodyAdapterService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts:232-238": {
-    "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
-    "lines": "232-238",
-    "reason": "@Injectable: DocumentMetaDataService",
-    "referenced_by": [
-      "DocumentMetaDataService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts:7-13": {
-    "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: DocumentMetadataApiConfiguration",
-    "referenced_by": [
-      "DocumentMetadataApiConfiguration"
-    ]
-  },
-  "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts:6-12": {
-    "path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
-    "lines": "6-12",
-    "reason": "@Injectable: OnlineHelpAdapterService",
-    "referenced_by": [
-      "OnlineHelpAdapterService"
-    ]
-  },
-  "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts:7-13": {
-    "path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: ActionApiConfiguration",
-    "referenced_by": [
-      "ActionApiConfiguration"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\document-metadata\\document-metadata-domain.service.ts:14-20": {
-    "path": "src\\app\\deed-entry\\services\\document-metadata\\document-metadata-domain.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: DocumentMetadataDomainService",
-    "referenced_by": [
-      "DocumentMetadataDomainService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts:9-15": {
-    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: WorkflowValidateSignatureWorkService",
-    "referenced_by": [
-      "WorkflowValidateSignatureWorkService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts:10-16": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot4Dot0",
-    "referenced_by": [
-      "ImportHandlerServiceVersion1Dot4Dot0"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts:8-14": {
-    "path": "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: XnpNotificationsEndpoint",
-    "referenced_by": [
-      "XnpNotificationsEndpoint"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts:11-17": {
-    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
-    "lines": "11-17",
-    "reason": "@Injectable: ReencryptionConfirmService",
-    "referenced_by": [
-      "ReencryptionConfirmService"
-    ]
-  },
-  "src\\app\\shared\\page\\busy-indicator\\services\\busy-indicator.service.ts:4-10": {
-    "path": "src\\app\\shared\\page\\busy-indicator\\services\\busy-indicator.service.ts",
-    "lines": "4-10",
-    "reason": "@Injectable: BusyIndicatorService",
-    "referenced_by": [
-      "BusyIndicatorService"
-    ]
-  },
-  "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts:7-13": {
-    "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: ReencryptionApiConfiguration",
-    "referenced_by": [
-      "ReencryptionApiConfiguration"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts:8-14": {
-    "path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: LspSecureFrameworkEndpoint",
-    "referenced_by": [
-      "LspSecureFrameworkEndpoint"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts:11-17": {
-    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
-    "lines": "11-17",
-    "reason": "@Injectable: WorkflowValidateSignatureJobService",
-    "referenced_by": [
-      "WorkflowValidateSignatureJobService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts:11-17": {
-    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
-    "lines": "11-17",
-    "reason": "@Injectable: ReencryptionFinalizationHasErrorsRetryService",
-    "referenced_by": [
-      "ReencryptionFinalizationHasErrorsRetryService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts:18-24": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
-    "lines": "18-24",
-    "reason": "@Injectable: DocumentModalHelperService",
-    "referenced_by": [
-      "DocumentModalHelperService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts:12-18": {
-    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
-    "lines": "12-18",
-    "reason": "@Injectable: WorkflowChangeAoidService",
-    "referenced_by": [
-      "WorkflowChangeAoidService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts:19-25": {
-    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
-    "lines": "19-25",
-    "reason": "@Injectable: WorkflowFinalizeReencryptionWorkService",
-    "referenced_by": [
-      "WorkflowFinalizeReencryptionWorkService"
-    ]
-  },
-  "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts:13-19": {
-    "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: XnpPageContainerNgAdapter",
-    "referenced_by": [
-      "XnpPageContainerNgAdapter"
-    ]
-  },
-  "src\\app\\shared\\services\\redesign.service.mock.ts:2-8": {
-    "path": "src\\app\\shared\\services\\redesign.service.mock.ts",
-    "lines": "2-8",
-    "reason": "@Injectable: RedesignServiceMock",
-    "referenced_by": [
-      "RedesignServiceMock"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts:13-19": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot1",
-    "referenced_by": [
-      "ImportHandlerServiceVersion1Dot5Dot1"
-    ]
-  },
-  "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts:17-23": {
-    "path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
-    "lines": "17-23",
-    "reason": "@Injectable: BusinessPurposeResolverEnhancedSearch",
-    "referenced_by": [
-      "BusinessPurposeResolverEnhancedSearch"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts:24-30": {
-    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
-    "lines": "24-30",
-    "reason": "@Injectable: WorkflowDeletionWorkService",
-    "referenced_by": [
-      "WorkflowDeletionWorkService"
-    ]
-  },
-  "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts:50-56": {
-    "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts",
-    "lines": "50-56",
-    "reason": "@Injectable: XnpArchivingAdapterService",
-    "referenced_by": [
-      "XnpArchivingAdapterService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts:9-15": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot1Dot1",
-    "referenced_by": [
-      "ImportHandlerServiceVersion1Dot1Dot1"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts:13-19": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot0",
-    "referenced_by": [
-      "ImportHandlerServiceVersion1Dot6Dot0"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts:14-20": {
-    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: WorkflowArchiveTaskService",
-    "referenced_by": [
-      "WorkflowArchiveTaskService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts:77-83": {
-    "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
-    "lines": "77-83",
-    "reason": "@Injectable: DeedRegistryService",
-    "referenced_by": [
-      "DeedRegistryService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts:17-23": {
-    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
-    "lines": "17-23",
-    "reason": "@Injectable: FinishReencryptionRestService",
-    "referenced_by": [
-      "FinishReencryptionRestService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts:8-14": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: WorkflowBaseService",
-    "referenced_by": [
-      "WorkflowBaseService"
-    ]
-  },
-  "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts:7-13": {
-    "path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: LoggingDataChangedAdapterService",
-    "referenced_by": [
-      "LoggingDataChangedAdapterService"
-    ]
-  },
-  "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts:4-10": {
-    "path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
-    "lines": "4-10",
-    "reason": "@Injectable: FlyinNotificationAdapter",
-    "referenced_by": [
-      "FlyinNotificationAdapter"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts:5-11": {
-    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
-    "lines": "5-11",
-    "reason": "@Injectable: WorkflowDeletionService",
-    "referenced_by": [
-      "WorkflowDeletionService"
-    ]
-  },
-  "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts:29-35": {
-    "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
-    "lines": "29-35",
-    "reason": "@Injectable: HtmlDocumentAdapterService",
-    "referenced_by": [
-      "HtmlDocumentAdapterService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts:16-22": {
-    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
-    "lines": "16-22",
-    "reason": "@Injectable: JobReencryptionService",
-    "referenced_by": [
-      "JobReencryptionService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts:10-16": {
-    "path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: DocumentCopyService",
-    "referenced_by": [
-      "DocumentCopyService"
-    ]
-  },
-  "src\\app\\adapters\\archiving\\archiving.service.ts:33-39": {
-    "path": "src\\app\\adapters\\archiving\\archiving.service.ts",
-    "lines": "33-39",
-    "reason": "@Injectable: ArchivingService",
-    "referenced_by": [
-      "ArchivingService"
-    ]
-  },
-  "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts:29-35": {
-    "path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
-    "lines": "29-35",
-    "reason": "@Injectable: XnpAuthenticationAdapter",
-    "referenced_by": [
-      "XnpAuthenticationAdapter"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts:73-79": {
-    "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
-    "lines": "73-79",
-    "reason": "@Injectable: DeedEntryRestService",
-    "referenced_by": [
-      "DeedEntryRestService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts:14-20": {
-    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: WorkflowFinalizeReencryptionTaskService",
-    "referenced_by": [
-      "WorkflowFinalizeReencryptionTaskService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts:7-13": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
-    "lines": "7-13",
-    "reason": "@Injectable: TaskApiConfiguration",
-    "referenced_by": [
-      "TaskApiConfiguration"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts:8-14": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: TaskBaseService",
-    "referenced_by": [
-      "TaskBaseService"
-    ]
-  },
-  "src\\app\\shared\\token-bar\\token-data-mapper.service.ts:14-20": {
-    "path": "src\\app\\shared\\token-bar\\token-data-mapper.service.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: TokenDataMapperService",
-    "referenced_by": [
-      "TokenDataMapperService"
-    ]
-  },
-  "src\\app\\adapters\\authentication\\xnp\\XnpAuthenticationNgAdapter.ts:8-14": {
-    "path": "src\\app\\adapters\\authentication\\xnp\\XnpAuthenticationNgAdapter.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: XnpAuthenticationNgAdapter",
-    "referenced_by": [
-      "XnpAuthenticationNgAdapter"
-    ]
-  },
-  "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts:10-16": {
-    "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: SignOperationTokenRestService",
-    "referenced_by": [
-      "SignOperationTokenRestService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts:10-16": {
-    "path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: NotaryRepresentationService",
-    "referenced_by": [
-      "NotaryRepresentationService"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts:26-32": {
-    "path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
-    "lines": "26-32",
-    "reason": "@Injectable: XnpArchiveManagerEndpoint",
-    "referenced_by": [
-      "XnpArchiveManagerEndpoint"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts:114-120": {
-    "path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
-    "lines": "114-120",
-    "reason": "@Injectable: PdfExportService",
-    "referenced_by": [
-      "PdfExportService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts:20-26": {
-    "path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
-    "lines": "20-26",
-    "reason": "@Injectable: AnnualReportActionResolver",
-    "referenced_by": [
-      "AnnualReportActionResolver"
-    ]
-  },
-  "src\\app\\shared\\authentication\\auth.guard.ts:9-15": {
-    "path": "src\\app\\shared\\authentication\\auth.guard.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: AuthGuard",
-    "referenced_by": [
-      "AuthGuard"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-2-handler\\import-v1-6-2-handler.service.ts:13-19": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-2-handler\\import-v1-6-2-handler.service.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot2",
-    "referenced_by": [
-      "ImportHandlerServiceVersion1Dot6Dot2"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts:14-20": {
-    "path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: XnpFsEndpoint",
-    "referenced_by": [
-      "XnpFsEndpoint"
+      "ImportHandlerServiceVersion1Dot3Dot0"
     ]
   },
   "src\\app\\adapters\\logging\\xnp\\XnpLogNgAdapter.ts:10-16": {
@@ -4015,260 +3951,44 @@
       "XnpLogNgAdapter"
     ]
   },
-  "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts:34-40": {
-    "path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
-    "lines": "34-40",
-    "reason": "@Injectable: DeedDeleteService",
-    "referenced_by": [
-      "DeedDeleteService"
-    ]
-  },
-  "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts:19-25": {
-    "path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
-    "lines": "19-25",
-    "reason": "@Injectable: TypeaheadFilterService",
-    "referenced_by": [
-      "TypeaheadFilterService"
-    ]
-  },
-  "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts:32-38": {
-    "path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
-    "lines": "32-38",
-    "reason": "@Injectable: FieldValidationService",
-    "referenced_by": [
-      "FieldValidationService"
-    ]
-  },
-  "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts:25-31": {
-    "path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
-    "lines": "25-31",
-    "reason": "@Injectable: ArchiveSessionService",
-    "referenced_by": [
-      "ArchiveSessionService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts:155-161": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
-    "lines": "155-161",
-    "reason": "@Injectable: WorkflowModuleMockService",
-    "referenced_by": [
-      "WorkflowModuleMockService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts:26-32": {
-    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
-    "lines": "26-32",
-    "reason": "@Injectable: WorkflowDeletionJobService",
-    "referenced_by": [
-      "WorkflowDeletionJobService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-1-handler\\import-v1-6-1-handler.service.ts:13-19": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-1-handler\\import-v1-6-1-handler.service.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot1",
-    "referenced_by": [
-      "ImportHandlerServiceVersion1Dot6Dot1"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts:119-125": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
-    "lines": "119-125",
-    "reason": "@Injectable: TaskModuleService",
-    "referenced_by": [
-      "TaskModuleService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts:8-14": {
-    "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: DeedTypeRestService",
-    "referenced_by": [
-      "DeedTypeRestService"
-    ]
-  },
-  "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts:27-33": {
-    "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
-    "lines": "27-33",
-    "reason": "@Injectable: HtmlSignatureAdapterService",
-    "referenced_by": [
-      "HtmlSignatureAdapterService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-entry\\business-purpose-rest.service.ts:8-14": {
-    "path": "src\\app\\deed-entry\\services\\deed-entry\\business-purpose-rest.service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: BusinessPurposeRestService",
-    "referenced_by": [
-      "BusinessPurposeRestService"
-    ]
-  },
-  "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts:20-26": {
-    "path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
-    "lines": "20-26",
-    "reason": "@Injectable: XnpPdfAdapter",
-    "referenced_by": [
-      "XnpPdfAdapter"
-    ]
-  },
-  "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts:8-14": {
-    "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: ReencryptionBaseService",
-    "referenced_by": [
-      "ReencryptionBaseService"
-    ]
-  },
-  "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts:8-14": {
-    "path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: NativePdfAdapter",
-    "referenced_by": [
-      "NativePdfAdapter"
-    ]
-  },
-  "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts:8-14": {
-    "path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: MockFileAdapterService",
-    "referenced_by": [
-      "MockFileAdapterService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts:5-11": {
-    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
-    "lines": "5-11",
-    "reason": "@Injectable: WorkflowArchiveService",
-    "referenced_by": [
-      "WorkflowArchiveService"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts:32-38": {
-    "path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
-    "lines": "32-38",
-    "reason": "@Injectable: XnpEndpointProvider",
-    "referenced_by": [
-      "XnpEndpointProvider"
-    ]
-  },
-  "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts:163-169": {
-    "path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
-    "lines": "163-169",
-    "reason": "@Injectable: LocalStorageSettingsAdapter",
-    "referenced_by": [
-      "LocalStorageSettingsAdapter"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts:9-15": {
-    "path": "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: SelectionHelperService",
-    "referenced_by": [
-      "SelectionHelperService"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts:11-17": {
-    "path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
-    "lines": "11-17",
-    "reason": "@Injectable: XnpPdfsEndpoint",
-    "referenced_by": [
-      "XnpPdfsEndpoint"
-    ]
-  },
-  "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts:23-29": {
-    "path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
-    "lines": "23-29",
-    "reason": "@Injectable: XnpJsonImportAdapter",
-    "referenced_by": [
-      "XnpJsonImportAdapter"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts:14-20": {
-    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
-    "lines": "14-20",
-    "reason": "@Injectable: ReencryptionCheckResolver",
-    "referenced_by": [
-      "ReencryptionCheckResolver"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts:9-15": {
-    "path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: DeedEntryLogService",
-    "referenced_by": [
-      "DeedEntryLogService"
-    ]
-  },
-  "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts:8-14": {
-    "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
-    "lines": "8-14",
-    "reason": "@Injectable: DeedRegistryBaseService",
-    "referenced_by": [
-      "DeedRegistryBaseService"
-    ]
-  },
-  "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts:26-32": {
-    "path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
-    "lines": "26-32",
-    "reason": "@Injectable: ReportMetadataRestService",
-    "referenced_by": [
-      "ReportMetadataRestService"
-    ]
-  },
-  "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts:9-15": {
-    "path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
-    "lines": "9-15",
-    "reason": "@Injectable: XnpPlatformEndpoint",
-    "referenced_by": [
-      "XnpPlatformEndpoint"
-    ]
-  },
-  "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts:16-22": {
-    "path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
-    "lines": "16-22",
-    "reason": "@Injectable: XnpCustodyAdapterService",
-    "referenced_by": [
-      "XnpCustodyAdapterService"
-    ]
-  },
-  "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts:12-18": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
-    "lines": "12-18",
-    "reason": "@Injectable: CorrectionObjectCreationService",
-    "referenced_by": [
-      "CorrectionObjectCreationService"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts:104-110": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
-    "lines": "104-110",
-    "reason": "@Injectable: JobModuleService",
-    "referenced_by": [
-      "JobModuleService"
-    ]
-  },
-  "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts:35-41": {
-    "path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
-    "lines": "35-41",
-    "reason": "@Injectable: UserContextPermissionCheckService",
-    "referenced_by": [
-      "UserContextPermissionCheckService"
-    ]
-  },
-  "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerAdapter.ts:30-36": {
-    "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerAdapter.ts",
-    "lines": "30-36",
-    "reason": "@Injectable: XnpPageContainerAdapter",
-    "referenced_by": [
-      "XnpPageContainerAdapter"
-    ]
-  },
-  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts:7-13": {
-    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
+  "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts:7-13": {
+    "path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
     "lines": "7-13",
-    "reason": "@Injectable: JobApiConfiguration",
+    "reason": "@Injectable: LoggingDataChangedAdapterService",
     "referenced_by": [
-      "JobApiConfiguration"
+      "LoggingDataChangedAdapterService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts:15-21": {
+    "path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
+    "lines": "15-21",
+    "reason": "@Injectable: ReportService",
+    "referenced_by": [
+      "ReportService"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts:10-16": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot4Dot0",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot4Dot0"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts:7-13": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: TaskApiConfiguration",
+    "referenced_by": [
+      "TaskApiConfiguration"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts:17-23": {
+    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
+    "lines": "17-23",
+    "reason": "@Injectable: FinishReencryptionRestService",
+    "referenced_by": [
+      "FinishReencryptionRestService"
     ]
   },
   "src\\app\\shared\\authentication\\auth-http-interceptor.service.ts:8-14": {
@@ -4279,36 +3999,132 @@
       "AuthenticationHttpInterceptor"
     ]
   },
-  "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts:36-42": {
-    "path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
-    "lines": "36-42",
-    "reason": "@Injectable: MockArchivingRetrievalHelperService",
+  "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts:32-38": {
+    "path": "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts",
+    "lines": "32-38",
+    "reason": "@Injectable: DocumentAdapterHelperService",
     "referenced_by": [
-      "MockArchivingRetrievalHelperService"
+      "DocumentAdapterHelperService"
     ]
   },
-  "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts:18-24": {
-    "path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
-    "lines": "18-24",
-    "reason": "@Injectable: XnpAuthorizationNgAdapter",
+  "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts:16-22": {
+    "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
+    "lines": "16-22",
+    "reason": "@Injectable: JobReencryptionService",
     "referenced_by": [
-      "XnpAuthorizationNgAdapter"
+      "JobReencryptionService"
     ]
   },
-  "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts:14-20": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
+  "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts:16-22": {
+    "path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
+    "lines": "16-22",
+    "reason": "@Injectable: XnpCustodyAdapterService",
+    "referenced_by": [
+      "XnpCustodyAdapterService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts:9-15": {
+    "path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: XnpSettingsEndpoint",
+    "referenced_by": [
+      "XnpSettingsEndpoint"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts:104-110": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
+    "lines": "104-110",
+    "reason": "@Injectable: JobModuleService",
+    "referenced_by": [
+      "JobModuleService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-modal\\reencryption-has-errors-retry\\reencryption-has-errors-retry.service.ts:14-20": {
+    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-has-errors-retry\\reencryption-has-errors-retry.service.ts",
     "lines": "14-20",
-    "reason": "@Injectable: KeepUnsavedBusinessObjectsService",
+    "reason": "@Injectable: ReencryptionHasErrorsRetryService",
     "referenced_by": [
-      "KeepUnsavedBusinessObjectsService"
+      "ReencryptionHasErrorsRetryService"
     ]
   },
-  "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts:15-21": {
-    "path": "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts",
-    "lines": "15-21",
-    "reason": "@Injectable: XnpFileApiAdapter",
+  "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts:50-56": {
+    "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts",
+    "lines": "50-56",
+    "reason": "@Injectable: XnpArchivingAdapterService",
     "referenced_by": [
-      "XnpFileApiAdapter"
+      "XnpArchivingAdapterService"
+    ]
+  },
+  "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts:23-29": {
+    "path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
+    "lines": "23-29",
+    "reason": "@Injectable: XnpJsonImportAdapter",
+    "referenced_by": [
+      "XnpJsonImportAdapter"
+    ]
+  },
+  "src\\app\\shared\\authorization\\activate-if-user-authorized.ts:17-23": {
+    "path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
+    "lines": "17-23",
+    "reason": "@Injectable: ActivateIfUserAuthorized",
+    "referenced_by": [
+      "ActivateIfUserAuthorized"
+    ]
+  },
+  "src\\app\\shared\\services\\injector\\injector.service.ts:3-9": {
+    "path": "src\\app\\shared\\services\\injector\\injector.service.ts",
+    "lines": "3-9",
+    "reason": "@Injectable: InjectorService",
+    "referenced_by": [
+      "InjectorService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts:24-30": {
+    "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
+    "lines": "24-30",
+    "reason": "@Injectable: WorkflowDeletionWorkService",
+    "referenced_by": [
+      "WorkflowDeletionWorkService"
+    ]
+  },
+  "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts:163-169": {
+    "path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
+    "lines": "163-169",
+    "reason": "@Injectable: LocalStorageSettingsAdapter",
+    "referenced_by": [
+      "LocalStorageSettingsAdapter"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts:13-19": {
+    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot1",
+    "referenced_by": [
+      "ImportHandlerServiceVersion1Dot5Dot1"
+    ]
+  },
+  "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts:7-13": {
+    "path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: ActionApiConfiguration",
+    "referenced_by": [
+      "ActionApiConfiguration"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts:11-17": {
+    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
+    "lines": "11-17",
+    "reason": "@Injectable: WorkflowValidateSignatureJobService",
+    "referenced_by": [
+      "WorkflowValidateSignatureJobService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts:8-14": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: JobBaseService",
+    "referenced_by": [
+      "JobBaseService"
     ]
   },
   "src\\app\\adapters\\xnp\\XnpSignatureEndpoint.ts:8-14": {
@@ -4319,20 +4135,188 @@
       "XnpSignatureEndpoint"
     ]
   },
-  "src\\app\\core\\application-initializer.service.ts:13-19": {
-    "path": "src\\app\\core\\application-initializer.service.ts",
-    "lines": "13-19",
-    "reason": "@Injectable: ApplicationInitializerService",
+  "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts:327-333": {
+    "path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
+    "lines": "327-333",
+    "reason": "@Injectable: MockXnpEndpointProvider",
     "referenced_by": [
-      "ApplicationInitializerService"
+      "MockXnpEndpointProvider"
     ]
   },
-  "src\\app\\shared\\generic-modal-dialogs\\issue-copy-document-modal-dialog\\issue-copy-document-modal-view\\issue-copy-document-helper.ts:10-16": {
-    "path": "src\\app\\shared\\generic-modal-dialogs\\issue-copy-document-modal-dialog\\issue-copy-document-modal-view\\issue-copy-document-helper.ts",
-    "lines": "10-16",
-    "reason": "@Injectable: IssueCopyDocumentHelper",
+  "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts:19-25": {
+    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
+    "lines": "19-25",
+    "reason": "@Injectable: ReencryptionFinalizationConfirmService",
     "referenced_by": [
-      "IssueCopyDocumentHelper"
+      "ReencryptionFinalizationConfirmService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts:32-38": {
+    "path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
+    "lines": "32-38",
+    "reason": "@Injectable: GlobalArchivingHelperService",
+    "referenced_by": [
+      "GlobalArchivingHelperService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts:10-16": {
+    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: WorkflowValidateSignatureTaskService",
+    "referenced_by": [
+      "WorkflowValidateSignatureTaskService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts:9-15": {
+    "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
+    "lines": "9-15",
+    "reason": "@Injectable: WorkflowValidateSignatureWorkService",
+    "referenced_by": [
+      "WorkflowValidateSignatureWorkService"
+    ]
+  },
+  "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts:18-24": {
+    "path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
+    "lines": "18-24",
+    "reason": "@Injectable: XnpAuthorizationNgAdapter",
+    "referenced_by": [
+      "XnpAuthorizationNgAdapter"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts:13-19": {
+    "path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: DeedEntryPageManagerService",
+    "referenced_by": [
+      "DeedEntryPageManagerService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts:7-13": {
+    "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
+    "lines": "7-13",
+    "reason": "@Injectable: DocumentMetadataApiConfiguration",
+    "referenced_by": [
+      "DocumentMetadataApiConfiguration"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts:80-86": {
+    "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
+    "lines": "80-86",
+    "reason": "@Injectable: SucessorHandoverProcessHelperService",
+    "referenced_by": [
+      "SucessorHandoverProcessHelperService"
+    ]
+  },
+  "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts:4-10": {
+    "path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
+    "lines": "4-10",
+    "reason": "@Injectable: FlyinNotificationAdapter",
+    "referenced_by": [
+      "FlyinNotificationAdapter"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts:12-18": {
+    "path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
+    "lines": "12-18",
+    "reason": "@Injectable: LogData",
+    "referenced_by": [
+      "LogData"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts:119-125": {
+    "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
+    "lines": "119-125",
+    "reason": "@Injectable: TaskModuleService",
+    "referenced_by": [
+      "TaskModuleService"
+    ]
+  },
+  "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts:13-19": {
+    "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
+    "lines": "13-19",
+    "reason": "@Injectable: XnpPageContainerNgAdapter",
+    "referenced_by": [
+      "XnpPageContainerNgAdapter"
+    ]
+  },
+  "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts:14-20": {
+    "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: SortingService",
+    "referenced_by": [
+      "SortingService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts:11-17": {
+    "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
+    "lines": "11-17",
+    "reason": "@Injectable: ReencryptionFinalizationHasErrorsRetryService",
+    "referenced_by": [
+      "ReencryptionFinalizationHasErrorsRetryService"
+    ]
+  },
+  "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts:14-20": {
+    "path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: XnpFsEndpoint",
+    "referenced_by": [
+      "XnpFsEndpoint"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts:8-14": {
+    "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: DeedRegistryBaseService",
+    "referenced_by": [
+      "DeedRegistryBaseService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts:14-20": {
+    "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: WorkflowChangeAoidTaskService",
+    "referenced_by": [
+      "WorkflowChangeAoidTaskService"
+    ]
+  },
+  "src\\app\\shared\\page\\busy-indicator\\services\\busy-indicator.service.ts:4-10": {
+    "path": "src\\app\\shared\\page\\busy-indicator\\services\\busy-indicator.service.ts",
+    "lines": "4-10",
+    "reason": "@Injectable: BusyIndicatorService",
+    "referenced_by": [
+      "BusyIndicatorService"
+    ]
+  },
+  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts:14-20": {
+    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
+    "lines": "14-20",
+    "reason": "@Injectable: WorkflowArchiveTaskService",
+    "referenced_by": [
+      "WorkflowArchiveTaskService"
+    ]
+  },
+  "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts:10-16": {
+    "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: SignOperationTokenRestService",
+    "referenced_by": [
+      "SignOperationTokenRestService"
+    ]
+  },
+  "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts:32-38": {
+    "path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
+    "lines": "32-38",
+    "reason": "@Injectable: FieldValidationService",
+    "referenced_by": [
+      "FieldValidationService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\official-activity-metadata\\official-activity-metadata.service.ts:12-18": {
+    "path": "src\\app\\deed-entry\\services\\official-activity-metadata\\official-activity-metadata.service.ts",
+    "lines": "12-18",
+    "reason": "@Injectable: OfficialActivityMetadataService",
+    "referenced_by": [
+      "OfficialActivityMetadataService"
     ]
   },
   "src\\app\\adapters\\xnp\\XnpPdfMakeEndpoint.ts:7-13": {
@@ -4343,36 +4327,52 @@
       "XnpPdfMakeEndpoint"
     ]
   },
-  "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts:10-16": {
-    "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
+  "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts:10-16": {
+    "path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
     "lines": "10-16",
-    "reason": "@Injectable: ImportHandlerServiceVersion1Dot2Dot0",
+    "reason": "@Injectable: JsonAuthenticationAdapter",
     "referenced_by": [
-      "ImportHandlerServiceVersion1Dot2Dot0"
+      "JsonAuthenticationAdapter"
     ]
   },
-  "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts:31-37": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
-    "lines": "31-37",
-    "reason": "@Injectable: DocumentHelperService",
+  "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts:71-77": {
+    "path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
+    "lines": "71-77",
+    "reason": "@Injectable: WorkflowReencryptionService",
     "referenced_by": [
-      "DocumentHelperService"
+      "WorkflowReencryptionService"
     ]
   },
-  "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts:28-34": {
-    "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
-    "lines": "28-34",
-    "reason": "@Injectable: AsyncDocumentHelperService",
+  "src\\app\\deed-entry\\services\\deed-entry\\business-purpose-rest.service.ts:8-14": {
+    "path": "src\\app\\deed-entry\\services\\deed-entry\\business-purpose-rest.service.ts",
+    "lines": "8-14",
+    "reason": "@Injectable: BusinessPurposeRestService",
     "referenced_by": [
-      "AsyncDocumentHelperService"
+      "BusinessPurposeRestService"
     ]
   },
-  "src\\app\\adapters\\json-import\\native\\native-json-import.ts:15-21": {
-    "path": "src\\app\\adapters\\json-import\\native\\native-json-import.ts",
-    "lines": "15-21",
-    "reason": "@Injectable: NativeJsonImportAdapter",
+  "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts:5-11": {
+    "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
+    "lines": "5-11",
+    "reason": "@Injectable: WorkflowArchiveService",
     "referenced_by": [
-      "NativeJsonImportAdapter"
+      "WorkflowArchiveService"
+    ]
+  },
+  "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts:29-35": {
+    "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
+    "lines": "29-35",
+    "reason": "@Injectable: HtmlDocumentAdapterService",
+    "referenced_by": [
+      "HtmlDocumentAdapterService"
+    ]
+  },
+  "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts:10-16": {
+    "path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
+    "lines": "10-16",
+    "reason": "@Injectable: DocumentCopyService",
+    "referenced_by": [
+      "DocumentCopyService"
     ]
   },
   "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\api\\rest\\ActionRestService.java:36-41": {
