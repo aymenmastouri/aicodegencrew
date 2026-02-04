@@ -1,10 +1,63 @@
 # AI-Powered Software Development Lifecycle Architecture
 
-## 1. Executive Summary
+## 1. Introduction
+
+### 1.1 Purpose & Goal
+
+**AICodeGenCrew** is a fully local, on-premises AI-powered blueprint for a complete, end-to-end Software Development Lifecycle (SDLC).
+
+**Use Case:** Provide a fully local / on-prem AI SDLC blueprint (using only on-prem LLMs, no external data transfer) that analyzes an existing repository, generates evidence-based architecture documentation, and supports the full development workflow by creating and then working through backlog items (issues/CRs/tasks): planning, implementing changes, generating tests, running build/CI validations, and finally preparing and merging the delivery end-to-end.
+
+**Why On-Premises?** Enterprise software often contains sensitive intellectual property, customer data, or security-critical code. Sending this data to external AI services (like OpenAI, Anthropic, etc.) may violate compliance requirements, data protection regulations, or internal security policies. AICodeGenCrew is designed to run entirely on your infrastructure with your own LLMs - no data ever leaves your network.
+
+**The Complete Vision:**
+
+> **Reference Diagram:** [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full SDLC Pipeline Overview
+
+**Phase 0-3: Understand (Current Focus - Implemented)**
+The tool analyzes your existing codebase. It extracts architectural facts, identifies patterns, and generates comprehensive documentation (C4 diagrams, arc42). This is the foundation - you cannot improve what you do not understand.
+
+**Phase 4-5: Plan (Designed - Not Yet Implemented)**
+Based on the architecture analysis, AI agents generate development backlogs, user stories, issues, change requests, and work items. The system understands the codebase structure and can suggest improvements, identify technical debt, and prioritize refactoring tasks.
+
+**Phase 6-7: Build (Designed - Not Yet Implemented)**
+AI agents implement changes based on backlog items, generate code following existing patterns and conventions, and create comprehensive tests. Each change is validated against the architecture constraints discovered during analysis.
+
+**Phase 8: Deploy (Designed - Not Yet Implemented)**
+The pipeline integrates with CI/CD systems to run builds, execute tests, validate changes, and prepare merge requests. The goal is fully automated delivery from backlog item to merged code.
+
+**Current Status:** Documentation and reverse engineering phases (0-3) are implemented and working. The planning, code generation, testing, and deployment phases are designed but not yet implemented.
+
+### 1.2 Key Benefits
+
+**Fully Automated:** No more manual diagram drawing. Point the tool at your repository and receive complete documentation. The AI agents handle everything from component discovery to diagram generation.
+
+**Evidence-Based:** Every statement in the generated documentation is backed by actual code or configuration evidence. No hallucinations, no guesswork. If it's not in your code, it won't appear in the documentation.
+
+**Reproducible:** Run the same analysis twice and get the same results. The deterministic code analysis phase ensures consistency, while the AI synthesis phase is guided by structured schemas.
+
+**Scalable:** Whether your project has 50 components or 100,000, the Map-Reduce architecture handles it. Large repositories are automatically split by container for parallel analysis.
+
+**Standards-Compliant:** The output follows industry-standard formats - C4 model for architectural diagrams and arc42 for comprehensive documentation. These formats are widely recognized and understood by architects worldwide.
+
+### 1.3 What You Get
+
+When you run AICodeGenCrew on your repository, you receive:
+
+- **C4 Diagrams:** Context, Container, Component, and Deployment views as editable DrawIO files
+- **arc42 Documentation:** All 12 chapters including introduction, constraints, context, solution strategy, building blocks, runtime scenarios, deployment, and quality requirements
+- **Architecture Analysis:** Detected patterns, technology stack, quality assessment, technical debt indicators, and security posture
+- **Evidence Map:** Internal traceability from documentation back to source code (for validation)
+
+The entire process takes minutes for typical repositories and produces documentation that would normally require days of manual effort.
+
+---
+
+## 2. Executive Summary
 
 This document defines the architecture for a complete **End-to-End AI-Powered Software Development Lifecycle (SDLC) Blueprint**. The system utilizes CrewAI multi-agent workflows with configurable LLM backends on-premise models to automate the entire software development process.
 
-### 1.1 Vision
+### 2.1 Vision
 
 Establish a fully automated SDLC pipeline that covers:
 
@@ -20,7 +73,7 @@ Establish a fully automated SDLC pipeline that covers:
 | Phase 7: Testing | Test generation, coverage | Crew (Planned) |
 | Phase 8: Deployment | CI/CD integration, releases | Pipeline (Planned) |
 
-### 1.2 Core Principles
+### 2.2 Core Principles
 
 | Principle | Description |
 |-----------|-------------|
@@ -890,11 +943,13 @@ step_done()  # Auto-timing
 
 | Diagram | File | Description |
 |---------|------|-------------|
+| **SDLC Overview** | `sdlc-overview.drawio` | Full SDLC pipeline (UNDERSTAND → PLAN → BUILD → DEPLOY) |
 | Phase Flow | `phase-flow.drawio` | Main pipeline flow |
 | Evidence Flow | `evidence-flow.drawio` | Evidence data flow |
 | Knowledge Structure | `knowledge-structure.drawio` | Knowledge base organization |
 | Collectors | `collectors.drawio` | Phase 1 collector details |
-| Synthesis | `synthesis-crew.drawio` | Phase 2 crew details |
+| Analysis Crew | `analysis-crew.drawio` | Phase 2 analysis crew details |
+| Synthesis Crew | `synthesis-crew.drawio` | Phase 3 synthesis crew details |
 
 ---
 
