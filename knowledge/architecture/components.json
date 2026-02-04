@@ -5263,666 +5263,6 @@
     ]
   },
   {
-    "name": "BusyIndicatorInterceptor",
-    "stereotype": "interceptor",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
-    "module": "http-util",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
-        "lines": "28-34",
-        "reason": "@Injectable: BusyIndicatorInterceptor"
-      }
-    ]
-  },
-  {
-    "name": "MockKeyManagerAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
-    "module": "adapters.reencryption.mock",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
-        "lines": "6-12",
-        "reason": "@Injectable: MockKeyManagerAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "ImportHandlerServiceVersion1Dot2Dot0",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-2-0-handler",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: ImportHandlerServiceVersion1Dot2Dot0"
-      }
-    ]
-  },
-  {
-    "name": "MockArchivingAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\archiving\\adapter\\mock-archiving-adapter\\mock-archiving-adapter.service.ts",
-    "module": "adapters.archiving.adapter.mock-archiving-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\archiving\\adapter\\mock-archiving-adapter\\mock-archiving-adapter.service.ts",
-        "lines": "26-32",
-        "reason": "@Injectable: MockArchivingAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowValidateSignatureService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
-    "module": "workflow.services.workflow-validate-signature",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: WorkflowValidateSignatureService"
-      }
-    ]
-  },
-  {
-    "name": "XnpPlatformEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: XnpPlatformEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowArchiveService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
-    "module": "workflow.services.workflow-archive",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
-        "lines": "5-11",
-        "reason": "@Injectable: WorkflowArchiveService"
-      }
-    ]
-  },
-  {
-    "name": "XnpAuthenticationAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
-    "module": "adapters.authentication.xnp.impl",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
-        "lines": "29-35",
-        "reason": "@Injectable: XnpAuthenticationAdapter"
-      }
-    ]
-  },
-  {
-    "name": "XnpEndpointProvider",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
-        "lines": "32-38",
-        "reason": "@Injectable: XnpEndpointProvider"
-      }
-    ]
-  },
-  {
-    "name": "AuthGuard",
-    "stereotype": "guard",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\authentication\\auth.guard.ts",
-    "module": "authentication",
-    "layer_hint": "presentation",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\authentication\\auth.guard.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: AuthGuard"
-      }
-    ]
-  },
-  {
-    "name": "ReportMetadataService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
-    "module": "report-metadata.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
-        "lines": "44-50",
-        "reason": "@Injectable: ReportMetadataService"
-      }
-    ]
-  },
-  {
-    "name": "XnpNotaryEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: XnpNotaryEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "BnotkGridHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
-    "module": "report-metadata.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
-        "lines": "19-25",
-        "reason": "@Injectable: BnotkGridHelperService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowChangeAoidTaskService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
-    "module": "workflow.services.workflow-change-aoid",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: WorkflowChangeAoidTaskService"
-      }
-    ]
-  },
-  {
-    "name": "DocumentImportService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\nsw-document-import\\document-import.service.ts",
-    "module": "nsw-document-import",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\nsw-document-import\\document-import.service.ts",
-        "lines": "40-46",
-        "reason": "@Injectable: DocumentImportService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowChangeAoidService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
-    "module": "workflow.services.workflow-change-aoid",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
-        "lines": "12-18",
-        "reason": "@Injectable: WorkflowChangeAoidService"
-      }
-    ]
-  },
-  {
-    "name": "JsonAuthenticationAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
-    "module": "adapters.authentication.jsonauthenticationadapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: JsonAuthenticationAdapter"
-      }
-    ]
-  },
-  {
-    "name": "ActionApiConfiguration",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
-    "module": "action.services.action.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: ActionApiConfiguration"
-      }
-    ]
-  },
-  {
-    "name": "SucessorHandoverProcessHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
-    "module": "deed-entry.components.deed-successor-page.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
-        "lines": "80-86",
-        "reason": "@Injectable: SucessorHandoverProcessHelperService"
-      }
-    ]
-  },
-  {
-    "name": "OnlineHelpAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
-    "module": "adapters.online-help-adapter.html-online-help-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
-        "lines": "6-12",
-        "reason": "@Injectable: OnlineHelpAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowReencryptionTaskService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
-    "module": "workflow.services.workflow-reencryption.job-reencryption",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: WorkflowReencryptionTaskService"
-      }
-    ]
-  },
-  {
-    "name": "DocumentHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
-    "module": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
-        "lines": "31-37",
-        "reason": "@Injectable: DocumentHelperService"
-      }
-    ]
-  },
-  {
-    "name": "TaskModuleService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
-    "module": "workflow.services.workflow-rest.api-generated.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
-        "lines": "119-125",
-        "reason": "@Injectable: TaskModuleService"
-      }
-    ]
-  },
-  {
-    "name": "XnpVvzEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
-        "lines": "16-22",
-        "reason": "@Injectable: XnpVvzEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "XnpPdfAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
-    "module": "adapters.pdf-report.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
-        "lines": "20-26",
-        "reason": "@Injectable: XnpPdfAdapter"
-      }
-    ]
-  },
-  {
-    "name": "ReencryptionFinalizationConfirmService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
-    "module": "workflow.services.workflow-modal.reencryption-finalization-confirm",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
-        "lines": "19-25",
-        "reason": "@Injectable: ReencryptionFinalizationConfirmService"
-      }
-    ]
-  },
-  {
-    "name": "NotaryRepresentationService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
-    "module": "deed-entry.services.notary-representation",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: NotaryRepresentationService"
-      }
-    ]
-  },
-  {
-    "name": "CorrectionObjectCreationService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
-    "module": "deed-entry.components.deed-form-page.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
-        "lines": "12-18",
-        "reason": "@Injectable: CorrectionObjectCreationService"
-      }
-    ]
-  },
-  {
-    "name": "ModalService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\services\\modal\\modal.service.ts",
-    "module": "services.modal",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\services\\modal\\modal.service.ts",
-        "lines": "32-38",
-        "reason": "@Injectable: ModalService"
-      }
-    ]
-  },
-  {
-    "name": "BusinessLoggingResolverService",
-    "stereotype": "resolver",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
-    "module": "deed-entry.components.deed-view-page.services",
-    "layer_hint": "presentation",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
-        "lines": "28-34",
-        "reason": "@Injectable: BusinessLoggingResolverService"
-      }
-    ]
-  },
-  {
-    "name": "XnpArchivingAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts",
-    "module": "adapters.archiving.adapter.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts",
-        "lines": "50-56",
-        "reason": "@Injectable: XnpArchivingAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "ImportHandlerServiceVersion1Dot4Dot0",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-4-0-handler",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: ImportHandlerServiceVersion1Dot4Dot0"
-      }
-    ]
-  },
-  {
-    "name": "DocumentMetadataBaseService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
-    "module": "deed-entry.services.document-metadata.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: DocumentMetadataBaseService"
-      }
-    ]
-  },
-  {
-    "name": "AnnualReportActionResolver",
-    "stereotype": "resolver",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
-    "module": "deed-entry.components.deed-report-page.services",
-    "layer_hint": "presentation",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
-        "lines": "20-26",
-        "reason": "@Injectable: AnnualReportActionResolver"
-      }
-    ]
-  },
-  {
-    "name": "ActionService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
-    "module": "action.services.action.api-generated.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
-        "lines": "52-58",
-        "reason": "@Injectable: ActionService"
-      }
-    ]
-  },
-  {
-    "name": "LspSecureFrameworkEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: LspSecureFrameworkEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "TaskApiConfiguration",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
-    "module": "workflow.services.workflow-rest.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: TaskApiConfiguration"
-      }
-    ]
-  },
-  {
-    "name": "ChromePageContainerAdapterImpl",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
-    "module": "adapters.page-container-adapter.impl.mock",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: ChromePageContainerAdapterImpl"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowReencryptionService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
-    "module": "workflow.services.workflow-reencryption",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
-        "lines": "71-77",
-        "reason": "@Injectable: WorkflowReencryptionService"
-      }
-    ]
-  },
-  {
-    "name": "GetDeedEntryLockService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-entry\\get-deed-entry-lock.service.ts",
-    "module": "deed-entry.services.deed-entry",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-entry\\get-deed-entry-lock.service.ts",
-        "lines": "37-43",
-        "reason": "@Injectable: GetDeedEntryLockService"
-      }
-    ]
-  },
-  {
-    "name": "LineNumberService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
-    "module": "deed-entry.components.deed-overview-page.deed-overview.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
-        "lines": "18-24",
-        "reason": "@Injectable: LineNumberService"
-      }
-    ]
-  },
-  {
-    "name": "MockXnpEndpointProvider",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
-        "lines": "327-333",
-        "reason": "@Injectable: MockXnpEndpointProvider"
-      }
-    ]
-  },
-  {
-    "name": "HandoverDataSetService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
-    "module": "deed-entry.components.deed-overview-page.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
-        "lines": "5-11",
-        "reason": "@Injectable: HandoverDataSetService"
-      }
-    ]
-  },
-  {
-    "name": "DeedRegistryApiConfiguration",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
-    "module": "deed-entry.services.deed-registry.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: DeedRegistryApiConfiguration"
-      }
-    ]
-  },
-  {
     "name": "ImportHandlerServiceVersion1Dot6Dot1",
     "stereotype": "service",
     "container_hint": "frontend",
@@ -5934,36 +5274,6 @@
         "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-1-handler\\import-v1-6-1-handler.service.ts",
         "lines": "13-19",
         "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot1"
-      }
-    ]
-  },
-  {
-    "name": "ReportMetadataRestService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
-    "module": "report-metadata.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
-        "lines": "26-32",
-        "reason": "@Injectable: ReportMetadataRestService"
-      }
-    ]
-  },
-  {
-    "name": "GlobalArchivingHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
-    "module": "deed-entry.services.archiving",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
-        "lines": "32-38",
-        "reason": "@Injectable: GlobalArchivingHelperService"
       }
     ]
   },
@@ -5983,21 +5293,6 @@
     ]
   },
   {
-    "name": "SortingService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
-    "module": "deed-entry.components.deed-overview-page.deed-overview.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: SortingService"
-      }
-    ]
-  },
-  {
     "name": "XnpDataChangedAdapterService",
     "stereotype": "adapter",
     "container_hint": "frontend",
@@ -6013,332 +5308,17 @@
     ]
   },
   {
-    "name": "LogData",
-    "stereotype": "service",
+    "name": "AnnualReportActionResolver",
+    "stereotype": "resolver",
     "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "application",
+    "file_path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
+    "module": "deed-entry.components.deed-report-page.services",
+    "layer_hint": "presentation",
     "evidence": [
       {
-        "path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
-        "lines": "12-18",
-        "reason": "@Injectable: LogData"
-      }
-    ]
-  },
-  {
-    "name": "XnpSettingsEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: XnpSettingsEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowDeletionJobService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
-    "module": "workflow.services.workflow-deletion",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
-        "lines": "26-32",
-        "reason": "@Injectable: WorkflowDeletionJobService"
-      }
-    ]
-  },
-  {
-    "name": "DeedRegistryBaseService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
-    "module": "deed-entry.services.deed-registry.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: DeedRegistryBaseService"
-      }
-    ]
-  },
-  {
-    "name": "JobModuleService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
-    "module": "workflow.services.workflow-rest.api-generated.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
-        "lines": "104-110",
-        "reason": "@Injectable: JobModuleService"
-      }
-    ]
-  },
-  {
-    "name": "ReEncryptionHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
-    "module": "deed-entry.components.deed-successor-page.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
-        "lines": "62-68",
-        "reason": "@Injectable: ReEncryptionHelperService"
-      }
-    ]
-  },
-  {
-    "name": "XnpFsEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: XnpFsEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "NswDeedImportService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
-        "lines": "16-22",
-        "reason": "@Injectable: NswDeedImportService"
-      }
-    ]
-  },
-  {
-    "name": "DocumentModalHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
-    "module": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
-        "lines": "18-24",
-        "reason": "@Injectable: DocumentModalHelperService"
-      }
-    ]
-  },
-  {
-    "name": "ReportService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
-    "module": "deed-entry.services.deed-reports",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
-        "lines": "15-21",
-        "reason": "@Injectable: ReportService"
-      }
-    ]
-  },
-  {
-    "name": "SelectionHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts",
-    "module": "deed-entry.components.deed-successor-page.deed-successor-selection-dialog.helper",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: SelectionHelperService"
-      }
-    ]
-  },
-  {
-    "name": "HtmlCustodyAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
-    "module": "adapters.custody.html-custody-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
-        "lines": "15-21",
-        "reason": "@Injectable: HtmlCustodyAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "DomainJobService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
-    "module": "workflow.services.workflow-rest.domain",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
-        "lines": "19-25",
-        "reason": "@Injectable: DomainJobService"
-      }
-    ]
-  },
-  {
-    "name": "DeedRegistryService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
-    "module": "deed-entry.services.deed-registry.api-generated.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
-        "lines": "77-83",
-        "reason": "@Injectable: DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "name": "ReencryptionApiConfiguration",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
-    "module": "adapters.reencryption.xnp.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: ReencryptionApiConfiguration"
-      }
-    ]
-  },
-  {
-    "name": "UserContextPermissionCheckService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
-    "module": "adapters.authorization.xnp.service",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
-        "lines": "35-41",
-        "reason": "@Injectable: UserContextPermissionCheckService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowValidateSignatureWorkService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
-    "module": "workflow.services.workflow-validate-signature",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: WorkflowValidateSignatureWorkService"
-      }
-    ]
-  },
-  {
-    "name": "RedesignServiceMock",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\services\\redesign.service.mock.ts",
-    "module": "services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\services\\redesign.service.mock.ts",
-        "lines": "2-8",
-        "reason": "@Injectable: RedesignServiceMock"
-      }
-    ]
-  },
-  {
-    "name": "HtmlSignatureAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
-    "module": "adapters.document.adapter.html-document-adapter.html-signature-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
-        "lines": "27-33",
-        "reason": "@Injectable: HtmlSignatureAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowDeletionWorkService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
-    "module": "workflow.services.workflow-deletion",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
-        "lines": "24-30",
-        "reason": "@Injectable: WorkflowDeletionWorkService"
-      }
-    ]
-  },
-  {
-    "name": "DeedDeleteService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
-    "module": "deed-entry.services.deed-delete",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
-        "lines": "34-40",
-        "reason": "@Injectable: DeedDeleteService"
-      }
-    ]
-  },
-  {
-    "name": "NumberManagementRestService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
-    "module": "number-management.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
-        "lines": "13-19",
-        "reason": "@Injectable: NumberManagementRestService"
+        "path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
+        "lines": "20-26",
+        "reason": "@Injectable: AnnualReportActionResolver"
       }
     ]
   },
@@ -6358,242 +5338,17 @@
     ]
   },
   {
-    "name": "CustomDatepickerParserFormatter",
+    "name": "DocumentMetaDataService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
-    "module": "page.custom-datepicker",
+    "file_path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
+    "module": "deed-entry.services.document-metadata.api-generated.services",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
-        "lines": "6-12",
-        "reason": "@Injectable: CustomDatepickerParserFormatter"
-      }
-    ]
-  },
-  {
-    "name": "ImportHandlerServiceVersion1Dot3Dot0",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-3-0-handler",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: ImportHandlerServiceVersion1Dot3Dot0"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowBaseService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
-    "module": "workflow.services.workflow-rest.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: WorkflowBaseService"
-      }
-    ]
-  },
-  {
-    "name": "DomainWorkflowService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts",
-    "module": "workflow.services.workflow-rest.domain",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts",
-        "lines": "11-17",
-        "reason": "@Injectable: DomainWorkflowService"
-      }
-    ]
-  },
-  {
-    "name": "DeedRegistryDomainService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
-    "module": "deed-entry.services.deed-registry",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
-        "lines": "12-18",
-        "reason": "@Injectable: DeedRegistryDomainService"
-      }
-    ]
-  },
-  {
-    "name": "SignOperationTokenRestService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
-    "module": "adapters.archiving.adapter.xnp",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: SignOperationTokenRestService"
-      }
-    ]
-  },
-  {
-    "name": "LoggingDataChangedAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
-    "module": "adapters.data-changed.impl.mock",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: LoggingDataChangedAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowDeletionTaskService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts",
-    "module": "workflow.services.workflow-deletion",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts",
-        "lines": "22-28",
-        "reason": "@Injectable: WorkflowDeletionTaskService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowApiConfiguration",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts",
-    "module": "workflow.services.workflow-rest.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: WorkflowApiConfiguration"
-      }
-    ]
-  },
-  {
-    "name": "DeedEntryRestService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
-    "module": "deed-entry.services.deed-entry",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
-        "lines": "73-79",
-        "reason": "@Injectable: DeedEntryRestService"
-      }
-    ]
-  },
-  {
-    "name": "SettingsInitializer",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\core\\settings-initializer.ts",
-    "module": "core",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\settings-initializer.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: SettingsInitializer"
-      }
-    ]
-  },
-  {
-    "name": "DeedEntryLogService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
-    "module": "deed-entry.services.deed-entry-log",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: DeedEntryLogService"
-      }
-    ]
-  },
-  {
-    "name": "XnpDocumentAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
-    "module": "adapters.document.adapter.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
-        "lines": "48-54",
-        "reason": "@Injectable: XnpDocumentAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "AuthenticationHttpInterceptor",
-    "stereotype": "interceptor",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\authentication\\auth-http-interceptor.service.ts",
-    "module": "authentication",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\authentication\\auth-http-interceptor.service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: AuthenticationHttpInterceptor"
-      }
-    ]
-  },
-  {
-    "name": "NativeSessionAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
-    "module": "adapters.session.native",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
-        "lines": "5-11",
-        "reason": "@Injectable: NativeSessionAdapter"
-      }
-    ]
-  },
-  {
-    "name": "CorrectionChangeDisplayService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
-    "module": "deed-entry.components.deed-form-page.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
-        "lines": "153-159",
-        "reason": "@Injectable: CorrectionChangeDisplayService"
+        "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
+        "lines": "232-238",
+        "reason": "@Injectable: DocumentMetaDataService"
       }
     ]
   },
@@ -6609,6 +5364,141 @@
         "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-has-errors-retry\\reencryption-has-errors-retry.service.ts",
         "lines": "14-20",
         "reason": "@Injectable: ReencryptionHasErrorsRetryService"
+      }
+    ]
+  },
+  {
+    "name": "HtmlDocumentAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
+    "module": "adapters.document.adapter.html-document-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
+        "lines": "29-35",
+        "reason": "@Injectable: HtmlDocumentAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "DeedApprovalService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
+    "module": "deed-entry.services.deed-approval",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
+        "lines": "22-28",
+        "reason": "@Injectable: DeedApprovalService"
+      }
+    ]
+  },
+  {
+    "name": "BusinessPurposeResolverEnhancedSearch",
+    "stereotype": "resolver",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
+    "module": "enhanced-search",
+    "layer_hint": "presentation",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
+        "lines": "17-23",
+        "reason": "@Injectable: BusinessPurposeResolverEnhancedSearch"
+      }
+    ]
+  },
+  {
+    "name": "DomainJobService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
+    "module": "workflow.services.workflow-rest.domain",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
+        "lines": "19-25",
+        "reason": "@Injectable: DomainJobService"
+      }
+    ]
+  },
+  {
+    "name": "MockXnpEndpointProvider",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
+        "lines": "327-333",
+        "reason": "@Injectable: MockXnpEndpointProvider"
+      }
+    ]
+  },
+  {
+    "name": "ActionService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
+    "module": "action.services.action.api-generated.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
+        "lines": "52-58",
+        "reason": "@Injectable: ActionService"
+      }
+    ]
+  },
+  {
+    "name": "DocumentCopyService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
+    "module": "deed-entry.services.document-copy",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: DocumentCopyService"
+      }
+    ]
+  },
+  {
+    "name": "XnpBroadcastAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
+    "module": "adapters.xnp.broadcast",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
+        "lines": "21-27",
+        "reason": "@Injectable: XnpBroadcastAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "ModalService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\services\\modal\\modal.service.ts",
+    "module": "services.modal",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\services\\modal\\modal.service.ts",
+        "lines": "32-38",
+        "reason": "@Injectable: ModalService"
       }
     ]
   },
@@ -6643,171 +5533,6 @@
     ]
   },
   {
-    "name": "NotaryOfficialTitleStaticMapperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\authentication\\xnp\\services\\notary-official-title-static-mapper.service.ts",
-    "module": "adapters.authentication.xnp.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\authentication\\xnp\\services\\notary-official-title-static-mapper.service.ts",
-        "lines": "4-10",
-        "reason": "@Injectable: NotaryOfficialTitleStaticMapperService"
-      }
-    ]
-  },
-  {
-    "name": "MockArchivingRetrievalHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
-    "module": "deed-entry.services.archiving",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
-        "lines": "36-42",
-        "reason": "@Injectable: MockArchivingRetrievalHelperService"
-      }
-    ]
-  },
-  {
-    "name": "RedesignService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\services\\redesign.service.ts",
-    "module": "services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\services\\redesign.service.ts",
-        "lines": "6-12",
-        "reason": "@Injectable: RedesignService"
-      }
-    ]
-  },
-  {
-    "name": "TypeaheadFilterService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
-    "module": "typeahead.services.typeahead-filter",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
-        "lines": "19-25",
-        "reason": "@Injectable: TypeaheadFilterService"
-      }
-    ]
-  },
-  {
-    "name": "NativeJsonImportAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\json-import\\native\\native-json-import.ts",
-    "module": "adapters.json-import.native",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\json-import\\native\\native-json-import.ts",
-        "lines": "15-21",
-        "reason": "@Injectable: NativeJsonImportAdapter"
-      }
-    ]
-  },
-  {
-    "name": "DocumentAdapterHelperService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts",
-    "module": "adapters.document.adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts",
-        "lines": "32-38",
-        "reason": "@Injectable: DocumentAdapterHelperService"
-      }
-    ]
-  },
-  {
-    "name": "XnpPageContainerNgAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
-    "module": "adapters.page-container-adapter.impl.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
-        "lines": "13-19",
-        "reason": "@Injectable: XnpPageContainerNgAdapter"
-      }
-    ]
-  },
-  {
-    "name": "NativePdfAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
-    "module": "adapters.pdf-report.native",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: NativePdfAdapter"
-      }
-    ]
-  },
-  {
-    "name": "XnpDocumentsEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
-        "lines": "18-24",
-        "reason": "@Injectable: XnpDocumentsEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "XnpStorageSettingsAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
-    "module": "adapters.settings.storage-adapter.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
-        "lines": "28-34",
-        "reason": "@Injectable: XnpStorageSettingsAdapter"
-      }
-    ]
-  },
-  {
-    "name": "UvzNumberFormatConfigurationService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
-    "module": "deed-entry.services.uvz-number-format-configuration",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
-        "lines": "24-30",
-        "reason": "@Injectable: UvzNumberFormatConfigurationService"
-      }
-    ]
-  },
-  {
     "name": "TokenDataMapperService",
     "stereotype": "service",
     "container_hint": "frontend",
@@ -6823,707 +5548,17 @@
     ]
   },
   {
-    "name": "RateLimitingInterceptor",
-    "stereotype": "interceptor",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
-    "module": "http-util",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: RateLimitingInterceptor"
-      }
-    ]
-  },
-  {
-    "name": "TaskModuleMockService",
+    "name": "ReportService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
-    "module": "workflow.services.workflow-rest.mock",
+    "file_path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
+    "module": "deed-entry.services.deed-reports",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
-        "lines": "85-91",
-        "reason": "@Injectable: TaskModuleMockService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowValidateSignatureJobService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
-    "module": "workflow.services.workflow-validate-signature",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
-        "lines": "11-17",
-        "reason": "@Injectable: WorkflowValidateSignatureJobService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowArchiveJobService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
-    "module": "workflow.services.workflow-archive",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
-        "lines": "26-32",
-        "reason": "@Injectable: WorkflowArchiveJobService"
-      }
-    ]
-  },
-  {
-    "name": "ReportMetadataSignatureHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
-    "module": "report-metadata.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
-        "lines": "6-12",
-        "reason": "@Injectable: ReportMetadataSignatureHelperService"
-      }
-    ]
-  },
-  {
-    "name": "TypeaheadDomService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
-    "module": "typeahead.services.typeahead-dom",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: TypeaheadDomService"
-      }
-    ]
-  },
-  {
-    "name": "KeyManagerAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
-    "module": "adapters.reencryption.xnp.api-generated.services",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
-        "lines": "48-54",
-        "reason": "@Injectable: KeyManagerAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "ImportHandlerServiceVersion1Dot1Dot1",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-1-1-handler",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
-        "lines": "9-15",
-        "reason": "@Injectable: ImportHandlerServiceVersion1Dot1Dot1"
-      }
-    ]
-  },
-  {
-    "name": "DeedTypeRestService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
-    "module": "deed-entry.services.deed-entry",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: DeedTypeRestService"
-      }
-    ]
-  },
-  {
-    "name": "ImportHandlerServiceVersion1Dot6Dot0",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-6-0-handler",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
-        "lines": "13-19",
-        "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot0"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowChangeAoidJobService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts",
-    "module": "workflow.services.workflow-change-aoid",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts",
-        "lines": "26-32",
-        "reason": "@Injectable: WorkflowChangeAoidJobService"
-      }
-    ]
-  },
-  {
-    "name": "ReencryptionFinalizationHasErrorsRetryService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
-    "module": "workflow.services.workflow-modal.reencryption-finalization-has-errors-retry",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
-        "lines": "11-17",
-        "reason": "@Injectable: ReencryptionFinalizationHasErrorsRetryService"
-      }
-    ]
-  },
-  {
-    "name": "XnpFlyInNotificationNgAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
-    "module": "adapters.flyinnotification.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: XnpFlyInNotificationNgAdapter"
-      }
-    ]
-  },
-  {
-    "name": "InjectorService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\services\\injector\\injector.service.ts",
-    "module": "services.injector",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\services\\injector\\injector.service.ts",
-        "lines": "3-9",
-        "reason": "@Injectable: InjectorService"
-      }
-    ]
-  },
-  {
-    "name": "HtmlDocumentAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
-    "module": "adapters.document.adapter.html-document-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
-        "lines": "29-35",
-        "reason": "@Injectable: HtmlDocumentAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "ReencryptionBaseService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
-    "module": "adapters.reencryption.xnp.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: ReencryptionBaseService"
-      }
-    ]
-  },
-  {
-    "name": "FlyinNotificationAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
-    "module": "adapters.flyinnotification.flyinNotificationAdapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
-        "lines": "4-10",
-        "reason": "@Injectable: FlyinNotificationAdapter"
-      }
-    ]
-  },
-  {
-    "name": "DocumentCopyService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
-    "module": "deed-entry.services.document-copy",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: DocumentCopyService"
-      }
-    ]
-  },
-  {
-    "name": "ActivateIfUserAuthorized",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
-    "module": "authorization",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
-        "lines": "17-23",
-        "reason": "@Injectable: ActivateIfUserAuthorized"
-      }
-    ]
-  },
-  {
-    "name": "XnpJsonImportAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
-    "module": "adapters.json-import.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
-        "lines": "23-29",
-        "reason": "@Injectable: XnpJsonImportAdapter"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowChangeAoidWorkService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
-    "module": "workflow.services.workflow-change-aoid",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
-        "lines": "20-26",
-        "reason": "@Injectable: WorkflowChangeAoidWorkService"
-      }
-    ]
-  },
-  {
-    "name": "DocumentMetaDataService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
-    "module": "deed-entry.services.document-metadata.api-generated.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
-        "lines": "232-238",
-        "reason": "@Injectable: DocumentMetaDataService"
-      }
-    ]
-  },
-  {
-    "name": "ActionDomainService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\action\\services\\action\\action-domain.service.ts",
-    "module": "action.services.action",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\action\\services\\action\\action-domain.service.ts",
-        "lines": "30-36",
-        "reason": "@Injectable: ActionDomainService"
-      }
-    ]
-  },
-  {
-    "name": "JsonAuthorizationAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
-    "module": "adapters.authorization.json-authorization-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: JsonAuthorizationAdapter"
-      }
-    ]
-  },
-  {
-    "name": "LocalStorageSettingsAdapter",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
-    "module": "adapters.settings.storage-adapter.local-storage",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
-        "lines": "163-169",
-        "reason": "@Injectable: LocalStorageSettingsAdapter"
-      }
-    ]
-  },
-  {
-    "name": "XnpPdfsEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
-        "lines": "11-17",
-        "reason": "@Injectable: XnpPdfsEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "AsyncDocumentHelperService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
-    "module": "deed-entry.components.deed-form-page.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
-        "lines": "28-34",
-        "reason": "@Injectable: AsyncDocumentHelperService"
-      }
-    ]
-  },
-  {
-    "name": "ImportHandlerServiceVersion1Dot5Dot0",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-5-0-handler",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
-        "lines": "13-19",
-        "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot0"
-      }
-    ]
-  },
-  {
-    "name": "TaskBaseService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts",
-    "module": "workflow.services.workflow-rest.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: TaskBaseService"
-      }
-    ]
-  },
-  {
-    "name": "MockFileAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
-    "module": "adapters.file-api-adapter.mock-file-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: MockFileAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "FinishReencryptionRestService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
-    "module": "deed-entry.components.deed-overview-page.finalize-reencryption.rest",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
-        "lines": "17-23",
-        "reason": "@Injectable: FinishReencryptionRestService"
-      }
-    ]
-  },
-  {
-    "name": "TooltipConfigService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
-    "module": "tooltip-table",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
-        "lines": "2-8",
-        "reason": "@Injectable: TooltipConfigService"
-      }
-    ]
-  },
-  {
-    "name": "DeedEntryPageManagerService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
-    "module": "deed-entry.services.page-manager-service",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
-        "lines": "13-19",
-        "reason": "@Injectable: DeedEntryPageManagerService"
-      }
-    ]
-  },
-  {
-    "name": "FieldValidationService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
-    "module": "forms.field-validation-service",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
-        "lines": "32-38",
-        "reason": "@Injectable: FieldValidationService"
-      }
-    ]
-  },
-  {
-    "name": "BusinessPurposeResolverEnhancedSearch",
-    "stereotype": "resolver",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
-    "module": "enhanced-search",
-    "layer_hint": "presentation",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
-        "lines": "17-23",
-        "reason": "@Injectable: BusinessPurposeResolverEnhancedSearch"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowFinalizeReencryptionWorkService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
-    "module": "workflow.services.workflow-reencryption.job-finalize-reencryption",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
-        "lines": "19-25",
-        "reason": "@Injectable: WorkflowFinalizeReencryptionWorkService"
-      }
-    ]
-  },
-  {
-    "name": "PdfExportService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
-    "module": "deed-entry.components.deed-report-page.pdf-export.pdf-export-service",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
-        "lines": "114-120",
-        "reason": "@Injectable: PdfExportService"
-      }
-    ]
-  },
-  {
-    "name": "ApplicationInitializerService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\core\\application-initializer.service.ts",
-    "module": "core",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\application-initializer.service.ts",
-        "lines": "13-19",
-        "reason": "@Injectable: ApplicationInitializerService"
-      }
-    ]
-  },
-  {
-    "name": "ArchivingService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\archiving\\archiving.service.ts",
-    "module": "adapters.archiving",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\archiving\\archiving.service.ts",
-        "lines": "33-39",
-        "reason": "@Injectable: ArchivingService"
-      }
-    ]
-  },
-  {
-    "name": "XnpCustodyAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
-    "module": "adapters.custody.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
-        "lines": "16-22",
-        "reason": "@Injectable: XnpCustodyAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "SettingsAdapterService",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
-    "module": "adapters.settings.settings-adapter",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
-        "lines": "19-25",
-        "reason": "@Injectable: SettingsAdapterService"
-      }
-    ]
-  },
-  {
-    "name": "JobFinalizeReencryptionService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
-    "module": "workflow.services.workflow-reencryption.job-finalize-reencryption",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
-        "lines": "16-22",
-        "reason": "@Injectable: JobFinalizeReencryptionService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowFinalizeReencryptionTaskService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
-    "module": "workflow.services.workflow-reencryption.job-finalize-reencryption",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: WorkflowFinalizeReencryptionTaskService"
-      }
-    ]
-  },
-  {
-    "name": "ButtonDeactivationService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\services\\button-deactivation.service.ts",
-    "module": "services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\services\\button-deactivation.service.ts",
-        "lines": "4-10",
-        "reason": "@Injectable: ButtonDeactivationService"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowModuleService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
-    "module": "workflow.services.workflow-rest.api-generated.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
-        "lines": "110-116",
-        "reason": "@Injectable: WorkflowModuleService"
-      }
-    ]
-  },
-  {
-    "name": "XnpPdfMakeEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpPdfMakeEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpPdfMakeEndpoint.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: XnpPdfMakeEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "XnpSignatureEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpSignatureEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpSignatureEndpoint.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: XnpSignatureEndpoint"
+        "path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
+        "lines": "15-21",
+        "reason": "@Injectable: ReportService"
       }
     ]
   },
@@ -7543,62 +5578,377 @@
     ]
   },
   {
-    "name": "GlobalErrorHandlerService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
-    "module": "error-handling",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
-        "lines": "20-26",
-        "reason": "@Injectable: GlobalErrorHandlerService"
-      }
-    ]
-  },
-  {
-    "name": "HttpErrorInterceptor",
-    "stereotype": "interceptor",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\forms\\http-error-interceptor.service.ts",
-    "module": "forms",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\forms\\http-error-interceptor.service.ts",
-        "lines": "6-12",
-        "reason": "@Injectable: HttpErrorInterceptor"
-      }
-    ]
-  },
-  {
-    "name": "XnpBroadcastAdapterService",
+    "name": "MockKeyManagerAdapterService",
     "stereotype": "adapter",
     "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
-    "module": "adapters.xnp.broadcast",
+    "file_path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
+    "module": "adapters.reencryption.mock",
     "layer_hint": "infrastructure",
     "evidence": [
       {
-        "path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
-        "lines": "21-27",
-        "reason": "@Injectable: XnpBroadcastAdapterService"
+        "path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
+        "lines": "6-12",
+        "reason": "@Injectable: MockKeyManagerAdapterService"
       }
     ]
   },
   {
-    "name": "WorkflowArchiveWorkService",
+    "name": "ReportMetadataSignatureHelperService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
-    "module": "workflow.services.workflow-archive",
+    "file_path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
+    "module": "report-metadata.services",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
-        "lines": "20-26",
-        "reason": "@Injectable: WorkflowArchiveWorkService"
+        "path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
+        "lines": "6-12",
+        "reason": "@Injectable: ReportMetadataSignatureHelperService"
+      }
+    ]
+  },
+  {
+    "name": "HtmlCustodyAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
+    "module": "adapters.custody.html-custody-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
+        "lines": "15-21",
+        "reason": "@Injectable: HtmlCustodyAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "BusyIndicatorInterceptor",
+    "stereotype": "interceptor",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
+    "module": "http-util",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
+        "lines": "28-34",
+        "reason": "@Injectable: BusyIndicatorInterceptor"
+      }
+    ]
+  },
+  {
+    "name": "MockArchivingAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\archiving\\adapter\\mock-archiving-adapter\\mock-archiving-adapter.service.ts",
+    "module": "adapters.archiving.adapter.mock-archiving-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\archiving\\adapter\\mock-archiving-adapter\\mock-archiving-adapter.service.ts",
+        "lines": "26-32",
+        "reason": "@Injectable: MockArchivingAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowFinalizeReencryptionWorkService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
+    "module": "workflow.services.workflow-reencryption.job-finalize-reencryption",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
+        "lines": "19-25",
+        "reason": "@Injectable: WorkflowFinalizeReencryptionWorkService"
+      }
+    ]
+  },
+  {
+    "name": "ReencryptionBaseService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
+    "module": "adapters.reencryption.xnp.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: ReencryptionBaseService"
+      }
+    ]
+  },
+  {
+    "name": "DocumentAdapterHelperService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts",
+    "module": "adapters.document.adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\document\\adapter\\document-adapter-helper.service.ts",
+        "lines": "32-38",
+        "reason": "@Injectable: DocumentAdapterHelperService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowReencryptionService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
+    "module": "workflow.services.workflow-reencryption",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
+        "lines": "71-77",
+        "reason": "@Injectable: WorkflowReencryptionService"
+      }
+    ]
+  },
+  {
+    "name": "FieldValidationService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
+    "module": "forms.field-validation-service",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
+        "lines": "32-38",
+        "reason": "@Injectable: FieldValidationService"
+      }
+    ]
+  },
+  {
+    "name": "MockArchivingRetrievalHelperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
+    "module": "deed-entry.services.archiving",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
+        "lines": "36-42",
+        "reason": "@Injectable: MockArchivingRetrievalHelperService"
+      }
+    ]
+  },
+  {
+    "name": "CustomDatepickerParserFormatter",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
+    "module": "page.custom-datepicker",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
+        "lines": "6-12",
+        "reason": "@Injectable: CustomDatepickerParserFormatter"
+      }
+    ]
+  },
+  {
+    "name": "ChromePageContainerAdapterImpl",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
+    "module": "adapters.page-container-adapter.impl.mock",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: ChromePageContainerAdapterImpl"
+      }
+    ]
+  },
+  {
+    "name": "ButtonDeactivationService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\services\\button-deactivation.service.ts",
+    "module": "services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\services\\button-deactivation.service.ts",
+        "lines": "4-10",
+        "reason": "@Injectable: ButtonDeactivationService"
+      }
+    ]
+  },
+  {
+    "name": "ImportHandlerServiceVersion1Dot2Dot0",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-2-0-handler",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: ImportHandlerServiceVersion1Dot2Dot0"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowChangeAoidJobService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts",
+    "module": "workflow.services.workflow-change-aoid",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-job.service.ts",
+        "lines": "26-32",
+        "reason": "@Injectable: WorkflowChangeAoidJobService"
+      }
+    ]
+  },
+  {
+    "name": "XnpArchivingAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts",
+    "module": "adapters.archiving.adapter.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\xnp-archiving-adapter.service.ts",
+        "lines": "50-56",
+        "reason": "@Injectable: XnpArchivingAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "AuthenticationHttpInterceptor",
+    "stereotype": "interceptor",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\authentication\\auth-http-interceptor.service.ts",
+    "module": "authentication",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\authentication\\auth-http-interceptor.service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: AuthenticationHttpInterceptor"
+      }
+    ]
+  },
+  {
+    "name": "TaskBaseService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts",
+    "module": "workflow.services.workflow-rest.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-base-service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: TaskBaseService"
+      }
+    ]
+  },
+  {
+    "name": "SettingsAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
+    "module": "adapters.settings.settings-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
+        "lines": "19-25",
+        "reason": "@Injectable: SettingsAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "DomainWorkflowService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts",
+    "module": "workflow.services.workflow-rest.domain",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts",
+        "lines": "11-17",
+        "reason": "@Injectable: DomainWorkflowService"
+      }
+    ]
+  },
+  {
+    "name": "TaskModuleService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
+    "module": "workflow.services.workflow-rest.api-generated.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
+        "lines": "119-125",
+        "reason": "@Injectable: TaskModuleService"
+      }
+    ]
+  },
+  {
+    "name": "ActionBaseService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
+    "module": "action.services.action.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: ActionBaseService"
+      }
+    ]
+  },
+  {
+    "name": "LineNumberService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
+    "module": "deed-entry.components.deed-overview-page.deed-overview.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
+        "lines": "18-24",
+        "reason": "@Injectable: LineNumberService"
+      }
+    ]
+  },
+  {
+    "name": "ActionApiConfiguration",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
+    "module": "action.services.action.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: ActionApiConfiguration"
       }
     ]
   },
@@ -7618,32 +5968,77 @@
     ]
   },
   {
-    "name": "DeedFormService",
+    "name": "NotaryRepresentationService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
-    "module": "deed-entry.components.deed-form-page.services",
+    "file_path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
+    "module": "deed-entry.services.notary-representation",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
-        "lines": "40-46",
-        "reason": "@Injectable: DeedFormService"
+        "path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: NotaryRepresentationService"
       }
     ]
   },
   {
-    "name": "KeepUnsavedBusinessObjectsService",
+    "name": "SignOperationTokenRestService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
-    "module": "deed-entry.components.deed-form-page.services",
+    "file_path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
+    "module": "adapters.archiving.adapter.xnp",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: KeepUnsavedBusinessObjectsService"
+        "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: SignOperationTokenRestService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowValidateSignatureTaskService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
+    "module": "workflow.services.workflow-validate-signature",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: WorkflowValidateSignatureTaskService"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
+    "module": "report-metadata.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
+        "lines": "44-50",
+        "reason": "@Injectable: ReportMetadataService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowValidateSignatureWorkService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
+    "module": "workflow.services.workflow-validate-signature",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: WorkflowValidateSignatureWorkService"
       }
     ]
   },
@@ -7663,122 +6058,152 @@
     ]
   },
   {
-    "name": "WorkflowDeletionService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
-    "module": "workflow.services.workflow-deletion",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
-        "lines": "5-11",
-        "reason": "@Injectable: WorkflowDeletionService"
-      }
-    ]
-  },
-  {
-    "name": "HandleSearchParamHelper",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
-    "module": "deed-entry.components.deed-overview-page",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
-        "lines": "16-22",
-        "reason": "@Injectable: HandleSearchParamHelper"
-      }
-    ]
-  },
-  {
-    "name": "XnpFileApiAdapter",
+    "name": "LocalStorageSettingsAdapter",
     "stereotype": "adapter",
     "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts",
-    "module": "adapters.file-api-adapter.xnp",
+    "file_path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
+    "module": "adapters.settings.storage-adapter.local-storage",
     "layer_hint": "infrastructure",
     "evidence": [
       {
-        "path": "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts",
-        "lines": "15-21",
-        "reason": "@Injectable: XnpFileApiAdapter"
+        "path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
+        "lines": "163-169",
+        "reason": "@Injectable: LocalStorageSettingsAdapter"
       }
     ]
   },
   {
-    "name": "JobBaseService",
+    "name": "ReencryptionCheckResolver",
+    "stereotype": "resolver",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
+    "module": "deed-entry.components.deed-overview-page.services",
+    "layer_hint": "presentation",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: ReencryptionCheckResolver"
+      }
+    ]
+  },
+  {
+    "name": "CorrectionChangeDisplayService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
-    "module": "workflow.services.workflow-rest.api-generated",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
+    "module": "deed-entry.components.deed-form-page.services",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
+        "lines": "153-159",
+        "reason": "@Injectable: CorrectionChangeDisplayService"
+      }
+    ]
+  },
+  {
+    "name": "ReEncryptionHelperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
+    "module": "deed-entry.components.deed-successor-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
+        "lines": "62-68",
+        "reason": "@Injectable: ReEncryptionHelperService"
+      }
+    ]
+  },
+  {
+    "name": "DeedRegistryBaseService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
+    "module": "deed-entry.services.deed-registry.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
         "lines": "8-14",
-        "reason": "@Injectable: JobBaseService"
+        "reason": "@Injectable: DeedRegistryBaseService"
       }
     ]
   },
   {
-    "name": "DeedApprovalService",
+    "name": "InjectorService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
-    "module": "deed-entry.services.deed-approval",
+    "file_path": "src\\app\\shared\\services\\injector\\injector.service.ts",
+    "module": "services.injector",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
-        "lines": "22-28",
-        "reason": "@Injectable: DeedApprovalService"
+        "path": "src\\app\\shared\\services\\injector\\injector.service.ts",
+        "lines": "3-9",
+        "reason": "@Injectable: InjectorService"
       }
     ]
   },
   {
-    "name": "JobReencryptionService",
+    "name": "WorkflowFinalizeReencryptionTaskService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
-    "module": "workflow.services.workflow-reencryption.job-reencryption",
+    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
+    "module": "workflow.services.workflow-reencryption.job-finalize-reencryption",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
-        "lines": "16-22",
-        "reason": "@Injectable: JobReencryptionService"
+        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: WorkflowFinalizeReencryptionTaskService"
       }
     ]
   },
   {
-    "name": "XnpArchiveManagerEndpoint",
-    "stereotype": "adapter",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
-    "module": "adapters.xnp",
-    "layer_hint": "infrastructure",
-    "evidence": [
-      {
-        "path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
-        "lines": "26-32",
-        "reason": "@Injectable: XnpArchiveManagerEndpoint"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowModuleMockService",
+    "name": "GetDeedEntryLockService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
-    "module": "workflow.services.workflow-rest.mock",
+    "file_path": "src\\app\\deed-entry\\services\\deed-entry\\get-deed-entry-lock.service.ts",
+    "module": "deed-entry.services.deed-entry",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
-        "lines": "155-161",
-        "reason": "@Injectable: WorkflowModuleMockService"
+        "path": "src\\app\\deed-entry\\services\\deed-entry\\get-deed-entry-lock.service.ts",
+        "lines": "37-43",
+        "reason": "@Injectable: GetDeedEntryLockService"
+      }
+    ]
+  },
+  {
+    "name": "DeedEntryPageManagerService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
+    "module": "deed-entry.services.page-manager-service",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
+        "lines": "13-19",
+        "reason": "@Injectable: DeedEntryPageManagerService"
+      }
+    ]
+  },
+  {
+    "name": "DocumentArchivingRestService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
+    "module": "deed-entry.services.archiving",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
+        "lines": "29-35",
+        "reason": "@Injectable: DocumentArchivingRestService"
       }
     ]
   },
@@ -7798,6 +6223,126 @@
     ]
   },
   {
+    "name": "BnotkGridHelperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
+    "module": "report-metadata.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
+        "lines": "19-25",
+        "reason": "@Injectable: BnotkGridHelperService"
+      }
+    ]
+  },
+  {
+    "name": "HttpErrorInterceptor",
+    "stereotype": "interceptor",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\forms\\http-error-interceptor.service.ts",
+    "module": "forms",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\forms\\http-error-interceptor.service.ts",
+        "lines": "6-12",
+        "reason": "@Injectable: HttpErrorInterceptor"
+      }
+    ]
+  },
+  {
+    "name": "DeedTypeRestService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
+    "module": "deed-entry.services.deed-entry",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: DeedTypeRestService"
+      }
+    ]
+  },
+  {
+    "name": "NativeSessionAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
+    "module": "adapters.session.native",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
+        "lines": "5-11",
+        "reason": "@Injectable: NativeSessionAdapter"
+      }
+    ]
+  },
+  {
+    "name": "DeedEntryRestService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
+    "module": "deed-entry.services.deed-entry",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
+        "lines": "73-79",
+        "reason": "@Injectable: DeedEntryRestService"
+      }
+    ]
+  },
+  {
+    "name": "RedesignServiceMock",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\services\\redesign.service.mock.ts",
+    "module": "services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\services\\redesign.service.mock.ts",
+        "lines": "2-8",
+        "reason": "@Injectable: RedesignServiceMock"
+      }
+    ]
+  },
+  {
+    "name": "ReencryptionFinalizationDoneService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
+    "module": "workflow.services.workflow-modal.reencryption-finalization-done",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: ReencryptionFinalizationDoneService"
+      }
+    ]
+  },
+  {
+    "name": "SortingService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
+    "module": "deed-entry.components.deed-overview-page.deed-overview.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: SortingService"
+      }
+    ]
+  },
+  {
     "name": "ImportHandlerServiceVersion1Dot6Dot2",
     "stereotype": "service",
     "container_hint": "frontend",
@@ -7809,6 +6354,1476 @@
         "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-2-handler\\import-v1-6-2-handler.service.ts",
         "lines": "13-19",
         "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot2"
+      }
+    ]
+  },
+  {
+    "name": "XnpDocumentAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
+    "module": "adapters.document.adapter.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
+        "lines": "48-54",
+        "reason": "@Injectable: XnpDocumentAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowReencryptionTaskService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
+    "module": "workflow.services.workflow-reencryption.job-reencryption",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: WorkflowReencryptionTaskService"
+      }
+    ]
+  },
+  {
+    "name": "XnpNotificationsEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: XnpNotificationsEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "DocumentMetadataBaseService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
+    "module": "deed-entry.services.document-metadata.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: DocumentMetadataBaseService"
+      }
+    ]
+  },
+  {
+    "name": "FlyinNotificationAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
+    "module": "adapters.flyinnotification.flyinNotificationAdapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
+        "lines": "4-10",
+        "reason": "@Injectable: FlyinNotificationAdapter"
+      }
+    ]
+  },
+  {
+    "name": "UvzNumberFormatConfigurationService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
+    "module": "deed-entry.services.uvz-number-format-configuration",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
+        "lines": "24-30",
+        "reason": "@Injectable: UvzNumberFormatConfigurationService"
+      }
+    ]
+  },
+  {
+    "name": "KeepUnsavedBusinessObjectsService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
+    "module": "deed-entry.components.deed-form-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: KeepUnsavedBusinessObjectsService"
+      }
+    ]
+  },
+  {
+    "name": "TypeaheadFilterService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
+    "module": "typeahead.services.typeahead-filter",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
+        "lines": "19-25",
+        "reason": "@Injectable: TypeaheadFilterService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowArchiveWorkService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
+    "module": "workflow.services.workflow-archive",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
+        "lines": "20-26",
+        "reason": "@Injectable: WorkflowArchiveWorkService"
+      }
+    ]
+  },
+  {
+    "name": "XnpNotaryEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: XnpNotaryEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "ImportHandlerServiceVersion1Dot1Dot1",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-1-1-handler",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: ImportHandlerServiceVersion1Dot1Dot1"
+      }
+    ]
+  },
+  {
+    "name": "TooltipConfigService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
+    "module": "tooltip-table",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
+        "lines": "2-8",
+        "reason": "@Injectable: TooltipConfigService"
+      }
+    ]
+  },
+  {
+    "name": "XnpPlatformEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: XnpPlatformEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "ReencryptionConfirmService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
+    "module": "workflow.services.workflow-modal.reencryption-confirm",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
+        "lines": "11-17",
+        "reason": "@Injectable: ReencryptionConfirmService"
+      }
+    ]
+  },
+  {
+    "name": "DeedRegistryApiConfiguration",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
+    "module": "deed-entry.services.deed-registry.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: DeedRegistryApiConfiguration"
+      }
+    ]
+  },
+  {
+    "name": "HandoverDataSetService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
+    "module": "deed-entry.components.deed-overview-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
+        "lines": "5-11",
+        "reason": "@Injectable: HandoverDataSetService"
+      }
+    ]
+  },
+  {
+    "name": "ArchiveSessionService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
+    "module": "services.archive-session-service",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
+        "lines": "25-31",
+        "reason": "@Injectable: ArchiveSessionService"
+      }
+    ]
+  },
+  {
+    "name": "OnlineHelpAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
+    "module": "adapters.online-help-adapter.html-online-help-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
+        "lines": "6-12",
+        "reason": "@Injectable: OnlineHelpAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataRestService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
+    "module": "report-metadata.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
+        "lines": "26-32",
+        "reason": "@Injectable: ReportMetadataRestService"
+      }
+    ]
+  },
+  {
+    "name": "XnpLogNgAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\logging\\xnp\\XnpLogNgAdapter.ts",
+    "module": "adapters.logging.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\logging\\xnp\\XnpLogNgAdapter.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: XnpLogNgAdapter"
+      }
+    ]
+  },
+  {
+    "name": "FinishReencryptionRestService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
+    "module": "deed-entry.components.deed-overview-page.finalize-reencryption.rest",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
+        "lines": "17-23",
+        "reason": "@Injectable: FinishReencryptionRestService"
+      }
+    ]
+  },
+  {
+    "name": "ShortcutService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
+    "module": "deed-entry.components.deed-form-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
+        "lines": "16-22",
+        "reason": "@Injectable: ShortcutService"
+      }
+    ]
+  },
+  {
+    "name": "TaskModuleMockService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
+    "module": "workflow.services.workflow-rest.mock",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
+        "lines": "85-91",
+        "reason": "@Injectable: TaskModuleMockService"
+      }
+    ]
+  },
+  {
+    "name": "XnpAuthorizationNgAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
+    "module": "adapters.authorization.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
+        "lines": "18-24",
+        "reason": "@Injectable: XnpAuthorizationNgAdapter"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowDeletionWorkService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
+    "module": "workflow.services.workflow-deletion",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
+        "lines": "24-30",
+        "reason": "@Injectable: WorkflowDeletionWorkService"
+      }
+    ]
+  },
+  {
+    "name": "NumberManagementRestService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
+    "module": "number-management.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
+        "lines": "13-19",
+        "reason": "@Injectable: NumberManagementRestService"
+      }
+    ]
+  },
+  {
+    "name": "NativePdfAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
+    "module": "adapters.pdf-report.native",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: NativePdfAdapter"
+      }
+    ]
+  },
+  {
+    "name": "DocumentModalHelperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
+    "module": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
+        "lines": "18-24",
+        "reason": "@Injectable: DocumentModalHelperService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowArchiveService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
+    "module": "workflow.services.workflow-archive",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
+        "lines": "5-11",
+        "reason": "@Injectable: WorkflowArchiveService"
+      }
+    ]
+  },
+  {
+    "name": "XnpPageContainerNgAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
+    "module": "adapters.page-container-adapter.impl.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
+        "lines": "13-19",
+        "reason": "@Injectable: XnpPageContainerNgAdapter"
+      }
+    ]
+  },
+  {
+    "name": "ApplicationInitializerService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\core\\application-initializer.service.ts",
+    "module": "core",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\application-initializer.service.ts",
+        "lines": "13-19",
+        "reason": "@Injectable: ApplicationInitializerService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowChangeAoidTaskService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
+    "module": "workflow.services.workflow-change-aoid",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: WorkflowChangeAoidTaskService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowChangeAoidService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
+    "module": "workflow.services.workflow-change-aoid",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
+        "lines": "12-18",
+        "reason": "@Injectable: WorkflowChangeAoidService"
+      }
+    ]
+  },
+  {
+    "name": "NativeJsonImportAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\json-import\\native\\native-json-import.ts",
+    "module": "adapters.json-import.native",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\json-import\\native\\native-json-import.ts",
+        "lines": "15-21",
+        "reason": "@Injectable: NativeJsonImportAdapter"
+      }
+    ]
+  },
+  {
+    "name": "GlobalErrorHandlerService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
+    "module": "error-handling",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
+        "lines": "20-26",
+        "reason": "@Injectable: GlobalErrorHandlerService"
+      }
+    ]
+  },
+  {
+    "name": "ReencryptionApiConfiguration",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
+    "module": "adapters.reencryption.xnp.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: ReencryptionApiConfiguration"
+      }
+    ]
+  },
+  {
+    "name": "DocumentMetadataApiConfiguration",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
+    "module": "deed-entry.services.document-metadata.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: DocumentMetadataApiConfiguration"
+      }
+    ]
+  },
+  {
+    "name": "JobApiConfiguration",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
+    "module": "workflow.services.workflow-rest.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: JobApiConfiguration"
+      }
+    ]
+  },
+  {
+    "name": "CorrectionObjectCreationService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
+    "module": "deed-entry.components.deed-form-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
+        "lines": "12-18",
+        "reason": "@Injectable: CorrectionObjectCreationService"
+      }
+    ]
+  },
+  {
+    "name": "RateLimitingInterceptor",
+    "stereotype": "interceptor",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
+    "module": "http-util",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: RateLimitingInterceptor"
+      }
+    ]
+  },
+  {
+    "name": "PdfExportService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
+    "module": "deed-entry.components.deed-report-page.pdf-export.pdf-export-service",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
+        "lines": "114-120",
+        "reason": "@Injectable: PdfExportService"
+      }
+    ]
+  },
+  {
+    "name": "TypeaheadDomService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
+    "module": "typeahead.services.typeahead-dom",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: TypeaheadDomService"
+      }
+    ]
+  },
+  {
+    "name": "ImportHandlerServiceVersion1Dot5Dot0",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-5-0-handler",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
+        "lines": "13-19",
+        "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot0"
+      }
+    ]
+  },
+  {
+    "name": "XnpFsEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: XnpFsEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "DeedRegistryService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
+    "module": "deed-entry.services.deed-registry.api-generated.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
+        "lines": "77-83",
+        "reason": "@Injectable: DeedRegistryService"
+      }
+    ]
+  },
+  {
+    "name": "UserContextPermissionCheckService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
+    "module": "adapters.authorization.xnp.service",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
+        "lines": "35-41",
+        "reason": "@Injectable: UserContextPermissionCheckService"
+      }
+    ]
+  },
+  {
+    "name": "HtmlSignatureAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
+    "module": "adapters.document.adapter.html-document-adapter.html-signature-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
+        "lines": "27-33",
+        "reason": "@Injectable: HtmlSignatureAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "MockFileAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
+    "module": "adapters.file-api-adapter.mock-file-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: MockFileAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "NswDeedImportService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
+        "lines": "16-22",
+        "reason": "@Injectable: NswDeedImportService"
+      }
+    ]
+  },
+  {
+    "name": "JobModuleService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
+    "module": "workflow.services.workflow-rest.api-generated.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
+        "lines": "104-110",
+        "reason": "@Injectable: JobModuleService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowBaseService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
+    "module": "workflow.services.workflow-rest.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: WorkflowBaseService"
+      }
+    ]
+  },
+  {
+    "name": "XnpStorageSettingsAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
+    "module": "adapters.settings.storage-adapter.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
+        "lines": "28-34",
+        "reason": "@Injectable: XnpStorageSettingsAdapter"
+      }
+    ]
+  },
+  {
+    "name": "XnpVvzEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
+        "lines": "16-22",
+        "reason": "@Injectable: XnpVvzEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "DeedFormService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
+    "module": "deed-entry.components.deed-form-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
+        "lines": "40-46",
+        "reason": "@Injectable: DeedFormService"
+      }
+    ]
+  },
+  {
+    "name": "NotaryOfficialTitleStaticMapperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\authentication\\xnp\\services\\notary-official-title-static-mapper.service.ts",
+    "module": "adapters.authentication.xnp.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\authentication\\xnp\\services\\notary-official-title-static-mapper.service.ts",
+        "lines": "4-10",
+        "reason": "@Injectable: NotaryOfficialTitleStaticMapperService"
+      }
+    ]
+  },
+  {
+    "name": "SettingsInitializer",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\core\\settings-initializer.ts",
+    "module": "core",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\settings-initializer.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: SettingsInitializer"
+      }
+    ]
+  },
+  {
+    "name": "ImportHandlerServiceVersion1Dot5Dot1",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-5-1-handler",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
+        "lines": "13-19",
+        "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot1"
+      }
+    ]
+  },
+  {
+    "name": "RedesignService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\services\\redesign.service.ts",
+    "module": "services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\services\\redesign.service.ts",
+        "lines": "6-12",
+        "reason": "@Injectable: RedesignService"
+      }
+    ]
+  },
+  {
+    "name": "JobReencryptionService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
+    "module": "workflow.services.workflow-reencryption.job-reencryption",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
+        "lines": "16-22",
+        "reason": "@Injectable: JobReencryptionService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowDeletionTaskService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts",
+    "module": "workflow.services.workflow-deletion",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-task.service.ts",
+        "lines": "22-28",
+        "reason": "@Injectable: WorkflowDeletionTaskService"
+      }
+    ]
+  },
+  {
+    "name": "XnpPdfsEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
+        "lines": "11-17",
+        "reason": "@Injectable: XnpPdfsEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "DeedDeleteService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
+    "module": "deed-entry.services.deed-delete",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
+        "lines": "34-40",
+        "reason": "@Injectable: DeedDeleteService"
+      }
+    ]
+  },
+  {
+    "name": "SucessorHandoverProcessHelperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
+    "module": "deed-entry.components.deed-successor-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
+        "lines": "80-86",
+        "reason": "@Injectable: SucessorHandoverProcessHelperService"
+      }
+    ]
+  },
+  {
+    "name": "XnpSignatureEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpSignatureEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpSignatureEndpoint.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: XnpSignatureEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "TaskApiConfiguration",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
+    "module": "workflow.services.workflow-rest.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: TaskApiConfiguration"
+      }
+    ]
+  },
+  {
+    "name": "AsyncDocumentHelperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
+    "module": "deed-entry.components.deed-form-page.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
+        "lines": "28-34",
+        "reason": "@Injectable: AsyncDocumentHelperService"
+      }
+    ]
+  },
+  {
+    "name": "XnpEndpointProvider",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
+        "lines": "32-38",
+        "reason": "@Injectable: XnpEndpointProvider"
+      }
+    ]
+  },
+  {
+    "name": "SearchNotifyService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
+    "module": "deed-entry.components.deed-overview-page.deed-overview.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
+        "lines": "6-12",
+        "reason": "@Injectable: SearchNotifyService"
+      }
+    ]
+  },
+  {
+    "name": "KeyManagerAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
+    "module": "adapters.reencryption.xnp.api-generated.services",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
+        "lines": "48-54",
+        "reason": "@Injectable: KeyManagerAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowArchiveTaskService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
+    "module": "workflow.services.workflow-archive",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
+        "lines": "14-20",
+        "reason": "@Injectable: WorkflowArchiveTaskService"
+      }
+    ]
+  },
+  {
+    "name": "HandleSearchParamHelper",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
+    "module": "deed-entry.components.deed-overview-page",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
+        "lines": "16-22",
+        "reason": "@Injectable: HandleSearchParamHelper"
+      }
+    ]
+  },
+  {
+    "name": "DocumentHelperService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
+    "module": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
+        "lines": "31-37",
+        "reason": "@Injectable: DocumentHelperService"
+      }
+    ]
+  },
+  {
+    "name": "ActivateIfUserAuthorized",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
+    "module": "authorization",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
+        "lines": "17-23",
+        "reason": "@Injectable: ActivateIfUserAuthorized"
+      }
+    ]
+  },
+  {
+    "name": "ActionDomainService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\action\\services\\action\\action-domain.service.ts",
+    "module": "action.services.action",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\action\\services\\action\\action-domain.service.ts",
+        "lines": "30-36",
+        "reason": "@Injectable: ActionDomainService"
+      }
+    ]
+  },
+  {
+    "name": "JsonAuthenticationAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
+    "module": "adapters.authentication.jsonauthenticationadapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: JsonAuthenticationAdapter"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowArchiveJobService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
+    "module": "workflow.services.workflow-archive",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
+        "lines": "26-32",
+        "reason": "@Injectable: WorkflowArchiveJobService"
+      }
+    ]
+  },
+  {
+    "name": "LogData",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
+        "lines": "12-18",
+        "reason": "@Injectable: LogData"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowChangeAoidWorkService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
+    "module": "workflow.services.workflow-change-aoid",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
+        "lines": "20-26",
+        "reason": "@Injectable: WorkflowChangeAoidWorkService"
+      }
+    ]
+  },
+  {
+    "name": "ArchivingService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\archiving\\archiving.service.ts",
+    "module": "adapters.archiving",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\archiving\\archiving.service.ts",
+        "lines": "33-39",
+        "reason": "@Injectable: ArchivingService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowBroadcastService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
+    "module": "workflow.services.workflow-broadcast",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
+        "lines": "31-37",
+        "reason": "@Injectable: WorkflowBroadcastService"
+      }
+    ]
+  },
+  {
+    "name": "DeedRegistryDomainService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
+    "module": "deed-entry.services.deed-registry",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
+        "lines": "12-18",
+        "reason": "@Injectable: DeedRegistryDomainService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowModuleMockService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
+    "module": "workflow.services.workflow-rest.mock",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
+        "lines": "155-161",
+        "reason": "@Injectable: WorkflowModuleMockService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowApiConfiguration",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts",
+    "module": "workflow.services.workflow-rest.api-generated",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api-configuration.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: WorkflowApiConfiguration"
+      }
+    ]
+  },
+  {
+    "name": "XnpPdfAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
+    "module": "adapters.pdf-report.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
+        "lines": "20-26",
+        "reason": "@Injectable: XnpPdfAdapter"
+      }
+    ]
+  },
+  {
+    "name": "DocumentImportService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\nsw-document-import\\document-import.service.ts",
+    "module": "nsw-document-import",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\nsw-document-import\\document-import.service.ts",
+        "lines": "40-46",
+        "reason": "@Injectable: DocumentImportService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowValidateSignatureJobService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
+    "module": "workflow.services.workflow-validate-signature",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
+        "lines": "11-17",
+        "reason": "@Injectable: WorkflowValidateSignatureJobService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowDeletionJobService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
+    "module": "workflow.services.workflow-deletion",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
+        "lines": "26-32",
+        "reason": "@Injectable: WorkflowDeletionJobService"
+      }
+    ]
+  },
+  {
+    "name": "LspSecureFrameworkEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: LspSecureFrameworkEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "AuthGuard",
+    "stereotype": "guard",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\shared\\authentication\\auth.guard.ts",
+    "module": "authentication",
+    "layer_hint": "presentation",
+    "evidence": [
+      {
+        "path": "src\\app\\shared\\authentication\\auth.guard.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: AuthGuard"
+      }
+    ]
+  },
+  {
+    "name": "ReencryptionFinalizationConfirmService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
+    "module": "workflow.services.workflow-modal.reencryption-finalization-confirm",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
+        "lines": "19-25",
+        "reason": "@Injectable: ReencryptionFinalizationConfirmService"
+      }
+    ]
+  },
+  {
+    "name": "JobFinalizeReencryptionService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
+    "module": "workflow.services.workflow-reencryption.job-finalize-reencryption",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
+        "lines": "16-22",
+        "reason": "@Injectable: JobFinalizeReencryptionService"
+      }
+    ]
+  },
+  {
+    "name": "ImportHandlerServiceVersion1Dot3Dot0",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-3-0-handler",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: ImportHandlerServiceVersion1Dot3Dot0"
+      }
+    ]
+  },
+  {
+    "name": "ReencryptionFinalizationHasErrorsRetryService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
+    "module": "workflow.services.workflow-modal.reencryption-finalization-has-errors-retry",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
+        "lines": "11-17",
+        "reason": "@Injectable: ReencryptionFinalizationHasErrorsRetryService"
+      }
+    ]
+  },
+  {
+    "name": "BusinessLoggingResolverService",
+    "stereotype": "resolver",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
+    "module": "deed-entry.components.deed-view-page.services",
+    "layer_hint": "presentation",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
+        "lines": "28-34",
+        "reason": "@Injectable: BusinessLoggingResolverService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowDeletionService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
+    "module": "workflow.services.workflow-deletion",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
+        "lines": "5-11",
+        "reason": "@Injectable: WorkflowDeletionService"
+      }
+    ]
+  },
+  {
+    "name": "XnpDocumentsEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
+        "lines": "18-24",
+        "reason": "@Injectable: XnpDocumentsEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "ImportHandlerServiceVersion1Dot4Dot0",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-4-0-handler",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: ImportHandlerServiceVersion1Dot4Dot0"
+      }
+    ]
+  },
+  {
+    "name": "XnpJsonImportAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
+    "module": "adapters.json-import.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
+        "lines": "23-29",
+        "reason": "@Injectable: XnpJsonImportAdapter"
       }
     ]
   },
@@ -7843,122 +7858,62 @@
     ]
   },
   {
-    "name": "SearchNotifyService",
+    "name": "JobBaseService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
-    "module": "deed-entry.components.deed-overview-page.deed-overview.services",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
+    "module": "workflow.services.workflow-rest.api-generated",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
-        "lines": "6-12",
-        "reason": "@Injectable: SearchNotifyService"
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: JobBaseService"
       }
     ]
   },
   {
-    "name": "ArchiveSessionService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
-    "module": "services.archive-session-service",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
-        "lines": "25-31",
-        "reason": "@Injectable: ArchiveSessionService"
-      }
-    ]
-  },
-  {
-    "name": "ImportHandlerServiceVersion1Dot5Dot1",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
-    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-5-1-handler",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
-        "lines": "13-19",
-        "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot1"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowBroadcastService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
-    "module": "workflow.services.workflow-broadcast",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
-        "lines": "31-37",
-        "reason": "@Injectable: WorkflowBroadcastService"
-      }
-    ]
-  },
-  {
-    "name": "DocumentArchivingRestService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
-    "module": "deed-entry.services.archiving",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
-        "lines": "29-35",
-        "reason": "@Injectable: DocumentArchivingRestService"
-      }
-    ]
-  },
-  {
-    "name": "ReencryptionFinalizationDoneService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
-    "module": "workflow.services.workflow-modal.reencryption-finalization-done",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: ReencryptionFinalizationDoneService"
-      }
-    ]
-  },
-  {
-    "name": "XnpAuthorizationNgAdapter",
+    "name": "XnpPdfMakeEndpoint",
     "stereotype": "adapter",
     "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
-    "module": "adapters.authorization.xnp",
+    "file_path": "src\\app\\adapters\\xnp\\XnpPdfMakeEndpoint.ts",
+    "module": "adapters.xnp",
     "layer_hint": "infrastructure",
     "evidence": [
       {
-        "path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
-        "lines": "18-24",
-        "reason": "@Injectable: XnpAuthorizationNgAdapter"
+        "path": "src\\app\\adapters\\xnp\\XnpPdfMakeEndpoint.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: XnpPdfMakeEndpoint"
       }
     ]
   },
   {
-    "name": "DocumentMetadataApiConfiguration",
+    "name": "SelectionHelperService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
-    "module": "deed-entry.services.document-metadata.api-generated",
+    "file_path": "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts",
+    "module": "deed-entry.components.deed-successor-page.deed-successor-selection-dialog.helper",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: DocumentMetadataApiConfiguration"
+        "path": "src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-selection-dialog\\helper\\deed-selection-helper-service.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: SelectionHelperService"
+      }
+    ]
+  },
+  {
+    "name": "XnpSettingsEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: XnpSettingsEndpoint"
       }
     ]
   },
@@ -7978,137 +7933,182 @@
     ]
   },
   {
-    "name": "JobApiConfiguration",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
-    "module": "workflow.services.workflow-rest.api-generated",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
-        "lines": "7-13",
-        "reason": "@Injectable: JobApiConfiguration"
-      }
-    ]
-  },
-  {
-    "name": "ShortcutService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
-    "module": "deed-entry.components.deed-form-page.services",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
-        "lines": "16-22",
-        "reason": "@Injectable: ShortcutService"
-      }
-    ]
-  },
-  {
-    "name": "XnpNotificationsEndpoint",
+    "name": "XnpFlyInNotificationNgAdapter",
     "stereotype": "adapter",
     "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts",
-    "module": "adapters.xnp",
+    "file_path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
+    "module": "adapters.flyinnotification.xnp",
     "layer_hint": "infrastructure",
     "evidence": [
       {
-        "path": "src\\app\\adapters\\xnp\\XnpNotificationsEndpoint.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: XnpNotificationsEndpoint"
+        "path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
+        "lines": "10-16",
+        "reason": "@Injectable: XnpFlyInNotificationNgAdapter"
       }
     ]
   },
   {
-    "name": "ActionBaseService",
+    "name": "GlobalArchivingHelperService",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
-    "module": "action.services.action.api-generated",
+    "file_path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
+    "module": "deed-entry.services.archiving",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
-        "lines": "8-14",
-        "reason": "@Injectable: ActionBaseService"
+        "path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
+        "lines": "32-38",
+        "reason": "@Injectable: GlobalArchivingHelperService"
       }
     ]
   },
   {
-    "name": "ReencryptionCheckResolver",
-    "stereotype": "resolver",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
-    "module": "deed-entry.components.deed-overview-page.services",
-    "layer_hint": "presentation",
-    "evidence": [
-      {
-        "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: ReencryptionCheckResolver"
-      }
-    ]
-  },
-  {
-    "name": "WorkflowValidateSignatureTaskService",
+    "name": "ImportHandlerServiceVersion1Dot6Dot0",
     "stereotype": "service",
     "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
+    "file_path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
+    "module": "deed-entry.components.deed-import.services.nsw-deed-import.impl.import-v1-6-0-handler",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
+        "lines": "13-19",
+        "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot0"
+      }
+    ]
+  },
+  {
+    "name": "JsonAuthorizationAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
+    "module": "adapters.authorization.json-authorization-adapter",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
+        "lines": "8-14",
+        "reason": "@Injectable: JsonAuthorizationAdapter"
+      }
+    ]
+  },
+  {
+    "name": "XnpAuthenticationAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
+    "module": "adapters.authentication.xnp.impl",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
+        "lines": "29-35",
+        "reason": "@Injectable: XnpAuthenticationAdapter"
+      }
+    ]
+  },
+  {
+    "name": "XnpFileApiAdapter",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts",
+    "module": "adapters.file-api-adapter.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\file-api-adapter\\xnp\\xnp-file-api.ts",
+        "lines": "15-21",
+        "reason": "@Injectable: XnpFileApiAdapter"
+      }
+    ]
+  },
+  {
+    "name": "DeedEntryLogService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
+    "module": "deed-entry.services.deed-entry-log",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
+        "lines": "9-15",
+        "reason": "@Injectable: DeedEntryLogService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowValidateSignatureService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
     "module": "workflow.services.workflow-validate-signature",
     "layer_hint": "application",
     "evidence": [
       {
-        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
+        "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
         "lines": "10-16",
-        "reason": "@Injectable: WorkflowValidateSignatureTaskService"
+        "reason": "@Injectable: WorkflowValidateSignatureService"
       }
     ]
   },
   {
-    "name": "WorkflowArchiveTaskService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
-    "module": "workflow.services.workflow-archive",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
-        "lines": "14-20",
-        "reason": "@Injectable: WorkflowArchiveTaskService"
-      }
-    ]
-  },
-  {
-    "name": "ReencryptionConfirmService",
-    "stereotype": "service",
-    "container_hint": "frontend",
-    "file_path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
-    "module": "workflow.services.workflow-modal.reencryption-confirm",
-    "layer_hint": "application",
-    "evidence": [
-      {
-        "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
-        "lines": "11-17",
-        "reason": "@Injectable: ReencryptionConfirmService"
-      }
-    ]
-  },
-  {
-    "name": "XnpLogNgAdapter",
+    "name": "XnpCustodyAdapterService",
     "stereotype": "adapter",
     "container_hint": "frontend",
-    "file_path": "src\\app\\adapters\\logging\\xnp\\XnpLogNgAdapter.ts",
-    "module": "adapters.logging.xnp",
+    "file_path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
+    "module": "adapters.custody.xnp",
     "layer_hint": "infrastructure",
     "evidence": [
       {
-        "path": "src\\app\\adapters\\logging\\xnp\\XnpLogNgAdapter.ts",
-        "lines": "10-16",
-        "reason": "@Injectable: XnpLogNgAdapter"
+        "path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
+        "lines": "16-22",
+        "reason": "@Injectable: XnpCustodyAdapterService"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowModuleService",
+    "stereotype": "service",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
+    "module": "workflow.services.workflow-rest.api-generated.services",
+    "layer_hint": "application",
+    "evidence": [
+      {
+        "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
+        "lines": "110-116",
+        "reason": "@Injectable: WorkflowModuleService"
+      }
+    ]
+  },
+  {
+    "name": "XnpArchiveManagerEndpoint",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
+    "module": "adapters.xnp",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
+        "lines": "26-32",
+        "reason": "@Injectable: XnpArchiveManagerEndpoint"
+      }
+    ]
+  },
+  {
+    "name": "LoggingDataChangedAdapterService",
+    "stereotype": "adapter",
+    "container_hint": "frontend",
+    "file_path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
+    "module": "adapters.data-changed.impl.mock",
+    "layer_hint": "infrastructure",
+    "evidence": [
+      {
+        "path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
+        "lines": "7-13",
+        "reason": "@Injectable: LoggingDataChangedAdapterService"
       }
     ]
   }
