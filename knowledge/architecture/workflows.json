@@ -21,18 +21,18 @@
     "workflow_type": "custom",
     "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\util\\DeedEntryStateMachine.java",
     "states": [
+      "APPROVED",
+      "REFUSED",
+      "TO_BE_SIGNED",
+      "TO_BE_APPROVED",
       "IN_PREPARATION",
       "SUBMITTED",
-      "SUBMITTED_WITH_CF",
-      "TO_BE_APPROVED",
-      "REFUSED",
-      "APPROVED",
-      "TO_BE_SIGNED"
+      "SUBMITTED_WITH_CF"
     ],
     "actions": [
-      "SUBMIT",
+      "SAVE",
       "SIGN",
-      "SAVE"
+      "SUBMIT"
     ],
     "evidence": [
       {
@@ -47,11 +47,11 @@
     "workflow_type": "custom",
     "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\util\\DocumentStateMachine.java",
     "states": [
-      "ARCHIVING_FAILED",
-      "FLAGGED_FOR_DELETION",
-      "ARCHIVED",
       "REFUSED",
+      "ARCHIVING_FAILED",
       "TO_BE_SIGNED",
+      "ARCHIVED",
+      "FLAGGED_FOR_DELETION",
       "TO_BE_ARCHIVED"
     ],
     "evidence": [
@@ -307,23 +307,23 @@
     "workflow_type": "custom",
     "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachine.java",
     "states": [
-      "FINISH_REENCRYPT_EXECUTE",
-      "REENCRYPT_EXECUTE",
-      "CONFIRM_VERIFY",
-      "REENCRYPT_SUCCESS",
-      "FINISH_REENCRYPT_DISCOVER_WORK",
       "FINISH_REENCRYPT_SUCCESS",
-      "CONFIRM_RETRY_REENCRYPT_FAULTY",
-      "REENCRYPT_CREATED_JOB",
-      "FAULTY",
-      "INCOMPLETE",
       "SUCCESSFUL",
-      "CREATED_COMPLETION",
-      "REENCRYPT_DISCOVER_WORK",
-      "CONFIRM_RETRY_FINISH_REENCRYPT_FAULTY",
-      "FINISH_REENCRYPT_CREATED_JOB",
       "FINAL",
-      "CREATED"
+      "FINISH_REENCRYPT_DISCOVER_WORK",
+      "CREATED_COMPLETION",
+      "CONFIRM_RETRY_FINISH_REENCRYPT_FAULTY",
+      "REENCRYPT_EXECUTE",
+      "FINISH_REENCRYPT_CREATED_JOB",
+      "INCOMPLETE",
+      "CONFIRM_VERIFY",
+      "CONFIRM_RETRY_REENCRYPT_FAULTY",
+      "FINISH_REENCRYPT_EXECUTE",
+      "REENCRYPT_SUCCESS",
+      "CREATED",
+      "REENCRYPT_CREATED_JOB",
+      "REENCRYPT_DISCOVER_WORK",
+      "FAULTY"
     ],
     "evidence": [
       {
@@ -374,13 +374,13 @@
     "workflow_type": "custom",
     "file_path": "backend\\src\\test\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\util\\DeedEntryStateMachineTest.java",
     "states": [
+      "APPROVED",
+      "REFUSED",
+      "TO_BE_SIGNED",
+      "TO_BE_APPROVED",
       "IN_PREPARATION",
       "SUBMITTED",
-      "SUBMITTED_WITH_CF",
-      "TO_BE_APPROVED",
-      "REFUSED",
-      "APPROVED",
-      "TO_BE_SIGNED"
+      "SUBMITTED_WITH_CF"
     ],
     "evidence": [
       {
@@ -395,13 +395,13 @@
     "workflow_type": "custom",
     "file_path": "backend\\src\\test\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\util\\DocumentStateMachineTest.java",
     "states": [
-      "ARCHIVING_FAILED",
-      "IN_PREPARATION",
-      "FLAGGED_FOR_DELETION",
-      "ARCHIVED",
       "SUCCESS",
       "REFUSED",
+      "ARCHIVING_FAILED",
       "TO_BE_SIGNED",
+      "ARCHIVED",
+      "IN_PREPARATION",
+      "FLAGGED_FOR_DELETION",
       "TO_BE_ARCHIVED"
     ],
     "evidence": [
@@ -477,24 +477,24 @@
     "workflow_type": "custom",
     "file_path": "backend\\src\\test\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachineTest.java",
     "states": [
-      "FINISH_REENCRYPT_EXECUTE",
+      "FINISH_REENCRYPT_SUCCESS",
+      "class",
+      "FINAL",
+      "SUCCESSFUL",
+      "FINISH_REENCRYPT_DISCOVER_WORK",
+      "CREATED_COMPLETION",
       "REENCRYPT_EXECUTE",
+      "FINISH_REENCRYPT_CREATED_JOB",
+      "INCOMPLETE",
       "CONFIRM_VERIFY",
       "REENCRYPT_SUCCESS",
-      "FINISH_REENCRYPT_DISCOVER_WORK",
-      "FINISH_REENCRYPT_SUCCESS",
       "CONFIRM_RETRY_REENCRYPT_FAULTY",
-      "REENCRYPT_CREATED_JOB",
-      "SUCCESSFUL",
-      "INCOMPLETE",
-      "FAULTY",
-      "class",
-      "CREATED_COMPLETION",
-      "REENCRYPT_DISCOVER_WORK",
+      "FINISH_REENCRYPT_EXECUTE",
       "CONFIRM_RETRY_FINISH_REENCRYPT_FAULTY",
-      "FINISH_REENCRYPT_CREATED_JOB",
-      "FINAL",
-      "CREATED"
+      "CREATED",
+      "REENCRYPT_CREATED_JOB",
+      "REENCRYPT_DISCOVER_WORK",
+      "FAULTY"
     ],
     "evidence": [
       {
