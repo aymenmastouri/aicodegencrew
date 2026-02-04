@@ -1,8 +1,0 @@
-﻿{
-    "style":  "Modular Monolith",
-    "container_count":  5,
-    "reasoning":  "The repository contains five containers: a Spring Boot backend, an Angular frontend, and supporting infrastructure containers (docker, PostgreSQL, pact-broker). The backend is a single application with many internal modules, and the architecture style components include both \u0027layered_architecture\u0027 and \u0027modular_monolith_architecture\u0027, indicating a modular monolith pattern rather than a set of independent microservices.",
-    "scalability_approach":  "vertical",
-    "deployment_model":  "distributed",
-    "communication_pattern":  "sync REST"
-}
