@@ -1,5 +1,33 @@
 [
   {
+    "name": "POST /uvz/v1/action/{type}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/action/{type}",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\api\\rest\\ActionRestService.java",
+        "lines": "36-41",
+        "reason": "REST endpoint: POST /uvz/v1/action/{type}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/action/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/action/{id}",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\api\\rest\\ActionRestService.java",
+        "lines": "40-45",
+        "reason": "REST endpoint: GET /uvz/v1/action/{id}"
+      }
+    ]
+  },
+  {
     "name": "GET /web/uvz/",
     "type": "rest_endpoint",
     "container_hint": "backend",
@@ -10,6 +38,1434 @@
         "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\staticwebresources\\StaticContentController.java",
         "lines": "33-38",
         "reason": "REST endpoint: GET /web/uvz/"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/keymanager/{groupId}/reencryptable",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/keymanager/{groupId}/reencryptable",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\service\\api\\rest\\KeyManagerRestService.java",
+        "lines": "39-44",
+        "reason": "REST endpoint: GET /uvz/v1/keymanager/{groupId}/reencryptable"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/keymanager/cryptostate",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/keymanager/cryptostate",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\service\\api\\rest\\KeyManagerRestService.java",
+        "lines": "51-56",
+        "reason": "REST endpoint: GET /uvz/v1/keymanager/cryptostate"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/archiving/sign-submission-token",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/archiving/sign-submission-token",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\api\\rest\\ArchivingRestService.java",
+        "lines": "49-54",
+        "reason": "REST endpoint: POST /uvz/v1/archiving/sign-submission-token"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/archiving/sign-reencrytion-token",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/archiving/sign-reencrytion-token",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\api\\rest\\ArchivingRestService.java",
+        "lines": "60-65",
+        "reason": "REST endpoint: POST /uvz/v1/archiving/sign-reencrytion-token"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/archiving/enabled",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/archiving/enabled",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\api\\rest\\ArchivingRestService.java",
+        "lines": "70-75",
+        "reason": "REST endpoint: GET /uvz/v1/archiving/enabled"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/businesspurposes",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/businesspurposes",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\BusinessPurposeRestService.java",
+        "lines": "39-44",
+        "reason": "REST endpoint: GET /uvz/v1/businesspurposes"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/problem-connections",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/problem-connections",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryConnectionRestService.java",
+        "lines": "42-47",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/problem-connections"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/{id}/logs",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}/logs",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryLogRestService.java",
+        "lines": "39-44",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/{id}/logs"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "49-54",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "61-66",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "74-79",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "85-90",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "97-102",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/{id}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/to-be-signed",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/to-be-signed",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "110-115",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/to-be-signed"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/to-be-approved",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/to-be-approved",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "127-132",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/to-be-approved"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "152-157",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "170-175",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/deedentries/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "185-190",
+        "reason": "REST endpoint: PUT /uvz/v1/deedentries/{id}"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/deedentries/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "200-205",
+        "reason": "REST endpoint: PUT /uvz/v1/deedentries/{id}"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/bulkcapture",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/bulkcapture",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "218-223",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/bulkcapture"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/bulkcapture",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/bulkcapture",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "234-239",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/bulkcapture"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/{id}/signature-folder",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}/signature-folder",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "242-247",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/{id}/signature-folder"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/document-handover",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/document-handover",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "259-264",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/document-handover"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/handover",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/handover",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "275-280",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/handover"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/handover",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/handover",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "285-290",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/handover"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/handover",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/handover",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "296-301",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/handover"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/successordeedselection",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/successordeedselection",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "303-308",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/successordeedselection"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/successordeedselection/{processType}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/successordeedselection/{processType}",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "311-316",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/successordeedselection/{processType}"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/successordeedselection",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/successordeedselection",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "321-326",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/successordeedselection"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/{id}/correctionnote",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}/correctionnote",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "335-340",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/{id}/correctionnote"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/{id}/lock",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}/lock",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "343-348",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/{id}/lock"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/deedentries/{id}/lock",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}/lock",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "353-358",
+        "reason": "REST endpoint: POST /uvz/v1/deedentries/{id}/lock"
+      }
+    ]
+  },
+  {
+    "name": "DELETE /uvz/v1/deedentries/{id}/lock",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}/lock",
+    "method": "DELETE",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "371-376",
+        "reason": "REST endpoint: DELETE /uvz/v1/deedentries/{id}/lock"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/deedentries/{id}/lock",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/{id}/lock",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "385-390",
+        "reason": "REST endpoint: PUT /uvz/v1/deedentries/{id}/lock"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/lock",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/lock",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "402-407",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/lock"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/participants",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/participants",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "411-416",
+        "reason": "REST endpoint: GET /uvz/v1/participants"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "425-430",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "DELETE /uvz/v1/deedentries",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries",
+    "method": "DELETE",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "445-450",
+        "reason": "REST endpoint: DELETE /uvz/v1/deedentries"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/check/submittedwithcf",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/check/submittedwithcf",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "455-460",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/check/submittedwithcf"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedentries/check/isvalidforsigning",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedentries/check/isvalidforsigning",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "464-469",
+        "reason": "REST endpoint: GET /uvz/v1/deedentries/check/isvalidforsigning"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedregistry/locks",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedregistry/locks",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedRegistryRestService.java",
+        "lines": "36-41",
+        "reason": "REST endpoint: GET /uvz/v1/deedregistry/locks"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedregistry/locks/{types}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedregistry/locks/{types}",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedRegistryRestService.java",
+        "lines": "49-54",
+        "reason": "REST endpoint: GET /uvz/v1/deedregistry/locks/{types}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedregistry/lock/{type}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedregistry/lock/{type}",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedRegistryRestService.java",
+        "lines": "58-63",
+        "reason": "REST endpoint: GET /uvz/v1/deedregistry/lock/{type}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/deedtypes",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/deedtypes",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedTypeRestService.java",
+        "lines": "38-43",
+        "reason": "REST endpoint: GET /uvz/v1/deedtypes"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/documents/{deedEntryId}/document-copies",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/{deedEntryId}/document-copies",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "51-56",
+        "reason": "REST endpoint: GET /uvz/v1/documents/{deedEntryId}/document-copies"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/documents/to-be-archived",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/to-be-archived",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "57-62",
+        "reason": "REST endpoint: GET /uvz/v1/documents/to-be-archived"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/documents/operation-tokens",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/operation-tokens",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "64-69",
+        "reason": "REST endpoint: POST /uvz/v1/documents/operation-tokens"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/reference-hashes",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/reference-hashes",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "73-78",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/reference-hashes"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/documents/check-reference-hashes",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/check-reference-hashes",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "82-87",
+        "reason": "REST endpoint: POST /uvz/v1/documents/check-reference-hashes"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/check-for-deletion",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/check-for-deletion",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "91-96",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/check-for-deletion"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/documents/info",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/info",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "102-107",
+        "reason": "REST endpoint: GET /uvz/v1/documents/info"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/triggerWawi",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/triggerWawi",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "109-114",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/triggerWawi"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/documents/archiving-failed",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/archiving-failed",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "118-123",
+        "reason": "REST endpoint: GET /uvz/v1/documents/archiving-failed"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/signing-info",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/signing-info",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "125-130",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/signing-info"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/report-metadata/signing-info",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/report-metadata/signing-info",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "142-147",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/report-metadata/signing-info"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/report-metadata/document-status",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/report-metadata/document-status",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "157-162",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/report-metadata/document-status"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/report-metadata/document-status-archive",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/report-metadata/document-status-archive",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "172-177",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/report-metadata/document-status-archive"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/documents/eto",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/eto",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "186-191",
+        "reason": "REST endpoint: GET /uvz/v1/documents/eto"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/documents/{aoId}/reencryption-state",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/documents/{aoId}/reencryption-state",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
+        "lines": "190-195",
+        "reason": "REST endpoint: PUT /uvz/v1/documents/{aoId}/reencryption-state"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/handoverdatasets",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "45-50",
+        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets"
+      }
+    ]
+  },
+  {
+    "name": "DELETE /uvz/v1/handoverdatasets",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets",
+    "method": "DELETE",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "52-57",
+        "reason": "REST endpoint: DELETE /uvz/v1/handoverdatasets"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/handoverdatasets/predecessor",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets/predecessor",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "64-69",
+        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets/predecessor"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/handoverdatasets/finalise-handover",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets/finalise-handover",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "72-77",
+        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets/finalise-handover"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/handoverdatasets/finalise-handover",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets/finalise-handover",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "80-85",
+        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/finalise-handover"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/handoverdatasets/finalise-handover-retry",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "89-94",
+        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets/finalise-handover-retry"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/handoverdatasets/finalise-handover-retry",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "97-102",
+        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/finalise-handover-retry"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "106-111",
+        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/handoverdatasets/accept",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/handoverdatasets/accept",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
+        "lines": "114-119",
+        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/accept"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/reports/annual",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/reports/annual",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
+        "lines": "40-45",
+        "reason": "REST endpoint: GET /uvz/v1/reports/annual"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/reports/annual/validate",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/reports/annual/validate",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
+        "lines": "53-58",
+        "reason": "REST endpoint: GET /uvz/v1/reports/annual/validate"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/reports/annual-deed-register",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/reports/annual-deed-register",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
+        "lines": "72-77",
+        "reason": "REST endpoint: GET /uvz/v1/reports/annual-deed-register"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/reports/annual-participants",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/reports/annual-participants",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
+        "lines": "89-94",
+        "reason": "REST endpoint: GET /uvz/v1/reports/annual-participants"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/reports/deposited-inheritance-contracts",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/reports/deposited-inheritance-contracts",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
+        "lines": "103-108",
+        "reason": "REST endpoint: GET /uvz/v1/reports/deposited-inheritance-contracts"
+      }
+    ]
+  },
+  {
+    "name": "PATCH /uvz/v1/job/retry",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/job/retry",
+    "method": "PATCH",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
+        "lines": "52-57",
+        "reason": "REST endpoint: PATCH /uvz/v1/job/retry"
+      }
+    ]
+  },
+  {
+    "name": "PATCH /uvz/v1/job/retry/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/job/retry/{id}",
+    "method": "PATCH",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
+        "lines": "63-68",
+        "reason": "REST endpoint: PATCH /uvz/v1/job/retry/{id}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/job/metrics",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/job/metrics",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
+        "lines": "78-83",
+        "reason": "REST endpoint: GET /uvz/v1/job/metrics"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/job/{type}/state",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/job/{type}/state",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
+        "lines": "90-95",
+        "reason": "REST endpoint: GET /uvz/v1/job/{type}/state"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/job/reencryption/{jobId}/document",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/job/reencryption/{jobId}/document",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\ReencryptionJobRestService.java",
+        "lines": "41-46",
+        "reason": "REST endpoint: GET /uvz/v1/job/reencryption/{jobId}/document"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/notaryrepresentations",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/notaryrepresentations",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\notaryrepresentation\\service\\api\\rest\\NotaryRepresentationRestService.java",
+        "lines": "51-56",
+        "reason": "REST endpoint: GET /uvz/v1/notaryrepresentations"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/numbermanagement",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/numbermanagement",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
+        "lines": "51-56",
+        "reason": "REST endpoint: GET /uvz/v1/numbermanagement"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/numbermanagement/validate",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/numbermanagement/validate",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
+        "lines": "71-76",
+        "reason": "REST endpoint: GET /uvz/v1/numbermanagement/validate"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/numbermanagement/numberformat",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/numbermanagement/numberformat",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
+        "lines": "79-84",
+        "reason": "REST endpoint: GET /uvz/v1/numbermanagement/numberformat"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/numbermanagement/numberformat",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/numbermanagement/numberformat",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
+        "lines": "91-96",
+        "reason": "REST endpoint: PUT /uvz/v1/numbermanagement/numberformat"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/numbermanagement/validate/bulkcapture",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/numbermanagement/validate/bulkcapture",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
+        "lines": "112-117",
+        "reason": "REST endpoint: GET /uvz/v1/numbermanagement/validate/bulkcapture"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/official-activity-metadata",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/official-activity-metadata",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\api\\rest\\OfficialActivityMetadataRestService.java",
+        "lines": "44-49",
+        "reason": "REST endpoint: GET /uvz/v1/official-activity-metadata"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/official-activity-metadata/notariesandchambers",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/official-activity-metadata/notariesandchambers",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\api\\rest\\OfficialActivityMetadataRestService.java",
+        "lines": "55-60",
+        "reason": "REST endpoint: GET /uvz/v1/official-activity-metadata/notariesandchambers"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/official-activity-metadata/successors",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/official-activity-metadata/successors",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\api\\rest\\OfficialActivityMetadataRestService.java",
+        "lines": "66-71",
+        "reason": "REST endpoint: GET /uvz/v1/official-activity-metadata/successors"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/report-metadata/",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/report-metadata/",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+        "lines": "41-46",
+        "reason": "REST endpoint: POST /uvz/v1/report-metadata/"
+      }
+    ]
+  },
+  {
+    "name": "PUT /uvz/v1/report-metadata/to-be-signed",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/report-metadata/to-be-signed",
+    "method": "PUT",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+        "lines": "51-56",
+        "reason": "REST endpoint: PUT /uvz/v1/report-metadata/to-be-signed"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/report-metadata/",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/report-metadata/",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+        "lines": "68-73",
+        "reason": "REST endpoint: GET /uvz/v1/report-metadata/"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/report-metadata/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/report-metadata/{id}",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+        "lines": "81-86",
+        "reason": "REST endpoint: GET /uvz/v1/report-metadata/{id}"
+      }
+    ]
+  },
+  {
+    "name": "DELETE /uvz/v1/report-metadata/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/report-metadata/{id}",
+    "method": "DELETE",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+        "lines": "89-94",
+        "reason": "REST endpoint: DELETE /uvz/v1/report-metadata/{id}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/task",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/task",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
+        "lines": "77-82",
+        "reason": "REST endpoint: GET /uvz/v1/task"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/task/initial",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/task/initial",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
+        "lines": "89-94",
+        "reason": "REST endpoint: GET /uvz/v1/task/initial"
+      }
+    ]
+  },
+  {
+    "name": "PATCH /uvz/v1/task/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/task/{id}",
+    "method": "PATCH",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
+        "lines": "98-103",
+        "reason": "REST endpoint: PATCH /uvz/v1/task/{id}"
+      }
+    ]
+  },
+  {
+    "name": "PATCH /uvz/v1/task/{id}/work",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/task/{id}/work",
+    "method": "PATCH",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
+        "lines": "110-115",
+        "reason": "REST endpoint: PATCH /uvz/v1/task/{id}/work"
+      }
+    ]
+  },
+  {
+    "name": "DELETE /uvz/v1/task/{id}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/task/{id}",
+    "method": "DELETE",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
+        "lines": "126-131",
+        "reason": "REST endpoint: DELETE /uvz/v1/task/{id}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/workflow/{type}",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/workflow/{type}",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
+        "lines": "52-57",
+        "reason": "REST endpoint: GET /uvz/v1/workflow/{type}"
+      }
+    ]
+  },
+  {
+    "name": "GET /uvz/v1/workflow/initial",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/workflow/initial",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
+        "lines": "62-67",
+        "reason": "REST endpoint: GET /uvz/v1/workflow/initial"
+      }
+    ]
+  },
+  {
+    "name": "POST /uvz/v1/workflow",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/workflow",
+    "method": "POST",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
+        "lines": "74-79",
+        "reason": "REST endpoint: POST /uvz/v1/workflow"
+      }
+    ]
+  },
+  {
+    "name": "PATCH /uvz/v1/workflow/{id}/proceed",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/workflow/{id}/proceed",
+    "method": "PATCH",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
+        "lines": "83-88",
+        "reason": "REST endpoint: PATCH /uvz/v1/workflow/{id}/proceed"
+      }
+    ]
+  },
+  {
+    "name": "PATCH /uvz/v1/workflow/{id}/confirm",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/uvz/v1/workflow/{id}/confirm",
+    "method": "PATCH",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
+        "lines": "91-96",
+        "reason": "REST endpoint: PATCH /uvz/v1/workflow/{id}/confirm"
       }
     ]
   },
