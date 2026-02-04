@@ -72,12 +72,13 @@ The SDLC pipeline consists of 8 phases:
 |-------|------|------|-------------|--------|
 | 0 | Indexing | Pipeline | Vector indexing of repository content | Implemented |
 | 1 | Architecture Facts | Pipeline | Deterministic extraction of facts and evidence | Implemented |
-| 2 | Architecture Synthesis | Crew | AI generation of C4 and arc42 documentation | Implemented |
-| 3 | Review | Crew | Consistency checks and quality validation | Planned |
-| 4 | Development | Crew | Backlog generation and planning | Planned |
-| 5 | Code Generation | Crew | Feature implementation and refactoring | Planned |
-| 6 | Testing | Crew | Test generation and coverage | Planned |
-| 7 | Deployment | Pipeline | CI/CD integration and releases | Planned |
+| 2 | Architecture Analysis | Crew | AI analysis of architecture | Implemented |
+| 3 | Architecture Synthesis | Crew | AI generation of C4 and arc42 documentation | Implemented |
+| 4 | Review | Crew | Consistency checks and quality validation | Planned |
+| 5 | Development | Crew | Backlog generation and planning | Planned |
+| 6 | Code Generation | Crew | Feature implementation and refactoring | Planned |
+| 7 | Testing | Crew | Test generation and coverage | Planned |
+| 8 | Deployment | Pipeline | CI/CD integration and releases | Planned |
 
 **Core Principles:**
 - **Evidence-First**: All outputs must reference code evidence.
@@ -104,6 +105,12 @@ See `phases_config.yaml` for additional settings.
 python -m aicodegencrew <command> [options]
 ```
 
+Or using CrewAI directly (if configured):
+
+```bash
+crewai run <preset or phases>
+```
+
 ### Examples
 
 - List phases and presets:
@@ -111,9 +118,11 @@ python -m aicodegencrew <command> [options]
   python -m aicodegencrew list
   ```
 
-- Run full workflow:
+- Run full architecture workflow (phases 0-3):
   ```bash
   python -m aicodegencrew run --preset architecture_workflow
+  # or
+  crewai run --preset architecture_workflow
   ```
 
 - Run specific phases:
@@ -124,6 +133,11 @@ python -m aicodegencrew <command> [options]
 - Index only:
   ```bash
   python -m aicodegencrew index --force
+  ```
+
+- Run all implemented phases:
+  ```bash
+  python -m aicodegencrew run --preset architecture_full
   ```
 
 ## Outputs
