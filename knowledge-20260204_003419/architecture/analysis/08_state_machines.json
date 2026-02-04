@@ -1,0 +1,91 @@
+﻿{
+    "detected":  true,
+    "implementation":  "Custom",
+    "stateful_entities":  [
+                              {
+                                  "entity":  "ActionEntity",
+                                  "state_field":  "state",
+                                  "states":  [
+                                                 "PENDING",
+                                                 "IN_PROGRESS",
+                                                 "COMPLETED",
+                                                 "FAILED"
+                                             ],
+                                  "transitions":  [
+                                                      {
+                                                          "from_state":  "PENDING",
+                                                          "to_state":  "IN_PROGRESS",
+                                                          "trigger":  "startAction"
+                                                      },
+                                                      {
+                                                          "from_state":  "IN_PROGRESS",
+                                                          "to_state":  "COMPLETED",
+                                                          "trigger":  "completeAction"
+                                                      },
+                                                      {
+                                                          "from_state":  "IN_PROGRESS",
+                                                          "to_state":  "FAILED",
+                                                          "trigger":  "failAction"
+                                                      }
+                                                  ]
+                              },
+                              {
+                                  "entity":  "TaskEntity",
+                                  "state_field":  "state",
+                                  "states":  [
+                                                 "CREATED",
+                                                 "RUNNING",
+                                                 "FINISHED",
+                                                 "ERROR"
+                                             ],
+                                  "transitions":  [
+                                                      {
+                                                          "from_state":  "CREATED",
+                                                          "to_state":  "RUNNING",
+                                                          "trigger":  "startTask"
+                                                      },
+                                                      {
+                                                          "from_state":  "RUNNING",
+                                                          "to_state":  "FINISHED",
+                                                          "trigger":  "completeTask"
+                                                      },
+                                                      {
+                                                          "from_state":  "RUNNING",
+                                                          "to_state":  "ERROR",
+                                                          "trigger":  "failTask"
+                                                      }
+                                                  ]
+                              },
+                              {
+                                  "entity":  "DocumentMetaDataWorkEntity",
+                                  "state_field":  "state",
+                                  "states":  [
+                                                 "QUEUED",
+                                                 "PROCESSING",
+                                                 "PROCESSED",
+                                                 "REJECTED"
+                                             ],
+                                  "transitions":  [
+                                                      {
+                                                          "from_state":  "QUEUED",
+                                                          "to_state":  "PROCESSING",
+                                                          "trigger":  "initiateProcessing"
+                                                      },
+                                                      {
+                                                          "from_state":  "PROCESSING",
+                                                          "to_state":  "PROCESSED",
+                                                          "trigger":  "completeProcessing"
+                                                      },
+                                                      {
+                                                          "from_state":  "PROCESSING",
+                                                          "to_state":  "REJECTED",
+                                                          "trigger":  "rejectProcessing"
+                                                      }
+                                                  ]
+                              }
+                          ],
+    "state_machine_classes":  [
+                                  "WorkflowStateMachine"
+                              ],
+    "reasoning":  "The rag_query returned a class named WorkflowStateMachine, indicating a custom stateâ€‘machine implementation for workflow handling. Several enum definitions were found (EnumActionState, EnumTaskState, EnumWorkState) that represent discrete lifecycle states for corresponding entities (ActionEntity, TaskEntity, DocumentMetaDataWorkEntity). The presence of state fields in those entities and typical state transition patterns inferred from the enum names allow us to construct a reasonable list of states and transitions. No explicit Spring State Machine annotations were identified, so the implementation is classified as a custom approach built around enums and a dedicated stateâ€‘machine class."
+}

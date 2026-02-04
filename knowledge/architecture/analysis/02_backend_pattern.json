@@ -1,1 +1,18 @@
-{"primary_pattern":"Layered","layer_structure":["Controller","Service","Repository","Domain"],"component_counts":{"controllers":24,"services":233,"repositories":4},"technology":{"framework":"Spring Boot","language":"Java"},"reasoning":"The backend contains a clear set of REST controllers (24), business services (233) and DAO repositories (4). Controllers route HTTP requests to services, which in turn delegate to repositories for persistence, matching a classic three‑tier layered architecture. Component naming (e.g., *RestServiceImpl, *Service, *DaoImpl) and the Spring Boot container metadata (framework Spring Boot, language Java) further confirm the layered pattern rather than a hexagonal or clean architecture approach."}
+﻿{
+    "primary_pattern":  "Layered",
+    "layer_structure":  [
+                            "Controller",
+                            "Service",
+                            "Repository"
+                        ],
+    "component_counts":  {
+                             "controllers":  24,
+                             "services":  233,
+                             "repositories":  4
+                         },
+    "technology":  {
+                       "framework":  "Spring Boot",
+                       "language":  "Java"
+                   },
+    "reasoning":  "The backend defines a clear threeâ€‘tier separation: REST controller implementations (24) delegate to service classes (233) which in turn use DAO/repository implementations (4). This linear flow matches a classic layered architecture. No explicit port/adapter naming or separate useâ€‘case packages are evident, so hexagonal or cleanâ€‘architecture patterns are not dominant. The technology stack of the backend container confirms Java with Spring Boot, reinforcing the conventional layered approach."
+}

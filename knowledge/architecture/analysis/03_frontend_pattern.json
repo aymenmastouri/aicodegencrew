@@ -1,1 +1,9 @@
-{"primary_pattern":"Component-Based SPA","framework":"Angular","module_structure":"NgModule","state_management":"Services","routing_strategy":"lazy-loading","component_count":163,"reasoning":"The frontend container is an Angular application (v18-lts) with a defined NgModule and lazy-loading routing. The repository lists 163 components of stereotype 'component', all residing in the frontend container, indicating a rich component hierarchy typical of a SPA. No separate micro‑frontend modules or multiple independent apps are detected. State is managed via Angular services (e.g., BusinessPurposeRestService, JsonAuthorizationAdapter) rather than a dedicated store like NgRx or Redux. The abundance of UI components and the Angular-specific module metadata confirm a classic component‑based single‑page application architecture."}
+﻿{
+    "primary_pattern":  "Component-Based SPA",
+    "framework":  "Angular",
+    "module_structure":  "NgModule",
+    "state_management":  "services",
+    "routing_strategy":  "lazy-loading",
+    "component_count":  163,
+    "reasoning":  "The frontend container uses Angular (v18â€‘lts) with an NgModule entry point. The codebase contains 163 components, all following Angular conventions (e.g., Component suffix, module structure). Routing is configured for lazyâ€‘loading, and state is managed via Angular services rather than a separate store. These characteristics match a classic componentâ€‘based singleâ€‘page application rather than microâ€‘frontends or serverâ€‘rendered approaches."
+}

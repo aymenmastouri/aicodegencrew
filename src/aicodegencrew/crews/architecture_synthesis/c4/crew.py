@@ -25,6 +25,7 @@ from ..tools import (
     FileReadTool,  # Safe version with size limits
     StereotypeListTool,  # Component chunking by stereotype
 )
+from ...architecture_analysis.tools import RAGQueryTool
 
 
 @CrewBase
@@ -46,11 +47,13 @@ class C4Crew:
     def __init__(
         self, 
         facts_path: str = "knowledge/architecture/architecture_facts.json",
-        analyzed_path: str = None
+        analyzed_path: str = None,
+        chroma_dir: str = None
     ):
-        """Initialize crew with architecture facts and analysis."""
+        """Initialize crew with architecture facts, analysis, and ChromaDB."""
         self.facts_path = Path(facts_path)
         self.analyzed_path = Path(analyzed_path) if analyzed_path else self.facts_path.parent / "analyzed_architecture.json"
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", ".cache/.chroma")
         self.facts = self._load_facts()
         self.analysis = self._load_analysis()
         self.evidence_map = self._load_evidence_map()
@@ -286,24 +289,35 @@ CONTAINER RELATIONSHIPS:
         model = os.getenv("MODEL", "gpt-oss-120b")
         api_base = os.getenv("API_BASE", "http://sov-ai-platform.nue.local.vm:4000/v1")
 
-        raw_max_tokens = os.getenv("MAX_LLM_OUTPUT_TOKENS", "800")
+        raw_max_tokens = os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000")
         try:
             max_tokens = int(raw_max_tokens)
         except Exception:
-            max_tokens = 800
+            max_tokens = 4000
 
         num_retries = int(os.getenv("LLM_NUM_RETRIES", "10"))
 
         # Some providers reject max_tokens<=0. Also guards against internal
         # calculations producing negative values when prompts are large.
         if max_tokens < 1:
-            max_tokens = 800
+            max_tokens = 4000
+        
+        # Context window for the model - prevents sending too large prompts
+        # IMPORTANT: Reserve space for output tokens to prevent vllm/litellm from
+        # calculating negative max_tokens when input approaches context limit.
+        # The effective context for input = context_window - max_tokens (output reserve)
+        raw_context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
+        # Reserve output space: effective context window = total - output reserve
+        # This ensures litellm never calculates negative available tokens
+        output_reserve = max(max_tokens, 8000)  # Reserve at least 8k for output
+        context_window = raw_context_window - output_reserve
         
         return LLM(
             model=model,
             base_url=api_base,
             temperature=0.1,
             max_tokens=max_tokens,
+            context_window=context_window,  # Limit prompt size (output space reserved)
             timeout=300,  # 5 min timeout for large contexts
             num_retries=num_retries,
         )
@@ -333,6 +347,11 @@ CONTAINER RELATIONSHIPS:
         """Tool for listing components by stereotype (Strategy 2)."""
         return StereotypeListTool(facts_path=str(self.facts_path))
     
+    @tool
+    def rag_query_tool(self) -> RAGQueryTool:
+        """ChromaDB semantic search for code context."""
+        return RAGQueryTool(chroma_dir=self.chroma_dir)
+    
     @agent
     def c4_architect(self) -> Agent:
         """C4 Architect agent from YAML config."""
@@ -344,36 +363,126 @@ CONTAINER RELATIONSHIPS:
                 self.file_read_tool(),
                 self.facts_query_tool(),
                 self.stereotype_list_tool(),
+                self.rag_query_tool(),
             ],
             verbose=True,
             max_iter=30,          # Allow more iterations before forcing final answer
             max_retry_limit=10,   # Retry more on LLM empty responses
         )
     
+    # -------------------------------------------------------------------------
+    # C4 TASKS - All Subtasks matching tasks.yaml
+    # -------------------------------------------------------------------------
+    
+    # ANALYZE SYSTEM SUBTASKS
     @task
-    def analyze_system(self) -> Task:
-        """System analysis task (think before writing)."""
-        return Task(config=self.tasks_config['analyze_system'])  # type: ignore[index]
+    def analyze_system_datasources(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_datasources'])
     
     @task
-    def c4_context(self) -> Task:
-        """C4 Context diagram task (Level 1)."""
-        return Task(config=self.tasks_config['c4_context'])  # type: ignore[index]
+    def analyze_system_context(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_context'])
     
     @task
-    def c4_container(self) -> Task:
-        """C4 Container diagram task (Level 2)."""
-        return Task(config=self.tasks_config['c4_container'])  # type: ignore[index]
+    def analyze_system_containers(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_containers'])
     
     @task
-    def c4_component(self) -> Task:
-        """C4 Component diagram task (Level 3)."""
-        return Task(config=self.tasks_config['c4_component'])  # type: ignore[index]
+    def analyze_system_components(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_components'])
     
     @task
-    def c4_deployment(self) -> Task:
-        """C4 Deployment diagram task (Level 4)."""
-        return Task(config=self.tasks_config['c4_deployment'])  # type: ignore[index]
+    def analyze_system_deployment(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_deployment'])
+    
+    # C4 LEVEL 1: CONTEXT SUBTASKS
+    @task
+    def context_overview(self) -> Task:
+        return Task(config=self.tasks_config['context_overview'])
+    
+    @task
+    def context_actors(self) -> Task:
+        return Task(config=self.tasks_config['context_actors'])
+    
+    @task
+    def context_external(self) -> Task:
+        return Task(config=self.tasks_config['context_external'])
+    
+    @task
+    def context_diagram(self) -> Task:
+        return Task(config=self.tasks_config['context_diagram'])
+    
+    @task
+    def context_merge(self) -> Task:
+        return Task(config=self.tasks_config['context_merge'])
+    
+    # C4 LEVEL 2: CONTAINER SUBTASKS
+    @task
+    def container_overview(self) -> Task:
+        return Task(config=self.tasks_config['container_overview'])
+    
+    @task
+    def container_details(self) -> Task:
+        return Task(config=self.tasks_config['container_details'])
+    
+    @task
+    def container_interactions(self) -> Task:
+        return Task(config=self.tasks_config['container_interactions'])
+    
+    @task
+    def container_diagram(self) -> Task:
+        return Task(config=self.tasks_config['container_diagram'])
+    
+    @task
+    def container_merge(self) -> Task:
+        return Task(config=self.tasks_config['container_merge'])
+    
+    # C4 LEVEL 3: COMPONENT SUBTASKS
+    @task
+    def component_overview(self) -> Task:
+        return Task(config=self.tasks_config['component_overview'])
+    
+    @task
+    def component_layers(self) -> Task:
+        return Task(config=self.tasks_config['component_layers'])
+    
+    @task
+    def component_dependencies(self) -> Task:
+        return Task(config=self.tasks_config['component_dependencies'])
+    
+    @task
+    def component_diagram(self) -> Task:
+        return Task(config=self.tasks_config['component_diagram'])
+    
+    @task
+    def component_merge(self) -> Task:
+        return Task(config=self.tasks_config['component_merge'])
+    
+    # C4 LEVEL 4: DEPLOYMENT SUBTASKS
+    @task
+    def deployment_infrastructure(self) -> Task:
+        return Task(config=self.tasks_config['deployment_infrastructure'])
+    
+    @task
+    def deployment_network(self) -> Task:
+        return Task(config=self.tasks_config['deployment_network'])
+    
+    @task
+    def deployment_environments(self) -> Task:
+        return Task(config=self.tasks_config['deployment_environments'])
+    
+    @task
+    def deployment_diagram(self) -> Task:
+        return Task(config=self.tasks_config['deployment_diagram'])
+    
+    @task
+    def deployment_merge(self) -> Task:
+        return Task(config=self.tasks_config['deployment_merge'])
+    
+    # QUALITY GATE
+    @task
+    def quality_gate(self) -> Task:
+        return Task(config=self.tasks_config['quality_gate'])
     
     @crew
     def crew(self) -> Crew:

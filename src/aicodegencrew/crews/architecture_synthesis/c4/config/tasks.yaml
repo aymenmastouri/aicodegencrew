@@ -1,142 +1,814 @@
 # =============================================================================
-# C4 Crew - Task Definitions (Phase 3)
+# C4 Crew - Task Definitions (Phase 3) - SUBTASK STRUCTURE
 # =============================================================================
-# INPUT:
-#   - architecture_facts.json (Phase 1): Exact component names, relations
-#   - analyzed_architecture.json (Phase 2): Architecture style, patterns, quality
-# OUTPUT:
-#   - c4/c4-context.md + .drawio
-#   - c4/c4-container.md + .drawio
-#   - c4/c4-component.md + .drawio
-#   - c4/c4-deployment.md + .drawio
+# TARGET: ~30 pages C4 documentation with WORKING DrawIO diagrams
+#
+# STRUCTURE: Each major section is a subtask, merged at the end
+#
+# DATA SOURCES (used by all subtasks):
+#   - analyzed_architecture.json: Style, patterns, quality (Phase 2)
+#   - architecture_facts.json: Components, relations, containers (Phase 1)
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# PHASE 1: ANALYSIS (Use analyzed.json + query facts for details)
-# -----------------------------------------------------------------------------
+# =============================================================================
+# ANALYZE SYSTEM - Split into subtasks
+# =============================================================================
 
-analyze_system:
+analyze_system_datasources:
   description: |
-    YOU are the Software Architect. Create C4 analysis from Phase 2 output + facts!
+    Load and validate the data sources for C4 documentation.
     
-    DATA SOURCES:
-    - analyzed_architecture.json: Already contains style, patterns, quality (from Phase 2)
-    - architecture_facts.json: Query for specific details (containers, components, relations)
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
     
-    ## STEP 1: Read Architecture Analysis
-    The analyzed_architecture.json already contains:
-    - architecture.primary_style
-    - architecture.layers
-    - patterns[]
-    - technology.backend/frontend/database
+    ## TASK
+    - Query and validate both JSON files exist
+    - Extract system name, type, technology stack
+    - Create summary of available data for C4 model
     
-    ## STEP 2: Query Facts for Details
-    Use tools to get EXACT data:
-    - query_architecture_facts(category="containers") → deployment units
-    - query_architecture_facts(category="interfaces") → API surface
-    - list_components_by_stereotype for layer details
-    
-    ## YOUR C4 ANALYSIS must identify:
-    1. SYSTEM: Name and domain from analysis
-    2. CONTAINERS: From facts.json containers[]
-    3. COMPONENTS: From facts.json components[]
-    4. EXTERNAL: Derive from interfaces[]
-    5. ARCHITECTURE STYLE: From analyzed_architecture.json
-    
-    ## Deliverable: Your C4 analysis as structured text
-  expected_output: "Complete C4 analysis from facts and analysis"
+    ## DELIVERABLE
+    Summary of available data sources for C4 diagrams.
+  expected_output: "Data sources summary for C4"
   agent: c4_architect
 
-# -----------------------------------------------------------------------------
-# PHASE 2: C4 DIAGRAMS (Based on analysis)
-# -----------------------------------------------------------------------------
-
-c4_context:
+analyze_system_context:
   description: |
-    Create C4 Level 1: System Context diagram and documentation.
+    Analyze Level 1: System Context elements.
     
-    Use the analysis from the previous task.
-
-    {system_summary}
-
-    ## DELIVERABLE: c4/c4-context.md + c4-context.drawio
-
-    Show the system as a black box with:
-    - External actors (users, admins)
-    - External systems (databases, APIs, services)
-    - Communication protocols
-  expected_output: "Complete C4 Context with DrawIO diagram"
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    ## ANALYSIS REQUIRED
+    
+    ### A. The System
+    - Full system name
+    - Primary purpose (1 paragraph)
+    - Business value
+    
+    ### B. External Actors (Users)
+    - End Users: Who uses the system directly?
+    - Administrators: Who configures/manages the system?
+    - API Consumers: What other systems call our APIs?
+    - Background Processes: Timers, schedulers?
+    
+    ### C. External Systems
+    - Databases: Type, purpose
+    - External APIs: Services consumed
+    - Message Queues: If applicable
+    - Identity Providers: Authentication systems
+    
+    ## DELIVERABLE
+    Complete Level 1 context analysis.
+  expected_output: "Level 1 context analysis"
   agent: c4_architect
-  context:
-    - analyze_system
-  output_file: "knowledge/architecture/c4/c4-context.md"
+  context: []
 
-c4_container:
+analyze_system_containers:
   description: |
-    Create C4 Level 2: Container diagram.
+    Analyze Level 2: Container elements.
     
-    Show all deployable units from the analysis:
-    - Backend applications
-    - Frontend applications
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    Query architecture_facts.json for containers[]:
+    
+    ## ANALYSIS REQUIRED
+    For each container:
+    | Container | Technology | Purpose | Ports | Dependencies |
+    |-----------|------------|---------|-------|--------------|
+    
+    Container categories:
+    - Web Applications (Frontend)
+    - Backend Services (APIs)
     - Databases
-    - Message queues
-    - External services
-
-    {system_summary}
-    {containers_summary}
-
-    ## DELIVERABLE: c4/c4-container.md + c4-container.drawio
-  expected_output: "Complete C4 Container with DrawIO diagram"
+    - Message Brokers
+    - Caches
+    - Batch Jobs
+    
+    ## DELIVERABLE
+    Complete Level 2 container analysis.
+  expected_output: "Level 2 container analysis"
   agent: c4_architect
-  context:
-    - c4_context
-  output_file: "knowledge/architecture/c4/c4-container.md"
+  context: []
 
-c4_component:
+analyze_system_components:
   description: |
-    Create C4 Level 3: Component diagram.
+    Analyze Level 3: Component elements.
     
-    ⚠️ This system has 800+ components! Show LAYER STRUCTURE, not all components.
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
     
-    ## APPROACH:
-    1. Query facts for component counts by stereotype
-    2. Show REPRESENTATIVE components per layer (5-10 examples each)
-    3. Focus on layer boundaries and dependencies
+    Query list_components_by_stereotype for each layer:
     
-    Show internal structure of each container:
-    - Controllers (presentation layer) - show count + key examples
-    - Services (business layer) - show count + key examples
-    - Repositories (data access layer) - show count + key examples
-    - Entities (domain model) - show count + key examples
-
-    {system_summary}
-    {components_summary}
-
-    ## DELIVERABLE: c4/c4-component.md + c4-component.drawio
+    ## ANALYSIS REQUIRED
     
-    DrawIO diagram should show LAYERS with component counts, not 800 boxes!
-  expected_output: "Complete C4 Component with DrawIO diagram showing layer structure"
+    | Layer | Components | Count | Purpose |
+    |-------|------------|-------|---------|
+    | Controllers | ... | X | API endpoints |
+    | Services | ... | X | Business logic |
+    | Repositories | ... | X | Data access |
+    | Entities | ... | X | Domain model |
+    
+    Component Dependencies:
+    - Controller → Service mappings
+    - Service → Repository mappings
+    - Cross-service dependencies
+    
+    ## DELIVERABLE
+    Complete Level 3 component analysis.
+  expected_output: "Level 3 component analysis"
   agent: c4_architect
-  context:
-    - c4_container
-  output_file: "knowledge/architecture/c4/c4-component.md"
+  context: []
 
-c4_deployment:
+analyze_system_deployment:
   description: |
-    Create C4 Level 4: Deployment diagram.
+    Analyze Level 4: Deployment topology.
     
-    Show infrastructure topology:
-    - Server nodes
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    ## ANALYSIS REQUIRED
+    - Infrastructure nodes
     - Container placement
     - Network zones
-    - Scaling strategy
+    - Scaling configuration
+    
+    ## DELIVERABLE
+    Complete Level 4 deployment analysis.
+  expected_output: "Level 4 deployment analysis"
+  agent: c4_architect
+  context: []
 
+# =============================================================================
+# C4 LEVEL 1: CONTEXT - Split into subtasks
+# =============================================================================
+
+context_overview:
+  description: |
+    Create C4 Context Section: Overview and System Identity (2-3 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: parts/c4-context-overview.md
+    
+    ## 1.1 Overview
+    The System Context diagram shows the big picture.
+    
+    ## 1.2 The System
+    | Attribute | Value |
+    |-----------|-------|
+    | Name | [System Name] |
+    | Type | Web Application / API / ... |
+    | Purpose | [One paragraph description] |
+    | Domain | [Business domain] |
+  expected_output: "Context overview section (2-3 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-context-overview.md"
+
+context_actors:
+  description: |
+    Create C4 Context Section: Actors and Users (2-3 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: parts/c4-context-actors.md
+    
+    ## 1.3 Actors and Users
+    
+    ### 1.3.1 Human Actors
+    | Actor | Role | Interactions | Priority |
+    |-------|------|--------------|----------|
+    
+    ### 1.3.2 System Actors
+    | System | Role | Protocol | Data Flow |
+    |--------|------|----------|-----------|
+  expected_output: "Actors section (2-3 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-context-actors.md"
+
+context_external:
+  description: |
+    Create C4 Context Section: External Systems (2 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: parts/c4-context-external.md
+    
+    ## 1.4 External Systems
+    
+    ### 1.4.1 Databases
+    | Database | Type | Purpose | Criticality |
+    |----------|------|---------|-------------|
+    
+    ### 1.4.2 External Services
+    | Service | Purpose | Protocol | SLA |
+    |---------|---------|----------|-----|
+  expected_output: "External systems section (2 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-context-external.md"
+
+context_diagram:
+  description: |
+    Create C4 Context DIAGRAM using DrawIO (1 page).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: c4-context.drawio
+    
+    Use drawio_generator tool with specifications:
+    
+    DIAGRAM TYPE: c4_context
+    ELEMENTS:
+    - Center: System box (large blue rectangle with name)
+    - Top: User actors (person icons)
+    - Left/Right: External systems (gray boxes)
+    - Bottom: Databases (cylinder icons)
+    CONNECTIONS:
+    - Arrows with labels like "Uses [HTTPS]", "Reads/Writes [JDBC]"
+    LEGEND:
+    - Blue: Our system
+    - Gray: External systems
+    - Cylinders: Databases
+  expected_output: "C4 Context DrawIO diagram"
+  agent: c4_architect
+  context: []
+
+context_merge:
+  description: |
+    MERGE all Context sections into C4 Level 1 document (8 pages total).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    READ these files:
+    1. knowledge/architecture/c4/parts/c4-context-overview.md
+    2. knowledge/architecture/c4/parts/c4-context-actors.md
+    3. knowledge/architecture/c4/parts/c4-context-external.md
+    
+    COMBINE into one complete document.
+    Add reference to the DrawIO diagram.
+    
+    ## DELIVERABLE: c4-context.md
+    
+    # C4 Level 1: System Context
+    
+    [Merged content from all parts]
+    
+    ## Context Diagram
+    See: c4-context.drawio
+  expected_output: "Complete C4 Context with DrawIO diagram (8 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/c4-context.md"
+
+# =============================================================================
+# C4 LEVEL 2: CONTAINER - Split into subtasks
+# =============================================================================
+
+container_overview:
+  description: |
+    Create C4 Container Section: Overview and Inventory (3 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
     {system_summary}
     {containers_summary}
-
-    ## DELIVERABLE: c4/c4-deployment.md + c4-deployment.drawio
-  expected_output: "Complete C4 Deployment with DrawIO diagram"
+    
+    ## DELIVERABLE: parts/c4-container-overview.md
+    
+    ## 2.1 Overview
+    A "container" is a separately deployable unit.
+    
+    ## 2.2 Container Inventory
+    
+    ### 2.2.1 Application Containers
+    | Container | Technology | Responsibility | Deployment |
+    |-----------|------------|----------------|------------|
+    
+    ### 2.2.2 Data Containers
+    | Container | Technology | Purpose | Persistence |
+    |-----------|------------|---------|-------------|
+    
+    ### 2.2.3 Infrastructure Containers
+    | Container | Technology | Purpose |
+    |-----------|------------|---------|
+  expected_output: "Container overview section (3 pages)"
   agent: c4_architect
-  context:
-    - c4_component
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-container-overview.md"
+
+container_details:
+  description: |
+    Create C4 Container Section: Container Details (3 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    {containers_summary}
+    
+    ## DELIVERABLE: parts/c4-container-details.md
+    
+    ## 2.3 Container Details
+    
+    For EACH container:
+    
+    ### [Container Name]
+    | Attribute | Value |
+    |-----------|-------|
+    | Technology | ... |
+    | Purpose | ... |
+    | Ports | ... |
+    | Interfaces Provided | ... |
+    | Interfaces Consumed | ... |
+    | Deployment | ... |
+    | Scaling | ... |
+  expected_output: "Container details section (3 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-container-details.md"
+
+container_interactions:
+  description: |
+    Create C4 Container Section: Interactions and Scaling (2 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: parts/c4-container-interactions.md
+    
+    ## 2.5 Container Interactions
+    
+    ### 2.5.1 Synchronous Communication
+    | Source | Target | Method | Format | Purpose |
+    |--------|--------|--------|--------|---------|
+    
+    ### 2.5.2 Asynchronous Communication
+    | Source | Target | Method | Format | Purpose |
+    |--------|--------|--------|--------|---------|
+    
+    ## 2.6 Container Scaling
+    | Container | Min | Max | Scaling Trigger |
+    |-----------|-----|-----|-----------------|
+    
+    ## 2.7 Technology Stack Summary
+    | Layer | Technology | Version |
+    |-------|------------|---------|
+  expected_output: "Container interactions section (2 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-container-interactions.md"
+
+container_diagram:
+  description: |
+    Create C4 Container DIAGRAM using DrawIO (1 page).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    {containers_summary}
+    
+    ## DELIVERABLE: c4-container.drawio
+    
+    Use drawio_generator tool with specifications:
+    
+    DIAGRAM TYPE: c4_container
+    SYSTEM BOUNDARY: Dashed rectangle labeled "System Name"
+    
+    CONTAINERS (inside boundary):
+    - Backend: Large blue box "Backend API [Spring Boot]"
+    - Frontend: Blue box "Web Application [Angular]"
+    - Database: Cylinder "Database [PostgreSQL]"
+    - Cache: Cylinder "Cache [Redis]" (if applicable)
+    
+    EXTERNAL (outside boundary):
+    - Users: Person icon at top
+    - External systems: Gray boxes
+    
+    CONNECTIONS:
+    - User → Frontend: "Views and interacts [HTTPS]"
+    - Frontend → Backend: "Makes API calls [HTTPS/JSON]"
+    - Backend → Database: "Reads/Writes [JDBC]"
+    
+    LEGEND included
+  expected_output: "C4 Container DrawIO diagram"
+  agent: c4_architect
+  context: []
+
+container_merge:
+  description: |
+    MERGE all Container sections into C4 Level 2 document (8 pages total).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    READ these files:
+    1. knowledge/architecture/c4/parts/c4-container-overview.md
+    2. knowledge/architecture/c4/parts/c4-container-details.md
+    3. knowledge/architecture/c4/parts/c4-container-interactions.md
+    
+    COMBINE into one complete document.
+    Add reference to the DrawIO diagram.
+    
+    ## DELIVERABLE: c4-container.md
+    
+    # C4 Level 2: Container Diagram
+    
+    [Merged content from all parts]
+    
+    ## Container Diagram
+    See: c4-container.drawio
+  expected_output: "Complete C4 Container with DrawIO diagram (8 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/c4-container.md"
+
+# =============================================================================
+# C4 LEVEL 3: COMPONENT - Split into subtasks
+# =============================================================================
+
+component_overview:
+  description: |
+    Create C4 Component Section: Overview and Layer Summary (2 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    {components_summary}
+    
+    ## DELIVERABLE: parts/c4-component-overview.md
+    
+    ## 3.1 Overview
+    Show LAYERS with component counts (not individual boxes).
+    
+    ## 3.2 Backend API Components
+    
+    ### 3.2.1 Layer Overview
+    | Layer | Purpose | Component Count | Key Pattern |
+    |-------|---------|-----------------|-------------|
+    | Controllers | HTTP handling | X | REST Controller |
+    | Services | Business logic | X | Service Layer |
+    | Repositories | Data access | X | Repository Pattern |
+    | Entities | Domain model | X | JPA Entity |
+  expected_output: "Component overview section (2 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-component-overview.md"
+
+component_layers:
+  description: |
+    Create C4 Component Section: Layer Details (4 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    Use list_components_by_stereotype for each layer.
+    
+    {system_summary}
+    {components_summary}
+    
+    ## DELIVERABLE: parts/c4-component-layers.md
+    
+    ### 3.2.2 Presentation Layer (Controllers)
+    **Count:** X controllers
+    | Controller | Endpoints | Responsibility |
+    |------------|-----------|----------------|
+    
+    ### 3.2.3 Business Layer (Services)
+    **Count:** X services
+    | Service | Responsibility | Dependencies |
+    |---------|----------------|--------------|
+    
+    ### 3.2.4 Data Access Layer (Repositories)
+    **Count:** X repositories
+    | Repository | Entity | Custom Queries |
+    |------------|--------|----------------|
+    
+    ### 3.2.5 Domain Layer (Entities)
+    **Count:** X entities
+    | Entity | Table | Relationships |
+    |--------|-------|---------------|
+  expected_output: "Component layers section (4 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-component-layers.md"
+
+component_dependencies:
+  description: |
+    Create C4 Component Section: Dependencies and Flow (2 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: parts/c4-component-dependencies.md
+    
+    ## 3.4 Component Dependencies
+    
+    ### 3.4.1 Layer Rules
+    | From | To | Allowed |
+    |------|----|---------|
+    
+    ### 3.4.2 Cross-Cutting Components
+    | Component | Used By | Purpose |
+    |-----------|---------|---------|
+    
+    ## 3.5 Component Communication
+    
+    ### Request Flow Example
+    ```
+    HTTP POST /api/orders
+        │
+        ▼
+    OrderController.createOrder(dto)
+        │
+        ▼
+    OrderService.create(dto)
+        │
+        ▼
+    OrderRepository.save(entity)
+    ```
+  expected_output: "Component dependencies section (2 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-component-dependencies.md"
+
+component_diagram:
+  description: |
+    Create C4 Component DIAGRAM using DrawIO (1 page).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    {components_summary}
+    
+    ## DELIVERABLE: c4-component.drawio
+    
+    Use drawio_generator tool with specifications:
+    
+    DIAGRAM TYPE: c4_component
+    CONTAINER BOUNDARY: "Backend API [Spring Boot]"
+    
+    SHOW LAYERS AS SWIMLANES (not individual components):
+    - Presentation Layer → Controllers (X components)
+    - Business Layer → Services (X components)
+    - Data Access Layer → Repositories (X components)
+    - Domain Layer → Entities (X components)
+    
+    LEGEND:
+    - Each layer box shows component count
+    - Arrows show dependency direction
+  expected_output: "C4 Component DrawIO diagram"
+  agent: c4_architect
+  context: []
+
+component_merge:
+  description: |
+    MERGE all Component sections into C4 Level 3 document (8 pages total).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    READ these files:
+    1. knowledge/architecture/c4/parts/c4-component-overview.md
+    2. knowledge/architecture/c4/parts/c4-component-layers.md
+    3. knowledge/architecture/c4/parts/c4-component-dependencies.md
+    
+    COMBINE into one complete document.
+    Add reference to the DrawIO diagram.
+    
+    ## DELIVERABLE: c4-component.md
+    
+    # C4 Level 3: Component Diagram
+    
+    [Merged content from all parts]
+    
+    ## Component Diagram
+    See: c4-component.drawio
+  expected_output: "Complete C4 Component with DrawIO diagram (8 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/c4-component.md"
+
+# =============================================================================
+# C4 LEVEL 4: DEPLOYMENT - Split into subtasks
+# =============================================================================
+
+deployment_infrastructure:
+  description: |
+    Create C4 Deployment Section: Infrastructure (2 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    {containers_summary}
+    
+    ## DELIVERABLE: parts/c4-deployment-infrastructure.md
+    
+    ## 4.1 Overview
+    
+    ## 4.2 Infrastructure Nodes
+    | Node | Type | Specification | Purpose |
+    |------|------|---------------|---------|
+    
+    ### 4.2.2 Container to Node Mapping
+    | Container | Node | Instances | Resources |
+    |-----------|------|-----------|-----------|
+  expected_output: "Infrastructure section (2 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-deployment-infrastructure.md"
+
+deployment_network:
+  description: |
+    Create C4 Deployment Section: Network Topology (2 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: parts/c4-deployment-network.md
+    
+    ## 4.3 Network Topology
+    
+    ### 4.3.1 Network Zones
+    | Zone | Purpose | Containers |
+    |------|---------|------------|
+    
+    ### 4.3.2 Firewall Rules
+    | Source | Destination | Port | Protocol |
+    |--------|-------------|------|----------|
+  expected_output: "Network topology section (2 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-deployment-network.md"
+
+deployment_environments:
+  description: |
+    Create C4 Deployment Section: Environments and Scaling (2 pages).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    
+    ## DELIVERABLE: parts/c4-deployment-environments.md
+    
+    ## 4.5 Environment Configuration
+    - Development
+    - Test/Staging
+    - Production
+    
+    ## 4.6 Scaling Strategy
+    | Container | Scaling Type | Trigger | Min | Max |
+    |-----------|--------------|---------|-----|-----|
+    
+    ## 4.7 Disaster Recovery
+    | Component | Backup Strategy | RTO | RPO |
+    |-----------|-----------------|-----|-----|
+  expected_output: "Environments section (2 pages)"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/c4/parts/c4-deployment-environments.md"
+
+deployment_diagram:
+  description: |
+    Create C4 Deployment DIAGRAM using DrawIO (1 page).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    {system_summary}
+    {containers_summary}
+    
+    ## DELIVERABLE: c4-deployment.drawio
+    
+    Use drawio_generator tool with specifications:
+    
+    DIAGRAM TYPE: c4_deployment
+    
+    STRUCTURE:
+    - Internet at top
+    - DMZ (Network Zone) with Load Balancer
+    - Application Zone with App Nodes containing containers
+    - Data Zone with Database and Cache
+    
+    LEGEND:
+    - Boxes: Physical/Virtual nodes
+    - Nested boxes: Containers on nodes
+    - Dashed areas: Network zones
+    - Arrows: Network connections
+  expected_output: "C4 Deployment DrawIO diagram"
+  agent: c4_architect
+  context: []
+
+deployment_merge:
+  description: |
+    MERGE all Deployment sections into C4 Level 4 document (6 pages total).
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    READ these files:
+    1. knowledge/architecture/c4/parts/c4-deployment-infrastructure.md
+    2. knowledge/architecture/c4/parts/c4-deployment-network.md
+    3. knowledge/architecture/c4/parts/c4-deployment-environments.md
+    
+    COMBINE into one complete document.
+    Add reference to the DrawIO diagram.
+    
+    ## DELIVERABLE: c4-deployment.md
+    
+    # C4 Level 4: Deployment Diagram
+    
+    [Merged content from all parts]
+    
+    ## Deployment Diagram
+    See: c4-deployment.drawio
+  expected_output: "Complete C4 Deployment with DrawIO diagram (6 pages)"
+  agent: c4_architect
+  context: []
   output_file: "knowledge/architecture/c4/c4-deployment.md"
+
+# =============================================================================
+# QUALITY GATE - Final validation
+# =============================================================================
+
+quality_gate:
+  description: |
+    Quality review of all C4 levels.
+    
+    ## DATA SOURCES
+    1. analyzed_architecture.json: Style, patterns, quality (Phase 2)
+    2. architecture_facts.json: Components, relations, containers (Phase 1)
+    
+    READ all C4 files and validate:
+    - All 4 levels complete
+    - Each level has DrawIO diagram
+    - Content based on REAL facts
+    - Diagrams are syntactically correct
+    
+    ## DELIVERABLE: quality/c4-report.md
+    
+    # C4 Quality Report
+    
+    | Level | Target Pages | Actual | Diagram | Status |
+    |-------|--------------|--------|---------|--------|
+    | Context | 8 | - | c4-context.drawio | ✓/✗ |
+    | Container | 8 | - | c4-container.drawio | ✓/✗ |
+    | Component | 8 | - | c4-component.drawio | ✓/✗ |
+    | Deployment | 6 | - | c4-deployment.drawio | ✓/✗ |
+    | **TOTAL** | **~30** | - | - | - |
+  expected_output: "Quality gate report"
+  agent: c4_architect
+  context: []
+  output_file: "knowledge/architecture/quality/c4-report.md"
