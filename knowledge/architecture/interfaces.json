@@ -1,0 +1,456 @@
+[
+  {
+    "name": "GET /web/uvz/",
+    "type": "rest_endpoint",
+    "container_hint": "backend",
+    "path": "/web/uvz/",
+    "method": "GET",
+    "evidence": [
+      {
+        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\staticwebresources\\StaticContentController.java",
+        "lines": "33-38",
+        "reason": "REST endpoint: GET /web/uvz/"
+      }
+    ]
+  },
+  {
+    "name": "/basic-data",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/basic-data",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "50-55",
+        "reason": "Angular route: /basic-data"
+      }
+    ]
+  },
+  {
+    "name": "/remarks",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/remarks",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "59-64",
+        "reason": "Angular route: /remarks"
+      }
+    ]
+  },
+  {
+    "name": "/registrations",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/registrations",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "64-69",
+        "reason": "Angular route: /registrations"
+      }
+    ]
+  },
+  {
+    "name": "/participants",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/participants",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "69-74",
+        "reason": "Angular route: /participants"
+      }
+    ]
+  },
+  {
+    "name": "/issuing-copy-notes",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/issuing-copy-notes",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "75-80",
+        "reason": "Angular route: /issuing-copy-notes"
+      }
+    ]
+  },
+  {
+    "name": "/notes",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/notes",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "81-86",
+        "reason": "Angular route: /notes"
+      }
+    ]
+  },
+  {
+    "name": "/links",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/links",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "87-92",
+        "reason": "Angular route: /links"
+      }
+    ]
+  },
+  {
+    "name": "/document",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/document",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "96-101",
+        "reason": "Angular route: /document"
+      }
+    ]
+  },
+  {
+    "name": "/",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "107-112",
+        "reason": "Angular route: /"
+      }
+    ]
+  },
+  {
+    "name": "/uvz",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/uvz",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "112-117",
+        "reason": "Angular route: /uvz"
+      }
+    ]
+  },
+  {
+    "name": "/access-denied",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/access-denied",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "120-125",
+        "reason": "Angular route: /access-denied"
+      }
+    ]
+  },
+  {
+    "name": "/",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "125-130",
+        "reason": "Angular route: /"
+      }
+    ]
+  },
+  {
+    "name": "/",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "134-139",
+        "reason": "Angular route: /"
+      }
+    ]
+  },
+  {
+    "name": "/deed-entries",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/deed-entries",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "139-144",
+        "reason": "Angular route: /deed-entries"
+      }
+    ]
+  },
+  {
+    "name": "/deed-view/:deedEntryId",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/deed-view/:deedEntryId",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "153-158",
+        "reason": "Angular route: /deed-view/:deedEntryId"
+      }
+    ]
+  },
+  {
+    "name": "/deed-form",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/deed-form",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "162-167",
+        "reason": "Angular route: /deed-form"
+      }
+    ]
+  },
+  {
+    "name": "/deed-form-bulk-capture",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/deed-form-bulk-capture",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "171-176",
+        "reason": "Angular route: /deed-form-bulk-capture"
+      }
+    ]
+  },
+  {
+    "name": "/deed-form/:deedEntryId",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/deed-form/:deedEntryId",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "180-185",
+        "reason": "Angular route: /deed-form/:deedEntryId"
+      }
+    ]
+  },
+  {
+    "name": "/",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "189-194",
+        "reason": "Angular route: /"
+      }
+    ]
+  },
+  {
+    "name": "/reports",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/reports",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "194-199",
+        "reason": "Angular route: /reports"
+      }
+    ]
+  },
+  {
+    "name": "/annual/preview",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/annual/preview",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "206-211",
+        "reason": "Angular route: /annual/preview"
+      }
+    ]
+  },
+  {
+    "name": "/annual-deed-register/preview",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/annual-deed-register/preview",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "214-219",
+        "reason": "Angular route: /annual-deed-register/preview"
+      }
+    ]
+  },
+  {
+    "name": "/deposited-inheritance-contracts/preview",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/deposited-inheritance-contracts/preview",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "223-228",
+        "reason": "Angular route: /deposited-inheritance-contracts/preview"
+      }
+    ]
+  },
+  {
+    "name": "/annual-participants/preview",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/annual-participants/preview",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "231-236",
+        "reason": "Angular route: /annual-participants/preview"
+      }
+    ]
+  },
+  {
+    "name": "/reports-metadata/:id",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/reports-metadata/:id",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "239-244",
+        "reason": "Angular route: /reports-metadata/:id"
+      }
+    ]
+  },
+  {
+    "name": "/reports-metadata",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/reports-metadata",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "244-249",
+        "reason": "Angular route: /reports-metadata"
+      }
+    ]
+  },
+  {
+    "name": "/successor-depositing",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/successor-depositing",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "251-256",
+        "reason": "Angular route: /successor-depositing"
+      }
+    ]
+  },
+  {
+    "name": "/complete",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/complete",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "260-265",
+        "reason": "Angular route: /complete"
+      }
+    ]
+  },
+  {
+    "name": "/partial",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/partial",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "273-278",
+        "reason": "Angular route: /partial"
+      }
+    ]
+  },
+  {
+    "name": "/logging/:deedEntryId",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/logging/:deedEntryId",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "287-292",
+        "reason": "Angular route: /logging/:deedEntryId"
+      }
+    ]
+  },
+  {
+    "name": "/settings",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/settings",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "295-300",
+        "reason": "Angular route: /settings"
+      }
+    ]
+  },
+  {
+    "name": "/**",
+    "type": "route",
+    "container_hint": "frontend",
+    "path": "/**",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "305-310",
+        "reason": "Angular route: /**"
+      }
+    ]
+  },
+  {
+    "name": "UslIntegrationModeGuard",
+    "type": "route_guard",
+    "container_hint": "frontend",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "100-101",
+        "reason": "Route guard: UslIntegrationModeGuard (canActivate)"
+      }
+    ]
+  },
+  {
+    "name": "AuthGuard",
+    "type": "route_guard",
+    "container_hint": "frontend",
+    "evidence": [
+      {
+        "path": "src\\app\\core\\routes.ts",
+        "lines": "132-133",
+        "reason": "Route guard: AuthGuard (canActivate)"
+      }
+    ]
+  }
+]

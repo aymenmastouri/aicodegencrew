@@ -1,0 +1,2922 @@
+{
+  "entities": [
+    {
+      "name": "ActionEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\action\\dataaccess\\api\\ActionEntity.java",
+          "lines": "27-34",
+          "reason": "JPA Entity: ActionEntity -> ACTION"
+        }
+      ]
+    },
+    {
+      "name": "ActionStreamEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\action\\dataaccess\\api\\ActionStreamEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: ActionStreamEntity -> ACTION"
+        }
+      ]
+    },
+    {
+      "name": "ChangeEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ChangeEntity.java",
+          "lines": "23-30",
+          "reason": "JPA Entity: ChangeEntity -> CORRECTION_NOTE_CHANGE"
+        }
+      ]
+    },
+    {
+      "name": "ConnectionEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionEntity.java",
+          "lines": "18-25",
+          "reason": "JPA Entity: ConnectionEntity -> CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "CorrectionNoteEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\CorrectionNoteEntity.java",
+          "lines": "19-26",
+          "reason": "JPA Entity: CorrectionNoteEntity -> CORRECTION_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "DeedCreatorHandoverInfoEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedCreatorHandoverInfoEntity.java",
+          "lines": "25-32",
+          "reason": "JPA Entity: DeedCreatorHandoverInfoEntity -> DEED_CREATOR_HANDOVER_INFO"
+        }
+      ]
+    },
+    {
+      "name": "DeedEntryEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedEntryEntity.java",
+          "lines": "17-24",
+          "reason": "JPA Entity: DeedEntryEntity -> DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DeedEntryLockEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedEntryLockEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: DeedEntryLockEntity -> DEEDENTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DeedEntryLogEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedEntryLogEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: DeedEntryLogEntity -> DEEDENTRY_LOG"
+        }
+      ]
+    },
+    {
+      "name": "DeedRegistryLockEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedRegistryLockEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: DeedRegistryLockEntity -> DEED_REGISTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DocumentMetaDataEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java",
+          "lines": "27-34",
+          "reason": "JPA Entity: DocumentMetaDataEntity -> DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "FinalHandoverDataSetEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+          "lines": "12-19",
+          "reason": "JPA Entity: FinalHandoverDataSetEntity -> FINAL_HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "HandoverDataSetEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+          "lines": "35-42",
+          "reason": "JPA Entity: HandoverDataSetEntity -> HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "HandoverDmdWorkEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDmdWorkEntity.java",
+          "lines": "18-25",
+          "reason": "JPA Entity: HandoverDmdWorkEntity -> HANDOVER_DMD_WORK"
+        }
+      ]
+    },
+    {
+      "name": "HandoverHistoryDeedEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryDeedEntity.java",
+          "lines": "12-19",
+          "reason": "JPA Entity: HandoverHistoryDeedEntity -> HANDOVER_HISTORY_DEED"
+        }
+      ]
+    },
+    {
+      "name": "HandoverHistoryEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+          "lines": "28-35",
+          "reason": "JPA Entity: HandoverHistoryEntity -> HANDOVER_HISTORY"
+        }
+      ]
+    },
+    {
+      "name": "IssuingCopyNoteEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java",
+          "lines": "32-39",
+          "reason": "JPA Entity: IssuingCopyNoteEntity -> ISSUING_COPY_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "ParticipantEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ParticipantEntity.java",
+          "lines": "30-37",
+          "reason": "JPA Entity: ParticipantEntity -> PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "RegistrationEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RegistrationEntity.java",
+          "lines": "27-34",
+          "reason": "JPA Entity: RegistrationEntity -> REGISTRATION"
+        }
+      ]
+    },
+    {
+      "name": "RemarkEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RemarkEntity.java",
+          "lines": "25-32",
+          "reason": "JPA Entity: RemarkEntity -> REMARK"
+        }
+      ]
+    },
+    {
+      "name": "RestrictedDeedEntryEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RestrictedDeedEntryEntity.java",
+          "lines": "14-21",
+          "reason": "JPA Entity: RestrictedDeedEntryEntity -> RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "SignatureInfoEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SignatureInfoEntity.java",
+          "lines": "22-29",
+          "reason": "JPA Entity: SignatureInfoEntity -> SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "SuccessorBatchEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorBatchEntity.java",
+          "lines": "18-25",
+          "reason": "JPA Entity: SuccessorBatchEntity -> SUCCESSOR_BATCH"
+        }
+      ]
+    },
+    {
+      "name": "SuccessorDeedSelectionEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorDeedSelectionEntity.java",
+          "lines": "21-28",
+          "reason": "JPA Entity: SuccessorDeedSelectionEntity -> SUCCESSOR_DEED_SELECTION"
+        }
+      ]
+    },
+    {
+      "name": "SuccessorDeedSelectionMetaEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorDeedSelectionMetaEntity.java",
+          "lines": "22-29",
+          "reason": "JPA Entity: SuccessorDeedSelectionMetaEntity -> SUCCESSOR_DEED_SELECTION_META"
+        }
+      ]
+    },
+    {
+      "name": "SuccessorDetailsEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorDetailsEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: SuccessorDetailsEntity -> SUCCESSOR_DETAILS"
+        }
+      ]
+    },
+    {
+      "name": "SuccessorSelectionTextEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorSelectionTextEntity.java",
+          "lines": "14-21",
+          "reason": "JPA Entity: SuccessorSelectionTextEntity -> SUCCESSOR_SELECTION_TEXT"
+        }
+      ]
+    },
+    {
+      "name": "UvzNumberGapManagerEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\UvzNumberGapManagerEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: UvzNumberGapManagerEntity -> UVZ_NUMBER_GAP_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "UvzNumberManagerEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\UvzNumberManagerEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: UvzNumberManagerEntity -> UVZ_NUMBER_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "UvzNumberSkipManagerEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\UvzNumberSkipManagerEntity.java",
+          "lines": "20-27",
+          "reason": "JPA Entity: UvzNumberSkipManagerEntity -> UVZ_NUMBER_SKIP_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "JobEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\job\\dataaccess\\api\\JobEntity.java",
+          "lines": "32-39",
+          "reason": "JPA Entity: JobEntity -> JOB"
+        }
+      ]
+    },
+    {
+      "name": "NumberFormatEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\dataaccess\\api\\NumberFormatEntity.java",
+          "lines": "14-21",
+          "reason": "JPA Entity: NumberFormatEntity -> OFF_ACTIVITY_NUMBER_FORMAT"
+        }
+      ]
+    },
+    {
+      "name": "OrganizationEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\dataaccess\\api\\OrganizationEntity.java",
+          "lines": "27-34",
+          "reason": "JPA Entity: OrganizationEntity -> ORGANIZATION"
+        }
+      ]
+    },
+    {
+      "name": "ReportMetadataEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\dataaccess\\api\\ReportMetadataEntity.java",
+          "lines": "15-22",
+          "reason": "JPA Entity: ReportMetadataEntity -> REPORT_METADATA"
+        }
+      ]
+    },
+    {
+      "name": "TaskEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\task\\dataaccess\\api\\TaskEntity.java",
+          "lines": "34-41",
+          "reason": "JPA Entity: TaskEntity -> TASK"
+        }
+      ]
+    },
+    {
+      "name": "DocumentMetaDataWorkEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\dataaccess\\api\\DocumentMetaDataWorkEntity.java",
+          "lines": "30-37",
+          "reason": "JPA Entity: DocumentMetaDataWorkEntity -> DOCUMENT_META_DATA_WORK"
+        }
+      ]
+    },
+    {
+      "name": "WorkflowEntity",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\dataaccess\\api\\WorkflowEntity.java",
+          "lines": "41-48",
+          "reason": "JPA Entity: WorkflowEntity -> WORKFLOW"
+        }
+      ]
+    },
+    {
+      "name": "DaoServiceLayerTest",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\test\\java\\de\\bnotk\\uvz\\module\\architecture\\DaoServiceLayerTest.java",
+          "lines": "25-32",
+          "reason": "JPA Entity: DaoServiceLayerTest -> daoservicelayertest"
+        }
+      ]
+    },
+    {
+      "name": "FileGenerator",
+      "type": "entity",
+      "evidence": [
+        {
+          "path": "backend\\src\\test\\java\\de\\bnotk\\uvz\\module\\testdatagen\\logic\\serialize\\FileGenerator.java",
+          "lines": "21-28",
+          "reason": "JPA Entity: FileGenerator -> filegenerator"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "44-114",
+          "reason": "CREATE TABLE: DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "ISSUING_COPY_NOTE",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "119-151",
+          "reason": "CREATE TABLE: ISSUING_COPY_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANT",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "153-199",
+          "reason": "CREATE TABLE: PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "REMARK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "266-285",
+          "reason": "CREATE TABLE: REMARK"
+        }
+      ]
+    },
+    {
+      "name": "CONNECTION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "290-299",
+          "reason": "CREATE TABLE: CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "REGISTRATION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "304-324",
+          "reason": "CREATE TABLE: REGISTRATION"
+        }
+      ]
+    },
+    {
+      "name": "CORRECTION_NOTE",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "329-354",
+          "reason": "CREATE TABLE: CORRECTION_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "CORRECTION_NOTE_CHANGE",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "359-384",
+          "reason": "CREATE TABLE: CORRECTION_NOTE_CHANGE"
+        }
+      ]
+    },
+    {
+      "name": "OFF_ACTIVITY_NUMBER_FORMAT",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "389-404",
+          "reason": "CREATE TABLE: OFF_ACTIVITY_NUMBER_FORMAT"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_DEED_SELECTION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "409-427",
+          "reason": "CREATE TABLE: SUCCESSOR_DEED_SELECTION"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY_LOCK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "432-449",
+          "reason": "CREATE TABLE: DEEDENTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY_LOG",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "454-468",
+          "reason": "CREATE TABLE: DEEDENTRY_LOG"
+        }
+      ]
+    },
+    {
+      "name": "DEED_REGISTRY_LOCK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "473-481",
+          "reason": "CREATE TABLE: DEED_REGISTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DOCUMENT_META_DATA",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "486-522",
+          "reason": "CREATE TABLE: DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "SIGNATURE_INFO",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "524-541",
+          "reason": "CREATE TABLE: SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_HISTORY",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "547-568",
+          "reason": "CREATE TABLE: HANDOVER_HISTORY"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_HISTORY_DEED",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "569-575",
+          "reason": "CREATE TABLE: HANDOVER_HISTORY_DEED"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_DATA_SET",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "578-594",
+          "reason": "CREATE TABLE: HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "FINAL_HANDOVER_DATA_SET",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "596-610",
+          "reason": "CREATE TABLE: FINAL_HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_BATCH",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "612-624",
+          "reason": "CREATE TABLE: SUCCESSOR_BATCH"
+        }
+      ]
+    },
+    {
+      "name": "DEED_CREATOR_HANDOVER_INFO",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "626-642",
+          "reason": "CREATE TABLE: DEED_CREATOR_HANDOVER_INFO"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_SELECTION_TEXT",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "647-662",
+          "reason": "CREATE TABLE: SUCCESSOR_SELECTION_TEXT"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_DETAILS",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "667-682",
+          "reason": "CREATE TABLE: SUCCESSOR_DETAILS"
+        }
+      ]
+    },
+    {
+      "name": "UVZ_NUMBER_MANAGER",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "687-701",
+          "reason": "CREATE TABLE: UVZ_NUMBER_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "UVZ_NUMBER_GAP_MANAGER",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "706-721",
+          "reason": "CREATE TABLE: UVZ_NUMBER_GAP_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "UVZ_NUMBER_SKIP_MANAGER",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "726-740",
+          "reason": "CREATE TABLE: UVZ_NUMBER_SKIP_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "TASK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "755-774",
+          "reason": "CREATE TABLE: TASK"
+        }
+      ]
+    },
+    {
+      "name": "WORKFLOW",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "779-796",
+          "reason": "CREATE TABLE: WORKFLOW"
+        }
+      ]
+    },
+    {
+      "name": "JOB",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "801-826",
+          "reason": "CREATE TABLE: JOB"
+        }
+      ]
+    },
+    {
+      "name": "DOCUMENT_META_DATA_WORK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "831-855",
+          "reason": "CREATE TABLE: DOCUMENT_META_DATA_WORK"
+        }
+      ]
+    },
+    {
+      "name": "ACTION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "923-944",
+          "reason": "CREATE TABLE: ACTION"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_DEED_SELECTION_META",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "953-966",
+          "reason": "CREATE TABLE: SUCCESSOR_DEED_SELECTION_META"
+        }
+      ]
+    },
+    {
+      "name": "ORGANIZATION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "987-1002",
+          "reason": "CREATE TABLE: ORGANIZATION"
+        }
+      ]
+    },
+    {
+      "name": "REPORT_METADATA",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "1005-1026",
+          "reason": "CREATE TABLE: REPORT_METADATA"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_DMD_WORK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "1054-1077",
+          "reason": "CREATE TABLE: HANDOVER_DMD_WORK"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "204-209",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "255-260",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANTS_ICN_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "745-746",
+          "reason": "CREATE INDEX: PARTICIPANTS_ICN_ID_IDX on PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "ISSUING_COPY_NOTE_DE_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "746-747",
+          "reason": "CREATE INDEX: ISSUING_COPY_NOTE_DE_ID_IDX on ISSUING_COPY_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "REGISTRATION_DE_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "747-748",
+          "reason": "CREATE INDEX: REGISTRATION_DE_ID_IDX on REGISTRATION"
+        }
+      ]
+    },
+    {
+      "name": "DEED_ENTRY_STRCTLY_CNF_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "748-749",
+          "reason": "CREATE INDEX: DEED_ENTRY_STRCTLY_CNF_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DEED_ENTRY_LSTSCSR_PRCTYPE_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "749-750",
+          "reason": "CREATE INDEX: DEED_ENTRY_LSTSCSR_PRCTYPE_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "REMARK_DE_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "750-751",
+          "reason": "CREATE INDEX: REMARK_DE_ID_IDX on REMARK"
+        }
+      ]
+    },
+    {
+      "name": "DMD_WORK_TASK_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "857-858",
+          "reason": "CREATE INDEX: DMD_WORK_TASK_ID_IDX on DOCUMENT_META_DATA_WORK"
+        }
+      ]
+    },
+    {
+      "name": "DE_UVZ_COUNTER_YEAR_ATID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "1033-1034",
+          "reason": "CREATE INDEX: DE_UVZ_COUNTER_YEAR_ATID_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DMD_OOI_JE_JI_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "1036-1037",
+          "reason": "CREATE INDEX: DMD_OOI_JE_JI_IDX on DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "DE_LAST_SUBMITTED_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "1038-1039",
+          "reason": "CREATE INDEX: DE_LAST_SUBMITTED_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_DMD_WORK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "1079-1080",
+          "reason": "CREATE INDEX: HANDOVER_DMD_WORK_IDX on HANDOVER_DMD_WORK"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "30-79",
+          "reason": "CREATE TABLE: DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "ISSUING_COPY_NOTE",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "90-120",
+          "reason": "CREATE TABLE: ISSUING_COPY_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANT",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "125-169",
+          "reason": "CREATE TABLE: PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "REMARK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "221-238",
+          "reason": "CREATE TABLE: REMARK"
+        }
+      ]
+    },
+    {
+      "name": "CONNECTION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "242-251",
+          "reason": "CREATE TABLE: CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "REGISTRATION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "255-272",
+          "reason": "CREATE TABLE: REGISTRATION"
+        }
+      ]
+    },
+    {
+      "name": "CORRECTION_NOTE",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "276-300",
+          "reason": "CREATE TABLE: CORRECTION_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "CORRECTION_NOTE_CHANGE",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "305-329",
+          "reason": "CREATE TABLE: CORRECTION_NOTE_CHANGE"
+        }
+      ]
+    },
+    {
+      "name": "OFF_ACTIVITY_NUMBER_FORMAT",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "334-349",
+          "reason": "CREATE TABLE: OFF_ACTIVITY_NUMBER_FORMAT"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_DEED_SELECTION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "354-372",
+          "reason": "CREATE TABLE: SUCCESSOR_DEED_SELECTION"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY_LOCK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "377-392",
+          "reason": "CREATE TABLE: DEEDENTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY_LOG",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "397-411",
+          "reason": "CREATE TABLE: DEEDENTRY_LOG"
+        }
+      ]
+    },
+    {
+      "name": "DEED_REGISTRY_LOCK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "416-424",
+          "reason": "CREATE TABLE: DEED_REGISTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DOCUMENT_META_DATA",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "429-462",
+          "reason": "CREATE TABLE: DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "SIGNATURE_INFO",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "464-481",
+          "reason": "CREATE TABLE: SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_DATA_SET",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "483-498",
+          "reason": "CREATE TABLE: HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "DEED_CREATOR_HANDOVER_INFO",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "500-515",
+          "reason": "CREATE TABLE: DEED_CREATOR_HANDOVER_INFO"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_SELECTION_TEXT",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "517-532",
+          "reason": "CREATE TABLE: SUCCESSOR_SELECTION_TEXT"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_DETAILS",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "534-549",
+          "reason": "CREATE TABLE: SUCCESSOR_DETAILS"
+        }
+      ]
+    },
+    {
+      "name": "UVZ_NUMBER_MANAGER",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "554-569",
+          "reason": "CREATE TABLE: UVZ_NUMBER_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "UVZ_NUMBER_GAP_MANAGER",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "574-589",
+          "reason": "CREATE TABLE: UVZ_NUMBER_GAP_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "175-180",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "210-215",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "DE_DEED_DEED_DATE",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "81-82",
+          "reason": "CREATE INDEX: DE_DEED_DEED_DATE on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DE_DEED_O_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "82-83",
+          "reason": "CREATE INDEX: DE_DEED_O_ORG_ID_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DE_DEED_OF_PERSON_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "83-84",
+          "reason": "CREATE INDEX: DE_DEED_OF_PERSON_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DE_PARTICIPANTS_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "84-85",
+          "reason": "CREATE INDEX: DE_PARTICIPANTS_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "UVZ_NUMBER_SKIP_MANAGER",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V03__Alter_Schema_v1.12.1.sql",
+          "lines": "40-54",
+          "reason": "CREATE TABLE: UVZ_NUMBER_SKIP_MANAGER"
+        }
+      ]
+    },
+    {
+      "name": "FINAL_HANDOVER_DATA_SET",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V04__Alter_Schema_v1.13.0.sql",
+          "lines": "12-27",
+          "reason": "CREATE TABLE: FINAL_HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_BATCH",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V04__Alter_Schema_v1.13.0.sql",
+          "lines": "32-46",
+          "reason": "CREATE TABLE: SUCCESSOR_BATCH"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANTS_DE_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V04__Alter_Schema_v1.13.0.sql",
+          "lines": "52-53",
+          "reason": "CREATE INDEX: PARTICIPANTS_DE_ID_IDX on PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "DE_OWNER_ORG_ID",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V04__Alter_Schema_v1.13.0.sql",
+          "lines": "53-54",
+          "reason": "CREATE INDEX: DE_OWNER_ORG_ID on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DE_ORIG_OFF_AT",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V04__Alter_Schema_v1.13.0.sql",
+          "lines": "54-55",
+          "reason": "CREATE INDEX: DE_ORIG_OFF_AT on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANTS_ICN_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V05__Alter_Schema_v1.19.0.sql",
+          "lines": "7-8",
+          "reason": "CREATE INDEX: PARTICIPANTS_ICN_ID_IDX on PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "ISSUING_COPY_NOTE_DE_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V05__Alter_Schema_v1.19.0.sql",
+          "lines": "8-9",
+          "reason": "CREATE INDEX: ISSUING_COPY_NOTE_DE_ID_IDX on ISSUING_COPY_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "REGISTRATION_DE_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V05__Alter_Schema_v1.19.0.sql",
+          "lines": "9-10",
+          "reason": "CREATE INDEX: REGISTRATION_DE_ID_IDX on REGISTRATION"
+        }
+      ]
+    },
+    {
+      "name": "DEED_ENTRY_STRCTLY_CNF_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V05__Alter_Schema_v1.19.0.sql",
+          "lines": "10-11",
+          "reason": "CREATE INDEX: DEED_ENTRY_STRCTLY_CNF_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DEED_ENTRY_LSTSCSR_PRCTYPE_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V05__Alter_Schema_v1.19.0.sql",
+          "lines": "11-12",
+          "reason": "CREATE INDEX: DEED_ENTRY_LSTSCSR_PRCTYPE_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "REMARK_DE_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V05__Alter_Schema_v1.19.0.sql",
+          "lines": "12-13",
+          "reason": "CREATE INDEX: REMARK_DE_ID_IDX on REMARK"
+        }
+      ]
+    },
+    {
+      "name": "CONNECTION_LINKED_DE_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V06__Alter_Schema_v1.20.0.sql",
+          "lines": "8-9",
+          "reason": "CREATE INDEX: CONNECTION_LINKED_DE_IDX on CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "CONNECTION_OWNING_DE_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V06__Alter_Schema_v1.20.0.sql",
+          "lines": "9-10",
+          "reason": "CREATE INDEX: CONNECTION_OWNING_DE_IDX on CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "DE_CMP_SC_ATID_ORGID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V06__Alter_Schema_v1.20.0.sql",
+          "lines": "12-13",
+          "reason": "CREATE INDEX: DE_CMP_SC_ATID_ORGID_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DE_CMP_STRCTLY_CNF_ORGID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V06__Alter_Schema_v1.20.0.sql",
+          "lines": "14-15",
+          "reason": "CREATE INDEX: DE_CMP_STRCTLY_CNF_ORGID_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "CN_DEED_ENTRY_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V08__Alter_Schema_v1.22.0.sql",
+          "lines": "8-9",
+          "reason": "CREATE INDEX: CN_DEED_ENTRY_ID_FK_IDX on CORRECTION_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "CHANGE_CN_NOTE_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V08__Alter_Schema_v1.22.0.sql",
+          "lines": "9-10",
+          "reason": "CREATE INDEX: CHANGE_CN_NOTE_ID_FK_IDX on CORRECTION_NOTE_CHANGE"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY_LOG_DEED_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V08__Alter_Schema_v1.22.0.sql",
+          "lines": "10-11",
+          "reason": "CREATE INDEX: DEEDENTRY_LOG_DEED_ID_FK_IDX on DEEDENTRY_LOG"
+        }
+      ]
+    },
+    {
+      "name": "DMD_DEED_ENTRY_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V08__Alter_Schema_v1.22.0.sql",
+          "lines": "11-12",
+          "reason": "CREATE INDEX: DMD_DEED_ENTRY_ID_FK_IDX on DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "SI_DOC_METADATA_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V08__Alter_Schema_v1.22.0.sql",
+          "lines": "12-13",
+          "reason": "CREATE INDEX: SI_DOC_METADATA_ID_FK_IDX on SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "CONNECTION_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "3-4",
+          "reason": "CREATE INDEX: CONNECTION_OWNER_ORG_ID_IDX on CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "CN_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "4-5",
+          "reason": "CREATE INDEX: CN_OWNER_ORG_ID_IDX on CORRECTION_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "CNC_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "5-6",
+          "reason": "CREATE INDEX: CNC_OWNER_ORG_ID_IDX on CORRECTION_NOTE_CHANGE"
+        }
+      ]
+    },
+    {
+      "name": "DE_HANDOVER_INFO_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "6-7",
+          "reason": "CREATE INDEX: DE_HANDOVER_INFO_OWNER_ORG_ID_IDX on DEED_CREATOR_HANDOVER_INFO"
+        }
+      ]
+    },
+    {
+      "name": "DR_LOCK_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "7-8",
+          "reason": "CREATE INDEX: DR_LOCK_OWNER_ORG_ID_IDX on DEED_REGISTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DE_LOCK_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "8-9",
+          "reason": "CREATE INDEX: DE_LOCK_OWNER_ORG_ID_IDX on DEEDENTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DE_LOG_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "9-10",
+          "reason": "CREATE INDEX: DE_LOG_OWNER_ORG_ID_IDX on DEEDENTRY_LOG"
+        }
+      ]
+    },
+    {
+      "name": "DMD_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "10-11",
+          "reason": "CREATE INDEX: DMD_OWNER_ORG_ID_IDX on DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "FINAL_HDS_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "11-12",
+          "reason": "CREATE INDEX: FINAL_HDS_OWNER_ORG_ID_IDX on FINAL_HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "HDS_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "12-13",
+          "reason": "CREATE INDEX: HDS_OWNER_ORG_ID_IDX on HANDOVER_DATA_SET"
+        }
+      ]
+    },
+    {
+      "name": "ICN_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "13-14",
+          "reason": "CREATE INDEX: ICN_OWNER_ORG_ID_IDX on ISSUING_COPY_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "OA_NF_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "14-15",
+          "reason": "CREATE INDEX: OA_NF_OWNER_ORG_ID_IDX on OFF_ACTIVITY_NUMBER_FORMAT"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANT_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "15-16",
+          "reason": "CREATE INDEX: PARTICIPANT_OWNER_ORG_ID_IDX on PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "REGISTRATION_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "16-17",
+          "reason": "CREATE INDEX: REGISTRATION_OWNER_ORG_ID_IDX on REGISTRATION"
+        }
+      ]
+    },
+    {
+      "name": "REMARK_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "17-18",
+          "reason": "CREATE INDEX: REMARK_OWNER_ORG_ID_IDX on REMARK"
+        }
+      ]
+    },
+    {
+      "name": "SI_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "18-19",
+          "reason": "CREATE INDEX: SI_OWNER_ORG_ID_IDX on SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "SUCC_BATCH_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "19-20",
+          "reason": "CREATE INDEX: SUCC_BATCH_OWNER_ORG_ID_IDX on SUCCESSOR_BATCH"
+        }
+      ]
+    },
+    {
+      "name": "SUCC_DS_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "20-21",
+          "reason": "CREATE INDEX: SUCC_DS_OWNER_ORG_ID_IDX on SUCCESSOR_DEED_SELECTION"
+        }
+      ]
+    },
+    {
+      "name": "SUCC_DETAILS_OWNER_ORG_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "21-22",
+          "reason": "CREATE INDEX: SUCC_DETAILS_OWNER_ORG_ID_IDX on SUCCESSOR_DETAILS"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V12__Alter_Schema_v1.32.0.sql",
+          "lines": "19-24",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V12__Alter_Schema_v1.32.0.sql",
+          "lines": "62-67",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V13__Alter_Schema_v1.33.0.sql",
+          "lines": "23-28",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V13__Alter_Schema_v1.33.0.sql",
+          "lines": "64-69",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "WORKFLOW",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "14-30",
+          "reason": "CREATE TABLE: WORKFLOW"
+        }
+      ]
+    },
+    {
+      "name": "JOB",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "35-53",
+          "reason": "CREATE TABLE: JOB"
+        }
+      ]
+    },
+    {
+      "name": "TASK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "61-81",
+          "reason": "CREATE TABLE: TASK"
+        }
+      ]
+    },
+    {
+      "name": "DOCUMENT_META_DATA_WORK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "87-110",
+          "reason": "CREATE TABLE: DOCUMENT_META_DATA_WORK"
+        }
+      ]
+    },
+    {
+      "name": "DMDW_TASK_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "112-113",
+          "reason": "CREATE INDEX: DMDW_TASK_ID_FK_IDX on DOCUMENT_META_DATA_WORK"
+        }
+      ]
+    },
+    {
+      "name": "DMDW_JOB_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "113-114",
+          "reason": "CREATE INDEX: DMDW_JOB_ID_FK_IDX on DOCUMENT_META_DATA_WORK"
+        }
+      ]
+    },
+    {
+      "name": "TASK_JOB_ID_FK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "114-115",
+          "reason": "CREATE INDEX: TASK_JOB_ID_FK_IDX on TASK"
+        }
+      ]
+    },
+    {
+      "name": "ACTION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V16__Alter_Schema_v1.35.1.sql",
+          "lines": "7-28",
+          "reason": "CREATE TABLE: ACTION"
+        }
+      ]
+    },
+    {
+      "name": "SUCCESSOR_DEED_SELECTION_META",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V17__Alter_Schema_v1.36.0.sql",
+          "lines": "24-37",
+          "reason": "CREATE TABLE: SUCCESSOR_DEED_SELECTION_META"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V18__Alter_Schema_v1.36.2.sql",
+          "lines": "14-19",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V18__Alter_Schema_v1.36.2.sql",
+          "lines": "56-61",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "98-103",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "140-145",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "CONNECTION_LINKED_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "59-60",
+          "reason": "CREATE INDEX: CONNECTION_LINKED_DEED_OWNER_IDX on CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "CONNECTION_OWNING_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "60-61",
+          "reason": "CREATE INDEX: CONNECTION_OWNING_DEED_OWNER_IDX on CONNECTION"
+        }
+      ]
+    },
+    {
+      "name": "CORRECTION_NOTE_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "61-62",
+          "reason": "CREATE INDEX: CORRECTION_NOTE_DEED_OWNER_IDX on CORRECTION_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "CORRECTION_NOTE_CHANGE_NOTE_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "62-63",
+          "reason": "CREATE INDEX: CORRECTION_NOTE_CHANGE_NOTE_OWNER_IDX on CORRECTION_NOTE_CHANGE"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY_LOCK_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "63-64",
+          "reason": "CREATE INDEX: DEEDENTRY_LOCK_DEED_OWNER_IDX on DEEDENTRY_LOCK"
+        }
+      ]
+    },
+    {
+      "name": "DEEDENTRY_LOG_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "64-65",
+          "reason": "CREATE INDEX: DEEDENTRY_LOG_DEED_OWNER_IDX on DEEDENTRY_LOG"
+        }
+      ]
+    },
+    {
+      "name": "DOCUMENT_META_DATA_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "65-66",
+          "reason": "CREATE INDEX: DOCUMENT_META_DATA_DEED_OWNER_IDX on DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "ISSUING_COPY_NOTE_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "66-67",
+          "reason": "CREATE INDEX: ISSUING_COPY_NOTE_DEED_OWNER_IDX on ISSUING_COPY_NOTE"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANT_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "67-68",
+          "reason": "CREATE INDEX: PARTICIPANT_DEED_OWNER_IDX on PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "PARTICIPANT_ICN_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "68-69",
+          "reason": "CREATE INDEX: PARTICIPANT_ICN_OWNER_IDX on PARTICIPANT"
+        }
+      ]
+    },
+    {
+      "name": "REGISTRATION_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "69-70",
+          "reason": "CREATE INDEX: REGISTRATION_DEED_OWNER_IDX on REGISTRATION"
+        }
+      ]
+    },
+    {
+      "name": "REMARK_DEED_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "70-71",
+          "reason": "CREATE INDEX: REMARK_DEED_OWNER_IDX on REMARK"
+        }
+      ]
+    },
+    {
+      "name": "SIGNATURE_INFO_DMD_OWNER_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "71-72",
+          "reason": "CREATE INDEX: SIGNATURE_INFO_DMD_OWNER_IDX on SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V22__Alter_Schema_v1.40.1.sql",
+          "lines": "42-47",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V22__Alter_Schema_v1.40.1.sql",
+          "lines": "86-91",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V24__Alter_Schema_v1.42.0.sql",
+          "lines": "9-14",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V24__Alter_Schema_v1.42.0.sql",
+          "lines": "56-61",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "DMD_STATUS_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V26__Alter_Schema_v1.43.2.sql",
+          "lines": "11-12",
+          "reason": "CREATE INDEX: DMD_STATUS_IDX on DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "DMD_STATUS_DEED_ID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V26__Alter_Schema_v1.43.2.sql",
+          "lines": "12-13",
+          "reason": "CREATE INDEX: DMD_STATUS_DEED_ID_IDX on DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "DE_WAWI_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V26__Alter_Schema_v1.43.2.sql",
+          "lines": "13-14",
+          "reason": "CREATE INDEX: DE_WAWI_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DMD_WORK_STATE_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V26__Alter_Schema_v1.43.2.sql",
+          "lines": "15-16",
+          "reason": "CREATE INDEX: DMD_WORK_STATE_IDX on DOCUMENT_META_DATA_WORK"
+        }
+      ]
+    },
+    {
+      "name": "JOB_TYPE_ACTIVE_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V26__Alter_Schema_v1.43.2.sql",
+          "lines": "17-18",
+          "reason": "CREATE INDEX: JOB_TYPE_ACTIVE_IDX on JOB"
+        }
+      ]
+    },
+    {
+      "name": "ORGANIZATION",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V27__Alter_Schema_v1.45.0.sql",
+          "lines": "11-26",
+          "reason": "CREATE TABLE: ORGANIZATION"
+        }
+      ]
+    },
+    {
+      "name": "DE_UVZ_COUNTER_YEAR_ATID_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V27__Alter_Schema_v1.45.0.sql",
+          "lines": "34-35",
+          "reason": "CREATE INDEX: DE_UVZ_COUNTER_YEAR_ATID_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "DMD_OOI_JE_JI_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V28__Alter_Schema_v1.46.0.sql",
+          "lines": "13-14",
+          "reason": "CREATE INDEX: DMD_OOI_JE_JI_IDX on DOCUMENT_META_DATA"
+        }
+      ]
+    },
+    {
+      "name": "AOID_EVENTS",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V29__Alter_Schema_v1.47.0.sql",
+          "lines": "31-41",
+          "reason": "CREATE TABLE: AOID_EVENTS"
+        }
+      ]
+    },
+    {
+      "name": "AOID_EVENTS_GROUP_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V29__Alter_Schema_v1.47.0.sql",
+          "lines": "42-43",
+          "reason": "CREATE INDEX: AOID_EVENTS_GROUP_IDX on AOID_EVENTS"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V30__Alter_Schema_v1.48.0.sql",
+          "lines": "23-28",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V30__Alter_Schema_v1.48.0.sql",
+          "lines": "73-78",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "SI_SIGNATURE_DATE_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V30__Alter_Schema_v1.48.0.sql",
+          "lines": "81-82",
+          "reason": "CREATE INDEX: SI_SIGNATURE_DATE_IDX on SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "SI_SIGNING_PERSONS_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V30__Alter_Schema_v1.48.0.sql",
+          "lines": "82-83",
+          "reason": "CREATE INDEX: SI_SIGNING_PERSONS_IDX on SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V32__Alter_Schema_v1.50.0.sql",
+          "lines": "11-16",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V32__Alter_Schema_v1.50.0.sql",
+          "lines": "62-67",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "DE_LAST_SUBMITTED_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V32__Alter_Schema_v1.50.0.sql",
+          "lines": "70-71",
+          "reason": "CREATE INDEX: DE_LAST_SUBMITTED_IDX on DEEDENTRY"
+        }
+      ]
+    },
+    {
+      "name": "CONFIDENTIAL_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V33__Alter_Schema_v1.50.2.sql",
+          "lines": "15-20",
+          "reason": "CREATE VIEW: CONFIDENTIAL_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "RESTRICTED_DEED_ENTRY_VIEW",
+      "type": "view",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V33__Alter_Schema_v1.50.2.sql",
+          "lines": "67-72",
+          "reason": "CREATE VIEW: RESTRICTED_DEED_ENTRY_VIEW"
+        }
+      ]
+    },
+    {
+      "name": "SI_CRYPTOGRAPHICALLY_CORRECT_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V33__Alter_Schema_v1.50.2.sql",
+          "lines": "13-14",
+          "reason": "CREATE INDEX: SI_CRYPTOGRAPHICALLY_CORRECT_IDX on SIGNATURE_INFO"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_HISTORY",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V38__Alter_Schema_v1.54.0.sql",
+          "lines": "11-33",
+          "reason": "CREATE TABLE: HANDOVER_HISTORY"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_HISTORY_DEED",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V38__Alter_Schema_v1.54.0.sql",
+          "lines": "38-44",
+          "reason": "CREATE TABLE: HANDOVER_HISTORY_DEED"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_DMD_WORK",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V45__Alter_Schema_v1.62.0.sql",
+          "lines": "10-33",
+          "reason": "CREATE TABLE: HANDOVER_DMD_WORK"
+        }
+      ]
+    },
+    {
+      "name": "HANDOVER_DMD_WORK_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V45__Alter_Schema_v1.62.0.sql",
+          "lines": "35-36",
+          "reason": "CREATE INDEX: HANDOVER_DMD_WORK_IDX on HANDOVER_DMD_WORK"
+        }
+      ]
+    },
+    {
+      "name": "REPORT_METADATA",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V47__Alter_Schema_v1.66.0.sql",
+          "lines": "10-37",
+          "reason": "CREATE TABLE: REPORT_METADATA"
+        }
+      ]
+    },
+    {
+      "name": "AOID_EVENTS_UQ_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\script\\db\\oracle\\tools\\UVZUSLNVV-4433_change_aoid_events_group.sql",
+          "lines": "37-38",
+          "reason": "CREATE INDEX: AOID_EVENTS_UQ_IDX on AOID_EVENTS"
+        }
+      ]
+    },
+    {
+      "name": "AOID_EVENTS_GROUP_IDX",
+      "type": "index",
+      "evidence": [
+        {
+          "path": "backend\\script\\db\\oracle\\tools\\UVZUSLNVV-4433_change_aoid_events_group.sql",
+          "lines": "43-44",
+          "reason": "CREATE INDEX: AOID_EVENTS_GROUP_IDX on AOID_EVENTS"
+        }
+      ]
+    },
+    {
+      "name": "CORRECTIONS_UVZ",
+      "type": "table",
+      "evidence": [
+        {
+          "path": "backend\\script\\db\\oracle\\vpd\\bnotk\\vpd-admin\\030-VPD_ADMIN-postconfig\\05-vpd-corrections-uvz.sql",
+          "lines": "25-47",
+          "reason": "CREATE TABLE: CORRECTIONS_UVZ"
+        }
+      ]
+    },
+    {
+      "name": "flyway-01",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V01__Create_User.sql",
+          "lines": "1-8",
+          "reason": "Flyway migration: 01 - Create User"
+        }
+      ]
+    },
+    {
+      "name": "flyway-02",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V02__Create_Schema.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 02 - Create Schema"
+        }
+      ]
+    },
+    {
+      "name": "flyway-90",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\h2\\V90__Create_Grants.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 90 - Create Grants"
+        }
+      ]
+    },
+    {
+      "name": "flyway-01",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V01__Create_User.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 01 - Create User"
+        }
+      ]
+    },
+    {
+      "name": "flyway-02",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V02__Create_Schema.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 02 - Create Schema"
+        }
+      ]
+    },
+    {
+      "name": "flyway-03",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V03__Alter_Schema_v1.12.1.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 03 - Alter Schema v1.12.1"
+        }
+      ]
+    },
+    {
+      "name": "flyway-04",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V04__Alter_Schema_v1.13.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 04 - Alter Schema v1.13.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-05",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V05__Alter_Schema_v1.19.0.sql",
+          "lines": "1-15",
+          "reason": "Flyway migration: 05 - Alter Schema v1.19.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-06",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V06__Alter_Schema_v1.20.0.sql",
+          "lines": "1-17",
+          "reason": "Flyway migration: 06 - Alter Schema v1.20.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-07",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V07__Alter_Schema_v1.21.0.sql",
+          "lines": "1-3",
+          "reason": "Flyway migration: 07 - Alter Schema v1.21.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-08",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V08__Alter_Schema_v1.22.0.sql",
+          "lines": "1-14",
+          "reason": "Flyway migration: 08 - Alter Schema v1.22.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-09",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V09__Alter_Schema_v1.24.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 09 - Alter Schema v1.24.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-10",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V10__Alter_Schema_v1.26.0.sql",
+          "lines": "1-5",
+          "reason": "Flyway migration: 10 - Alter Schema v1.26.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-11",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V11__Alter_Schema_v1.31.0.sql",
+          "lines": "1-6",
+          "reason": "Flyway migration: 11 - Alter Schema v1.31.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-12",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V12__Alter_Schema_v1.32.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 12 - Alter Schema v1.32.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-13",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V13__Alter_Schema_v1.33.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 13 - Alter Schema v1.33.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-14",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V14__Alter_Schema_v1.34.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 14 - Alter Schema v1.34.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-15",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V15__Alter_Schema_v1.35.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 15 - Alter Schema v1.35.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-16",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V16__Alter_Schema_v1.35.1.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 16 - Alter Schema v1.35.1"
+        }
+      ]
+    },
+    {
+      "name": "flyway-17",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V17__Alter_Schema_v1.36.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 17 - Alter Schema v1.36.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-18",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V18__Alter_Schema_v1.36.2.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 18 - Alter Schema v1.36.2"
+        }
+      ]
+    },
+    {
+      "name": "flyway-19",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V19__Alter_Schema_v1.39.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 19 - Alter Schema v1.39.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-20",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V20__Alter_Schema_v1.40.1.sql",
+          "lines": "1-12",
+          "reason": "Flyway migration: 20 - Alter Schema v1.40.1"
+        }
+      ]
+    },
+    {
+      "name": "flyway-21",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V21__Migrate_Data_v1.40.1.sql",
+          "lines": "1-12",
+          "reason": "Flyway migration: 21 - Migrate Data v1.40.1"
+        }
+      ]
+    },
+    {
+      "name": "flyway-22",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V22__Alter_Schema_v1.40.1.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 22 - Alter Schema v1.40.1"
+        }
+      ]
+    },
+    {
+      "name": "flyway-23",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V23__Alter_Schema_v1.41.0.sql",
+          "lines": "1-9",
+          "reason": "Flyway migration: 23 - Alter Schema v1.41.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-24",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V24__Alter_Schema_v1.42.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 24 - Alter Schema v1.42.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-25",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V25__Alter_Schema_v1.42.2.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 25 - Alter Schema v1.42.2"
+        }
+      ]
+    },
+    {
+      "name": "flyway-26",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V26__Alter_Schema_v1.43.2.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 26 - Alter Schema v1.43.2"
+        }
+      ]
+    },
+    {
+      "name": "flyway-27",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V27__Alter_Schema_v1.45.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 27 - Alter Schema v1.45.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-28",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V28__Alter_Schema_v1.46.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 28 - Alter Schema v1.46.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-29",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V29__Alter_Schema_v1.47.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 29 - Alter Schema v1.47.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-30",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V30__Alter_Schema_v1.48.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 30 - Alter Schema v1.48.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-31",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V31__Alter_Schema_v1.49.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 31 - Alter Schema v1.49.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-32",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V32__Alter_Schema_v1.50.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 32 - Alter Schema v1.50.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-33",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V33__Alter_Schema_v1.50.2.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 33 - Alter Schema v1.50.2"
+        }
+      ]
+    },
+    {
+      "name": "flyway-34",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V34__Alter_Schema_v1.50.3.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 34 - Alter Schema v1.50.3"
+        }
+      ]
+    },
+    {
+      "name": "flyway-35",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V35__Alter_Schema_v1.51.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 35 - Alter Schema v1.51.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-36",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V36__Alter_Schema_v1.52.0.sql",
+          "lines": "1-12",
+          "reason": "Flyway migration: 36 - Alter Schema v1.52.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-37",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V37__Alter_Schema_v1.53.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 37 - Alter Schema v1.53.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-38",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V38__Alter_Schema_v1.54.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 38 - Alter Schema v1.54.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-39",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V39__Alter_Schema_v1.53.2.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 39 - Alter Schema v1.53.2"
+        }
+      ]
+    },
+    {
+      "name": "flyway-40",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V40__Alter_Schema_v1.53.3.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 40 - Alter Schema v1.53.3"
+        }
+      ]
+    },
+    {
+      "name": "flyway-41",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V41__Alter_Schema_v1.55.0.sql",
+          "lines": "1-12",
+          "reason": "Flyway migration: 41 - Alter Schema v1.55.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-42",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V42__Alter_Schema_v1.58.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 42 - Alter Schema v1.58.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-43",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V43__Alter_Schema_v1.59.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 43 - Alter Schema v1.59.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-44",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V44__Alter_Schema_v1.61.0.sql",
+          "lines": "1-12",
+          "reason": "Flyway migration: 44 - Alter Schema v1.61.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-45",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V45__Alter_Schema_v1.62.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 45 - Alter Schema v1.62.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-46",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V46__Alter_Schema_v1.64.0.sql",
+          "lines": "1-12",
+          "reason": "Flyway migration: 46 - Alter Schema v1.64.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-47",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V47__Alter_Schema_v1.66.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 47 - Alter Schema v1.66.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-48",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V48__Alter_Schema_v1.67.0.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 48 - Alter Schema v1.67.0"
+        }
+      ]
+    },
+    {
+      "name": "flyway-90",
+      "evidence": [
+        {
+          "path": "backend\\distResources\\phase1\\db\\oracle\\V90__Create_Grants.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: 90 - Create Grants"
+        }
+      ]
+    },
+    {
+      "name": "flyway-unknown",
+      "evidence": [
+        {
+          "path": "backend\\script\\db\\oracle\\vpd\\bnotk\\module\\020-UVZ-schema\\V999.001_initial-vpd-ddl.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: unknown - V999.001_initial-vpd-ddl"
+        }
+      ]
+    },
+    {
+      "name": "flyway-unknown",
+      "evidence": [
+        {
+          "path": "backend\\script\\db\\oracle\\vpd\\bnotk\\module\\020-UVZ-schema\\V999.002_grant-vpd-admin.sql",
+          "lines": "1-20",
+          "reason": "Flyway migration: unknown - V999.002_grant-vpd-admin"
+        }
+      ]
+    }
+  ],
+  "tables": [],
+  "migrations": []
+}
