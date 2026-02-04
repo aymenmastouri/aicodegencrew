@@ -296,7 +296,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     )
     
     if will_run_analysis:
-        analysis_crew = ArchitectureAnalysisCrew(
+        # Use MapReduce for large repos (auto-fallback to standard for small repos)
+        from .crews.architecture_analysis import MapReduceAnalysisCrew
+        analysis_crew = MapReduceAnalysisCrew(
             facts_path="./knowledge/architecture/architecture_facts.json"
         )
         orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
