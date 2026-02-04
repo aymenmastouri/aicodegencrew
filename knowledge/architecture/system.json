@@ -1,0 +1,837 @@
+{
+  "id": "system",
+  "name": "uvz",
+  "description": "Architecture model for uvz",
+  "generated_at": "2026-02-04T22:48:20.371255",
+  "bounded_contexts": [
+    {
+      "name": "de.bnotk.uvz.module.action.dataaccess.api",
+      "component_count": 2,
+      "stereotypes": [
+        "entity"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.action.logic.impl",
+      "component_count": 4,
+      "stereotypes": [
+        "component",
+        "design_pattern",
+        "service"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.action.logic.impl.deedentrylock",
+      "component_count": 2,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.action.logic.impl.deedreports",
+      "component_count": 2,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.action.logic.impl.handover",
+      "component_count": 4,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.adapters.staticwebresources",
+      "component_count": 2,
+      "stereotypes": [
+        "controller",
+        "service"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.adapters.actuator.component",
+      "component_count": 3,
+      "stereotypes": [
+        "component",
+        "design_pattern"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.adapters.actuator.endpoint",
+      "component_count": 2,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.adapters.metadataresolver.impl.xnp.helper",
+      "component_count": 2,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.adapters.wawi.impl",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "service"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.archive.logic.impl",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.deedentry.validator",
+      "component_count": 2,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+      "component_count": 28,
+      "stereotypes": [
+        "entity"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.deedentry.dataaccess.api.dao.impl",
+      "component_count": 5,
+      "stereotypes": [
+        "service",
+        "repository"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.deedentry.logic.impl",
+      "component_count": 14,
+      "stereotypes": [
+        "component",
+        "service"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.deedentry.service.impl.rest",
+      "component_count": 8,
+      "stereotypes": [
+        "controller"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.general.configuration",
+      "component_count": 2,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.general.common.api.exception",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "controller"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.general.configuration.capci",
+      "component_count": 4,
+      "stereotypes": [
+        "component"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.job.service.impl.rest",
+      "component_count": 2,
+      "stereotypes": [
+        "controller"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.work.logic",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.work.submission.logic",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "de.bnotk.uvz.module.workflow.logic.impl.state",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "bin.db.data.dao",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "distResources.phase1.db.data.bac",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "distResources.phase1.db.data.demo",
+      "component_count": 10,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "distResources.phase1.db.data.pact",
+      "component_count": 5,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "distResources.phase1.db.data.performance.h2",
+      "component_count": 10,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "distResources.phase1.db.data-post.h2",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "distResources.phase1.db.data-post.oracle",
+      "component_count": 6,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle",
+      "component_count": 13,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.datacorrections",
+      "component_count": 101,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.tools",
+      "component_count": 17,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.csvmigration.UVZUSLNVV-5262",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.datacorrections.check-org-association-integrity",
+      "component_count": 10,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.tools.dmd",
+      "component_count": 8,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.vpd.bnotk.module.020-UVZ-schema",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.vpd.bnotk.module.025",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.vpd.bnotk.platform.020-PLATFORM-migration",
+      "component_count": 27,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.vpd.bnotk.sys.000",
+      "component_count": 4,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.vpd.bnotk.vpd-admin.005",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.db.oracle.vpd.bnotk.vpd-admin.030-VPD",
+      "component_count": 6,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "script.user.edu.deliverable",
+      "component_count": 2,
+      "stereotypes": [
+        "sql_script"
+      ]
+    },
+    {
+      "name": "frontend.app",
+      "component_count": 2,
+      "stereotypes": [
+        "module",
+        "component"
+      ]
+    },
+    {
+      "name": "core",
+      "component_count": 3,
+      "stereotypes": [
+        "module",
+        "service"
+      ]
+    },
+    {
+      "name": "action.services.action.api-generated",
+      "component_count": 3,
+      "stereotypes": [
+        "module",
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.xnp",
+      "component_count": 15,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.archiving.adapter.xnp",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.page-container-adapter.impl.xnp",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.reencryption.xnp.api-generated",
+      "component_count": 3,
+      "stereotypes": [
+        "module",
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-overview-page",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-successor-page",
+      "component_count": 3,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.pipes",
+      "component_count": 6,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.services",
+      "component_count": 6,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.issuing-copy-notes-data-tab",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.remarks-data-tab",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.basic-data-tab.basic-data-form-pipes",
+      "component_count": 2,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.document-archiving-overlay",
+      "component_count": 2,
+      "stereotypes": [
+        "directive",
+        "component"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.document-marked-for-removal-component",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.document-edit-component.pipes",
+      "component_count": 2,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.participants-data-tab.pipes",
+      "component_count": 3,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-overview-page.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-overview-page.deed-detail.deed-detail-presentation",
+      "component_count": 3,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-overview-page.deed-overview.services",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-report-page.annual-deed-register-report-preview",
+      "component_count": 8,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-report-page.annual-participants-report-preview",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-report-page.annual-report-preview",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-report-page.report-configuration",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-successor-page.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.copy-notes-container",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.copy-notes-view",
+      "component_count": 3,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.participant-view",
+      "component_count": 3,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.participant-view-container",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.registration-view",
+      "component_count": 3,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.connections.uvz-connections-view",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.correction-notes.pipes",
+      "component_count": 8,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.document-view-container.pipes",
+      "component_count": 3,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-view-page.participant-view.pipe",
+      "component_count": 3,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "deed-entry.services.archiving",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.services.deed-entry",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.services.deed-registry.api-generated",
+      "component_count": 3,
+      "stereotypes": [
+        "module",
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.services.document-metadata.api-generated",
+      "component_count": 3,
+      "stereotypes": [
+        "module",
+        "service"
+      ]
+    },
+    {
+      "name": "report-metadata.services",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "authentication",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "directives",
+      "component_count": 2,
+      "stereotypes": [
+        "directive"
+      ]
+    },
+    {
+      "name": "enhanced-search",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "service"
+      ]
+    },
+    {
+      "name": "http-util",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "services",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "token-bar",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "service"
+      ]
+    },
+    {
+      "name": "tooltip-table",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "service"
+      ]
+    },
+    {
+      "name": "generic-modal-dialogs.issue-notarised-copy-note-modal-dialog",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "pipe"
+      ]
+    },
+    {
+      "name": "generic-modal-dialogs.issue-copy-document-modal-dialog.issue-copy-document-modal-view",
+      "component_count": 2,
+      "stereotypes": [
+        "component",
+        "service"
+      ]
+    },
+    {
+      "name": "official-activity-filter.pipes",
+      "component_count": 2,
+      "stereotypes": [
+        "pipe"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-archive",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-change-aoid",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-deletion",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-validate-signature",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-reencryption.job-reencryption",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.api-generated",
+      "component_count": 9,
+      "stereotypes": [
+        "module",
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.domain",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.mock",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.api-generated.services",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    }
+  ],
+  "subsystems": [
+    {
+      "id": "container.backend",
+      "name": "backend",
+      "technology": "Spring Boot",
+      "category": "backend"
+    },
+    {
+      "id": "container.frontend",
+      "name": "frontend",
+      "technology": "Angular",
+      "category": "frontend"
+    },
+    {
+      "id": "container.docker",
+      "name": "docker",
+      "technology": "ubuntu",
+      "category": "unknown"
+    },
+    {
+      "id": "container.postgres",
+      "name": "postgres",
+      "technology": "PostgreSQL",
+      "category": "unknown"
+    },
+    {
+      "id": "container.broker_app",
+      "name": "broker_app",
+      "technology": "pact-broker",
+      "category": "unknown"
+    }
+  ],
+  "statistics": {
+    "system_name": "uvz",
+    "containers": 5,
+    "components": 803,
+    "interfaces": 98,
+    "relations": 108,
+    "evidence": 1006,
+    "by_layer": {
+      "presentation": 273,
+      "domain": 37,
+      "application": 233,
+      "dataaccess": 248,
+      "infrastructure": 9,
+      "unknown": 3
+    },
+    "by_stereotype": {
+      "component": 161,
+      "entity": 37,
+      "service": 233,
+      "controller": 24,
+      "repository": 4,
+      "sql_script": 243,
+      "database_schema": 1,
+      "design_pattern": 6,
+      "architecture_style": 2,
+      "integration": 1,
+      "database_connection": 2,
+      "module": 16,
+      "pipe": 67,
+      "directive": 5,
+      "dockerfile": 1
+    }
+  }
+}

@@ -1,0 +1,1459 @@
+{
+  "entities": {
+    "total": 37,
+    "items": [
+      {
+        "id": "component.backend.action_dataaccess_api.action_entity",
+        "name": "ActionEntity",
+        "module": "de.bnotk.uvz.module.action.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\action\\dataaccess\\api\\ActionEntity.java"
+      },
+      {
+        "id": "component.backend.action_dataaccess_api.action_stream_entity",
+        "name": "ActionStreamEntity",
+        "module": "de.bnotk.uvz.module.action.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\action\\dataaccess\\api\\ActionStreamEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.change_entity",
+        "name": "ChangeEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ChangeEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.connection_entity",
+        "name": "ConnectionEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.correction_note_entity",
+        "name": "CorrectionNoteEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\CorrectionNoteEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.deed_creator_handover_info_entity",
+        "name": "DeedCreatorHandoverInfoEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedCreatorHandoverInfoEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.deed_entry_entity",
+        "name": "DeedEntryEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedEntryEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.deed_entry_lock_entity",
+        "name": "DeedEntryLockEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedEntryLockEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.deed_entry_log_entity",
+        "name": "DeedEntryLogEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedEntryLogEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.deed_registry_lock_entity",
+        "name": "DeedRegistryLockEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedRegistryLockEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.document_meta_data_entity",
+        "name": "DocumentMetaDataEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.final_handover_data_set_entity",
+        "name": "FinalHandoverDataSetEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.handover_data_set_entity",
+        "name": "HandoverDataSetEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.handover_dmd_work_entity",
+        "name": "HandoverDmdWorkEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDmdWorkEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.handover_history_deed_entity",
+        "name": "HandoverHistoryDeedEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryDeedEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.handover_history_entity",
+        "name": "HandoverHistoryEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.issuing_copy_note_entity",
+        "name": "IssuingCopyNoteEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.participant_entity",
+        "name": "ParticipantEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ParticipantEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.registration_entity",
+        "name": "RegistrationEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RegistrationEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.remark_entity",
+        "name": "RemarkEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RemarkEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.restricted_deed_entry_entity",
+        "name": "RestrictedDeedEntryEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RestrictedDeedEntryEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.signature_info_entity",
+        "name": "SignatureInfoEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SignatureInfoEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.successor_batch_entity",
+        "name": "SuccessorBatchEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorBatchEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.successor_deed_selection_entity",
+        "name": "SuccessorDeedSelectionEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorDeedSelectionEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.successor_deed_selection_meta_entity",
+        "name": "SuccessorDeedSelectionMetaEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorDeedSelectionMetaEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.successor_details_entity",
+        "name": "SuccessorDetailsEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorDetailsEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.successor_selection_text_entity",
+        "name": "SuccessorSelectionTextEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\SuccessorSelectionTextEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.uvz_number_gap_manager_entity",
+        "name": "UvzNumberGapManagerEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\UvzNumberGapManagerEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.uvz_number_manager_entity",
+        "name": "UvzNumberManagerEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\UvzNumberManagerEntity.java"
+      },
+      {
+        "id": "component.backend.deedentry_dataaccess_api.uvz_number_skip_manager_entity",
+        "name": "UvzNumberSkipManagerEntity",
+        "module": "de.bnotk.uvz.module.deedentry.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\UvzNumberSkipManagerEntity.java"
+      },
+      {
+        "id": "component.backend.job_dataaccess_api.job_entity",
+        "name": "JobEntity",
+        "module": "de.bnotk.uvz.module.job.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\job\\dataaccess\\api\\JobEntity.java"
+      },
+      {
+        "id": "component.backend.numbermanagement_dataaccess_api.number_format_entity",
+        "name": "NumberFormatEntity",
+        "module": "de.bnotk.uvz.module.numbermanagement.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\dataaccess\\api\\NumberFormatEntity.java"
+      },
+      {
+        "id": "component.backend.officialactivity_dataaccess_api.organization_entity",
+        "name": "OrganizationEntity",
+        "module": "de.bnotk.uvz.module.officialactivity.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\dataaccess\\api\\OrganizationEntity.java"
+      },
+      {
+        "id": "component.backend.reportmetadata_dataaccess_api.report_metadata_entity",
+        "name": "ReportMetadataEntity",
+        "module": "de.bnotk.uvz.module.reportmetadata.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\dataaccess\\api\\ReportMetadataEntity.java"
+      },
+      {
+        "id": "component.backend.task_dataaccess_api.task_entity",
+        "name": "TaskEntity",
+        "module": "de.bnotk.uvz.module.task.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\task\\dataaccess\\api\\TaskEntity.java"
+      },
+      {
+        "id": "component.backend.submission_dataaccess_api.document_meta_data_work_entity",
+        "name": "DocumentMetaDataWorkEntity",
+        "module": "de.bnotk.uvz.module.work.submission.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\dataaccess\\api\\DocumentMetaDataWorkEntity.java"
+      },
+      {
+        "id": "component.backend.workflow_dataaccess_api.workflow_entity",
+        "name": "WorkflowEntity",
+        "module": "de.bnotk.uvz.module.workflow.dataaccess.api",
+        "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\dataaccess\\api\\WorkflowEntity.java"
+      }
+    ]
+  },
+  "tables": {
+    "total": 0,
+    "items": []
+  },
+  "migrations": {
+    "total": 244,
+    "items": [
+      {
+        "id": "component.backend.db_data_contract.r__001__insert__contract__data",
+        "name": "R__001_Insert_Contract_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_dao.r__001__insert__dao__data",
+        "name": "R__001_Insert_Dao_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_dao.r__002__insert__dao__data__handover",
+        "name": "R__002_Insert_Dao_Data_Handover",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.prod_config_db.01_platform_permissions_uvz_dml",
+        "name": "01-platform-permissions-uvz-dml",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_bac.r___insert__backend__acceptance__test__data",
+        "name": "R__Insert_Backend_Acceptance_Test_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_bac.r___insert_bac__connection_deletable_test__data",
+        "name": "R__Insert_BAC_ConnectionDeletableTest_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__001__insert_10000__data",
+        "name": "R__001_Insert_10000_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__001__insert_1000__data",
+        "name": "R__001_Insert_1000_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__001__insert_30000__deeds__for__overview__export",
+        "name": "R__001_Insert_30000_Deeds_For_Overview_Export",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__001__insert__demo__data",
+        "name": "R__001_Insert_Demo_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__001__insert__demo__document_meta_data",
+        "name": "R__001_Insert_Demo_DocumentMetaData",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__001__insert__demo__sorting",
+        "name": "R__001_Insert_Demo_Sorting",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__002__insert__demo__participants",
+        "name": "R__002_Insert_Demo_Participants",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__003__insert__number_format__data",
+        "name": "R__003_Insert_NumberFormat_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__100__insert__demo__export__data__notar__nicole",
+        "name": "R__100_Insert_Demo_Export_Data_Notar_Nicole",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_demo.r__101__insert__demo__export__data__notar__robert",
+        "name": "R__101_Insert_Demo_Export_Data_Notar_Robert",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_headless.r__001__insert__headless_test__data",
+        "name": "R__001_Insert_HeadlessTest_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_pact.r___insert__pact__document__data",
+        "name": "R__Insert_Pact_Document_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_pact.r___insert__pact__locking__data",
+        "name": "R__Insert_Pact_Locking_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_pact.r___insert__pact__log__data",
+        "name": "R__Insert_Pact_Log_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_pact.r___insert__pact__sign__data",
+        "name": "R__Insert_Pact_Sign_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data_pact.r___insert__pact__successor__locking__data",
+        "name": "R__Insert_Pact_Successor_Locking_Data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__010__insert_deed_entry_h2",
+        "name": "R__010_InsertDeedEntry.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__011__insert_number_format_h2",
+        "name": "R__011_InsertNumberFormat.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__012__insert_issuing_copy_note_h2",
+        "name": "R__012_InsertIssuingCopyNote.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__013__insert_participant_h2",
+        "name": "R__013_InsertParticipant.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__014__insert_correction_note_h2",
+        "name": "R__014_InsertCorrectionNote.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__015__insert_change_h2",
+        "name": "R__015_InsertChange.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__016__insert_remark_h2",
+        "name": "R__016_InsertRemark.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__017__insert_registration_h2",
+        "name": "R__017_InsertRegistration.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__018__insert_connection_h2",
+        "name": "R__018_InsertConnection.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.data_performance_h2.r__019__insert_uvz_number_manager_h2",
+        "name": "R__019_InsertUvzNumberManager.h2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_h2.r__v1_21_0000_dml_correct_data_inconsistencies",
+        "name": "R__v1_21_0000_dml_correct_data_inconsistencies",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_h2.r__v1_26_0000_dml_correct_data_inconsistencies",
+        "name": "R__v1_26_0000_dml_correct_data_inconsistencies",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_oracle.r__v1_20_0000_dml_correct_data_inconsistencies",
+        "name": "R__v1_20_0000_dml_correct_data_inconsistencies",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_oracle.r__v1_50_0000_dml_migrate_data",
+        "name": "R__v1_50_0000_dml_migrate_data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_oracle.r__v1_50_2000_dml_migrate_data",
+        "name": "R__v1_50_2000_dml_migrate_data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_oracle.r__v1_51_0000_dml_migrate_data",
+        "name": "R__v1_51_0000_dml_migrate_data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_oracle.r__v1_53_0000_dml_migrate_data",
+        "name": "R__v1_53_0000_dml_migrate_data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_data-post_oracle.r__v9_99_9999_dml_update_stats",
+        "name": "R__v9_99_9999_dml_update_stats",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_cleanup.cleanup_db",
+        "name": "cleanup-db",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_prepare.prepare_db",
+        "name": "prepare-db",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.calculate_cost",
+        "name": "calculate-cost",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.check_org_association_integrity",
+        "name": "check-org-association-integrity",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.cleanup_db_content_reset_sequence",
+        "name": "cleanup-db-content-reset-sequence",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.cleanup_organization_contents",
+        "name": "cleanup-organization-contents",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.cleanup_schema_contents",
+        "name": "cleanup-schema-contents",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.create_deeds_in_bulk",
+        "name": "create-deeds-in-bulk",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.deed_entry_statistic",
+        "name": "deed-entry-statistic",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.export_to_csv",
+        "name": "exportToCsv",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.functions",
+        "name": "functions",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.gather_plan_stats",
+        "name": "gather-plan-stats",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.move_organization",
+        "name": "move-organization",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.perform_multi_successor_handover",
+        "name": "perform-multi-successor-handover",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.script_db_oracle.show_handover_integrity",
+        "name": "show-handover-integrity",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_20_datacorrections",
+        "name": "uvz_1_20_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_21_datacorrections",
+        "name": "uvz_1_21_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_22_datacorrections",
+        "name": "uvz_1_22_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_29_datacorrections",
+        "name": "uvz_1_29_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_30_0_analyze_uvzuslnvv_2135",
+        "name": "uvz_1_30_0_analyze_UVZUSLNVV-2135",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_30_0_datacorrections_uatest",
+        "name": "uvz_1_30_0_datacorrections_UATEST",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_30_3_datacorrections",
+        "name": "uvz_1_30_3_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_32_datacorrections",
+        "name": "uvz_1_32_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_33_datacorrections",
+        "name": "uvz_1_33_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_34_0_analyze_fix_uvzuslnvv_2781",
+        "name": "uvz_1_34_0_analyze_fix_UVZUSLNVV-2781",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_34_1_datacorrections",
+        "name": "uvz_1_34_1_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_35_0_datacorrections",
+        "name": "uvz_1_35_0_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_35_0_datacorrections_uatest_uvzuslnvv_2917",
+        "name": "uvz_1_35_0_datacorrections_UATEST_UVZUSLNVV-2917",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_35_1_datacorrections_uvzuslnvv_2967",
+        "name": "uvz_1_35_1_datacorrections_UVZUSLNVV-2967",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_36_0_datacorrections_fix_uvzuslnvv_1726",
+        "name": "uvz_1_36_0_datacorrections_fix_UVZUSLNVV-1726",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_36_0_datacorrections_uvzuslnvv_2360",
+        "name": "uvz_1_36_0_datacorrections_UVZUSLNVV-2360",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_36_0_datacorrections_uvzuslnvv_2360_bulk",
+        "name": "uvz_1_36_0_datacorrections_UVZUSLNVV-2360_bulk",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_36_1_datacorrections_uatest_uvzuslnvv_3217",
+        "name": "uvz_1_36_1_datacorrections_UATEST_UVZUSLNVV-3217",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_36_2_datacorrections",
+        "name": "uvz_1_36_2_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_39_0_datacorrections",
+        "name": "uvz_1_39_0_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_39_0_datacorrections_uvzuslnvv_3292",
+        "name": "uvz_1_39_0_datacorrections_UVZUSLNVV-3292",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_39_0_datacorrections_uvzuslnvv_3293",
+        "name": "uvz_1_39_0_datacorrections_UVZUSLNVV-3293",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_39_1_datacorrections",
+        "name": "uvz_1_39_1_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_40_1_datacorrections",
+        "name": "uvz_1_40_1_datacorrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_41_0_datacorrections_uvzuslnvv_3503",
+        "name": "uvz_1_41_0_datacorrections_UVZUSLNVV-3503",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_41_0_datacorrections_uvzuslnvv_3518",
+        "name": "uvz_1_41_0_datacorrections_UVZUSLNVV-3518",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_43_1_datacorrections_uvzuslnvv_3966",
+        "name": "uvz_1_43_1_datacorrections_UVZUSLNVV-3966",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_44_0_datacorrections_uvzuslnvv_3957",
+        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3957",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_44_0_datacorrections_uvzuslnvv_3971",
+        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3971",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_44_0_datacorrections_uvzuslnvv_3971_dryrun",
+        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3971_dryrun",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_44_0_datacorrections_uvzuslnvv_4017",
+        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-4017",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_46_0_datacorrections_uvzuslnvv_3792_01_data_select",
+        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-3792_01_data_select",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_46_0_datacorrections_uvzuslnvv_3792_02_mark_change_aoid",
+        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-3792_02_mark_change_aoid",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_46_0_datacorrections_uvzuslnvv_4169",
+        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-4169",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_47_0_datacorrections_uvzuslnvv_3957_dryrun",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-3957_dryrun",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_47_0_datacorrections_uvzuslnvv_4196",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4196",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_47_0_datacorrections_uvzuslnvv_4280",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4280",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_47_0_datacorrections_uvzuslnvv_4305",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4305",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_48_0_datacorrections_uvzuslnvv_4325",
+        "name": "uvz_1_48_0_datacorrections_UVZUSLNVV-4325",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_50_0_datacorrections_uvzuslnvv_4530",
+        "name": "uvz_1_50_0_datacorrections_UVZUSLNVV-4530",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_50_1_datacorrections_uvzuslnvv_4472",
+        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4472",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_50_1_datacorrections_uvzuslnvv_4476",
+        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4476",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_50_1_datacorrections_uvzuslnvv_4476_dryrun",
+        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4476_dryrun",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_51_0_datacorrections_uvzuslnvv_4467",
+        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4467",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_51_0_datacorrections_uvzuslnvv_4637",
+        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4637",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_51_0_datacorrections_uvzuslnvv_4647",
+        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4647",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_51_1_datacorrections_uvzuslnvv_4662",
+        "name": "uvz_1_51_1_datacorrections_UVZUSLNVV-4662",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_51_1_datacorrections_uvzuslnvv_4676",
+        "name": "uvz_1_51_1_datacorrections_UVZUSLNVV-4676",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_52_0_datacorrections_uvzuslnvv_4727",
+        "name": "uvz_1_52_0_datacorrections_UVZUSLNVV-4727",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_53_0_datacorrections_uvzuslnvv_4843",
+        "name": "uvz_1_53_0_datacorrections_UVZUSLNVV-4843",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_53_0_datacorrections_uvzuslnvv_4853",
+        "name": "uvz_1_53_0_datacorrections_UVZUSLNVV-4853",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_54_6_datacorrections_uvzuslnvv_4953",
+        "name": "uvz_1_54_6_datacorrections_UVZUSLNVV-4953",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_55_0_datacorrections_uvzuslnvv_4726",
+        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-4726",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_55_0_datacorrections_uvzuslnvv_4871",
+        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-4871",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_55_0_datacorrections_uvzuslnvv_5052",
+        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-5052",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_56_0_datacorrections_uvzuslnvv_5083",
+        "name": "uvz_1_56_0_datacorrections_UVZUSLNVV-5083",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_01_collect_corrections",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-01-collect-corrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_02_update_based_on_corrections",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-02-update-based-on-corrections",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_03_gather_correction_statistics",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-03-gather-correction-statistics",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_58_0_datacorrections_uvzuslnvv_5130_part_01_identify_data",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5130-part-01-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_58_0_datacorrections_uvzuslnvv_5130_part_02_correct_data",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5130-part-02-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_59_0_datacorrections_uvzuslnvv_4505_part_01",
+        "name": "uvz_1_59_0_datacorrections_UVZUSLNVV-4505-part-01",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_59_0_datacorrections_uvzuslnvv_4505_part_02",
+        "name": "uvz_1_59_0_datacorrections_UVZUSLNVV-4505-part-02",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_60_0_datacorrections_uvzuslnvv_4780",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-4780",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_60_0_datacorrections_uvzuslnvv_5172",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5172",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_60_0_datacorrections_uvzuslnvv_5275_part_01",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5275-part-01",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_60_0_datacorrections_uvzuslnvv_5275_part_02",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5275-part-02",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_61_0_datacorrections_uvzuslnvv_5290_part_01_identify_data",
+        "name": "uvz_1_61_0_datacorrections_UVZUSLNVV-5290-part-01-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_61_0_datacorrections_uvzuslnvv_5290_part_02_correct_data",
+        "name": "uvz_1_61_0_datacorrections_UVZUSLNVV-5290-part-02-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_01_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-01-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_02_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-02-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_03_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-03-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_5290_part_03_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5290-part-03-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_5321_part_01_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5321-part-01-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_5321_part_02_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5321-part-02-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_5388_part_01_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5388-part-01-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_62_0_datacorrections_uvzuslnvv_5388_part_02_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5388-part-02-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_64_0_datacorrections_uvzuslnvv_5463_part_01_reset_deleted_data",
+        "name": "uvz_1_64_0_datacorrections_UVZUSLNVV-5463-part-01-reset-deleted-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_64_0_datacorrections_uvzuslnvv_5463_part_02_correct_data",
+        "name": "uvz_1_64_0_datacorrections_UVZUSLNVV-5463-part-02-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_65_0_datacorrections_uvzuslnvv_5219_part_01_identify_data",
+        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5219-part-01-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_65_0_datacorrections_uvzuslnvv_5219_part_02_correct_data",
+        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5219-part-02-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_65_0_datacorrections_uvzuslnvv_5387_correct_data",
+        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5387-correct_data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_66_0_datacorrections_uvzuslnvv_5474_correct_data",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5474-correct-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_66_0_datacorrections_uvzuslnvv_5595_identify_data",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5595-identify-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_1",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-1",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_2",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-2",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_3",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-3",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_4",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-4",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_67_0_datacorrections_uatest_uaint_uadev",
+        "name": "uvz_1_67_0_datacorrections_UATEST_UAINT_UADEV",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5650",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5650",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_0_prepare_and_precalculate",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_0_prepare_and_precalculate",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_1_restore_dmd_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_1_restore_dmd_table",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_2_delete_wrong_rows_after_import",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_2_delete_wrong_rows_after_import",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_3_migrate_handover_history",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_3_migrate_handover_history",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_4_update_document_archiving_fields",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_4_update_document_archiving_fields",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_5_document_changes",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_5_document_changes",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_6_cleanup_temp_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_6_cleanup_temp_table",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_0_prepare_and_precalculate",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_0_prepare_and_precalculate",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_1_apply_wawi_reactivation_by_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_1_apply-wawi-reactivation-by-table",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_2_document_wawi_reactivation_by_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_2_document-wawi-reactivation-by-table",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_datacorrections.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_3_cleanup_temp_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_3_cleanup-temp-table",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.deletion_trigger_timestamp",
+        "name": "deletion_trigger_timestamp",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.document_statistics",
+        "name": "document_statistics",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.doc_wawi_report",
+        "name": "doc_wawi_report",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.print_schema",
+        "name": "print_schema",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_3533_fk_analyse",
+        "name": "UVZUSLNVV-3533_fk_analyse",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_3709_01_handover_org_names",
+        "name": "UVZUSLNVV-3709_01_handover_org_names",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_3709_02_migrate_handover_data",
+        "name": "UVZUSLNVV-3709_02_migrate_handover_data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_3748_year_statistics_deedentry",
+        "name": "UVZUSLNVV-3748_year_statistics_deedentry",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_3833_icn__erroneous__data__count",
+        "name": "UVZUSLNVV-3833_ICN_Erroneous_Data_Count",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_3884__update__deed__for__retry_wawi",
+        "name": "UVZUSLNVV-3884_Update_Deed-For_Retry-WAWI",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_4372_migrate_archiving_org_from_handover_history",
+        "name": "UVZUSLNVV-4372_migrate_archiving_org_from_handover_history",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_4433_change_aoid_events_group",
+        "name": "UVZUSLNVV-4433_change_aoid_events_group",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_4472_identify_workflow_work_with_predecessor",
+        "name": "UVZUSLNVV-4472_identify-workflow-work-with-predecessor",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_4472_workflow_engine_overview",
+        "name": "UVZUSLNVV-4472_workflow-engine-overview",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_4677_signed_documents_in_timeframe",
+        "name": "UVZUSLNVV-4677_signed_documents_in_timeframe",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_5113_clean_handover_for_a_ts",
+        "name": "UVZUSLNVV-5113_clean_handover_for_ATs",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.db_oracle_tools.uvzuslnvv_5396_remove_final_handover_dataset_records_by_aoids",
+        "name": "UVZUSLNVV-5396_remove_final_handover_dataset_records_by_aoids",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_csvmigration_UVZUSLNVV-5262.createtable",
+        "name": "createtable",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_csvmigration_UVZUSLNVV-5262.uvzuslnvv_5262_migrate_handover_history",
+        "name": "UVZUSLNVV-5262_migrate_handover_history",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.connection_org_association_integrity_correction",
+        "name": "connection-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.correction_note_org_association_integrity_correction",
+        "name": "correction-note-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.deedentry_lock_org_association_integrity_correction",
+        "name": "deedentry-lock-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.deedentry_log_org_association_integrity_correction",
+        "name": "deedentry-log-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.document_meta_data_org_association_integrity_correction",
+        "name": "document-meta-data-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.issuing_copy_note_org_association_integrity_correction",
+        "name": "issuing-copy-note-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.participant_org_association_integrity_correction",
+        "name": "participant-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.registration_org_association_integrity_correction",
+        "name": "registration-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.remark_org_association_integrity_correction",
+        "name": "remark-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_datacorrections_check-org-association-integrity.successor_deed_selection_org_association_integrity_correction",
+        "name": "successor-deed-selection-org-association-integrity-correction",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.clean_documents_for_at",
+        "name": "clean_documents_for_at",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.clean_documents_for_at_uvzuslnvv_3217",
+        "name": "clean_documents_for_at_UVZUSLNVV-3217",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.clean_handover_for_at",
+        "name": "clean_handover_for_at",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.clean_reencryption_documents_for_at_uvzuslnvv_3973",
+        "name": "clean_reencryption_documents_for_at_UVZUSLNVV-3973",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.find_blocked_work_in_progress_uvzuslnvv_5107",
+        "name": "find_blocked_work_in_progress_UVZUSLNVV-5107",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.find_ownership_changed_logs_of_document_uvzuslnvv_4374",
+        "name": "find_ownership_changed_logs_of_document_UVZUSLNVV-4374",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.remove_document_by_uvznr_or_aoid_uvzuslnvv_4102",
+        "name": "remove_document_by_uvznr_or_aoid_UVZUSLNVV-4102",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.oracle_tools_dmd.restore_documents_for_at_uvzuslnvv_3949",
+        "name": "restore_documents_for_at_UVZUSLNVV-3949",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_module_005_schema_cleanup.cleanup_schema",
+        "name": "cleanup_schema",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_module_006_schema_cleanup_test.01_test_policies_cleared",
+        "name": "01-test-policies-cleared",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_module_020-UVZ-schema.v999_001_initial_vpd_ddl",
+        "name": "V999.001_initial-vpd-ddl",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_module_020-UVZ-schema.v999_002_grant_vpd_admin",
+        "name": "V999.002_grant-vpd-admin",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_module_025_schema_prepare_data.vpd_dao_test_data_handover",
+        "name": "vpd-dao-test-data-handover",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_module_025_schema_prepare_data.vpd_dao_test_data",
+        "name": "vpd-dao-test-data",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_module-app_100_test_vpd_context.call_context_set_function",
+        "name": "call_context_set_function",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_17_001",
+        "name": "platform_migrate_settings_dml_v1.17_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_19_001",
+        "name": "platform_migrate_settings_dml_v1.19_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_20_001",
+        "name": "platform_migrate_settings_dml_v1.20_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_25_001",
+        "name": "platform_migrate_settings_dml_v1.25_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_26_001",
+        "name": "platform_migrate_settings_dml_v1.26_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_30_001",
+        "name": "platform_migrate_settings_dml_v1.30_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_33_001",
+        "name": "platform_migrate_settings_dml_v1.33_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_34_001",
+        "name": "platform_migrate_settings_dml_v1.34_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_35_001",
+        "name": "platform_migrate_settings_dml_v1.35_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_35_002",
+        "name": "platform_migrate_settings_dml_v1.35_002",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_36_001",
+        "name": "platform_migrate_settings_dml_v1.36_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_37_001",
+        "name": "platform_migrate_settings_dml_v1.37_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_39_001",
+        "name": "platform_migrate_settings_dml_v1.39_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_42_001",
+        "name": "platform_migrate_settings_dml_v1.42_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_43_001",
+        "name": "platform_migrate_settings_dml_v1.43_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_45_001",
+        "name": "platform_migrate_settings_dml_v1.45_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_46_001",
+        "name": "platform_migrate_settings_dml_v1.46_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_48_001",
+        "name": "platform_migrate_settings_dml_v1.48_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_50_001",
+        "name": "platform_migrate_settings_dml_v1.50_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_50_002",
+        "name": "platform_migrate_settings_dml_v1.50_002",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_51_001",
+        "name": "platform_migrate_settings_dml_v1.51_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_53_001",
+        "name": "platform_migrate_settings_dml_v1.53_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_54_003",
+        "name": "platform_migrate_settings_dml_v1.54_003",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_55_001",
+        "name": "platform_migrate_settings_dml_v1.55_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_56_001",
+        "name": "platform_migrate_settings_dml_v1.56_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_62_001",
+        "name": "platform_migrate_settings_dml_v1.62_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_platform_020-PLATFORM-migration.platform_migrate_settings_dml_v1_69_001",
+        "name": "platform_migrate_settings_dml_v1.69_001",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_sys_000_system_prepare.00_drop_context",
+        "name": "00-drop-context",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_sys_000_system_prepare.00_drop_create_users",
+        "name": "00-drop-create-users",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_sys_000_system_prepare.01_sys_vpd_context_ddl",
+        "name": "01-sys-vpd-context-ddl",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_sys_000_system_prepare.02_login_trigger_ddl",
+        "name": "02-login-trigger-ddl",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_sys_035_toggle_vpd_test.test_toggle_vpd",
+        "name": "test-toggle-vpd",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_005_schema_cleanup.01_clear_vpd_common",
+        "name": "01-clear-vpd-common",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_005_schema_cleanup.02_clear_uvz_policies",
+        "name": "02-clear-uvz-policies",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_010-VPD_ADMIN-preparation.01_platform_vpd_ddl",
+        "name": "01-platform-vpd-ddl",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_030-VPD_ADMIN-postconfig.01_vpd_platform_grants_ddl",
+        "name": "01-vpd-platform-grants-ddl",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_030-VPD_ADMIN-postconfig.02_vpd_platform_hmac_keys_dml",
+        "name": "02-vpd-platform-hmac-keys-dml",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_030-VPD_ADMIN-postconfig.03_vpd_policy_functions_uvz_ddl",
+        "name": "03-vpd-policy-functions-uvz-ddl",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_030-VPD_ADMIN-postconfig.04_vpd_policies_uvz_ddl",
+        "name": "04-vpd-policies-uvz-ddl",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_030-VPD_ADMIN-postconfig.05_vpd_corrections_uvz",
+        "name": "05-vpd-corrections-uvz",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.bnotk_vpd-admin_030-VPD_ADMIN-postconfig.06_toggle_vpd",
+        "name": "06-toggle-vpd",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.user_edu_deliverable.check_db_sequences",
+        "name": "checkDbSequences",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.user_edu_deliverable.patch_db_sequences",
+        "name": "patchDbSequences",
+        "stereotype": "sql_script"
+      },
+      {
+        "id": "component.backend.database.database_schema",
+        "name": "database_schema",
+        "stereotype": "database_schema"
+      }
+    ]
+  },
+  "relationships": []
+}

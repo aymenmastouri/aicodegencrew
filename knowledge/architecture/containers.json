@@ -1,0 +1,235 @@
+{
+  "total": 5,
+  "containers": [
+    {
+      "id": "container.backend",
+      "name": "backend",
+      "type": "application",
+      "technology": "Spring Boot",
+      "category": "backend",
+      "root_path": "backend",
+      "evidence_ids": [
+        "ev.6ff7a58540cf"
+      ],
+      "metadata": {
+        "entry_points": [
+          "src\\main\\java\\de\\bnotk\\uvz\\module\\Application.java",
+          "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\enums\\EnumSourceApplication.java"
+        ],
+        "technology_stack": {
+          "language": {
+            "name": "Java",
+            "version": null
+          },
+          "framework": {
+            "name": "Spring Boot",
+            "version": "$springFrameworkBoot"
+          },
+          "build_tool": {
+            "name": "Gradle",
+            "version": null
+          },
+          "key_dependencies": [],
+          "test_frameworks": [],
+          "security_frameworks": []
+        },
+        "backend_metadata": {
+          "spring_profiles": [
+            "contract-test",
+            "dao-unit-h2",
+            "dao-unit-oracle-local",
+            "dao-unit-oracle-remote",
+            "dao-unit-vpd-local",
+            "dao-unit-vpd-remote",
+            "sad-unit-local",
+            "wawi-unit-local",
+            "backend-acceptance-H2",
+            "backend-acceptance-local-oracle",
+            "backend-acceptance-oracle",
+            "backend-acceptance-xnp-local-oracle",
+            "backend-pact-H2",
+            "demo-long-oracle",
+            "demo-oracle.local",
+            "headless",
+            "performance-common-oracle",
+            "performance-oracle-local",
+            "performance-phase1-oracle",
+            "xnp-local-oracle",
+            "xnp-local-vpd",
+            "xnp-local",
+            "xnp-oracle-remote"
+          ],
+          "api_base_path": null,
+          "security_config": {
+            "spring_security": true
+          },
+          "database_config": {},
+          "messaging_config": {},
+          "actuator_endpoints": []
+        }
+      },
+      "component_count": 396,
+      "layer_distribution": {
+        "presentation": 57,
+        "domain": 37,
+        "application": 43,
+        "dataaccess": 248,
+        "infrastructure": 8,
+        "unknown": 3
+      }
+    },
+    {
+      "id": "container.frontend",
+      "name": "frontend",
+      "type": "application",
+      "technology": "Angular",
+      "category": "frontend",
+      "root_path": "frontend",
+      "evidence_ids": [
+        "ev.377080996265"
+      ],
+      "metadata": {
+        "entry_points": [
+          "src\\main.ts",
+          "src\\app\\app.module.ts"
+        ],
+        "config_files": [
+          "angular.json"
+        ],
+        "module_info": {
+          "type": "NgModule",
+          "module_path": "src/app/app.module.ts",
+          "root_component": "src/app/app.component.ts",
+          "entry_point": "src/main.ts",
+          "bootstrap": "module"
+        },
+        "technology_stack": {
+          "language": {
+            "name": "TypeScript",
+            "version": "5.4.5"
+          },
+          "framework": {
+            "name": "Angular",
+            "version": "v18-lts"
+          },
+          "build_tool": {
+            "name": "npm",
+            "version": null
+          },
+          "runtime": {
+            "name": "Node.js",
+            "version": null
+          },
+          "key_dependencies": [
+            {
+              "name": "@angular/cdk",
+              "version": "v18-lts",
+              "category": "ui"
+            },
+            {
+              "name": "rxjs",
+              "version": "7.8.2",
+              "category": "core"
+            },
+            {
+              "name": "@angular/router",
+              "version": "v18-lts",
+              "category": "routing"
+            },
+            {
+              "name": "@angular/forms",
+              "version": "v18-lts",
+              "category": "forms"
+            }
+          ],
+          "test_frameworks": [
+            {
+              "name": "@types/jasmine",
+              "version": "3.6.0"
+            },
+            {
+              "name": "@pact-foundation/karma-pact",
+              "version": "2.2.0"
+            },
+            {
+              "name": "@playwright/test",
+              "version": "1.56.0"
+            }
+          ],
+          "ui_frameworks": [
+            {
+              "name": "@ng-bootstrap/ng-bootstrap",
+              "version": "17.0.1"
+            },
+            {
+              "name": "bootstrap",
+              "version": "5.2.3"
+            }
+          ]
+        },
+        "frontend_metadata": {
+          "angular_version": "v18-lts",
+          "routing_strategy": "lazy-loading",
+          "state_management": "services",
+          "ui_library": "ng-bootstrap",
+          "i18n_config": {},
+          "build_config": {},
+          "environments": [
+            "default-common",
+            "cap-ci",
+            "cdct.template",
+            "cdctlocal",
+            "local",
+            "prod",
+            "default",
+            "xnp-local"
+          ]
+        }
+      },
+      "component_count": 406,
+      "layer_distribution": {
+        "presentation": 216,
+        "application": 190
+      }
+    },
+    {
+      "id": "container.docker",
+      "name": "docker",
+      "type": "application",
+      "technology": "ubuntu",
+      "category": "unknown",
+      "root_path": ".",
+      "evidence_ids": [
+        "ev.58cad152c268"
+      ],
+      "component_count": 0,
+      "layer_distribution": {}
+    },
+    {
+      "id": "container.postgres",
+      "name": "postgres",
+      "type": "database",
+      "technology": "PostgreSQL",
+      "category": "unknown",
+      "root_path": ".",
+      "evidence_ids": [
+        "ev.fb950be7ecb8"
+      ],
+      "component_count": 0,
+      "layer_distribution": {}
+    },
+    {
+      "id": "container.broker_app",
+      "name": "broker_app",
+      "type": "application",
+      "technology": "pact-broker",
+      "category": "unknown",
+      "root_path": ".",
+      "evidence_ids": [
+        "ev.518d46c32861"
+      ],
+      "component_count": 0,
+      "layer_distribution": {}
+    }
+  ]
+}

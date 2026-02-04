@@ -1,0 +1,24 @@
+{
+  "docker": {
+    "total": 1,
+    "items": [
+      {
+        "id": "component.infrastructure.deployment_docker.dockerfile_docker",
+        "name": "Dockerfile-docker",
+        "file_path": "deployment\\docker\\Dockerfile"
+      }
+    ]
+  },
+  "kubernetes": {
+    "total": 0,
+    "items": []
+  },
+  "ci_cd": {
+    "total": 0,
+    "items": []
+  },
+  "configuration": {
+    "total": 0,
+    "items": []
+  }
+}

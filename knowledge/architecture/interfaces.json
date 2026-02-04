@@ -1,0 +1,1095 @@
+{
+  "total": 98,
+  "by_type": {
+    "REST": {
+      "count": 98,
+      "methods": {
+        "POST": 20,
+        "GET": 55,
+        "PUT": 12,
+        "DELETE": 5,
+        "PATCH": 6
+      }
+    }
+  },
+  "interfaces": [
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_action_type",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/action/{type}",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.action_rest_service_impl",
+      "evidence_ids": [
+        "ev.2028b8c57c70"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_action_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/action/{id}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.action_rest_service_impl",
+      "evidence_ids": [
+        "ev.d6f7fbeddd55"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_web",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/web",
+      "method": "GET",
+      "implemented_by": "component.backend.module_adapters_staticwebresources.static_content_controller",
+      "evidence_ids": [
+        "ev.609a7199d3c4"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_web_",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/web/",
+      "method": "GET",
+      "implemented_by": "component.backend.module_adapters_staticwebresources.static_content_controller",
+      "evidence_ids": [
+        "ev.609a7199d3c4"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_web_index_html",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/web/index.html",
+      "method": "GET",
+      "implemented_by": "component.backend.module_adapters_staticwebresources.static_content_controller",
+      "evidence_ids": [
+        "ev.609a7199d3c4"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_web_uvz_",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/web/uvz/",
+      "method": "GET",
+      "implemented_by": "component.backend.module_adapters_staticwebresources.static_content_controller",
+      "evidence_ids": [
+        "ev.1135f3b8c5da"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_keymanager_groupid_reencryptable",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/keymanager/{groupId}/reencryptable",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.key_manager_rest_service_impl",
+      "evidence_ids": [
+        "ev.b66a8c485f25"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_keymanager_cryptostate",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/keymanager/cryptostate",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.key_manager_rest_service_impl",
+      "evidence_ids": [
+        "ev.b66a8c485f25"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_archiving_sign_submission_token",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/archiving/sign-submission-token",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev.b54e2543c09b"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_archiving_sign_reencrytion_token",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/archiving/sign-reencrytion-token",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev.b54e2543c09b"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_archiving_enabled",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/archiving/enabled",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev.2db880177241"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_businesspurposes",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/businesspurposes",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.business_purpose_rest_service_impl",
+      "evidence_ids": [
+        "ev.0d736d2348ca"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_problem_connections",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/problem-connections",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_connection_rest_service_impl",
+      "evidence_ids": [
+        "ev.ad3d3b6972bd"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_id_logs",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}/logs",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_log_rest_service_impl",
+      "evidence_ids": [
+        "ev.61f7eb8d2ee8"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_to_be_signed",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/to-be-signed",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_to_be_approved",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/to-be-approved",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_deedentries_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.04a5d906b997"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_bulkcapture",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/bulkcapture",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_id_signature_folder",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}/signature-folder",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_document_handover",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/document-handover",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_handover",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/handover",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_successordeedselection",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/successordeedselection",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_successordeedselection_processt",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/successordeedselection/{processType}",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_id_correctionnote",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}/correctionnote",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_id_lock",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_deedentries_id_lock",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.6164e8ad3b94"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.DELETE_uvz_v1_deedentries_id_lock",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.fb37775c4a18"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_deedentries_id_lock",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.04a5d906b997"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_lock",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_participants",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/participants",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.82bf6630b67e"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.DELETE_uvz_v1_deedentries",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.fb37775c4a18"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_check_submittedwithcf",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/check/submittedwithcf",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedentries_check_isvalidforsigning",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedentries/check/isvalidforsigning",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev.5d5596dcf243"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedregistry_locks",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedregistry/locks",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev.730622649a2f"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedregistry_locks_types",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedregistry/locks/{types}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev.596d4c0ca9cc"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedregistry_lock_type",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedregistry/lock/{type}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev.d767f8877dbf"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_deedtypes",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/deedtypes",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_type_rest_service_impl",
+      "evidence_ids": [
+        "ev.0871d4fae8fe"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_documents_deedentryid_document_copies",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/{deedEntryId}/document-copies",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.c38371514dc9"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_documents_to_be_archived",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/to-be-archived",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.c38371514dc9"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_documents_operation_tokens",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/operation-tokens",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.23ba68c5418a"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_reference_hashes",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/reference-hashes",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_documents_check_reference_hashes",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/check-reference-hashes",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.23ba68c5418a"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_check_for_deletion",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/check-for-deletion",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_documents_info",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/info",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.c38371514dc9"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_triggerwawi",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/triggerWawi",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_documents_archiving_failed",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/archiving-failed",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.c38371514dc9"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_signing_info",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/signing-info",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_report_metadata_signing_info",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/report-metadata/signing-info",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_report_metadata_document_status",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/report-metadata/document-status",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_report_metadata_document_status_a",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/report-metadata/document-status-archive",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_documents_eto",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/eto",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.c38371514dc9"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_documents_aoid_reencryption_state",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/documents/{aoId}/reencryption-state",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev.d3b2bb19fcac"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_handoverdatasets",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.31f34ac7d40a"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.DELETE_uvz_v1_handoverdatasets",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.5fd36334fe3a"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_handoverdatasets_predecessor",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets/predecessor",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.31f34ac7d40a"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_handoverdatasets_finalise_handover",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.31f34ac7d40a"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_handoverdatasets_finalise_handover",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.582690f40e34"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_handoverdatasets_finalise_handover_retry",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.31f34ac7d40a"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_handoverdatasets_finalise_handover_retry",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.582690f40e34"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_handoverdatasets_batchid_finalise_handover_",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.582690f40e34"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_handoverdatasets_accept",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/handoverdatasets/accept",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev.582690f40e34"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_reports_annual",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/reports/annual",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev.751592de0b6e"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_reports_annual_validate",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/reports/annual/validate",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev.f56e04cb76b4"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_reports_annual_deed_register",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/reports/annual-deed-register",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev.dda12851b614"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_reports_annual_participants",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/reports/annual-participants",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev.c2a4ecc441af"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_reports_deposited_inheritance_contracts",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/reports/deposited-inheritance-contracts",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev.b225e7c5b5b0"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PATCH_uvz_v1_job_retry",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/job/retry",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev.a70dd5a346ff"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PATCH_uvz_v1_job_retry_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/job/retry/{id}",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev.a70dd5a346ff"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_job_metrics",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/job/metrics",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev.afb3eae4100c"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_job_type_state",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/job/{type}/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev.afe20c718a48"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_job_reencryption_jobid_document",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/job/reencryption/{jobId}/document",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.reencryption_job_rest_service_impl",
+      "evidence_ids": [
+        "ev.13f2ed5be1a9"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_notaryrepresentations",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/notaryrepresentations",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.notary_representation_rest_service_impl",
+      "evidence_ids": [
+        "ev.cef401fca6af"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_numbermanagement",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/numbermanagement",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev.a698ab8396fe"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_numbermanagement_validate",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/numbermanagement/validate",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev.a698ab8396fe"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_numbermanagement_numberformat",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/numbermanagement/numberformat",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev.a698ab8396fe"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_numbermanagement_numberformat",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/numbermanagement/numberformat",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev.4f10580090a0"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_numbermanagement_validate_bulkcapture",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/numbermanagement/validate/bulkcapture",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev.a698ab8396fe"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_official_activity_metadata",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/official-activity-metadata",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.official_activity_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.ab50c8ab6dcb"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_official_activity_metadata_notariesandchamb",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/official-activity-metadata/notariesandchambers",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.official_activity_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.ab50c8ab6dcb"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_official_activity_metadata_successors",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/official-activity-metadata/successors",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.official_activity_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.ab50c8ab6dcb"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_report_metadata",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/report-metadata",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.c1ed59f8c7f8"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PUT_uvz_v1_report_metadata_to_be_signed",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/report-metadata/to-be-signed",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.baa633792a5f"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_report_metadata",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/report-metadata",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.4cf6e03a6e7e"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_report_metadata_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/report-metadata/{id}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.9ee944a61326"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.DELETE_uvz_v1_report_metadata_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/report-metadata/{id}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev.485c53ad0ce9"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_task",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/task",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev.c07748fe24f7"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_task_initial",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/task/initial",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev.a402fd24e342"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PATCH_uvz_v1_task_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/task/{id}",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev.262ba26939b2"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PATCH_uvz_v1_task_id_work",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/task/{id}/work",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev.262ba26939b2"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.DELETE_uvz_v1_task_id",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/task/{id}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev.e920e2ba3ee0"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_workflow_type",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/workflow/{type}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev.93c9c5adeea4"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.GET_uvz_v1_workflow_initial",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/workflow/initial",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev.93c9c5adeea4"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.POST_uvz_v1_workflow",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/workflow",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev.8f8eec110ce5"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PATCH_uvz_v1_workflow_id_proceed",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/workflow/{id}/proceed",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev.946af0d02f62"
+      ]
+    },
+    {
+      "id": "interface.backend.rest.PATCH_uvz_v1_workflow_id_confirm",
+      "container": "container.backend",
+      "type": "REST",
+      "path": "/uvz/v1/workflow/{id}/confirm",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev.946af0d02f62"
+      ]
+    }
+  ]
+}
