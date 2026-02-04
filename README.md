@@ -1,403 +1,155 @@
 # AI Code Generation Crew
 
-AI-powered SDLC automation using CrewAI. Automatically generates C4 diagrams and arc42 documentation from your codebase.
+AI Code Generation Crew is an on‑premises toolkit that automates evidence‑based architecture discovery and documentation for software repositories. It extracts deterministic architecture facts from a codebase, then synthesizes C4 diagrams and arc42 documentation using configurable local LLMs.
 
----
+This repository focuses on a secure, reproducible, and auditable SDLC workflow where every claim in generated documentation is traceable to source code evidence.
 
-## Quick Install (From Scratch)
+Key principles:
+- Evidence‑first: every generated item must reference code/config evidence.
+- Deterministic discovery: facts are extracted by deterministic collectors (no LLM).
+- Phase isolation: clear inputs/outputs per pipeline phase.
+- On‑prem operation: designed for local LLMs and no external data leakage.
 
-### Step 1: Install uv (Package Manager)
+Contents
+- [Quick Start](#quick-start)
+- [Concepts & Phases](#concepts--phases)
+- [Configuration](#configuration)
+- [CLI & Usage](#cli--usage)
+- [Outputs](#outputs)
+- [Contributing](#contributing)
+- [License](#license)
+- [Further Documentation](#further-documentation)
 
-```powershell
-# Windows PowerShell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
+## Quick Start
 
-```bash
-# macOS/Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+Prerequisites
+- Python 3.10+ (recommended)
+- Local embedding/LLM runtime (e.g. Ollama) if running synthesis phases
 
-### Step 2: Install Ollama (for Embeddings)
-
-Download from: https://ollama.com/download
-
-```bash
-# Pull embedding model
-ollama pull all-minilm:latest
-```
-
-### Step 3: Clone & Setup
+Clone and prepare
 
 ```powershell
 git clone <repo-url> aicodegencrew
 cd aicodegencrew
-```
-
-### Step 4: Configure
-
-```powershell
 copy .env.example .env
 ```
 
-Edit `.env`:
+Configure `.env` (example values)
 
 ```env
-# Your repository to analyze
+# Path to repository you want to analyze
 PROJECT_PATH=C:\path\to\your\repo
 
-# LLM Provider: "local" (Ollama) or "onprem" (Capgemini)
-LLM_PROVIDER=onprem
-
-# On-Prem Capgemini
-MODEL=gpt-oss-120b
-API_BASE=http://sov-ai-platform.nue.local.vm:4000/v1
-OPENAI_API_KEY=your-api-key-here
-
-# First run: auto, subsequent: off
+# Choose LLM provider: "local" (Ollama) or "onprem" (enterprise endpoint)
+LLM_PROVIDER=local
+MODEL=all-minilm:latest
 INDEX_MODE=auto
 ```
 
-### Step 5: Run
+Install and prepare embedding/model runtimes as required by your environment (e.g. install Ollama and pull an embedding model).
+
+Run the full architecture workflow
 
 ```powershell
-crewai run
+python -m aicodegencrew run --preset architecture_workflow
 ```
 
-That's it! The crew will:
-1. Index your codebase (first run only)
-2. Extract architecture facts (components, relations, integrations)
-3. Generate C4 diagrams + arc42 documentation
+Run only indexing and facts extraction (no LLM required)
 
-Output: `./knowledge/architecture/`
-
----
-
-## Documentation
-
-- [Architecture Details](docs/AI_SDLC_ARCHITECTURE.md)
-- [Diagrams](docs/diagrams/)
-
----
-
-## Table of Contents
-
-1. [Quick Install](#quick-install-from-scratch)
-2. [Running Phases](#2-running-phases)
-3. [Configuration](#3-configuration)
-4. [Project Structure](#4-project-structure)
-5. [CLI Reference](#5-cli-reference)
-6. [Knowledge Management](#6-knowledge-management)
-7. [Troubleshooting](#7-troubleshooting)
-8. [Development](#8-development)
-9. [License](#9-license)
-
----
-
-## 2. Running Phases
-
-The SDLC pipeline consists of 8 phases (0-7). Use the unified CLI to run phases.
-
-### 2.1 Available Phases
-
-| Phase | Name | Type | Description |
-|-------|------|------|-------------|
-| 0 | Indexing | Pipeline | Index codebase into ChromaDB (embeddings only, no LLM) |
-| 1 | Facts | Pipeline | Extract architecture facts (deterministic, no LLM) |
-| 2 | Synthesis | Crew | AI generates C4 + arc42 documentation from facts |
-| 3 | Review | Crew | Consistency check and quality review (planned) |
-| 4 | Development | Crew | Backlog generation and planning (planned) |
-| 5 | Codegen | Crew | Code generation from specs (planned) |
-| 6 | Testing | Crew | Test generation (planned) |
-| 7 | Deployment | Pipeline | CI/CD and deployment configs (planned) |
-
-### 2.2 Presets (Recommended)
-
-```bash
-# List all phases and presets
-python -m aicodegencrew list
-
-# Index repository only (Phase 0)
-python -m aicodegencrew run --preset indexing_only
-
-# Index + extract facts (Phase 0+1, no LLM required)
+```powershell
 python -m aicodegencrew run --preset facts_only
-
-# Full architecture documentation (Phase 0+1+2)
-python -m aicodegencrew run --preset architecture_workflow
-
-# Skip re-indexing if already indexed
-python -m aicodegencrew run --preset architecture_workflow --index-mode off
-
-# Force clean re-index
-python -m aicodegencrew run --preset architecture_workflow --index-mode force --clean
 ```
 
-### 2.3 Running Individual Phases
+## Concepts & Phases
 
-```bash
-# Run specific phases by name
-python -m aicodegencrew run --phases phase0_indexing
-python -m aicodegencrew run --phases phase1_architecture_facts
-python -m aicodegencrew run --phases phase2_architecture_synthesis
+The pipeline is organized into phased steps. Phases 0–2 are implemented and stable; later phases are planned.
 
-# Run multiple phases
-python -m aicodegencrew run --phases phase0_indexing phase1_architecture_facts
+- Phase 0 — Indexing (pipeline): create vector index (Chroma) for repository content.
+- Phase 1 — Architecture Facts (pipeline): deterministic collectors extract components, containers, interfaces, relations and build `architecture_facts.json` + `evidence_map.json` (NO LLM).
+- Phase 2 — Architecture Synthesis (crew): AI agents synthesize C4 diagrams and arc42 documentation from facts and analysis (uses local LLMs).
+- Phases 3–7 — Review, Development, Codegen, Testing, Deployment: designed, planned for future work.
 
-# Clean output before running (deletes previous results)
-python -m aicodegencrew run --phases phase2_architecture_synthesis --clean
-```
+Important rule: Phase 2 may only synthesize items that are present (or marked UNKNOWN) in Phase 1 outputs. The system enforces evidence traceability; generated documentation must reference evidence IDs internally.
 
-### 2.4 Phase Dependencies
+## Configuration
 
-Phases have dependencies that must be satisfied:
+Key environment variables (set in `.env`)
 
-- Phase 1 requires Phase 0 (needs index)
-- Phase 2 requires Phase 1 (needs `architecture_facts.json`)
-- Phase 3+ require Phase 2 (needs synthesized docs)
+- `PROJECT_PATH`: repository to analyze
+- `LLM_PROVIDER`: `local` or `onprem`
+- `MODEL`: LLM/embedding model identifier
+- `INDEX_MODE`: `off`, `auto`, `force`, `smart`
 
-If a dependency is not met, you'll see:
-```
-[WARN] Dependency not met: phase2_architecture_synthesis requires phase1_architecture_facts
-```
+Indexing limits and chunking settings are configurable in `shared` utilities and `phases_config.yaml`.
 
-Use a preset like `architecture_workflow` to run all required phases automatically.
+## CLI & Usage
 
-### 2.5 Output Locations
+Top‑level commands
 
-| Phase | Output |
-|-------|--------|
-| 0 | `.cache/.chroma/` (ChromaDB vector store) |
-| 1 | `knowledge/architecture/architecture_facts.json`, `evidence_map.json` |
-| 2 | `knowledge/architecture/c4/*.md`, `*.drawio`, `arc42/*.md` |
-| 3+ | `knowledge/` subdirectories (planned) |
-
-### 2.6 Example Workflow
-
-```bash
-# First time setup: full workflow
-python -m aicodegencrew run --preset architecture_workflow
-
-# After code changes: re-run facts + synthesis
-python -m aicodegencrew run --preset architecture_workflow --index-mode smart
-
-# Just regenerate docs (facts already exist)
-python -m aicodegencrew run --phases phase2_architecture_synthesis --clean
-
-# Standalone indexing
-python -m aicodegencrew index --force
-
-# Convert Draw.io files after Phase 2
-python -m aicodegencrew.shared.utils.drawio_converter knowledge/architecture
-```
-
----
-
-## 3. Configuration
-
-### 2.1 INDEX_MODE
-
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| `off` | Skip indexing, use existing index | CI/CD, quick iterations |
-| `auto` | Index only if needed | Normal development |
-| `force` | Clear cache, complete re-index | After model changes |
-| `smart` | Update changed files only | Large codebases |
-
-### 2.2 Embedding Configuration
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `EMBED_MODEL` | Embedding model | `all-minilm:latest` |
-| `EMBED_BATCH_SIZE` | Batch processing size | `50` |
-| `EMBED_MAX_BATCH_SIZE` | Maximum batch size | `100` |
-| `EMBED_PAUSE_S` | Pause between batches | `1.0` |
-
-### 2.3 LLM Configuration
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MODEL` | LLM model identifier | `gpt-oss-120b` |
-| `API_BASE` | API endpoint | `http://sov-ai-platform.nue.local.vm:4000/v1` |
-| `MAX_LLM_OUTPUT_TOKENS` | Output token limit | `800` |
-
-### 2.4 Model Context Windows
-
-Different models have different context limits. The new architecture avoids token limits entirely.
-
-**New Architecture (v2.0):**
-
-| Phase | Method | Token Usage | Duration |
-|-------|--------|-------------|----------|
-| A: RAG Analysis | Direct Python | None (no LLM) | 5-30 min |
-| B: Documentation | LLM Agent | ~8K tokens | 2-5 min |
-| C: Quality Gate | LLM Agent | ~5K tokens | 1-2 min |
-
-**Phase A: Comprehensive RAG Analysis**
-- Runs 55+ semantic queries against ChromaDB
-- Collects 200-500 evidence items
-- No token limits - runs in pure Python
-- Creates `analyze.json` with full analysis
-
-**Phase B+C: Agent Documentation**
-- Agents receive pre-computed `analyze.json`
-- Only need to format and validate
-- Minimal token usage
-
-**RAG Query Categories (55 queries total):**
-
-| Category | Queries | Purpose |
-|----------|---------|---------|
-| Backend (Java/Spring) | 10 | Controllers, Services, Repositories |
-| Backend (Node/Python/.NET) | 8 | Express, FastAPI, Django, .NET |
-| Frontend | 7 | Angular, React, Vue, Next.js |
-| Database | 4 | Entities, Migrations, ORM |
-| Messaging | 4 | Kafka, RabbitMQ, Events |
-| Infrastructure | 6 | Docker, K8s, CI/CD |
-| Configuration | 4 | Properties, Dependencies |
-| Security | 3 | Auth, JWT, CORS |
-| Cross-Cutting | 5 | Logging, Tests, Docs |
-
-**Legacy Mode (for debugging):**
-
-Use `run_legacy()` to let the LLM agent do RAG queries directly.
-Note: May hit token limits with large repos.
-
-```python
-# In crew.py
-crew = ArchitectureCrew()
-result = crew.run_legacy(inputs)  # Agent-controlled RAG
-```
-
-### 2.5 Indexing Limits
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `INDEX_MAX_TOTAL_FILES` | Maximum files to index | `10000` |
-| `INDEX_MAX_TOTAL_CHUNKS` | Maximum chunks to store | `100000` |
-| `CHUNK_CHARS` | Chunk size (characters) | `1200` |
-| `CHUNK_OVERLAP` | Chunk overlap (characters) | `150` |
-
----
-
-## 4. Project Structure
-
-```
-aicodegencrew/
-    .env
-    pyproject.toml
-    
-    config/
-        phases_config.yaml
-    
-    docs/diagrams/
-        phase-flow.drawio
-        evidence-flow.drawio
-        knowledge-structure.drawio
-        collectors.drawio
-        synthesis-crew.drawio
-    
-    logs/
-        current.log            # Active session
-        errors.log             # Persistent errors (rotating)
-        archive/               # Archived sessions
-    
-    src/aicodegencrew/
-        __init__.py
-        __main__.py            # Entry point: python -m aicodegencrew
-        cli.py                 # Unified CLI (run, index, list)
-        orchestrator.py
-        
-        crews/
-            architecture/              # Legacy (deprecated)
-            architecture_synthesis/    # Phase 2: Architecture Synthesis
-            development/               # Phase 4: Planned
-        
-        pipelines/
-            indexing.py                # Phase 0: Indexing
-            architecture_facts/        # Phase 1: Architecture Facts
-            tools/
-        
-        shared/
-            utils/
-            models/
-            tools/
-    
-    knowledge/
-        architecture/
-            architecture_facts.json    # Phase 1 output
-            evidence_map.json          # Phase 1 output
-            c4/                        # Phase 2 output
-            arc42/                     # Phase 2 output
-        development/
-    
-    .cache/.chroma/
-```
-
----
-
-## 5. CLI Reference
-
-Unified CLI with subcommands:
-
-```bash
+```powershell
 python -m aicodegencrew <command> [options]
 ```
 
-### 5.1 run - Execute Pipeline
+Common commands
+- `run` — execute phases or presets (`--preset architecture_workflow`, `--phases`)
+- `index` — run indexing only (`--mode force|smart`)
+- `list` — show phases and presets
 
-```bash
-python -m aicodegencrew run [OPTIONS]
+Examples
+
+```powershell
+# Full architecture workflow (index + facts + synthesis)
+python -m aicodegencrew run --preset architecture_workflow
+
+# Index only
+python -m aicodegencrew run --preset indexing_only
+
+# Run specific phases
+python -m aicodegencrew run --phases phase0_indexing phase1_architecture_facts
 ```
 
-| Option | Description |
-|--------|-------------|
-| `--preset NAME` | Run preset (indexing_only, facts_only, architecture_workflow) |
-| `--phases PHASE...` | Run specific phases |
-| `--repo-path PATH` | Override PROJECT_PATH |
-| `--index-mode MODE` | Override INDEX_MODE (off, auto, force, smart) |
-| `--clean` | Clean knowledge directories before running |
-| `--no-clean` | Skip auto-cleaning |
-| `--config PATH` | Custom phases_config.yaml |
+## Outputs
 
-### 5.2 index - Repository Indexing
+Primary outputs are written to `knowledge/architecture/`:
 
-```bash
-python -m aicodegencrew index [OPTIONS]
-```
+- `architecture_facts.json` — canonical facts (phase 1)
+- `evidence_map.json` — mapping from evidence IDs to file paths and line ranges
+- `c4/` — generated C4 markdown + Draw.io files
+- `arc42/` — generated arc42 chapter markdown files
 
-| Option | Description |
-|--------|-------------|
-| `--mode, -m MODE` | Indexing mode (off, auto, force, smart) |
-| `-f, --force` | Force re-index (clears cache) |
-| `-s, --smart` | Smart incremental update |
-| `--repo PATH` | Override PROJECT_PATH |
+Use these artifacts to review, validate, and iterate on architecture decisions. Evidence IDs are internal and ensure traceability from docs back to source code.
 
-### 5.3 list - Show Phases
+## Contributing
 
-```bash
-python -m aicodegencrew list
-```
+We welcome contributions. Suggested workflow:
 
-Shows all available phases and presets.
+1. Fork the repository and create a feature branch.
+2. Run unit tests and linters.
+3. Open a pull request describing the change and rationale.
 
-### 5.4 Presets
+See `tests/` for the current test suite and `config/phases_config.yaml` for configurable phase behavior.
 
-| Preset | Phases | Description |
-|--------|--------|-------------|
-| `indexing_only` | 0 | Repository indexing only |
-| `facts_only` | 0, 1 | Indexing + Architecture Facts (no LLM) |
-| `architecture_workflow` | 0, 1, 2 | Full architecture documentation |
-| `planning_workflow` | 0, 1, 2 | Alias for architecture_workflow |
+## License
+
+This project is provided under the terms in the `LICENSE` file.
+
+## Further Documentation
+
+See the detailed SDLC architecture and design notes:
+
+- [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md)
+- Architecture analysis and diagrams: `docs/diagrams/`
+
+If you want, I can stage and commit this change and provide the exact git commands to push it.
 
 ---
 
-## 6. Knowledge Management
+## Implementation notes for maintainers
 
-### 5.1 Directory Structure
+- Phase 1 collectors are deterministic and must not use LLMs; Phase 2 performs synthesis with LLMs using the analyze→synthesize pattern.
+- Keep evidence-first rules in mind when modifying synthesis code paths.
 
-```
-knowledge/
+
     README.md
     user_preference.txt
     architecture/
