@@ -2060,32 +2060,40 @@
     "to_stereotype": "module"
   },
   {
-    "from": "ActionBaseService",
-    "to": "ActionApiConfiguration",
+    "from": "PdfExportService",
+    "to": "OfficialActivityMetadataService",
     "type": "uses",
     "confidence": 1.0,
     "from_stereotype": "service",
     "to_stereotype": "service"
   },
   {
-    "from": "JobBaseService",
-    "to": "JobApiConfiguration",
+    "from": "PdfExportService",
+    "to": "DeedEntryRestService",
     "type": "uses",
     "confidence": 1.0,
     "from_stereotype": "service",
     "to_stereotype": "service"
   },
   {
-    "from": "DocumentMetadataBaseService",
-    "to": "DocumentMetadataApiConfiguration",
+    "from": "WorkflowChangeAoidJobService",
+    "to": "DomainJobService",
     "type": "uses",
     "confidence": 1.0,
     "from_stereotype": "service",
     "to_stereotype": "service"
   },
   {
-    "from": "GlobalArchivingHelperService",
-    "to": "DocumentArchivingRestService",
+    "from": "WorkflowChangeAoidJobService",
+    "to": "WorkflowChangeAoidTaskService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "DeedRegistryDomainService",
+    "to": "DeedRegistryService",
     "type": "uses",
     "confidence": 1.0,
     "from_stereotype": "service",
@@ -2108,6 +2116,294 @@
     "to_stereotype": "service"
   },
   {
+    "from": "DocumentMetadataBaseService",
+    "to": "DocumentMetadataApiConfiguration",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowDeletionService",
+    "to": "WorkflowDeletionJobService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "GlobalErrorHandlerService",
+    "to": "InjectorService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowArchiveJobService",
+    "to": "DomainJobService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowArchiveJobService",
+    "to": "WorkflowArchiveTaskService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowBaseService",
+    "to": "WorkflowApiConfiguration",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReportMetadataService",
+    "to": "PdfExportService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReportMetadataService",
+    "to": "ReportMetadataRestService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "BusinessLoggingResolverService",
+    "to": "DeedEntryLogService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "BusinessLoggingResolverService",
+    "to": "DeedEntryRestService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "BusinessLoggingResolverService",
+    "to": "OfficialActivityMetadataService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "UvzNumberFormatConfigurationService",
+    "to": "NumberManagementRestService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ActionDomainService",
+    "to": "ActionService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ActionDomainService",
+    "to": "BusyIndicatorService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "AnnualReportActionResolver",
+    "to": "ActionDomainService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowFinalizeReencryptionTaskService",
+    "to": "InjectorService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "SettingsInitializer",
+    "to": "InjectorService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowStatusControlService",
+    "to": "DomainTaskService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowStatusControlService",
+    "to": "HandoverDataSetService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "TaskBaseService",
+    "to": "TaskApiConfiguration",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionConfirmService",
+    "to": "WorkflowReencryptionService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionConfirmService",
+    "to": "ModalService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowDeletionJobService",
+    "to": "DomainJobService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowDeletionJobService",
+    "to": "WorkflowDeletionTaskService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "MockArchivingRetrievalHelperService",
+    "to": "DocumentArchivingRestService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "MockArchivingRetrievalHelperService",
+    "to": "DocumentHelperService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "MockArchivingRetrievalHelperService",
+    "to": "GlobalArchivingHelperService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowChangeAoidService",
+    "to": "WorkflowChangeAoidJobService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionBaseService",
+    "to": "ReencryptionApiConfiguration",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionFinalizationDoneService",
+    "to": "ModalService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "BusyIndicatorInterceptor",
+    "to": "BusyIndicatorService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "BusyIndicatorInterceptor",
+    "to": "ButtonDeactivationService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ApplicationInitializerService",
+    "to": "DocumentArchivingRestService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReEncryptionHelperService",
+    "to": "DocumentMetaDataService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReEncryptionHelperService",
+    "to": "DeedEntryRestService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ActionBaseService",
+    "to": "ActionApiConfiguration",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
     "from": "JobFinalizeReencryptionService",
     "to": "WorkflowFinalizeReencryptionTaskService",
     "type": "uses",
@@ -2124,7 +2420,31 @@
     "to_stereotype": "service"
   },
   {
-    "from": "WorkflowChangeAoidJobService",
+    "from": "WorkflowReencryptionTaskService",
+    "to": "InjectorService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "HttpErrorInterceptor",
+    "to": "FieldValidationService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "JobReencryptionService",
+    "to": "WorkflowReencryptionTaskService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "JobReencryptionService",
     "to": "DomainJobService",
     "type": "uses",
     "confidence": 1.0,
@@ -2132,8 +2452,80 @@
     "to_stereotype": "service"
   },
   {
-    "from": "WorkflowChangeAoidJobService",
-    "to": "WorkflowChangeAoidTaskService",
+    "from": "ReencryptionHasErrorsRetryService",
+    "to": "WorkflowReencryptionService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionHasErrorsRetryService",
+    "to": "ModalService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowValidateSignatureJobService",
+    "to": "DomainJobService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowValidateSignatureJobService",
+    "to": "WorkflowValidateSignatureTaskService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "JobBaseService",
+    "to": "JobApiConfiguration",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionFinalizationConfirmService",
+    "to": "WorkflowReencryptionService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionFinalizationConfirmService",
+    "to": "ModalService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "ReencryptionFinalizationConfirmService",
+    "to": "InjectorService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "GlobalArchivingHelperService",
+    "to": "DocumentArchivingRestService",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowValidateSignatureTaskService",
+    "to": "InjectorService",
     "type": "uses",
     "confidence": 1.0,
     "from_stereotype": "service",
@@ -2188,87 +2580,7 @@
     "to_stereotype": "service"
   },
   {
-    "from": "BusinessLoggingResolverService",
-    "to": "DeedEntryLogService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusinessLoggingResolverService",
-    "to": "DeedEntryRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusinessLoggingResolverService",
-    "to": "OfficialActivityMetadataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "GlobalErrorHandlerService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusyIndicatorInterceptor",
-    "to": "BusyIndicatorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusyIndicatorInterceptor",
-    "to": "ButtonDeactivationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowArchiveJobService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowArchiveJobService",
-    "to": "WorkflowArchiveTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReportMetadataService",
-    "to": "PdfExportService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReportMetadataService",
-    "to": "ReportMetadataRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionHasErrorsRetryService",
+    "from": "ReencryptionFinalizationHasErrorsRetryService",
     "to": "WorkflowReencryptionService",
     "type": "uses",
     "confidence": 1.0,
@@ -2276,7 +2588,7 @@
     "to_stereotype": "service"
   },
   {
-    "from": "ReencryptionHasErrorsRetryService",
+    "from": "ReencryptionFinalizationHasErrorsRetryService",
     "to": "ModalService",
     "type": "uses",
     "confidence": 1.0,
@@ -2284,7 +2596,15 @@
     "to_stereotype": "service"
   },
   {
-    "from": "WorkflowValidateSignatureTaskService",
+    "from": "DeedRegistryBaseService",
+    "to": "DeedRegistryApiConfiguration",
+    "type": "uses",
+    "confidence": 1.0,
+    "from_stereotype": "service",
+    "to_stereotype": "service"
+  },
+  {
+    "from": "WorkflowChangeAoidTaskService",
     "to": "InjectorService",
     "type": "uses",
     "confidence": 1.0,
@@ -2292,31 +2612,7 @@
     "to_stereotype": "service"
   },
   {
-    "from": "SettingsInitializer",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationConfirmService",
-    "to": "WorkflowReencryptionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationConfirmService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationConfirmService",
+    "from": "WorkflowArchiveTaskService",
     "to": "InjectorService",
     "type": "uses",
     "confidence": 1.0,
@@ -2332,270 +2628,6 @@
     "to_stereotype": "service"
   },
   {
-    "from": "ReencryptionFinalizationDoneService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowStatusControlService",
-    "to": "DomainTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowStatusControlService",
-    "to": "HandoverDataSetService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "UvzNumberFormatConfigurationService",
-    "to": "NumberManagementRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "DeedRegistryDomainService",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowReencryptionTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ActionDomainService",
-    "to": "ActionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ActionDomainService",
-    "to": "BusyIndicatorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowChangeAoidTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "HttpErrorInterceptor",
-    "to": "FieldValidationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReEncryptionHelperService",
-    "to": "DocumentMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReEncryptionHelperService",
-    "to": "DeedEntryRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionConfirmService",
-    "to": "WorkflowReencryptionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionConfirmService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowValidateSignatureJobService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowValidateSignatureJobService",
-    "to": "WorkflowValidateSignatureTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationHasErrorsRetryService",
-    "to": "WorkflowReencryptionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationHasErrorsRetryService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowChangeAoidService",
-    "to": "WorkflowChangeAoidJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowArchiveTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowBaseService",
-    "to": "WorkflowApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowDeletionService",
-    "to": "WorkflowDeletionJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "HtmlDocumentAdapterService",
-    "to": "HtmlSignatureAdapterService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "JobReencryptionService",
-    "to": "WorkflowReencryptionTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "JobReencryptionService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowFinalizeReencryptionTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "TaskBaseService",
-    "to": "TaskApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "PdfExportService",
-    "to": "OfficialActivityMetadataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "PdfExportService",
-    "to": "DeedEntryRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "AnnualReportActionResolver",
-    "to": "ActionDomainService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowDeletionJobService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowDeletionJobService",
-    "to": "WorkflowDeletionTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionBaseService",
-    "to": "ReencryptionApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
     "from": "WorkflowArchiveService",
     "to": "WorkflowArchiveJobService",
     "type": "uses",
@@ -2604,40 +2636,8 @@
     "to_stereotype": "service"
   },
   {
-    "from": "DeedRegistryBaseService",
-    "to": "DeedRegistryApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "MockArchivingRetrievalHelperService",
-    "to": "DocumentArchivingRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "MockArchivingRetrievalHelperService",
-    "to": "DocumentHelperService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "MockArchivingRetrievalHelperService",
-    "to": "GlobalArchivingHelperService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ApplicationInitializerService",
-    "to": "DocumentArchivingRestService",
+    "from": "HtmlDocumentAdapterService",
+    "to": "HtmlSignatureAdapterService",
     "type": "uses",
     "confidence": 1.0,
     "from_stereotype": "service",
