@@ -1,0 +1,9 @@
+﻿{
+    "primary_pattern":  "Component-Based SPA",
+    "framework":  "Angular",
+    "module_structure":  "NgModule",
+    "state_management":  "services",
+    "routing_strategy":  "lazy-loading",
+    "component_count":  163,
+    "reasoning":  "The frontend container uses Angular (v18â€‘lts) with an NgModule entry point. The codebase contains 163 components, all following Angular conventions (e.g., Component suffix, module structure). Routing is configured for lazyâ€‘loading, and state is managed via Angular services rather than a separate store. These characteristics match a classic componentâ€‘based singleâ€‘page application rather than microâ€‘frontends or serverâ€‘rendered approaches."
+}

@@ -1,0 +1,127 @@
+﻿{
+    "capabilities":  [
+                         {
+                             "capability":  "Deed Management",
+                             "description":  "Handles creation, typing, archiving, reencryption and signing of deed entries.",
+                             "services_count":  5,
+                             "key_services":  [
+                                                  "DeedEntryRestService",
+                                                  "DeedTypeRestService",
+                                                  "DocumentArchivingRestService",
+                                                  "FinishReencryptionRestService",
+                                                  "SignOperationTokenRestService"
+                                              ],
+                             "maturity":  "intermediate",
+                             "api_surface":  "REST"
+                         },
+                         {
+                             "capability":  "Number Management",
+                             "description":  "Manages UVZ number generation, formatting and gap handling.",
+                             "services_count":  1,
+                             "key_services":  [
+                                                  "NumberManagementRestService"
+                                              ],
+                             "maturity":  "basic",
+                             "api_surface":  "REST"
+                         },
+                         {
+                             "capability":  "Workflow Management",
+                             "description":  "Coordinates jobs, tasks and overall workflow orchestration.",
+                             "services_count":  3,
+                             "key_services":  [
+                                                  "JobApiConfiguration",
+                                                  "TaskApiConfiguration",
+                                                  "WorkflowApiConfiguration"
+                                              ],
+                             "maturity":  "intermediate",
+                             "api_surface":  "REST"
+                         },
+                         {
+                             "capability":  "Reporting",
+                             "description":  "Provides metadata for report generation and handling.",
+                             "services_count":  1,
+                             "key_services":  [
+                                                  "ReportMetadataRestService"
+                                              ],
+                             "maturity":  "basic",
+                             "api_surface":  "REST"
+                         },
+                         {
+                             "capability":  "Action Handling",
+                             "description":  "Exposes configuration for actionâ€‘related API endpoints.",
+                             "services_count":  1,
+                             "key_services":  [
+                                                  "ActionApiConfiguration"
+                                              ],
+                             "maturity":  "basic",
+                             "api_surface":  "REST"
+                         },
+                         {
+                             "capability":  "Business Purpose Management",
+                             "description":  "Manages businessâ€‘purpose related data via REST interface.",
+                             "services_count":  1,
+                             "key_services":  [
+                                                  "BusinessPurposeRestService"
+                                              ],
+                             "maturity":  "basic",
+                             "api_surface":  "REST"
+                         },
+                         {
+                             "capability":  "XNP Integration",
+                             "description":  "Integrates with the external XNP platform for authentication, document handling, notifications and other services.",
+                             "services_count":  24,
+                             "key_services":  [
+                                                  "MockXnpEndpointProvider",
+                                                  "XnpArchiveManagerEndpoint",
+                                                  "XnpAuthenticationAdapter",
+                                                  "XnpAuthenticationNgAdapter",
+                                                  "XnpAuthorizationNgAdapter",
+                                                  "XnpDocumentsEndpoint",
+                                                  "XnpEndpointProvider",
+                                                  "XnpFileApiAdapter",
+                                                  "XnpFlyInNotificationNgAdapter",
+                                                  "XnpFsEndpoint",
+                                                  "XnpJsonImportAdapter",
+                                                  "XnpLogNgAdapter",
+                                                  "XnpNotaryEndpoint",
+                                                  "XnpNotificationsEndpoint",
+                                                  "XnpPageContainerAdapter",
+                                                  "XnpPageContainerNgAdapter",
+                                                  "XnpPdfAdapter",
+                                                  "XnpPdfMakeEndpoint",
+                                                  "XnpPdfsEndpoint",
+                                                  "XnpPlatformEndpoint",
+                                                  "XnpSettingsEndpoint",
+                                                  "XnpSignatureEndpoint",
+                                                  "XnpStorageSettingsAdapter",
+                                                  "XnpVvzEndpoint"
+                                              ],
+                             "maturity":  "advanced",
+                             "api_surface":  "Internal"
+                         },
+                         {
+                             "capability":  "Infrastructure Support",
+                             "description":  "Provides generic infrastructure utilities such as health checks, adapters, storage, authentication and UI helpers.",
+                             "services_count":  13,
+                             "key_services":  [
+                                                  "HealthCheck",
+                                                  "ChromePageContainerAdapterImpl",
+                                                  "JsonAuthenticationAdapter",
+                                                  "JsonAuthorizationAdapter",
+                                                  "LocalStorageSettingsAdapter",
+                                                  "NativeJsonImportAdapter",
+                                                  "NativePdfAdapter",
+                                                  "NativeSessionAdapter",
+                                                  "ReencryptionApiConfiguration",
+                                                  "CustomDatepickerParserFormatter",
+                                                  "HandleSearchParamHelper",
+                                                  "FlyinNotificationAdapter",
+                                                  "LspSecureFrameworkEndpoint"
+                                              ],
+                             "maturity":  "advanced",
+                             "api_surface":  "Internal"
+                         }
+                     ],
+    "capability_coverage":  "partial",
+    "reasoning":  "The first 50 service components were examined and grouped by their naming prefixes. Core business functionality is represented by Deed Management, Number Management, Workflow Management, Reporting, Action Handling and Business Purpose Management. A large family of Xnp* services constitutes a dedicated integration capability with the external XNP platform, while many remaining components serve infrastructure/support roles. The distribution shows a moderate breadth of capabilities but does not cover the entire set of 233 services (only 50 were retrieved), therefore the coverage is considered partial. Maturity levels are inferred from naming conventions and typical complexity: core domain services are at an intermediate level, simple REST endpoints are basic, and the extensive XNP integration and infrastructure utilities exhibit advanced maturity."
+}

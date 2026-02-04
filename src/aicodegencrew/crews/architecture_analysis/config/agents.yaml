@@ -14,6 +14,7 @@ tech_architect:
   allow_delegation: false
   verbose: true
   max_iter: 20
+  respect_context_window: true
 
 func_analyst:
   role: Functional Analyst
@@ -25,6 +26,7 @@ func_analyst:
   allow_delegation: false
   verbose: true
   max_iter: 20
+  respect_context_window: true
 
 quality_analyst:
   role: Quality Analyst
@@ -36,6 +38,7 @@ quality_analyst:
   allow_delegation: false
   verbose: true
   max_iter: 20
+  respect_context_window: true
 
 synthesis_lead:
   role: Synthesis Lead
@@ -47,3 +50,4 @@ synthesis_lead:
   allow_delegation: false
   verbose: true
   max_iter: 20
+  respect_context_window: true

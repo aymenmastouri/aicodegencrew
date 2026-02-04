@@ -28,6 +28,7 @@ from ..tools import (
     StereotypeListTool,
     FileReadTool,  # Safe version with size limits
 )
+from ...architecture_analysis.tools import RAGQueryTool
 
 
 @CrewBase
@@ -49,11 +50,13 @@ class Arc42Crew:
     def __init__(
         self, 
         facts_path: str = "knowledge/architecture/architecture_facts.json",
-        analyzed_path: str = None
+        analyzed_path: str = None,
+        chroma_dir: str = None
     ):
-        """Initialize crew with architecture facts and analysis."""
+        """Initialize crew with architecture facts, analysis, and ChromaDB."""
         self.facts_path = Path(facts_path)
         self.analyzed_path = Path(analyzed_path) if analyzed_path else self.facts_path.parent / "analyzed_architecture.json"
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", ".cache/.chroma")
         self.facts = self._load_facts()
         self.analysis = self._load_analysis()
         self.evidence_map = self._load_evidence_map()
@@ -189,24 +192,35 @@ IMPORTANT:
         model = os.getenv("MODEL", "gpt-oss-120b")
         api_base = os.getenv("API_BASE", "http://sov-ai-platform.nue.local.vm:4000/v1")
 
-        raw_max_tokens = os.getenv("MAX_LLM_OUTPUT_TOKENS", "800")
+        raw_max_tokens = os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000")
         try:
             max_tokens = int(raw_max_tokens)
         except Exception:
-            max_tokens = 800
+            max_tokens = 4000
 
         num_retries = int(os.getenv("LLM_NUM_RETRIES", "10"))
 
         # Some providers reject max_tokens<=0. Also guards against internal
         # calculations producing negative values when prompts are large.
         if max_tokens < 1:
-            max_tokens = 800
+            max_tokens = 4000
+        
+        # Context window for the model - prevents sending too large prompts
+        # IMPORTANT: Reserve space for output tokens to prevent vllm/litellm from
+        # calculating negative max_tokens when input approaches context limit.
+        # The effective context for input = context_window - max_tokens (output reserve)
+        raw_context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
+        # Reserve output space: effective context window = total - output reserve
+        # This ensures litellm never calculates negative available tokens
+        output_reserve = max(max_tokens, 8000)  # Reserve at least 8k for output
+        context_window = raw_context_window - output_reserve
         
         return LLM(
             model=model,
             base_url=api_base,
             temperature=0.1,
             max_tokens=max_tokens,
+            context_window=context_window,  # Limit prompt size (output space reserved)
             timeout=300,  # 5 min timeout for large contexts
             num_retries=num_retries,
         )
@@ -241,6 +255,11 @@ IMPORTANT:
         """Tool for listing components by stereotype (Strategy 2)."""
         return StereotypeListTool(facts_path=str(self.facts_path))
     
+    @tool
+    def rag_query_tool(self) -> RAGQueryTool:
+        """ChromaDB semantic search for code context."""
+        return RAGQueryTool(chroma_dir=self.chroma_dir)
+    
     @agent
     def arc42_architect(self) -> Agent:
         """Arc42 Architect agent from YAML config."""
@@ -253,6 +272,7 @@ IMPORTANT:
                 self.facts_query_tool(),
                 self.chunked_writer_tool(),
                 self.stereotype_list_tool(),
+                self.rag_query_tool(),
             ],
             verbose=True,
             max_iter=30,          # Allow more iterations before forcing final answer
@@ -260,102 +280,211 @@ IMPORTANT:
         )
     
     # -------------------------------------------------------------------------
-    # ARC42 TASKS - All 12 Chapters
+    # ARC42 TASKS - All Subtasks matching tasks.yaml
     # -------------------------------------------------------------------------
     
+    # ANALYZE SYSTEM SUBTASKS
     @task
-    def analyze_system(self) -> Task:
-        """System analysis task (think before writing)."""
-        return Task(config=self.tasks_config['analyze_system'])  # type: ignore[index]
+    def analyze_system_datasources(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_datasources'])
     
     @task
-    def arc42_introduction(self) -> Task:
-        """arc42 Chapter 1: Introduction and Goals."""
-        return Task(config=self.tasks_config['arc42_introduction'])  # type: ignore[index]
+    def analyze_system_identity(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_identity'])
     
     @task
-    def arc42_constraints(self) -> Task:
-        """arc42 Chapter 2: Architecture Constraints."""
-        return Task(config=self.tasks_config['arc42_constraints'])  # type: ignore[index]
+    def analyze_system_architecture(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_architecture'])
     
     @task
-    def arc42_context(self) -> Task:
-        """arc42 Chapter 3: System Scope and Context."""
-        return Task(config=self.tasks_config['arc42_context'])  # type: ignore[index]
+    def analyze_system_technology(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_technology'])
     
     @task
-    def arc42_solution_strategy(self) -> Task:
-        """arc42 Chapter 4: Solution Strategy."""
-        return Task(config=self.tasks_config['arc42_solution_strategy'])  # type: ignore[index]
-    
-    # -------------------------------------------------------------------------
-    # BUILDING BLOCKS - Split into Sub-Tasks (Strategy 2)
-    # -------------------------------------------------------------------------
+    def analyze_system_components(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_components'])
     
     @task
-    def bb_intro(self) -> Task:
-        """Building Blocks Chapter 5 - Intro and Level 1."""
-        return Task(config=self.tasks_config['bb_intro'])  # type: ignore[index]
+    def analyze_system_dependencies(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_dependencies'])
+    
+    @task
+    def analyze_system_integration(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_integration'])
+    
+    @task
+    def analyze_system_quality(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_quality'])
+    
+    @task
+    def analyze_system_risks(self) -> Task:
+        return Task(config=self.tasks_config['analyze_system_risks'])
+    
+    # CHAPTER 1: INTRODUCTION SUBTASKS
+    @task
+    def intro_requirements(self) -> Task:
+        return Task(config=self.tasks_config['intro_requirements'])
+    
+    @task
+    def intro_quality_goals(self) -> Task:
+        return Task(config=self.tasks_config['intro_quality_goals'])
+    
+    @task
+    def intro_stakeholders(self) -> Task:
+        return Task(config=self.tasks_config['intro_stakeholders'])
+    
+    @task
+    def intro_merge(self) -> Task:
+        return Task(config=self.tasks_config['intro_merge'])
+    
+    # CHAPTER 2: CONSTRAINTS SUBTASKS
+    @task
+    def constraints_technical(self) -> Task:
+        return Task(config=self.tasks_config['constraints_technical'])
+    
+    @task
+    def constraints_organizational(self) -> Task:
+        return Task(config=self.tasks_config['constraints_organizational'])
+    
+    @task
+    def constraints_conventions(self) -> Task:
+        return Task(config=self.tasks_config['constraints_conventions'])
+    
+    @task
+    def constraints_merge(self) -> Task:
+        return Task(config=self.tasks_config['constraints_merge'])
+    
+    # CHAPTER 3: CONTEXT SUBTASKS
+    @task
+    def context_business(self) -> Task:
+        return Task(config=self.tasks_config['context_business'])
+    
+    @task
+    def context_technical(self) -> Task:
+        return Task(config=self.tasks_config['context_technical'])
+    
+    @task
+    def context_dependencies(self) -> Task:
+        return Task(config=self.tasks_config['context_dependencies'])
+    
+    @task
+    def context_merge(self) -> Task:
+        return Task(config=self.tasks_config['context_merge'])
+    
+    # CHAPTER 4: SOLUTION STRATEGY SUBTASKS
+    @task
+    def strategy_technology(self) -> Task:
+        return Task(config=self.tasks_config['strategy_technology'])
+    
+    @task
+    def strategy_patterns(self) -> Task:
+        return Task(config=self.tasks_config['strategy_patterns'])
+    
+    @task
+    def strategy_quality(self) -> Task:
+        return Task(config=self.tasks_config['strategy_quality'])
+    
+    @task
+    def strategy_merge(self) -> Task:
+        return Task(config=self.tasks_config['strategy_merge'])
+    
+    # CHAPTER 5: BUILDING BLOCKS SUBTASKS
+    @task
+    def bb_overview(self) -> Task:
+        return Task(config=self.tasks_config['bb_overview'])
     
     @task
     def bb_controllers(self) -> Task:
-        """Building Blocks - Controllers section."""
-        return Task(config=self.tasks_config['bb_controllers'])  # type: ignore[index]
+        return Task(config=self.tasks_config['bb_controllers'])
     
     @task
     def bb_services(self) -> Task:
-        """Building Blocks - Services section."""
-        return Task(config=self.tasks_config['bb_services'])  # type: ignore[index]
+        return Task(config=self.tasks_config['bb_services'])
     
     @task
     def bb_entities(self) -> Task:
-        """Building Blocks - Entities section."""
-        return Task(config=self.tasks_config['bb_entities'])  # type: ignore[index]
+        return Task(config=self.tasks_config['bb_entities'])
     
     @task
     def bb_repositories(self) -> Task:
-        """Building Blocks - Repositories section."""
-        return Task(config=self.tasks_config['bb_repositories'])  # type: ignore[index]
+        return Task(config=self.tasks_config['bb_repositories'])
+    
+    @task
+    def bb_dependencies(self) -> Task:
+        return Task(config=self.tasks_config['bb_dependencies'])
     
     @task
     def bb_merge(self) -> Task:
-        """Building Blocks - Merge all sections."""
-        return Task(config=self.tasks_config['bb_merge'])  # type: ignore[index]
+        return Task(config=self.tasks_config['bb_merge'])
+    
+    # CHAPTER 6: RUNTIME VIEW SUBTASKS
+    @task
+    def runtime_scenarios(self) -> Task:
+        return Task(config=self.tasks_config['runtime_scenarios'])
     
     @task
-    def arc42_runtime_view(self) -> Task:
-        """arc42 Chapter 6: Runtime View."""
-        return Task(config=self.tasks_config['arc42_runtime_view'])  # type: ignore[index]
+    def runtime_patterns(self) -> Task:
+        return Task(config=self.tasks_config['runtime_patterns'])
     
     @task
-    def arc42_deployment(self) -> Task:
-        """arc42 Chapter 7: Deployment View."""
-        return Task(config=self.tasks_config['arc42_deployment'])  # type: ignore[index]
+    def runtime_merge(self) -> Task:
+        return Task(config=self.tasks_config['runtime_merge'])
+    
+    # CHAPTER 7: DEPLOYMENT VIEW SUBTASKS
+    @task
+    def deployment_infrastructure(self) -> Task:
+        return Task(config=self.tasks_config['deployment_infrastructure'])
     
     @task
-    def arc42_crosscutting(self) -> Task:
-        """arc42 Chapter 8: Cross-cutting Concepts."""
-        return Task(config=self.tasks_config['arc42_crosscutting'])  # type: ignore[index]
+    def deployment_environments(self) -> Task:
+        return Task(config=self.tasks_config['deployment_environments'])
     
+    @task
+    def deployment_merge(self) -> Task:
+        return Task(config=self.tasks_config['deployment_merge'])
+    
+    # CHAPTER 8: CROSSCUTTING SUBTASKS
+    @task
+    def crosscutting_domain(self) -> Task:
+        return Task(config=self.tasks_config['crosscutting_domain'])
+    
+    @task
+    def crosscutting_security(self) -> Task:
+        return Task(config=self.tasks_config['crosscutting_security'])
+    
+    @task
+    def crosscutting_persistence(self) -> Task:
+        return Task(config=self.tasks_config['crosscutting_persistence'])
+    
+    @task
+    def crosscutting_operations(self) -> Task:
+        return Task(config=self.tasks_config['crosscutting_operations'])
+    
+    @task
+    def crosscutting_merge(self) -> Task:
+        return Task(config=self.tasks_config['crosscutting_merge'])
+    
+    # CHAPTERS 9-12: SINGLE TASKS (small enough)
     @task
     def arc42_decisions(self) -> Task:
-        """arc42 Chapter 9: Architecture Decisions (ADRs)."""
-        return Task(config=self.tasks_config['arc42_decisions'])  # type: ignore[index]
+        return Task(config=self.tasks_config['arc42_decisions'])
     
     @task
     def arc42_quality(self) -> Task:
-        """arc42 Chapter 10: Quality Requirements."""
-        return Task(config=self.tasks_config['arc42_quality'])  # type: ignore[index]
+        return Task(config=self.tasks_config['arc42_quality'])
     
     @task
     def arc42_risks(self) -> Task:
-        """arc42 Chapter 11: Risks and Technical Debt."""
-        return Task(config=self.tasks_config['arc42_risks'])  # type: ignore[index]
+        return Task(config=self.tasks_config['arc42_risks'])
     
     @task
     def arc42_glossary(self) -> Task:
-        """arc42 Chapter 12: Glossary."""
-        return Task(config=self.tasks_config['arc42_glossary'])  # type: ignore[index]
+        return Task(config=self.tasks_config['arc42_glossary'])
+    
+    # QUALITY GATE
+    @task
+    def quality_gate(self) -> Task:
+        return Task(config=self.tasks_config['quality_gate'])
     
     @crew
     def crew(self) -> Crew:

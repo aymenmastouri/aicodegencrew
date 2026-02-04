@@ -13,6 +13,7 @@ The agents use tools to DISCOVER architecture (not hardcoded).
 """
 import logging
 import json
+import os
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
@@ -69,13 +70,13 @@ class ArchitectureAnalysisCrew:
     def __init__(
         self,
         facts_path: str = "knowledge/architecture/architecture_facts.json",
-        chroma_dir: str = ".chroma_db",
+        chroma_dir: str = None,
         output_dir: str = "knowledge/architecture"
     ):
         """Initialize crew with paths."""
         self.facts_path = Path(facts_path)
         self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        self.chroma_dir = chroma_dir
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", ".cache/.chroma")
         self.output_dir = Path(output_dir)
         
         # Initialize tools (shared by agents)
@@ -182,13 +183,36 @@ class ArchitectureAnalysisCrew:
     
     @after_kickoff
     def log_completion(self, result):
-        """Log completion message."""
+        """Log completion message and format JSON outputs."""
         logger.info("")
         logger.info("=" * 60)
         logger.info("PHASE 2 COMPLETE: Architecture Analysis finished")
         logger.info("=" * 60)
+        
+        # Format all JSON files with pretty-print
+        logger.info("[Phase2] Formatting JSON outputs with pretty-print...")
+        
+        # Format analysis directory files
+        for json_file in self._analysis_dir.glob("*.json"):
+            self._format_json_file(json_file)
+        
+        # Format main output files
+        for json_file in self.output_dir.glob("*.json"):
+            self._format_json_file(json_file)
+        
         logger.info(f"Output: {self.output_dir / 'analyzed_architecture.json'}")
         return result
+    
+    def _format_json_file(self, json_file: Path) -> None:
+        """Format a JSON file with pretty-print."""
+        try:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            with open(json_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            logger.info(f"   [OK] Formatted: {json_file.name}")
+        except Exception as e:
+            logger.warning(f"   [WARN] Could not format {json_file.name}: {e}")
     
     # =========================================================================
     # AGENTS
@@ -258,7 +282,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_macro_architecture'],
             agent=self.tech_architect(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=MacroArchitectureOutput,
             output_file=str(self._analysis_dir / "01_macro_architecture.json"),
         )
@@ -269,7 +293,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_backend_pattern'],
             agent=self.tech_architect(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=BackendPatternOutput,
             output_file=str(self._analysis_dir / "02_backend_pattern.json"),
         )
@@ -280,7 +304,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_frontend_pattern'],
             agent=self.tech_architect(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=FrontendPatternOutput,
             output_file=str(self._analysis_dir / "03_frontend_pattern.json"),
         )
@@ -291,7 +315,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_architecture_quality'],
             agent=self.tech_architect(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=ArchitectureQualityOutput,
             output_file=str(self._analysis_dir / "04_architecture_quality.json"),
         )
@@ -306,7 +330,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_domain_model'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=DomainModelOutput,
             output_file=str(self._analysis_dir / "05_domain_model.json"),
         )
@@ -317,7 +341,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_business_capabilities'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=BusinessCapabilitiesOutput,
             output_file=str(self._analysis_dir / "06_business_capabilities.json"),
         )
@@ -328,7 +352,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_bounded_contexts'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=BoundedContextsOutput,
             output_file=str(self._analysis_dir / "07_bounded_contexts.json"),
         )
@@ -339,7 +363,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_state_machines'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=StateMachinesOutput,
             output_file=str(self._analysis_dir / "08_state_machines.json"),
         )
@@ -350,7 +374,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_workflow_engines'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=WorkflowEnginesOutput,
             output_file=str(self._analysis_dir / "09_workflow_engines.json"),
         )
@@ -361,7 +385,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_saga_patterns'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=SagaPatternsOutput,
             output_file=str(self._analysis_dir / "10_saga_patterns.json"),
         )
@@ -372,7 +396,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_runtime_scenarios'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=RuntimeScenariosOutput,
             output_file=str(self._analysis_dir / "11_runtime_scenarios.json"),
         )
@@ -383,7 +407,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_api_design'],
             agent=self.func_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=ApiDesignOutput,
             output_file=str(self._analysis_dir / "12_api_design.json"),
         )
@@ -398,7 +422,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_complexity'],
             agent=self.quality_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=ComplexityOutput,
             output_file=str(self._analysis_dir / "13_complexity.json"),
         )
@@ -409,7 +433,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_technical_debt'],
             agent=self.quality_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=TechnicalDebtOutput,
             output_file=str(self._analysis_dir / "14_technical_debt.json"),
         )
@@ -420,7 +444,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_security'],
             agent=self.quality_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=SecurityOutput,
             output_file=str(self._analysis_dir / "15_security.json"),
         )
@@ -431,7 +455,7 @@ class ArchitectureAnalysisCrew:
         return Task(
             config=self.tasks_config['analyze_operational_readiness'],
             agent=self.quality_analyst(),
-            async_execution=True,
+            context=[],  # No context from previous tasks - independent analysis
             output_pydantic=OperationalReadinessOutput,
             output_file=str(self._analysis_dir / "16_operational_readiness.json"),
         )
@@ -445,29 +469,13 @@ class ArchitectureAnalysisCrew:
         """Task 4: Merge all analyses into analyzed_architecture.json.
         
         Uses PartialResultsTool to read all partial analysis outputs from files.
-        Context lists all async tasks to ensure they complete before synthesis.
+        All previous tasks have already completed (sequential execution with context=[]).
+        This task also uses context=[] to avoid receiving raw outputs - instead reads structured JSON files.
         """
         return Task(
             config=self.tasks_config['synthesize_architecture'],
             agent=self.synthesis_lead(),
-            context=[
-                self.analyze_macro_architecture(),
-                self.analyze_backend_pattern(),
-                self.analyze_frontend_pattern(),
-                self.analyze_architecture_quality(),
-                self.analyze_domain_model(),
-                self.analyze_business_capabilities(),
-                self.analyze_bounded_contexts(),
-                self.analyze_state_machines(),
-                self.analyze_workflow_engines(),
-                self.analyze_saga_patterns(),
-                self.analyze_runtime_scenarios(),
-                self.analyze_api_design(),
-                self.analyze_complexity(),
-                self.analyze_technical_debt(),
-                self.analyze_security(),
-                self.analyze_operational_readiness(),
-            ],
+            context=[],  # Don't pass previous outputs as context - read from files instead
             output_pydantic=AnalyzedArchitecture,
             output_file=str(self.output_dir / "analyzed_architecture.json"),
         )

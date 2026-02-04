@@ -1,0 +1,14 @@
+﻿{
+    "total_components":  826,
+    "total_relations":  120,
+    "relations_per_component":  0.1453,
+    "structural_complexity":  "moderate",
+    "cognitive_complexity":  "moderate",
+    "scale":  "medium",
+    "hotspots":  [
+                     "deed_entry_service_impl",
+                     "document_meta_data_service_impl",
+                     "action_service_impl"
+                 ],
+    "reasoning":  "The repository contains 826 components and 120 \u0027uses\u0027 relations, giving a ratio of ~0.15 relations per component. According to the provided thresholds, a component count between 500 and 5,000 maps to medium scale and thus structural complexity is classified as moderate. The relations-per-component ratio falls in the 0.1â€‘0.2 band, which we interpret as moderate cognitive complexity. Hotspots are identified by scanning the relation list for components that appear repeatedly as sources or targets; \u0027deed_entry_service_impl\u0027 and \u0027document_meta_data_service_impl\u0027 each participate in many relations, indicating high coupling and potential maintenance risk, while \u0027action_service_impl\u0027 also shows multiple connections."
+}

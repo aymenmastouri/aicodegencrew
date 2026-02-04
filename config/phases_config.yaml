@@ -116,7 +116,7 @@ phases:
   # =========================================================================
   # Type:      Crew (AI Agents)
   # Location:  crews/architecture_synthesis/
-  # Input:     architecture_facts.json + analyzed_architecture.json (ChromaDB optional)
+  # Input:     architecture_facts.json + analyzed_architecture.json + ChromaDB
   # Output:    knowledge/architecture/c4/
   #            knowledge/architecture/arc42/
   #            knowledge/architecture/runtime/

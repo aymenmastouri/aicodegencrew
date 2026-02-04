@@ -12,6 +12,8 @@ Design Principles:
 """
 
 import yaml
+import shutil
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Protocol
 from datetime import datetime
@@ -258,6 +260,10 @@ class SDLCOrchestrator:
                 message="Dependencies not met",
             )
         
+        # Archive knowledge before starting (for rollback capability)
+        if phase_id.startswith("phase1") or phase_id.startswith("phase2") or phase_id.startswith("phase3"):
+            self.archive_knowledge(label=f"before_{phase_id}")
+        
         # Execute
         logger.info(f"\n{'─' * 60}")
         logger.info(f"[Phase] {phase_id} - Starting")
@@ -281,6 +287,9 @@ class SDLCOrchestrator:
             duration = (datetime.now() - start).total_seconds()
             
             logger.info(f"[Phase] {phase_id} - Completed in {duration:.2f}s")
+            
+            # Auto-commit after successful phase
+            self._git_commit_after_phase(phase_id)
             
             return PhaseResult(
                 phase_id=phase_id,
@@ -361,6 +370,9 @@ class SDLCOrchestrator:
                 "knowledge/architecture/architecture_facts.json",
                 "knowledge/architecture/evidence_map.json",
             ],
+            "phase2_architecture_analysis": [
+                "knowledge/architecture/analysis/01_macro_architecture.json",
+            ],
             "phase2_architecture_synthesis": [
                 "knowledge/architecture/c4/c4-context.md",
             ],
@@ -416,3 +428,88 @@ class SDLCOrchestrator:
                 "indexing_only": ["phase0_indexing"],
             },
         }
+    
+    # -------------------------------------------------------------------------
+    # ARCHIVE & GIT OPERATIONS
+    # -------------------------------------------------------------------------
+    
+    def archive_knowledge(self, label: str = "manual") -> Path:
+        """
+        Archive the entire knowledge/ directory as knowledge-{timestamp}/.
+        
+        Args:
+            label: Label for the archive (e.g., 'manual', 'phase1', 'phase2')
+            
+        Returns:
+            Path to the archive directory
+        """
+        knowledge_dir = Path("knowledge")
+        if not knowledge_dir.exists():
+            logger.warning("[Orchestrator] knowledge/ directory does not exist")
+            return None
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        archive_dir = Path(f"knowledge-{timestamp}")
+        
+        # Copy entire knowledge directory
+        shutil.copytree(knowledge_dir, archive_dir, dirs_exist_ok=True)
+        
+        logger.info(f"[Orchestrator] Knowledge archived to: {archive_dir}")
+        return archive_dir
+    
+    def _git_commit_after_phase(self, phase_id: str) -> bool:
+        """
+        Auto-commit knowledge/ after successful phase.
+        
+        Args:
+            phase_id: The completed phase ID
+            
+        Returns:
+            True if commit successful, False otherwise
+        """
+        try:
+            # Check if git repo
+            result = subprocess.run(
+                ["git", "rev-parse", "--git-dir"],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                logger.debug("[Orchestrator] Not a git repository, skipping commit")
+                return False
+            
+            # Stage knowledge/ directory
+            subprocess.run(
+                ["git", "add", "knowledge/"],
+                capture_output=True,
+                check=True,
+            )
+            
+            # Check if there are staged changes
+            result = subprocess.run(
+                ["git", "diff", "--cached", "--quiet"],
+                capture_output=True,
+            )
+            if result.returncode == 0:
+                logger.debug("[Orchestrator] No changes to commit")
+                return True
+            
+            # Commit with descriptive message
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            commit_msg = f"[aicodegencrew] {phase_id} completed - {timestamp}"
+            
+            subprocess.run(
+                ["git", "commit", "-m", commit_msg],
+                capture_output=True,
+                check=True,
+            )
+            
+            logger.info(f"[Orchestrator] Git commit: {commit_msg}")
+            return True
+            
+        except subprocess.CalledProcessError as e:
+            logger.warning(f"[Orchestrator] Git commit failed: {e}")
+            return False
+        except FileNotFoundError:
+            logger.debug("[Orchestrator] Git not found, skipping commit")
+            return False

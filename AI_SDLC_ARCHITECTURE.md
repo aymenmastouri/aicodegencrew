@@ -316,11 +316,11 @@ src/aicodegencrew/
 | Type | Crew (AI Agents) |
 | Module | `crews/architecture_synthesis/crew.py` |
 | LLM Requirement | Yes |
-| Input | `architecture_facts.json` + `evidence_map.json` |
+| Input | `architecture_facts.json` + `analyzed_architecture.json` + ChromaDB |
 | Output | `knowledge/architecture/c4/` (Draw.io XML + Markdown) |
 |        | `knowledge/architecture/arc42/` (Markdown) |
 |        | `knowledge/architecture/quality/` (Reports) |
-| Dependency | Phase 1 |
+| Dependency | Phase 1, Phase 2 Analysis |
 | Status | Implemented |
 
 #### CrewAI Best Practices Applied

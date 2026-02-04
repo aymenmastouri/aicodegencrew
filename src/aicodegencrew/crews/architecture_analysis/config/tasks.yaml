@@ -1,524 +1,371 @@
 # =============================================================================
-# Phase 2: Architecture Analysis Crew - Tasks Configuration
+# Phase 2: Architecture Analysis Crew - 17 Focused Tasks
 # =============================================================================
-# SCALABLE ANALYSIS MODE:
-# - Supports small repos (100 components) to enterprise (100,000+ components)
-# - Use get_facts_statistics FIRST to understand scale
-# - Use pagination for large repos (offset/limit)
-# - Each task adapts strategy based on repo size
+# Each task is INDEPENDENT and runs async without context from others.
+# All tasks use tools to query facts - no hardcoded assumptions.
+# Synthesis task reads all partial outputs from files.
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Task 1: Technical Architecture Analysis (10-15 min)
-# -----------------------------------------------------------------------------
-analyze_technical:
+# =============================================================================
+# TECH ARCHITECT TASKS (1.1 - 1.4)
+# =============================================================================
+
+analyze_macro_architecture:
   description: >
-    Perform EXHAUSTIVE technical architecture analysis.
-    This repository may have 100,000+ components - adapt your strategy!
+    Analyze MACRO ARCHITECTURE style.
     
-    TIME BUDGET: 10-15 minutes. DO NOT RUSH.
-    MINIMUM: 20 tool calls before concluding.
+    STEPS:
+    1. Call: get_facts_statistics() to understand scale
+    2. Call: list_components_by_stereotype(stereotype="architecture_style")
+    3. Call: query_facts(category="containers")
+    4. Determine: Monolith, Modular Monolith, Microservices, or Hybrid?
     
+    INDICATORS:
+    - 1 container = Monolith
+    - 1 container + clear modules = Modular Monolith
+    - Multiple containers with APIs = Microservices
     
-    PHASE 0: UNDERSTAND SCALE (MANDATORY FIRST STEP)
-    
-    STEP 0.1: Get repository statistics
-    - Call: get_facts_statistics(include_samples=true)
-    - Note the "repository_scale" and "recommendation"
-    - If enterprise scale (10,000+): Use pagination with offset/limit
-    - If medium/small: Standard queries are fine
-    
-    
-    PHASE 1: ARCHITECTURE STYLES (3-5 queries)
-    
-    STEP 1.1: Query all architecture styles
-    - Call: list_components_by_stereotype(stereotype="architecture_style", limit=100)
-    - Document EACH style found with its evidence count
-    
-    STEP 1.2: Verify primary style
-    - If "layered_architecture" found, verify with layer queries
-    - If "microservices" found, verify with container count
-    
-    
-    PHASE 2: DESIGN PATTERNS (5-10 queries)
-    
-    STEP 2.1: Query all patterns
-    - Call: list_components_by_stereotype(stereotype="design_pattern", limit=200)
-    - Count instances per pattern type
-    
-    STEP 2.2: Verify specific patterns with RAG
-    - Call: rag_query("repository pattern") - verify Repository usage
-    - Call: rag_query("factory pattern") - verify Factory usage
-    - Call: rag_query("singleton") - check for Singletons
-    - Call: rag_query("builder pattern") - check for Builders
-    
-    
-    PHASE 3: TECHNOLOGY STACK (3-5 queries)
-    
-    STEP 3.1: Query all containers
-    - Call: query_facts(category="containers")
-    - For EACH container, extract:
-      - name, type, technology, root_path
-    - Group technologies by category (backend, frontend, database, infra)
-    
-    STEP 3.2: Verify technologies with RAG
-    - Call: rag_query("spring boot") if suspected Java backend
-    - Call: rag_query("angular react vue") if suspected frontend
-    - Call: rag_query("postgresql mysql oracle") if suspected database
-    
-    
-    PHASE 4: LAYER STRUCTURE (use pagination for large repos)
-    
-    STEP 4.1: Query each layer - USE PAGINATION IF NEEDED
-    For large repos (10,000+ components), query with offset:
-    - Call: query_facts(category="components", stereotype="controller", limit=500, offset=0)
-    - If has_more=true: query_facts(..., offset=500), then offset=1000, etc.
-    
-    For smaller repos:
-    - Call: list_components_by_stereotype(stereotype="controller", limit=500)
-    - Call: list_components_by_stereotype(stereotype="service", limit=500)
-    - Call: list_components_by_stereotype(stereotype="repository", limit=500)
-    - Call: list_components_by_stereotype(stereotype="entity", limit=500)
-    
-    STEP 4.2: Analyze component naming patterns
-    - Group controllers by URL prefix pattern
-    - Group services by domain prefix
-    - Identify common naming conventions
-    
-    
-    PHASE 5: DEPENDENCY ANALYSIS (3-5 queries)
-    
-    STEP 5.1: Query relations with pagination
-    - Call: query_facts(category="relations", limit=500, offset=0)
-    - Check pagination.relations.has_more - continue if needed
-    - Count relations by type (uses, implements, extends)
-    
-    STEP 5.2: Check for architectural violations
-    - Controller -> Repository (should go through Service)
-    - Circular dependencies
-    
-    
-    OUTPUT FORMAT (JSON):
-    {
-      "repository_scale": "<from statistics>",
-      "architecture_styles": {
-        "primary": "<DISCOVERED or UNKNOWN>",
-        "secondary": ["<DISCOVERED>"],
-        "evidence_count": <number>,
-        "verification": "<how you verified>"
-      },
-      "design_patterns": [
-        {"name": "<DISCOVERED>", "instances": <count>, "verified_with_rag": true/false}
-      ],
-      "technology_stack": {
-        "backend": {"framework": "<DISCOVERED>", "language": "<DISCOVERED>", "evidence": "<container name>"},
-        "frontend": {"framework": "<DISCOVERED>", "language": "<DISCOVERED>", "evidence": "<container name>"},
-        "database": ["<DISCOVERED from containers>"],
-        "infrastructure": ["<DISCOVERED from containers>"]
-      },
-      "layer_structure": {
-        "layers": ["<DISCOVERED>"],
-        "component_counts": {
-          "controllers": <exact count>,
-          "services": <exact count>,
-          "repositories": <exact count>,
-          "entities": <exact count>,
-          "other_components": <exact count>
-        },
-        "total_components": <sum>,
-        "naming_patterns": ["<identified patterns>"]
-      },
-      "dependencies": {
-        "total_relations": <count>,
-        "relation_types": {"uses": <count>, "implements": <count>},
-        "high_dependency_components": ["<top 10 most connected>"],
-        "violations": ["<architectural violations found>"]
-      }
-    }
   expected_output: >
-    Comprehensive JSON with technical architecture analysis.
-    All counts must be EXACT from tool queries.
-    All technologies must be DISCOVERED, not assumed.
+    JSON with: style, container_count, reasoning, scalability_approach, 
+    deployment_model, communication_pattern
   agent: tech_architect
 
-# -----------------------------------------------------------------------------
-# Task 2: Functional/Domain Analysis (10-15 min)
-# -----------------------------------------------------------------------------
-analyze_functional:
+analyze_backend_pattern:
   description: >
-    Perform EXHAUSTIVE functional/domain analysis.
-    This repository may have 100,000+ components - adapt your strategy!
+    Analyze BACKEND architectural pattern.
     
-    TIME BUDGET: 10-15 minutes. DO NOT RUSH.
-    MINIMUM: 20 tool calls before concluding.
+    STEPS:
+    1. Call: get_facts_statistics() - check components_by_stereotype
+    2. Call: list_components_by_stereotype(stereotype="controller", limit=50)
+    3. Call: list_components_by_stereotype(stereotype="service", limit=50)
+    4. Call: list_components_by_stereotype(stereotype="repository", limit=50)
+    5. Determine pattern from layer distribution
     
+    PATTERNS:
+    - Layered: controller → service → repository clear separation
+    - Hexagonal: ports/adapters naming, domain isolation
+    - Clean Architecture: use cases, entities, interfaces folders
+    - CQRS: separate command/query handlers
     
-    PHASE 0: UNDERSTAND SCALE (MANDATORY FIRST STEP)
-    
-    STEP 0.1: Get repository statistics
-    - Call: get_facts_statistics()
-    - Check components_by_stereotype breakdown
-    - If entity count > 1000: Use pagination
-    
-    
-    PHASE 1: ENTITY DISCOVERY (use pagination for large repos)
-    
-    STEP 1.1: Query ALL entities with pagination if needed
-    - Call: query_facts(category="components", stereotype="entity", limit=500, offset=0)
-    - Check pagination.components.has_more
-    - If true: Continue with offset=500, 1000, etc. until all retrieved
-    - List EVERY entity name returned
-    
-    STEP 1.2: Analyze entity names for domain areas
-    - Group by common prefixes (e.g., Deed*, Workflow*, User*)
-    - Each prefix group = one domain area
-    
-    STEP 1.3: Deep dive into large domain areas
-    - Call: rag_query("<domain_prefix>") for top 3 domains
-    - Understand what each domain handles
-    
-    
-    PHASE 2: SERVICE DISCOVERY (5-8 queries)
-    
-    STEP 2.1: Query ALL services
-    - Call: list_components_by_stereotype(stereotype="service", limit=500)
-    - List EVERY service name returned
-    
-    STEP 2.2: Group services by capability
-    - Services with same prefix = one capability
-    - E.g., WorkflowService, WorkflowActionService -> "Workflow" capability
-    
-    STEP 2.3: Verify service responsibilities with RAG
-    - Call: rag_query("<service_name> responsibility") for key services
-    - Document what each major service does
-    
-    
-    PHASE 3: CONTROLLER/USE CASE DISCOVERY (5-8 queries)
-    
-    STEP 3.1: Query ALL controllers
-    - Call: list_components_by_stereotype(stereotype="controller", limit=500)
-    - List EVERY controller name
-    
-    STEP 3.2: Map controllers to use cases
-    - Each controller represents entry points for use cases
-    - Group by URL pattern or naming
-    
-    STEP 3.3: Query interfaces for API surface
-    - Call: query_facts(category="interfaces")
-    - Map interfaces to controllers
-    
-    
-    PHASE 4: BOUNDED CONTEXT IDENTIFICATION (3-5 queries)
-    
-    STEP 4.1: Cross-reference entities, services, controllers
-    - Components with same prefix = same bounded context
-    - Document each bounded context
-    
-    STEP 4.2: Verify contexts with relations
-    - Call: query_facts(category="relations")
-    - Check which services use which repositories/entities
-    
-    
-    OUTPUT FORMAT (JSON):
-    {
-      "domain_model": {
-        "core_entities": ["<ALL entity names>"],
-        "entity_count": <exact count>,
-        "domain_areas": {
-          "<prefix>": {
-            "entities": ["<entities with this prefix>"],
-            "count": <number>,
-            "description": "<inferred from names>"
-          }
-        }
-      },
-      "capabilities": [
-        {
-          "name": "<derived from service prefix>",
-          "services": ["<services in this capability>"],
-          "service_count": <number>,
-          "description": "<inferred from service names>",
-          "key_operations": ["<main service methods if discoverable>"]
-        }
-      ],
-      "use_cases": [
-        {
-          "name": "<derived from controller>",
-          "controller": "<controller name>",
-          "endpoints": ["<from interfaces>"],
-          "description": "<inferred>"
-        }
-      ],
-      "bounded_contexts": [
-        {
-          "name": "<context name>",
-          "entities": ["<entities>"],
-          "services": ["<services>"],
-          "controllers": ["<controllers>"]
-        }
-      ],
-      "statistics": {
-        "total_entities": <count>,
-        "total_services": <count>,
-        "total_controllers": <count>,
-        "domain_area_count": <count>,
-        "capability_count": <count>
-      }
-    }
   expected_output: >
-    Comprehensive JSON with functional/domain analysis.
-    All lists must be COMPLETE from tool queries.
-    Domain areas must be DERIVED from actual names, not assumed.
+    JSON with: primary_pattern, layer_structure, component_counts, 
+    technology (framework, language), reasoning
+  agent: tech_architect
+
+analyze_frontend_pattern:
+  description: >
+    Analyze FRONTEND architectural pattern.
+    
+    STEPS:
+    1. Call: query_facts(category="containers") - find frontend container
+    2. Call: list_components_by_stereotype(stereotype="component", limit=50)
+    3. Check container metadata for framework
+    
+    PATTERNS:
+    - Component-Based SPA: Angular/React/Vue components
+    - Micro-Frontends: multiple independent frontend apps
+    - Server-Rendered: minimal JS, server templates
+    
+  expected_output: >
+    JSON with: primary_pattern, framework, module_structure, 
+    state_management, routing_strategy, component_count, reasoning
+  agent: tech_architect
+
+analyze_architecture_quality:
+  description: >
+    Assess ARCHITECTURE QUALITY metrics.
+    
+    STEPS:
+    1. Call: get_facts_statistics() - get relation counts
+    2. Call: query_facts(category="relations", limit=100)
+    3. Check for layer violations (controller → repository direct)
+    4. Calculate coupling metrics
+    
+    METRICS:
+    - Separation of concerns: good/moderate/poor
+    - Layer violations count
+    - Coupling assessment: loose/moderate/tight
+    - Circular dependencies count
+    
+  expected_output: >
+    JSON with: separation_of_concerns, layer_violations_count, 
+    coupling_assessment, circular_dependencies, overall_grade, reasoning
+  agent: tech_architect
+
+# =============================================================================
+# FUNCTIONAL ANALYST TASKS (2.1 - 2.8)
+# =============================================================================
+
+analyze_domain_model:
+  description: >
+    Analyze the DOMAIN MODEL.
+    
+    STEPS:
+    1. Call: get_facts_statistics() - check entity count
+    2. Call: list_components_by_stereotype(stereotype="entity", limit=100)
+    3. Group entities by naming prefix (domain areas)
+    4. Identify core vs supporting domains
+    
+    OUTPUT:
+    - List ALL entity names
+    - Group by domain area
+    - Identify domain complexity
+    
+  expected_output: >
+    JSON with: total_entities, domain_complexity, core_domain_areas,
+    naming_consistency, reasoning
   agent: func_analyst
 
-# -----------------------------------------------------------------------------
-# Task 3: Quality Analysis (10-15 min)
-# -----------------------------------------------------------------------------
-analyze_quality:
+analyze_business_capabilities:
   description: >
-    Perform EXHAUSTIVE quality analysis.
-    This repository may have 100,000+ components - adapt your strategy!
+    Identify BUSINESS CAPABILITIES from services.
     
-    TIME BUDGET: 10-15 minutes. DO NOT RUSH.
-    MINIMUM: 20 tool calls before concluding.
+    STEPS:
+    1. Call: list_components_by_stereotype(stereotype="service", limit=100)
+    2. Group services by naming prefix
+    3. Each prefix group = one capability
+    4. Assess capability maturity
     
+    EXAMPLE:
+    - OrderService, OrderValidationService → "Order Management" capability
+    - UserService, AuthService → "User Management" capability
     
-    PHASE 0: UNDERSTAND SCALE (MANDATORY FIRST STEP)
-    
-    STEP 0.1: Get repository statistics
-    - Call: get_facts_statistics()
-    - Note total component count and relation count
-    - Adapt complexity thresholds based on scale
-    
-    
-    PHASE 1: COMPLEXITY METRICS (use statistics + sampling)
-    
-    STEP 1.1: Use statistics for counts
-    - From statistics: components_by_stereotype gives exact counts
-    - No need to query all if statistics available
-    
-    STEP 1.2: Assess complexity level (adjusted for enterprise)
-    - < 500 components: Low complexity
-    - 500-5000 components: Medium complexity
-    - 5000-50000 components: High complexity
-    - > 50000 components: Enterprise scale
-    
-    
-    PHASE 2: COUPLING ANALYSIS (use pagination)
-    
-    STEP 2.1: Query all relations
-    - Call: query_facts(category="relations")
-    - Count total relations
-    - Calculate relations per component ratio
-    
-    STEP 2.2: Find highly coupled components
-    - Identify components with > 10 dependencies
-    - List potential "god classes"
-    
-    STEP 2.3: Check for circular dependencies
-    - Analyze relation graph for cycles
-    - Report any A->B->C->A patterns
-    
-    
-    PHASE 3: TECHNICAL DEBT SEARCH (5-8 queries)
-    
-    STEP 3.1: Search for debt markers
-    - Call: rag_query("TODO")
-    - Call: rag_query("FIXME")
-    - Call: rag_query("HACK workaround")
-    - Call: rag_query("deprecated")
-    - Count occurrences
-    
-    STEP 3.2: Search for code smells
-    - Call: rag_query("large class god class")
-    - Call: rag_query("duplicate code")
-    - Call: rag_query("magic number hardcoded")
-    
-    
-    PHASE 4: SECURITY & ERROR HANDLING (3-5 queries)
-    
-    STEP 4.1: Search for security patterns
-    - Call: rag_query("authentication authorization security")
-    - Call: rag_query("SQL injection XSS CSRF")
-    - Call: rag_query("password encryption")
-    
-    STEP 4.2: Search for error handling
-    - Call: rag_query("exception error handling try catch")
-    - Call: rag_query("logging audit")
-    
-    
-    PHASE 5: TESTABILITY ASSESSMENT (2-3 queries)
-    
-    STEP 5.1: Search for test patterns
-    - Call: rag_query("unit test integration test")
-    - Call: rag_query("mock stub test")
-    
-    
-    OUTPUT FORMAT (JSON):
-    {
-      "complexity": {
-        "total_components": <exact count>,
-        "by_type": {
-          "controllers": <count>,
-          "services": <count>,
-          "repositories": <count>,
-          "entities": <count>
-        },
-        "level": "low|medium|high",
-        "assessment": "<explanation>"
-      },
-      "coupling": {
-        "total_relations": <count>,
-        "relations_per_component": <ratio>,
-        "highly_coupled_components": [
-          {"name": "<component>", "dependencies": <count>}
-        ],
-        "circular_dependencies": ["<A->B->A patterns>"],
-        "level": "low|medium|high"
-      },
-      "technical_debt": {
-        "todo_count": <count from rag>,
-        "fixme_count": <count from rag>,
-        "hack_count": <count from rag>,
-        "deprecated_count": <count from rag>,
-        "debt_items": [
-          {"type": "TODO|FIXME|HACK", "location": "<if found>", "description": "<snippet>"}
-        ],
-        "level": "low|medium|high"
-      },
-      "security": {
-        "authentication_patterns": ["<found patterns>"],
-        "security_concerns": ["<potential issues>"],
-        "level": "low|medium|high|UNKNOWN"
-      },
-      "testability": {
-        "test_patterns_found": ["<patterns>"],
-        "level": "low|medium|high|UNKNOWN"
-      },
-      "quality_attributes": {
-        "maintainability": {"rating": "<level>", "evidence": "<why>"},
-        "scalability": {"rating": "<level>", "evidence": "<why>"},
-        "security": {"rating": "<level>", "evidence": "<why>"},
-        "testability": {"rating": "<level>", "evidence": "<why>"}
-      },
-      "risks": [
-        {"name": "<risk>", "severity": "high|medium|low", "evidence": "<what indicates this>", "mitigation": "<suggestion>"}
-      ],
-      "recommendations": [
-        "<actionable recommendation based on findings>"
-      ]
-    }
   expected_output: >
-    Comprehensive JSON with quality analysis.
-    All counts must be from actual tool queries.
-    Ratings must have EVIDENCE - use UNKNOWN if no evidence.
+    JSON with: capabilities list (name, services, description, maturity),
+    capability_coverage, reasoning
+  agent: func_analyst
+
+analyze_bounded_contexts:
+  description: >
+    Identify BOUNDED CONTEXTS (DDD).
+    
+    STEPS:
+    1. Call: get_facts_statistics() - understand scale
+    2. Call: list_components_by_stereotype(stereotype="entity", limit=50)
+    3. Call: list_components_by_stereotype(stereotype="service", limit=50)
+    4. Cross-reference: entities + services with same prefix = context
+    
+    CONTEXT DETECTION:
+    - Components with same prefix belong to same context
+    - Check cross-context dependencies via relations
+    
+  expected_output: >
+    JSON with: contexts_identified, contexts list (name, entities, services),
+    cross_context_coupling, recommendations, reasoning
+  agent: func_analyst
+
+analyze_state_machines:
+  description: >
+    Detect STATE MACHINES in the codebase.
+    
+    STEPS:
+    1. Call: rag_query("state machine StateMachine")
+    2. Call: rag_query("status enum Status")
+    3. Call: list_components_by_stereotype(stereotype="entity", limit=50)
+    4. Look for entities with status/state fields
+    
+    INDICATORS:
+    - Spring State Machine annotations
+    - Enum with states (PENDING, APPROVED, REJECTED)
+    - State transition methods
+    
+  expected_output: >
+    JSON with: detected (bool), implementation type, stateful_entities,
+    state_machine_classes, reasoning
+  agent: func_analyst
+
+analyze_workflow_engines:
+  description: >
+    Detect WORKFLOW ENGINES (BPMN, Camunda, Flowable).
+    
+    STEPS:
+    1. Call: rag_query("Camunda BPMN workflow")
+    2. Call: rag_query("Flowable Activiti process")
+    3. Call: list_components_by_stereotype(stereotype="design_pattern")
+    4. Check for workflow-related patterns
+    
+    INDICATORS:
+    - Camunda/Flowable dependencies
+    - .bpmn files
+    - ProcessEngine beans
+    
+  expected_output: >
+    JSON with: engine (Camunda/Flowable/None), version, bpmn_processes,
+    integration_style, workflow_services, reasoning
+  agent: func_analyst
+
+analyze_saga_patterns:
+  description: >
+    Detect SAGA patterns for distributed transactions.
+    
+    STEPS:
+    1. Call: rag_query("saga pattern compensation")
+    2. Call: rag_query("outbox pattern event")
+    3. Call: list_components_by_stereotype(stereotype="design_pattern")
+    
+    INDICATORS:
+    - Saga orchestrators
+    - Compensation methods
+    - Outbox tables
+    - Event sourcing
+    
+  expected_output: >
+    JSON with: detected (bool), style (orchestration/choreography),
+    sagas list, outbox_pattern (bool), event_store, reasoning
+  agent: func_analyst
+
+analyze_runtime_scenarios:
+  description: >
+    Identify key RUNTIME SCENARIOS (Arc42 Section 6).
+    
+    STEPS:
+    1. Call: list_components_by_stereotype(stereotype="controller", limit=30)
+    2. Call: query_facts(category="interfaces", limit=30)
+    3. For top 3-5 endpoints, trace the flow
+    
+    SCENARIO FORMAT:
+    - Trigger: HTTP request
+    - Steps: controller → service → repository
+    - End state: response returned
+    
+  expected_output: >
+    JSON with: scenarios list (name, trigger, steps, end_state),
+    orchestration_style, arc42_section6_ready, reasoning
+  agent: func_analyst
+
+analyze_api_design:
+  description: >
+    Assess API DESIGN QUALITY.
+    
+    STEPS:
+    1. Call: get_facts_statistics() - check api_statistics section
+    2. Analyze verb distribution (GET, POST, PUT, DELETE)
+    3. Check versioning (/v1/, /v2/)
+    4. Assess naming consistency
+    
+    METRICS:
+    - RESTfulness: proper verbs, resource URLs
+    - Consistency: same patterns across controllers
+    - Versioning strategy
+    
+  expected_output: >
+    JSON with: total_endpoints, restfulness, verb_distribution,
+    consistency, versioning_strategy, naming_quality, recommendations, reasoning
+  agent: func_analyst
+
+# =============================================================================
+# QUALITY ANALYST TASKS (3.1 - 3.4)
+# =============================================================================
+
+analyze_complexity:
+  description: >
+    Assess STRUCTURAL and COGNITIVE COMPLEXITY.
+    
+    STEPS:
+    1. Call: get_facts_statistics()
+    2. Calculate: relations per component ratio
+    3. Identify complexity hotspots
+    
+    THRESHOLDS:
+    - < 500 components: Low complexity
+    - 500-5000: Medium
+    - 5000+: High/Enterprise
+    
+  expected_output: >
+    JSON with: total_components, total_relations, relations_per_component,
+    structural_complexity, cognitive_complexity, scale, hotspots, reasoning
   agent: quality_analyst
 
-# -----------------------------------------------------------------------------
-# Task 4: Synthesis (5-10 min)
-# -----------------------------------------------------------------------------
+analyze_technical_debt:
+  description: >
+    Assess TECHNICAL DEBT level.
+    
+    STEPS:
+    1. Call: rag_query("TODO FIXME deprecated")
+    2. Call: rag_query("workaround hack temporary")
+    3. Call: get_facts_statistics()
+    4. Estimate debt from code indicators
+    
+    INDICATORS:
+    - TODO/FIXME count
+    - Deprecated annotations
+    - Workaround comments
+    
+  expected_output: >
+    JSON with: debt_level, indicators_found, categories,
+    estimated_effort, priority_items, reasoning
+  agent: quality_analyst
+
+analyze_security:
+  description: >
+    Assess SECURITY POSTURE.
+    
+    STEPS:
+    1. Call: rag_query("Spring Security authentication")
+    2. Call: rag_query("JWT OAuth authorization")
+    3. Call: rag_query("@PreAuthorize @Secured")
+    4. Check for security patterns
+    
+    CHECKLIST:
+    - Authentication mechanism
+    - Authorization framework
+    - Input validation
+    - Audit logging
+    
+  expected_output: >
+    JSON with: authentication, authorization, input_validation,
+    audit_logging, security_framework, concerns, recommendations,
+    overall_posture, reasoning
+  agent: quality_analyst
+
+analyze_operational_readiness:
+  description: >
+    Assess OPERATIONAL READINESS.
+    
+    STEPS:
+    1. Call: rag_query("actuator health metrics")
+    2. Call: rag_query("logging slf4j logback")
+    3. Call: rag_query("@ConfigurationProperties")
+    4. Check for ops patterns
+    
+    CHECKLIST:
+    - Health checks (Spring Actuator)
+    - Monitoring endpoints
+    - Structured logging
+    - Configuration externalization
+    
+  expected_output: >
+    JSON with: health_checks, monitoring, logging, metrics,
+    configuration, deployment_readiness, recommendations, reasoning
+  agent: quality_analyst
+
+# =============================================================================
+# SYNTHESIS TASK (4.0)
+# =============================================================================
+
 synthesize_architecture:
   description: >
-    Merge all agent analyses into the final analyzed_architecture.json.
+    Synthesize ALL analysis results into analyzed_architecture.json.
     
-    TIME BUDGET: 5-10 minutes for thorough validation.
+    STEPS:
+    1. Call: read_partial_results() to get all analysis outputs
+    2. Merge all sections into complete architecture document
+    3. Calculate overall grade
+    4. Write executive summary
+    5. Create top recommendations
     
+    STRUCTURE:
+    - system: name, description
+    - macro_architecture: from task 1.1
+    - micro_architecture: backend (1.2) + frontend (1.3)
+    - architecture_quality: from task 1.4
+    - domain: model (2.1) + capabilities (2.2) + contexts (2.3)
+    - workflows: state machines (2.4) + engines (2.5) + sagas (2.6) + scenarios (2.7)
+    - api: from task 2.8
+    - quality: complexity (3.1) + debt (3.2) + security (3.3) + ops (3.4)
     
-    VALIDATION PHASE:
-    
-    STEP 1: Cross-validate component counts
-    - Technical says X controllers, Functional says Y
-    - If different, note discrepancy
-    - Use the number that has more evidence
-    
-    STEP 2: Remove hardcoded assumptions
-    - If any agent wrote "Spring Boot" but containers don't show it, REMOVE
-    - Every technology must have container evidence
-    
-    STEP 3: Merge perspectives
-    - Technical: styles, patterns, tech stack, layers
-    - Functional: domain, capabilities, use cases
-    - Quality: attributes, risks, recommendations
-    
-    STEP 4: Resolve conflicts
-    - If assessments conflict, prefer the one with more evidence
-    - Document any unresolved conflicts
-    
-    
-    FINAL OUTPUT SCHEMA:
-    {
-      "system": {
-        "name": "<from facts or UNKNOWN>",
-        "domain": "<from functional analysis>",
-        "description": "<synthesized from all analyses>"
-      },
-      "architecture": {
-        "primary_style": "<from tech analysis>",
-        "secondary_styles": ["<from tech analysis>"],
-        "layers": ["<from tech analysis>"],
-        "evidence_summary": "<how this was determined>"
-      },
-      "patterns": [
-        {"name": "<from tech>", "instances": <count>, "verified": true/false}
-      ],
-      "technology": {
-        "backend": {
-          "framework": "<from containers>",
-          "language": "<from containers>",
-          "version": "<if found or UNKNOWN>"
-        },
-        "frontend": {
-          "framework": "<from containers>",
-          "language": "<from containers>"
-        },
-        "database": ["<from containers>"],
-        "infrastructure": ["<from containers>"]
-      },
-      "domain_model": {
-        "bounded_contexts": ["<from functional>"],
-        "core_entities": ["<top entities>"],
-        "entity_count": <total>
-      },
-      "capabilities": [
-        {"name": "<from functional>", "description": "<from functional>", "key_components": ["<from functional>"]}
-      ],
-      "statistics": {
-        "total_containers": <count>,
-        "total_components": <count>,
-        "controllers": <count>,
-        "services": <count>,
-        "repositories": <count>,
-        "entities": <count>,
-        "relations": <count>
-      },
-      "quality_attributes": {
-        "maintainability": {"rating": "<from quality>", "evidence": "<from quality>"},
-        "scalability": {"rating": "<from quality>", "evidence": "<from quality>"},
-        "security": {"rating": "<from quality>", "evidence": "<from quality>"},
-        "testability": {"rating": "<from quality>", "evidence": "<from quality>"}
-      },
-      "risks": [
-        {"name": "<from quality>", "severity": "<level>", "mitigation": "<suggestion>"}
-      ],
-      "technical_debt": {
-        "level": "<from quality>",
-        "items": ["<top debt items>"]
-      },
-      "recommendations": [
-        "<from quality analysis>"
-      ],
-      "validation_notes": [
-        "<any discrepancies found during synthesis>"
-      ]
-    }
-    
-    Write the output to: knowledge/architecture/analyzed_architecture.json
   expected_output: >
-    The complete analyzed_architecture.json file.
-    Must be valid JSON matching the schema exactly.
-    All values must be DISCOVERED, not assumed.
+    Complete analyzed_architecture.json matching AnalyzedArchitecture schema.
+    All sections populated from partial results.
+    Overall grade (A-F) and executive summary.
   agent: synthesis_lead
-  context:
-    - analyze_technical
-    - analyze_functional
-    - analyze_quality

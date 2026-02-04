@@ -92,6 +92,10 @@ class StereotypeListInput(BaseModel):
         default=100,
         description="Maximum results to return (default 100, max 500 for large repos)"
     )
+    offset: int = Field(
+        default=0,
+        description="Number of results to skip for pagination (default 0)"
+    )
 
 
 class StereotypeListTool(BaseTool):
@@ -112,8 +116,10 @@ class StereotypeListTool(BaseTool):
     name: str = "list_components_by_stereotype"
     description: str = (
         "Get list of components filtered by stereotype. "
-        "Stereotypes: controller, service, repository, entity, design_pattern, architecture_style. "
-        "Use this to discover architecture elements by type."
+        "REQUIRED: stereotype (string) - one of: controller, service, repository, entity, design_pattern, architecture_style, component, module. "
+        "OPTIONAL: container (string) - filter by container name like 'backend' or 'frontend'. "
+        "OPTIONAL: limit (int) - max results, default 100. "
+        "Example: list_components_by_stereotype(stereotype='controller', limit=50)"
     )
     args_schema: Type[BaseModel] = StereotypeListInput
     
@@ -141,7 +147,8 @@ class StereotypeListTool(BaseTool):
         self,
         stereotype: str,
         container: str = "",
-        limit: int = 100
+        limit: int = 100,
+        offset: int = 0
     ) -> str:
         """Get components by stereotype (limited to prevent token overflow)."""
         
@@ -168,16 +175,20 @@ class StereotypeListTool(BaseTool):
         # SORT by layer relevance - most architecturally important first
         filtered = self._sort_by_relevance(filtered)
         
-        # LIMIT results to prevent token overflow
-        limited = filtered[:MAX_RESULTS]
+        # Apply offset and limit for pagination
+        start_idx = min(offset, total_count)
+        end_idx = min(start_idx + MAX_RESULTS, total_count)
+        limited = filtered[start_idx:end_idx]
         
         # Build result with summary
         result = {
             "stereotype": stereotype,
             "container_filter": container,
             "total_count": total_count,
+            "offset": start_idx,
             "returned_count": len(limited),
-            "note": f"Sorted by layer importance. Showing top {len(limited)} of {total_count}." if total_count > MAX_RESULTS else "Sorted by layer importance.",
+            "has_more": end_idx < total_count,
+            "note": f"Showing {start_idx+1}-{end_idx} of {total_count}. Use offset={end_idx} to get next page." if end_idx < total_count else f"Showing all {total_count} results.",
             "components": [
                 {
                     "name": c.get("name", "Unknown"),

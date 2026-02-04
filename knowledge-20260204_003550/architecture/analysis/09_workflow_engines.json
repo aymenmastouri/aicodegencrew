@@ -1,0 +1,14 @@
+﻿{
+    "engine":  "None",
+    "version":  null,
+    "bpmn_processes":  [
+
+                       ],
+    "integration_style":  "none",
+    "workflow_services":  [
+                              "WorkflowApiConfiguration",
+                              "JobApiConfiguration",
+                              "TaskApiConfiguration"
+                          ],
+    "reasoning":  "The semantic searches for Camunda and Flowable yielded no references to BPMN engine libraries, configuration beans, or .bpmn files. The design_pattern components list contains typical software patterns but no workflow engine patterns. The codebase defines custom state machine classes (e.g., WorkflowStateMachine) and enums for workflow states, indicating a homeâ€‘grown workflow implementation rather than an external BPM platform. Consequently, no workflow engine is detected, version information is unavailable, and there are no BPMN process definitions. Integration style is therefore classified as \u0027none\u0027, with only internal workflowâ€‘related configuration/services identified."
+}
