@@ -1071,8 +1071,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.basic_data",
-      "container": "container.backend",
+      "id": "interface.frontend.route.basic_data",
+      "container": "container.frontend",
       "type": "route",
       "path": "/basic-data",
       "method": "GET",
@@ -1082,8 +1082,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.remarks",
-      "container": "container.backend",
+      "id": "interface.frontend.route.remarks",
+      "container": "container.frontend",
       "type": "route",
       "path": "/remarks",
       "method": "GET",
@@ -1093,8 +1093,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.registrations",
-      "container": "container.backend",
+      "id": "interface.frontend.route.registrations",
+      "container": "container.frontend",
       "type": "route",
       "path": "/registrations",
       "method": "GET",
@@ -1104,8 +1104,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.participants",
-      "container": "container.backend",
+      "id": "interface.frontend.route.participants",
+      "container": "container.frontend",
       "type": "route",
       "path": "/participants",
       "method": "GET",
@@ -1115,8 +1115,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.issuing_copy_notes",
-      "container": "container.backend",
+      "id": "interface.frontend.route.issuing_copy_notes",
+      "container": "container.frontend",
       "type": "route",
       "path": "/issuing-copy-notes",
       "method": "GET",
@@ -1126,8 +1126,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.notes",
-      "container": "container.backend",
+      "id": "interface.frontend.route.notes",
+      "container": "container.frontend",
       "type": "route",
       "path": "/notes",
       "method": "GET",
@@ -1137,8 +1137,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.links",
-      "container": "container.backend",
+      "id": "interface.frontend.route.links",
+      "container": "container.frontend",
       "type": "route",
       "path": "/links",
       "method": "GET",
@@ -1148,8 +1148,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.document",
-      "container": "container.backend",
+      "id": "interface.frontend.route.document",
+      "container": "container.frontend",
       "type": "route",
       "path": "/document",
       "method": "GET",
@@ -1159,8 +1159,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.root",
-      "container": "container.backend",
+      "id": "interface.frontend.route.root",
+      "container": "container.frontend",
       "type": "route",
       "path": "/",
       "method": "GET",
@@ -1170,8 +1170,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.uvz",
-      "container": "container.backend",
+      "id": "interface.frontend.route.uvz",
+      "container": "container.frontend",
       "type": "route",
       "path": "/uvz",
       "method": "GET",
@@ -1181,8 +1181,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.access_denied",
-      "container": "container.backend",
+      "id": "interface.frontend.route.access_denied",
+      "container": "container.frontend",
       "type": "route",
       "path": "/access-denied",
       "method": "GET",
@@ -1192,8 +1192,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.deed_entries",
-      "container": "container.backend",
+      "id": "interface.frontend.route.deed_entries",
+      "container": "container.frontend",
       "type": "route",
       "path": "/deed-entries",
       "method": "GET",
@@ -1203,8 +1203,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.deed_view__deedentryid",
-      "container": "container.backend",
+      "id": "interface.frontend.route.deed_view__deedentryid",
+      "container": "container.frontend",
       "type": "route",
       "path": "/deed-view/:deedEntryId",
       "method": "GET",
@@ -1214,8 +1214,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.deed_form",
-      "container": "container.backend",
+      "id": "interface.frontend.route.deed_form",
+      "container": "container.frontend",
       "type": "route",
       "path": "/deed-form",
       "method": "GET",
@@ -1225,8 +1225,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.deed_form_bulk_capture",
-      "container": "container.backend",
+      "id": "interface.frontend.route.deed_form_bulk_capture",
+      "container": "container.frontend",
       "type": "route",
       "path": "/deed-form-bulk-capture",
       "method": "GET",
@@ -1236,8 +1236,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.deed_form__deedentryid",
-      "container": "container.backend",
+      "id": "interface.frontend.route.deed_form__deedentryid",
+      "container": "container.frontend",
       "type": "route",
       "path": "/deed-form/:deedEntryId",
       "method": "GET",
@@ -1247,8 +1247,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.reports",
-      "container": "container.backend",
+      "id": "interface.frontend.route.reports",
+      "container": "container.frontend",
       "type": "route",
       "path": "/reports",
       "method": "GET",
@@ -1258,8 +1258,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.annual_preview",
-      "container": "container.backend",
+      "id": "interface.frontend.route.annual_preview",
+      "container": "container.frontend",
       "type": "route",
       "path": "/annual/preview",
       "method": "GET",
@@ -1269,8 +1269,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.annual_deed_register_preview",
-      "container": "container.backend",
+      "id": "interface.frontend.route.annual_deed_register_preview",
+      "container": "container.frontend",
       "type": "route",
       "path": "/annual-deed-register/preview",
       "method": "GET",
@@ -1280,8 +1280,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.deposited_inheritance_contracts_preview",
-      "container": "container.backend",
+      "id": "interface.frontend.route.deposited_inheritance_contracts_preview",
+      "container": "container.frontend",
       "type": "route",
       "path": "/deposited-inheritance-contracts/preview",
       "method": "GET",
@@ -1291,8 +1291,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.annual_participants_preview",
-      "container": "container.backend",
+      "id": "interface.frontend.route.annual_participants_preview",
+      "container": "container.frontend",
       "type": "route",
       "path": "/annual-participants/preview",
       "method": "GET",
@@ -1302,8 +1302,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.reports_metadata__id",
-      "container": "container.backend",
+      "id": "interface.frontend.route.reports_metadata__id",
+      "container": "container.frontend",
       "type": "route",
       "path": "/reports-metadata/:id",
       "method": "GET",
@@ -1313,8 +1313,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.reports_metadata",
-      "container": "container.backend",
+      "id": "interface.frontend.route.reports_metadata",
+      "container": "container.frontend",
       "type": "route",
       "path": "/reports-metadata",
       "method": "GET",
@@ -1324,8 +1324,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.successor_depositing",
-      "container": "container.backend",
+      "id": "interface.frontend.route.successor_depositing",
+      "container": "container.frontend",
       "type": "route",
       "path": "/successor-depositing",
       "method": "GET",
@@ -1335,8 +1335,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.complete",
-      "container": "container.backend",
+      "id": "interface.frontend.route.complete",
+      "container": "container.frontend",
       "type": "route",
       "path": "/complete",
       "method": "GET",
@@ -1346,8 +1346,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.partial",
-      "container": "container.backend",
+      "id": "interface.frontend.route.partial",
+      "container": "container.frontend",
       "type": "route",
       "path": "/partial",
       "method": "GET",
@@ -1357,8 +1357,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.logging__deedentryid",
-      "container": "container.backend",
+      "id": "interface.frontend.route.logging__deedentryid",
+      "container": "container.frontend",
       "type": "route",
       "path": "/logging/:deedEntryId",
       "method": "GET",
@@ -1368,8 +1368,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.settings",
-      "container": "container.backend",
+      "id": "interface.frontend.route.settings",
+      "container": "container.frontend",
       "type": "route",
       "path": "/settings",
       "method": "GET",
@@ -1379,8 +1379,8 @@
       ]
     },
     {
-      "id": "interface.backend.route.__",
-      "container": "container.backend",
+      "id": "interface.frontend.route.__",
+      "container": "container.frontend",
       "type": "route",
       "path": "/**",
       "method": "GET",
@@ -1390,8 +1390,8 @@
       ]
     },
     {
-      "id": "interface.backend.route_guard.7528035a",
-      "container": "container.backend",
+      "id": "interface.frontend.route_guard.7528035a",
+      "container": "container.frontend",
       "type": "route_guard",
       "path": "",
       "method": "GET",

@@ -9,7 +9,7 @@
   ],
   "async_processors": [
     {
-      "id": "component.backend.components_deed-form-page_services.async_document_helper_service",
+      "id": "component.frontend.components_deed-form-page_services.async_document_helper_service",
       "name": "AsyncDocumentHelperService"
     }
   ]
