@@ -1,24 +1,28 @@
 # Phase 1 - Architecture Facts Extraction - TODO
 
 **Stand:** 2026-02-05  
+**Layer:** KNOWLEDGE (Layer 1)  
 **Letzter Lauf:** 733 components, 125 interfaces, 169 relations, 1005 evidence
+
+> Phase 1 ist Teil des **Knowledge Layers** im 4-Layer-Architekturmodell.  
+> Siehe [AI_SDLC_ARCHITECTURE.md](AI_SDLC_ARCHITECTURE.md) und [layer-architecture.drawio](diagrams/layer-architecture.drawio)
 
 ---
 
-## ✅ Erledigt
+## Erledigt
 
 - [x] Progressive JSON Writing (jeder Collector schreibt sofort)
 - [x] `architecture_facts.json` als kombinierte Datei am Ende
 - [x] SpringRestCollector: Interfaces mit `@RequestMapping` erkennen
 - [x] AngularServiceCollector: Endpoints, Adapters, Guards, Interceptors
 - [x] JS API Pattern: `static ENDPOINT = '...'` erkennen
-- [x] Alle Collector-Logs einheitlich (Found → DEBUG)
+- [x] Alle Collector-Logs einheitlich (Found - DEBUG)
 - [x] Generische Patterns (keine projektspezifischen Strings)
 - [x] ModelBuilder: Alte/neue Attribute kompatibel
 
 ---
 
-## 🔴 Kritisch
+## Kritisch
 
 ### 1. Relation Resolution (~46% Verlust)
 **Problem:** 313 Relation Hints → nur 169 resolved  
@@ -81,7 +85,7 @@ interface.implemented_by = controller_name  # z.B. "WorkflowRestServiceImpl"
 
 ---
 
-## 📊 Metriken zum Tracken
+## Metriken zum Tracken
 
 | Metrik | Aktuell | Ziel |
 |--------|---------|------|
@@ -92,20 +96,25 @@ interface.implemented_by = controller_name  # z.B. "WorkflowRestServiceImpl"
 
 ---
 
-## 🏗️ Architektur-Notizen
+## Architektur-Notizen
 
-### Collector → Model Pipeline
+### Collector - Model Pipeline
 ```
 Collectors (10 Steps)
-    ↓
+    |
+    v
 Raw Facts (CollectedComponent, CollectedInterface, etc.)
-    ↓
+    |
+    v
 FactAdapter (Normalisierung)
-    ↓
+    |
+    v
 ModelBuilder (Dedup, ID-Generation, Relation Resolution)
-    ↓
+    |
+    v
 CanonicalModel (733 components, 125 interfaces, 169 relations)
-    ↓
+    |
+    v
 DimensionWriters (11 JSON files)
 ```
 
@@ -114,68 +123,70 @@ DimensionWriters (11 JSON files)
 Raw: "backend_WorkflowRestServiceImpl"
 Canonical: "component.backend.workflowrestserviceimpl"
 
-Relation: from_id="WorkflowRestServiceImpl" → nicht gefunden!
+Relation: from_id="WorkflowRestServiceImpl" - nicht gefunden!
 ```
 
 **Fix:** Name-to-ID Index aufbauen vor Relation Resolution
 
 ---
 
-## Nächste Session
+## Naechste Session
 
-1. **Relation Resolution fixen** - größter Impact
+1. **Relation Resolution fixen** - groesster Impact
 2. **implemented_by setzen** - Endpoint Flows enablen
 3. **Tables/Migrations** ins Model bringen
 
 ---
 
-## ❓ Evaluiert: Lokales Modell / Fine-Tuning / MCP
+## Evaluiert: Lokales Modell / Fine-Tuning / MCP
 
 **Frage:** UVZ mit lokalem Modell trainieren und als MCP in Pipeline integrieren?
 
-### Bewertung: ❌ Nicht empfohlen für Phase 1
+### Bewertung: NICHT empfohlen fuer Phase 1
 
 | Aspekt | Analyse |
 |--------|---------|
-| **Phase 1 ist deterministisch** | Regex, Pattern Matching, AST - kein LLM nötig |
-| **Aktuelle Probleme** | ID-Mapping, nicht Verständnis - technisch lösbar |
-| **Training-Aufwand** | Wochen/Monate für marginalen Gewinn |
-| **MCP Overhead** | HTTP-Roundtrips für etwas das in 0.1ms lokal läuft |
+| **Phase 1 ist deterministisch** | Regex, Pattern Matching, AST - kein LLM noetig |
+| **Aktuelle Probleme** | ID-Mapping, nicht Verstaendnis - technisch loesbar |
+| **Training-Aufwand** | Wochen/Monate fuer marginalen Gewinn |
+| **MCP Overhead** | HTTP-Roundtrips fuer etwas das in 0.1ms lokal laeuft |
 
 ### Aktuelle Probleme sind keine LLM-Probleme:
 
 ```
-❌ Lokales Modell hilft NICHT bei:
-   - Relation Resolution → ist ein Index/Lookup Problem
-   - implemented_by → ist ein Collector-Logik Problem  
-   - Tables/Migrations → ist ein Mapping Problem
+Lokales Modell hilft NICHT bei:
+   - Relation Resolution - ist ein Index/Lookup Problem
+   - implemented_by - ist ein Collector-Logik Problem  
+   - Tables/Migrations - ist ein Mapping Problem
 
-✅ Besser investierte Zeit:
+Besser investierte Zeit:
    - Name-to-ID Index aufbauen (10 Zeilen Code)
-   - Controller→Endpoint Mapping im Collector (20 Zeilen)
+   - Controller-Endpoint Mapping im Collector (20 Zeilen)
    - DataModel ins CanonicalModel bringen (50 Zeilen)
 ```
 
-### Wo ein lokales/fine-tuned Modell SINN machen könnte:
+### Wo ein lokales/fine-tuned Modell SINN machen koennte:
 
 | Phase | Nutzen | Empfehlung |
 |-------|--------|------------|
 | **Phase 2 (Synthese)** | Arc42/C4 Texte generieren | Generisches Modell reicht |
-| **Code Generation** | UVZ-spezifischen Code generieren | Später evaluieren |
-| **Domänen-QA** | Fragen zu Notariat/Workflow | RAG mit Facts effizienter |
+| **Code Generation** | UVZ-spezifischen Code generieren | Spaeter evaluieren |
+| **Domaenen-QA** | Fragen zu Notariat/Workflow | RAG mit Facts effizienter |
 
 ### Empfohlene Alternative: RAG statt Fine-Tuning
 
 ```
 Phase 1 Facts (733 components, 169 relations, etc.)
-    ↓
-Als Kontext für generisches LLM (GPT-4, Claude, etc.)
-    ↓
-Domänen-spezifische Antworten OHNE Training
+    |
+    v
+Als Kontext fuer generisches LLM (GPT-4, Claude, etc.)
+    |
+    v
+Domaenen-spezifische Antworten OHNE Training
 ```
 
 **Vorteile RAG:**
-- Kein Training nötig
+- Kein Training noetig
 - Immer aktuelle Daten
 - Funktioniert mit jedem LLM
 - Nachvollziehbare Quellen (Evidence)

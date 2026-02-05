@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-### 1.1 Purpose & Goal
+### 1.1 Purpose and Goal
 
 **AICodeGenCrew** is a fully local, on-premises AI-powered blueprint for a complete, end-to-end Software Development Lifecycle (SDLC).
 
@@ -10,29 +10,71 @@
 
 **Why On-Premises?** Enterprise software often contains sensitive intellectual property, customer data, or security-critical code. Sending this data to external AI services (like OpenAI, Anthropic, etc.) may violate compliance requirements, data protection regulations, or internal security policies. AICodeGenCrew is designed to run entirely on your infrastructure with your own LLMs - no data ever leaves your network.
 
-**The Complete Vision:**
+### 1.2 4-Layer Architecture Model
 
-> **Reference Diagram:** [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full SDLC Pipeline Overview
+> **Reference Diagrams:**
+> - [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full SDLC Pipeline Overview
+> - [layer-architecture.drawio](diagrams/layer-architecture.drawio) - Detailed 4-Layer Architecture
 
-**Phase 0-3: Understand (Current Focus - Implemented)**
-The tool analyzes your existing codebase. It extracts architectural facts, identifies patterns, and generates comprehensive documentation (C4 diagrams, arc42). This is the foundation - you cannot improve what you do not understand.
+The system is organized into 4 distinct layers, each with clear responsibilities:
 
-**Phase 4-5: Plan (Designed - Not Yet Implemented)**
-Based on the architecture analysis, AI agents generate development backlogs, user stories, issues, change requests, and work items. The system understands the codebase structure and can suggest improvements, identify technical debt, and prioritize refactoring tasks.
+| Layer | Phases | Purpose | LLM Required |
+|-------|--------|---------|--------------|
+| **KNOWLEDGE** | 0-1 | Deterministic facts extraction | No |
+| **REASONING** | 2-3 | LLM-powered analysis and synthesis | Yes |
+| **EXECUTION** | 4-6 | Code generation and deployment | Yes |
+| **FEEDBACK** | 7 | Continuous learning and quality | Yes |
 
-**Phase 6-7: Build (Designed - Not Yet Implemented)**
-AI agents implement changes based on backlog items, generate code following existing patterns and conventions, and create comprehensive tests. Each change is validated against the architecture constraints discovered during analysis.
+```
++------------------------------------------------------------------+
+|  LAYER 1: KNOWLEDGE (Deterministic)                              |
+|  [Phase 0: Indexing] --> [Phase 1: Architecture Facts]           |
+|  ChromaDB + 7 Collectors = Single Source of Truth                |
++------------------------------------------------------------------+
+                              |
+                              v
++------------------------------------------------------------------+
+|  LAYER 2: REASONING (LLM-Powered)                                |
+|  [Phase 2: Synthesis] --> [Phase 3: Task Understanding]          |
+|  C4 + arc42 Documentation, RAG-Enhanced Planning                 |
++------------------------------------------------------------------+
+                              |
+                              v
++------------------------------------------------------------------+
+|  LAYER 3: EXECUTION (LLM-Powered)                                |
+|  [Phase 4: CodeGen] --> [Phase 5: Testing] --> [Phase 6: Deploy] |
+|  Pattern-Compliant Code, Tests, CI/CD Integration                |
++------------------------------------------------------------------+
+                              |
+                              v
++------------------------------------------------------------------+
+|  LAYER 4: FEEDBACK (Continuous)                                  |
+|  [Phase 7: Learning]                                             |
+|  Quality Metrics, Pattern Learning, Knowledge Update             |
++------------------------------------------------------------------+
+        |                                                    ^
+        +----------------------------------------------------+
+                        Feedback Loop
+```
 
-**Phase 8: Deploy (Designed - Not Yet Implemented)**
-The pipeline integrates with CI/CD systems to run builds, execute tests, validate changes, and prepare merge requests. The goal is fully automated delivery from backlog item to merged code.
+### 1.3 Implementation Status
 
-**Current Status:** Documentation and reverse engineering phases (0-3) are implemented and working. The planning, code generation, testing, and deployment phases are designed but not yet implemented.
+| Phase | Name | Layer | Type | Status |
+|-------|------|-------|------|--------|
+| 0 | Indexing | Knowledge | Pipeline | IMPLEMENTED |
+| 1 | Architecture Facts | Knowledge | Pipeline | 80% COMPLETE |
+| 2 | Architecture Synthesis | Reasoning | Crew | IMPLEMENTED |
+| 3 | Task Understanding | Reasoning | Crew | PLANNED |
+| 4 | Code Generation | Execution | Crew | PLANNED |
+| 5 | Test Generation | Execution | Crew | PLANNED |
+| 6 | Review + Deploy | Execution | Pipeline | PLANNED |
+| 7 | Learning | Feedback | Pipeline | PLANNED |
 
-### 1.2 Key Benefits
+### 1.4 Key Benefits
 
 **Fully Automated:** No more manual diagram drawing. Point the tool at your repository and receive complete documentation. The AI agents handle everything from component discovery to diagram generation.
 
-**Evidence-Based:** Every statement in the generated documentation is backed by actual code or configuration evidence. No hallucinations, no guesswork. If it's not in your code, it won't appear in the documentation.
+**Evidence-Based:** Every statement in the generated documentation is backed by actual code or configuration evidence. No hallucinations, no guesswork. If it is not in your code, it will not appear in the documentation.
 
 **Reproducible:** Run the same analysis twice and get the same results. The deterministic code analysis phase ensures consistency, while the AI synthesis phase is guided by structured schemas.
 
@@ -40,7 +82,7 @@ The pipeline integrates with CI/CD systems to run builds, execute tests, validat
 
 **Standards-Compliant:** The output follows industry-standard formats - C4 model for architectural diagrams and arc42 for comprehensive documentation. These formats are widely recognized and understood by architects worldwide.
 
-### 1.3 What You Get
+### 1.5 What You Get
 
 When you run AICodeGenCrew on your repository, you receive:
 
@@ -48,8 +90,6 @@ When you run AICodeGenCrew on your repository, you receive:
 - **arc42 Documentation:** All 12 chapters including introduction, constraints, context, solution strategy, building blocks, runtime scenarios, deployment, and quality requirements
 - **Architecture Analysis:** Detected patterns, technology stack, quality assessment, technical debt indicators, and security posture
 - **Evidence Map:** Internal traceability from documentation back to source code (for validation)
-
-The entire process takes minutes for typical repositories and produces documentation that would normally require days of manual effort.
 
 ---
 
@@ -61,17 +101,16 @@ This document defines the architecture for a complete **End-to-End AI-Powered So
 
 Establish a fully automated SDLC pipeline that covers:
 
-| Phase | Capability | Implementation |
-|-------|------------|----------------|
-| Phase 0: Indexing | Repository analysis, vector storage | Pipeline (ChromaDB) |
-| Phase 1: Architecture Facts | Deterministic code analysis, facts extraction | Pipeline (7 Collectors) |
-| Phase 2: Architecture Analysis | Multi-agent analysis (Technical, Functional, Quality) | Crew (4 Agents) |
-| Phase 3: Architecture Synthesis | C4 + arc42 documentation generation | Crew (Think First) |
-| Phase 4: Review | Consistency checks, quality validation | Crew (Planned) |
-| Phase 5: Development | Backlog generation, work items | Crew (Planned) |
-| Phase 6: Code Generation | Feature implementation, refactoring | Crew (Planned) |
-| Phase 7: Testing | Test generation, coverage | Crew (Planned) |
-| Phase 8: Deployment | CI/CD integration, releases | Pipeline (Planned) |
+| Phase | Layer | Capability | Implementation |
+|-------|-------|------------|----------------|
+| Phase 0: Indexing | Knowledge | Repository analysis, vector storage | Pipeline (ChromaDB) |
+| Phase 1: Architecture Facts | Knowledge | Deterministic code analysis | Pipeline (7 Collectors) |
+| Phase 2: Architecture Synthesis | Reasoning | C4 + arc42 documentation | Crew (Think First) |
+| Phase 3: Task Understanding | Reasoning | RAG-enhanced planning | Crew (Planned) |
+| Phase 4: Code Generation | Execution | Feature implementation | Crew (Planned) |
+| Phase 5: Test Generation | Execution | Test creation | Crew (Planned) |
+| Phase 6: Review + Deploy | Execution | CI/CD integration | Pipeline (Planned) |
+| Phase 7: Learning | Feedback | Quality metrics, improvement | Pipeline (Planned) |
 
 ### 2.2 Core Principles
 
@@ -84,76 +123,90 @@ Establish a fully automated SDLC pipeline that covers:
 | Incremental Adoption | Phases can be executed independently |
 | Clean Output | No evidence IDs in final documentation |
 
-### 1.3 Current Focus: Architecture Phases (0-2)
+### 2.3 Current Focus: Knowledge Layer (Phases 0-1)
 
-The initial implementation focuses on architecture reverse engineering:
+The initial implementation focuses on architecture facts extraction:
 
 | Area | Implementation | Status |
 |------|----------------|--------|
-| **C4 Model** | 5 tasks (1 analyze + 4 diagrams) | Implemented |
-| **arc42 Documentation** | 14 tasks (1 analyze + 12 chapters + quality gate) | Implemented |
-| **Evidence Traceability** | evidence_map.json (internal use only) | Implemented |
-| **Think First Pattern** | analyze_system task before all documentation | Implemented |
+| **Phase 0 Indexing** | ChromaDB vector storage | IMPLEMENTED |
+| **Phase 1 Facts** | 7 Collectors | 80% COMPLETE |
+| **Phase 2 Synthesis** | C4 + arc42 Crews | IMPLEMENTED |
+| **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
-### 1.4 Implementation Status
+### 2.4 Phase 1 Results (Current)
 
-| Phase | Name | Type | Components | Output | Status |
-|-------|------|------|------------|--------|--------|
-| 0 | Indexing | Pipeline | 5 tools | `.cache/.chroma` | Implemented |
-| 1 | Architecture Facts | Pipeline | 7 collectors | `architecture_facts.json` + `evidence_map.json` | Implemented |
-| 2 | Architecture Analysis | Crew | 4 agents | `analyzed_architecture.json` | In Progress |
-| 3 | Architecture Synthesis | Crew | 2 sub-crews | `c4/*`, `arc42/*`, `quality/*` | Implemented |
-| 4 | Review | Crew | - | Quality reports | Planned |
-| 5 | Development | Crew | - | Backlog items | Planned |
-| 6 | Code Generation | Crew | - | Feature code | Planned |
-| 7 | Testing | Crew | - | Unit/integration tests | Planned |
-| 8 | Deployment | Pipeline | - | CI/CD configs | Planned |
+| Metric | Value |
+|--------|-------|
+| Components | 733 |
+| Interfaces | 125 |
+| Relations | 169 |
+| Evidence Items | 1005 |
+| Relation Resolution | 54% (target: 85%) |
+| Endpoint Flows | 0 (to be implemented) |
 
 ---
 
-## 2. Architecture Overview
+## 3. Architecture Overview
 
 > **Reference Diagrams:**
-> - [phase-flow.drawio](diagrams/phase-flow.drawio) - Pipeline Flow (Phases 0-5)
+> - [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full 4-Layer SDLC Overview
+> - [layer-architecture.drawio](diagrams/layer-architecture.drawio) - Detailed Layer Architecture
+> - [phase-flow.drawio](diagrams/phase-flow.drawio) - Pipeline Flow (Phases 0-7)
 > - [evidence-flow.drawio](diagrams/evidence-flow.drawio) - Evidence Data Flow
 > - [knowledge-structure.drawio](diagrams/knowledge-structure.drawio) - Knowledge Base Structure
 > - [collectors.drawio](diagrams/collectors.drawio) - Phase 1 Collectors
-> - [analysis-crew.drawio](diagrams/analysis-crew.drawio) - Phase 2 Analysis Crew
-> - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - Phase 3 Synthesis Crew
+> - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - Phase 2 Synthesis Crew
 
-### 2.1 Core Principle: Evidence-First Architecture
+### 3.1 Core Principle: Evidence-First Architecture
 
 ```
-Repository → Phase 0 (Indexing) → Phase 1 (Facts) → Phase 2 (Analysis) → Phase 3 (Synthesis) → C4 + arc42 Output
-                 ↓                     ↓                   ↓                    ↓
-            ChromaDB              NO LLM!           LLM (4 Agents)        LLM (2 Sub-Crews)
++-- LAYER 1: KNOWLEDGE (No LLM) ------------------------------------------+
+|  Repository → Phase 0 (Indexing) → Phase 1 (Facts)                      |
+|                    ↓                     ↓                               |
+|               ChromaDB           architecture_facts.json                 |
++-------------------------------------------------------------------------+
+                                      ↓
++-- LAYER 2: REASONING (LLM Required) ------------------------------------+
+|  Phase 2 (Synthesis) → Phase 3 (Task Understanding)                     |
+|        ↓                         ↓                                       |
+|   C4 + arc42 Docs          RAG-Enhanced Planning                         |
++-------------------------------------------------------------------------+
+                                      ↓
++-- LAYER 3: EXECUTION (LLM Required) ------------------------------------+
+|  Phase 4 (CodeGen) → Phase 5 (Testing) → Phase 6 (Deploy)               |
++-------------------------------------------------------------------------+
+                                      ↓
++-- LAYER 4: FEEDBACK ----------------------------------------------------+
+|  Phase 7 (Learning) → Quality Metrics → Knowledge Update                |
++-------------------------------------------------------------------------+
 ```
 
 **Key Rules:**
 - Phase 1 produces facts and evidence (deterministic, no LLM)
-- Phase 2 analyzes facts with 4 specialized agents, produces `analyzed_architecture.json`
-- Phase 3 may only synthesize from Phase 2 output
+- Phase 2 synthesizes documentation from facts only
 - If it is not in `architecture_facts.json`, it must NOT appear in output
 - Evidence IDs are for internal processing only, NOT in final documentation
+- Feedback loop updates knowledge base continuously
 
-### 2.2 Component Classification
+### 3.2 Component Classification
 
-| Classification | Description | LLM Requirement | Implemented |
-|----------------|-------------|-----------------|-------------|
-| Pipeline | Deterministic automated process | None (Embeddings for Phase 0) | Phase 0, Phase 1 |
-| Crew | CrewAI multi-agent workflow | Full LLM | Phase 2, Phase 3 |
+| Classification | Layer | LLM Requirement | Phases |
+|----------------|-------|-----------------|--------|
+| Pipeline | Knowledge | None (Embeddings for Phase 0) | 0, 1, 6, 7 |
+| Crew | Reasoning/Execution | Full LLM | 2, 3, 4, 5 |
 
-### 2.3 Core Modules
+### 3.3 Core Modules
 
 | Module | Location | Responsibility |
 |--------|----------|----------------|
-| **Orchestrator** | `orchestrator.py` | Phase coordination (register → run) |
+| **Orchestrator** | `orchestrator.py` | Phase coordination (register - run) |
 | CLI | `cli.py` | Command-line interface |
 | Pipelines | `pipelines/` | Deterministic processes (Phase 0, 1) |
 | Crews | `crews/` | AI agent workflows (Phase 2+) |
 | Shared | `shared/` | Common utilities, models, tools |
 
-### 2.4 SDLCOrchestrator Design
+### 3.4 SDLCOrchestrator Design
 
 The orchestrator follows clean architecture principles:
 
@@ -175,7 +228,7 @@ result = orchestrator.run(preset="architecture_workflow")
 | **Protocol-based** | Any class with `kickoff()` or `run()` works |
 | **Data Classes** | `PhaseResult`, `PipelineResult` for clarity |
 
-### 2.5 Phase 2 Think First Pattern
+### 3.5 Think First Pattern
 
 Each crew in Phase 2 starts with an `analyze_system` task:
 
@@ -189,7 +242,7 @@ This ensures the agent "thinks" before writing any documentation.
 
 ---
 
-## 3. Project Structure
+## 4. Project Structure
 
 ```
 src/aicodegencrew/
