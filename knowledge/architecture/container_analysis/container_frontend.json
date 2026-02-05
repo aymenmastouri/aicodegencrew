@@ -3,91 +3,97 @@
   "component_count": 404,
   "relation_count": 0,
   "interface_count": 30,
-  "summary": "The frontend is a component‑based Angular application leveraging TypeScript and RxJS, organized into presentation, business‑logic, and data‑access layers and consuming a suite of REST APIs. It fully supports the legal deed management domain with capabilities ranging from deed creation to PDF generation and background job handling. While the codebase exhibits high cohesion, moderate coupling and several areas of technical debt—especially an excess of services, adapters, and pipes—its overall quality is solid (grade B). Targeted refactoring and consolidation will improve maintainability and reduce complexity.",
+  "summary": "The frontend container implements a component‑based Angular architecture organized into presentation, business‑logic, and infrastructure layers and communicates with the backend via REST APIs. It delivers a comprehensive set of legal‑deed management capabilities, from creation and workflow handling to reporting and user settings. Quality metrics indicate moderate separation of concerns, coupling, and cohesion, resulting in a grade of C. The primary technical debt stems from an excessive number of services, adapters, and pipes, and a lack of documented module relationships, which together threaten maintainability and scalability.",
   "technical": {
     "primary_pattern": "Component-Based",
     "layers": [
-      "Presentation (Components, Directives, Pipes)",
-      "Business Logic (Services, Resolvers, Guards)",
-      "Data Access / Integration (Adapters, Interceptors, API Modules)"
+      "Presentation Layer (Components, Directives, Pipes, Guards, Interceptors)",
+      "Business Logic Layer (Services, Resolvers, Helpers)",
+      "Infrastructure/Adapter Layer (Adapters, HTTP Interceptors, API Modules)"
     ],
     "technologies": [
       "Angular",
       "TypeScript",
-      "RxJS"
+      "RxJS",
+      "Angular Modules",
+      "Angular Routing",
+      "Angular HTTP Client"
     ],
-    "integration_style": "REST API over HTTP"
+    "integration_style": "REST API"
   },
   "functional": {
-    "bounded_context": "Legal Deed Management and Document Lifecycle",
     "domain_concepts": [
       "Deed",
-      "Document",
       "Workflow",
+      "Document",
       "User",
-      "Signature",
-      "PDF",
-      "Permission",
+      "Authentication",
+      "Settings",
+      "Notification",
       "Report",
-      "Job",
       "Task",
-      "Metadata"
+      "Job",
+      "NumberManagement",
+      "CorrectionNote",
+      "Archiving"
     ],
     "capabilities": [
-      "Create, edit and view deeds",
-      "Approve and correct deed entries",
-      "Manage deed lifecycle workflows",
-      "Handle document import/export and PDF generation",
-      "Capture and validate electronic signatures",
-      "Perform user authentication and authorization",
-      "Apply security features such as reencryption",
-      "Generate and view reports and metadata",
-      "Execute background jobs and task processing",
-      "Provide online help and contextual assistance"
+      "Create, view, edit, approve and delete deeds",
+      "Manage deed workflows (finalize, validate signatures, reencryption)",
+      "Import and export document data (JSON, PDF, etc.)",
+      "Archive and retrieve documents",
+      "Handle user authentication and authorization",
+      "Configure and persist application settings",
+      "Display online help and notifications",
+      "Generate reports and metadata for deeds",
+      "Manage tasks, jobs and number assignments",
+      "Provide UI components for data entry, validation and correction notes"
     ],
+    "bounded_context": "Legal Deed Management and Workflow Processing",
     "integrations": [
-      "Action API (REST)",
-      "Deed Registry API (REST)",
-      "Document Metadata API (REST)",
-      "Job API (REST)",
-      "Task API (REST)",
-      "Reencryption API (REST)",
-      "Authentication services (e.g., OAuth/OIDC)",
-      "PDF generation service",
-      "External help/content service"
+      "Action API (ActionApiModule)",
+      "Reencryption API (ReencryptionApiModule)",
+      "Deed Registry API (DeedRegistryApiModule)",
+      "Document Metadata API (DocumentMetadataApiModule)",
+      "Job API (JobApiModule)",
+      "Task API (TaskApiModule)",
+      "External authentication adapters (JsonAuthenticationAdapter, XnpAuthenticationAdapter, etc.)",
+      "Online help adapter service",
+      "Settings adapter service"
     ]
   },
   "quality": {
     "separation_of_concerns": "moderate",
     "coupling": "moderate",
-    "cohesion": "high",
-    "grade": "B",
+    "cohesion": "moderate",
     "debt_indicators": [
-      "Excessive number of services (131) suggesting possible god services",
-      "Large number of adapters (50) with similar naming, indicating duplicated abstractions",
-      "Proliferation of pipes (67) that may be split across unrelated concerns",
-      "Modules contain many responsibilities; some modules may be too broad"
+      "Excessive number of services (131) suggesting possible God services",
+      "High count of adapters (50) indicating potential abstraction leakage",
+      "Large number of pipes (67) may lead to duplication and maintenance overhead",
+      "Lack of recorded component/module relations makes dependency analysis difficult"
     ],
+    "grade": "C",
     "recommendations": [
-      "Consolidate related services into domain‑specific service groups or facades to reduce coupling",
-      "Introduce higher‑level abstractions (e.g., repository or gateway patterns) to unify similar adapters",
-      "Review and refactor rarely‑used or overly granular pipes; group them into shared utility libraries",
-      "Apply the Single Responsibility Principle to modules: split overly large modules into feature‑specific ones",
-      "Add interface contracts for critical services to decouple implementations from consumers"
+      "Consolidate related services into feature‑scoped modules or facade services to reduce surface area",
+      "Introduce a clear adapter/factory abstraction layer to limit direct adapter usage across the app",
+      "Review and merge similar pipes; consider utility functions or shared pipe libraries",
+      "Document module boundaries and enforce dependency rules (e.g., via lint rules or architecture tests)",
+      "Limit the proliferation of adapters by defining generic adapter interfaces where appropriate",
+      "Implement architectural guardrails (e.g., layer enforcement, bounded context segregation) to improve separation of concerns"
     ]
   },
-  "overall_assessment": "The frontend delivers comprehensive functional coverage and adheres to a solid component‑based architecture, but moderate coupling and notable technical debt (especially service and adapter sprawl) warrant focused refactoring to sustain long‑term quality.",
+  "overall_assessment": "The frontend delivers rich functional coverage and follows a sensible Angular component model, but its architectural health is hampered by service, adapter, and pipe bloat as well as undocumented module dependencies. Addressing these quality issues is essential to sustain future development velocity and system stability.",
   "top_recommendations": [
-    "Consolidate related services into domain‑specific service groups or facades",
-    "Introduce repository/gateway abstractions to unify and deduplicate adapters",
-    "Refactor oversized modules and split them into feature‑specific modules"
+    "Consolidate related services into feature‑scoped modules or facade services",
+    "Introduce a clear adapter/factory abstraction layer to curb adapter proliferation",
+    "Document module boundaries and enforce dependency rules via lint or architecture tests"
   ],
   "analysis": {
     "primary_pattern": "Component-Based",
     "layers": [
-      "Presentation (Components, Directives, Pipes)",
-      "Business Logic (Services, Resolvers, Guards)",
-      "Data Access / Integration (Adapters, Interceptors, API Modules)"
+      "Presentation Layer (Components, Directives, Pipes, Guards, Interceptors)",
+      "Business Logic Layer (Services, Resolvers, Helpers)",
+      "Infrastructure/Adapter Layer (Adapters, HTTP Interceptors, API Modules)"
     ],
     "stereotype_distribution": {
       "module": 16,
@@ -95,10 +101,10 @@
       "pipe": 67,
       "directive": 3,
       "service": 131,
-      "interceptor": 4,
       "adapter": 50,
-      "resolver": 4,
-      "guard": 1
+      "interceptor": 4,
+      "guard": 1,
+      "resolver": 4
     },
     "total_components": 404,
     "total_relations": 0,
