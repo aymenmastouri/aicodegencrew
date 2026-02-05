@@ -47,16 +47,6 @@
     "communication_pattern": "sync REST"
   },
   "micro_architecture": {
-    "e2e-xnp": {
-      "primary_pattern": "Unknown",
-      "layer_structure": [],
-      "component_counts": {}
-    },
-    "frontend": {
-      "primary_pattern": "Unknown",
-      "layer_structure": [],
-      "component_counts": {}
-    },
     "backend": {
       "primary_pattern": "Layered",
       "layer_structure": [
@@ -81,6 +71,16 @@
         "entity": 199,
         "scheduler": 1
       }
+    },
+    "frontend": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
+    },
+    "e2e-xnp": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
     },
     "import-schema": {
       "primary_pattern": "Unknown",
@@ -118,34 +118,6 @@
   },
   "container_analyses": [
     {
-      "container": "e2e-xnp",
-      "component_count": 0,
-      "relation_count": 0,
-      "interface_count": 0,
-      "analysis": {
-        "primary_pattern": "Unknown",
-        "layers": [],
-        "stereotype_distribution": {},
-        "total_components": 0,
-        "total_relations": 0,
-        "total_interfaces": 0
-      }
-    },
-    {
-      "container": "frontend",
-      "component_count": 0,
-      "relation_count": 0,
-      "interface_count": 0,
-      "analysis": {
-        "primary_pattern": "Unknown",
-        "layers": [],
-        "stereotype_distribution": {},
-        "total_components": 0,
-        "total_relations": 0,
-        "total_interfaces": 0
-      }
-    },
-    {
       "container": "backend",
       "component_count": 732,
       "relation_count": 0,
@@ -177,6 +149,34 @@
         "total_components": 732,
         "total_relations": 0,
         "total_interfaces": 125
+      }
+    },
+    {
+      "container": "frontend",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
+      }
+    },
+    {
+      "container": "e2e-xnp",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
       }
     },
     {
