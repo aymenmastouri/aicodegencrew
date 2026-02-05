@@ -217,16 +217,24 @@ class SDLCOrchestrator:
     ) -> List[str]:
         """Resolve which phases to run."""
         if explicit_phases:
-            return explicit_phases
-        
-        if preset:
+            phases = explicit_phases
+        elif preset:
             phases = self.config.get("presets", {}).get(preset, [])
             if not phases:
                 logger.warning(f"[Orchestrator] Unknown preset: {preset}")
-            return phases
+        else:
+            # Default: return enabled phases in order
+            phases = self._get_enabled_phases()
         
-        # Default: return enabled phases in order
-        return self._get_enabled_phases()
+        # Filter out unregistered phases (e.g., phase0 when INDEX_MODE=off)
+        filtered = []
+        for phase_id in phases:
+            if phase_id in self.phases:
+                filtered.append(phase_id)
+            else:
+                logger.info(f"[Orchestrator] Skipping unregistered phase: {phase_id}")
+        
+        return filtered
     
     def _get_enabled_phases(self) -> List[str]:
         """Get enabled phases sorted by order."""

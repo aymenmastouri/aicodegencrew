@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field
 from crewai.tools import BaseTool
 
 from ....shared.utils.logger import setup_logger
+from ....shared.utils.token_budget import MAX_RESPONSE_CHARS, truncate_response
 
 logger = setup_logger(__name__)
 
@@ -200,7 +201,11 @@ class StereotypeListTool(BaseTool):
             ]
         }
         
-        return json.dumps(result, indent=2, ensure_ascii=False)
+        # TOKEN BUDGET: Truncate if too large
+        output_str = json.dumps(result, indent=2, ensure_ascii=False)
+        output_str = truncate_response(output_str, hint="use offset for pagination")
+        
+        return output_str
     
     def _sort_by_relevance(self, components: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Sort components by architectural layer relevance.

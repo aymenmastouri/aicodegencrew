@@ -9,7 +9,7 @@ NO LLM. Only evidence-based construction from Phase 1 facts.
 from typing import List, Dict, Set, Tuple
 from pathlib import Path
 
-from .base_collector import CollectedComponent, CollectedInterface, CollectedRelation, CollectedEvidence
+from .collectors.fact_adapter import CollectedComponent, CollectedInterface, CollectedRelation, CollectedEvidence
 from ...shared.utils.logger import logger
 
 
@@ -78,7 +78,9 @@ class EndpointFlowBuilder:
         flows = []
 
         for interface in self.interfaces:
-            if interface.type != "REST":
+            # Support both 'type' and 'interface_type' attributes
+            iface_type = getattr(interface, 'type', None) or getattr(interface, 'interface_type', '')
+            if iface_type.upper() not in ("REST", "REST_ENDPOINT"):
                 continue  # Only process REST interfaces for now
 
             flow = self._build_single_flow(interface)
@@ -98,8 +100,8 @@ class EndpointFlowBuilder:
         Returns:
             Endpoint flow dictionary or None
         """
-        # Find implementing controller
-        controller_name = interface.implemented_by
+        # Find implementing controller - support both attribute names
+        controller_name = getattr(interface, 'implemented_by', '') or getattr(interface, 'name', '')
         controller = self.component_by_name.get(controller_name)
 
         if not controller:
@@ -121,11 +123,14 @@ class EndpointFlowBuilder:
         # Create flow ID
         flow_id = f"flow_{interface.id}"
 
+        # Get path - support both 'path' and 'endpoint' attributes
+        iface_path = getattr(interface, 'path', None) or getattr(interface, 'endpoint', 'UNKNOWN')
+
         # Build flow dictionary
         flow = {
             "id": flow_id,
             "interface_id": interface.id,
-            "path": interface.path or "UNKNOWN",
+            "path": iface_path or "UNKNOWN",
             "method": interface.method or "UNKNOWN",
             "chain": chain,
             "evidence": evidence_ids,

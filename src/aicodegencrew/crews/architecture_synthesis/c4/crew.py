@@ -286,8 +286,8 @@ CONTAINER RELATIONSHIPS:
     @llm
     def default_llm(self) -> LLM:
         """Default LLM from environment variables."""
-        model = os.getenv("MODEL", "gpt-oss-120b")
-        api_base = os.getenv("API_BASE", "http://sov-ai-platform.nue.local.vm:4000/v1")
+        model = os.getenv("MODEL", "gpt-4o-mini")
+        api_base = os.getenv("API_BASE", "")
 
         raw_max_tokens = os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000")
         try:

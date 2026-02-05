@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from crewai.tools import BaseTool
 
 from ....shared.utils.logger import setup_logger
+from ....shared.utils.token_budget import RAG_MAX_RESPONSE_CHARS, MAX_SNIPPET_LENGTH, truncate_response
 
 logger = setup_logger(__name__)
 
@@ -188,7 +189,7 @@ class RAGQueryTool(BaseTool):
                 include=["documents", "metadatas", "distances"]
             )
             
-            # Format results
+            # Format results with TOKEN BUDGET
             formatted_results = []
             
             if results and results.get("documents"):
@@ -200,11 +201,16 @@ class RAGQueryTool(BaseTool):
                     metadata = metadatas[i] if i < len(metadatas) else {}
                     distance = distances[i] if i < len(distances) else 0
                     
+                    # Truncate content to MAX_SNIPPET_LENGTH
+                    content = doc[:MAX_SNIPPET_LENGTH] if doc else ""
+                    if doc and len(doc) > MAX_SNIPPET_LENGTH:
+                        content += "..."
+                    
                     formatted_results.append({
                         "file_path": metadata.get("file_path", "unknown"),
                         "chunk_type": metadata.get("chunk_type", "code"),
                         "relevance_score": round(1 - distance, 3) if distance else 0,
-                        "content": doc[:200] if doc else "",  # Reduced from 500 to prevent context overflow
+                        "content": content,
                     })
             
             output = {
@@ -214,7 +220,11 @@ class RAGQueryTool(BaseTool):
                 "results": formatted_results
             }
             
-            return json.dumps(output, indent=2, ensure_ascii=False)
+            # TOKEN BUDGET: Final truncation check
+            output_str = json.dumps(output, indent=2, ensure_ascii=False)
+            output_str = truncate_response(output_str, RAG_MAX_RESPONSE_CHARS)
+            
+            return output_str
             
         except Exception as e:
             logger.error(f"RAG query error: {e}")
