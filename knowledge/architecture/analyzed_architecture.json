@@ -41,17 +41,12 @@
   "macro_architecture": {
     "style": "Distributed",
     "container_count": 4,
-    "reasoning": "Map-Reduce analysis of 4 containers with 0 total components",
+    "reasoning": "Map-Reduce analysis of 4 containers with 732 total components",
     "scalability_approach": "horizontal",
     "deployment_model": "distributed",
     "communication_pattern": "sync REST"
   },
   "micro_architecture": {
-    "backend": {
-      "primary_pattern": "Unknown",
-      "layer_structure": [],
-      "component_counts": {}
-    },
     "e2e-xnp": {
       "primary_pattern": "Unknown",
       "layer_structure": [],
@@ -62,6 +57,31 @@
       "layer_structure": [],
       "component_counts": {}
     },
+    "backend": {
+      "primary_pattern": "Layered",
+      "layer_structure": [
+        "Controller",
+        "Service",
+        "Repository",
+        "Entity"
+      ],
+      "component_counts": {
+        "rest_interface": 21,
+        "controller": 32,
+        "service": 168,
+        "repository": 38,
+        "module": 16,
+        "component": 128,
+        "pipe": 67,
+        "directive": 3,
+        "adapter": 50,
+        "resolver": 4,
+        "interceptor": 4,
+        "guard": 1,
+        "entity": 199,
+        "scheduler": 1
+      }
+    },
     "import-schema": {
       "primary_pattern": "Unknown",
       "layer_structure": [],
@@ -69,33 +89,34 @@
     }
   },
   "architecture_quality": {
-    "separation_of_concerns": "moderate",
+    "separation_of_concerns": "good",
     "layer_violations_count": 0,
     "coupling_assessment": "loose",
     "overall_grade": "A"
   },
   "statistics": {
-    "total_components": 0,
+    "total_components": 732,
     "total_relations": 0,
-    "total_interfaces": 0,
+    "total_interfaces": 125,
     "containers_analyzed": 4,
-    "stereotype_distribution": {}
+    "stereotype_distribution": {
+      "rest_interface": 21,
+      "controller": 32,
+      "service": 168,
+      "repository": 38,
+      "module": 16,
+      "component": 128,
+      "pipe": 67,
+      "directive": 3,
+      "adapter": 50,
+      "resolver": 4,
+      "interceptor": 4,
+      "guard": 1,
+      "entity": 199,
+      "scheduler": 1
+    }
   },
   "container_analyses": [
-    {
-      "container": "backend",
-      "component_count": 0,
-      "relation_count": 0,
-      "interface_count": 0,
-      "analysis": {
-        "primary_pattern": "Unknown",
-        "layers": [],
-        "stereotype_distribution": {},
-        "total_components": 0,
-        "total_relations": 0,
-        "total_interfaces": 0
-      }
-    },
     {
       "container": "e2e-xnp",
       "component_count": 0,
@@ -125,6 +146,40 @@
       }
     },
     {
+      "container": "backend",
+      "component_count": 732,
+      "relation_count": 0,
+      "interface_count": 125,
+      "analysis": {
+        "primary_pattern": "Layered",
+        "layers": [
+          "Controller",
+          "Service",
+          "Repository",
+          "Entity"
+        ],
+        "stereotype_distribution": {
+          "rest_interface": 21,
+          "controller": 32,
+          "service": 168,
+          "repository": 38,
+          "module": 16,
+          "component": 128,
+          "pipe": 67,
+          "directive": 3,
+          "adapter": 50,
+          "resolver": 4,
+          "interceptor": 4,
+          "guard": 1,
+          "entity": 199,
+          "scheduler": 1
+        },
+        "total_components": 732,
+        "total_relations": 0,
+        "total_interfaces": 125
+      }
+    },
+    {
       "container": "import-schema",
       "component_count": 0,
       "relation_count": 0,
@@ -140,7 +195,7 @@
     }
   ],
   "overall_grade": "A",
-  "executive_summary": "Map-Reduce analysis completed for 4 containers with 0 components.",
+  "executive_summary": "Map-Reduce analysis completed for 4 containers with 732 components.",
   "top_recommendations": [
     "Consider extracting large containers into separate services",
     "Add API documentation for external interfaces",
