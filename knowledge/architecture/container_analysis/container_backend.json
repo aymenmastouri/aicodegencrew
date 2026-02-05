@@ -3,68 +3,63 @@
   "component_count": 333,
   "relation_count": 0,
   "interface_count": 95,
-  "summary": "The backend follows a classic layered architecture built on Spring Boot, exposing a rich set of RESTful capabilities for deed registry, archiving, and key‑management operations. While the technical stack (Spring MVC, Data JPA, Security, Scheduler, Lombok) and functional coverage (CRUD, history logging, reporting, scheduled jobs) are solid, the codebase shows moderate separation‑of‑concerns, coupling, and cohesion issues, notably oversized controllers, god‑services, and an over‑populated domain model, resulting in a overall quality grade of C.",
+  "summary": "The backend follows a conventional layered architecture (Presentation, Service, Repository, Domain) built with Spring Boot and related Spring stack technologies, exposing REST APIs for deed and document management. Functionally it delivers a rich set of capabilities around CRUD operations, history tracking, archiving, key management, reporting, and security. Quality-wise the codebase shows moderate separation, coupling and cohesion with notable technical debt such as an excessive number of entity classes, missing abstractions, and oversized controllers, resulting in an overall grade of C.",
   "technical": {
     "primary_pattern": "Layered",
     "layers": [
-      "Presentation (Controllers / REST interfaces)",
-      "Service (Business logic services)",
-      "Repository (Data access / DAO)",
-      "Domain (Entities / JPA models)",
-      "Infrastructure (Configurations, Scheduler, Security)"
+      "Presentation (Controller/REST)",
+      "Service (Business logic)",
+      "Repository (Data access)",
+      "Domain (Entity models)"
     ],
     "technologies": [
       "Spring Boot",
-      "Spring MVC",
+      "Spring MVC (REST Controllers)",
       "Spring Data JPA",
-      "Hibernate",
+      "Hibernate (JPA provider)",
       "Spring Security",
-      "Spring Scheduler",
-      "REST (Spring @RestController)",
-      "JPA / Hibernate",
       "Lombok"
     ],
-    "integration_style": "REST API"
+    "integration_style": "REST API",
+    "integrations": [
+      "Relational Database (via Spring Data JPA / Hibernate)",
+      "External Key Management Service (XnpKmService, MockKmService)",
+      "External Archiving Service (via REST endpoints)",
+      "Authentication/Authorization provider (TokenAuthenticationRestTemplate)",
+      "External REST clients (via ProxyRestTemplateConfiguration)"
+    ]
   },
   "functional": {
+    "bounded_context": "Deed and Document Management with Archiving and Key Management",
     "domain_concepts": [
+      "Action",
       "DeedEntry",
       "DocumentMetaData",
-      "Action",
       "HandoverDataSet",
+      "SignatureInfo",
+      "Participant",
       "KeyManager",
       "Archiving",
       "BusinessPurpose",
-      "Participant",
-      "SignatureInfo",
-      "CorrectionNote",
       "Connection",
+      "Change",
+      "CorrectionNote",
       "Report",
       "Job",
-      "User"
+      "ReencryptionJob"
     ],
     "capabilities": [
-      "Create, retrieve, update and delete Deed entries",
-      "Log and query Deed entry history",
-      "Manage handover data sets and their histories",
-      "Handle actions and action streams",
-      "Manage document metadata",
-      "Perform archiving operations and generate signing tokens",
-      "Re‑encrypt data and manage cryptographic state via Key Manager",
-      "Expose business purpose information",
-      "Run scheduled jobs and background processing",
-      "Generate reports and job status information",
-      "Health‑check and system monitoring",
-      "Provide RESTful API for all above functions"
-    ],
-    "bounded_context": "Deed Registry and Archiving Management",
-    "integrations": [
-      "External Key Management Service (XnpKmService / MockKmService)",
-      "Database via JPA/Hibernate (relational persistence)",
-      "External Reporting system (ReportRestService)",
-      "Spring Scheduler for background jobs",
-      "REST clients (consuming the /uvz/v1/* endpoints)",
-      "Spring Security for authentication/authorization"
+      "Create, read, update, delete (CRUD) deed entries",
+      "Log and retrieve deed entry history",
+      "Manage action streams and action types",
+      "Handle document metadata and versioning",
+      "Execute handover data set operations",
+      "Perform archiving operations and sign submission/reencryption tokens",
+      "Manage cryptographic keys and re‑encryption processes",
+      "Provide business purpose lookup",
+      "Generate reports and job scheduling",
+      "Health checking and system monitoring",
+      "Security enforcement via custom method expressions"
     ]
   },
   "quality": {
@@ -72,36 +67,33 @@
     "coupling": "moderate",
     "cohesion": "moderate",
     "debt_indicators": [
-      "Large controllers",
-      "God services (services with many responsibilities)",
-      "Excessive number of domain entities (199)",
-      "Missing service abstractions/interfaces",
-      "Potential cyclic dependencies between services and repositories"
+      "Large number of entity classes (199) suggesting over‑modeling",
+      "Many service and DAO implementations used directly (Impl suffix) without interfaces",
+      "Potentially oversized controller implementations",
+      "Mix of persistence and business logic in some service classes"
     ],
     "grade": "C",
     "recommendations": [
-      "Split oversized controller classes into smaller, feature‑focused controllers.",
-      "Introduce interfaces for services and inject them via constructors to reduce tight coupling.",
-      "Refactor god services into multiple focused services or use the strategy pattern for interchangeable behaviours.",
-      "Review the domain model and consolidate overlapping entities; apply bounded‑context concepts to limit entity proliferation.",
-      "Conduct a dependency‑graph analysis to detect and break any cyclic dependencies between services and repositories.",
-      "Add a façade or application‑service layer to isolate business logic from REST controllers further."
+      "Introduce explicit interfaces for services and repositories to decouple layers",
+      "Refactor oversized controllers into smaller, focused endpoint handlers",
+      "Consolidate related entity classes or apply bounded‑context partitioning to improve domain cohesion",
+      "Apply Facade or Application Service pattern for external integrations (KeyManager, Archiving) to isolate third‑party APIs",
+      "Consider adopting domain‑driven design aggregates to reduce anemic domain model and improve encapsulation"
     ]
   },
-  "overall_assessment": "The backend delivers comprehensive business functionality on a robust Spring stack, but architectural erosion—manifested as heavy controllers, monolithic services, and an unwieldy domain model—limits maintainability and scalability. Addressing the identified technical debt will elevate code quality and align the implementation with the intended layered design.",
+  "overall_assessment": "The backend provides a comprehensive functional set and uses a familiar Spring‑based stack, but architectural concerns such as excessive entity proliferation, lack of proper abstractions, and monolithic controllers hinder maintainability and scalability, reflected in a moderate quality rating.",
   "top_recommendations": [
-    "Split oversized controller classes into smaller, feature‑focused controllers.",
-    "Introduce interfaces for services and inject them via constructors to reduce tight coupling.",
-    "Refactor god services into multiple focused services or use the strategy pattern for interchangeable behaviours."
+    "Introduce explicit interfaces for services and repositories to decouple layers",
+    "Refactor oversized controllers into smaller, focused endpoint handlers",
+    "Consolidate related entity classes or apply bounded‑context partitioning to improve domain cohesion"
   ],
   "analysis": {
     "primary_pattern": "Layered",
     "layers": [
-      "Presentation (Controllers / REST interfaces)",
-      "Service (Business logic services)",
-      "Repository (Data access / DAO)",
-      "Domain (Entities / JPA models)",
-      "Infrastructure (Configurations, Scheduler, Security)"
+      "Presentation (Controller/REST)",
+      "Service (Business logic)",
+      "Repository (Data access)",
+      "Domain (Entity models)"
     ],
     "stereotype_distribution": {
       "rest_interface": 21,
