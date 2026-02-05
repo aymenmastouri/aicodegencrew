@@ -3,63 +3,63 @@
   "component_count": 333,
   "relation_count": 0,
   "interface_count": 95,
-  "summary": "The backend follows a conventional layered architecture (Presentation, Service, Repository, Domain) built with Spring Boot and related Spring stack technologies, exposing REST APIs for deed and document management. Functionally it delivers a rich set of capabilities around CRUD operations, history tracking, archiving, key management, reporting, and security. Quality-wise the codebase shows moderate separation, coupling and cohesion with notable technical debt such as an excessive number of entity classes, missing abstractions, and oversized controllers, resulting in an overall grade of C.",
+  "summary": "The backend follows a layered architecture (Presentation, Service, Repository, Domain) built on Spring Boot and related Spring projects, exposing its functionality through REST APIs. It implements a comprehensive deed registry and archiving domain with numerous capabilities such as action CRUD, deed entry lifecycle management, document metadata handling, key management, archiving, reporting, and scheduled jobs, all secured by Spring Security. While the codebase demonstrates moderate separation of concerns, coupling, and cohesion, there are architectural debts including oversized controllers, missing service interfaces, misplaced DAO implementations, and a lack of an application façade to isolate the domain, resulting in an overall quality grade of B.",
   "technical": {
     "primary_pattern": "Layered",
     "layers": [
-      "Presentation (Controller/REST)",
-      "Service (Business logic)",
-      "Repository (Data access)",
-      "Domain (Entity models)"
+      "Presentation (Controllers)",
+      "Service",
+      "Repository (Data Access)",
+      "Domain (Entities)"
     ],
     "technologies": [
       "Spring Boot",
-      "Spring MVC (REST Controllers)",
+      "Spring MVC",
       "Spring Data JPA",
-      "Hibernate (JPA provider)",
+      "Hibernate",
       "Spring Security",
-      "Lombok"
+      "Spring Scheduler",
+      "REST (Spring REST Controllers)",
+      "JPA"
     ],
-    "integration_style": "REST API",
-    "integrations": [
-      "Relational Database (via Spring Data JPA / Hibernate)",
-      "External Key Management Service (XnpKmService, MockKmService)",
-      "External Archiving Service (via REST endpoints)",
-      "Authentication/Authorization provider (TokenAuthenticationRestTemplate)",
-      "External REST clients (via ProxyRestTemplateConfiguration)"
-    ]
+    "integration_style": "REST API"
   },
   "functional": {
-    "bounded_context": "Deed and Document Management with Archiving and Key Management",
     "domain_concepts": [
       "Action",
       "DeedEntry",
       "DocumentMetaData",
       "HandoverDataSet",
-      "SignatureInfo",
-      "Participant",
       "KeyManager",
       "Archiving",
       "BusinessPurpose",
+      "SignatureInfo",
+      "Participant",
       "Connection",
-      "Change",
       "CorrectionNote",
       "Report",
-      "Job",
-      "ReencryptionJob"
+      "Job"
     ],
     "capabilities": [
-      "Create, read, update, delete (CRUD) deed entries",
-      "Log and retrieve deed entry history",
-      "Manage action streams and action types",
-      "Handle document metadata and versioning",
-      "Execute handover data set operations",
-      "Perform archiving operations and sign submission/reencryption tokens",
-      "Manage cryptographic keys and re‑encryption processes",
+      "Create, read, update, and delete actions",
+      "Manage deed entries and their lifecycle",
+      "Store and retrieve document metadata",
+      "Handle handover data sets and history",
+      "Perform key management operations (reencryption, crypto state)",
+      "Execute archiving processes and sign submission/re‑encryption tokens",
       "Provide business purpose lookup",
-      "Generate reports and job scheduling",
+      "Generate and serve reports",
+      "Schedule and run background jobs",
       "Health checking and system monitoring",
-      "Security enforcement via custom method expressions"
+      "Secure REST API access with Spring Security"
+    ],
+    "bounded_context": "Deed Registry and Archiving Management",
+    "integrations": [
+      "Relational database via Spring Data JPA/Hibernate",
+      "External Key Management System (via XnpKmServiceImpl / MockKmService)",
+      "External Archiving Service (via ArchivingServiceImpl)",
+      "REST clients for external services (ProxyRestTemplateConfiguration)",
+      "Spring Security authentication/authorization mechanisms"
     ]
   },
   "quality": {
@@ -67,33 +67,35 @@
     "coupling": "moderate",
     "cohesion": "moderate",
     "debt_indicators": [
-      "Large number of entity classes (199) suggesting over‑modeling",
-      "Many service and DAO implementations used directly (Impl suffix) without interfaces",
-      "Potentially oversized controller implementations",
-      "Mix of persistence and business logic in some service classes"
+      "Large controllers (32 REST controllers)",
+      "Large number of service implementations (42) without clear interfaces",
+      "DAO implementation classes placed in SERVICE layer",
+      "Potential tight coupling between controllers and repositories",
+      "Missing façade or application layer to isolate domain"
     ],
-    "grade": "C",
+    "grade": "B",
     "recommendations": [
-      "Introduce explicit interfaces for services and repositories to decouple layers",
-      "Refactor oversized controllers into smaller, focused endpoint handlers",
-      "Consolidate related entity classes or apply bounded‑context partitioning to improve domain cohesion",
-      "Apply Facade or Application Service pattern for external integrations (KeyManager, Archiving) to isolate third‑party APIs",
-      "Consider adopting domain‑driven design aggregates to reduce anemic domain model and improve encapsulation"
+      "Introduce service interfaces and program to abstractions to decouple implementations",
+      "Extract common business logic into dedicated domain services or facades",
+      "Refactor oversized controllers into smaller, purpose‑driven components",
+      "Move DAO implementation classes out of the SERVICE package to respect layering",
+      "Consider adding an application façade layer (or hexagonal ports) to isolate external integrations",
+      "Review entity model to consolidate overlapping entities and reduce unnecessary complexity"
     ]
   },
-  "overall_assessment": "The backend provides a comprehensive functional set and uses a familiar Spring‑based stack, but architectural concerns such as excessive entity proliferation, lack of proper abstractions, and monolithic controllers hinder maintainability and scalability, reflected in a moderate quality rating.",
+  "overall_assessment": "The backend provides solid functional coverage and leverages a familiar Spring stack, but architectural debt around layering violations and oversized components hampers maintainability and scalability. Addressing these issues will elevate the quality from a solid B to a higher tier.",
   "top_recommendations": [
-    "Introduce explicit interfaces for services and repositories to decouple layers",
-    "Refactor oversized controllers into smaller, focused endpoint handlers",
-    "Consolidate related entity classes or apply bounded‑context partitioning to improve domain cohesion"
+    "Introduce service interfaces and program to abstractions to decouple implementations",
+    "Refactor oversized controllers into smaller, purpose‑driven components",
+    "Add an application façade layer (or hexagonal ports) to isolate the domain from external integrations"
   ],
   "analysis": {
     "primary_pattern": "Layered",
     "layers": [
-      "Presentation (Controller/REST)",
-      "Service (Business logic)",
-      "Repository (Data access)",
-      "Domain (Entity models)"
+      "Presentation (Controllers)",
+      "Service",
+      "Repository (Data Access)",
+      "Domain (Entities)"
     ],
     "stereotype_distribution": {
       "rest_interface": 21,
