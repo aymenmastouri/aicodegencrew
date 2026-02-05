@@ -15,6 +15,7 @@
 > **Reference Diagrams:**
 > - [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full SDLC Pipeline Overview
 > - [layer-architecture.drawio](diagrams/layer-architecture.drawio) - Detailed 4-Layer Architecture
+> - [phase-flow.drawio](diagrams/phase-flow.drawio) - Phase Flow with Layer Context
 
 The system is organized into 4 distinct layers, each with clear responsibilities:
 
@@ -24,38 +25,6 @@ The system is organized into 4 distinct layers, each with clear responsibilities
 | **REASONING** | 2-3 | LLM-powered analysis and synthesis | Yes |
 | **EXECUTION** | 4-6 | Code generation and deployment | Yes |
 | **FEEDBACK** | 7 | Continuous learning and quality | Yes |
-
-```
-+------------------------------------------------------------------+
-|  LAYER 1: KNOWLEDGE (Deterministic)                              |
-|  [Phase 0: Indexing] --> [Phase 1: Architecture Facts]           |
-|  ChromaDB + 7 Collectors = Single Source of Truth                |
-+------------------------------------------------------------------+
-                              |
-                              v
-+------------------------------------------------------------------+
-|  LAYER 2: REASONING (LLM-Powered)                                |
-|  [Phase 2: Synthesis] --> [Phase 3: Task Understanding]          |
-|  C4 + arc42 Documentation, RAG-Enhanced Planning                 |
-+------------------------------------------------------------------+
-                              |
-                              v
-+------------------------------------------------------------------+
-|  LAYER 3: EXECUTION (LLM-Powered)                                |
-|  [Phase 4: CodeGen] --> [Phase 5: Testing] --> [Phase 6: Deploy] |
-|  Pattern-Compliant Code, Tests, CI/CD Integration                |
-+------------------------------------------------------------------+
-                              |
-                              v
-+------------------------------------------------------------------+
-|  LAYER 4: FEEDBACK (Continuous)                                  |
-|  [Phase 7: Learning]                                             |
-|  Quality Metrics, Pattern Learning, Knowledge Update             |
-+------------------------------------------------------------------+
-        |                                                    ^
-        +----------------------------------------------------+
-                        Feedback Loop
-```
 
 ### 1.3 Implementation Status
 
