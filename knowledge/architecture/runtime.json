@@ -1,13 +1,16 @@
-[
-  {
-    "name": "execute",
-    "type": "async",
-    "evidence": [
-      {
-        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\action\\logic\\impl\\ActionWorkerService.java",
-        "lines": "47-50",
-        "reason": "@Async: execute"
-      }
-    ]
-  }
-]
+{
+  "endpoint_flows": [],
+  "schedulers": [
+    {
+      "id": "component.backend.core.execute",
+      "name": "execute",
+      "file_path": null
+    }
+  ],
+  "async_processors": [
+    {
+      "id": "component.backend.components_deed-form-page_services.async_document_helper_service",
+      "name": "AsyncDocumentHelperService"
+    }
+  ]
+}
