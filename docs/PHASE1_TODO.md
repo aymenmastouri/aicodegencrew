@@ -126,3 +126,58 @@ Relation: from_id="WorkflowRestServiceImpl" → nicht gefunden!
 1. **Relation Resolution fixen** - größter Impact
 2. **implemented_by setzen** - Endpoint Flows enablen
 3. **Tables/Migrations** ins Model bringen
+
+---
+
+## ❓ Evaluiert: Lokales Modell / Fine-Tuning / MCP
+
+**Frage:** UVZ mit lokalem Modell trainieren und als MCP in Pipeline integrieren?
+
+### Bewertung: ❌ Nicht empfohlen für Phase 1
+
+| Aspekt | Analyse |
+|--------|---------|
+| **Phase 1 ist deterministisch** | Regex, Pattern Matching, AST - kein LLM nötig |
+| **Aktuelle Probleme** | ID-Mapping, nicht Verständnis - technisch lösbar |
+| **Training-Aufwand** | Wochen/Monate für marginalen Gewinn |
+| **MCP Overhead** | HTTP-Roundtrips für etwas das in 0.1ms lokal läuft |
+
+### Aktuelle Probleme sind keine LLM-Probleme:
+
+```
+❌ Lokales Modell hilft NICHT bei:
+   - Relation Resolution → ist ein Index/Lookup Problem
+   - implemented_by → ist ein Collector-Logik Problem  
+   - Tables/Migrations → ist ein Mapping Problem
+
+✅ Besser investierte Zeit:
+   - Name-to-ID Index aufbauen (10 Zeilen Code)
+   - Controller→Endpoint Mapping im Collector (20 Zeilen)
+   - DataModel ins CanonicalModel bringen (50 Zeilen)
+```
+
+### Wo ein lokales/fine-tuned Modell SINN machen könnte:
+
+| Phase | Nutzen | Empfehlung |
+|-------|--------|------------|
+| **Phase 2 (Synthese)** | Arc42/C4 Texte generieren | Generisches Modell reicht |
+| **Code Generation** | UVZ-spezifischen Code generieren | Später evaluieren |
+| **Domänen-QA** | Fragen zu Notariat/Workflow | RAG mit Facts effizienter |
+
+### Empfohlene Alternative: RAG statt Fine-Tuning
+
+```
+Phase 1 Facts (733 components, 169 relations, etc.)
+    ↓
+Als Kontext für generisches LLM (GPT-4, Claude, etc.)
+    ↓
+Domänen-spezifische Antworten OHNE Training
+```
+
+**Vorteile RAG:**
+- Kein Training nötig
+- Immer aktuelle Daten
+- Funktioniert mit jedem LLM
+- Nachvollziehbare Quellen (Evidence)
+
+**Fazit:** Erst Phase 1 technisch optimieren, dann RAG-basierte Phase 2. Fine-Tuning nur wenn RAG nicht ausreicht.
