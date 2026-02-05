@@ -15,7 +15,7 @@
     },
     {
       "from": "component.backend.action_logic_impl.action_worker_service",
-      "to": "component.backend.action_api-generated_services.action_service",
+      "to": "component.frontend.action_api-generated_services.action_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -45,19 +45,19 @@
     },
     {
       "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
-      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "to": "component.frontend.deed-entry_services_deed-entry-log.deed_entry_log_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
-      "to": "component.backend.components_deed-overview-page_services.handover_data_set_service",
+      "to": "component.frontend.components_deed-overview-page_services.handover_data_set_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -69,7 +69,7 @@
     },
     {
       "from": "component.backend.deedentry_logic_impl.document_meta_data_service_impl",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -87,13 +87,13 @@
     },
     {
       "from": "component.backend.deedentry_logic_impl.document_meta_data_service_impl",
-      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "to": "component.frontend.deed-entry_services_deed-entry-log.deed_entry_log_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.deedentry_logic_impl.handover_data_set_service_impl",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -111,7 +111,7 @@
     },
     {
       "from": "component.backend.deedentry_logic_impl.signature_folder_service_impl",
-      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "to": "component.frontend.deed-entry_services_deed-entry-log.deed_entry_log_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -123,19 +123,19 @@
     },
     {
       "from": "component.backend.job_logic_impl.job_service_impl",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.reportmetadata_logic_impl.report_metadata_service_impl",
-      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "to": "component.frontend.document-metadata_api-generated_services.document_meta_data_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.module_task_logic.task_service_impl",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -171,37 +171,37 @@
     },
     {
       "from": "component.backend.work_submission_logic.change_document_work_service",
-      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "to": "component.frontend.document-metadata_api-generated_services.document_meta_data_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.work_submission_logic.deletion_work_service",
-      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "to": "component.frontend.document-metadata_api-generated_services.document_meta_data_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.work_submission_logic.deletion_work_service",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.work_submission_logic.signature_work_service",
-      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "to": "component.frontend.document-metadata_api-generated_services.document_meta_data_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.work_submission_logic.submission_work_service",
-      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "to": "component.frontend.document-metadata_api-generated_services.document_meta_data_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.workflow_logic_impl.workflow_service_impl",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -213,13 +213,13 @@
     },
     {
       "from": "component.backend.logic_impl_state.reencryption_workflow_state_machine",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
       "from": "component.backend.logic_impl_state.reencryption_workflow_state_machine",
-      "to": "component.backend.components_deed-overview-page_services.handover_data_set_service",
+      "to": "component.frontend.components_deed-overview-page_services.handover_data_set_service",
       "type": "uses",
       "evidence_ids": []
     },
@@ -374,530 +374,530 @@
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.app_module",
-      "to": "component.backend.core.core_module",
+      "from": "component.frontend.core.app_module",
+      "to": "component.frontend.core.core_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.app_module",
-      "to": "component.backend.deed-entry.deed_entry_module",
+      "from": "component.frontend.core.app_module",
+      "to": "component.frontend.deed-entry.deed_entry_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.app_module",
-      "to": "component.backend.report-metadata.report_metadata_module",
+      "from": "component.frontend.core.app_module",
+      "to": "component.frontend.report-metadata.report_metadata_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.app_module",
-      "to": "component.backend.number-management.number_management_module",
+      "from": "component.frontend.core.app_module",
+      "to": "component.frontend.number-management.number_management_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.adapters.adapters_module",
-      "to": "component.backend.shared.online_help_module",
+      "from": "component.frontend.adapters.adapters_module",
+      "to": "component.frontend.shared.online_help_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.core_module",
-      "to": "component.backend.adapters.adapters_module",
+      "from": "component.frontend.core.core_module",
+      "to": "component.frontend.adapters.adapters_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.core_module",
-      "to": "component.backend.shared.shared_module",
+      "from": "component.frontend.core.core_module",
+      "to": "component.frontend.shared.shared_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry.deed_entry_module",
-      "to": "component.backend.shared.shared_module",
+      "from": "component.frontend.deed-entry.deed_entry_module",
+      "to": "component.frontend.shared.shared_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry.deed_entry_module",
-      "to": "component.backend.workflow.workflow_module",
+      "from": "component.frontend.deed-entry.deed_entry_module",
+      "to": "component.frontend.workflow.workflow_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.number-management.number_management_module",
-      "to": "component.backend.shared.shared_module",
+      "from": "component.frontend.number-management.number_management_module",
+      "to": "component.frontend.shared.shared_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.report-metadata.report_metadata_module",
-      "to": "component.backend.shared.shared_module",
+      "from": "component.frontend.report-metadata.report_metadata_module",
+      "to": "component.frontend.shared.shared_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.report-metadata.report_metadata_module",
-      "to": "component.backend.workflow.workflow_module",
+      "from": "component.frontend.report-metadata.report_metadata_module",
+      "to": "component.frontend.workflow.workflow_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.shared.shared_module",
-      "to": "component.backend.adapters.adapters_module",
+      "from": "component.frontend.shared.shared_module",
+      "to": "component.frontend.adapters.adapters_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.shared.shared_module",
-      "to": "component.backend.shared.online_help_module",
+      "from": "component.frontend.shared.shared_module",
+      "to": "component.frontend.shared.online_help_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow.workflow_module",
-      "to": "component.backend.shared.shared_module",
+      "from": "component.frontend.workflow.workflow_module",
+      "to": "component.frontend.shared.shared_module",
       "type": "imports",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-reencryption_job-reencryption.job_reencryption_service",
-      "to": "component.backend.services_workflow-reencryption_job-reencryption.workflow_reencryption_task_service",
+      "from": "component.frontend.services_action_api-generated.action_base_service",
+      "to": "component.frontend.services_action_api-generated.action_api_configuration",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-reencryption_job-reencryption.job_reencryption_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "from": "component.frontend.components_deed-view-page_services.business_logging_resolver_service",
+      "to": "component.frontend.deed-entry_services_deed-entry-log.deed_entry_log_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-has-errors-retry.reencryption_has_errors_retry_service",
-      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "from": "component.frontend.components_deed-view-page_services.business_logging_resolver_service",
+      "to": "component.frontend.deed-entry_services_deed-entry.deed_entry_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-has-errors-retry.reencryption_has_errors_retry_service",
-      "to": "component.backend.services_modal.modal_service",
+      "from": "component.frontend.components_deed-view-page_services.business_logging_resolver_service",
+      "to": "component.frontend.deed-entry_services_official-activity-metadata.official_activity_metadata_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-rest_api-generated.task_base_service",
-      "to": "component.backend.services_workflow-rest_api-generated.task_api_configuration",
+      "from": "component.frontend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.action_services_action.action_domain_service",
-      "to": "component.backend.action_api-generated_services.action_service",
+      "from": "component.frontend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.frontend.components_deed-successor-page_services.re_encryption_helper_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.action_services_action.action_domain_service",
-      "to": "component.backend.page_busy-indicator_services.busy_indicator_service",
+      "from": "component.frontend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.frontend.deed-successor-page_deed-successor-selection-dialog_helper.selection_helper_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.report-metadata_services.report_metadata_service",
-      "to": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "from": "component.frontend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.frontend.deed-entry_services_deed-entry.deed_entry_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.report-metadata_services.report_metadata_service",
-      "to": "component.backend.service_api_rest.report_metadata_rest_service",
+      "from": "component.frontend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.frontend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
-      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "from": "component.frontend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.frontend.deed-entry_services_page-manager-service.deed_entry_page_manager_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
-      "to": "component.backend.services_modal.modal_service",
+      "from": "component.frontend.core.application_initializer_service",
+      "to": "component.frontend.deed-entry_services_archiving.document_archiving_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.services_workflow-reencryption_job-reencryption.job_reencryption_service",
+      "to": "component.frontend.services_workflow-reencryption_job-reencryption.workflow_reencryption_task_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_deed-registry_api-generated.deed_registry_base_service",
-      "to": "component.backend.services_deed-registry_api-generated.deed_registry_api_configuration",
+      "from": "component.frontend.services_workflow-reencryption_job-reencryption.job_reencryption_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-rest_api-generated.workflow_base_service",
-      "to": "component.backend.services_workflow-rest_api-generated.workflow_api_configuration",
+      "from": "component.frontend.workflow_services_workflow-change-aoid.workflow_change_aoid_service",
+      "to": "component.frontend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.application_initializer_service",
-      "to": "component.backend.deed-entry_services_archiving.document_archiving_rest_service",
+      "from": "component.frontend.forms.http_error_interceptor",
+      "to": "component.frontend.forms_field-validation-service.field_validation_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_task_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.services_workflow-reencryption_job-reencryption.workflow_reencryption_task_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-finalization-done.reencryption_finalization_done_service",
-      "to": "component.backend.services_modal.modal_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
+      "to": "component.frontend.workflow_services_workflow-reencryption.workflow_reencryption_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-rest_api-generated.job_base_service",
-      "to": "component.backend.services_workflow-rest_api-generated.job_api_configuration",
+      "from": "component.frontend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
+      "to": "component.frontend.services_modal.modal_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry_services_uvz-number-format-configuration.uvz_number_format_configuration_service",
-      "to": "component.backend.service_api_rest.number_management_rest_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_action_api-generated.action_base_service",
-      "to": "component.backend.services_action_api-generated.action_api_configuration",
+      "from": "component.frontend.workflow_services_workflow-archive.workflow_archive_service",
+      "to": "component.frontend.workflow_services_workflow-archive.workflow_archive_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-confirm.reencryption_confirm_service",
-      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "from": "component.frontend.deed-entry_services_deed-registry.deed_registry_domain_service",
+      "to": "component.frontend.deed-registry_api-generated_services.deed_registry_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-confirm.reencryption_confirm_service",
-      "to": "component.backend.services_modal.modal_service",
+      "from": "component.frontend.services_workflow-rest_api-generated.task_base_service",
+      "to": "component.frontend.services_workflow-rest_api-generated.task_api_configuration",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.reencryption_xnp_api-generated.reencryption_base_service",
-      "to": "component.backend.reencryption_xnp_api-generated.reencryption_api_configuration",
+      "from": "component.frontend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-report-page_services.annual_report_action_resolver",
-      "to": "component.backend.action_services_action.action_domain_service",
+      "from": "component.frontend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
+      "to": "component.frontend.workflow_services_workflow-change-aoid.workflow_change_aoid_task_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_service",
-      "to": "component.backend.workflow_services_workflow-archive.workflow_archive_job_service",
+      "from": "component.frontend.components_deed-successor-page_services.re_encryption_helper_service",
+      "to": "component.frontend.document-metadata_api-generated_services.document_meta_data_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.re_encryption_helper_service",
-      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "from": "component.frontend.components_deed-successor-page_services.re_encryption_helper_service",
+      "to": "component.frontend.deed-entry_services_deed-entry.deed_entry_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.re_encryption_helper_service",
-      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-finalization-has-errors-retry.reencryption_finalization_has_errors_retry_service",
+      "to": "component.frontend.workflow_services_workflow-reencryption.workflow_reencryption_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-finalization-has-errors-retry.reencryption_finalization_has_errors_retry_service",
+      "to": "component.frontend.services_modal.modal_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
-      "to": "component.backend.components_deed-successor-page_services.re_encryption_helper_service",
+      "from": "component.frontend.deed-entry_services_uvz-number-format-configuration.uvz_number_format_configuration_service",
+      "to": "component.frontend.number-management_services.number_management_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
-      "to": "component.backend.deed-successor-page_deed-successor-selection-dialog_helper.selection_helper_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-finalization-done.reencryption_finalization_done_service",
+      "to": "component.frontend.services_modal.modal_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
-      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "from": "component.frontend.services_deed-registry_api-generated.deed_registry_base_service",
+      "to": "component.frontend.services_deed-registry_api-generated.deed_registry_api_configuration",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
-      "to": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "from": "component.frontend.core.settings_initializer",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
-      "to": "component.backend.deed-entry_services_page-manager-service.deed_entry_page_manager_service",
+      "from": "component.frontend.action_services_action.action_domain_service",
+      "to": "component.frontend.action_api-generated_services.action_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.document_adapter_html-document-adapter.html_document_adapter_service",
-      "to": "component.backend.adapter_html-document-adapter_html-signature-adapter.html_signature_adapter_service",
+      "from": "component.frontend.action_services_action.action_domain_service",
+      "to": "component.frontend.page_busy-indicator_services.busy_indicator_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_document-metadata_api-generated.document_metadata_base_service",
-      "to": "component.backend.services_document-metadata_api-generated.document_metadata_api_configuration",
+      "from": "component.frontend.report-metadata_services.report_metadata_service",
+      "to": "component.frontend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_workflow_service",
+      "from": "component.frontend.report-metadata_services.report_metadata_service",
+      "to": "component.frontend.report-metadata_services.report_metadata_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_job_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "from": "component.frontend.services_workflow-rest_api-generated.job_base_service",
+      "to": "component.frontend.services_workflow-rest_api-generated.job_api_configuration",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_job_service",
-      "to": "component.backend.workflow_services_workflow-archive.workflow_archive_task_service",
+      "from": "component.frontend.reencryption_xnp_api-generated.reencryption_base_service",
+      "to": "component.frontend.reencryption_xnp_api-generated.reencryption_api_configuration",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-reencryption_job-finalize-reencryption.job_finalize_reencryption_service",
-      "to": "component.backend.services_workflow-reencryption_job-finalize-reencryption.workflow_finalize_reencryption_task_service",
+      "from": "component.frontend.workflow_services_workflow-validate-signature.workflow_validate_signature_service",
+      "to": "component.frontend.workflow_services_workflow-broadcast.workflow_broadcast_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-reencryption_job-finalize-reencryption.job_finalize_reencryption_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "from": "component.frontend.workflow_services_workflow-validate-signature.workflow_validate_signature_service",
+      "to": "component.frontend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry_services_deed-registry.deed_registry_domain_service",
-      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "from": "component.frontend.document_adapter_html-document-adapter.html_document_adapter_service",
+      "to": "component.frontend.adapter_html-document-adapter_html-signature-adapter.html_signature_adapter_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-finalization-has-errors-retry.reencryption_finalization_has_errors_retry_service",
-      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-confirm.reencryption_confirm_service",
+      "to": "component.frontend.workflow_services_workflow-reencryption.workflow_reencryption_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-modal_reencryption-finalization-has-errors-retry.reencryption_finalization_has_errors_retry_service",
-      "to": "component.backend.services_modal.modal_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-confirm.reencryption_confirm_service",
+      "to": "component.frontend.services_modal.modal_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.forms.http_error_interceptor",
-      "to": "component.backend.forms_field-validation-service.field_validation_service",
+      "from": "component.frontend.workflow_services_workflow-archive.workflow_archive_job_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_service",
-      "to": "component.backend.workflow_services_workflow-broadcast.workflow_broadcast_service",
+      "from": "component.frontend.workflow_services_workflow-archive.workflow_archive_job_service",
+      "to": "component.frontend.workflow_services_workflow-archive.workflow_archive_task_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_service",
-      "to": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
+      "from": "component.frontend.workflow_services_workflow-change-aoid.workflow_change_aoid_task_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.core.settings_initializer",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.workflow_services_workflow-validate-signature.workflow_validate_signature_task_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
-      "to": "component.backend.deed-entry_services_official-activity-metadata.official_activity_metadata_service",
+      "from": "component.frontend.workflow_services_workflow-archive.workflow_archive_task_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
-      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "from": "component.frontend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "to": "component.frontend.deed-entry_services_official-activity-metadata.official_activity_metadata_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "from": "component.frontend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "to": "component.frontend.deed-entry_services_deed-entry.deed_entry_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
-      "to": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_task_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-has-errors-retry.reencryption_has_errors_retry_service",
+      "to": "component.frontend.workflow_services_workflow-reencryption.workflow_reencryption_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-reencryption_job-reencryption.workflow_reencryption_task_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.services_workflow-modal_reencryption-has-errors-retry.reencryption_has_errors_retry_service",
+      "to": "component.frontend.services_modal.modal_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
-      "to": "component.backend.deed-entry_services_archiving.document_archiving_rest_service",
+      "from": "component.frontend.workflow_services_workflow-deletion.workflow_deletion_job_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
-      "to": "component.backend.tabs_document-data-tab_services.document_helper_service",
+      "from": "component.frontend.workflow_services_workflow-deletion.workflow_deletion_job_service",
+      "to": "component.frontend.workflow_services_workflow-deletion.workflow_deletion_task_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
-      "to": "component.backend.deed-entry_services_archiving.global_archiving_helper_service",
+      "from": "component.frontend.workflow_services_workflow-status.workflow_status_control_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_task_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.services_workflow-reencryption_job-finalize-reencryption.workflow_finalize_reencryption_task_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.workflow_services_workflow-status.workflow_status_control_service",
+      "to": "component.frontend.components_deed-overview-page_services.handover_data_set_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-view-page_services.business_logging_resolver_service",
-      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "from": "component.frontend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_workflow_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-view-page_services.business_logging_resolver_service",
-      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "from": "component.frontend.deed-entry_services_archiving.global_archiving_helper_service",
+      "to": "component.frontend.deed-entry_services_archiving.document_archiving_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.components_deed-view-page_services.business_logging_resolver_service",
-      "to": "component.backend.deed-entry_services_official-activity-metadata.official_activity_metadata_service",
+      "from": "component.frontend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
+      "to": "component.frontend.deed-entry_services_archiving.document_archiving_rest_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-status.workflow_status_control_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_task_service",
+      "from": "component.frontend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
+      "to": "component.frontend.tabs_document-data-tab_services.document_helper_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-status.workflow_status_control_service",
-      "to": "component.backend.components_deed-overview-page_services.handover_data_set_service",
+      "from": "component.frontend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
+      "to": "component.frontend.deed-entry_services_archiving.global_archiving_helper_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "from": "component.frontend.error-handling.global_error_handler_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
-      "to": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_task_service",
+      "from": "component.frontend.services_document-metadata_api-generated.document_metadata_base_service",
+      "to": "component.frontend.services_document-metadata_api-generated.document_metadata_api_configuration",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.http-util.busy_indicator_interceptor",
-      "to": "component.backend.page_busy-indicator_services.busy_indicator_service",
+      "from": "component.frontend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.http-util.busy_indicator_interceptor",
-      "to": "component.backend.services.button_deactivation_service",
+      "from": "component.frontend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
+      "to": "component.frontend.workflow_services_workflow-validate-signature.workflow_validate_signature_task_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.deed-entry_services_archiving.global_archiving_helper_service",
-      "to": "component.backend.deed-entry_services_archiving.document_archiving_rest_service",
+      "from": "component.frontend.http-util.busy_indicator_interceptor",
+      "to": "component.frontend.page_busy-indicator_services.busy_indicator_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-deletion.workflow_deletion_service",
-      "to": "component.backend.workflow_services_workflow-deletion.workflow_deletion_job_service",
+      "from": "component.frontend.http-util.busy_indicator_interceptor",
+      "to": "component.frontend.services.button_deactivation_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_task_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.services_workflow-reencryption_job-finalize-reencryption.workflow_finalize_reencryption_task_service",
+      "to": "component.frontend.services_injector.injector_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_service",
-      "to": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
+      "from": "component.frontend.workflow_services_workflow-deletion.workflow_deletion_service",
+      "to": "component.frontend.workflow_services_workflow-deletion.workflow_deletion_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_task_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.services_workflow-rest_api-generated.workflow_base_service",
+      "to": "component.frontend.services_workflow-rest_api-generated.workflow_api_configuration",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.error-handling.global_error_handler_service",
-      "to": "component.backend.services_injector.injector_service",
+      "from": "component.frontend.services_workflow-reencryption_job-finalize-reencryption.job_finalize_reencryption_service",
+      "to": "component.frontend.services_workflow-reencryption_job-finalize-reencryption.workflow_finalize_reencryption_task_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-deletion.workflow_deletion_job_service",
-      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "from": "component.frontend.services_workflow-reencryption_job-finalize-reencryption.job_finalize_reencryption_service",
+      "to": "component.frontend.services_workflow-rest_domain.domain_job_service",
       "type": "uses",
       "evidence_ids": []
     },
     {
-      "from": "component.backend.workflow_services_workflow-deletion.workflow_deletion_job_service",
-      "to": "component.backend.workflow_services_workflow-deletion.workflow_deletion_task_service",
+      "from": "component.frontend.components_deed-report-page_services.annual_report_action_resolver",
+      "to": "component.frontend.action_services_action.action_domain_service",
       "type": "uses",
       "evidence_ids": []
     },
