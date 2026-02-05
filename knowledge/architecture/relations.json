@@ -1,3235 +1,1025 @@
-[
-  {
-    "from": "ActionServiceImpl",
-    "to": "ActionWorkerService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\logic\\impl\\ActionServiceImpl.java",
-        "lines": "47-48",
-        "reason": "Constructor injection: ActionServiceImpl -> ActionWorkerService"
-      }
-    ]
-  },
-  {
-    "from": "ActionWorkerService",
-    "to": "ActionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\logic\\impl\\ActionWorkerService.java",
-        "lines": "35-36",
-        "reason": "Constructor injection: ActionWorkerService -> ActionService"
-      }
-    ]
-  },
-  {
-    "from": "KeyManagerServiceImpl",
-    "to": "KmService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\logic\\impl\\KeyManagerServiceImpl.java",
-        "lines": "19-20",
-        "reason": "Constructor injection: KeyManagerServiceImpl -> KmService"
-      }
-    ]
-  },
-  {
-    "from": "KeyManagerServiceImpl",
-    "to": "ArchivingServiceImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\logic\\impl\\KeyManagerServiceImpl.java",
-        "lines": "22-23",
-        "reason": "Constructor injection: KeyManagerServiceImpl -> ArchivingServiceImpl"
-      }
-    ]
-  },
-  {
-    "from": "WaWiServiceImpl",
-    "to": "MetaDataResolverService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\wawi\\impl\\WaWiServiceImpl.java",
-        "lines": "47-48",
-        "reason": "Constructor injection: WaWiServiceImpl -> MetaDataResolverService"
-      }
-    ]
-  },
-  {
-    "from": "WaWiServiceImpl",
-    "to": "WaWiSendService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\wawi\\impl\\WaWiServiceImpl.java",
-        "lines": "49-50",
-        "reason": "Constructor injection: WaWiServiceImpl -> WaWiSendService"
-      }
-    ]
-  },
-  {
-    "from": "WaWiServiceImpl",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\wawi\\impl\\WaWiServiceImpl.java",
-        "lines": "51-52",
-        "reason": "Constructor injection: WaWiServiceImpl -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "BusinessPurposeServiceImpl",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\BusinessPurposeServiceImpl.java",
-        "lines": "32-33",
-        "reason": "Constructor injection: BusinessPurposeServiceImpl -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryLogServiceImpl",
-    "to": "MetaDataResolverService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryLogServiceImpl.java",
-        "lines": "37-38",
-        "reason": "Constructor injection: DeedEntryLogServiceImpl -> MetaDataResolverService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryLogServiceImpl",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryLogServiceImpl.java",
-        "lines": "58-59",
-        "reason": "Constructor injection: DeedEntryLogServiceImpl -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryLogServiceImpl",
-    "to": "DeedEntryLogsDaoImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryLogServiceImpl.java",
-        "lines": "61-62",
-        "reason": "Constructor injection: DeedEntryLogServiceImpl -> DeedEntryLogsDaoImpl"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "OfficialActivityMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "253-254",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> OfficialActivityMetaDataService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "DeedEntryConnectionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "262-263",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> DeedEntryConnectionService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "CorrectionNoteService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "274-275",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> CorrectionNoteService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "278-279",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "NumberManagementService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "281-282",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> NumberManagementService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "DocumentMetaDataCustomDaoImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "290-291",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> DocumentMetaDataCustomDaoImpl"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "ArchiveManagerService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "293-294",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> ArchiveManagerService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "DeedEntryLogService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "299-300",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> DeedEntryLogService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "SignatureFolderService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "302-303",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> SignatureFolderService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "305-306",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "HandoverDataSetService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "311-312",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> HandoverDataSetService"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "HandoverDataSetDaoImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "323-324",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> HandoverDataSetDaoImpl"
-      }
-    ]
-  },
-  {
-    "from": "DeedEntryServiceImpl",
-    "to": "MetaDataResolverService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedEntryServiceImpl.java",
-        "lines": "329-330",
-        "reason": "Constructor injection: DeedEntryServiceImpl -> MetaDataResolverService"
-      }
-    ]
-  },
-  {
-    "from": "DeedTypeServiceImpl",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedTypeServiceImpl.java",
-        "lines": "38-39",
-        "reason": "Constructor injection: DeedTypeServiceImpl -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "DeedWaWiOrchestratorServiceImpl",
-    "to": "DeedWaWiService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedWaWiOrchestratorServiceImpl.java",
-        "lines": "19-20",
-        "reason": "Constructor injection: DeedWaWiOrchestratorServiceImpl -> DeedWaWiService"
-      }
-    ]
-  },
-  {
-    "from": "DeedWaWiServiceImpl",
-    "to": "WaWiService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedWaWiServiceImpl.java",
-        "lines": "41-42",
-        "reason": "Constructor injection: DeedWaWiServiceImpl -> WaWiService"
-      }
-    ]
-  },
-  {
-    "from": "DeedWaWiServiceImpl",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedWaWiServiceImpl.java",
-        "lines": "47-48",
-        "reason": "Constructor injection: DeedWaWiServiceImpl -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "DeedWaWiServiceImpl",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DeedWaWiServiceImpl.java",
-        "lines": "49-50",
-        "reason": "Constructor injection: DeedWaWiServiceImpl -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "DeedEntryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "82-83",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> DeedEntryService"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "84-85",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "ArchiveManagerService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "86-87",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> ArchiveManagerService"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "MetaDataResolverService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "90-91",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> MetaDataResolverService"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "ArchivingServiceImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "92-93",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> ArchivingServiceImpl"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "98-99",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "DocumentMetaDataCustomDaoImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "102-103",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> DocumentMetaDataCustomDaoImpl"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataServiceImpl",
-    "to": "DeedEntryLogService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\DocumentMetaDataServiceImpl.java",
-        "lines": "104-105",
-        "reason": "Constructor injection: DocumentMetaDataServiceImpl -> DeedEntryLogService"
-      }
-    ]
-  },
-  {
-    "from": "HandoverDataSetServiceImpl",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\HandoverDataSetServiceImpl.java",
-        "lines": "70-71",
-        "reason": "Constructor injection: HandoverDataSetServiceImpl -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "HandoverDataSetServiceImpl",
-    "to": "HandoverDataSetDaoImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\HandoverDataSetServiceImpl.java",
-        "lines": "74-75",
-        "reason": "Constructor injection: HandoverDataSetServiceImpl -> HandoverDataSetDaoImpl"
-      }
-    ]
-  },
-  {
-    "from": "HandoverDataSetServiceImpl",
-    "to": "MetaDataResolverService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\HandoverDataSetServiceImpl.java",
-        "lines": "75-76",
-        "reason": "Constructor injection: HandoverDataSetServiceImpl -> MetaDataResolverService"
-      }
-    ]
-  },
-  {
-    "from": "HandoverDataSetServiceImpl",
-    "to": "ArchiveManagerService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\HandoverDataSetServiceImpl.java",
-        "lines": "79-80",
-        "reason": "Constructor injection: HandoverDataSetServiceImpl -> ArchiveManagerService"
-      }
-    ]
-  },
-  {
-    "from": "HandoverDataSetServiceImpl",
-    "to": "WorkflowServiceImpl",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\HandoverDataSetServiceImpl.java",
-        "lines": "82-83",
-        "reason": "Constructor injection: HandoverDataSetServiceImpl -> WorkflowServiceImpl"
-      }
-    ]
-  },
-  {
-    "from": "SignatureFolderServiceImpl",
-    "to": "DeedEntryLogService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\SignatureFolderServiceImpl.java",
-        "lines": "68-69",
-        "reason": "Constructor injection: SignatureFolderServiceImpl -> DeedEntryLogService"
-      }
-    ]
-  },
-  {
-    "from": "SignatureFolderServiceImpl",
-    "to": "ApplyCorrectionNoteService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\impl\\SignatureFolderServiceImpl.java",
-        "lines": "69-70",
-        "reason": "Constructor injection: SignatureFolderServiceImpl -> ApplyCorrectionNoteService"
-      }
-    ]
-  },
-  {
-    "from": "ReportServiceImpl",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\logic\\impl\\ReportServiceImpl.java",
-        "lines": "104-105",
-        "reason": "Constructor injection: ReportServiceImpl -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "ReportServiceImpl",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\logic\\impl\\ReportServiceImpl.java",
-        "lines": "110-111",
-        "reason": "Constructor injection: ReportServiceImpl -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "JobServiceImpl",
-    "to": "WorkServiceProvider",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\logic\\impl\\JobServiceImpl.java",
-        "lines": "59-60",
-        "reason": "Constructor injection: JobServiceImpl -> WorkServiceProvider"
-      }
-    ]
-  },
-  {
-    "from": "JobServiceImpl",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\logic\\impl\\JobServiceImpl.java",
-        "lines": "61-62",
-        "reason": "Constructor injection: JobServiceImpl -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "JobServiceImpl",
-    "to": "WorkflowService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\logic\\impl\\JobServiceImpl.java",
-        "lines": "63-64",
-        "reason": "Constructor injection: JobServiceImpl -> WorkflowService"
-      }
-    ]
-  },
-  {
-    "from": "NumberManagementServiceImpl",
-    "to": "OfficialActivityMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\logic\\impl\\NumberManagementServiceImpl.java",
-        "lines": "101-102",
-        "reason": "Constructor injection: NumberManagementServiceImpl -> OfficialActivityMetaDataService"
-      }
-    ]
-  },
-  {
-    "from": "NumberManagementServiceImpl",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\logic\\impl\\NumberManagementServiceImpl.java",
-        "lines": "104-105",
-        "reason": "Constructor injection: NumberManagementServiceImpl -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "OfficialActivityMetaDataServiceImpl",
-    "to": "MetaDataResolverService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\logic\\impl\\OfficialActivityMetaDataServiceImpl.java",
-        "lines": "51-52",
-        "reason": "Constructor injection: OfficialActivityMetaDataServiceImpl -> MetaDataResolverService"
-      }
-    ]
-  },
-  {
-    "from": "OfficialActivityMetaDataServiceImpl",
-    "to": "KmService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\logic\\impl\\OfficialActivityMetaDataServiceImpl.java",
-        "lines": "60-61",
-        "reason": "Constructor injection: OfficialActivityMetaDataServiceImpl -> KmService"
-      }
-    ]
-  },
-  {
-    "from": "ReportMetadataServiceImpl",
-    "to": "DocumentMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\impl\\ReportMetadataServiceImpl.java",
-        "lines": "43-44",
-        "reason": "Constructor injection: ReportMetadataServiceImpl -> DocumentMetaDataService"
-      }
-    ]
-  },
-  {
-    "from": "TaskServiceImpl",
-    "to": "JobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\logic\\TaskServiceImpl.java",
-        "lines": "45-46",
-        "reason": "Constructor injection: TaskServiceImpl -> JobService"
-      }
-    ]
-  },
-  {
-    "from": "TaskServiceImpl",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\logic\\TaskServiceImpl.java",
-        "lines": "47-48",
-        "reason": "Constructor injection: TaskServiceImpl -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "TaskServiceImpl",
-    "to": "WorkServiceProvider",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\logic\\TaskServiceImpl.java",
-        "lines": "51-52",
-        "reason": "Constructor injection: TaskServiceImpl -> WorkServiceProvider"
-      }
-    ]
-  },
-  {
-    "from": "TaskServiceImpl",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\logic\\TaskServiceImpl.java",
-        "lines": "53-54",
-        "reason": "Constructor injection: TaskServiceImpl -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "WorkServiceProviderImpl",
-    "to": "SubmissionWorkService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\logic\\WorkServiceProviderImpl.java",
-        "lines": "15-16",
-        "reason": "Constructor injection: WorkServiceProviderImpl -> SubmissionWorkService"
-      }
-    ]
-  },
-  {
-    "from": "WorkServiceProviderImpl",
-    "to": "DocumentMetadataWorkService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\logic\\WorkServiceProviderImpl.java",
-        "lines": "17-18",
-        "reason": "Constructor injection: WorkServiceProviderImpl -> DocumentMetadataWorkService"
-      }
-    ]
-  },
-  {
-    "from": "WorkServiceProviderImpl",
-    "to": "DeletionWorkService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\logic\\WorkServiceProviderImpl.java",
-        "lines": "19-20",
-        "reason": "Constructor injection: WorkServiceProviderImpl -> DeletionWorkService"
-      }
-    ]
-  },
-  {
-    "from": "WorkServiceProviderImpl",
-    "to": "SignatureWorkService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\logic\\WorkServiceProviderImpl.java",
-        "lines": "21-22",
-        "reason": "Constructor injection: WorkServiceProviderImpl -> SignatureWorkService"
-      }
-    ]
-  },
-  {
-    "from": "WorkServiceProviderImpl",
-    "to": "ChangeDocumentWorkService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\logic\\WorkServiceProviderImpl.java",
-        "lines": "23-24",
-        "reason": "Constructor injection: WorkServiceProviderImpl -> ChangeDocumentWorkService"
-      }
-    ]
-  },
-  {
-    "from": "ChangeDocumentWorkService",
-    "to": "DocumentMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\ChangeDocumentWorkService.java",
-        "lines": "45-46",
-        "reason": "Constructor injection: ChangeDocumentWorkService -> DocumentMetaDataService"
-      }
-    ]
-  },
-  {
-    "from": "ChangeDocumentWorkService",
-    "to": "DeedEntryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\ChangeDocumentWorkService.java",
-        "lines": "47-48",
-        "reason": "Constructor injection: ChangeDocumentWorkService -> DeedEntryService"
-      }
-    ]
-  },
-  {
-    "from": "DeletionWorkService",
-    "to": "DocumentMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\DeletionWorkService.java",
-        "lines": "39-40",
-        "reason": "Constructor injection: DeletionWorkService -> DocumentMetaDataService"
-      }
-    ]
-  },
-  {
-    "from": "DeletionWorkService",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\DeletionWorkService.java",
-        "lines": "41-42",
-        "reason": "Constructor injection: DeletionWorkService -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "DeletionWorkService",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\DeletionWorkService.java",
-        "lines": "43-44",
-        "reason": "Constructor injection: DeletionWorkService -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "SignatureWorkService",
-    "to": "DeedEntryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\SignatureWorkService.java",
-        "lines": "63-64",
-        "reason": "Constructor injection: SignatureWorkService -> DeedEntryService"
-      }
-    ]
-  },
-  {
-    "from": "SignatureWorkService",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\SignatureWorkService.java",
-        "lines": "64-65",
-        "reason": "Constructor injection: SignatureWorkService -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "SignatureWorkService",
-    "to": "DocumentMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\SignatureWorkService.java",
-        "lines": "65-66",
-        "reason": "Constructor injection: SignatureWorkService -> DocumentMetaDataService"
-      }
-    ]
-  },
-  {
-    "from": "SignatureWorkService",
-    "to": "SignatureFolderService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\SignatureWorkService.java",
-        "lines": "66-67",
-        "reason": "Constructor injection: SignatureWorkService -> SignatureFolderService"
-      }
-    ]
-  },
-  {
-    "from": "SignatureWorkService",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\SignatureWorkService.java",
-        "lines": "67-68",
-        "reason": "Constructor injection: SignatureWorkService -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "SubmissionWorkService",
-    "to": "DocumentMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\SubmissionWorkService.java",
-        "lines": "36-37",
-        "reason": "Constructor injection: SubmissionWorkService -> DocumentMetaDataService"
-      }
-    ]
-  },
-  {
-    "from": "SubmissionWorkService",
-    "to": "DeedWaWiOrchestratorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\logic\\SubmissionWorkService.java",
-        "lines": "38-39",
-        "reason": "Constructor injection: SubmissionWorkService -> DeedWaWiOrchestratorService"
-      }
-    ]
-  },
-  {
-    "from": "WorkflowServiceImpl",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\WorkflowServiceImpl.java",
-        "lines": "37-38",
-        "reason": "Constructor injection: WorkflowServiceImpl -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "WorkflowServiceImpl",
-    "to": "WorkflowStateMachineProvider",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\WorkflowServiceImpl.java",
-        "lines": "39-40",
-        "reason": "Constructor injection: WorkflowServiceImpl -> WorkflowStateMachineProvider"
-      }
-    ]
-  },
-  {
-    "from": "ReencryptionWorkflowStateMachine",
-    "to": "AuthorizationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachine.java",
-        "lines": "37-38",
-        "reason": "Constructor injection: ReencryptionWorkflowStateMachine -> AuthorizationService"
-      }
-    ]
-  },
-  {
-    "from": "ReencryptionWorkflowStateMachine",
-    "to": "JobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachine.java",
-        "lines": "39-40",
-        "reason": "Constructor injection: ReencryptionWorkflowStateMachine -> JobService"
-      }
-    ]
-  },
-  {
-    "from": "ReencryptionWorkflowStateMachine",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachine.java",
-        "lines": "40-41",
-        "reason": "Constructor injection: ReencryptionWorkflowStateMachine -> DeedRegistryService"
-      }
-    ]
-  },
-  {
-    "from": "ReencryptionWorkflowStateMachine",
-    "to": "WorkServiceProvider",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachine.java",
-        "lines": "42-43",
-        "reason": "Constructor injection: ReencryptionWorkflowStateMachine -> WorkServiceProvider"
-      }
-    ]
-  },
-  {
-    "from": "ReencryptionWorkflowStateMachine",
-    "to": "HandoverDataSetService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachine.java",
-        "lines": "43-44",
-        "reason": "Constructor injection: ReencryptionWorkflowStateMachine -> HandoverDataSetService"
-      }
-    ]
-  },
-  {
-    "from": "ReencryptionWorkflowStateMachine",
-    "to": "SettingsService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\ReencryptionWorkflowStateMachine.java",
-        "lines": "45-46",
-        "reason": "Constructor injection: ReencryptionWorkflowStateMachine -> SettingsService"
-      }
-    ]
-  },
-  {
-    "from": "WorkflowStateMachineProvider",
-    "to": "ReencryptionWorkflowStateMachine",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\logic\\impl\\state\\WorkflowStateMachineProvider.java",
-        "lines": "14-15",
-        "reason": "Constructor injection: WorkflowStateMachineProvider -> ReencryptionWorkflowStateMachine"
-      }
-    ]
-  },
-  {
-    "from": "ActionDao",
-    "to": "ActionEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\dataaccess\\api\\dao\\ActionDao.java",
-        "lines": "21-23",
-        "reason": "Repository manages entity: ActionEntity"
-      }
-    ]
-  },
-  {
-    "from": "DeedRegistryLockDao",
-    "to": "DeedRegistryLockEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\DeedRegistryLockDao.java",
-        "lines": "16-18",
-        "reason": "Repository manages entity: DeedRegistryLockEntity"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetaDataDao",
-    "to": "DocumentMetaDataEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\DocumentMetaDataDao.java",
-        "lines": "28-30",
-        "reason": "Repository manages entity: DocumentMetaDataEntity"
-      }
-    ]
-  },
-  {
-    "from": "FinalHandoverDataSetDao",
-    "to": "FinalHandoverDataSetEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\FinalHandoverDataSetDao.java",
-        "lines": "14-16",
-        "reason": "Repository manages entity: FinalHandoverDataSetEntity"
-      }
-    ]
-  },
-  {
-    "from": "HandoverDataSetDao",
-    "to": "HandoverDataSetEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\HandoverDataSetDao.java",
-        "lines": "14-16",
-        "reason": "Repository manages entity: HandoverDataSetEntity"
-      }
-    ]
-  },
-  {
-    "from": "HandoverHistoryDao",
-    "to": "HandoverHistoryEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\HandoverHistoryDao.java",
-        "lines": "16-18",
-        "reason": "Repository manages entity: HandoverHistoryEntity"
-      }
-    ]
-  },
-  {
-    "from": "HandoverHistoryDeedDao",
-    "to": "HandoverHistoryDeedEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\HandoverHistoryDeedDao.java",
-        "lines": "15-17",
-        "reason": "Repository manages entity: HandoverHistoryDeedEntity"
-      }
-    ]
-  },
-  {
-    "from": "ParticipantDao",
-    "to": "ParticipantEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\ParticipantDao.java",
-        "lines": "20-22",
-        "reason": "Repository manages entity: ParticipantEntity"
-      }
-    ]
-  },
-  {
-    "from": "SignatureInfoDao",
-    "to": "SignatureInfoEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\SignatureInfoDao.java",
-        "lines": "6-8",
-        "reason": "Repository manages entity: SignatureInfoEntity"
-      }
-    ]
-  },
-  {
-    "from": "SuccessorBatchDao",
-    "to": "SuccessorBatchEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\SuccessorBatchDao.java",
-        "lines": "12-14",
-        "reason": "Repository manages entity: SuccessorBatchEntity"
-      }
-    ]
-  },
-  {
-    "from": "SuccessorDeedSelectionDao",
-    "to": "SuccessorDeedSelectionEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\SuccessorDeedSelectionDao.java",
-        "lines": "16-18",
-        "reason": "Repository manages entity: SuccessorDeedSelectionEntity"
-      }
-    ]
-  },
-  {
-    "from": "SuccessorDeedSelectionMetaDao",
-    "to": "SuccessorDeedSelectionMetaEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\SuccessorDeedSelectionMetaDao.java",
-        "lines": "14-16",
-        "reason": "Repository manages entity: SuccessorDeedSelectionMetaEntity"
-      }
-    ]
-  },
-  {
-    "from": "SuccessorDetailsDao",
-    "to": "SuccessorDetailsEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\SuccessorDetailsDao.java",
-        "lines": "12-14",
-        "reason": "Repository manages entity: SuccessorDetailsEntity"
-      }
-    ]
-  },
-  {
-    "from": "SuccessorSelectionTextDao",
-    "to": "SuccessorSelectionTextEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\SuccessorSelectionTextDao.java",
-        "lines": "14-16",
-        "reason": "Repository manages entity: SuccessorSelectionTextEntity"
-      }
-    ]
-  },
-  {
-    "from": "UvzNumberGapManagerDao",
-    "to": "UvzNumberGapManagerEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\UvzNumberGapManagerDao.java",
-        "lines": "15-17",
-        "reason": "Repository manages entity: UvzNumberGapManagerEntity"
-      }
-    ]
-  },
-  {
-    "from": "UvzNumberManagerDao",
-    "to": "UvzNumberManagerEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\UvzNumberManagerDao.java",
-        "lines": "12-14",
-        "reason": "Repository manages entity: UvzNumberManagerEntity"
-      }
-    ]
-  },
-  {
-    "from": "UvzNumberSkipManagerDao",
-    "to": "UvzNumberSkipManagerEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\dao\\UvzNumberSkipManagerDao.java",
-        "lines": "14-16",
-        "reason": "Repository manages entity: UvzNumberSkipManagerEntity"
-      }
-    ]
-  },
-  {
-    "from": "JobDao",
-    "to": "JobEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\dataaccess\\api\\dao\\JobDao.java",
-        "lines": "15-17",
-        "reason": "Repository manages entity: JobEntity"
-      }
-    ]
-  },
-  {
-    "from": "NumberFormatDao",
-    "to": "NumberFormatEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\dataaccess\\api\\dao\\NumberFormatDao.java",
-        "lines": "8-10",
-        "reason": "Repository manages entity: NumberFormatEntity"
-      }
-    ]
-  },
-  {
-    "from": "OrganizationDao",
-    "to": "OrganizationEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\dataaccess\\api\\dao\\OrganizationDao.java",
-        "lines": "11-13",
-        "reason": "Repository manages entity: OrganizationEntity"
-      }
-    ]
-  },
-  {
-    "from": "ReportMetadataDao",
-    "to": "ReportMetadataEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\dataaccess\\api\\dao\\ReportMetadataDao.java",
-        "lines": "12-14",
-        "reason": "Repository manages entity: ReportMetadataEntity"
-      }
-    ]
-  },
-  {
-    "from": "TaskDao",
-    "to": "TaskEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\dataaccess\\api\\dao\\TaskDao.java",
-        "lines": "16-18",
-        "reason": "Repository manages entity: TaskEntity"
-      }
-    ]
-  },
-  {
-    "from": "DocumentMetadataWorkDao",
-    "to": "DocumentMetaDataWorkEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\work\\submission\\dataaccess\\api\\dao\\DocumentMetadataWorkDao.java",
-        "lines": "18-20",
-        "reason": "Repository manages entity: DocumentMetaDataWorkEntity"
-      }
-    ]
-  },
-  {
-    "from": "WorkflowDao",
-    "to": "WorkflowEntity",
-    "type": "manages",
-    "confidence": 1.0,
-    "from_stereotype": "repository",
-    "to_stereotype": "entity",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\dataaccess\\api\\dao\\WorkflowDao.java",
-        "lines": "15-17",
-        "reason": "Repository manages entity: WorkflowEntity"
-      }
-    ]
-  },
-  {
-    "from": "AppModule",
-    "to": "BrowserModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AppModule",
-    "to": "CoreModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AppModule",
-    "to": "RouterModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AppModule",
-    "to": "DeedEntryModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AppModule",
-    "to": "ReportMetadataModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AppModule",
-    "to": "NumberManagementModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AdaptersModule",
-    "to": "CommonModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AdaptersModule",
-    "to": "RouterModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AdaptersModule",
-    "to": "NgbDropdownModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AdaptersModule",
-    "to": "BrowserAnimationsModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AdaptersModule",
-    "to": "OnlineHelpModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AdaptersModule",
-    "to": "TranslateModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "AdaptersModule",
-    "to": "ToastrModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "CoreModule",
-    "to": "RouterModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "CoreModule",
-    "to": "TranslateModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "CoreModule",
-    "to": "AdaptersModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "CoreModule",
-    "to": "AgGridModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "CoreModule",
-    "to": "SharedModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "DeedEntryModule",
-    "to": "SharedModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "DeedEntryModule",
-    "to": "WorkflowModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "NumberManagementModule",
-    "to": "SharedModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "TableModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "CommonModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "SharedModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "ModalModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "ButtonModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "InfoboxModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "FormFieldWrapperModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "TokenModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "ReportMetadataModule",
-    "to": "WorkflowModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "OnlineHelpModule",
-    "to": "CommonModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "OnlineHelpModule",
-    "to": "TranslateModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "OnlineHelpModule",
-    "to": "NgbModalModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "OnlineHelpModule",
-    "to": "IconModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "CommonModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "AdaptersModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "TranslateModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "RouterModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "ReactiveFormsModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "FormsModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "NgbDatepickerModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "NgbDropdownModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "OnlineHelpModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "NgbModalModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "NgbTooltipModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "NgbTypeaheadModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "AgGridModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "NgMultiSelectDropDownModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "ActionbarModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "ButtonModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "SharedModule",
-    "to": "IconModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "WorkflowModule",
-    "to": "CommonModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "WorkflowModule",
-    "to": "FormsModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "WorkflowModule",
-    "to": "NgbAccordionModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "WorkflowModule",
-    "to": "SharedModule",
-    "type": "imports",
-    "confidence": 1.0,
-    "from_stereotype": "module",
-    "to_stereotype": "module"
-  },
-  {
-    "from": "PdfExportService",
-    "to": "OfficialActivityMetadataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "PdfExportService",
-    "to": "DeedEntryRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowChangeAoidJobService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowChangeAoidJobService",
-    "to": "WorkflowChangeAoidTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "DeedRegistryDomainService",
-    "to": "DeedRegistryService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowValidateSignatureService",
-    "to": "WorkflowBroadcastService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowValidateSignatureService",
-    "to": "WorkflowValidateSignatureJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "DocumentMetadataBaseService",
-    "to": "DocumentMetadataApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowDeletionService",
-    "to": "WorkflowDeletionJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "GlobalErrorHandlerService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowArchiveJobService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowArchiveJobService",
-    "to": "WorkflowArchiveTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowBaseService",
-    "to": "WorkflowApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReportMetadataService",
-    "to": "PdfExportService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReportMetadataService",
-    "to": "ReportMetadataRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusinessLoggingResolverService",
-    "to": "DeedEntryLogService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusinessLoggingResolverService",
-    "to": "DeedEntryRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusinessLoggingResolverService",
-    "to": "OfficialActivityMetadataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "UvzNumberFormatConfigurationService",
-    "to": "NumberManagementRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ActionDomainService",
-    "to": "ActionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ActionDomainService",
-    "to": "BusyIndicatorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "AnnualReportActionResolver",
-    "to": "ActionDomainService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowFinalizeReencryptionTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "SettingsInitializer",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowStatusControlService",
-    "to": "DomainTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowStatusControlService",
-    "to": "HandoverDataSetService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "TaskBaseService",
-    "to": "TaskApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionConfirmService",
-    "to": "WorkflowReencryptionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionConfirmService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowDeletionJobService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowDeletionJobService",
-    "to": "WorkflowDeletionTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "MockArchivingRetrievalHelperService",
-    "to": "DocumentArchivingRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "MockArchivingRetrievalHelperService",
-    "to": "DocumentHelperService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "MockArchivingRetrievalHelperService",
-    "to": "GlobalArchivingHelperService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowChangeAoidService",
-    "to": "WorkflowChangeAoidJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionBaseService",
-    "to": "ReencryptionApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationDoneService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusyIndicatorInterceptor",
-    "to": "BusyIndicatorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "BusyIndicatorInterceptor",
-    "to": "ButtonDeactivationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ApplicationInitializerService",
-    "to": "DocumentArchivingRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReEncryptionHelperService",
-    "to": "DocumentMetaDataService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReEncryptionHelperService",
-    "to": "DeedEntryRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ActionBaseService",
-    "to": "ActionApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "JobFinalizeReencryptionService",
-    "to": "WorkflowFinalizeReencryptionTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "JobFinalizeReencryptionService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowReencryptionTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "HttpErrorInterceptor",
-    "to": "FieldValidationService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "JobReencryptionService",
-    "to": "WorkflowReencryptionTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "JobReencryptionService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionHasErrorsRetryService",
-    "to": "WorkflowReencryptionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionHasErrorsRetryService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowValidateSignatureJobService",
-    "to": "DomainJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowValidateSignatureJobService",
-    "to": "WorkflowValidateSignatureTaskService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "JobBaseService",
-    "to": "JobApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationConfirmService",
-    "to": "WorkflowReencryptionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationConfirmService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationConfirmService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "GlobalArchivingHelperService",
-    "to": "DocumentArchivingRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowValidateSignatureTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "SucessorHandoverProcessHelperService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "SucessorHandoverProcessHelperService",
-    "to": "ReEncryptionHelperService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "SucessorHandoverProcessHelperService",
-    "to": "SelectionHelperService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "SucessorHandoverProcessHelperService",
-    "to": "DeedEntryRestService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "SucessorHandoverProcessHelperService",
-    "to": "PdfExportService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "SucessorHandoverProcessHelperService",
-    "to": "DeedEntryPageManagerService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationHasErrorsRetryService",
-    "to": "WorkflowReencryptionService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "ReencryptionFinalizationHasErrorsRetryService",
-    "to": "ModalService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "DeedRegistryBaseService",
-    "to": "DeedRegistryApiConfiguration",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowChangeAoidTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowArchiveTaskService",
-    "to": "InjectorService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowReencryptionService",
-    "to": "DomainWorkflowService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "WorkflowArchiveService",
-    "to": "WorkflowArchiveJobService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "HtmlDocumentAdapterService",
-    "to": "HtmlSignatureAdapterService",
-    "type": "uses",
-    "confidence": 1.0,
-    "from_stereotype": "service",
-    "to_stereotype": "service"
-  },
-  {
-    "from": "route:/basic-data",
-    "to": "BasicDataTabComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/remarks",
-    "to": "RemarksDataTabComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/registrations",
-    "to": "RegistrationsDataTabComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/participants",
-    "to": "ParticipantsDataTabComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/issuing-copy-notes",
-    "to": "IssuingCopyNotesDataTabComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/notes",
-    "to": "CorrectionNotesTabDataComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/links",
-    "to": "ConnectionsDataTabComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/document",
-    "to": "DocumentDataTabComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/uvz",
-    "to": "LoginPageComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/access-denied",
-    "to": "AccessDeniedPageComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/",
-    "to": "PageWithPluginBarComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/deed-entries",
-    "to": "DeedOverviewPageComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/deed-view/:deedEntryId",
-    "to": "DeedViewPageComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/deed-form/:deedEntryId",
-    "to": "DeedFormPageComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/reports",
-    "to": "ReportConfigurationComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/annual/preview",
-    "to": "AnnualReportPreviewComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/annual-deed-register/preview",
-    "to": "AnnualDeedRegisterReportPreviewComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/deposited-inheritance-contracts/preview",
-    "to": "DepositedInheritanceContractsPreviewComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/annual-participants/preview",
-    "to": "AnnualParticipantsReportPreviewComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/reports-metadata/:id",
-    "to": "ReportReadonlyViewComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/reports-metadata",
-    "to": "ReportMetadataOverviewComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/successor-depositing",
-    "to": "DeedSuccessorModeSelectionComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/complete",
-    "to": "DeedSuccessorPageComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/partial",
-    "to": "DeedSuccessorPartialComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/logging/:deedEntryId",
-    "to": "BusinessLoggingComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/settings",
-    "to": "NumberFormatConfigurationComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "route:/**",
-    "to": "PageNotFoundPageComponent",
-    "type": "renders",
-    "confidence": 1.0,
-    "to_stereotype": "component"
-  },
-  {
-    "from": "CorrectionNoteEntity",
-    "to": "private",
-    "type": "one_to_many",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "DocumentMetaDataEntity",
-    "to": "private",
-    "type": "one_to_one",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "HandoverDataSetEntity",
-    "to": "private",
-    "type": "one_to_many",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "HandoverHistoryEntity",
-    "to": "private",
-    "type": "one_to_many",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "IssuingCopyNoteEntity",
-    "to": "private",
-    "type": "one_to_many",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "ReportMetadataEntity",
-    "to": "private",
-    "type": "one_to_one",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "DocumentMetaDataWorkEntity",
-    "to": "private",
-    "type": "one_to_one",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "DocumentMetaDataWorkEntity",
-    "to": "private",
-    "type": "one_to_one",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "WorkflowEntity",
-    "to": "NotNull",
-    "type": "one_to_many",
-    "confidence": 1.0,
-    "from_stereotype": "entity",
-    "to_stereotype": "entity"
-  },
-  {
-    "from": "ISSUING_COPY_NOTE",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "PARTICIPANT",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "PARTICIPANT",
-    "to": "ISSUING_COPY_NOTE",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "REMARK",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CONNECTION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CONNECTION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "REGISTRATION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CORRECTION_NOTE",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CORRECTION_NOTE_CHANGE",
-    "to": "CORRECTION_NOTE",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "SUCCESSOR_DEED_SELECTION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DEEDENTRY_LOCK",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DEEDENTRY_LOG",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DOCUMENT_META_DATA",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "SIGNATURE_INFO",
-    "to": "DOCUMENT_META_DATA",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "HANDOVER_HISTORY_DEED",
-    "to": "HANDOVER_HISTORY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DEED_CREATOR_HANDOVER_INFO",
-    "to": "HANDOVER_DATA_SET",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "JOB",
-    "to": "WORKFLOW",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DOCUMENT_META_DATA_WORK",
-    "to": "TASK",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DOCUMENT_META_DATA_WORK",
-    "to": "JOB",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "HANDOVER_DMD_WORK",
-    "to": "DOCUMENT_META_DATA",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "ISSUING_COPY_NOTE",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "PARTICIPANT",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "PARTICIPANT",
-    "to": "ISSUING_COPY_NOTE",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "REMARK",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CONNECTION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CONNECTION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "REGISTRATION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CORRECTION_NOTE",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "CORRECTION_NOTE_CHANGE",
-    "to": "CORRECTION_NOTE",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "SUCCESSOR_DEED_SELECTION",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DEEDENTRY_LOCK",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DEEDENTRY_LOG",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DOCUMENT_META_DATA",
-    "to": "DEEDENTRY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "SIGNATURE_INFO",
-    "to": "DOCUMENT_META_DATA",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DEED_CREATOR_HANDOVER_INFO",
-    "to": "HANDOVER_DATA_SET",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "JOB",
-    "to": "WORKFLOW",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "TASK",
-    "to": "JOB",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DOCUMENT_META_DATA_WORK",
-    "to": "TASK",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "DOCUMENT_META_DATA_WORK",
-    "to": "JOB",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "HANDOVER_HISTORY_DEED",
-    "to": "HANDOVER_HISTORY",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  },
-  {
-    "from": "HANDOVER_DMD_WORK",
-    "to": "DOCUMENT_META_DATA",
-    "type": "references",
-    "confidence": 1.0,
-    "from_stereotype": "table",
-    "to_stereotype": "table"
-  }
-]
+{
+  "total": 169,
+  "by_type": {
+    "uses": 110,
+    "manages": 24,
+    "imports": 15,
+    "references": 20
+  },
+  "relations": [
+    {
+      "from": "component.backend.action_logic_impl.action_service_impl",
+      "to": "component.backend.action_logic_impl.action_worker_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.action_logic_impl.action_worker_service",
+      "to": "component.backend.action_api-generated_services.action_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.km_logic_impl.key_manager_service_impl",
+      "to": "component.backend.archive_logic_impl.archiving_service_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.deed_entry_log_service_impl",
+      "to": "component.backend.api_dao_impl.deed_entry_logs_dao_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
+      "to": "component.backend.deedentry_logic_impl.correction_note_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
+      "to": "component.backend.api_dao_impl.document_meta_data_custom_dao_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
+      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
+      "to": "component.backend.components_deed-overview-page_services.handover_data_set_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
+      "to": "component.backend.api_dao_impl.handover_data_set_dao_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.document_meta_data_service_impl",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.document_meta_data_service_impl",
+      "to": "component.backend.archive_logic_impl.archiving_service_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.document_meta_data_service_impl",
+      "to": "component.backend.api_dao_impl.document_meta_data_custom_dao_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.document_meta_data_service_impl",
+      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.handover_data_set_service_impl",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.handover_data_set_service_impl",
+      "to": "component.backend.api_dao_impl.handover_data_set_dao_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.handover_data_set_service_impl",
+      "to": "component.backend.workflow_logic_impl.workflow_service_impl",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.signature_folder_service_impl",
+      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deedentry_logic_impl.signature_folder_service_impl",
+      "to": "component.backend.deedentry_logic_impl.apply_correction_note_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.job_logic_impl.job_service_impl",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.reportmetadata_logic_impl.report_metadata_service_impl",
+      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.module_task_logic.task_service_impl",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.module_work_logic.work_service_provider_impl",
+      "to": "component.backend.work_submission_logic.submission_work_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.module_work_logic.work_service_provider_impl",
+      "to": "component.backend.module_work_logic.document_metadata_work_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.module_work_logic.work_service_provider_impl",
+      "to": "component.backend.work_submission_logic.deletion_work_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.module_work_logic.work_service_provider_impl",
+      "to": "component.backend.work_submission_logic.signature_work_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.module_work_logic.work_service_provider_impl",
+      "to": "component.backend.work_submission_logic.change_document_work_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.work_submission_logic.change_document_work_service",
+      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.work_submission_logic.deletion_work_service",
+      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.work_submission_logic.deletion_work_service",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.work_submission_logic.signature_work_service",
+      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.work_submission_logic.submission_work_service",
+      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_logic_impl.workflow_service_impl",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_logic_impl.workflow_service_impl",
+      "to": "component.backend.logic_impl_state.workflow_state_machine_provider",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.logic_impl_state.reencryption_workflow_state_machine",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.logic_impl_state.reencryption_workflow_state_machine",
+      "to": "component.backend.components_deed-overview-page_services.handover_data_set_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.logic_impl_state.workflow_state_machine_provider",
+      "to": "component.backend.logic_impl_state.reencryption_workflow_state_machine",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.action_dao",
+      "to": "component.backend.core.action_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.deed_registry_lock_dao",
+      "to": "component.backend.core.deed_registry_lock_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.document_meta_data_dao",
+      "to": "component.backend.core.document_meta_data_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.final_handover_data_set_dao",
+      "to": "component.backend.core.final_handover_data_set_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.handover_data_set_dao",
+      "to": "component.backend.core.handover_data_set_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.handover_history_dao",
+      "to": "component.backend.core.handover_history_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.handover_history_deed_dao",
+      "to": "component.backend.core.handover_history_deed_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.participant_dao",
+      "to": "component.backend.core.participant_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.signature_info_dao",
+      "to": "component.backend.core.signature_info_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.successor_batch_dao",
+      "to": "component.backend.core.successor_batch_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.successor_deed_selection_dao",
+      "to": "component.backend.core.successor_deed_selection_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.successor_deed_selection_meta_dao",
+      "to": "component.backend.core.successor_deed_selection_meta_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.successor_details_dao",
+      "to": "component.backend.core.successor_details_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.successor_selection_text_dao",
+      "to": "component.backend.core.successor_selection_text_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.uvz_number_gap_manager_dao",
+      "to": "component.backend.core.uvz_number_gap_manager_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.uvz_number_manager_dao",
+      "to": "component.backend.core.uvz_number_manager_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.uvz_number_skip_manager_dao",
+      "to": "component.backend.core.uvz_number_skip_manager_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.job_dao",
+      "to": "component.backend.core.job_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.number_format_dao",
+      "to": "component.backend.core.number_format_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.organization_dao",
+      "to": "component.backend.core.organization_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.report_metadata_dao",
+      "to": "component.backend.core.report_metadata_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.task_dao",
+      "to": "component.backend.core.task_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.document_metadata_work_dao",
+      "to": "component.backend.core.document_meta_data_work_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.dataaccess_api_dao.workflow_dao",
+      "to": "component.backend.core.workflow_entity",
+      "type": "manages",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.app_module",
+      "to": "component.backend.core.core_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.app_module",
+      "to": "component.backend.deed-entry.deed_entry_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.app_module",
+      "to": "component.backend.report-metadata.report_metadata_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.app_module",
+      "to": "component.backend.number-management.number_management_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.adapters.adapters_module",
+      "to": "component.backend.shared.online_help_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.core_module",
+      "to": "component.backend.adapters.adapters_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.core_module",
+      "to": "component.backend.shared.shared_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry.deed_entry_module",
+      "to": "component.backend.shared.shared_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry.deed_entry_module",
+      "to": "component.backend.workflow.workflow_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.number-management.number_management_module",
+      "to": "component.backend.shared.shared_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.report-metadata.report_metadata_module",
+      "to": "component.backend.shared.shared_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.report-metadata.report_metadata_module",
+      "to": "component.backend.workflow.workflow_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.shared.shared_module",
+      "to": "component.backend.adapters.adapters_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.shared.shared_module",
+      "to": "component.backend.shared.online_help_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow.workflow_module",
+      "to": "component.backend.shared.shared_module",
+      "type": "imports",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-report-page_services.annual_report_action_resolver",
+      "to": "component.backend.action_services_action.action_domain_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.application_initializer_service",
+      "to": "component.backend.deed-entry_services_archiving.document_archiving_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_task_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-reencryption_job-reencryption.job_reencryption_service",
+      "to": "component.backend.services_workflow-reencryption_job-reencryption.workflow_reencryption_task_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-reencryption_job-reencryption.job_reencryption_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-finalization-has-errors-retry.reencryption_finalization_has_errors_retry_service",
+      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-finalization-has-errors-retry.reencryption_finalization_has_errors_retry_service",
+      "to": "component.backend.services_modal.modal_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
+      "to": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_task_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry_services_deed-registry.deed_registry_domain_service",
+      "to": "component.backend.deed-registry_api-generated_services.deed_registry_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-reencryption_job-reencryption.workflow_reencryption_task_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.settings_initializer",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-rest_api-generated.workflow_base_service",
+      "to": "component.backend.services_workflow-rest_api-generated.workflow_api_configuration",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-deletion.workflow_deletion_job_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-deletion.workflow_deletion_job_service",
+      "to": "component.backend.workflow_services_workflow-deletion.workflow_deletion_task_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_deed-registry_api-generated.deed_registry_base_service",
+      "to": "component.backend.services_deed-registry_api-generated.deed_registry_api_configuration",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-rest_api-generated.job_base_service",
+      "to": "component.backend.services_workflow-rest_api-generated.job_api_configuration",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.http-util.busy_indicator_interceptor",
+      "to": "component.backend.page_busy-indicator_services.busy_indicator_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.http-util.busy_indicator_interceptor",
+      "to": "component.backend.services.button_deactivation_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-view-page_services.business_logging_resolver_service",
+      "to": "component.backend.deed-entry_services_deed-entry-log.deed_entry_log_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-view-page_services.business_logging_resolver_service",
+      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-view-page_services.business_logging_resolver_service",
+      "to": "component.backend.deed-entry_services_official-activity-metadata.official_activity_metadata_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_service",
+      "to": "component.backend.workflow_services_workflow-broadcast.workflow_broadcast_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_service",
+      "to": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-has-errors-retry.reencryption_has_errors_retry_service",
+      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-has-errors-retry.reencryption_has_errors_retry_service",
+      "to": "component.backend.services_modal.modal_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-status.workflow_status_control_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_task_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-status.workflow_status_control_service",
+      "to": "component.backend.components_deed-overview-page_services.handover_data_set_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.reencryption_xnp_api-generated.reencryption_base_service",
+      "to": "component.backend.reencryption_xnp_api-generated.reencryption_api_configuration",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_document-metadata_api-generated.document_metadata_base_service",
+      "to": "component.backend.services_document-metadata_api-generated.document_metadata_api_configuration",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-finalization-done.reencryption_finalization_done_service",
+      "to": "component.backend.services_modal.modal_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_job_service",
+      "to": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_task_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.report-metadata_services.report_metadata_service",
+      "to": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.report-metadata_services.report_metadata_service",
+      "to": "component.backend.service_api_rest.report_metadata_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-reencryption_job-finalize-reencryption.workflow_finalize_reencryption_task_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry_services_uvz-number-format-configuration.uvz_number_format_configuration_service",
+      "to": "component.backend.service_api_rest.number_management_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
+      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
+      "to": "component.backend.services_modal.modal_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-finalization-confirm.reencryption_finalization_confirm_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.action_services_action.action_domain_service",
+      "to": "component.backend.action_api-generated_services.action_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.action_services_action.action_domain_service",
+      "to": "component.backend.page_busy-indicator_services.busy_indicator_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.document_adapter_html-document-adapter.html_document_adapter_service",
+      "to": "component.backend.adapter_html-document-adapter_html-signature-adapter.html_signature_adapter_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.backend.components_deed-successor-page_services.re_encryption_helper_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.backend.deed-successor-page_deed-successor-selection-dialog_helper.selection_helper_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.sucessor_handover_process_helper_service",
+      "to": "component.backend.deed-entry_services_page-manager-service.deed_entry_page_manager_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.error-handling.global_error_handler_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_action_api-generated.action_base_service",
+      "to": "component.backend.services_action_api-generated.action_api_configuration",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_workflow_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry_services_archiving.global_archiving_helper_service",
+      "to": "component.backend.deed-entry_services_archiving.document_archiving_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_service",
+      "to": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "to": "component.backend.deed-entry_services_official-activity-metadata.official_activity_metadata_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-report-page_pdf-export_pdf-export-service.pdf_export_service",
+      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_job_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_job_service",
+      "to": "component.backend.workflow_services_workflow-archive.workflow_archive_task_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.re_encryption_helper_service",
+      "to": "component.backend.document-metadata_api-generated_services.document_meta_data_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.components_deed-successor-page_services.re_encryption_helper_service",
+      "to": "component.backend.service_api_rest.deed_entry_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-deletion.workflow_deletion_service",
+      "to": "component.backend.workflow_services_workflow-deletion.workflow_deletion_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-reencryption_job-finalize-reencryption.job_finalize_reencryption_service",
+      "to": "component.backend.services_workflow-reencryption_job-finalize-reencryption.workflow_finalize_reencryption_task_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-reencryption_job-finalize-reencryption.job_finalize_reencryption_service",
+      "to": "component.backend.services_workflow-rest_domain.domain_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-confirm.reencryption_confirm_service",
+      "to": "component.backend.workflow_services_workflow-reencryption.workflow_reencryption_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-modal_reencryption-confirm.reencryption_confirm_service",
+      "to": "component.backend.services_modal.modal_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.services_workflow-rest_api-generated.task_base_service",
+      "to": "component.backend.services_workflow-rest_api-generated.task_api_configuration",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-validate-signature.workflow_validate_signature_task_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.forms.http_error_interceptor",
+      "to": "component.backend.forms_field-validation-service.field_validation_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
+      "to": "component.backend.deed-entry_services_archiving.document_archiving_rest_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
+      "to": "component.backend.tabs_document-data-tab_services.document_helper_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.deed-entry_services_archiving.mock_archiving_retrieval_helper_service",
+      "to": "component.backend.deed-entry_services_archiving.global_archiving_helper_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-change-aoid.workflow_change_aoid_task_service",
+      "to": "component.backend.services_injector.injector_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.workflow_services_workflow-archive.workflow_archive_service",
+      "to": "component.backend.workflow_services_workflow-archive.workflow_archive_job_service",
+      "type": "uses",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.issuing_copy_note",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.participant",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.participant",
+      "to": "component.backend.core.issuing_copy_note",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.remark",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.connection",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.registration",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.correction_note",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.correction_note_change",
+      "to": "component.backend.core.correction_note",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.successor_deed_selection",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.deedentry_lock",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.deedentry_log",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.document_meta_data",
+      "to": "component.backend.core.deedentry",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.signature_info",
+      "to": "component.backend.core.document_meta_data",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.handover_history_deed",
+      "to": "component.backend.core.handover_history",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.deed_creator_handover_info",
+      "to": "component.backend.core.handover_data_set",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.job",
+      "to": "component.backend.core.workflow",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.document_meta_data_work",
+      "to": "component.backend.core.task",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.document_meta_data_work",
+      "to": "component.backend.core.job",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.handover_dmd_work",
+      "to": "component.backend.core.document_meta_data",
+      "type": "references",
+      "evidence_ids": []
+    },
+    {
+      "from": "component.backend.core.task",
+      "to": "component.backend.core.job",
+      "type": "references",
+      "evidence_ids": []
+    }
+  ]
+}
