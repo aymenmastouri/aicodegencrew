@@ -1,8 +1,8 @@
 {
   "container": "backend",
-  "component_count": 732,
+  "component_count": 333,
   "relation_count": 0,
-  "interface_count": 125,
+  "interface_count": 95,
   "analysis": {
     "primary_pattern": "Layered",
     "layers": [
@@ -14,21 +14,13 @@
     "stereotype_distribution": {
       "rest_interface": 21,
       "controller": 32,
-      "service": 168,
+      "service": 42,
       "repository": 38,
-      "module": 16,
-      "component": 128,
-      "pipe": 67,
-      "directive": 3,
-      "adapter": 50,
-      "resolver": 4,
-      "interceptor": 4,
-      "guard": 1,
       "entity": 199,
       "scheduler": 1
     },
-    "total_components": 732,
+    "total_components": 333,
     "total_relations": 0,
-    "total_interfaces": 125
+    "total_interfaces": 95
   }
 }

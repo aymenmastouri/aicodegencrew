@@ -1,14 +1,28 @@
 {
   "container": "frontend",
-  "component_count": 0,
+  "component_count": 404,
   "relation_count": 0,
-  "interface_count": 0,
+  "interface_count": 30,
   "analysis": {
-    "primary_pattern": "Unknown",
-    "layers": [],
-    "stereotype_distribution": {},
-    "total_components": 0,
+    "primary_pattern": "Component-Based",
+    "layers": [
+      "Component",
+      "Service",
+      "Module"
+    ],
+    "stereotype_distribution": {
+      "module": 16,
+      "component": 128,
+      "pipe": 67,
+      "directive": 3,
+      "service": 131,
+      "interceptor": 4,
+      "adapter": 50,
+      "resolver": 4,
+      "guard": 1
+    },
+    "total_components": 404,
     "total_relations": 0,
-    "total_interfaces": 0
+    "total_interfaces": 30
   }
 }
