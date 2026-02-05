@@ -4,6 +4,14 @@ Phase 1: Architecture Facts Pipeline
 Deterministic extraction of architecture facts from source code.
 NO LLM. NO interpretation. Only facts + evidence.
 
+Pipeline:
+    Index → Collectors (parallel) → Raw Facts → Model Builder → Canonical JSON
+
+Architecture:
+    - Collectors: Extract raw facts with their own IDs
+    - Model Builder: Deduplicate, normalize IDs, resolve relations
+    - Dimension Writers: Write separate JSON files per dimension
+
 Usage:
     from aicodegencrew.pipelines.architecture_facts import ArchitectureFactsPipeline
     
@@ -12,7 +20,21 @@ Usage:
 """
 
 from .pipeline import ArchitectureFactsPipeline
+from .model_builder import (
+    ArchitectureModelBuilder,
+    ArchitectureModel,
+    CanonicalIdGenerator,
+    LayerClassifier,
+    ArchitectureLayer,
+)
+from .dimension_writers import CanonicalModelWriter
 
 __all__ = [
     "ArchitectureFactsPipeline",
+    "ArchitectureModelBuilder",
+    "ArchitectureModel",
+    "CanonicalIdGenerator",
+    "LayerClassifier",
+    "ArchitectureLayer",
+    "CanonicalModelWriter",
 ]

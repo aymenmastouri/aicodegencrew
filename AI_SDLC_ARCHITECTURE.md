@@ -142,16 +142,46 @@ src/aicodegencrew/
         architecture_facts/            # Phase 1: Architecture Facts
             __init__.py
             pipeline.py                # ArchitectureFactsPipeline
-            base_collector.py          # BaseCollector
-            container_detector.py      # ContainerDetector
-            spring_collector.py        # SpringCollector
-            angular_collector.py       # AngularCollector
-            infra_collector.py         # InfraCollector
-            database_collector.py      # DatabaseCollector (Liquibase, Flyway)
-            integration_collector.py   # IntegrationCollector (Kafka, REST clients)
-            architecture_style_collector.py  # Design patterns detection
+            dimension_writers.py       # Writes 9 dimension JSON files
+            endpoint_flow_builder.py   # Builds request flow chains
+            model_builder.py           # Normalizes collector outputs
             quality_validator.py       # Deterministic validation
-            writer.py                  # FactsWriter
+            
+            collectors/                # Modular collector system
+                __init__.py
+                orchestrator.py        # CollectorOrchestrator
+                base.py                # RawFact, RawComponent, etc.
+                fact_adapter.py        # Converts Raw* → Collected*
+                system_collector.py
+                container_collector.py
+                component_collector.py
+                interface_collector.py
+                data_model_collector.py
+                runtime_collector.py
+                infrastructure_collector.py
+                evidence_collector.py
+                dependency_collector.py
+                
+                spring/                # Spring specialists
+                    rest_collector.py
+                    service_collector.py
+                    repository_collector.py
+                    config_collector.py
+                    security_collector.py
+                    
+                angular/               # Angular specialists
+                    module_collector.py
+                    component_collector.py
+                    service_collector.py
+                    routing_collector.py
+                    state_collector.py
+                    
+                database/              # Database specialists
+                    oracle_table_collector.py
+                    migration_collector.py
+                    view_collector.py
+                    procedure_collector.py
+                    schema_collector.py
         
         tools/
         git_ops/

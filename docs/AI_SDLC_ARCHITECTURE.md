@@ -352,19 +352,42 @@ src/aicodegencrew/
 | Interfaces | REST endpoints, Routes | Yes |
 | Relations | Constructor injection, imports | Yes |
 
-#### Collectors
+#### Collector Architecture (Modular)
 
 > **Reference Diagram:** [collectors.drawio](diagrams/collectors.drawio)
 
-| Collector | Technology | Extracts | Key Patterns |
-|-----------|------------|----------|--------------|
-| `ContainerDetector` | All | Containers from build files | pom.xml, package.json, angular.json, Dockerfile |
-| `SpringCollector` | Java/Spring | Controllers, Services, Repos, Relations | @RestController, @Service, @Repository, @Component, @Entity |
-| `AngularCollector` | Angular/TS | Components, Modules, Routes | @NgModule, @Component, @Injectable, RouterModule |
-| `InfraCollector` | Docker/K8s | Deployment configs | docker-compose.yml, k8s/*.yaml |
-| `DatabaseCollector` | SQL | Database schemas, migrations | Liquibase XML/YAML, Flyway V*.sql |
-| `ArchitectureStyleCollector` | All | Design patterns, arch styles | Repository, Factory, Builder, Singleton, Strategy |
-| `IntegrationCollector` | All | External integrations | RestTemplate, WebClient, Feign, Kafka, RabbitMQ |
+The collector system uses a modular architecture with an **Orchestrator** that coordinates **Dimension Collectors** and **Specialist Collectors**.
+
+**Orchestrator** (`collectors/orchestrator.py`):
+- `CollectorOrchestrator`: Runs all collectors in sequence, returns `DimensionResults`
+- 8-step flow: System → Container → Component → Interface → DataModel → Runtime → Infrastructure → Evidence
+
+**Dimension Collectors**:
+| Collector | Output | Description |
+|-----------|--------|-------------|
+| `SystemCollector` | system.json | System metadata from root files |
+| `ContainerCollector` | containers.json | Deployable units (pom.xml, package.json, Dockerfile) |
+| `ComponentCollector` | components.json | Aggregates Spring + Angular specialists |
+| `InterfaceCollector` | interfaces.json | REST endpoints, routes, schedulers |
+| `DataModelCollector` | data_model.json | JPA entities, SQL tables, migrations |
+| `RuntimeCollector` | runtime.json | Schedulers, async, events |
+| `InfrastructureCollector` | infrastructure.json | Docker, K8s, CI/CD |
+| `EvidenceCollector` | evidence_map.json | Aggregates all evidence |
+
+**Specialist Collectors** (`collectors/spring/`, `collectors/angular/`, `collectors/database/`):
+| Specialist | Package | Extracts |
+|------------|---------|----------|
+| `SpringRestCollector` | spring/ | @RestController, @RequestMapping |
+| `SpringServiceCollector` | spring/ | @Service, interface+impl mappings |
+| `SpringRepositoryCollector` | spring/ | JpaRepository, custom queries |
+| `SpringConfigCollector` | spring/ | @Configuration, application.yml |
+| `SpringSecurityCollector` | spring/ | Security configs |
+| `AngularModuleCollector` | angular/ | @NgModule |
+| `AngularComponentCollector` | angular/ | @Component |
+| `AngularServiceCollector` | angular/ | @Injectable services |
+| `AngularRoutingCollector` | angular/ | RouterModule, routes |
+| `OracleTableCollector` | database/ | CREATE TABLE (multi-dialect) |
+| `MigrationCollector` | database/ | Flyway, Liquibase |
 
 #### Additional Components
 
