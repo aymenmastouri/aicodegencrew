@@ -64,6 +64,11 @@
         "scheduler": 1
       }
     },
+    "e2e-xnp": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
+    },
     "frontend": {
       "primary_pattern": "Component-Based",
       "layer_structure": [
@@ -82,11 +87,6 @@
         "resolver": 4,
         "guard": 1
       }
-    },
-    "e2e-xnp": {
-      "primary_pattern": "Unknown",
-      "layer_structure": [],
-      "component_counts": {}
     },
     "import-schema": {
       "primary_pattern": "Unknown",
@@ -150,6 +150,20 @@
       }
     },
     {
+      "container": "e2e-xnp",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
+      }
+    },
+    {
       "container": "frontend",
       "component_count": 404,
       "relation_count": 0,
@@ -175,20 +189,6 @@
         "total_components": 404,
         "total_relations": 0,
         "total_interfaces": 30
-      }
-    },
-    {
-      "container": "e2e-xnp",
-      "component_count": 0,
-      "relation_count": 0,
-      "interface_count": 0,
-      "analysis": {
-        "primary_pattern": "Unknown",
-        "layers": [],
-        "stereotype_distribution": {},
-        "total_components": 0,
-        "total_relations": 0,
-        "total_interfaces": 0
       }
     },
     {
