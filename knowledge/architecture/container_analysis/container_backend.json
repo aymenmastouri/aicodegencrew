@@ -3,13 +3,99 @@
   "component_count": 333,
   "relation_count": 0,
   "interface_count": 95,
+  "summary": "The backend is built on a classic layered architecture using Spring Boot, Spring MVC, Spring Data JPA, Spring Security and Scheduler, exposing RESTful JSON APIs. It implements a comprehensive set of capabilities for legal deed archiving, handover management, key management and background job processing, while integrating with external key‑management services and a relational database. Although the system is functionally rich, the codebase shows moderate coupling and cohesion, a large number of controllers, services and entities, and signs of architectural debt that call for refactoring and stronger domain‑driven design discipline.",
+  "technical": {
+    "primary_pattern": "Layered",
+    "layers": [
+      "Presentation (Controllers / REST endpoints)",
+      "Service (Business logic)",
+      "Repository (Data access)",
+      "Domain (Entities)",
+      "Integration (Scheduler, external REST clients)"
+    ],
+    "technologies": [
+      "Spring Boot",
+      "Spring MVC / Spring Web",
+      "Spring Data JPA / Hibernate",
+      "Spring Security",
+      "Spring Scheduler",
+      "REST (JSON over HTTP)",
+      "JPA Entities",
+      "Spring Bean Validation"
+    ],
+    "integration_style": "REST API (HTTP JSON) with internal service calls and scheduled jobs"
+  },
+  "functional": {
+    "domain_concepts": [
+      "DeedEntry",
+      "DocumentMetaData",
+      "HandoverDataSet",
+      "Action",
+      "KeyManager",
+      "Archiving",
+      "BusinessPurpose",
+      "SignatureInfo",
+      "Participant",
+      "Report",
+      "Job",
+      "ReencryptionJob"
+    ],
+    "capabilities": [
+      "Create, read, update and delete deed entries",
+      "Track deed entry connections and logs",
+      "Manage document metadata",
+      "Handle handover data sets and history",
+      "Execute business actions and action streams",
+      "Perform archiving operations and sign submission/re‑encryption tokens",
+      "Manage encryption keys, re‑encryption and crypto state queries",
+      "Provide business purpose lookup and participant management",
+      "Generate reports and job status information",
+      "Schedule and run background jobs (e.g., re‑encryption, archiving)",
+      "Validate and enforce security/authorization rules"
+    ],
+    "bounded_context": "Legal Deed Archiving & Handover Management",
+    "integrations": [
+      "External Key Management Service (via XnpKmServiceImpl / MockKmService)",
+      "External REST clients through ProxyRestTemplateConfiguration and TokenAuthenticationRestTemplateConfigurationSpringBoot",
+      "Scheduler (Spring Scheduler) for background jobs",
+      "Database (JPA/Hibernate) for persistence of entities"
+    ]
+  },
+  "quality": {
+    "separation_of_concerns": "good",
+    "coupling": "moderate",
+    "cohesion": "moderate",
+    "debt_indicators": [
+      "Large number of controllers (32) some likely to be fat",
+      "Service layer dense (42 services) with many implementation classes",
+      "High entity count (199) suggests potential anemic domain model",
+      "Custom DAO implementations proliferating, indicating duplicated abstraction",
+      "Missing clear domain service interfaces for many business operations"
+    ],
+    "grade": "B",
+    "recommendations": [
+      "Introduce dedicated service interfaces and Facade layers to decouple controllers from concrete services",
+      "Refactor overly large controllers and services into smaller, task‑focused components",
+      "Consolidate related entities or apply aggregate roots to reduce entity explosion",
+      "Standardize repository abstractions; replace custom DAO implementations with reusable specifications or Spring Data extensions",
+      "Apply Domain‑Driven Design patterns (Aggregates, Domain Services) to improve cohesion within the domain layer",
+      "Add DTO mappings to separate API contracts from internal domain models, reducing coupling between layers"
+    ]
+  },
+  "overall_assessment": "The backend delivers a solid functional foundation and follows a clear layered pattern, but its moderate coupling, sprawling controller/service surface area, and anemic domain model raise maintainability concerns. Addressing the identified technical debt will improve scalability, testability and alignment with DDD principles.",
+  "top_recommendations": [
+    "Introduce dedicated service interfaces and Facade layers to decouple controllers from concrete services",
+    "Refactor overly large controllers and services into smaller, task‑focused components",
+    "Consolidate related entities or apply aggregate roots to reduce entity explosion"
+  ],
   "analysis": {
     "primary_pattern": "Layered",
     "layers": [
-      "Controller",
-      "Service",
-      "Repository",
-      "Entity"
+      "Presentation (Controllers / REST endpoints)",
+      "Service (Business logic)",
+      "Repository (Data access)",
+      "Domain (Entities)",
+      "Integration (Scheduler, external REST clients)"
     ],
     "stereotype_distribution": {
       "rest_interface": 21,
