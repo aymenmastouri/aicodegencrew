@@ -1,9 +1,11 @@
 # =============================================================================
 # Phase 2: Architecture Analysis Crew - 17 Focused Tasks
 # =============================================================================
-# Each task is INDEPENDENT and runs async without context from others.
-# All tasks use tools to query facts - no hardcoded assumptions.
-# Synthesis task reads all partial outputs from files.
+# Each task is INDEPENDENT (context=[] in crew.py) and uses tools to query facts.
+# CrewAI Best Practices applied:
+# - Clear step-by-step instructions
+# - Explicit expected_output with JSON structure
+# - human_input: false for automated execution
 # =============================================================================
 
 # =============================================================================
@@ -12,84 +14,117 @@
 
 analyze_macro_architecture:
   description: >
-    Analyze MACRO ARCHITECTURE style.
-    
+    Analyze MACRO ARCHITECTURE style of the system.
+
     STEPS:
-    1. Call: get_facts_statistics() to understand scale
+    1. Call: get_facts_statistics() to understand scale (component/container counts)
     2. Call: list_components_by_stereotype(stereotype="architecture_style")
-    3. Call: query_facts(category="containers")
-    4. Determine: Monolith, Modular Monolith, Microservices, or Hybrid?
-    
-    INDICATORS:
-    - 1 container = Monolith
-    - 1 container + clear modules = Modular Monolith
-    - Multiple containers with APIs = Microservices
-    
+    3. Call: query_facts(category="containers") to list all containers
+    4. Determine architecture style based on evidence:
+       - 1 container = Monolith
+       - 1 container + clear module boundaries = Modular Monolith
+       - Multiple containers with REST APIs between them = Microservices
+       - Mix = Hybrid
+    5. Identify deployment model and communication patterns
+
+    IMPORTANT: Base your analysis ONLY on tool query results. Do not invent containers or components.
+
   expected_output: >
-    JSON with: style, container_count, reasoning, scalability_approach, 
-    deployment_model, communication_pattern
+    Valid JSON object with these exact keys:
+    {"style": "Monolith|Modular Monolith|Microservices|Hybrid",
+     "container_count": <number>,
+     "containers": [{"name": "...", "type": "..."}],
+     "reasoning": "Evidence-based explanation",
+     "scalability_approach": "vertical|horizontal",
+     "deployment_model": "single|distributed",
+     "communication_pattern": "sync REST|async messaging|mixed"}
+  human_input: false
   agent: tech_architect
 
 analyze_backend_pattern:
   description: >
     Analyze BACKEND architectural pattern.
-    
+
     STEPS:
-    1. Call: get_facts_statistics() - check components_by_stereotype
+    1. Call: get_facts_statistics() - check components_by_stereotype breakdown
     2. Call: list_components_by_stereotype(stereotype="controller", limit=50)
     3. Call: list_components_by_stereotype(stereotype="service", limit=50)
     4. Call: list_components_by_stereotype(stereotype="repository", limit=50)
-    5. Determine pattern from layer distribution
-    
-    PATTERNS:
-    - Layered: controller → service → repository clear separation
-    - Hexagonal: ports/adapters naming, domain isolation
-    - Clean Architecture: use cases, entities, interfaces folders
-    - CQRS: separate command/query handlers
-    
+    5. Analyze layer distribution to determine pattern:
+       - Layered: clear controller -> service -> repository separation
+       - Hexagonal: ports/adapters naming convention, domain isolation
+       - Clean Architecture: use cases, entities, interfaces directories
+       - CQRS: separate command/query handlers
+
+    IMPORTANT: Count actual components from tool results. Do not estimate.
+
   expected_output: >
-    JSON with: primary_pattern, layer_structure, component_counts, 
-    technology (framework, language), reasoning
+    Valid JSON object with these exact keys:
+    {"primary_pattern": "Layered|Hexagonal|Clean Architecture|CQRS|Unknown",
+     "layer_structure": ["Controller", "Service", "Repository"],
+     "component_counts": {"controller": <n>, "service": <n>, "repository": <n>},
+     "technology": {"framework": "Spring Boot|Angular|...", "language": "Java|TypeScript|..."},
+     "layer_violations": <number>,
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: tech_architect
 
 analyze_frontend_pattern:
   description: >
     Analyze FRONTEND architectural pattern.
-    
+
     STEPS:
-    1. Call: query_facts(category="containers") - find frontend container
+    1. Call: query_facts(category="containers") - find frontend container(s)
     2. Call: list_components_by_stereotype(stereotype="component", limit=50)
-    3. Check container metadata for framework
-    
-    PATTERNS:
-    - Component-Based SPA: Angular/React/Vue components
-    - Micro-Frontends: multiple independent frontend apps
-    - Server-Rendered: minimal JS, server templates
-    
+    3. Call: list_components_by_stereotype(stereotype="module", limit=50)
+    4. Check container metadata for framework (Angular, React, Vue)
+    5. Determine pattern:
+       - Component-Based SPA: Angular/React/Vue with components + modules
+       - Micro-Frontends: multiple independent frontend applications
+       - Server-Rendered: minimal JavaScript, server-side templates
+       - No Frontend: backend-only system
+
+    IMPORTANT: If no frontend container exists, report "No Frontend" - do not invent one.
+
   expected_output: >
-    JSON with: primary_pattern, framework, module_structure, 
-    state_management, routing_strategy, component_count, reasoning
+    Valid JSON object with these exact keys:
+    {"primary_pattern": "Component-Based SPA|Micro-Frontends|Server-Rendered|No Frontend",
+     "framework": "Angular|React|Vue|None",
+     "module_structure": "feature-based|flat|layered",
+     "state_management": "NgRx|Redux|Vuex|None|Unknown",
+     "routing_strategy": "lazy-loaded|eager|Unknown",
+     "component_count": <number>,
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: tech_architect
 
 analyze_architecture_quality:
   description: >
     Assess ARCHITECTURE QUALITY metrics.
-    
+
     STEPS:
-    1. Call: get_facts_statistics() - get relation counts
+    1. Call: get_facts_statistics() - get total components, relations, interfaces
     2. Call: query_facts(category="relations", limit=100)
-    3. Check for layer violations (controller → repository direct)
-    4. Calculate coupling metrics
-    
-    METRICS:
-    - Separation of concerns: good/moderate/poor
-    - Layer violations count
-    - Coupling assessment: loose/moderate/tight
-    - Circular dependencies count
-    
+    3. Calculate: relations_per_component = total_relations / total_components
+    4. Check for layer violations (controller directly calling repository)
+    5. Look for circular dependencies (A->B->C->A)
+    6. Assess coupling:
+       - ratio < 1.0 = loose coupling
+       - ratio 1.0-3.0 = moderate coupling
+       - ratio > 3.0 = tight coupling
+
+    IMPORTANT: Use actual numbers from statistics. Do not estimate.
+
   expected_output: >
-    JSON with: separation_of_concerns, layer_violations_count, 
-    coupling_assessment, circular_dependencies, overall_grade, reasoning
+    Valid JSON object with these exact keys:
+    {"separation_of_concerns": "good|moderate|poor",
+     "layer_violations_count": <number>,
+     "coupling_assessment": "loose|moderate|tight",
+     "relations_per_component": <float>,
+     "circular_dependencies": <number>,
+     "overall_grade": "A|B|C|D|F",
+     "reasoning": "Evidence-based explanation with actual numbers"}
+  human_input: false
   agent: tech_architect
 
 # =============================================================================
@@ -98,159 +133,221 @@ analyze_architecture_quality:
 
 analyze_domain_model:
   description: >
-    Analyze the DOMAIN MODEL.
-    
+    Analyze the DOMAIN MODEL of the system.
+
     STEPS:
-    1. Call: get_facts_statistics() - check entity count
+    1. Call: get_facts_statistics() - check entity count and distribution
     2. Call: list_components_by_stereotype(stereotype="entity", limit=100)
-    3. Group entities by naming prefix (domain areas)
-    4. Identify core vs supporting domains
-    
-    OUTPUT:
-    - List ALL entity names
-    - Group by domain area
-    - Identify domain complexity
-    
+    3. Group entities by naming prefix (e.g., Order*, User*, Document*)
+    4. Each prefix group = one domain area
+    5. Identify core domains (most entities) vs supporting domains (few entities)
+    6. Assess naming consistency
+
+    IMPORTANT: List ALL entity names from tool results. Group by actual naming patterns.
+
   expected_output: >
-    JSON with: total_entities, domain_complexity, core_domain_areas,
-    naming_consistency, reasoning
+    Valid JSON object with these exact keys:
+    {"total_entities": <number>,
+     "domain_areas": [{"name": "...", "entities": ["Entity1", "Entity2"], "type": "core|supporting"}],
+     "domain_complexity": "simple|moderate|complex",
+     "naming_consistency": "consistent|mixed|inconsistent",
+     "reasoning": "Evidence-based explanation listing actual entity names"}
+  human_input: false
   agent: func_analyst
 
 analyze_business_capabilities:
   description: >
     Identify BUSINESS CAPABILITIES from services.
-    
+
     STEPS:
     1. Call: list_components_by_stereotype(stereotype="service", limit=100)
-    2. Group services by naming prefix
-    3. Each prefix group = one capability
-    4. Assess capability maturity
-    
-    EXAMPLE:
-    - OrderService, OrderValidationService → "Order Management" capability
-    - UserService, AuthService → "User Management" capability
-    
+    2. Group services by naming prefix (e.g., OrderService, OrderValidationService = "Order Management")
+    3. Each prefix group = one business capability
+    4. Assess capability maturity (number of services per capability)
+    5. Identify gaps (entities without corresponding services)
+
+    EXAMPLE GROUPING:
+    - OrderService, OrderValidationService, OrderMapper -> "Order Management"
+    - UserService, AuthService, LoginService -> "User & Authentication"
+
   expected_output: >
-    JSON with: capabilities list (name, services, description, maturity),
-    capability_coverage, reasoning
+    Valid JSON object with these exact keys:
+    {"capabilities": [{"name": "...", "services": ["Service1", "Service2"],
+                       "description": "...", "maturity": "basic|intermediate|mature"}],
+     "total_services": <number>,
+     "capability_coverage": "comprehensive|partial|minimal",
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: func_analyst
 
 analyze_bounded_contexts:
   description: >
-    Identify BOUNDED CONTEXTS (DDD).
-    
+    Identify BOUNDED CONTEXTS (DDD perspective).
+
     STEPS:
-    1. Call: get_facts_statistics() - understand scale
+    1. Call: get_facts_statistics() - understand overall scale
     2. Call: list_components_by_stereotype(stereotype="entity", limit=50)
     3. Call: list_components_by_stereotype(stereotype="service", limit=50)
-    4. Cross-reference: entities + services with same prefix = context
-    
-    CONTEXT DETECTION:
-    - Components with same prefix belong to same context
-    - Check cross-context dependencies via relations
-    
+    4. Cross-reference: entities + services with same naming prefix = one bounded context
+    5. Call: query_facts(category="relations", limit=50) to find cross-context dependencies
+    6. Assess coupling between contexts
+
+    CONTEXT DETECTION: Components sharing a naming prefix belong to the same context.
+
   expected_output: >
-    JSON with: contexts_identified, contexts list (name, entities, services),
-    cross_context_coupling, recommendations, reasoning
+    Valid JSON object with these exact keys:
+    {"contexts_identified": <number>,
+     "contexts": [{"name": "...", "entities": ["..."], "services": ["..."],
+                   "component_count": <n>}],
+     "cross_context_coupling": "low|moderate|high",
+     "recommendations": ["..."],
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: func_analyst
 
 analyze_state_machines:
   description: >
     Detect STATE MACHINES in the codebase.
-    
+
     STEPS:
-    1. Call: rag_query("state machine StateMachine")
-    2. Call: rag_query("status enum Status")
+    1. Call: rag_query("state machine StateMachine enum Status")
+    2. Call: rag_query("status transition PENDING APPROVED REJECTED")
     3. Call: list_components_by_stereotype(stereotype="entity", limit=50)
-    4. Look for entities with status/state fields
-    
+    4. Look for entities with status/state fields in names
+
     INDICATORS:
     - Spring State Machine annotations
-    - Enum with states (PENDING, APPROVED, REJECTED)
-    - State transition methods
-    
+    - Enum types with state values (PENDING, APPROVED, REJECTED, ACTIVE, INACTIVE)
+    - Classes with "State" or "Status" in name
+    - Transition methods (approve(), reject(), activate())
+
+    IMPORTANT: If no state machines found, report detected=false. Do not invent them.
+
   expected_output: >
-    JSON with: detected (bool), implementation type, stateful_entities,
-    state_machine_classes, reasoning
+    Valid JSON object with these exact keys:
+    {"detected": true|false,
+     "implementation_type": "Spring State Machine|Enum-based|Custom|None",
+     "stateful_entities": ["EntityName"],
+     "state_transitions": [{"entity": "...", "states": ["STATE1", "STATE2"]}],
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: func_analyst
 
 analyze_workflow_engines:
   description: >
     Detect WORKFLOW ENGINES (BPMN, Camunda, Flowable).
-    
+
     STEPS:
-    1. Call: rag_query("Camunda BPMN workflow")
-    2. Call: rag_query("Flowable Activiti process")
+    1. Call: rag_query("Camunda BPMN workflow ProcessEngine")
+    2. Call: rag_query("Flowable Activiti process definition")
     3. Call: list_components_by_stereotype(stereotype="design_pattern")
-    4. Check for workflow-related patterns
-    
+    4. Check for workflow-related components or configurations
+
     INDICATORS:
-    - Camunda/Flowable dependencies
-    - .bpmn files
-    - ProcessEngine beans
-    
+    - Camunda/Flowable library dependencies
+    - .bpmn or .bpmn20.xml files
+    - ProcessEngine or RuntimeService beans
+    - @ProcessVariable annotations
+
+    IMPORTANT: If no workflow engine found, report engine="None". Do not invent.
+
   expected_output: >
-    JSON with: engine (Camunda/Flowable/None), version, bpmn_processes,
-    integration_style, workflow_services, reasoning
+    Valid JSON object with these exact keys:
+    {"engine": "Camunda|Flowable|Activiti|None",
+     "version": "...|Unknown",
+     "bpmn_processes": ["process_name"],
+     "integration_style": "embedded|standalone|None",
+     "workflow_services": ["ServiceName"],
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: func_analyst
 
 analyze_saga_patterns:
   description: >
     Detect SAGA patterns for distributed transactions.
-    
+
     STEPS:
-    1. Call: rag_query("saga pattern compensation")
-    2. Call: rag_query("outbox pattern event")
+    1. Call: rag_query("saga pattern compensation rollback")
+    2. Call: rag_query("outbox pattern event publishing")
     3. Call: list_components_by_stereotype(stereotype="design_pattern")
-    
+    4. Look for saga orchestrator or choreography patterns
+
     INDICATORS:
-    - Saga orchestrators
-    - Compensation methods
-    - Outbox tables
-    - Event sourcing
-    
+    - Saga orchestrator classes
+    - Compensation/rollback methods
+    - Outbox tables or event sourcing
+    - @SagaEventHandler annotations
+
+    IMPORTANT: If no saga patterns found, report detected=false. Do not invent.
+
   expected_output: >
-    JSON with: detected (bool), style (orchestration/choreography),
-    sagas list, outbox_pattern (bool), event_store, reasoning
+    Valid JSON object with these exact keys:
+    {"detected": true|false,
+     "style": "orchestration|choreography|None",
+     "sagas": ["SagaName"],
+     "outbox_pattern": true|false,
+     "event_store": true|false,
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: func_analyst
 
 analyze_runtime_scenarios:
   description: >
-    Identify key RUNTIME SCENARIOS (Arc42 Section 6).
-    
+    Identify key RUNTIME SCENARIOS for Arc42 Section 6.
+
     STEPS:
     1. Call: list_components_by_stereotype(stereotype="controller", limit=30)
     2. Call: query_facts(category="interfaces", limit=30)
-    3. For top 3-5 endpoints, trace the flow
-    
+    3. For the top 3-5 most important endpoints, trace the call flow:
+       controller -> service -> repository -> entity
+    4. Document each scenario with trigger, steps, and end state
+
     SCENARIO FORMAT:
-    - Trigger: HTTP request
-    - Steps: controller → service → repository
-    - End state: response returned
-    
+    - Name: descriptive name (e.g., "Create Order")
+    - Trigger: HTTP POST /api/orders
+    - Steps: OrderController -> OrderService -> OrderRepository
+    - End state: Order persisted, 201 Created returned
+
   expected_output: >
-    JSON with: scenarios list (name, trigger, steps, end_state),
-    orchestration_style, arc42_section6_ready, reasoning
+    Valid JSON object with these exact keys:
+    {"scenarios": [{"name": "...", "trigger": "HTTP METHOD /path",
+                    "steps": ["Component1", "Component2", "Component3"],
+                    "end_state": "..."}],
+     "total_endpoints": <number>,
+     "orchestration_style": "synchronous|asynchronous|mixed",
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: func_analyst
 
 analyze_api_design:
   description: >
     Assess API DESIGN QUALITY.
-    
+
     STEPS:
-    1. Call: get_facts_statistics() - check api_statistics section
-    2. Analyze verb distribution (GET, POST, PUT, DELETE)
-    3. Check versioning (/v1/, /v2/)
-    4. Assess naming consistency
-    
+    1. Call: get_facts_statistics() - check interface statistics
+    2. Call: query_facts(category="interfaces", limit=50)
+    3. Analyze HTTP verb distribution (GET, POST, PUT, DELETE, PATCH)
+    4. Check URL patterns for versioning (/v1/, /api/v2/)
+    5. Assess naming consistency across controllers
+    6. Check for RESTful resource naming
+
     METRICS:
-    - RESTfulness: proper verbs, resource URLs
-    - Consistency: same patterns across controllers
-    - Versioning strategy
-    
+    - RESTfulness: proper verb usage with resource URLs
+    - Consistency: same URL patterns across all controllers
+    - Versioning: presence of API version in URLs
+    - Completeness: CRUD coverage per resource
+
   expected_output: >
-    JSON with: total_endpoints, restfulness, verb_distribution,
-    consistency, versioning_strategy, naming_quality, recommendations, reasoning
+    Valid JSON object with these exact keys:
+    {"total_endpoints": <number>,
+     "verb_distribution": {"GET": <n>, "POST": <n>, "PUT": <n>, "DELETE": <n>},
+     "restfulness": "good|moderate|poor",
+     "consistency": "consistent|mixed|inconsistent",
+     "versioning_strategy": "URL-based|header-based|none",
+     "naming_quality": "good|moderate|poor",
+     "recommendations": ["..."],
+     "reasoning": "Evidence-based explanation with actual endpoint examples"}
+  human_input: false
   agent: func_analyst
 
 # =============================================================================
@@ -260,101 +357,140 @@ analyze_api_design:
 analyze_complexity:
   description: >
     Assess STRUCTURAL and COGNITIVE COMPLEXITY.
-    
+
     STEPS:
-    1. Call: get_facts_statistics()
-    2. Calculate: relations per component ratio
-    3. Identify complexity hotspots
-    
-    THRESHOLDS:
-    - < 500 components: Low complexity
-    - 500-5000: Medium
-    - 5000+: High/Enterprise
-    
+    1. Call: get_facts_statistics() - get total counts
+    2. Calculate: relations_per_component = total_relations / total_components
+    3. Identify complexity hotspots (components with most relations)
+    4. Classify scale:
+       - < 500 components: Low complexity
+       - 500-5000: Medium complexity
+       - 5000+: High/Enterprise complexity
+
+    IMPORTANT: Use actual numbers from get_facts_statistics(). Do not estimate.
+
   expected_output: >
-    JSON with: total_components, total_relations, relations_per_component,
-    structural_complexity, cognitive_complexity, scale, hotspots, reasoning
+    Valid JSON object with these exact keys:
+    {"total_components": <number>,
+     "total_relations": <number>,
+     "total_interfaces": <number>,
+     "relations_per_component": <float>,
+     "structural_complexity": "low|medium|high",
+     "scale": "small|medium|large|enterprise",
+     "hotspots": [{"component": "...", "relation_count": <n>}],
+     "reasoning": "Evidence-based explanation with actual numbers"}
+  human_input: false
   agent: quality_analyst
 
 analyze_technical_debt:
   description: >
     Assess TECHNICAL DEBT level.
-    
+
     STEPS:
-    1. Call: rag_query("TODO FIXME deprecated")
-    2. Call: rag_query("workaround hack temporary")
-    3. Call: get_facts_statistics()
-    4. Estimate debt from code indicators
-    
-    INDICATORS:
-    - TODO/FIXME count
-    - Deprecated annotations
-    - Workaround comments
-    
+    1. Call: rag_query("TODO FIXME HACK workaround")
+    2. Call: rag_query("deprecated @Deprecated SuppressWarnings")
+    3. Call: get_facts_statistics() - for context
+    4. Categorize debt indicators found:
+       - Code debt: TODO/FIXME markers
+       - Design debt: deprecated patterns still in use
+       - Test debt: missing test coverage indicators
+
+    IMPORTANT: Only report what RAG search actually finds. Do not speculate.
+
   expected_output: >
-    JSON with: debt_level, indicators_found, categories,
-    estimated_effort, priority_items, reasoning
+    Valid JSON object with these exact keys:
+    {"debt_level": "low|moderate|high|critical",
+     "indicators_found": <number>,
+     "categories": {"code_debt": <n>, "design_debt": <n>, "test_debt": <n>},
+     "top_items": [{"type": "TODO|FIXME|deprecated", "location": "file/class", "description": "..."}],
+     "estimated_effort": "days|weeks|months",
+     "reasoning": "Evidence-based explanation with actual findings"}
+  human_input: false
   agent: quality_analyst
 
 analyze_security:
   description: >
     Assess SECURITY POSTURE.
-    
+
     STEPS:
-    1. Call: rag_query("Spring Security authentication")
-    2. Call: rag_query("JWT OAuth authorization")
-    3. Call: rag_query("@PreAuthorize @Secured")
-    4. Check for security patterns
-    
-    CHECKLIST:
-    - Authentication mechanism
-    - Authorization framework
-    - Input validation
-    - Audit logging
-    
+    1. Call: rag_query("Spring Security WebSecurityConfigurer SecurityConfig")
+    2. Call: rag_query("JWT OAuth2 token authentication")
+    3. Call: rag_query("@PreAuthorize @Secured @RolesAllowed")
+    4. Call: rag_query("CSRF XSS input validation sanitize")
+    5. Assess each security dimension:
+       - Authentication: mechanism used (JWT, OAuth2, Basic, Session)
+       - Authorization: framework used (Spring Security, custom)
+       - Input validation: annotation-based or manual
+       - Audit logging: present or absent
+
+    IMPORTANT: Only report security patterns found by RAG search. Do not assume.
+
   expected_output: >
-    JSON with: authentication, authorization, input_validation,
-    audit_logging, security_framework, concerns, recommendations,
-    overall_posture, reasoning
+    Valid JSON object with these exact keys:
+    {"authentication": {"mechanism": "JWT|OAuth2|Basic|Session|Unknown", "configured": true|false},
+     "authorization": {"framework": "Spring Security|Custom|None", "method_level": true|false},
+     "input_validation": "annotation-based|manual|none|unknown",
+     "audit_logging": true|false,
+     "security_framework": "Spring Security|None|Unknown",
+     "overall_posture": "strong|moderate|weak|unknown",
+     "concerns": ["..."],
+     "recommendations": ["..."],
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: quality_analyst
 
 analyze_operational_readiness:
   description: >
     Assess OPERATIONAL READINESS.
-    
+
     STEPS:
-    1. Call: rag_query("actuator health metrics")
-    2. Call: rag_query("logging slf4j logback")
-    3. Call: rag_query("@ConfigurationProperties")
-    4. Check for ops patterns
-    
-    CHECKLIST:
-    - Health checks (Spring Actuator)
-    - Monitoring endpoints
-    - Structured logging
-    - Configuration externalization
-    
+    1. Call: rag_query("actuator health endpoint HealthIndicator")
+    2. Call: rag_query("slf4j logback logging structured log")
+    3. Call: rag_query("@ConfigurationProperties environment profile")
+    4. Call: rag_query("micrometer prometheus metrics counter timer")
+    5. Assess each operational dimension:
+       - Health checks: Spring Actuator / health endpoints
+       - Monitoring: metrics endpoints, Prometheus, Grafana integration
+       - Logging: structured logging, log levels, frameworks
+       - Configuration: externalized config, profiles, environment variables
+
+    IMPORTANT: Only report what RAG search confirms. Do not assume.
+
   expected_output: >
-    JSON with: health_checks, monitoring, logging, metrics,
-    configuration, deployment_readiness, recommendations, reasoning
+    Valid JSON object with these exact keys:
+    {"health_checks": {"present": true|false, "framework": "Spring Actuator|Custom|None"},
+     "monitoring": {"metrics": true|false, "framework": "Micrometer|Prometheus|None"},
+     "logging": {"framework": "Logback|Log4j|SLF4J|Unknown", "structured": true|false},
+     "configuration": {"externalized": true|false, "profiles": true|false},
+     "deployment_readiness": "production-ready|needs-work|minimal",
+     "recommendations": ["..."],
+     "reasoning": "Evidence-based explanation"}
+  human_input: false
   agent: quality_analyst
 
 # =============================================================================
-# SYNTHESIS TASK (4.0)
+# SYNTHESIS TASK (4.0) - Merges all 16 partial results
 # =============================================================================
 
 synthesize_architecture:
   description: >
-    Synthesize ALL analysis results into analyzed_architecture.json.
-    
+    Synthesize ALL 16 analysis results into the final analyzed_architecture.json.
+
     STEPS:
-    1. Call: read_partial_results() to get all analysis outputs
-    2. Merge all sections into complete architecture document
-    3. Calculate overall grade
-    4. Write executive summary
-    5. Create top recommendations
-    
-    STRUCTURE:
+    1. Call: read_partial_results() to load all 16 analysis JSON files
+    2. Review each section for completeness and consistency
+    3. Cross-validate numbers (component counts should match across sections)
+    4. Resolve any conflicts between agent assessments
+    5. Calculate overall architecture grade (A-F):
+       - A: Well-structured, low debt, good security, production-ready
+       - B: Good structure, moderate debt, some improvements needed
+       - C: Acceptable but significant improvements needed
+       - D: Poor structure, high debt, major concerns
+       - F: Critical issues, needs immediate attention
+    6. Write executive summary (2-3 sentences)
+    7. Create top 5 recommendations list
+
+    STRUCTURE of output:
     - system: name, description
     - macro_architecture: from task 1.1
     - micro_architecture: backend (1.2) + frontend (1.3)
@@ -363,9 +499,13 @@ synthesize_architecture:
     - workflows: state machines (2.4) + engines (2.5) + sagas (2.6) + scenarios (2.7)
     - api: from task 2.8
     - quality: complexity (3.1) + debt (3.2) + security (3.3) + ops (3.4)
-    
+
+    IMPORTANT: Never invent data. If a section is missing, use "NOT_ANALYZED".
+
   expected_output: >
-    Complete analyzed_architecture.json matching AnalyzedArchitecture schema.
-    All sections populated from partial results.
-    Overall grade (A-F) and executive summary.
+    Complete valid JSON matching the AnalyzedArchitecture schema. Must include:
+    executive_summary, overall_grade (A-F), all 16 analysis sections merged,
+    and top_recommendations list. Every section must be populated from
+    partial results or marked as "NOT_ANALYZED".
+  human_input: false
   agent: synthesis_lead

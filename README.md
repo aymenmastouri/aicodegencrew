@@ -1,168 +1,536 @@
 # AICodeGenCrew
 
-AICodeGenCrew is a fully local, on-premises AI-powered toolkit for end-to-end Software Development Lifecycle (SDLC) automation. It analyzes existing repositories, generates evidence-based architecture documentation, and supports the full development workflow from planning to deployment.
+**AI-Powered Software Development Lifecycle Automation**
 
-## Key Features
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![CrewAI](https://img.shields.io/badge/framework-CrewAI-orange.svg)](https://crewai.com/)
+[![Capgemini](https://img.shields.io/badge/license-Capgemini-green.svg)](LICENSE)
+[![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#why-on-premises)
 
-- **Fully Automated Architecture Discovery**: Extracts deterministic facts from codebases and synthesizes C4 diagrams and arc42 documentation.
-- **Evidence-Based**: Every claim in generated documentation is traceable to source code evidence.
-- **On-Premises Operation**: Runs entirely on your infrastructure with local LLMs - no data leaves your network.
-- **Scalable**: Handles repositories from small projects to enterprise-scale systems.
-- **Standards-Compliant**: Outputs follow C4 model and arc42 documentation standards.
+AICodeGenCrew is a fully local, on-premises AI-powered toolkit for end-to-end Software Development Lifecycle (SDLC) automation. Point it at any repository and it will extract architecture facts, analyze patterns, and generate complete **C4 model** and **arc42** documentation — all backed by real code evidence, running entirely on your infrastructure.
+
+---
 
 ## Table of Contents
 
+- [Key Features](#key-features)
+- [Why On-Premises?](#why-on-premises)
+- [Architecture Overview](#architecture-overview)
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Phases](#phases)
 - [Configuration](#configuration)
-- [Usage](#usage)
-- [Outputs](#outputs)
+- [CLI Reference](#cli-reference)
+- [Pipeline Phases](#pipeline-phases)
+- [Output Artifacts](#output-artifacts)
+- [Project Structure](#project-structure)
+- [Testing](#testing)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
-- [Documentation](#documentation)
+
+---
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Evidence-Based Documentation** | Every claim in generated docs is traceable to source code evidence. No hallucinations. |
+| **C4 Model + arc42** | Generates complete C4 diagrams (Context, Container, Component, Deployment) and all 12 arc42 chapters. |
+| **Deterministic Fact Extraction** | Phase 1 extracts architecture facts without any LLM — pure code analysis. |
+| **Multi-Agent AI Crews** | Specialized AI agents (architects, analysts) collaborate via CrewAI for analysis and synthesis. |
+| **Map-Reduce for Scale** | Large repositories (500+ components) are split by container and analyzed in parallel. |
+| **Mini-Crews Pattern** | Each documentation section gets a fresh LLM context window — no context overflow. |
+| **Checkpoint & Resume** | If a crew fails, re-running automatically skips completed work. |
+| **MCP Integration** | Model Context Protocol server provides live architecture queries to agents. |
+| **DrawIO Diagrams** | Generates machine-readable `.drawio` diagrams alongside Markdown documentation. |
+| **Fully On-Premises** | Runs with local LLMs (Ollama) or on-prem endpoints. No data leaves your network. |
+
+---
+
+## Why On-Premises?
+
+Enterprise software often contains sensitive intellectual property, customer data, or security-critical code. Sending this data to external AI services may violate compliance requirements, data protection regulations, or internal security policies.
+
+AICodeGenCrew is designed to run **entirely on your infrastructure** with your own LLMs — no data ever leaves your network. It supports:
+
+- **Local models** via [Ollama](https://ollama.com/) (e.g., `qwen2.5-coder`, `llama3`)
+- **On-prem API endpoints** compatible with the OpenAI API format (e.g., vLLM, TGI)
+- **Local embeddings** via Ollama (`all-minilm`) for vector indexing
+
+---
+
+## Architecture Overview
+
+The system follows a **4-Layer Architecture** with 9 pipeline phases:
+
+| Layer | Phases | Purpose | LLM Required |
+|-------|--------|---------|:------------:|
+| **Knowledge** | 0 – 1 | Deterministic facts extraction | No |
+| **Reasoning** | 2 – 3 | AI-powered analysis and synthesis | Yes |
+| **Execution** | 4 – 7 | Code generation and deployment | Yes |
+| **Feedback** | 8 | Continuous learning and quality | Yes |
+
+> For the full architecture specification, see [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md).
+> DrawIO diagrams are in [docs/diagrams/](docs/diagrams/).
+
+### Data Flow
+
+```
+Repository
+  │
+  ├─ Phase 0: Indexing ──────────────► ChromaDB (vector store)
+  │
+  ├─ Phase 1: Facts Extraction ─────► architecture_facts.json + evidence_map.json
+  │
+  ├─ Phase 2: Analysis (AI) ────────► analyzed_architecture.json
+  │
+  └─ Phase 3: Synthesis (AI) ───────► C4 docs + arc42 chapters + DrawIO diagrams
+```
+
+---
+
+## Prerequisites
+
+| Requirement | Version | Purpose |
+|-------------|---------|---------|
+| **Python** | 3.10 – 3.12 | Runtime |
+| **Ollama** | latest | Local embeddings (`all-minilm`) and optional local LLMs |
+| **Git** | any | Repository access |
+
+**Optional:**
+- On-prem LLM API endpoint (OpenAI-compatible) for analysis/synthesis phases
+- 16 GB+ RAM recommended for large repositories
+
+---
 
 ## Installation
 
-### Prerequisites
+### 1. Clone the Repository
 
-- Python 3.10+
-- Local LLM runtime (e.g., Ollama) for synthesis phases
+```bash
+git clone <repo-url> aicodegencrew
+cd aicodegencrew
+```
 
-### Setup
+### 2. Create Virtual Environment
 
-1. Clone the repository:
-   ```bash
-   git clone <repo-url> aicodegencrew
-   cd aicodegencrew
-   ```
+```bash
+python -m venv .venv
 
-2. Configure environment:
-   ```bash
-   cp .env.example .env
-   ```
+# Linux / macOS
+source .venv/bin/activate
 
-   Edit `.env`:
-   ```env
-   PROJECT_PATH=/path/to/your/repo
-   LLM_PROVIDER=local
-   MODEL=all-minilm:latest
-   INDEX_MODE=auto
-   ```
+# Windows
+.venv\Scripts\activate
+```
 
-3. Install dependencies and prepare runtimes as needed.
+### 3. Install Dependencies
+
+```bash
+pip install -e ".[dev]"
+```
+
+### 4. Configure Environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your settings (see [Configuration](#configuration) below).
+
+### 5. Start Ollama (for embeddings)
+
+```bash
+ollama pull all-minilm:latest
+ollama serve
+```
+
+### 6. Verify Installation
+
+```bash
+python -m aicodegencrew list
+```
+
+---
 
 ## Quick Start
 
-Run the complete architecture workflow:
+### Analyze a Repository (Full Workflow)
+
 ```bash
+# Set the target repository
+# In .env: PROJECT_PATH=/path/to/your/repo
+
+# Run the complete architecture workflow (Phases 0-3)
 python -m aicodegencrew run --preset architecture_workflow
 ```
 
-Run only deterministic phases (no LLM required):
+### Facts Only (No LLM Required)
+
 ```bash
 python -m aicodegencrew run --preset facts_only
 ```
 
-## Phases
+### Step by Step
 
-The SDLC pipeline consists of 8 phases:
+```bash
+# Step 1: Index the repository into ChromaDB
+python -m aicodegencrew run --phases phase0_indexing
 
-| Phase | Name | Type | Description | Status |
-|-------|------|------|-------------|--------|
-| 0 | Indexing | Pipeline | Vector indexing of repository content | Implemented |
-| 1 | Architecture Facts | Pipeline | Deterministic extraction of facts and evidence | Implemented |
-| 2 | Architecture Analysis | Crew | AI analysis of architecture | Implemented |
-| 3 | Architecture Synthesis | Crew | AI generation of C4 and arc42 documentation | Implemented |
-| 4 | Review | Crew | Consistency checks and quality validation | Planned |
-| 5 | Development | Crew | Backlog generation and planning | Planned |
-| 6 | Code Generation | Crew | Feature implementation and refactoring | Planned |
-| 7 | Testing | Crew | Test generation and coverage | Planned |
-| 8 | Deployment | Pipeline | CI/CD integration and releases | Planned |
+# Step 2: Extract architecture facts (deterministic, no LLM)
+python -m aicodegencrew run --phases phase1_architecture_facts
 
-**Core Principles:**
-- **Evidence-First**: All outputs must reference code evidence.
-- **Deterministic Discovery**: Facts are extracted without LLMs.
-- **Phase Isolation**: Clear inputs/outputs per phase.
-- **Incremental Adoption**: Phases can run independently.
+# Step 3: AI analysis of architecture patterns
+python -m aicodegencrew run --phases phase2_architecture_analysis
+
+# Step 4: Generate C4 + arc42 documentation
+python -m aicodegencrew run --phases phase3_architecture_synthesis
+```
+
+---
 
 ## Configuration
 
-Key environment variables:
+### Environment Variables
 
-- `PROJECT_PATH`: Path to repository to analyze
-- `LLM_PROVIDER`: `local` or `onprem`
-- `MODEL`: LLM/embedding model identifier
-- `INDEX_MODE`: `off`, `auto`, `force`, `smart`
+Copy `.env.example` to `.env` and configure:
 
-See `phases_config.yaml` for additional settings.
+#### Required
 
-## Usage
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `PROJECT_PATH` | Absolute path to the repository to analyze | `C:\repos\my-project` |
+| `LLM_PROVIDER` | LLM provider type | `local` or `onprem` |
+| `MODEL` | LLM model identifier | `qwen2.5-coder:7b` or `gpt-oss-120b` |
+| `API_BASE` | LLM API endpoint URL | `http://localhost:11434/v1` |
 
-### CLI Commands
+#### Embeddings (Ollama)
 
-```bash
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMBED_MODEL` | `all-minilm:latest` | Ollama embedding model |
+| `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` | Ollama server URL |
+| `OLLAMA_TIMEOUT_S` | `300` | Ollama request timeout (seconds) |
+
+#### Indexing
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `INDEX_MODE` | `auto` | `off` / `auto` / `force` / `smart` |
+| `CHROMA_DIR` | `.cache/.chroma` | ChromaDB storage directory |
+| `INDEX_EXTENSIONS` | `.java,.ts,...` | File extensions to index |
+| `INDEX_EXTRA_SKIP_DIRS` | `dist,out,...` | Directories to skip during indexing |
+
+#### Token Budget
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MAX_LLM_INPUT_TOKENS` | `32000` | Max input tokens per LLM call |
+| `MAX_LLM_OUTPUT_TOKENS` | `4000` | Max output tokens per LLM call |
+| `LLM_CONTEXT_WINDOW` | `120000` | Total LLM context window size |
+
+#### Output & Logging
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OUTPUT_DIR` | `./knowledge/architecture` | Output directory for generated artifacts |
+| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+
+### Presets
+
+Presets are predefined phase combinations defined in [`config/phases_config.yaml`](config/phases_config.yaml):
+
+| Preset | Phases | Description |
+|--------|--------|-------------|
+| `indexing_only` | 0 | Index repository only |
+| `facts_only` | 0 – 1 | Deterministic facts extraction (no LLM) |
+| `analysis_only` | 0 – 2 | Facts + AI analysis |
+| `architecture_workflow` | 0 – 3 | Full architecture documentation |
+| `architecture_full` | 0 – 4 | Architecture + review/consistency |
+| `full_pipeline` | 0 – 8 | All phases (end-to-end SDLC) |
+
+---
+
+## CLI Reference
+
+```
 python -m aicodegencrew <command> [options]
 ```
 
-Or using CrewAI directly (if configured):
+### Commands
 
-```bash
-crewai run <preset or phases>
-```
+| Command | Description |
+|---------|-------------|
+| `run` | Execute pipeline phases |
+| `list` | List available phases and presets |
+| `index` | Run indexing only (shortcut) |
+
+### Options for `run`
+
+| Option | Description |
+|--------|-------------|
+| `--preset <name>` | Run a predefined preset (e.g., `architecture_workflow`) |
+| `--phases <p1> [p2] ...` | Run specific phases by name |
+| `--index-mode <mode>` | Override `INDEX_MODE` (`off` / `auto` / `force` / `smart`) |
 
 ### Examples
 
-- List phases and presets:
-  ```bash
-  python -m aicodegencrew list
-  ```
+```bash
+# List all phases and presets
+python -m aicodegencrew list
 
-- Run full architecture workflow (phases 0-3):
-  ```bash
-  python -m aicodegencrew run --preset architecture_workflow
-  # or
-  crewai run --preset architecture_workflow
-  ```
+# Run full architecture workflow
+python -m aicodegencrew run --preset architecture_workflow
 
-- Run specific phases:
-  ```bash
-  python -m aicodegencrew run --phases phase0_indexing phase1_architecture_facts
-  ```
+# Run specific phases
+python -m aicodegencrew run --phases phase0_indexing phase1_architecture_facts
 
-- Index only:
-  ```bash
-  python -m aicodegencrew index --force
-  ```
+# Force re-index then run facts
+python -m aicodegencrew run --preset facts_only --index-mode force
 
-- Run all implemented phases:
-  ```bash
-  python -m aicodegencrew run --preset architecture_full
-  ```
+# Index only with forced rebuild
+python -m aicodegencrew index --force
+```
 
-## Outputs
+---
 
-Generated artifacts are saved to `knowledge/architecture/`:
+## Pipeline Phases
 
-- `architecture_facts.json`: Canonical architecture facts
-- `evidence_map.json`: Evidence traceability mapping
-- `c4/`: C4 diagrams (Markdown + Draw.io)
-- `arc42/`: Complete arc42 documentation (12 chapters)
+| Phase | Name | Type | LLM | Status | Description |
+|:-----:|------|:----:|:---:|:------:|-------------|
+| 0 | **Indexing** | Pipeline | No | Implemented | Vector-indexes repository into ChromaDB |
+| 1 | **Architecture Facts** | Pipeline | No | Implemented | Deterministic extraction of components, relations, interfaces |
+| 2 | **Architecture Analysis** | Crew | Yes | Implemented | Multi-agent analysis (4 analysts + Map-Reduce) |
+| 3 | **Architecture Synthesis** | Crew | Yes | Implemented | C4 + arc42 document generation (Mini-Crews pattern) |
+| 4 | **Review** | Crew | Yes | Planned | Cross-document consistency validation |
+| 5 | **Development Planning** | Crew | Yes | Planned | Backlog generation from architecture insights |
+| 6 | **Code Generation** | Crew | Yes | Planned | Feature implementation and refactoring |
+| 7 | **Test Generation** | Crew | Yes | Planned | Unit and integration test generation |
+| 8 | **Deployment** | Pipeline | No | Planned | CI/CD configuration and release management |
 
-## Contributing
+### Phase Dependencies
 
-1. Fork the repository.
-2. Create a feature branch.
-3. Run tests and linters.
-4. Submit a pull request.
+Each phase declares its dependencies. The orchestrator validates that all required inputs exist before starting a phase. If a dependency fails validation, the phase will not run.
 
-See `tests/` for test suite and `config/phases_config.yaml` for configuration.
+```
+Phase 0 ──► Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 ──► ...
+(Index)     (Facts)     (Analysis)  (Synthesis)  (Review)
+```
 
-## License
+---
 
-Proprietary. See [LICENSE](LICENSE) for details.
+## Output Artifacts
+
+All outputs are saved to `knowledge/architecture/` (configurable via `OUTPUT_DIR`).
+
+### Phase 1: Facts
+
+| File | Description |
+|------|-------------|
+| `architecture_facts.json` | Canonical architecture facts (components, relations, interfaces, containers) |
+| `evidence_map.json` | Source code evidence linked to each fact |
+
+### Phase 2: Analysis
+
+| File | Description |
+|------|-------------|
+| `analyzed_architecture.json` | Unified analysis (styles, patterns, domain model, quality, risks) |
+
+### Phase 3: Synthesis
+
+**C4 Model** (`c4/`):
+
+| File | Description |
+|------|-------------|
+| `c4-context.md` | Level 1: System Context (actors, external systems) |
+| `c4-context.drawio` | System Context diagram (DrawIO) |
+| `c4-container.md` | Level 2: Container view (services, databases) |
+| `c4-container.drawio` | Container diagram (DrawIO) |
+| `c4-component.md` | Level 3: Component view (modules, layers) |
+| `c4-component.drawio` | Component diagram (DrawIO) |
+| `c4-deployment.md` | Level 4: Deployment view (infrastructure) |
+| `c4-deployment.drawio` | Deployment diagram (DrawIO) |
+
+**arc42** (`arc42/`):
+
+| File | Description |
+|------|-------------|
+| `01-introduction.md` | Business context and stakeholders |
+| `02-constraints.md` | Technical and organizational constraints |
+| `03-context.md` | System scope and context |
+| `04-solution-strategy.md` | Fundamental architecture decisions |
+| `05-building-blocks.md` | Static decomposition (largest chapter) |
+| `06-runtime-view.md` | Runtime scenarios and flows |
+| `07-deployment.md` | Infrastructure and deployment topology |
+| `08-crosscutting.md` | Cross-cutting concerns (security, logging, etc.) |
+| `09-decisions.md` | Architecture Decision Records (ADRs) |
+| `10-quality.md` | Quality requirements and measures |
+| `11-risks.md` | Known risks and technical debt |
+| `12-glossary.md` | Domain and technical glossary |
+
+**Quality Reports** (`quality/`):
+
+| File | Description |
+|------|-------------|
+| `c4-report.md` | C4 documentation quality assessment |
+| `arc42-report.md` | arc42 documentation quality assessment |
+
+---
+
+## Project Structure
+
+```
+aicodegencrew/
+├── config/
+│   └── phases_config.yaml          # Phase definitions and presets
+├── docs/
+│   ├── AI_SDLC_ARCHITECTURE.md     # Full architecture specification
+│   └── diagrams/                   # DrawIO architecture diagrams
+│       ├── sdlc-overview.drawio
+│       ├── layer-architecture.drawio
+│       ├── phase-flow.drawio
+│       ├── collectors.drawio
+│       ├── evidence-flow.drawio
+│       ├── knowledge-structure.drawio
+│       ├── analysis-crew.drawio
+│       ├── synthesis-crew.drawio
+│       └── phase2-crew-architecture.drawio
+├── src/aicodegencrew/
+│   ├── cli.py                      # CLI entry point (argparse)
+│   ├── orchestrator.py             # Phase orchestration and dependency resolution
+│   ├── main.py                     # Application entry point
+│   │
+│   ├── crews/                      # AI Agent Workflows (LLM required)
+│   │   ├── architecture_analysis/  # Phase 2: Multi-agent analysis
+│   │   │   ├── crew.py             #   Main crew (Map-Reduce orchestrator)
+│   │   │   ├── mapreduce_crew.py   #   Map-Reduce for large repos
+│   │   │   ├── container_crew.py   #   Per-container analysis crew
+│   │   │   └── tools/              #   Facts query, RAG, statistics tools
+│   │   │
+│   │   └── architecture_synthesis/ # Phase 3: Document generation
+│   │       ├── base_crew.py        #   MiniCrewBase ABC (shared infrastructure)
+│   │       ├── crew.py             #   Top-level synthesis coordinator
+│   │       ├── c4/crew.py          #   C4 Mini-Crews (5 crews, 9 tasks)
+│   │       ├── arc42/crew.py       #   Arc42 Mini-Crews (7 crews, 14 tasks)
+│   │       └── tools/              #   DocWriter, DrawIO, chunked writer
+│   │
+│   ├── pipelines/                  # Deterministic Pipelines (no LLM)
+│   │   ├── indexing/               # Phase 0: ChromaDB vector indexing
+│   │   │   ├── pipeline.py
+│   │   │   ├── chroma_index_tool.py
+│   │   │   ├── chunker_tool.py
+│   │   │   └── embeddings_tool.py
+│   │   │
+│   │   └── architecture_facts/     # Phase 1: Facts extraction
+│   │       ├── pipeline.py
+│   │       ├── model_builder.py    #   Pydantic model assembly
+│   │       ├── dimension_writers.py
+│   │       └── collectors/         #   20+ specialized collectors
+│   │           ├── spring/         #     Spring Boot (REST, services, repos, config)
+│   │           ├── angular/        #     Angular (components, modules, routing, services)
+│   │           └── database/       #     Database (migrations, tables, procedures)
+│   │
+│   ├── shared/                     # Shared utilities
+│   │   ├── validation.py           # Phase output validation
+│   │   ├── models/                 # Pydantic schemas (facts, analysis, outputs)
+│   │   └── utils/                  # Logger, token budget, file filters, Ollama client
+│   │
+│   └── mcp/                        # Model Context Protocol
+│       ├── server.py               # MCP server (architecture knowledge queries)
+│       └── knowledge_tools.py      # get_statistics, get_endpoints, query_facts, ...
+│
+├── tests/
+│   ├── test_*.py                   # Unit tests
+│   └── e2e/                        # End-to-end tests (full workflow)
+│
+├── knowledge/architecture/         # Generated output (gitignored)
+├── logs/                           # Runtime logs + metrics.jsonl
+├── .env.example                    # Environment template
+├── pyproject.toml                  # Project metadata and dependencies
+└── mcp_server.py                   # MCP server entry point
+```
+
+---
+
+## Testing
+
+### Run Unit Tests
+
+```bash
+pytest tests/ -v
+```
+
+### Run End-to-End Tests
+
+```bash
+# Requires PROJECT_PATH to be set and Ollama running
+pytest tests/e2e/ -v
+```
+
+### Run Specific Test Suites
+
+```bash
+pytest tests/test_file_filters.py -v      # File filter logic
+pytest tests/test_chunker.py -v            # Text chunking
+pytest tests/test_chroma_index.py -v       # ChromaDB indexing
+pytest tests/test_quality_gate.py -v       # Quality validation
+pytest tests/test_summarize_facts.py -v    # Facts summarization
+```
+
+### Install Dev Dependencies
+
+```bash
+pip install -e ".[dev]"
+```
+
+---
 
 ## Documentation
 
-- [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md)
-- Diagrams: `docs/diagrams/`
+| Document | Description |
+|----------|-------------|
+| [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md) | Full architecture specification (4-layer model, phases, patterns, Mini-Crews) |
+| [DrawIO Diagrams](docs/diagrams/) | Visual architecture diagrams (open with [draw.io](https://app.diagrams.net/)) |
+| [Phase Configuration](config/phases_config.yaml) | Phase definitions, dependencies, and preset configurations |
+| [Environment Template](.env.example) | All configurable environment variables with descriptions |
+
+### Key Architecture Concepts
+
+- **Evidence-First**: All outputs must reference real code evidence. If it's not in `architecture_facts.json`, it must not appear in documentation.
+- **Mini-Crews Pattern**: Each document section is generated by a separate AI crew with fresh LLM context, preventing context window overflow.
+- **MiniCrewBase**: Abstract base class providing shared infrastructure (LLM factory, tool setup, MCP config, checkpointing) for all synthesis crews.
+- **Map-Reduce Analysis**: Large repositories are split by container for parallel analysis, then merged into a unified result.
+- **Checkpoint & Resume**: Failed runs can be resumed — completed mini-crews are skipped automatically.
+
+---
+
+## Contributing
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/my-feature`)
+3. **Install** dev dependencies (`pip install -e ".[dev]"`)
+4. **Make** your changes
+5. **Run** tests (`pytest tests/ -v`)
+6. **Lint** your code (`ruff check src/`)
+7. **Submit** a pull request
+
+### Development Guidelines
+
+- Follow existing code patterns and naming conventions
+- Add tests for new collectors or tools
+- Update `phases_config.yaml` when adding new phases
+- Keep the evidence-first principle: no invented data in outputs
+- Use Pydantic models for data contracts between phases
+
+---
+
+## License
+
+Proprietary — Capgemini. See [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  Built with <a href="https://crewai.com/">CrewAI</a> · Powered by local LLMs · Made for enterprise
+</p>

@@ -23,21 +23,21 @@ The system is organized into 4 distinct layers, each with clear responsibilities
 |-------|--------|---------|--------------|
 | **KNOWLEDGE** | 0-1 | Deterministic facts extraction | No |
 | **REASONING** | 2-3 | LLM-powered analysis and synthesis | Yes |
-| **EXECUTION** | 4-6 | Code generation and deployment | Yes |
-| **FEEDBACK** | 7 | Continuous learning and quality | Yes |
+| **EXECUTION** | 4-7 | Code generation and deployment | Yes |
+| **FEEDBACK** | - | Continuous learning and quality | Yes |
 
 ### 1.3 Implementation Status
 
 | Phase | Name | Layer | Type | Status |
 |-------|------|-------|------|--------|
 | 0 | Indexing | Knowledge | Pipeline | IMPLEMENTED |
-| 1 | Architecture Facts | Knowledge | Pipeline | 80% COMPLETE |
-| 2 | Architecture Synthesis | Reasoning | Crew | IMPLEMENTED |
-| 3 | Task Understanding | Reasoning | Crew | PLANNED |
-| 4 | Code Generation | Execution | Crew | PLANNED |
-| 5 | Test Generation | Execution | Crew | PLANNED |
-| 6 | Review + Deploy | Execution | Pipeline | PLANNED |
-| 7 | Learning | Feedback | Pipeline | PLANNED |
+| 1 | Architecture Facts | Knowledge | Pipeline | IMPLEMENTED |
+| 2 | Architecture Analysis | Reasoning | Crew | IMPLEMENTED |
+| 3 | Architecture Synthesis | Reasoning | Crew | IMPLEMENTED |
+| 4 | Task Understanding | Reasoning | Crew | PLANNED |
+| 5 | Code Generation | Execution | Crew | PLANNED |
+| 6 | Test Generation | Execution | Crew | PLANNED |
+| 7 | Review + Deploy | Execution | Pipeline | PLANNED |
 
 ### 1.4 Key Benefits
 
@@ -74,12 +74,12 @@ Establish a fully automated SDLC pipeline that covers:
 |-------|-------|------------|----------------|
 | Phase 0: Indexing | Knowledge | Repository analysis, vector storage | Pipeline (ChromaDB) |
 | Phase 1: Architecture Facts | Knowledge | Deterministic code analysis | Pipeline (7 Collectors) |
-| Phase 2: Architecture Synthesis | Reasoning | C4 + arc42 documentation | Crew (Think First) |
-| Phase 3: Task Understanding | Reasoning | RAG-enhanced planning | Crew (Planned) |
-| Phase 4: Code Generation | Execution | Feature implementation | Crew (Planned) |
-| Phase 5: Test Generation | Execution | Test creation | Crew (Planned) |
-| Phase 6: Review + Deploy | Execution | CI/CD integration | Pipeline (Planned) |
-| Phase 7: Learning | Feedback | Quality metrics, improvement | Pipeline (Planned) |
+| Phase 2: Architecture Analysis | Reasoning | Multi-agent architecture analysis | Crew (MapReduce) |
+| Phase 3: Architecture Synthesis | Reasoning | C4 + arc42 documentation | Crew (Think First) |
+| Phase 4: Task Understanding | Reasoning | RAG-enhanced planning | Crew (Planned) |
+| Phase 5: Code Generation | Execution | Feature implementation | Crew (Planned) |
+| Phase 6: Test Generation | Execution | Test creation | Crew (Planned) |
+| Phase 7: Review + Deploy | Execution | CI/CD integration | Pipeline (Planned) |
 
 ### 2.2 Core Principles
 
@@ -99,15 +99,16 @@ The initial implementation focuses on architecture facts extraction:
 | Area | Implementation | Status |
 |------|----------------|--------|
 | **Phase 0 Indexing** | ChromaDB vector storage | IMPLEMENTED |
-| **Phase 1 Facts** | 7 Collectors | 80% COMPLETE |
-| **Phase 2 Synthesis** | C4 + arc42 Crews | IMPLEMENTED |
+| **Phase 1 Facts** | 7 Collectors | IMPLEMENTED |
+| **Phase 2 Analysis** | MapReduce multi-agent analysis | IMPLEMENTED |
+| **Phase 3 Synthesis** | C4 + arc42 Crews | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
 ### 2.4 Phase 1 Results (Current)
 
 | Metric | Value |
 |--------|-------|
-| Components | 733 |
+| Components | 738 |
 | Interfaces | 125 |
 | Relations | 169 |
 | Evidence Items | 1005 |
@@ -129,27 +130,7 @@ The initial implementation focuses on architecture facts extraction:
 
 ### 3.1 Core Principle: Evidence-First Architecture
 
-```
-+-- LAYER 1: KNOWLEDGE (No LLM) ------------------------------------------+
-|  Repository → Phase 0 (Indexing) → Phase 1 (Facts)                      |
-|                    ↓                     ↓                               |
-|               ChromaDB           architecture_facts.json                 |
-+-------------------------------------------------------------------------+
-                                      ↓
-+-- LAYER 2: REASONING (LLM Required) ------------------------------------+
-|  Phase 2 (Synthesis) → Phase 3 (Task Understanding)                     |
-|        ↓                         ↓                                       |
-|   C4 + arc42 Docs          RAG-Enhanced Planning                         |
-+-------------------------------------------------------------------------+
-                                      ↓
-+-- LAYER 3: EXECUTION (LLM Required) ------------------------------------+
-|  Phase 4 (CodeGen) → Phase 5 (Testing) → Phase 6 (Deploy)               |
-+-------------------------------------------------------------------------+
-                                      ↓
-+-- LAYER 4: FEEDBACK ----------------------------------------------------+
-|  Phase 7 (Learning) → Quality Metrics → Knowledge Update                |
-+-------------------------------------------------------------------------+
-```
+> See [phase-flow.drawio](diagrams/phase-flow.drawio) for the full 4-layer pipeline diagram.
 
 **Key Rules:**
 - Phase 1 produces facts and evidence (deterministic, no LLM)
@@ -184,7 +165,8 @@ The orchestrator follows clean architecture principles:
 orchestrator = SDLCOrchestrator()
 orchestrator.register("phase0_indexing", IndexingPipeline(...))
 orchestrator.register("phase1_architecture_facts", ArchFactsPipeline(...))
-orchestrator.register("phase2_architecture_synthesis", SynthesisCrew(...))
+orchestrator.register("phase2_architecture_analysis", AnalysisCrew(...))
+orchestrator.register("phase3_architecture_synthesis", SynthesisCrew(...))
 
 result = orchestrator.run(preset="architecture_workflow")
 ```
@@ -196,18 +178,60 @@ result = orchestrator.run(preset="architecture_workflow")
 | **Fail Fast** | Stops on first error by default |
 | **Protocol-based** | Any class with `kickoff()` or `run()` works |
 | **Data Classes** | `PhaseResult`, `PipelineResult` for clarity |
+| **Phase Validation** | `PhaseOutputValidator` checks outputs between phases |
+| **Strict CLI** | Preset/phase names validated against `phases_config.yaml` |
 
-### 3.5 Think First Pattern
+### 3.5 Mini-Crews Pattern (Phase 3)
 
-Each crew in Phase 2 starts with an `analyze_system` task:
+Phase 3 uses the **Mini-Crews Pattern** instead of a single large Crew:
 
 ```
-analyze_system  →  document_1  →  document_2  →  ...  →  quality_gate
-     ↓
-  (Query all facts first, understand system, then document)
+OLD: 1 Crew with 26 sequential tasks → Context overflow after task ~10-15
+NEW: 5 Mini-Crews (2-3 tasks each) → Fresh context per level, no overflow
 ```
 
-This ensures the agent "thinks" before writing any documentation.
+Each Mini-Crew:
+- Gets a **fresh agent** with a **fresh LLM context window**
+- Receives data via **template variables** (summaries), not inter-task context
+- Is **checkpointed** after completion for resume-on-failure
+
+```
+C4Crew.run():
+  Mini-Crew 1: Context   (doc + diagram) → checkpoint
+  Mini-Crew 2: Container (doc + diagram) → checkpoint
+  Mini-Crew 3: Component (doc + diagram) → checkpoint
+  Mini-Crew 4: Deployment (doc + diagram) → checkpoint
+  Mini-Crew 5: Quality Gate              → checkpoint
+```
+
+This prevents the context overflow that occurs when CrewAI accumulates
+internal conversation history across many sequential tasks.
+
+### 3.6 MiniCrewBase Architecture
+
+Both C4Crew and Arc42Crew inherit from `MiniCrewBase` (ABC):
+
+```python
+class MiniCrewBase(ABC):
+    # Shared infrastructure:
+    _create_llm()           # LLM factory from env vars
+    _create_agent()         # Agent with MCP + tools
+    _run_mini_crew()        # Execute crew with fresh context
+    _save_checkpoint()      # Persist progress for resume
+    _extract_token_usage()  # Track token consumption
+
+    # Subclasses implement:
+    crew_name: str          # "C4" or "Arc42"
+    _summarize_facts()      # Create template variables
+    run()                   # Execute all mini-crews
+```
+
+| Feature | Description |
+|---------|-------------|
+| **Checkpoint Resume** | `.checkpoint_c4.json` / `.checkpoint_arc42.json` |
+| **Token Tracking** | Per mini-crew token usage with summary |
+| **MCP Singleton** | MCP server path resolved once, reused |
+| **Structured Metrics** | `log_metric()` writes to `metrics.jsonl` |
 
 ---
 
@@ -217,103 +241,87 @@ This ensures the agent "thinks" before writing any documentation.
 src/aicodegencrew/
     __init__.py
     __main__.py
-    cli.py
-    orchestrator.py
-    
+    cli.py                             # Strict preset validation from config
+    orchestrator.py                    # Phase coordination + dependency validation
+
     crews/
         __init__.py
-        
-        architecture_analysis/         # Phase 2: Architecture Analysis (NEW)
+
+        architecture_analysis/         # Phase 2: Architecture Analysis
             __init__.py
             crew.py                    # ArchitectureAnalysisCrew
+            mapreduce_crew.py          # MapReduceAnalysisCrew (large repos)
             config/
-                agents.yaml            # 4 agents: tech_architect, func_analyst, quality_analyst, synthesis_lead
+                agents.yaml            # 4 agents: tech_architect, func_analyst, etc.
                 tasks.yaml             # analyze tasks per agent + merge task
             tools/
                 __init__.py
                 rag_query_tool.py      # ChromaDB semantic search
-        
+
         architecture_synthesis/        # Phase 3: Architecture Synthesis
             __init__.py
-            crew.py                    # ArchitectureSynthesisCrew
-            agents.py
-            
-            c4/                        # C4 Sub-Crew
+            crew.py                    # ArchitectureSynthesisCrew (orchestrator)
+            base_crew.py               # MiniCrewBase ABC (shared infrastructure)
+
+            c4/                        # C4 Mini-Crews (5 crews)
                 __init__.py
-                crew.py
+                crew.py                # C4Crew(MiniCrewBase) - task descriptions as Python constants
                 config/
-                    agents.yaml        # architect agent
-                    tasks.yaml         # analyze + 4 diagram tasks
-            
-            arc42/                     # Arc42 Sub-Crew
+                    agents.yaml        # c4_architect agent
+
+            arc42/                     # Arc42 Mini-Crews (7 crews)
                 __init__.py
-                crew.py
+                crew.py                # Arc42Crew(MiniCrewBase) - task descriptions as Python constants
                 config/
-                    agents.yaml        # architect agent
-                    tasks.yaml         # analyze + 12 chapter tasks
-            
+                    agents.yaml        # arc42_architect agent
+
             tools/                     # Crew tools
                 __init__.py
-                file_read_tool.py
-                doc_writer_tool.py
-                drawio_tool.py
-                facts_query_tool.py
-                chunked_writer_tool.py     # includes StereotypeListTool
-                doc_quality_gate_tool.py
-        
-        development/                   # Phase 5: Planned
-            __init__.py
-    
+                file_read_tool.py      # Read JSON/text files
+                doc_writer_tool.py     # Write markdown (with path-stripping)
+                drawio_tool.py         # Create DrawIO diagrams (with path-stripping)
+                facts_query_tool.py    # Query architecture facts
+                chunked_writer_tool.py # ChunkedWriterTool + StereotypeListTool
+
     pipelines/
         __init__.py
-        indexing.py                    # Backward compat → indexing/
-        
+        indexing.py                    # Backward compat
+
         indexing/                      # Phase 0: Repository Indexing
             __init__.py
-            pipeline.py                # IndexingPipeline
+            pipeline.py               # IndexingPipeline
             indexing_pipeline.py       # ensure_repo_indexed
-            repo_discovery_tool.py
-            repo_reader_tool.py
-            chunker_tool.py
-            embeddings_tool.py
-            chroma_index_tool.py
-        
+            ...
+
         architecture_facts/            # Phase 1: Architecture Facts
             __init__.py
-            pipeline.py                # ArchitectureFactsPipeline
-            base_collector.py
-            container_detector.py
-            spring_collector.py
-            angular_collector.py
-            infra_collector.py
-            database_collector.py
-            integration_collector.py
-            architecture_style_collector.py
+            pipeline.py               # ArchitectureFactsPipeline
+            collectors/                # Dimension + Specialist collectors
+                orchestrator.py        # CollectorOrchestrator
+                spring/                # Spring Boot specialists
+                angular/               # Angular specialists
+                database/              # Database specialists
+            model_builder.py
             endpoint_flow_builder.py
-            quality_validator.py
-            writer.py
-        
-        tools/                         # Backward compat → indexing/
-        deployment/                    # Phase 7: Planned
-        cicd/                          # Planned
-        git_ops/                       # Planned
-        merge/                         # Planned
-    
+            dimension_writers.py
+
     shared/
         __init__.py
+        validation.py                  # PhaseOutputValidator (inter-phase contracts)
         utils/
-            logger.py
+            logger.py                  # Logger + JsonFormatter + log_metric()
+            token_budget.py            # Token budget configuration
             file_filters.py
             crew_callbacks.py
             ollama_client.py
-            smart_index_config.py
         models/
             __init__.py
-            architecture_facts_schema.py
-        tools/
-            __init__.py
-            base_tool.py
-            quality_gate_tool.py
+            architecture_facts_schema.py  # Pydantic schema for Phase 1
+            analysis_schema.py            # Pydantic schema for Phase 2
+
+    mcp/
+        server.py                      # MCP knowledge server (STDIO)
+        knowledge_tools.py             # MCP tool implementations
 ```
 
 ---
@@ -573,15 +581,7 @@ Instead, it uses strategies to analyze MORE data within the same context window:
 4. **Forgetting Old Results**: CrewAI naturally "forgets" older tool results as
    conversation grows. New queries replace old data in working memory.
 
-```
-Agent Context Window (e.g., 128K tokens)
-+-- System Prompt + Task Description (~5K)
-+-- Tool Result 1: 500 components (~20K)
-+-- Tool Result 2: 500 relations (~15K)
-+-- Tool Result 3: 200 interfaces (~10K)
-+-- ... (older results fade from context)
-+-- Final Output -> written to file (not in context)
-```
+> See [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) for the agent context window layout.
 
 **Configuration (agents.yaml):**
 
@@ -594,104 +594,125 @@ tech_architect:
 
 ---
 
-### 4.4 Phase 3: Architecture Synthesis
-
-> **Reference Diagram:** [synthesis-crew.drawio](diagrams/synthesis-crew.drawio)
+### 4.4 Phase 3: Architecture Synthesis (Mini-Crews Pattern)
 
 | Attribute | Specification |
 |-----------|---------------|
-| Type | Crew (AI Agents) |
-| Module | `crews/architecture_synthesis/crew.py` |
-| LLM Requirement | Yes (Ollama) |
+| Type | Crew (AI Agents) - Mini-Crews Pattern |
+| Module | `crews/architecture_synthesis/` |
+| Base Class | `base_crew.py` → `MiniCrewBase` (ABC) |
+| LLM Requirement | Yes |
 | Input | `architecture_facts.json` (Phase 1) + `analyzed_architecture.json` (Phase 2) |
-| Input (optional) | ChromaDB Index (for code snippets if needed) |
-| Output | `knowledge/architecture/c4/` (Draw.io XML + Markdown) |
+| Input (optional) | ChromaDB Index (via MCP server) |
+| Output | `knowledge/architecture/c4/` (DrawIO + Markdown) |
 |        | `knowledge/architecture/arc42/` (Markdown) |
 |        | `knowledge/architecture/quality/` (Reports) |
-| Dependency | Phase 1 + Phase 2 |
+| Dependency | Phase 1 + Phase 2 (validated by `PhaseOutputValidator`) |
 | Status | Implemented |
+
+#### Why Mini-Crews?
+
+**Problem:** CrewAI accumulates internal conversation history across sequential tasks.
+With 26+ tasks in one Crew, the prompt exceeds the model's context window (~120k tokens)
+after ~10-15 tasks, causing `max_tokens must be at least 1, got -8424` errors.
+
+**Solution:** Split into multiple small Crews (2-3 tasks each), each with a **fresh agent
+and fresh LLM context**. Data is passed via template variables, not inter-task context.
 
 #### Orchestration
 
-The `ArchitectureSynthesisCrew` orchestrates two sub-crews sequentially:
-
 ```
-Phase 3a: C4Crew → Phase 3b: Arc42Crew
-```
-
-Each sub-crew has exactly **1 agent** (`architect`) with multiple sequential tasks.
-
-#### CrewAI Best Practices Applied
-
-| Practice | Implementation |
-|----------|----------------|
-| **Think First** | `analyze_system` task runs before any documentation |
-| **Hierarchical Context** | Tasks inherit context from predecessors |
-| **Simple Agents** | Minimal backstory (~15 lines), 4 clear rules |
-| **RAG-based Queries** | `FactsQueryTool` for category-based queries |
-| **Clean Output** | No evidence IDs in final documentation |
-| **Single Agent per Crew** | One `architect` agent handles all tasks |
-
-#### Sub-Crews Architecture
-
-Phase 2 uses a **"Think First"** pattern - each crew starts with an analysis task:
-
-| Crew | Agent | Tasks | Output |
-|------|-------|-------|--------|
-| **C4Crew** | `architect` | 1 analyze + 4 diagram tasks (5 total) | `c4/*.md` + `*.drawio` |
-| **Arc42Crew** | `architect` | 1 analyze + 12 chapters + 1 quality gate (14 total) | `arc42/*.md` |
-
-#### Task Flow Pattern
-
-```
-analyze_system → document_task_1 → document_task_2 → ... → quality_gate
-     ↓
-  (Think!)
+ArchitectureSynthesisCrew.run():
+    C4Crew.run()     → 5 Mini-Crews (9 tasks total)
+    Arc42Crew.run()  → 7 Mini-Crews (14 tasks total)
 ```
 
-The `analyze_system` task queries all facts first, understands the system, 
-identifies patterns, and provides context for all following documentation tasks.
+Both inherit from `MiniCrewBase` which provides shared infrastructure.
+
+#### C4Crew: 5 Mini-Crews (9 tasks)
+
+| Mini-Crew | Tasks | Output |
+|-----------|-------|--------|
+| `context` | doc + diagram | `c4/c4-context.md` + `.drawio` |
+| `container` | doc + diagram | `c4/c4-container.md` + `.drawio` |
+| `component` | doc + diagram | `c4/c4-component.md` + `.drawio` |
+| `deployment` | doc + diagram | `c4/c4-deployment.md` + `.drawio` |
+| `quality` | validation | `quality/c4-report.md` |
+
+#### Arc42Crew: 7 Mini-Crews (14 tasks)
+
+| Mini-Crew | Chapters | Output |
+|-----------|----------|--------|
+| `intro-constraints` | 1-2 | `01-introduction.md`, `02-constraints.md` |
+| `context-strategy` | 3-4 | `03-context.md`, `04-solution-strategy.md` |
+| `building-blocks` | 5 | `05-building-blocks.md` (largest chapter) |
+| `runtime-deployment` | 6-7 | `06-runtime-view.md`, `07-deployment.md` |
+| `crosscutting-decisions` | 8-9 | `08-crosscutting.md`, `09-decisions.md` |
+| `quality-risks-glossary` | 10-12 | `10-quality.md`, `11-risks.md`, `12-glossary.md` |
+| `quality-gate` | validation | `quality/arc42-report.md` |
+
+#### Task Descriptions as Python Constants
+
+Task descriptions are defined as Python multiline strings (not YAML), prefixed with
+`TOOL_INSTRUCTION` that forces the agent to use the `doc_writer` tool:
+
+```python
+TOOL_INSTRUCTION = """
+CRITICAL INSTRUCTION: You MUST use the doc_writer tool to write the output file.
+STEP 1: Use MCP tools to gather data.
+STEP 2: Use doc_writer(file_path="...", content="...") to write the complete document.
+STEP 3: Respond with a brief confirmation that the file was written.
+"""
+
+CONTEXT_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
+Create the COMPLETE C4 Level 1: System Context document.
+...
+"""
+```
+
+This solved the problem of agents writing document content in their response text
+instead of calling the tool.
+
+#### Checkpoint Resume
+
+Each mini-crew is checkpointed after completion. If a run fails at mini-crew 4,
+re-running skips mini-crews 1-3 automatically:
+
+```json
+// .checkpoint_c4.json
+{
+  "completed_crews": ["context", "container", "component"],
+  "checkpoints": [
+    {"crew": "context", "status": "completed", "duration_seconds": 180.5},
+    ...
+  ]
+}
+```
 
 #### Tools
 
 | Tool | Purpose |
 |------|---------|
 | `FileReadTool` | Read JSON/text files |
-| `DocWriterTool` | Write markdown documents |
-| `DrawioDiagramTool` | Create Draw.io XML diagrams |
-| `FactsQueryTool` | Query architecture facts (RAG-based) |
-| `ChunkedWriterTool` | Write large documents in sections |
-| `StereotypeListTool` | Get components by stereotype |
-| `DocQualityGateTool` | Validate document quality |
+| `DocWriterTool` | Write markdown (with path-stripping for double-nesting bug) |
+| `DrawioDiagramTool` | Create DrawIO diagrams (with path-stripping) |
+| `FactsQueryTool` | Query architecture facts by category |
+| `StereotypeListTool` | List components by stereotype |
+| `ChunkedWriterTool` | Write large documents in sections (Arc42 only) |
+| `RAGQueryTool` | ChromaDB semantic search |
+| **MCP Tools** | `get_statistics()`, `get_architecture_summary()`, `get_endpoints()`, etc. |
 
-#### C4 Crew Tasks (5 Total)
+#### MCP Server Integration
 
-| Task | Context Dependency | Output |
-|------|-------------------|--------|
-| `analyze_system` | None | Internal analysis |
-| `c4_context` | analyze_system | `c4/c4-context.md` + `.drawio` |
-| `c4_container` | c4_context | `c4/c4-container.md` + `.drawio` |
-| `c4_component` | c4_container | `c4/c4-component.md` + `.drawio` |
-| `c4_deployment` | c4_component | `c4/c4-deployment.md` + `.drawio` |
+Each agent connects to an MCP knowledge server (`mcp_server.py`) via STDIO,
+providing token-efficient access to architecture facts without loading full JSON:
 
-#### Arc42 Crew Tasks (14 Total)
-
-| Task | Context Dependency | Output |
-|------|-------------------|--------|
-| `analyze_system` | None | Internal analysis |
-| `arc42_introduction` | analyze_system | `arc42/01-introduction.md` |
-| `arc42_constraints` | introduction | `arc42/02-constraints.md` |
-| `arc42_context` | constraints | `arc42/03-context.md` |
-| `arc42_solution_strategy` | context | `arc42/04-solution-strategy.md` |
-| `arc42_building_blocks` | solution_strategy | `arc42/05-building-blocks.md` |
-| `arc42_runtime_view` | building_blocks | `arc42/06-runtime-view.md` |
-| `arc42_deployment` | runtime_view | `arc42/07-deployment.md` |
-| `arc42_crosscutting` | deployment | `arc42/08-crosscutting.md` |
-| `arc42_decisions` | crosscutting | `arc42/09-decisions.md` |
-| `arc42_quality` | decisions | `arc42/10-quality.md` |
-| `arc42_risks` | quality | `arc42/11-risks.md` |
-| `arc42_glossary` | risks | `arc42/12-glossary.md` |
-| `quality_gate` | glossary | `quality/arc42-report.md` |
+| MCP Tool | Purpose | Tokens Saved |
+|----------|---------|--------------|
+| `get_statistics()` | Component counts, metrics | ~90% vs full JSON |
+| `get_architecture_summary()` | Patterns, styles | ~95% vs full JSON |
+| `search_components(query)` | Find specific components | ~98% vs full JSON |
+| `list_components_by_stereotype(stereo)` | Layer-specific lists | ~95% vs full JSON |
 
 #### Output Structure
 
@@ -699,30 +720,34 @@ identifies patterns, and provides context for all following documentation tasks.
 knowledge/architecture/
     architecture_facts.json     # From Phase 1
     evidence_map.json           # From Phase 1
+    analyzed_architecture.json  # From Phase 2
+    .checkpoint_c4.json         # Resume checkpoint (temporary)
+    .checkpoint_arc42.json      # Resume checkpoint (temporary)
     c4/
-        c4-context.md           # System context
+        c4-context.md           # Level 1 (6-8 pages)
         c4-context.drawio
-        c4-container.md         # Container diagram
+        c4-container.md         # Level 2 (6-8 pages)
         c4-container.drawio
-        c4-component.md         # Component diagram
+        c4-component.md         # Level 3 (6-8 pages)
         c4-component.drawio
-        c4-deployment.md        # Deployment diagram
+        c4-deployment.md        # Level 4 (4-6 pages)
         c4-deployment.drawio
     arc42/
-        01-introduction.md
-        02-constraints.md
-        03-context.md
-        04-solution-strategy.md
-        05-building-blocks.md   # Chunked generation (4 sub-tasks)
-        06-runtime-view.md
-        07-deployment.md
-        08-crosscutting.md
-        09-decisions.md
-        10-quality.md
-        11-risks.md
-        12-glossary.md
+        01-introduction.md      # Chapter 1 (8-10 pages)
+        02-constraints.md       # Chapter 2 (6-8 pages)
+        03-context.md           # Chapter 3 (8-10 pages)
+        04-solution-strategy.md # Chapter 4 (8-10 pages)
+        05-building-blocks.md   # Chapter 5 (20-25 pages, largest)
+        06-runtime-view.md      # Chapter 6 (8-10 pages)
+        07-deployment.md        # Chapter 7 (6-8 pages)
+        08-crosscutting.md      # Chapter 8 (8-10 pages)
+        09-decisions.md         # Chapter 9 (8 pages)
+        10-quality.md           # Chapter 10 (6 pages)
+        11-risks.md             # Chapter 11 (6 pages)
+        12-glossary.md          # Chapter 12 (4 pages)
     quality/
-        arc42-report.md
+        c4-report.md            # C4 quality gate report
+        arc42-report.md         # Arc42 quality gate report
 ```
 
 #### Rules (MUST FOLLOW!)
@@ -730,18 +755,15 @@ knowledge/architecture/
 | DO | DO NOT |
 |-------|-----------|
 | Use ONLY data from facts.json | Invent containers |
-| Query facts before writing | Invent components |
-| State clearly if no data found | Invent relations |
+| Query MCP tools for real data | Invent components |
+| Use doc_writer tool for output | Write content in response text |
 | Use exact names from facts | Add business context |
 | Write readable documentation | Clutter output with evidence IDs |
-| Use Draw.io for diagrams (XML export) | Use Mermaid or ASCII diagrams |
-
-**Note:** Evidence IDs are for internal processing and quality validation.
-The final documentation should be clean and readable without `[ev_XXX]` markers.
+| Use DrawIO for diagrams (XML) | Use Mermaid or ASCII diagrams |
 
 ---
 
-### 4.5 Phase 4: Review & Consistency Guard (PLANNED)
+### 4.5 Phase 4: Task Understanding (PLANNED)
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -758,7 +780,7 @@ The final documentation should be clean and readable without `[ev_XXX]` markers.
 
 ---
 
-### 4.6 Phase 5: Development / Backlog (PLANNED)
+### 4.6 Phase 5: Code Generation (PLANNED)
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -786,10 +808,10 @@ The final documentation should be clean and readable without `[ev_XXX]` markers.
 |--------------|-----------------|----------------|
 | Phase 0 | ChromaDB Vector Index | Phase 1, Phase 2, Phase 3 (optional) |
 | Phase 1 | `architecture_facts.json` | Phase 2, Phase 3 |
-| Phase 1 | `evidence_map.json` | Phase 2 |
+| Phase 1 | `evidence_map.json` | Phase 2, Phase 3 |
 | Phase 2 | `analyzed_architecture.json` | Phase 3 |
 | Phase 3 | `c4/*.md`, `c4/*.drawio` | Phase 4 |
-| Phase 3 | `arc42/*.md`, `arc42/diagrams/*.drawio` | Phase 4 |
+| Phase 3 | `arc42/*.md` | Phase 4 |
 | Phase 4 | Quality Reports | Phase 5 |
 
 ### 5.2 Knowledge Directory Structure
@@ -803,7 +825,7 @@ knowledge/
         architecture_facts.json     # From Phase 1 (truth)
         evidence_map.json           # From Phase 1 (evidence)
         
-        c4/                         # From Phase 2 (C4Crew)
+        c4/                         # From Phase 3 (C4Crew)
             c4-context.md
             c4-context.drawio
             c4-container.md
@@ -812,8 +834,8 @@ knowledge/
             c4-component.drawio
             c4-deployment.md
             c4-deployment.drawio
-            
-        arc42/                      # From Phase 2 (Arc42Crew)
+
+        arc42/                      # From Phase 3 (Arc42Crew)
             01-introduction.md
             02-constraints.md
             03-context.md
@@ -827,7 +849,7 @@ knowledge/
             11-risks.md
             12-glossary.md
             
-        quality/                    # From Phase 2/3
+        quality/                    # From Phase 3
             arc42-report.md
             
         html/                       # Generated reports
@@ -895,13 +917,17 @@ Embeddings utilize local Ollama exclusively, independent of LLM provider configu
 
 ## 7. Execution Presets
 
+Presets are defined in `config/phases_config.yaml` and validated strictly by the CLI.
+Unknown presets raise an error instead of silently falling back.
+
 | Preset | Phases | Description |
 |--------|--------|-------------|
 | `indexing_only` | 0 | Repository indexing only |
 | `facts_only` | 0, 1 | Indexing + Architecture Facts (no LLM) |
-| `architecture_workflow` | 0, 1, 2 | Full architecture pipeline |
-| `architecture_full` | 0, 1, 2 | Complete C4 + arc42 generation |
-| `full_pipeline` | 0, 1, 2, 3, 4 | Complete automated pipeline (future) |
+| `analysis_only` | 0, 1, 2 | Indexing + Facts + Analysis |
+| `architecture_workflow` | 0, 1, 2, 3 | Full architecture documentation |
+| `architecture_full` | 0, 1, 2, 3, 4 | Architecture + Review (with consistency checks) |
+| `full_pipeline` | 0-8 | Complete automated SDLC pipeline (future) |
 
 ---
 
@@ -910,31 +936,46 @@ Embeddings utilize local Ollama exclusively, independent of LLM provider configu
 ### 8.1 Phase Listing
 
 ```bash
-python run_phase.py --list
+python -m aicodegencrew list
 ```
 
 ### 8.2 Preset Execution
 
 ```bash
 # Only extract facts (no LLM)
-python run_phase.py --preset facts_only
+python -m aicodegencrew run --preset facts_only
 
-# Full architecture documentation
-python run_phase.py --preset architecture_workflow
+# Full architecture documentation (C4 + arc42)
+python -m aicodegencrew run --preset architecture_workflow
+
+# Analysis only (no synthesis)
+python -m aicodegencrew run --preset analysis_only
 ```
 
 ### 8.3 Single Phase Execution
 
 ```bash
-# Phase 0: Indexing
-python run_phase.py --phases phase0_indexing
-
 # Phase 1: Architecture Facts
-python run_phase.py --phases phase1_architecture_facts
+python -m aicodegencrew run --phases phase1_architecture_facts
 
-# Phase 2: Architecture Synthesis
-python -m aicodegencrew run --phases phase2_architecture_synthesis
+# Phase 2: Architecture Analysis
+python -m aicodegencrew run --phases phase2_architecture_analysis
+
+# Phase 3: Architecture Synthesis (C4 + arc42)
+python -m aicodegencrew run --phases phase3_architecture_synthesis
 ```
+
+### 8.4 Options
+
+| Option | Description |
+|--------|-------------|
+| `--preset NAME` | Run a named preset (validated against config) |
+| `--phases P1 P2` | Run specific phases by ID |
+| `--repo-path PATH` | Target repository path |
+| `--index-mode MODE` | Override INDEX_MODE (`off`, `auto`, `force`, `smart`) |
+| `--clean` | Clean knowledge directories before running |
+| `--no-clean` | Skip auto-cleaning |
+| `--config PATH` | Custom phases_config.yaml path |
 
 ---
 
@@ -945,6 +986,7 @@ python -m aicodegencrew run --phases phase2_architecture_synthesis
 ```
 logs/
 ├── current.log          # Active session (overwritten each run)
+├── metrics.jsonl         # Structured JSON metrics (append-only)
 ├── archive/             # Archived sessions (max 20)
 │   ├── 2026-02-03_11-30-00_session.log
 │   └── ...
@@ -961,24 +1003,42 @@ from .shared.utils.logger import (
     step_info,      #        Info message
     step_warn,      #        Warning message
     step_progress,  #        [██████░░░░] 5/10 - items
+    log_metric,     # Structured JSON event → metrics.jsonl
 )
 
-# Example
+# Step tracking example
 step_start("Phase 1: Indexing")
 step_info("Scanning repository...")
 step_progress(5, 10, "files")
 step_done()  # Auto-timing
+
+# Structured metric example
+log_metric("mini_crew_complete", crew="context", duration=180.5, tokens=1500)
 ```
 
-### 9.3 Features
+### 9.3 Structured Metrics (metrics.jsonl)
+
+Each line in `metrics.jsonl` is a JSON object:
+
+```json
+{"ts": "2026-02-07T14:30:00", "level": "INFO", "logger": "aicodegencrew", "msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "crew_type": "C4", "crew_name": "context", "duration_seconds": 180.5, "total_tokens": 1500}}
+```
+
+Events logged:
+- `mini_crew_complete` — per mini-crew with timing and token usage
+- `phase_complete` — per phase with total duration
+
+### 9.4 Features
 
 | Feature | Description |
 |---------|-------------|
 | Session Archive | Auto-archives `current.log` to `archive/` on startup |
 | Step Tracking | Automatic timing per step |
 | Progress Bar | Visual progress with `step_progress()` |
+| Structured Metrics | JSON events in `metrics.jsonl` via `log_metric()` |
 | Unbuffered | Real-time log viewing |
 | Singleton | Logger initialized once |
+| MCP-Safe | Console logging disabled when `MCP_STDIO_MODE` is set |
 
 ---
 
@@ -1062,4 +1122,4 @@ pytest tests/test_quality_gate.py -v
 
 ## 14. License
 
-MIT License
+Proprietary — Capgemini. See [LICENSE](../LICENSE) for details.

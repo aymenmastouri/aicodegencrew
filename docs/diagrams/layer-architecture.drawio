@@ -87,10 +87,10 @@
         <mxCell id="p2-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="60" y="350" width="300" height="90" as="geometry"/>
         </mxCell>
-        <mxCell id="p2-title" value="Phase 2: Architecture Synthesis" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#0D47A1;" parent="1" vertex="1">
+        <mxCell id="p2-title" value="Phase 2: Architecture Analysis" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#0D47A1;" parent="1" vertex="1">
           <mxGeometry x="60" y="355" width="300" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="p2-items" value="- C4 Crew (Context, Container, Component, Deployment)&#xa;- arc42 Crew (12 Chapters + Quality Gate)&#xa;- Think-First Pattern: Analyze before Document" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1565C0;spacingLeft=10;" parent="1" vertex="1">
+        <mxCell id="p2-items" value="- MapReduce Multi-Agent Analysis&#xa;- 4 Specialists: Tech, Func, Quality, Synthesis&#xa;- Per-Container Analysis + Quality Grading" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1565C0;spacingLeft=10;" parent="1" vertex="1">
           <mxGeometry x="60" y="380" width="300" height="60" as="geometry"/>
         </mxCell>
         
@@ -106,10 +106,10 @@
         <mxCell id="p3-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;" parent="1" vertex="1">
           <mxGeometry x="420" y="350" width="300" height="90" as="geometry"/>
         </mxCell>
-        <mxCell id="p3-title" value="Phase 3: Task Understanding" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#0D47A1;" parent="1" vertex="1">
+        <mxCell id="p3-title" value="Phase 3: Architecture Synthesis" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#0D47A1;" parent="1" vertex="1">
           <mxGeometry x="420" y="355" width="300" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="p3-items" value="- RAG-Enhanced Context Retrieval&#xa;- Task Decomposition into Sub-Tasks&#xa;- Architecture-Aware Planning" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1565C0;spacingLeft=10;" parent="1" vertex="1">
+        <mxCell id="p3-items" value="- C4 Crew (Context, Container, Component, Deploy)&#xa;- arc42 Crew (12 Chapters + Quality Gate)&#xa;- Think-First Pattern: Analyze before Document" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1565C0;spacingLeft=10;" parent="1" vertex="1">
           <mxGeometry x="420" y="380" width="300" height="60" as="geometry"/>
         </mxCell>
         
@@ -128,7 +128,7 @@
         <mxCell id="l2-output-title" value="Documentation Output" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1;fontColor=#1565C0;" parent="1" vertex="1">
           <mxGeometry x="780" y="355" width="360" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="l2-output-items" value="c4/*.md | arc42/*.md | quality/*.md&#xa;Context Diagram | Container Diagram | Component Diagrams&#xa;Building Blocks | Runtime Scenarios | Deployment Views" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1976D2;" parent="1" vertex="1">
+        <mxCell id="l2-output-items" value="analyzed_architecture.json | c4/*.md | arc42/*.md&#xa;C4 Diagrams (*.drawio) | 12 arc42 Chapters&#xa;Quality Assessment | Technical Debt Analysis" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#1976D2;" parent="1" vertex="1">
           <mxGeometry x="780" y="385" width="360" height="50" as="geometry"/>
         </mxCell>
 
@@ -245,13 +245,13 @@
         <mxCell id="status-p0" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="280" y="155" width="50" height="20" as="geometry"/>
         </mxCell>
-        <mxCell id="status-p1" value="80%" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFA726;strokeColor=#EF6C00;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p1" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="680" y="155" width="50" height="20" as="geometry"/>
         </mxCell>
         <mxCell id="status-p2" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="320" y="355" width="50" height="20" as="geometry"/>
         </mxCell>
-        <mxCell id="status-p3" value="TODO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9E9E9E;strokeColor=#616161;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p3" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="680" y="355" width="50" height="20" as="geometry"/>
         </mxCell>
         <mxCell id="status-p4" value="TODO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9E9E9E;strokeColor=#616161;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">

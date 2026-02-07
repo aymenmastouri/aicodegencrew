@@ -24,6 +24,9 @@ from crewai_tools import FileWriterTool
 
 from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool, PartialResultsTool
 
+# MCP server script path (project root)
+_MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
+
 # Import Pydantic schemas for output validation
 from ...shared.models import (
     MacroArchitectureOutput,
@@ -108,13 +111,25 @@ class ArchitectureAnalysisCrew:
         if not self.facts_path.exists():
             missing_files.append(str(self.facts_path))
         else:
-            logger.info(f"   [OK] Found: {self.facts_path}")
-        
+            # Validate JSON is parseable and has required keys
+            try:
+                with open(self.facts_path, 'r', encoding='utf-8') as f:
+                    facts_data = json.load(f)
+                if not isinstance(facts_data, dict) or "components" not in facts_data:
+                    logger.error(f"   [INVALID] {self.facts_path}: missing 'components' key")
+                    missing_files.append(f"{self.facts_path} (invalid JSON structure)")
+                else:
+                    comp_count = len(facts_data.get("components", []))
+                    logger.info(f"   [OK] Found: {self.facts_path} ({comp_count} components)")
+            except json.JSONDecodeError as e:
+                logger.error(f"   [INVALID] {self.facts_path}: {e}")
+                missing_files.append(f"{self.facts_path} (invalid JSON)")
+
         if not self.evidence_path.exists():
             missing_files.append(str(self.evidence_path))
         else:
             logger.info(f"   [OK] Found: {self.evidence_path}")
-        
+
         if missing_files:
             logger.error("")
             logger.error("=" * 60)
@@ -234,7 +249,7 @@ class ArchitectureAnalysisCrew:
             mcps=[
                 MCPServerStdio(
                     command="python",
-                    args=["mcp_server.py"],
+                    args=[_MCP_SERVER_PATH],
                     cache_tools_list=True,
                 )
             ],
@@ -245,7 +260,7 @@ class ArchitectureAnalysisCrew:
     def func_analyst(self) -> Agent:
         """Functional Analyst Agent."""
         return Agent(
-            config=self.agents_config['func_architect'],
+            config=self.agents_config['func_analyst'],
             tools=[
                 self._facts_stats_tool,  # Use FIRST for large repos
                 self._facts_tool,
@@ -256,7 +271,7 @@ class ArchitectureAnalysisCrew:
             mcps=[
                 MCPServerStdio(
                     command="python",
-                    args=["mcp_server.py"],
+                    args=[_MCP_SERVER_PATH],
                     cache_tools_list=True,
                 )
             ],
@@ -278,7 +293,7 @@ class ArchitectureAnalysisCrew:
             mcps=[
                 MCPServerStdio(
                     command="python",
-                    args=["mcp_server.py"],
+                    args=[_MCP_SERVER_PATH],
                     cache_tools_list=True,
                 )
             ],
@@ -298,7 +313,7 @@ class ArchitectureAnalysisCrew:
             mcps=[
                 MCPServerStdio(
                     command="python",
-                    args=["mcp_server.py"],
+                    args=[_MCP_SERVER_PATH],
                     cache_tools_list=True,
                 )
             ],
@@ -525,8 +540,10 @@ class ArchitectureAnalysisCrew:
             tasks=self.tasks,    # Automatically populated by @task decorators
             process=Process.sequential,
             verbose=True,
-            memory=False,  # Disable memory to prevent context overflow
+            memory=False,  # Disable memory - tasks are independent, no shared context needed
             full_output=False,  # Only return final result, not intermediate
+            max_rpm=30,  # Rate limit: max 30 requests/minute to LLM API
+            planning=False,  # Tasks already have clear step-by-step instructions
         )
     
     def run(self) -> str:
