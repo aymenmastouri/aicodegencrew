@@ -1,5 +1,5 @@
 {
-  "total": 4,
+  "total": 5,
   "containers": [
     {
       "id": "container.backend",
@@ -15,13 +15,13 @@
           "has_main_class": true
         }
       },
-      "component_count": 333,
+      "component_count": 494,
       "layer_distribution": {
         "unknown": 22,
         "presentation": 32,
         "application": 42,
         "dataaccess": 38,
-        "domain": 199
+        "domain": 360
       }
     },
     {
@@ -61,6 +61,23 @@
         "application": 131,
         "unknown": 59
       }
+    },
+    {
+      "id": "container.js_api",
+      "name": "jsApi",
+      "type": "frontend",
+      "technology": "Node.js",
+      "category": "application",
+      "root_path": "frontend\\src\\jsApi",
+      "evidence_ids": [],
+      "metadata": {
+        "metadata": {
+          "build_system": "npm",
+          "version": "1.2.<BUILD_NUMBER>"
+        }
+      },
+      "component_count": 0,
+      "layer_distribution": {}
     },
     {
       "id": "container.import_schema",

@@ -2,7 +2,7 @@
   "id": "system",
   "name": "uvz",
   "description": "Architecture model for uvz",
-  "generated_at": "2026-02-07T19:31:32.615229",
+  "generated_at": "2026-02-07T22:49:10.188077",
   "bounded_contexts": [
     {
       "name": "de.bnotk.uvz.module.adapters.staticwebresources",
@@ -15,8 +15,8 @@
       "name": "de.bnotk.uvz.module.deedentry.dataaccess.api.dao",
       "component_count": 22,
       "stereotypes": [
-        "rest_interface",
-        "repository"
+        "repository",
+        "rest_interface"
       ]
     },
     {
@@ -130,8 +130,8 @@
       "name": "app",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "module"
+        "module",
+        "component"
       ]
     },
     {
@@ -223,8 +223,8 @@
       "name": "deed-entry.components.deed-form-page.tabs.remarks-data-tab",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "pipe"
+        "pipe",
+        "component"
       ]
     },
     {
@@ -300,8 +300,8 @@
       "name": "deed-entry.components.deed-report-page.report-configuration",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "pipe"
+        "pipe",
+        "component"
       ]
     },
     {
@@ -324,32 +324,32 @@
       "name": "deed-entry.components.deed-view-page.participant-view",
       "component_count": 3,
       "stereotypes": [
-        "component",
-        "pipe"
+        "pipe",
+        "component"
       ]
     },
     {
       "name": "deed-entry.components.deed-view-page.participant-view-container",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "pipe"
+        "pipe",
+        "component"
       ]
     },
     {
       "name": "deed-entry.components.deed-view-page.registration-view",
       "component_count": 3,
       "stereotypes": [
-        "component",
-        "pipe"
+        "pipe",
+        "component"
       ]
     },
     {
       "name": "deed-entry.components.deed-view-page.connections.uvz-connections-view",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "pipe"
+        "pipe",
+        "component"
       ]
     },
     {
@@ -408,8 +408,8 @@
       "name": "generic-modal-dialogs.issue-notarised-copy-note-modal-dialog",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "pipe"
+        "pipe",
+        "component"
       ]
     },
     {
@@ -428,65 +428,7 @@
       ]
     },
     {
-      "name": "workflow.services.workflow-rest.mock",
-      "component_count": 2,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "adapters.xnp",
-      "component_count": 15,
-      "stereotypes": [
-        "adapter",
-        "service"
-      ]
-    },
-    {
-      "name": "authentication",
-      "component_count": 2,
-      "stereotypes": [
-        "guard",
-        "interceptor"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.domain",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-deletion",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.components.deed-form-page.services",
-      "component_count": 6,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "services",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-archive",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.services.archiving",
+      "name": "deed-entry.components.deed-overview-page.deed-overview.services",
       "component_count": 3,
       "stereotypes": [
         "service"
@@ -500,58 +442,50 @@
       ]
     },
     {
-      "name": "workflow.services.workflow-change-aoid",
+      "name": "http-util",
+      "component_count": 2,
+      "stereotypes": [
+        "interceptor"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-deletion",
       "component_count": 4,
       "stereotypes": [
         "service"
       ]
     },
     {
-      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
+      "name": "workflow.services.workflow-rest.domain",
       "component_count": 3,
       "stereotypes": [
         "service"
       ]
     },
     {
-      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
-      "component_count": 2,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "adapters.archiving.adapter.xnp",
-      "component_count": 2,
-      "stereotypes": [
-        "adapter",
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.services.deed-entry",
+      "name": "workflow.services.workflow-archive",
       "component_count": 4,
       "stereotypes": [
         "service"
       ]
     },
     {
-      "name": "deed-entry.components.deed-overview-page.services",
-      "component_count": 2,
+      "name": "adapters.xnp",
+      "component_count": 15,
       "stereotypes": [
-        "resolver",
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.components.deed-successor-page.services",
-      "component_count": 2,
-      "stereotypes": [
-        "service"
+        "service",
+        "adapter"
       ]
     },
     {
       "name": "workflow.services.workflow-reencryption.job-reencryption",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "services",
       "component_count": 3,
       "stereotypes": [
         "service"
@@ -565,10 +499,25 @@
       ]
     },
     {
-      "name": "http-util",
+      "name": "deed-entry.components.deed-form-page.services",
+      "component_count": 6,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.archiving.adapter.xnp",
       "component_count": 2,
       "stereotypes": [
-        "interceptor"
+        "service",
+        "adapter"
+      ]
+    },
+    {
+      "name": "deed-entry.services.deed-entry",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
       ]
     },
     {
@@ -579,17 +528,68 @@
       ]
     },
     {
-      "name": "deed-entry.components.deed-overview-page.deed-overview.services",
+      "name": "adapters.page-container-adapter.impl.xnp",
+      "component_count": 2,
+      "stereotypes": [
+        "adapter"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.mock",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-change-aoid",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.services.archiving",
       "component_count": 3,
       "stereotypes": [
         "service"
       ]
     },
     {
-      "name": "adapters.page-container-adapter.impl.xnp",
+      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-successor-page.services",
       "component_count": 2,
       "stereotypes": [
-        "adapter"
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-overview-page.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service",
+        "resolver"
+      ]
+    },
+    {
+      "name": "authentication",
+      "component_count": 2,
+      "stereotypes": [
+        "guard",
+        "interceptor"
       ]
     }
   ],
@@ -613,6 +613,12 @@
       "category": "application"
     },
     {
+      "id": "container.js_api",
+      "name": "jsApi",
+      "technology": "Node.js",
+      "category": "application"
+    },
+    {
       "id": "container.import_schema",
       "name": "import-schema",
       "technology": "Java/Gradle",
@@ -621,19 +627,19 @@
   ],
   "statistics": {
     "system_name": "uvz",
-    "containers": 4,
-    "components": 738,
-    "interfaces": 125,
+    "containers": 5,
+    "components": 899,
+    "interfaces": 226,
     "relations": 190,
-    "evidence": 1005,
+    "evidence": 1275,
     "dependencies": 170,
-    "workflows": 40,
+    "workflows": 42,
     "by_layer": {
       "unknown": 81,
       "presentation": 246,
       "application": 173,
       "dataaccess": 38,
-      "domain": 199,
+      "domain": 360,
       "infrastructure": 1
     },
     "by_stereotype": {
@@ -645,11 +651,11 @@
       "component": 128,
       "pipe": 67,
       "directive": 3,
-      "adapter": 50,
-      "guard": 1,
-      "interceptor": 4,
       "resolver": 4,
-      "entity": 199,
+      "adapter": 50,
+      "interceptor": 4,
+      "guard": 1,
+      "entity": 360,
       "scheduler": 1,
       "configuration": 1
     }
