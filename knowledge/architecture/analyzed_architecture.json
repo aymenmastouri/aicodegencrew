@@ -1,0 +1,417 @@
+{
+  "system": {
+    "id": "system",
+    "name": "uvz",
+    "statistics": {
+      "system_name": "uvz",
+      "containers": 4,
+      "components": 738,
+      "interfaces": 125,
+      "relations": 169,
+      "evidence": 1005,
+      "dependencies": 170,
+      "workflows": 40,
+      "by_layer": {
+        "unknown": 81,
+        "presentation": 246,
+        "application": 173,
+        "dataaccess": 38,
+        "domain": 199,
+        "infrastructure": 1
+      },
+      "by_stereotype": {
+        "rest_interface": 21,
+        "controller": 32,
+        "service": 173,
+        "repository": 38,
+        "module": 16,
+        "component": 128,
+        "pipe": 67,
+        "directive": 3,
+        "adapter": 50,
+        "interceptor": 4,
+        "resolver": 4,
+        "guard": 1,
+        "entity": 199,
+        "scheduler": 1,
+        "configuration": 1
+      }
+    }
+  },
+  "macro_architecture": {
+    "style": "Modular Monolith",
+    "container_count": 4,
+    "active_containers": 2,
+    "reasoning": "2 active containers (backend, frontend) with 738 total components. Backend uses Layered pattern, Frontend uses Component-Based pattern.",
+    "scalability_approach": "horizontal",
+    "deployment_model": "distributed",
+    "communication_pattern": "sync REST"
+  },
+  "micro_architecture": {
+    "e2e-xnp": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
+    },
+    "import-schema": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
+    },
+    "backend": {
+      "primary_pattern": "Layered",
+      "layer_structure": [
+        "Presentation (Controllers / REST interfaces)",
+        "Service (Business services)",
+        "Repository (DAO / data access)",
+        "Domain (Entity models)"
+      ],
+      "component_counts": {
+        "rest_interface": 21,
+        "controller": 32,
+        "service": 42,
+        "repository": 38,
+        "entity": 199,
+        "scheduler": 1
+      }
+    },
+    "frontend": {
+      "primary_pattern": "Component-Based",
+      "layer_structure": [
+        "Presentation (Components, Directives, Pipes, UI Modules)",
+        "Service (Services, Interceptors, Guards, Resolvers)",
+        "Adapter/Data Access (Adapter services, API modules)"
+      ],
+      "component_counts": {
+        "module": 16,
+        "component": 128,
+        "pipe": 67,
+        "directive": 3,
+        "service": 131,
+        "adapter": 50,
+        "interceptor": 4,
+        "resolver": 4,
+        "guard": 1
+      }
+    }
+  },
+  "architecture_quality": {
+    "separation_of_concerns": "good",
+    "layer_violations_count": 0,
+    "coupling_assessment": "loose",
+    "relations_per_component": 0.23,
+    "overall_grade": "C"
+  },
+  "statistics": {
+    "total_components": 738,
+    "total_relations": 169,
+    "total_interfaces": 125,
+    "containers_analyzed": 4,
+    "active_containers": 2,
+    "stereotype_distribution": {
+      "rest_interface": 21,
+      "controller": 32,
+      "service": 173,
+      "repository": 38,
+      "entity": 199,
+      "scheduler": 1,
+      "module": 16,
+      "component": 128,
+      "pipe": 67,
+      "directive": 3,
+      "adapter": 50,
+      "interceptor": 4,
+      "resolver": 4,
+      "guard": 1
+    }
+  },
+  "container_analyses": [
+    {
+      "container": "e2e-xnp",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
+      }
+    },
+    {
+      "container": "import-schema",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
+      }
+    },
+    {
+      "container": "backend",
+      "component_count": 333,
+      "relation_count": 0,
+      "interface_count": 95,
+      "summary": "The backend implements a classic layered architecture built on Spring Boot, Spring MVC, Spring Data JPA, and Spring Security, exposing a comprehensive REST API for deed management, handover processing, and archiving. It delivers a rich set of domain capabilities across many entities and services, but the large number of controllers, services, and entity classes results in moderate coupling, potential service bloat, and technical debt that should be addressed to improve maintainability and scalability.",
+      "technical": {
+        "primary_pattern": "Layered",
+        "layers": [
+          "Presentation (Controllers / REST interfaces)",
+          "Service (Business services)",
+          "Repository (DAO / data access)",
+          "Domain (Entity models)"
+        ],
+        "technologies": [
+          "Spring Boot",
+          "Spring MVC / Spring Web",
+          "Spring Data JPA",
+          "Spring Security",
+          "JPA / Hibernate",
+          "Scheduler (Spring @Scheduled)"
+        ],
+        "integration_style": "REST API"
+      },
+      "functional": {
+        "domain_concepts": [
+          "DeedEntry",
+          "DeedRegistry",
+          "Action",
+          "DocumentMetaData",
+          "HandoverDataSet",
+          "SignatureInfo",
+          "KeyManager",
+          "Archiving",
+          "BusinessPurpose",
+          "Connection",
+          "Participant",
+          "CorrectionNote",
+          "Change"
+        ],
+        "capabilities": [
+          "Create, read, update and delete deed entries",
+          "Log and retrieve deed entry history",
+          "Manage actions and action streams",
+          "Handle document metadata storage and retrieval",
+          "Perform handover data set processing and versioning",
+          "Manage signature information and verification",
+          "Key management including re‑encryption and crypto state queries",
+          "Archiving operations such as token signing and archive status checks",
+          "Provide business purpose lookup",
+          "Manage connections between deed entries",
+          "Apply correction notes to deeds",
+          "Generate reports and job scheduling (including re‑encryption jobs)",
+          "Expose REST APIs for all above operations"
+        ],
+        "bounded_context": "Deed Management, Handover & Archiving (Legal Document Registry)",
+        "integrations": [
+          "External Key Management Service (KM) via REST",
+          "External Archiving Service for token signing",
+          "External Authentication/Authorization provider (Spring Security/OAuth)",
+          "External Proxy/REST client services (configured via ProxyRestTemplateConfiguration)",
+          "Database persistence (JPA/Hibernate) as a data store"
+        ]
+      },
+      "quality": {
+        "separation_of_concerns": "good",
+        "coupling": "moderate",
+        "cohesion": "high",
+        "debt_indicators": [
+          "Large number of controllers (32) – risk of fat controllers",
+          "Service layer has many implementations (42) – possible service bloat",
+          "High count of entity classes (199) – may indicate low domain aggregation",
+          "Direct DAO implementations used in services – missing higher‑level abstractions"
+        ],
+        "grade": "B",
+        "recommendations": [
+          "Refactor oversized controllers into smaller, request‑specific handlers",
+          "Apply Service‑Facade pattern to group related service methods and reduce service surface",
+          "Introduce domain aggregates to collapse related entity classes and simplify the model",
+          "Define repository abstractions or domain‑specific interfaces to decouple services from concrete DAO implementations",
+          "Adopt Interface Segregation on REST interfaces to avoid monolithic contracts",
+          "Consider consolidating similar services into bounded‑context modules to improve modularity"
+        ]
+      },
+      "overall_assessment": "The backend is functionally complete and follows a solid layered approach, but its size and lack of higher‑level abstractions create moderate coupling and technical debt. Targeted refactoring and domain modeling improvements will enhance maintainability and scalability.",
+      "top_recommendations": [
+        "Refactor oversized controllers into smaller, request‑specific handlers",
+        "Introduce domain aggregates to collapse related entity classes and simplify the model",
+        "Define repository abstractions or domain‑specific interfaces to decouple services from concrete DAO implementations"
+      ],
+      "analysis": {
+        "primary_pattern": "Layered",
+        "layers": [
+          "Presentation (Controllers / REST interfaces)",
+          "Service (Business services)",
+          "Repository (DAO / data access)",
+          "Domain (Entity models)"
+        ],
+        "stereotype_distribution": {
+          "rest_interface": 21,
+          "controller": 32,
+          "service": 42,
+          "repository": 38,
+          "entity": 199,
+          "scheduler": 1
+        },
+        "total_components": 333,
+        "total_relations": 0,
+        "total_interfaces": 95
+      }
+    },
+    {
+      "container": "frontend",
+      "component_count": 404,
+      "relation_count": 0,
+      "interface_count": 30,
+      "summary": "The frontend container is built on a component‑based Angular architecture (Presentation, Service, Adapter layers) leveraging TypeScript, RxJS, Angular Material and RESTful API integration to support the full spectrum of deed‑registration capabilities. While the implementation covers a rich set of domain concepts and integrations, quality metrics reveal moderate separation of concerns, coupling and cohesion, with a high count of services, adapters and pipes that inflate maintenance risk, resulting in an overall grade of C.",
+      "technical": {
+        "primary_pattern": "Component-Based",
+        "layers": [
+          "Presentation (Components, Directives, Pipes, UI Modules)",
+          "Service (Services, Interceptors, Guards, Resolvers)",
+          "Adapter/Data Access (Adapter services, API modules)"
+        ],
+        "technologies": [
+          "Angular",
+          "TypeScript",
+          "RxJS",
+          "Angular Router",
+          "Angular HttpClient",
+          "Angular Material (or similar UI library)",
+          "RESTful API integration"
+        ],
+        "integration_style": "REST API"
+      },
+      "functional": {
+        "domain_concepts": [
+          "Deed",
+          "Document",
+          "Workflow",
+          "User",
+          "Notary",
+          "Job",
+          "Task",
+          "Report",
+          "NumberManagement",
+          "Metadata",
+          "Participant",
+          "Remark",
+          "Connection",
+          "Signature"
+        ],
+        "capabilities": [
+          "Create, edit, view and delete deeds",
+          "Approve and correct deed entries",
+          "Manage deed workflow lifecycle (start, change, delete, reencryption)",
+          "Import and export documents (JSON, PDF, native formats)",
+          "Archive and retrieve document versions",
+          "Handle user authentication and authorization",
+          "Provide online help and notifications",
+          "Search and filter deed data (basic data, remarks, participants, connections)",
+          "Generate and export reports",
+          "Manage number assignments and sequencing",
+          "Execute background jobs and tasks",
+          "Interact with RESTful APIs for deed registry, document metadata, job and task services",
+          "Apply rate limiting, busy indicators and error handling for HTTP calls"
+        ],
+        "bounded_context": "Deed Registration and Notarial Services Management",
+        "integrations": [
+          "Deed Registry API",
+          "Document Metadata API",
+          "Job API",
+          "Task API",
+          "Action API",
+          "Reencryption API",
+          "Authentication endpoint (XnpAuthenticationNgAdapter)",
+          "Notary endpoint (XnpNotaryEndpoint)",
+          "Online Help service",
+          "Local and XNP storage adapters",
+          "PDF generation service (XnpPdfAdapter)",
+          "External notification service (FlyinNotificationAdapter)"
+        ]
+      },
+      "quality": {
+        "separation_of_concerns": "moderate",
+        "coupling": "moderate",
+        "cohesion": "moderate",
+        "debt_indicators": [
+          "Very large number of services (131) – likely some services are too big or overlapping",
+          "Excessive number of adapters (50) – possible duplication of data‑access logic",
+          "High count of pipes (67) – business logic may be misplaced in presentation layer",
+          "Potential mixing of domain, application, and UI concerns within modules"
+        ],
+        "grade": "C",
+        "recommendations": [
+          "Identify and split oversized services into smaller, focused ones or introduce facade layers",
+          "Consolidate similar adapters into a unified data‑access layer to reduce duplication",
+          "Move complex transformation logic from pipes into dedicated services",
+          "Review module boundaries; group related components, services, and adapters into feature‑specific modules",
+          "Introduce well‑defined interfaces between presentation and service layers to loosen coupling",
+          "Add documentation and tests for high‑traffic adapters to mitigate future maintenance risk"
+        ]
+      },
+      "overall_assessment": "The frontend provides comprehensive functional coverage and uses modern Angular tooling, but its architectural health is compromised by excessive service, adapter and pipe proliferation, leading to moderate cohesion and coupling. Refactoring to stricter modular boundaries and clearer responsibility allocation is needed to raise maintainability and scalability.",
+      "top_recommendations": [
+        "Refactor oversized services into focused, purpose‑specific facades or smaller services.",
+        "Consolidate duplicate adapters into a unified data‑access layer with shared interfaces.",
+        "Extract heavy transformation logic from pipes into dedicated services to improve separation of concerns."
+      ],
+      "analysis": {
+        "primary_pattern": "Component-Based",
+        "layers": [
+          "Presentation (Components, Directives, Pipes, UI Modules)",
+          "Service (Services, Interceptors, Guards, Resolvers)",
+          "Adapter/Data Access (Adapter services, API modules)"
+        ],
+        "stereotype_distribution": {
+          "module": 16,
+          "component": 128,
+          "pipe": 67,
+          "directive": 3,
+          "service": 131,
+          "adapter": 50,
+          "interceptor": 4,
+          "resolver": 4,
+          "guard": 1
+        },
+        "total_components": 404,
+        "total_relations": 0,
+        "total_interfaces": 30
+      }
+    }
+  ],
+  "overall_grade": "C",
+  "executive_summary": "uvz is a modular monolith system with 738 components across 2 active containers: backend (333 components, Grade B), frontend (404 components, Grade C). Overall architecture grade: C.",
+  "top_recommendations": [
+    "Refactor oversized controllers into smaller, request‑specific handlers",
+    "Introduce domain aggregates to collapse related entity classes and simplify the model",
+    "Define repository abstractions or domain‑specific interfaces to decouple services from concrete DAO implementations",
+    "Apply Service‑Facade pattern to group related service methods and reduce service surface",
+    "Adopt Interface Segregation on REST interfaces to avoid monolithic contracts",
+    "Consider consolidating similar services into bounded‑context modules to improve modularity",
+    "Refactor oversized services into focused, purpose‑specific facades or smaller services.",
+    "Consolidate duplicate adapters into a unified data‑access layer with shared interfaces.",
+    "Extract heavy transformation logic from pipes into dedicated services to improve separation of concerns.",
+    "Identify and split oversized services into smaller, focused ones or introduce facade layers"
+  ],
+  "technical_debt": {
+    "indicators": [
+      "Large number of controllers (32) – risk of fat controllers",
+      "Service layer has many implementations (42) – possible service bloat",
+      "High count of entity classes (199) – may indicate low domain aggregation",
+      "Direct DAO implementations used in services – missing higher‑level abstractions",
+      "Very large number of services (131) – likely some services are too big or overlapping",
+      "Excessive number of adapters (50) – possible duplication of data‑access logic",
+      "High count of pipes (67) – business logic may be misplaced in presentation layer",
+      "Potential mixing of domain, application, and UI concerns within modules"
+    ],
+    "indicator_count": 8
+  }
+}
