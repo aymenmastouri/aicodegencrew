@@ -258,3 +258,28 @@ python train_lora.py --base-model qwen2.5-72b --data traces/filtered/ --epochs 3
 
 *Erstellt: 2026-02-07*
 *Projekt: AICodeGenCrew*
+Ja genau — das Tool bekommt als Input nur den Pfad zum Repository (C:\uvz), sonst nichts. Kein manuelles Tagging, keine Annotationen, keine vorbereitete Doku.
+
+Der Ablauf ist:
+
+
+Input: C:\uvz (2700+ Dateien, raw source code)
+                    ↓
+Phase 0: Indexing   → Scannt alle Dateien, erkennt Technologien
+Phase 1: Facts      → Extrahiert 738 Komponenten, 190 Relationen, 125 Interfaces
+Phase 2: Analysis   → LLM analysiert Architekturstil, Patterns, Risiken
+Phase 3: Synthesis  → LLM schreibt Arc42 + C4 Dokumentation
+                    ↓
+Output: 26 Architektur-Dokumente (135KB Markdown + DrawIO)
+Das heißt: Vollautomatisch von Raw-Code zu professioneller Architekturdokumentation.
+
+Die Herausforderung ist dabei:
+
+Schritt	Was passiert	Schwierigkeit
+Code → Komponenten	Parser erkennt @Controller, @Service, @Component, Angular-Dekoratoren	Mittel — regelbasiert
+Komponenten → Relationen	Dependency Injection, Imports, REST-Calls	Hoch — viele Patterns
+Relationen → Architektur	LLM analysiert Schichtenarchitektur, DDD, Patterns	Sehr hoch — braucht Kontext
+Architektur → Doku	LLM schreibt 12 Arc42-Kapitel + 4 C4-Level	Hoch — konsistente Ausgabe
+Für ein vollautomatisches Reverse-Engineering eines Repos mit 2700+ Dateien — ohne jegliche manuelle Vorbereitung — ist die Qualität der Ausgabe tatsächlich beeindruckend. Die Fakten-Extraktion (Phase 1) ist der stärkste Teil: 738 Komponenten korrekt klassifiziert, echte Namen, echte Relationen.
+
+Die größte Limitation bleibt das On-Prem-Modell (4000 Token max output) — mit einem stärkeren Modell wären die Kapitel 2-3x detaillierter.

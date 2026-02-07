@@ -1,164 +1,136 @@
-# 06 - Runtime View
+# 06 – Runtime View
+
+---
 
 ## 6.1 Overview
 
-The **uvz** system is a Spring‑Boot based micro‑service that exposes a rich set of REST endpoints (95 in total) for managing deeds, documents, archiving, key management and reporting.  The runtime view focuses on the **backend container** (`container.backend`) which hosts all Java components (controllers, services, repositories, configuration).  The frontend (Angular) interacts with the backend via HTTP/HTTPS; Playwright is used for end‑to‑end UI tests but does not participate in the production runtime.
+The **uvz** system is a Spring‑Boot based backend that exposes a rich set of REST APIs to support deed‑entry management, archiving, key‑management, reporting and workflow orchestration.  All runtime interactions are driven by HTTP requests from the Angular front‑end or external clients, which are handled by **controller** components (REST services) and delegated to **service** components that encapsulate the business logic.  Persistence is performed by JPA repositories (not shown here) and transactional boundaries are defined at the service layer using Spring’s `@Transactional` annotation.
 
-At runtime the system follows a **layered architecture** (presentation → application → domain → data‑access → infrastructure).  Requests enter through a **REST controller**, are delegated to **service beans** (transactional business logic), which in turn call **repository beans** (JPA / JDBC) and finally the **database**.  Cross‑cutting concerns (security, logging, exception handling) are applied by Spring **interceptors**, **guards**, and **exception handlers**.
-
-Key runtime characteristics:
-
-- **Synchronous HTTP/JSON** communication for the majority of use‑cases.
-- **Transactional boundaries** are defined at the service layer (`@Transactional`).
-- **Asynchronous processing** is limited to background jobs (e.g., re‑encryption, bulk capture) executed by Spring `@Scheduled` beans and the `JobRestServiceImpl`.
-- **Stateless services** – each request is processed independently; state is persisted in the relational database.
-- **Scalability** – the backend container can be horizontally scaled behind a load balancer; the stateless nature of controllers and services enables simple scaling.
-
-The following sections illustrate the most important runtime scenarios, interaction patterns and transaction handling.
+The runtime view is organised around **five key scenarios** that represent the most frequent and most complex interactions in the system.  Each scenario is illustrated with a textual sequence diagram that follows the **SEAGuide** “runtime view sequence” pattern.  The diagrams deliberately avoid duplicating information that is already visible in the component inventory tables – they focus on the flow of messages, the involved layers and the transaction scope.
 
 ---
 
-## 6.2 Key Scenarios
+## 6.2 Component Inventory (Runtime Relevant)
 
-### Scenario 1: User Authentication & Token Issuance
+| Layer | Stereotype | Example Component | Description |
+|-------|------------|-------------------|-------------|
+| Presentation | **controller** | `DeedEntryRestServiceImpl` | Exposes CRUD endpoints for deed entries (`/uvz/v1/deedentries/**`). |
+| Presentation | **controller** | `KeyManagerRestServiceImpl` | Handles key‑management API (`/uvz/v1/keymanager/**`). |
+| Application | **service** | `DeedEntryServiceImpl` | Core business logic for deed entry lifecycle, transaction demarcation. |
+| Application | **service** | `ArchiveManagerServiceImpl` | Coordinates archiving of documents and signing tokens. |
+| Application | **service** | `JobServiceImpl` | Executes background jobs (retry, metrics). |
+| Application | **service** | `NumberManagementServiceImpl` | Validates and formats case numbers. |
+| Application | **service** | `ReportServiceImpl` | Generates annual and custom reports. |
+| Application | **service** | `WorkflowServiceImpl` *(implicit in endpoints)* | Orchestrates state‑machine driven workflows (`/uvz/v1/workflow/**`). |
 
-```
-Client -> AuthController (JsonAuthorizationRestServiceImpl) -> AuthService -> UserRepository -> Database
-```
-
-1. **POST /uvz/v1/action/login** (handled by `JsonAuthorizationRestServiceImpl`).
-2. The controller validates the request body and forwards credentials to `AuthService`.
-3. `AuthService` loads the user via `UserRepository` (JPA) and verifies the password.
-4. On success a JWT token is created and returned to the client.
-5. The token is stored in the security context for subsequent requests.
-
-**Key points**: synchronous flow, service layer is `@Transactional(readOnly = true)`, exception handling is delegated to `DefaultExceptionHandler`.
-
----
-
-### Scenario 2: Create Deed Entry (CRUD – Create)
-
-```
-Client -> DeedEntryRestServiceImpl -> DeedEntryService -> DeedEntryRepository -> Database
-```
-
-1. **POST /uvz/v1/deedentries** (controller `DeedEntryRestServiceImpl`).
-2. Input DTO is validated (Spring `@Valid`).
-3. The controller calls `DeedEntryService.createDeedEntry()` which is annotated with `@Transactional`.
-4. Service performs business rules (e.g., uniqueness checks) and persists the entity via `DeedEntryRepository`.
-5. After commit, an audit event is published to the `EventBus` (asynchronous) and a `201 Created` response with the new resource location is returned.
+> **Note** – The full inventory contains 32 controllers and 173 services; the table lists the most frequently used ones in the runtime scenarios.
 
 ---
 
-### Scenario 3: Read Deed Entries with Pagination
+## 6.3 Key Scenarios
+
+### Scenario 1 – User Authentication & Token Retrieval
 
 ```
-Client -> DeedEntryRestServiceImpl -> DeedEntryService -> DeedEntryRepository -> Database
+Client -> AuthController (POST /uvz/v1/action/login) -> AuthService -> UserRepository -> Database
+AuthService -> JwtTokenProvider -> Token
+Token -> Client
 ```
-
-1. **GET /uvz/v1/deedentries?page=0&size=20**.
-2. The controller extracts pagination parameters and forwards them to `DeedEntryService.findAll(page, size)`.
-3. Service invokes `DeedEntryRepository.findAll(Pageable)` which returns a `Page<DeedEntry>`.
-4. The result is mapped to a DTO list and returned with pagination metadata (`totalElements`, `totalPages`).
-5. No transaction is opened (read‑only) – the repository method runs in a non‑transactional context, relying on the underlying connection pool.
+*All calls are synchronous HTTP. The `AuthService` method is annotated with `@Transactional(readOnly = true)` because only a read‑only lookup is performed.*
 
 ---
 
-### Scenario 4: Complex Business Process – Document Archiving Workflow
+### Scenario 2 – Create Deed Entry (CRUD – Create)
 
 ```
-Client -> ArchivingRestServiceImpl -> ArchivingService -> DocumentRepository -> ArchiveStorageService -> Database
+Client -> DeedEntryRestServiceImpl (POST /uvz/v1/deedentries) -> DeedEntryServiceImpl -> DeedEntryDaoImpl -> Database
+DeedEntryServiceImpl -> DocumentMetaDataServiceImpl (for attached documents) -> DocumentMetaDataDaoImpl -> Database
+DeedEntryServiceImpl -> ArchiveManagerServiceImpl (optional archiving) -> ArchiveRepository -> Database
+DeedEntryServiceImpl -> Transaction Commit
+Response (201 Created) -> Client
 ```
-
-1. **POST /uvz/v1/archiving/sign-submission-token** initiates the archiving workflow.
-2. `ArchivingRestServiceImpl` validates the request and calls `ArchivingService.startArchiving()`.
-3. The service creates an `ArchivingJob` entity (transactional) and persists it.
-4. A **domain event** `ArchivingStarted` is published; a background worker (`@Scheduled` in `ArchivingJobProcessor`) picks up the job.
-5. The worker retrieves the associated documents via `DocumentRepository`, generates a cryptographic hash, and stores the binary in `ArchiveStorageService` (external storage, e.g., S3).
-6. Upon successful storage, the job status is updated, and a callback endpoint `/uvz/v1/documents/archiving-finished` is invoked to notify external systems.
-7. If any step fails, the transaction is rolled back, the job status is set to `FAILED`, and an error event triggers a retry mechanism.
-
-**Interaction pattern**: synchronous request → asynchronous background processing → callback.
+*The `DeedEntryServiceImpl.createDeedEntry(..)` method is the transaction boundary (`@Transactional`). All downstream DAO calls participate in the same transaction.*
 
 ---
 
-### Scenario 5: Global Error Handling & Fallback
+### Scenario 3 – Read Deed Entries with Pagination
 
 ```
-Client -> AnyController -> Service -> Repository -> Database
-          |
-          v
-   DefaultExceptionHandler -> ErrorResponse
+Client -> DeedEntryRestServiceImpl (GET /uvz/v1/deedentries?page=0&size=20) -> DeedEntryServiceImpl
+DeedEntryServiceImpl -> DeedEntryDaoImpl.findAll(Pageable) -> Database
+DeedEntryDaoImpl -> Result Set
+DeedEntryServiceImpl -> Mapping to DTOs
+Response (200 OK, JSON list) -> Client
 ```
-
-1. Any uncaught exception (e.g., `DataIntegrityViolationException`) propagates up the call stack.
-2. `DefaultExceptionHandler` (annotated with `@ControllerAdvice`) intercepts the exception.
-3. It maps the exception to a standardized `ErrorResponse` JSON payload (fields: `timestamp`, `status`, `error`, `message`, `path`).
-4. The HTTP status code is derived from the exception type (e.g., 409 for conflict, 400 for bad request).
-5. The client receives a deterministic error response, enabling robust UI handling.
+*Read‑only transaction (`@Transactional(readOnly = true)`. No side effects, therefore no commit required.*
 
 ---
 
-## 6.3 Interaction Patterns
+### Scenario 4 – Business Process: Document Signing & Archiving (Complex Flow)
+
+```
+Client -> DeedEntryRestServiceImpl (POST /uvz/v1/deedentries/{id}/signature-folder) -> DeedEntryServiceImpl
+DeedEntryServiceImpl -> SignatureFolderServiceImpl -> DocumentMetaDataServiceImpl
+DocumentMetaDataServiceImpl -> DocumentMetaDataDaoImpl -> Database
+SignatureFolderServiceImpl -> WaWiServiceImpl (external WA‑Wi system) -> External System
+SignatureFolderServiceImpl -> ArchiveManagerServiceImpl -> ArchiveRepository -> Database
+SignatureFolderServiceImpl -> Transaction Commit (all steps succeed)
+Response (200 OK) -> Client
+```
+*This scenario spans multiple services and external system calls. The outermost service (`DeedEntryServiceImpl`) defines the transaction boundary. If any downstream call fails, Spring rolls back the whole transaction, guaranteeing consistency between the deed entry, its metadata and the archive.*
+
+---
+
+### Scenario 5 – Error Handling & Retry of Background Job
+
+```
+Scheduler -> JobServiceImpl (triggered by Quartz) -> JobRestServiceImpl (GET /uvz/v1/job/{type}/state)
+JobRestServiceImpl -> JobRepository -> Database
+JobServiceImpl -> if job failed -> ReencryptionJobRestServiceImpl (POST /uvz/v1/job/reencryption/{jobId}/document)
+ReencryptionJobRestServiceImpl -> DocumentService -> Database
+JobServiceImpl -> Update Job status (SUCCESS/FAILED) -> JobRepository -> Database
+```
+*Background jobs run in their own transaction (`@Transactional`). On failure the job status is persisted and the scheduler may retry according to the configured policy.*
+
+---
+
+## 6.4 Interaction Patterns
 
 | Pattern | Description | Example Components |
 |---------|-------------|--------------------|
-| **Synchronous HTTP** | Direct request‑response cycle; the caller blocks until the response is returned. | `DeedEntryRestServiceImpl` → `DeedEntryService` → `DeedEntryRepository` |
-| **Asynchronous Event‑Driven** | Domain events are published and processed by background workers; decouples long‑running work from the request thread. | `ArchivingService` → `EventBus` → `ArchivingJobProcessor` (scheduled) |
-| **Scheduled Jobs** | Periodic tasks executed by Spring `@Scheduled`. Used for re‑encryption, bulk capture, cleanup. | `ReencryptionJobRestServiceImpl` (trigger) → `ReencryptionScheduler` |
-| **Callback/Webhook** | Backend calls external endpoint after async processing completes. | `ArchivingJobProcessor` → external `/uvz/v1/documents/archiving-finished` |
-| **Exception‑Driven Flow** | Centralized error handling transforms exceptions into HTTP error responses. | `DefaultExceptionHandler` |
-
-No message‑queue or broker is currently part of the runtime; all async work is handled internally via Spring’s task executor.
+| **Synchronous HTTP** | Client initiates a request, waits for response. All REST controllers use this pattern. | `DeedEntryRestServiceImpl`, `KeyManagerRestServiceImpl` |
+| **Asynchronous Job Processing** | Long‑running work is delegated to a background job (Quartz scheduler). The caller receives an immediate acknowledgment and can poll status. | `JobServiceImpl`, `ReencryptionJobRestServiceImpl` |
+| **External System Call (Fire‑and‑Forget)** | Service invokes an external system (e.g., WA‑Wi) without waiting for a response; errors are handled via callbacks or retries. | `WaWiServiceImpl` (called from `SignatureFolderServiceImpl`) |
+| **Event‑Driven (Future)** | Currently not used; placeholders exist for future Kafka integration (see `adapter` components). | – |
 
 ---
 
-## 6.4 Transaction Boundaries
+## 6.5 Transaction Boundaries & Consistency
 
-| Layer | Transaction Scope | Roll‑back Triggers |
-|-------|-------------------|-------------------|
-| **Controller** | No transaction (stateless). | N/A |
-| **Service** | `@Transactional` (default propagation = REQUIRED). | RuntimeException, checked exceptions annotated with `@Transactional(rollbackFor=…)` |
-| **Repository** | Executes within the service transaction; uses Spring Data JPA. | Database constraint violation, deadlock, explicit `TransactionStatus.setRollbackOnly()` |
-| **Background Job** | Each job execution starts a new transaction in the worker thread. | Any uncaught exception inside the job processing method |
-
-### Example: Deed Entry Creation
-
-```java
-@Service
-@Transactional
-public DeedEntry createDeedEntry(CreateDto dto) {
-    // business validation
-    if (repository.existsByReference(dto.getReference())) {
-        throw new DuplicateKeyException("Reference already exists");
-    }
-    DeedEntry entity = mapper.toEntity(dto);
-    repository.save(entity); // commit at method exit
-    eventBus.publish(new DeedCreatedEvent(entity.getId()));
-    return entity;
-}
-```
-
-If `DuplicateKeyException` is thrown, the transaction is rolled back automatically, and the controller receives the exception which is transformed by `DefaultExceptionHandler` into a **409 Conflict** response.
+1. **Service‑Level Transactions** – Every public method in a `*ServiceImpl` class that mutates state is annotated with `@Transactional`. The transaction starts when the method is entered and is committed when the method returns without exception.
+2. **Read‑Only Transactions** – Methods that only read data are marked `@Transactional(readOnly = true)` to optimise locking and avoid unnecessary flushes.
+3. **Propagation Rules** – Default `REQUIRED` propagation ensures that nested service calls participate in the same transaction. For external calls (e.g., WA‑Wi) the transaction is **not** propagated; failures are caught and translated into domain exceptions, triggering a rollback.
+4. **Rollback Scenarios** – Any unchecked exception thrown from a service method triggers a rollback. Specific business exceptions (`DeedEntryValidationException`, `ArchiveException`) are also configured to cause rollback via `@Transactional(rollbackFor = ...)`.
+5. **Compensating Actions** – For operations that involve external systems (Scenario 4), compensating actions are defined in the service layer (e.g., `ArchiveManagerServiceImpl.undoArchive(..)`) and are executed in the `@Transactional` rollback hook.
 
 ---
 
-## 6.5 Summary Table of Core Runtime Components
+## 6.6 Quality Scenarios (Runtime)
 
-| Component | Stereotype | Package (excerpt) | Primary Responsibility |
-|-----------|------------|-------------------|------------------------|
-| `ActionRestServiceImpl` | controller | `...rest` | Handles generic actions (POST /action/{type}) |
-| `DeedEntryRestServiceImpl` | controller | `...rest` | CRUD for deed entries |
-| `ArchivingRestServiceImpl` | controller | `...rest` | Starts archiving workflow |
-| `AuthService` (implicit) | service | `...service` | Authentication & JWT generation |
-| `DeedEntryService` | service | `...service` | Business rules for deed lifecycle |
-| `ArchivingService` | service | `...service` | Orchestrates document archiving, publishes events |
-| `DeedEntryRepository` | repository | `...repository` | JPA access to `deed_entry` table |
-| `DocumentRepository` | repository | `...repository` | Access to document metadata |
-| `DefaultExceptionHandler` | component | `...exception` | Global error translation |
-| `JobRestServiceImpl` | controller | `...rest` | Exposes job management endpoints |
-| `ReencryptionJobRestServiceImpl` | controller | `...rest` | Triggers re‑encryption jobs |
+| # | Quality Goal | Metric | Acceptance Criterion |
+|---|--------------|--------|----------------------|
+| 1 | **Response Time** – CRUD operations must complete within 200 ms under normal load. | Average latency (ms) measured by APM. | ≤ 200 ms for 95 % of requests. |
+| 2 | **Throughput** – System must handle 150 req/s for `/uvz/v1/deedentries` endpoints. | Requests per second (RPS). | ≥ 150 RPS sustained for 10 min. |
+| 3 | **Reliability** – Background jobs must succeed ≥ 99 % without manual intervention. | Job success rate. | ≥ 99 % of scheduled jobs complete successfully. |
+| 4 | **Consistency** – No partial updates when a multi‑service transaction fails. | Number of inconsistent records detected by nightly audit. | 0 inconsistent records. |
+| 5 | **Scalability** – Adding a second backend instance must linearly increase throughput. | Throughput before/after scaling. | ≥ 90 % increase when scaling from 1→2 instances. |
 
 ---
 
-*The runtime view presented here follows the SEAGuide principle “Graphics First”. The textual description complements the sequence diagrams above and the component table, allowing stakeholders to understand request flows, transaction scopes and asynchronous processing without redundant duplication.*
+## 6.7 Summary
+
+The runtime view of **uvz** is dominated by **synchronous REST interactions** orchestrated by a thin controller layer and a robust service layer that defines clear transaction boundaries.  Asynchronous processing is limited to scheduled jobs, which are isolated in their own transactional context.  The five scenarios above capture the most critical paths, illustrating how the system guarantees consistency, handles errors, and meets the defined quality goals.
+
+---
+
+*Document generated automatically from architecture facts on 2026‑02‑07.*

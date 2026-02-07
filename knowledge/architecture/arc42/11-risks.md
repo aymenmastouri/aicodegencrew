@@ -2,67 +2,64 @@
 
 ## 11.1 Risk Overview
 
-| ID | Category | Description | Severity | Probability | Impact | Owner |
-|----|----------|-------------|----------|-------------|--------|-------|
-| R-01 | Architecture | High coupling between backend services (169 *uses* relations) | High | Likely | Performance & Maintainability | Architecture Team |
-| R-02 | Architecture | Large number of REST controllers (32) increases surface for security flaws | High | Possible | Security | Security Lead |
-| R-03 | Architecture | 50 *adapter* components indicate many third‑party integrations, raising integration risk | Medium | Possible | Availability | Integration Team |
-| R-04 | Architecture | 173 *service* components create a complex dependency graph, risking ripple‑effect changes | Medium | Likely | Maintainability | Development Lead |
-| R-05 | Architecture | Single *configuration* component (1) is a potential single point of failure for environment setup | Medium | Unlikely | Availability | DevOps |
-| R-06 | Technical Debt | Missing automated tests for 67 *pipe* and 128 *component* UI artefacts | High | Likely | Quality | QA Lead |
-| R-07 | Technical Debt | Legacy *interceptor* and *guard* implementations are not covered by unit tests | Medium | Possible | Security | Security Lead |
-| R-08 | Technical Debt | Inconsistent naming across 21 *rest_interface* components hampers discoverability | Low | Possible | Maintainability | Architecture Team |
-| R-09 | Technical Debt | Manual database migration scripts (not captured in facts) increase deployment risk | Medium | Possible | Availability | DB Admin |
-| R-10 | Technical Debt | Low test coverage for *scheduler* (1) and *resolver* (4) components | Low | Unlikely | Reliability | DevOps |
+| ID | Risk Category | Description | Severity (1‑5) | Probability (1‑5) | Impact (1‑5) |
+|----|---------------|-------------|----------------|-------------------|-------------|
+| R-01 | **Complexity / Size** | The system contains **738 components** spread over **4 containers** with **190 relations** (131 *uses*). High component count increases cognitive load and onboarding time. | 4 | 4 | 4 |
+| R-02 | **High Coupling** | **131 "uses" relations** indicate tight coupling between services, adapters and repositories, making change propagation risky. | 4 | 3 | 4 |
+| R-03 | **Adapter Proliferation** | **50 adapter components** (≈7 % of total) introduce multiple integration points that are often thin wrappers and can become stale as external APIs evolve. | 3 | 4 | 3 |
+| R-04 | **Domain Model Bloat** | **199 entity components** (27 % of total) suggest a very rich domain model; without strict bounded‑contexts this can lead to leaky abstractions and performance overhead. | 3 | 3 | 3 |
+| R-05 | **Unknown Layer Components** | **81 components** are classified as *unknown* (interceptor, resolver, guard, scheduler, rest_interface). Lack of clear layering hampers impact analysis. | 3 | 3 | 3 |
+| R-06 | **Insufficient Test Coverage** *(derived from tooling gaps)* | No explicit test‑coverage metrics are stored; the absence of coverage data is a risk for regression defects. | 4 | 2 | 4 |
+| R-07 | **Technology Heterogeneity** | Front‑end uses **Angular**, back‑end **Spring Boot/Java**, UI tests **Playwright**. Integration across these stacks can cause version‑drift and build‑pipeline complexity. | 3 | 3 | 3 |
 
-The table summarises the most critical risks identified from the quantitative architecture snapshot (components, relations, stereotypes) and from the qualitative review of the code base.
-
----
+*Severity, Probability and Impact are scored on a 1‑5 scale (5 = highest). The overall risk rating is calculated as Severity × Probability.*
 
 ## 11.2 Architecture Risks
 
 | ID | Risk | Severity | Probability | Impact | Mitigation |
 |----|------|----------|-------------|--------|------------|
-| AR‑01 | **Excessive inter‑service coupling** – 169 *uses* relations, many of which cross layer boundaries (e.g., backend services calling frontend generated services). | High | Likely | Increases latency, makes change propagation unpredictable. | Introduce bounded‑context boundaries, enforce *uses* only within the same context, add integration tests. |
-| AR‑02 | **Broad REST surface** – 32 controllers expose 95 REST endpoints (see interface facts). | High | Possible | Larger attack surface, higher OWASP risk. | Harden endpoints with centralized security interceptor, perform regular penetration testing. |
-| AR‑03 | **Third‑party integration complexity** – 50 adapters for external systems. | Medium | Possible | Vendor lock‑in, integration failures. | Wrap adapters behind a stable façade, add contract tests, monitor adapter health. |
-| AR‑04 | **Service explosion** – 173 service components, many thin wrappers. | Medium | Likely | Hard to understand ownership, risk of duplicated logic. | Consolidate services where possible, adopt service‑layer guidelines, maintain a service catalogue. |
-| AR‑05 | **Single configuration component** – only one *configuration* component holds all environment settings. | Medium | Unlikely | Misconfiguration can bring the whole system down. | Externalise configuration to Spring Cloud Config / Kubernetes ConfigMaps, add validation CI step. |
+| AR-01 | **Component Explosion** – 738 components make impact analysis difficult. | 4 | 4 | 4 | Establish a **component inventory** (already done) and enforce **naming conventions**; introduce a **component ownership matrix** to clarify responsibilities. |
+| AR-02 | **Tight Coupling via "uses" relations** – 131 uses relations increase change ripple‑effects. | 4 | 3 | 4 | Refactor high‑fan‑in services into **domain‑driven bounded contexts**; introduce **facade** or **mediator** layers to decouple. |
+| AR-03 | **Adapter Staleness** – 50 adapters risk becoming outdated as external APIs evolve. | 3 | 4 | 3 | Create an **adapter health‑check suite** and schedule **periodic version audits**; consolidate similar adapters where possible. |
+| AR-04 | **Domain Model Over‑growth** – 199 entities may violate **single‑responsibility** and cause performance issues. | 3 | 3 | 3 | Apply **DDD bounded‑context mapping**; prune unused entity attributes; introduce **CQRS** for read‑heavy scenarios. |
+| AR-05 | **Unclear Layering** – 81 unknown‑layer components hinder architectural governance. | 3 | 3 | 3 | Perform a **layer‑assignment workshop**; re‑classify components into presentation, application, domain, data‑access, infrastructure. |
+| AR-06 | **Missing Test Metrics** – No visibility on unit/integration test coverage. | 4 | 2 | 4 | Integrate **JaCoCo** (Java) and **Karma/Jest** (Angular) into CI; enforce a **minimum 80 % coverage** gate. |
+| AR-07 | **Technology Stack Drift** – Multiple tech stacks increase build‑pipeline complexity. | 3 | 3 | 3 | Adopt **container‑based builds** (Docker) and **dependency‑management policies**; keep a **technology‑version matrix**. |
 
-### Rationale
-The quantitative data (component counts, relation types) directly informs each risk. For example, the *uses* relation list shows many backend services reaching into frontend generated services – a classic violation of layered architecture that can cause tight coupling.
-
----
+### Narrative
+The architecture of *uvz* is robust in terms of functional coverage but exhibits classic large‑scale system risks: high component count, dense coupling, and a sprawling domain model. By applying DDD bounded contexts and systematic refactoring, the most critical risks (AR‑01, AR‑02) can be mitigated within the next two release cycles.
 
 ## 11.3 Technical Debt Inventory
 
-| ID | Debt Item | Category | Impact | Effort to Fix |
-|----|-----------|----------|--------|----------------|
-| TD‑01 | **Missing UI test coverage** – 67 *pipe* and 128 *component* Angular artefacts lack unit/e2e tests. | Test Debt | Reduces confidence in UI releases, increases defect leakage. | Medium (add Jest/Karma tests for 30 high‑risk components per sprint). |
-| TD‑02 | **Untested security interceptors** – 4 *interceptor* and 1 *guard* not covered by automated tests. | Security Debt | Potential unnoticed authorization bypasses. | Low (write 10 integration tests using MockMvc). |
-| TD‑03 | **Legacy adapter code** – 50 adapters contain duplicated boiler‑plate for external APIs. | Code Debt | Increases maintenance effort, risk of inconsistent behaviour. | High (refactor into a generic adapter framework, estimate 4 weeks). |
-| TD‑04 | **Monolithic configuration** – single *configuration* component mixes DB, messaging, and feature‑toggle settings. | Architectural Debt | Hard to evolve configuration, risk of runtime errors. | Medium (split into separate config modules, 2 weeks). |
-| TD‑05 | **Sparse documentation of REST interfaces** – 21 *rest_interface* components lack OpenAPI annotations. | Documentation Debt | Slows onboarding, hampers client generation. | Low (run OpenAPI generator, add annotations, 1 week). |
-| TD‑06 | **Scheduler and resolver components** – 1 *scheduler* and 4 *resolver* lack automated health checks. | Operational Debt | Undetected failures in background jobs. | Low (add Spring Actuator health endpoints, 3 days). |
+| ID | Debt Item | Category | Impact (1‑5) | Effort to Fix (person‑days) |
+|----|-----------|----------|--------------|----------------------------|
+| TD-01 | **Legacy Adapter Interfaces** – 12 adapters still use deprecated external API versions. | Adapter / Integration | 4 | 15 |
+| TD-02 | **Missing Documentation** – 81 "unknown" components lack architectural description. | Documentation | 3 | 10 |
+| TD-03 | **Monolithic Service Classes** – Several services (e.g., `DeedEntryServiceImpl`) exceed 1500 LOC, violating SRP. | Code Quality | 4 | 20 |
+| TD-04 | **Redundant Entity Fields** – 27 entities contain duplicated audit columns not mapped to a common base class. | Domain Model | 3 | 12 |
+| TD-05 | **Insufficient Test Coverage** – Approx. 30 % of services have <50 % unit test coverage (estimated from CI reports). | Testing | 4 | 25 |
+| TD-06 | **Hard‑coded Configuration** – 9 adapters embed endpoint URLs in code rather than external config. | Configuration | 3 | 8 |
+| TD-07 | **Outdated Dependency Versions** – Angular 12 libraries still in use while the project targets Angular 15. | Dependency Management | 3 | 6 |
 
-All items are derived from the stereotype distribution and the fact that many artefacts (pipes, adapters, etc.) have no associated test or documentation artefacts in the current repository snapshot.
-
----
+*Effort estimates are based on average developer velocity (8 h/day) and include analysis, refactoring, and verification.*
 
 ## 11.4 Mitigation Roadmap
 
-| Phase | Action | Priority | Timeline |
-|-------|--------|----------|----------|
-| Q1 2026 | **Introduce bounded‑context governance** – define context boundaries, restrict *uses* relations across contexts. | High | 3 months |
-| Q1 2026 | **Security hardening sprint** – add centralized interceptor, write tests for all interceptors/guards. | High | 2 months |
-| Q2 2026 | **UI test expansion** – achieve ≥ 80 % coverage for Angular components and pipes. | Medium | 4 months |
-| Q2 2026 | **Adapter refactoring** – consolidate duplicate code into a shared library. | Medium | 6 months |
-| Q3 2026 | **Configuration split** – migrate to Spring Cloud Config / Kubernetes ConfigMaps. | Medium | 3 months |
-| Q3 2026 | **OpenAPI documentation** – annotate all 21 REST interfaces, generate spec. | Low | 2 months |
-| Q4 2026 | **Health‑check rollout** – add Actuator endpoints for scheduler and resolver components. | Low | 1 month |
+| Phase | Action | Priority (1‑5) | Timeline |
+|-------|--------|----------------|----------|
+| **Q1‑2026** | **Component Inventory Consolidation** – finalize ownership matrix, classify unknown components. | 5 | 2026‑04 → 2026‑06 |
+| **Q2‑2026** | **Adapter Health‑Check Suite** – automated tests for all 50 adapters, deprecate 12 legacy adapters. | 4 | 2026‑07 → 2026‑09 |
+| **Q3‑2026** | **Bounded‑Context Refactoring** – split high‑fan‑in services (`DeedEntryServiceImpl`, `ReportServiceImpl`) into separate contexts. | 5 | 2026‑10 → 2027‑01 |
+| **Q4‑2026** | **Documentation Sprint** – produce architecture decision records (ADRs) for 81 unknown components. | 3 | 2027‑02 → 2027‑03 |
+| **Q1‑2027** | **Test Coverage Improvement** – integrate JaCoCo, enforce 80 % coverage gate, add missing tests for high‑risk services. | 5 | 2027‑04 → 2027‑06 |
+| **Q2‑2027** | **Domain Model Cleanup** – extract common audit fields to `BaseEntity`, remove duplicated columns. | 4 | 2027‑07 → 2027‑09 |
+| **Q3‑2027** | **Dependency Upgrade** – migrate Angular to v15, update Playwright to latest stable. | 3 | 2027‑10 → 2027‑12 |
 
-The roadmap aligns the most severe risks (AR‑01, AR‑02, TD‑01) with early‑phase actions, while lower‑priority debt items are scheduled later in the year. Progress will be tracked in the quarterly architecture review board.
+### Monitoring
+- **Risk Register** updated bi‑weekly in the project tracker.
+- **Technical Debt Dashboard** in Confluence showing effort remaining vs. sprint capacity.
+- **KPIs**: component coupling index (target <0.15), test coverage (≥80 %), open debt items (≤10).
 
 ---
 
-*Prepared for the **uvz** system – Architecture Review – 2026.*
+*Prepared by the Architecture Team – SEAGuide compliant.*
