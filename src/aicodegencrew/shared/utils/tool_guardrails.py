@@ -23,6 +23,8 @@ from crewai.hooks.tool_hooks import (
     unregister_before_tool_call_hook,
 )
 
+from .logger import log_metric
+
 logger = logging.getLogger(__name__)
 
 # Tools that are always allowed (output-producing tools)
@@ -68,6 +70,7 @@ class ToolCallTracker:
                     f"[GUARDRAIL] Blocked: {tool_name} called {identical_count}x "
                     f"with identical args. Synthesize and call doc_writer now."
                 )
+                log_metric("guardrail_blocked", tool_name=tool_name, reason="identical_call")
                 return False  # Block execution
 
         # Check total budget
@@ -76,6 +79,7 @@ class ToolCallTracker:
                 f"[GUARDRAIL] Budget exhausted ({self.max_total} calls). "
                 f"Blocked: {tool_name}. Agent must call doc_writer."
             )
+            log_metric("guardrail_blocked", tool_name=tool_name, reason="budget_exhausted")
             return False  # Block non-output tools
 
         # Allow and track

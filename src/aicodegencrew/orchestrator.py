@@ -19,7 +19,7 @@ from typing import Dict, List, Any, Optional, Protocol
 from datetime import datetime
 from dataclasses import dataclass, field
 
-from .shared.utils.logger import logger
+from .shared.utils.logger import logger, log_metric
 
 
 # =============================================================================
@@ -277,6 +277,8 @@ class SDLCOrchestrator:
         logger.info(f"[Phase] {phase_id} - Starting")
         logger.info(f"{'=' * 60}")
         
+        log_metric("phase_start", phase_id=phase_id)
+
         try:
             executable = self.phases[phase_id]
             config = self.get_phase_config(phase_id).get("config", {})
@@ -295,7 +297,8 @@ class SDLCOrchestrator:
             duration = (datetime.now() - start).total_seconds()
             
             logger.info(f"[Phase] {phase_id} - Completed in {duration:.2f}s")
-            
+            log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status="success")
+
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
             
@@ -310,7 +313,8 @@ class SDLCOrchestrator:
         except Exception as e:
             duration = (datetime.now() - start).total_seconds()
             logger.error(f"[Phase] {phase_id} - Failed: {e}", exc_info=True)
-            
+            log_metric("phase_failed", phase_id=phase_id, duration_seconds=round(duration, 2), error=str(e)[:500])
+
             return PhaseResult(
                 phase_id=phase_id,
                 status="failed",
@@ -405,15 +409,25 @@ class SDLCOrchestrator:
     def _build_result(self, status: str, message: str) -> PipelineResult:
         """Build final pipeline result."""
         total_duration = ""
+        total_seconds = 0.0
         if self._start_time:
             delta = datetime.now() - self._start_time
             total_duration = str(delta).split(".")[0]  # Remove microseconds
-        
+            total_seconds = delta.total_seconds()
+
         logger.info("=" * 60)
         logger.info(f"[Orchestrator] Pipeline {status.upper()}: {message}")
         logger.info(f"[Orchestrator] Duration: {total_duration}")
         logger.info("=" * 60)
-        
+
+        log_metric(
+            "pipeline_complete",
+            status=status,
+            total_duration=round(total_seconds, 2),
+            phases_run=len(self.results),
+            phases_succeeded=sum(1 for r in self.results.values() if r.is_success()),
+        )
+
         return PipelineResult(
             status=status,
             message=message,

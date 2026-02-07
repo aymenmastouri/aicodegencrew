@@ -3,8 +3,8 @@
 from .logger import (
     setup_logger,
     logger,
-    log_execution_start,
-    log_execution_end,
+    log_metric,
+    RUN_ID,
     step_start,
     step_done,
     step_fail,
@@ -19,8 +19,8 @@ from .tool_guardrails import install_guardrails, uninstall_guardrails
 __all__ = [
     "setup_logger",
     "logger",
-    "log_execution_start",
-    "log_execution_end",
+    "log_metric",
+    "RUN_ID",
     "step_start",
     "step_done",
     "step_fail",

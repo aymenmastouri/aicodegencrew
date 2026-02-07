@@ -232,7 +232,10 @@ class MiniCrewBase(ABC):
 | **Checkpoint Resume** | `.checkpoint_c4.json` / `.checkpoint_arc42.json` |
 | **Token Tracking** | Per mini-crew token usage with summary |
 | **MCP Singleton** | MCP server path resolved once, reused |
-| **Structured Metrics** | `log_metric()` writes to `metrics.jsonl` |
+| **Structured Metrics** | `log_metric()` writes to `metrics.jsonl` with `run_id` |
+| **Tool Guardrails** | Blocks identical/runaway tool calls via CrewAI hooks |
+| **Retry with Backoff** | Retries on `ConnectionError/TimeoutError/OSError` |
+| **Output Recovery** | Generates stub docs from facts on crew failure |
 
 ---
 
@@ -305,10 +308,11 @@ src/aicodegencrew/
         __init__.py
         validation.py                  # PhaseOutputValidator (inter-phase contracts)
         utils/
-            logger.py                  # Logger + JsonFormatter + log_metric()
+            logger.py                  # Logger + RUN_ID + JsonFormatter + log_metric()
+            tool_guardrails.py         # ToolCallTracker + install/uninstall hooks
+            crew_callbacks.py          # step_callback + task_callback (logger-based)
             token_budget.py            # Token budget configuration
             file_filters.py
-            crew_callbacks.py
             ollama_client.py
         models/
             __init__.py
@@ -1066,21 +1070,48 @@ python -m aicodegencrew run --phases phase3_architecture_synthesis
 
 ---
 
-## 9. Logging System
+## 9. Logging & Observability
 
-### 9.1 Log Structure
+### 9.1 Design Principles
+
+1. **Single output path**: Everything through `logger`, zero `print()` in production code
+2. **Structured metrics for every measurable event**: phases, crews, guardrails, tools
+3. **Run correlation**: `RUN_ID` (UUID) on every metric event for cross-event joining
+4. **Dead code removal**: No unused callback classes or alias wrappers
+
+### 9.2 Log Structure
 
 ```
 logs/
 ├── current.log          # Active session (overwritten each run)
-├── metrics.jsonl         # Structured JSON metrics (append-only)
-├── archive/             # Archived sessions (max 20)
-│   ├── 2026-02-03_11-30-00_session.log
+├── metrics.jsonl         # Structured JSON metrics (append-only, archived at 1MB)
+├── archive/             # Archived sessions + old metrics (max 20 session logs)
+│   ├── 2026-02-07_23-40-28_session.log
+│   ├── 2026-02-07_23-40-28_metrics.jsonl
 │   └── ...
 └── errors.log           # Persistent errors (rotating, 5MB x 3)
 ```
 
-### 9.2 Step Logging API
+### 9.3 Run Correlation
+
+Every process generates a `RUN_ID` (e.g. `a3f8b2c1`) — a short UUID injected into:
+- Every `log_metric()` event in `metrics.jsonl`
+- The session banner in `current.log`
+
+```
+============================================================
+SESSION START: 2026-02-07T23:40:28 | run_id=a3f8b2c1
+Log Level: INFO
+============================================================
+```
+
+This enables querying all events from a single pipeline run:
+```bash
+# Show all events from run a3f8b2c1
+python -c "import json; [print(json.loads(l)['data']) for l in open('logs/metrics.jsonl') if 'a3f8b2c1' in l]"
+```
+
+### 9.4 Step Logging API
 
 ```python
 from .shared.utils.logger import (
@@ -1091,41 +1122,59 @@ from .shared.utils.logger import (
     step_warn,      #        Warning message
     step_progress,  #        [██████░░░░] 5/10 - items
     log_metric,     # Structured JSON event → metrics.jsonl
+    RUN_ID,         # Short UUID for this process
 )
-
-# Step tracking example
-step_start("Phase 1: Indexing")
-step_info("Scanning repository...")
-step_progress(5, 10, "files")
-step_done()  # Auto-timing
-
-# Structured metric example
-log_metric("mini_crew_complete", crew="context", duration=180.5, tokens=1500)
 ```
 
-### 9.3 Structured Metrics (metrics.jsonl)
+### 9.5 Structured Metrics (metrics.jsonl)
 
-Each line in `metrics.jsonl` is a JSON object:
+Each line in `metrics.jsonl` is a JSON object with `run_id` for correlation:
 
 ```json
-{"ts": "2026-02-07T14:30:00", "level": "INFO", "logger": "aicodegencrew", "msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "crew_type": "C4", "crew_name": "context", "duration_seconds": 180.5, "total_tokens": 1500}}
+{"ts": "2026-02-07T14:30:00", "level": "INFO", "logger": "aicodegencrew", "msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "run_id": "a3f8b2c1", "crew_type": "C4", "crew_name": "context", "duration_seconds": 180.5, "total_tokens": 1500, "estimated": false}}
 ```
 
-Events logged:
-- `mini_crew_complete` — per mini-crew with timing and token usage
-- `phase_complete` — per phase with total duration
+#### Event Catalog
 
-### 9.4 Features
+| Event | Source | Key Fields |
+|-------|--------|------------|
+| `phase_start` | orchestrator | `phase_id` |
+| `phase_complete` | orchestrator | `phase_id`, `duration_seconds`, `status` |
+| `phase_failed` | orchestrator | `phase_id`, `duration_seconds`, `error` |
+| `pipeline_complete` | orchestrator | `status`, `total_duration`, `phases_run`, `phases_succeeded` |
+| `mini_crew_complete` | base_crew / crew.py | `crew_type`, `crew_name`, `duration_seconds`, `tasks`, `attempts`, `total_tokens`, `estimated` |
+| `mini_crew_failed` | base_crew / crew.py | `crew_type`, `crew_name`, `duration_seconds`, `error_type`, `error` |
+| `guardrail_blocked` | tool_guardrails | `tool_name`, `reason` (`identical_call` or `budget_exhausted`) |
+| `guardrail_summary` | base_crew / crew.py | `crew_name`, `total_calls`, `unique_calls`, `blocked` |
+
+All events share `run_id` for correlation.
+
+### 9.6 CrewAI Callbacks
+
+Agent step and task callbacks (`crew_callbacks.py`) route through `logger`:
+
+| Event | Log Level | Destination | Example |
+|-------|-----------|-------------|---------|
+| Agent thinking | `DEBUG` | File only | `[THINK] Architect: Analyzing macro...` |
+| Tool call | `INFO` | File + console | `[TOOL] get_statistics: {}` |
+| Tool result | `DEBUG` | File only | `[TOOL_RESULT] {"components": 738...}` |
+| Task completion | `INFO` | File + console | `[TASK] Completed: Analyze macro arch...` |
+
+### 9.7 Features
 
 | Feature | Description |
 |---------|-------------|
-| Session Archive | Auto-archives `current.log` to `archive/` on startup |
-| Step Tracking | Automatic timing per step |
-| Progress Bar | Visual progress with `step_progress()` |
-| Structured Metrics | JSON events in `metrics.jsonl` via `log_metric()` |
-| Unbuffered | Real-time log viewing |
-| Singleton | Logger initialized once |
-| MCP-Safe | Console logging disabled when `MCP_STDIO_MODE` is set |
+| **Run Correlation** | `RUN_ID` (uuid4[:8]) on every metric event |
+| **Session Archive** | Auto-archives `current.log` to `archive/` on startup |
+| **Metrics Archival** | Auto-archives `metrics.jsonl` at 1MB on startup |
+| **Step Tracking** | Automatic timing per step |
+| **Progress Bar** | Visual progress with `step_progress()` |
+| **Structured Metrics** | JSON events in `metrics.jsonl` via `log_metric()` |
+| **Guardrail Metrics** | Blocked tool calls + summary stats per crew |
+| **Token Tracking** | Real token counts when available, `estimated=true` as fallback |
+| **Unbuffered** | Real-time log viewing |
+| **Singleton** | Logger initialized once |
+| **MCP-Safe** | Console logging disabled when `MCP_STDIO_MODE` is set |
 
 ---
 

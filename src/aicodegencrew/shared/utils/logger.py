@@ -24,11 +24,15 @@ import os
 import shutil
 import sys
 import time
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import ClassVar
+
+# Short UUID per process — injected into every metric for cross-event correlation
+RUN_ID = str(uuid.uuid4())[:8]
 
 
 # =============================================================================
@@ -201,6 +205,19 @@ def archive_current_log() -> None:
         pass
 
 
+def _archive_metrics() -> None:
+    """Archive metrics.jsonl if > 1MB."""
+    if METRICS_LOG.exists():
+        try:
+            if METRICS_LOG.stat().st_size > 1_000_000:
+                ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+                ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                shutil.copy2(METRICS_LOG, ARCHIVE_DIR / f"{ts}_metrics.jsonl")
+                METRICS_LOG.write_text("", encoding="utf-8")
+        except OSError:
+            pass
+
+
 def cleanup_old_archives() -> int:
     """Remove old archive files. Returns number of files removed."""
     if not ARCHIVE_DIR.exists():
@@ -252,8 +269,9 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
         # Create directories
         LOG_DIR.mkdir(parents=True, exist_ok=True)
         
-        # Archive previous session
+        # Archive previous session and large metrics
         archive_current_log()
+        _archive_metrics()
         
         # ==========================================================================
         # Console Handler - Clean, readable format
@@ -329,7 +347,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
         
         # Log session start
         logger.info("=" * 60)
-        logger.info(f"SESSION START: {datetime.now().isoformat()}")
+        logger.info(f"SESSION START: {datetime.now().isoformat()} | run_id={RUN_ID}")
         logger.info(f"Log Level: {level.upper()}")
         logger.info("=" * 60)
     else:
@@ -389,6 +407,8 @@ def log_phase_end(phase: str, status: str = "success", duration: float = 0) -> N
 def log_metric(event: str, **data) -> None:
     """Log a structured metric event to metrics.jsonl.
 
+    Every event automatically includes ``run_id`` for cross-event correlation.
+
     Usage:
         log_metric("mini_crew_complete", crew="context", duration=12.3, tokens=1500)
         log_metric("phase_complete", phase="phase3", files_created=8)
@@ -396,13 +416,8 @@ def log_metric(event: str, **data) -> None:
     record = logger.makeRecord(
         logger.name, logging.INFO, "", 0, event, (), None,
     )
-    record.metric_data = {"event": event, **data}
+    record.metric_data = {"event": event, "run_id": RUN_ID, **data}
     logger.handle(record)
-
-
-# Backward compatibility aliases
-log_execution_start = log_phase_start
-log_execution_end = log_phase_end
 
 
 # =============================================================================

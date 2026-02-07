@@ -344,7 +344,8 @@ class MiniCrewBase(ABC):
                     duration_seconds=round(duration, 1),
                     tasks=len(tasks),
                     attempts=attempt,
-                    **token_info,
+                    total_tokens=token_info.get("total_tokens", 0),
+                    estimated=token_info.get("estimated", token_info.get("total_tokens", 0) == 0),
                 )
                 return result_str
 
@@ -378,6 +379,15 @@ class MiniCrewBase(ABC):
                 raise
 
             finally:
+                if tracker and tracker.calls:
+                    from ...shared.utils.logger import log_metric as _log_metric
+                    _log_metric(
+                        "guardrail_summary",
+                        crew_name=name,
+                        total_calls=len(tracker.calls),
+                        unique_calls=len(set(tracker.calls)),
+                        blocked=len(tracker.calls) - len(set(tracker.calls)),
+                    )
                 uninstall_guardrails(tracker)
 
         # Should never reach here, but satisfy type checker
