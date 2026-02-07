@@ -7,7 +7,7 @@ A Container in C4 terms is:
 - Runs as its own process
 
 Detection Strategy:
-1. Scan top-level directories for build files
+1. RECURSIVE scan for build files (package.json, build.gradle, pom.xml)
 2. Use DIRECTORY NAME as container name (not settings.gradle)
 3. Determine type from build system + markers
 4. Skip: node_modules, dist, build, deployment, .git, etc.
@@ -35,52 +35,83 @@ from ....shared.utils.logger import logger
 
 class ContainerCollector(DimensionCollector):
     """
-    Detects deployable containers by scanning for build files.
-    
+    Detects deployable containers by RECURSIVE scanning for build files.
+
     Key Principle: Directory name = Container name
     """
-    
+
     DIMENSION = "containers"
-    
+
     # Directories to completely skip
     SKIP_DIRS = {
         'node_modules', '.git', '__pycache__', 'dist', 'build', 'target',
         '.venv', 'venv', 'deployment', 'buildSrc', '.gradle', '.idea',
-        '.continue', 'test-results', 'coverage', '.nyc_output'
+        '.continue', 'test-results', 'coverage', '.nyc_output', 'bin',
+        'obj', 'out', '.cache', 'logs', 'tmp', 'temp'
     }
-    
+
     # Directories that indicate test containers
     TEST_DIR_PATTERNS = {'e2e', 'test', 'tests', 'integration-test', 'it'}
-    
+
+    # Maximum recursion depth for sub-project detection
+    MAX_DEPTH = 5
+
     def collect(self) -> CollectorOutput:
-        """Collect container facts by scanning build files."""
+        """Collect container facts by RECURSIVELY scanning build files."""
         self._log_start()
-        
+
         detected: Dict[str, RawContainer] = {}  # name -> container
-        
-        # Strategy 1: Scan top-level directories for build files
-        self._scan_top_level_dirs(detected)
-        
+
+        # Strategy 1: RECURSIVE scan for build files at all levels
+        self._scan_recursive(self.repo_path, detected, depth=0)
+
         # Strategy 2: Detect from docker-compose (databases, external)
         self._detect_from_docker_compose(detected)
-        
+
         # Add all detected containers
         for container in detected.values():
             self.output.add_fact(container)
-        
+
+        logger.info(f"[ContainerCollector] Total containers found: {len(detected)}")
         self._log_end()
         return self.output
-    
+
+    def _scan_recursive(self, current_path: Path, detected: Dict[str, RawContainer], depth: int):
+        """Recursively scan directories for containers (sub-projects)."""
+        if depth > self.MAX_DEPTH:
+            return
+
+        # Check if current directory is a container
+        container = self._detect_container_in_dir(current_path)
+        if container and container.name not in detected:
+            detected[container.name] = container
+            logger.info(f"[ContainerCollector] Found {container.type}: {container.name} ({container.technology}) at depth {depth}")
+
+        # Recurse into subdirectories
+        try:
+            for item in current_path.iterdir():
+                if not item.is_dir():
+                    continue
+
+                # Skip excluded directories
+                if item.name in self.SKIP_DIRS or item.name.startswith('.'):
+                    continue
+
+                # Recurse
+                self._scan_recursive(item, detected, depth + 1)
+        except PermissionError:
+            pass  # Skip directories we can't access
+
     def _scan_top_level_dirs(self, detected: Dict[str, RawContainer]):
-        """Scan top-level directories for containers."""
+        """Scan top-level directories for containers (legacy, replaced by _scan_recursive)."""
         for item in self.repo_path.iterdir():
             if not item.is_dir():
                 continue
-            
+
             # Skip excluded directories
             if item.name in self.SKIP_DIRS or item.name.startswith('.'):
                 continue
-            
+
             # Check for build files
             container = self._detect_container_in_dir(item)
             if container and container.name not in detected:

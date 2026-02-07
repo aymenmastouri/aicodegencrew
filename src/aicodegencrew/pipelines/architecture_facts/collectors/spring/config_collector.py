@@ -4,7 +4,11 @@ SpringConfigCollector - Extracts configuration facts.
 Detects:
 - @Configuration classes
 - @Bean definitions
-- application.yml / application.properties
+- application.yml / application.properties in multiple locations:
+  - src/main/resources
+  - distResources (environment-specific configs)
+  - config/ directories
+  - Any nested resources directories
 - Spring profiles
 - Property sources
 
@@ -13,7 +17,7 @@ Output feeds -> infrastructure.json (config components)
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from ..base import DimensionCollector, CollectorOutput, RawComponent, RawInfraFact
 from .....shared.utils.logger import logger
@@ -21,19 +25,36 @@ from .....shared.utils.logger import logger
 
 class SpringConfigCollector(DimensionCollector):
     """
-    Extracts Spring configuration facts.
+    Extracts Spring configuration facts from multiple locations.
     """
-    
+
     DIMENSION = "spring_config"
-    
+
     # Patterns
     CONFIGURATION_PATTERN = re.compile(r'@Configuration')
     BEAN_PATTERN = re.compile(r'@Bean')
     CLASS_PATTERN = re.compile(r'^(?:public\s+)?class\s+([A-Z]\w*)', re.MULTILINE)
-    
+
     # Profile patterns
     PROFILE_PATTERN = re.compile(r'@Profile\s*\(\s*["\']([^"\']+)["\']')
     CONDITIONAL_PATTERN = re.compile(r'@Conditional\w+')
+
+    # Config file search directories (relative to repo root)
+    CONFIG_SEARCH_DIRS = [
+        "src/main/resources",
+        "src/test/resources",
+        "distResources",
+        "config",
+        "configs",
+        "configuration",
+        "resources",
+        "env",
+        "environments",
+        "profiles",
+    ]
+
+    # Skip directories
+    SKIP_DIRS = {'node_modules', 'dist', 'build', 'target', '.git', 'bin', 'generated'}
     
     def __init__(self, repo_path: Path, container_id: str = "backend"):
         super().__init__(repo_path)
@@ -114,7 +135,7 @@ class SpringConfigCollector(DimensionCollector):
             self.output.add_fact(config)
     
     def _collect_config_files(self):
-        """Collect application.yml/properties files."""
+        """Collect application.yml/properties files from ALL possible locations."""
         config_patterns = [
             "application.yml",
             "application.yaml",
@@ -124,76 +145,147 @@ class SpringConfigCollector(DimensionCollector):
             "application-*.properties",
             "bootstrap.yml",
             "bootstrap.yaml",
+            "bootstrap-*.yml",
+            "bootstrap-*.yaml",
         ]
-        
+
+        found_files: Set[Path] = set()
+
+        # Strategy 1: Search in known config directories
+        for config_dir in self.CONFIG_SEARCH_DIRS:
+            for search_path in self.repo_path.rglob(config_dir):
+                if not search_path.is_dir():
+                    continue
+                if self._should_skip_path(search_path):
+                    continue
+
+                for pattern in config_patterns:
+                    for config_file in search_path.glob(pattern):
+                        found_files.add(config_file)
+
+                # Also check subdirectories (e.g., distResources/dev/, distResources/prod/)
+                for subdir in search_path.iterdir():
+                    if subdir.is_dir() and not self._should_skip_path(subdir):
+                        for pattern in config_patterns:
+                            for config_file in subdir.glob(pattern):
+                                found_files.add(config_file)
+
+        # Strategy 2: Global recursive search for any config files
         for pattern in config_patterns:
-            config_files = self._find_files(pattern)
-            
-            for config_file in config_files:
-                rel_path = self._relative_path(config_file)
-                
-                # Determine profile from filename
-                profile = None
-                if "-" in config_file.stem:
-                    parts = config_file.stem.split("-", 1)
-                    if len(parts) > 1 and parts[0] == "application":
-                        profile = parts[1]
-                
-                config = RawInfraFact(
-                    name=config_file.name,
-                    type="config_file",
-                    category="configuration",
-                )
-                
-                if profile:
-                    config.metadata["profile"] = profile
-                
-                # Extract some key properties
-                content = self._read_file_content(config_file)
-                config.metadata["size_lines"] = content.count('\n')
-                
-                # Look for common properties
-                props_found = []
-                if "spring.datasource" in content:
-                    props_found.append("datasource")
-                if "spring.jpa" in content:
-                    props_found.append("jpa")
-                if "spring.security" in content:
-                    props_found.append("security")
-                if "spring.kafka" in content or "spring.rabbitmq" in content:
-                    props_found.append("messaging")
-                if "spring.cloud" in content:
-                    props_found.append("cloud")
-                
-                if props_found:
-                    config.metadata["configures"] = props_found
-                
-                config.add_evidence(
-                    path=rel_path,
-                    line_start=1,
-                    line_end=min(20, content.count('\n')),
-                    reason=f"Spring config file: {config_file.name}"
-                )
-                
-                self.output.add_fact(config)
+            for config_file in self.repo_path.rglob(pattern):
+                if not self._should_skip_path(config_file):
+                    found_files.add(config_file)
+
+        logger.info(f"[SpringConfigCollector] Found {len(found_files)} config files")
+
+        # Process all found files
+        for config_file in sorted(found_files):
+            self._process_config_file(config_file)
+
+    def _should_skip_path(self, path: Path) -> bool:
+        """Check if path should be skipped."""
+        path_str = str(path).lower()
+        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
+
+    def _process_config_file(self, config_file: Path):
+        """Process a single config file."""
+        rel_path = self._relative_path(config_file)
+
+        # Determine profile from filename
+        profile = None
+        if "-" in config_file.stem:
+            parts = config_file.stem.split("-", 1)
+            if len(parts) > 1 and parts[0] in ("application", "bootstrap"):
+                profile = parts[1]
+
+        # Determine environment from path (e.g., distResources/dev/ -> dev)
+        environment = None
+        path_parts = rel_path.replace("\\", "/").split("/")
+        for part in path_parts:
+            if part.lower() in ('dev', 'test', 'stage', 'staging', 'prod', 'production',
+                                'local', 'docker', 'kubernetes', 'k8s', 'integration', 'qa'):
+                environment = part.lower()
+                break
+
+        config = RawInfraFact(
+            name=config_file.name,
+            type="config_file",
+            category="configuration",
+        )
+
+        # Set metadata
+        config.metadata["path"] = rel_path
+        if profile:
+            config.metadata["profile"] = profile
+        if environment:
+            config.metadata["environment"] = environment
+
+        # Extract some key properties
+        content = self._read_file_content(config_file)
+        config.metadata["size_lines"] = content.count('\n')
+
+        # Look for common properties
+        props_found = []
+        if "spring.datasource" in content:
+            props_found.append("datasource")
+        if "spring.jpa" in content:
+            props_found.append("jpa")
+        if "spring.security" in content:
+            props_found.append("security")
+        if "spring.kafka" in content or "spring.rabbitmq" in content:
+            props_found.append("messaging")
+        if "spring.cloud" in content:
+            props_found.append("cloud")
+        if "oracle" in content.lower():
+            props_found.append("oracle")
+        if "server.port" in content:
+            props_found.append("server")
+
+        if props_found:
+            config.metadata["configures"] = props_found
+
+        config.add_evidence(
+            path=rel_path,
+            line_start=1,
+            line_end=min(20, content.count('\n')),
+            reason=f"Spring config: {config_file.name}" + (f" (env: {environment})" if environment else "") + (f" (profile: {profile})" if profile else "")
+        )
+
+        self.output.add_fact(config)
+        logger.debug(f"[SpringConfigCollector] Processed: {rel_path}")
     
     def _collect_profiles(self):
-        """Collect Spring profiles from config files."""
-        profiles_found = set()
-        
-        # From application-{profile}.yml files
-        for pattern in ["application-*.yml", "application-*.yaml", "application-*.properties"]:
-            for f in self._find_files(pattern):
+        """Collect Spring profiles from config files and annotations."""
+        profiles_found: Set[str] = set()
+        environments_found: Set[str] = set()
+
+        # From application-{profile}.yml files (recursive search)
+        for pattern in ["application-*.yml", "application-*.yaml", "application-*.properties",
+                        "bootstrap-*.yml", "bootstrap-*.yaml"]:
+            for f in self.repo_path.rglob(pattern):
+                if self._should_skip_path(f):
+                    continue
                 parts = f.stem.split("-", 1)
                 if len(parts) > 1:
                     profiles_found.add(parts[1])
-        
+
         # From @Profile annotations
         for java_file in self._find_files("*.java"):
             content = self._read_file_content(java_file)
             for match in self.PROFILE_PATTERN.finditer(content):
                 profiles_found.add(match.group(1))
-        
+
+        # From directory names (e.g., distResources/dev/, environments/prod/)
+        env_dir_names = {'dev', 'test', 'stage', 'staging', 'prod', 'production',
+                         'local', 'docker', 'kubernetes', 'k8s', 'integration', 'qa'}
+        for config_dir in self.CONFIG_SEARCH_DIRS:
+            for search_path in self.repo_path.rglob(config_dir):
+                if not search_path.is_dir():
+                    continue
+                for subdir in search_path.iterdir():
+                    if subdir.is_dir() and subdir.name.lower() in env_dir_names:
+                        environments_found.add(subdir.name.lower())
+
         # Create profile facts
         for profile in profiles_found:
             profile_fact = RawInfraFact(
@@ -202,8 +294,18 @@ class SpringConfigCollector(DimensionCollector):
                 category="configuration",
                 metadata={"profile_name": profile}
             )
-            
             profile_fact.tags.append(f"profile:{profile}")
-            
             self.output.add_fact(profile_fact)
             logger.info(f"[SpringConfigCollector] Found profile: {profile}")
+
+        # Create environment facts
+        for env in environments_found:
+            env_fact = RawInfraFact(
+                name=f"environment-{env}",
+                type="environment",
+                category="configuration",
+                metadata={"environment_name": env}
+            )
+            env_fact.tags.append(f"env:{env}")
+            self.output.add_fact(env_fact)
+            logger.info(f"[SpringConfigCollector] Found environment: {env}")

@@ -32,6 +32,7 @@ from .runtime_collector import RuntimeCollector
 from .infrastructure_collector import InfrastructureCollector
 from .dependency_collector import DependencyCollector
 from .workflow_collector import WorkflowCollector
+from .techstack_version_collector import TechStackVersionCollector
 from .evidence_collector import EvidenceCollector
 
 from ....shared.utils.logger import logger
@@ -70,13 +71,16 @@ class DimensionResults:
     
     # Workflows (state machines, BPMN, NgRx, etc.)
     workflows: List[RawFact] = field(default_factory=list)
-    
+
+    # Technology versions (for upgrade planning)
+    tech_versions: List[RawFact] = field(default_factory=list)
+
     # All relations (hints for model builder)
     relation_hints: List[Dict] = field(default_factory=list)
-    
+
     # Evidence map
     evidence: Dict[str, RawEvidence] = field(default_factory=dict)
-    
+
     def get_statistics(self) -> Dict[str, int]:
         """Get counts for all dimensions."""
         return {
@@ -91,6 +95,7 @@ class DimensionResults:
             "infrastructure_facts": len(self.infrastructure),
             "dependencies": len(self.dependencies),
             "workflows": len(self.workflows),
+            "tech_versions": len(self.tech_versions),
             "relation_hints": len(self.relation_hints),
             "evidence_items": len(self.evidence),
         }
@@ -211,11 +216,15 @@ class CollectorOrchestrator:
         self._run_dependency_collector()
         
         # 9. Workflows extraction
-        logger.info("[CollectorOrchestrator] Step 9/10: Workflows extraction...")
+        logger.info("[CollectorOrchestrator] Step 9/11: Workflows extraction...")
         self._run_workflow_collector()
-        
-        # 10. Evidence aggregation
-        logger.info("[CollectorOrchestrator] Step 10/10: Evidence aggregation...")
+
+        # 10. Technology versions extraction
+        logger.info("[CollectorOrchestrator] Step 10/11: Technology versions extraction...")
+        self._run_techstack_version_collector()
+
+        # 11. Evidence aggregation
+        logger.info("[CollectorOrchestrator] Step 11/11: Evidence aggregation...")
         self._aggregate_evidence()
         
         # Log statistics
@@ -462,21 +471,45 @@ class CollectorOrchestrator:
         """Run WorkflowCollector for state machines, BPMN, NgRx, etc."""
         collector = WorkflowCollector(self.repo_path)
         output = collector.collect()
-        
+
         # Add workflow facts
         self.results.workflows.extend(output.facts)
-        
+
         # Add relation hints
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Extracted {len(output.facts)} workflows")
-        
+
         # Write workflows.json
         workflows_out = [self._fact_to_dict(w) for w in self.results.workflows]
         self._write_json("workflows.json", workflows_out)
+
+    def _run_techstack_version_collector(self) -> None:
+        """Run TechStackVersionCollector for technology versions (upgrade planning)."""
+        collector = TechStackVersionCollector(self.repo_path)
+        output = collector.collect()
+
+        # Add tech version facts
+        self.results.tech_versions.extend(output.facts)
+
+        # Add evidence
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} technology versions")
+
+        # Write tech_versions.json
+        versions_out = []
+        for fact in self.results.tech_versions:
+            versions_out.append({
+                "technology": getattr(fact, 'technology', fact.name),
+                "version": getattr(fact, 'version', ''),
+                "category": getattr(fact, 'category', ''),
+                "source_file": getattr(fact, 'source_file', ''),
+            })
+        self._write_json("tech_versions.json", versions_out)
 
     def _aggregate_evidence(self) -> None:
         """Build final evidence map."""
@@ -521,6 +554,12 @@ class CollectorOrchestrator:
             "infrastructure": [self._fact_to_dict(i) for i in self.results.infrastructure],
             "dependencies": [self._fact_to_dict(d) for d in self.results.dependencies],
             "workflows": [self._fact_to_dict(w) for w in self.results.workflows],
+            "tech_versions": [{
+                "technology": getattr(v, 'technology', v.name),
+                "version": getattr(v, 'version', ''),
+                "category": getattr(v, 'category', ''),
+                "source_file": getattr(v, 'source_file', ''),
+            } for v in self.results.tech_versions],
             "evidence": {k: v.to_dict() if hasattr(v, 'to_dict') else v for k, v in self.results.evidence.items()},
             "statistics": self.results.get_statistics(),
         }

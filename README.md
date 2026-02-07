@@ -156,36 +156,12 @@ python -m aicodegencrew list
 
 ## Quick Start
 
-### Analyze a Repository (Full Workflow)
-
 ```bash
-# Set the target repository
-# In .env: PROJECT_PATH=/path/to/your/repo
+# Set the target repository in .env:
+#   PROJECT_PATH=/path/to/your/repo
 
 # Run the complete architecture workflow (Phases 0-3)
 python -m aicodegencrew run --preset architecture_workflow
-```
-
-### Facts Only (No LLM Required)
-
-```bash
-python -m aicodegencrew run --preset facts_only
-```
-
-### Step by Step
-
-```bash
-# Step 1: Index the repository into ChromaDB
-python -m aicodegencrew run --phases phase0_indexing
-
-# Step 2: Extract architecture facts (deterministic, no LLM)
-python -m aicodegencrew run --phases phase1_architecture_facts
-
-# Step 3: AI analysis of architecture patterns
-python -m aicodegencrew run --phases phase2_architecture_analysis
-
-# Step 4: Generate C4 + arc42 documentation
-python -m aicodegencrew run --phases phase3_architecture_synthesis
 ```
 
 ---
@@ -262,35 +238,157 @@ python -m aicodegencrew <command> [options]
 
 | Command | Description |
 |---------|-------------|
-| `run` | Execute pipeline phases |
+| `run` | Execute pipeline phases (presets or explicit phase list) |
+| `index` | Run indexing only (shortcut for Phase 0) |
 | `list` | List available phases and presets |
-| `index` | Run indexing only (shortcut) |
 
-### Options for `run`
+### `run` Options
 
 | Option | Description |
 |--------|-------------|
-| `--preset <name>` | Run a predefined preset (e.g., `architecture_workflow`) |
+| `--preset <name>` | Run a predefined preset (see table below) |
 | `--phases <p1> [p2] ...` | Run specific phases by name |
 | `--index-mode <mode>` | Override `INDEX_MODE` (`off` / `auto` / `force` / `smart`) |
+| `--repo-path <path>` | Override `PROJECT_PATH` from `.env` |
+| `--clean` | Clean knowledge directories before running |
+| `--no-clean` | Skip auto-cleaning of knowledge directories |
+| `--config <path>` | Custom path to `phases_config.yaml` |
+
+### `index` Options
+
+| Option | Description |
+|--------|-------------|
+| `--mode <mode>`, `-m` | Indexing mode (`off` / `auto` / `force` / `smart`) |
+| `--force`, `-f` | Force re-index (shortcut for `--mode force`) |
+| `--smart`, `-s` | Smart incremental (shortcut for `--mode smart`) |
+| `--repo <path>` | Repository path (overrides `PROJECT_PATH`) |
+
+### `list` Options
+
+| Option | Description |
+|--------|-------------|
+| `--config <path>` | Custom path to `phases_config.yaml` |
+
+### Index Modes
+
+| Mode | Behavior |
+|------|----------|
+| `off` | Skip indexing entirely, use existing ChromaDB index |
+| `auto` | Index only if repo changed (fingerprint check). Persistent state survives ChromaDB deletion |
+| `smart` | Always run, but only re-embed files whose content hash changed |
+| `force` | Delete ChromaDB and re-index everything from scratch |
 
 ### Examples
 
-```bash
-# List all phases and presets
-python -m aicodegencrew list
+#### Presets (recommended)
 
-# Run full architecture workflow
+```bash
+# Full architecture documentation (Phases 0-3) — most common
 python -m aicodegencrew run --preset architecture_workflow
 
-# Run specific phases
+# Facts only — no LLM needed (Phases 0-1)
+python -m aicodegencrew run --preset facts_only
+
+# Facts + AI analysis, no synthesis (Phases 0-2)
+python -m aicodegencrew run --preset analysis_only
+
+# Index repository only (Phase 0)
+python -m aicodegencrew run --preset indexing_only
+
+# Architecture + review/consistency (Phases 0-4)
+python -m aicodegencrew run --preset architecture_full
+
+# All phases end-to-end (Phases 0-8)
+python -m aicodegencrew run --preset full_pipeline
+```
+
+#### Running Individual Phases
+
+```bash
+# Phase 0: Index repository into ChromaDB
+python -m aicodegencrew run --phases phase0_indexing
+
+# Phase 1: Extract architecture facts (deterministic, no LLM)
+python -m aicodegencrew run --phases phase1_architecture_facts
+
+# Phase 2: AI analysis of architecture patterns
+python -m aicodegencrew run --phases phase2_architecture_analysis
+
+# Phase 3: Generate C4 + arc42 documentation
+python -m aicodegencrew run --phases phase3_architecture_synthesis
+```
+
+#### Combining Phases
+
+```bash
+# Run Phase 0 + Phase 1 together
 python -m aicodegencrew run --phases phase0_indexing phase1_architecture_facts
 
-# Force re-index then run facts
-python -m aicodegencrew run --preset facts_only --index-mode force
+# Run Phase 2 + Phase 3 (skip indexing/facts if already done)
+python -m aicodegencrew run --phases phase2_architecture_analysis phase3_architecture_synthesis --index-mode off
 
-# Index only with forced rebuild
+# Re-run synthesis only (skip earlier phases)
+python -m aicodegencrew run --phases phase3_architecture_synthesis --index-mode off
+```
+
+#### Indexing Control
+
+```bash
+# Auto-index (skip if unchanged, default)
+python -m aicodegencrew run --preset architecture_workflow --index-mode auto
+
+# Force full re-index + run all phases
+python -m aicodegencrew run --preset architecture_workflow --index-mode force
+
+# Skip indexing entirely (use existing ChromaDB)
+python -m aicodegencrew run --preset architecture_workflow --index-mode off
+
+# Smart incremental index (only changed files)
+python -m aicodegencrew run --preset facts_only --index-mode smart
+```
+
+#### Index Command (Shortcut)
+
+```bash
+# Auto-index (default)
+python -m aicodegencrew index
+
+# Force re-index
 python -m aicodegencrew index --force
+python -m aicodegencrew index -f
+
+# Smart incremental
+python -m aicodegencrew index --smart
+python -m aicodegencrew index -s
+
+# Explicit mode
+python -m aicodegencrew index --mode force
+
+# Index a different repository
+python -m aicodegencrew index --repo C:\repos\my-project
+```
+
+#### Clean Runs
+
+```bash
+# Clean knowledge directory + run full workflow
+python -m aicodegencrew run --preset architecture_workflow --clean
+
+# Force re-index + clean + full workflow (completely fresh start)
+python -m aicodegencrew run --preset architecture_workflow --index-mode force --clean
+
+# Run facts without auto-cleaning previous outputs
+python -m aicodegencrew run --preset facts_only --no-clean
+```
+
+#### Other Repository
+
+```bash
+# Analyze a different repository
+python -m aicodegencrew run --preset architecture_workflow --repo-path C:\repos\other-project
+
+# List available phases and presets
+python -m aicodegencrew list
 ```
 
 ---
@@ -417,7 +515,7 @@ aicodegencrew/
 │   │
 │   ├── pipelines/                  # Deterministic Pipelines (no LLM)
 │   │   ├── indexing/               # Phase 0: ChromaDB vector indexing
-│   │   │   ├── pipeline.py
+│   │   │   ├── indexing_pipeline.py #  IndexingPipeline + IndexingState + ensure_repo_indexed
 │   │   │   ├── chroma_index_tool.py
 │   │   │   ├── chunker_tool.py
 │   │   │   └── embeddings_tool.py

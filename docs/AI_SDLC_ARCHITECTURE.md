@@ -330,9 +330,9 @@ src/aicodegencrew/
 | Attribute | Specification |
 |-----------|---------------|
 | Type | Pipeline (deterministic) |
-| Module | `pipelines/indexing/pipeline.py` |
+| Module | `pipelines/indexing/indexing_pipeline.py` |
 | LLM Requirement | None (embeddings only) |
-| Output | `.cache/.chroma` (ChromaDB) |
+| Output | `.cache/.chroma` (ChromaDB) + `.cache/.indexing_state.json` |
 | Dependency | None |
 | Status | Implemented |
 
@@ -997,9 +997,9 @@ Embeddings utilize local Ollama exclusively, independent of LLM provider configu
 | Mode | Description |
 |------|-------------|
 | `off` | Skip indexing; utilize existing index |
-| `auto` | Conditional indexing based on change detection (default) |
-| `force` | Clear cache and perform complete re-indexing |
-| `smart` | Incremental update for modified files only |
+| `auto` | Conditional indexing based on change detection (default). Persistent state (`.cache/.indexing_state.json`) survives ChromaDB deletion — warns instead of silently re-indexing |
+| `force` | Clear ChromaDB directory and perform complete re-indexing |
+| `smart` | Incremental update — per-file hash check against ChromaDB, only re-embeds changed files |
 
 ---
 

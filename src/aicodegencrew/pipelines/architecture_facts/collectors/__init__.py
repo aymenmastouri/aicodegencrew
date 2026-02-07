@@ -90,6 +90,10 @@ from .database import (
     MigrationCollector,
 )
 
+# Cross-cutting Collectors
+from .workflow_collector import WorkflowCollector
+from .techstack_version_collector import TechStackVersionCollector
+
 # Orchestrator
 from .orchestrator import CollectorOrchestrator, DimensionResults
 
@@ -137,6 +141,9 @@ __all__ = [
     "OracleViewCollector",
     "OracleProcedureCollector",
     "MigrationCollector",
+    # Cross-cutting
+    "WorkflowCollector",
+    "TechStackVersionCollector",
     # Orchestrator
     "CollectorOrchestrator",
     "DimensionResults",

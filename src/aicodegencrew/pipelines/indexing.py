@@ -9,11 +9,13 @@ from .indexing import (
     ensure_repo_indexed,
     IndexingConfig,
     IndexingMetrics,
+    IndexingState,
 )
 
 __all__ = [
     "IndexingPipeline",
     "ensure_repo_indexed",
-    "IndexingConfig", 
+    "IndexingConfig",
     "IndexingMetrics",
+    "IndexingState",
 ]

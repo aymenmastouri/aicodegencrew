@@ -29,7 +29,7 @@ phases:
   # PIPELINE: Phase 0 - Repository Indexing
   # =========================================================================
   # Type:      Pipeline (no AI, only embeddings)
-  # Location:  pipelines/indexing.py
+  # Location:  pipelines/indexing/indexing_pipeline.py
   # Control:   INDEX_MODE in .env (off/auto/force/smart)
   # Output:    .cache/.chroma (ChromaDB vector store)
   # =========================================================================
