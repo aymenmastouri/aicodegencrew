@@ -38,13 +38,40 @@ from ..architecture_analysis.tools import RAGQueryTool
 logger = logging.getLogger(__name__)
 
 
-# Shared tool instruction for all doc-writing tasks
+# Shared tool instruction for all doc-writing tasks (with few-shot example)
 TOOL_INSTRUCTION = """
 CRITICAL INSTRUCTION: You MUST use the doc_writer tool to write the output file.
 Do NOT include the full document in your response text.
-STEP 1: Use MCP tools to gather data.
-STEP 2: Use doc_writer(file_path="...", content="...") to write the complete document.
-STEP 3: Respond with a brief confirmation that the file was written.
+
+## CORRECT EXECUTION PATTERN (follow this exactly):
+
+Step 1: Call MCP tools to gather REAL data (2-4 tool calls).
+Step 2: Call doc_writer(file_path="<path>", content="# Full markdown document...") ONCE.
+Step 3: Respond ONLY with a short confirmation message.
+
+## EXAMPLE OF CORRECT EXECUTION:
+
+Call 1: get_statistics()
+  -> Result: {{"components": 738, "containers": 4, "interfaces": 45, "relations": 169}}
+Call 2: get_architecture_summary()
+  -> Result: {{"primary_style": "Layered Architecture", "patterns": ["MVC", "Repository", ...]}}
+Call 3: list_components_by_stereotype(stereotype="service")
+  -> Result: [{{"name": "DeedEntryServiceImpl", "package": "backend.deedentry_logic_impl"}}, ...]
+Call 4: doc_writer(file_path="arc42/01-introduction.md", content="# 01 - Introduction and Goals\\n\\n## 1.1 Requirements Overview\\n\\nThe system uvz is a deed-entry management platform...")
+  -> Result: "File written successfully"
+Your response: "File arc42/01-introduction.md written successfully (8 pages)."
+
+## WRONG (do NOT do these):
+- Writing the document content directly in your response text
+- Returning JSON like {{"file_path": "...", "content": "..."}} as text
+- Calling get_architecture_summary() more than 2 times (no loops!)
+- NOT calling doc_writer at all
+- Calling the same MCP tool repeatedly without making progress
+
+## RIGHT:
+- Call MCP tools 2-4 times to gather data
+- Call doc_writer ONCE with the COMPLETE document as the content parameter
+- Your response is ONLY a short confirmation message
 """
 
 
@@ -239,7 +266,12 @@ class MiniCrewBase(ABC):
     # MINI-CREW EXECUTION
     # -------------------------------------------------------------------------
 
-    def _run_mini_crew(self, name: str, tasks: list[Task]) -> str:
+    def _run_mini_crew(
+        self,
+        name: str,
+        tasks: list[Task],
+        expected_files: list[str] | None = None,
+    ) -> str:
         """
         Run a Mini-Crew with fresh context.
 
@@ -247,6 +279,13 @@ class MiniCrewBase(ABC):
         preventing the context overflow that occurs with many sequential tasks.
 
         Records checkpoint with timing for resume capability.
+
+        Args:
+            name: Mini-crew identifier for logging/checkpointing.
+            tasks: Tasks to execute.
+            expected_files: Optional list of output files to validate after
+                completion. If files are missing but the result contains
+                markdown content, the result is written as a fallback.
         """
         logger.info(f"[{self.crew_name}] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
         start_time = time.time()
@@ -272,6 +311,11 @@ class MiniCrewBase(ABC):
                 f"({duration:.1f}s, ~{token_info.get('total_tokens', '?')} tokens)"
             )
 
+            # Validate expected output files and fallback-write if needed
+            result_str = str(result)
+            if expected_files:
+                self._validate_and_fallback(name, result_str, expected_files)
+
             # Record checkpoint, persist, and log metric
             checkpoint = {
                 "crew": name,
@@ -294,7 +338,7 @@ class MiniCrewBase(ABC):
                 **token_info,
             )
 
-            return str(result)
+            return result_str
 
         except Exception as e:
             duration = time.time() - start_time
@@ -310,6 +354,82 @@ class MiniCrewBase(ABC):
                 "error": str(e),
             })
             raise
+
+    # -------------------------------------------------------------------------
+    # OUTPUT VALIDATION
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _extract_content(result: str) -> str:
+        """Extract markdown content from result, handling JSON tool-call wrappers.
+
+        The on-prem model sometimes returns the doc_writer tool-call arguments
+        as JSON in its response text instead of actually calling the tool:
+            {"file_path": "arc42/05-building-blocks.md", "content": "# 05 ..."}
+        This extracts the 'content' field so we write clean markdown.
+        """
+        stripped = result.strip()
+        if stripped.startswith("{") and '"content"' in stripped:
+            import re
+            match = re.search(r'"content"\s*:\s*"', stripped)
+            if match:
+                start = match.end()
+                raw = stripped[start:].rstrip('"}\n\r\t ').rstrip("\\")
+                content = raw.replace("\\n", "\n").replace("\\t", "\t").replace('\\"', '"')
+                if len(content) > 200:
+                    return content
+        return result
+
+    def _validate_and_fallback(
+        self, crew_name: str, result: str, expected_files: list[str]
+    ) -> None:
+        """Check expected output files exist; fallback-write from result if not.
+
+        When the agent writes doc content in its response instead of using
+        the doc_writer tool, the crew 'completes' but no file is written.
+        This detects that and writes the result as a last resort.
+
+        Also handles JSON-wrapped content where the agent returns the
+        tool-call arguments as text instead of actually executing the tool.
+        """
+        base = Path("knowledge/architecture")
+        for file_path in expected_files:
+            full = base / file_path
+
+            # Check if file exists and has content (possibly JSON-wrapped)
+            if full.exists() and full.stat().st_size > 100:
+                # Fix JSON-wrapped files in-place
+                try:
+                    with open(full, "r", encoding="utf-8") as f:
+                        existing = f.read()
+                    if existing.strip().startswith("{") and '"content"' in existing:
+                        cleaned = self._extract_content(existing)
+                        if cleaned != existing:
+                            with open(full, "w", encoding="utf-8") as f:
+                                f.write(cleaned)
+                            logger.info(
+                                f"[{self.crew_name}] {crew_name}: Fixed JSON-wrapped "
+                                f"{file_path} ({len(cleaned)} chars)"
+                            )
+                except Exception:
+                    pass
+                continue
+
+            # File missing — try fallback from result
+            content = self._extract_content(result)
+            if len(content) > 500 and ("# " in content or "## " in content):
+                logger.warning(
+                    f"[{self.crew_name}] {crew_name}: {file_path} NOT written by agent! "
+                    f"Fallback-writing {len(content)} chars from result."
+                )
+                full.parent.mkdir(parents=True, exist_ok=True)
+                with open(full, "w", encoding="utf-8") as f:
+                    f.write(content)
+            else:
+                logger.error(
+                    f"[{self.crew_name}] {crew_name}: {file_path} NOT written and "
+                    f"result too short/no markdown for fallback ({len(content)} chars)."
+                )
 
     # -------------------------------------------------------------------------
     # CHECKPOINT PERSISTENCE

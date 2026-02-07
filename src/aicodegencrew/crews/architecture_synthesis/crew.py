@@ -132,9 +132,17 @@ class ArchitectureSynthesisCrew:
         # Validate prerequisites before running
         self._validate_prerequisites()
         
-        # Archive and clean old outputs
-        logger.info("[Phase3] Archive and clean old outputs...")
-        self._archive_and_clean_old_outputs()
+        # Only archive on fresh run. When resuming (checkpoint exists),
+        # keep existing files — skipped crews depend on them still being there.
+        c4_checkpoint = self.facts_path.parent / ".checkpoint_c4.json"
+        arc42_checkpoint = self.facts_path.parent / ".checkpoint_arc42.json"
+        is_resume = c4_checkpoint.exists() or arc42_checkpoint.exists()
+
+        if is_resume:
+            logger.info("[Phase3] Resuming from checkpoint — keeping existing outputs")
+        else:
+            logger.info("[Phase3] Fresh run — archive and clean old outputs...")
+            self._archive_and_clean_old_outputs()
         
         results = []
         
