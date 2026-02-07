@@ -7,8 +7,8 @@ Detects:
 - @GetMapping, @PostMapping, @PutMapping, @DeleteMapping, @PatchMapping
 - Path variables, request params
 
-Output feeds → interfaces.json (REST endpoints)
-             → components.json (controllers)
+Output feeds -> interfaces.json (REST endpoints)
+             -> components.json (controllers)
 """
 
 import re

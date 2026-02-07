@@ -515,15 +515,15 @@ class CanonicalModelWriter:
     
     Output:
         knowledge/architecture/
-        ├── system.json
-        ├── containers.json
-        ├── components.json
-        ├── interfaces.json
-        ├── relations.json
-        ├── data_model.json
-        ├── runtime.json
-        ├── infrastructure.json
-        └── evidence_map.json
+        +-- system.json
+        +-- containers.json
+        +-- components.json
+        +-- interfaces.json
+        +-- relations.json
+        +-- data_model.json
+        +-- runtime.json
+        +-- infrastructure.json
+        +-- evidence_map.json
     """
     
     def __init__(self, output_dir: Path):

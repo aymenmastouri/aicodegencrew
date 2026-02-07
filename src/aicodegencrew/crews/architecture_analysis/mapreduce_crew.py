@@ -27,12 +27,13 @@ from typing import Dict, Any, List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .crew import ArchitectureAnalysisCrew
+from .container_crew import ContainerAnalysisCrew
 
 logger = logging.getLogger(__name__)
 
 
 class ContainerAnalyzer:
-    """Analyzes a single container's components."""
+    """Analyzes a single container's components using LLM crew."""
     
     def __init__(
         self,
@@ -40,11 +41,13 @@ class ContainerAnalyzer:
         container_name: str,
         output_dir: Path,
         chroma_dir: str = None,
+        use_llm: bool = True,
     ):
         self.facts_path = Path(facts_path)
         self.container_name = container_name
         self.output_dir = output_dir
         self.chroma_dir = chroma_dir
+        self.use_llm = use_llm
         
     def run(self) -> Dict[str, Any]:
         """Run analysis for this container."""
@@ -53,12 +56,22 @@ class ContainerAnalyzer:
         # Load facts and filter by container
         facts = self._load_container_facts()
         
+        # Use LLM crew if enabled and container has components
+        if self.use_llm and len(facts.get("components", [])) > 0:
+            crew = ContainerAnalysisCrew(
+                container_name=self.container_name,
+                container_facts=facts,
+                output_dir=self.output_dir,
+            )
+            return crew.run()
+        
+        # Fallback: deterministic analysis
         result = {
             "container": self.container_name,
             "component_count": len(facts.get("components", [])),
             "relation_count": len(facts.get("relations", [])),
             "interface_count": len(facts.get("interfaces", [])),
-            "analysis": self._analyze_container(facts),
+            "analysis": self._analyze_container_deterministic(facts),
         }
         
         # Save partial result
@@ -74,11 +87,28 @@ class ContainerAnalyzer:
         with open(self.facts_path, 'r', encoding='utf-8') as f:
             all_facts = json.load(f)
         
-        # Filter components by container
+        # Normalize container name for matching (handle hyphen/underscore differences)
+        # container_name = "e2e-xnp" -> normalized = "e2e_xnp" or "e2exnp"
+        def normalize(s: str) -> str:
+            return s.lower().replace("-", "_").replace(".", "_")
+        
+        container_name_norm = normalize(self.container_name)
+        
+        # Build possible container ID patterns
+        # e.g., "backend" -> ["container.backend", "container_backend", "backend"]
+        possible_ids = [
+            f"container.{self.container_name}",
+            f"container_{self.container_name}",
+            f"container.{self.container_name.replace('-', '_')}",
+            self.container_name,
+        ]
+        possible_ids_norm = [normalize(pid) for pid in possible_ids]
+        
+        # Filter components by container (match normalized ID/name)
         components = [
             c for c in all_facts.get("components", [])
-            if c.get("container", "").lower() == self.container_name.lower()
-            or self.container_name.lower() in c.get("path", "").lower()
+            if normalize(c.get("container", "")) in possible_ids_norm
+            or container_name_norm in normalize(c.get("path", ""))  # fallback: path contains name
         ]
         
         # Filter relations involving this container's components
@@ -89,10 +119,10 @@ class ContainerAnalyzer:
             or r.get("to", "").lower() in component_names
         ]
         
-        # Filter interfaces by container
+        # Filter interfaces by container (match normalized)
         interfaces = [
             i for i in all_facts.get("interfaces", [])
-            if i.get("container", "").lower() == self.container_name.lower()
+            if normalize(i.get("container", "")) in possible_ids_norm
         ]
         
         return {
@@ -102,8 +132,8 @@ class ContainerAnalyzer:
             "interfaces": interfaces,
         }
     
-    def _analyze_container(self, facts: Dict[str, Any]) -> Dict[str, Any]:
-        """Analyze container structure without LLM (deterministic)."""
+    def _analyze_container_deterministic(self, facts: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze container structure without LLM (fallback)."""
         components = facts.get("components", [])
         
         # Count by stereotype

@@ -8,7 +8,7 @@ Detects:
 - Workflow triggers
 - Event handlers
 
-Output → runtime.json
+Output -> runtime.json
 """
 
 import re

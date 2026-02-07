@@ -6,7 +6,7 @@ Detects:
 - Flyway migrations (SQL/Java)
 - Migration history and dependencies
 
-Output feeds → data_model.json
+Output feeds -> data_model.json
 """
 
 import re

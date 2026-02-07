@@ -11,7 +11,7 @@ Detection Strategy:
 2. Bounded Contexts = Top-level packages under domain/feature packages
 3. No hardcoded patterns - detect from actual package structure
 
-Output → system.json
+Output -> system.json
 """
 
 import re

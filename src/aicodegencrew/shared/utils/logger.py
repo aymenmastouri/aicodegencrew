@@ -3,16 +3,16 @@ Logging System - Simple, Structured, Archived
 
 Log Structure:
     logs/
-    ├── current.log          # Active session (overwritten each run)
-    ├── archive/             # Archived sessions
-    │   ├── 2026-02-03_11-30-00_session.log
-    │   └── ...
-    └── errors.log           # Persistent error log (rotating)
+    +-- current.log          # Active session (overwritten each run)
+    +-- archive/             # Archived sessions
+    |   +-- 2026-02-03_11-30-00_session.log
+    |   +-- ...
+    +-- errors.log           # Persistent error log (rotating)
 
 Step Logging:
-    step_start("Indexing")     → [STEP] ══════ Indexing ══════
-    step_done("Indexing")      → [DONE] ══════ Indexing ══════ (12.3s)
-    step_fail("Indexing", err) → [FAIL] ══════ Indexing ══════
+    step_start("Indexing")     -> [STEP] ====== Indexing ======
+    step_done("Indexing")      -> [DONE] ====== Indexing ====== (12.3s)
+    step_fail("Indexing", err) -> [FAIL] ====== Indexing ======
 """
 
 from __future__ import annotations
@@ -75,7 +75,7 @@ class StepTracker:
         self._current = name
         self._steps[name] = time.time()
         
-        line = f"══════ {name} ══════"
+        line = f"====== {name} ======"
         if self._logger:
             self._logger.info("")
             self._logger.info(f"[STEP] {line}")
@@ -91,7 +91,7 @@ class StepTracker:
         start_time = self._steps.pop(step, time.time())
         duration = time.time() - start_time
         
-        line = f"══════ {step} ══════"
+        line = f"====== {step} ======"
         if self._logger:
             self._logger.info(f"[DONE] {line} ({duration:.1f}s)")
             if message:
@@ -109,7 +109,7 @@ class StepTracker:
         start_time = self._steps.pop(step, time.time())
         duration = time.time() - start_time
         
-        line = f"══════ {step} ══════"
+        line = f"====== {step} ======"
         if self._logger:
             self._logger.error(f"[FAIL] {line} ({duration:.1f}s)")
             if error:
@@ -126,12 +126,12 @@ class StepTracker:
     def warn(self, message: str) -> None:
         """Log warning within current step."""
         if self._logger:
-            self._logger.warning(f"       ⚠ {message}")
+            self._logger.warning(f"       [WARN] {message}")
     
     def progress(self, current: int, total: int, item: str = "") -> None:
         """Log progress within current step."""
         pct = (current / total * 100) if total > 0 else 0
-        bar = "█" * int(pct // 5) + "░" * (20 - int(pct // 5))
+        bar = "#" * int(pct // 5) + "-" * (20 - int(pct // 5))
         msg = f"[{bar}] {current}/{total}"
         if item:
             msg += f" - {item}"
@@ -234,14 +234,22 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
         
         # ==========================================================================
         # Console Handler - Clean, readable format
+        # Skip console logging if MCP_STDIO_MODE is set (corrupts JSON-RPC)
         # ==========================================================================
-        console = logging.StreamHandler(sys.stdout)
-        console.setLevel(log_level)
-        console.setFormatter(logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        ))
-        logger.addHandler(console)
+        if not os.getenv("MCP_STDIO_MODE"):
+            # Use UTF-8 encoding for Windows console to handle emojis
+            if sys.platform == "win32":
+                import io
+                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+            
+            console = logging.StreamHandler(sys.stdout)
+            console.setLevel(log_level)
+            console.setFormatter(logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            ))
+            logger.addHandler(console)
         
         # ==========================================================================
         # Session Log - current.log (overwritten each run, detailed)
@@ -250,7 +258,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             session = logging.FileHandler(CURRENT_LOG, mode='w', encoding='utf-8')
             session.setLevel(logging.DEBUG)
             session.setFormatter(logging.Formatter(
-                '%(asctime)s.%(msecs)03d │ %(levelname)-5s │ %(message)s',
+                '%(asctime)s.%(msecs)03d | %(levelname)-5s | %(message)s',
                 datefmt='%H:%M:%S'
             ))
             # Unbuffered for real-time viewing
@@ -271,7 +279,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             )
             errors.setLevel(logging.ERROR)
             errors.setFormatter(logging.Formatter(
-                '%(asctime)s │ %(name)s │ %(funcName)s:%(lineno)d\n'
+                '%(asctime)s | %(name)s | %(funcName)s:%(lineno)d\n'
                 '  %(message)s\n',
                 datefmt='%Y-%m-%d %H:%M:%S'
             ))

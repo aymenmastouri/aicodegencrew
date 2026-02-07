@@ -7,7 +7,7 @@ Collects:
 - Schedulers (@Scheduled)
 - Message listeners (Kafka, RabbitMQ)
 
-Output → interfaces.json
+Output -> interfaces.json
 """
 
 import re

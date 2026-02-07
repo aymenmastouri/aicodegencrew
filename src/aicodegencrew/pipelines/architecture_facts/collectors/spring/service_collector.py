@@ -6,8 +6,8 @@ Detects:
 - Interface + Implementation mappings (UserService -> UserServiceImpl)
 - Dependencies between services
 
-Output feeds → components.json (services)
-             → relations (service dependencies)
+Output feeds -> components.json (services)
+             -> relations (service dependencies)
 """
 
 import re

@@ -5,15 +5,15 @@ Modular collector architecture where each collector extracts ONE dimension.
 No collector thinks. No collector summarizes. All deliver structured facts.
 
 Core Collectors (always needed):
-    SystemCollector         → system.json
-    ContainerCollector      → containers.json
-    ComponentCollector      → components.json (aggregates from specialists)
-    InterfaceCollector      → interfaces.json (aggregates from specialists)
-    DataModelCollector      → data_model.json
-    RuntimeCollector        → runtime.json
-    InfrastructureCollector → infrastructure.json
-    EvidenceCollector       → evidence_map.json
-    DependencyCollector     → dependencies info
+    SystemCollector         -> system.json
+    ContainerCollector      -> containers.json
+    ComponentCollector      -> components.json (aggregates from specialists)
+    InterfaceCollector      -> interfaces.json (aggregates from specialists)
+    DataModelCollector      -> data_model.json
+    RuntimeCollector        -> runtime.json
+    InfrastructureCollector -> infrastructure.json
+    EvidenceCollector       -> evidence_map.json
+    DependencyCollector     -> dependencies info
 
 Spring Specialists:
     SpringRestCollector

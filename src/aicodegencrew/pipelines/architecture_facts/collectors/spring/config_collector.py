@@ -8,7 +8,7 @@ Detects:
 - Spring profiles
 - Property sources
 
-Output feeds → infrastructure.json (config components)
+Output feeds -> infrastructure.json (config components)
 """
 
 import re

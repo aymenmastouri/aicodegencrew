@@ -15,7 +15,7 @@ Detects:
 - Indexes
 - Views
 
-Output feeds → data_model.json
+Output feeds -> data_model.json
 """
 
 import re

@@ -401,6 +401,346 @@ class KnowledgeTools:
             "evidence": evidence_list
         }
     
+    # ========== Module Dimension Tools ==========
+    
+    def get_module_overview(self, module: str) -> dict:
+        """
+        Get complete overview of a module: all components, relations, and endpoints.
+        
+        Args:
+            module: Module name (e.g., "workflow", "deed", "user")
+        """
+        module_lower = module.lower()
+        
+        # Find all components in this module
+        components = [
+            {"id": c["id"], "name": c["name"], "stereotype": c.get("stereotype"), "layer": c.get("layer")}
+            for c in self.components.get("components", [])
+            if module_lower in c.get("module", "").lower() or module_lower in c.get("name", "").lower()
+        ]
+        
+        component_ids = {c["id"] for c in components}
+        
+        # Find internal relations (within module)
+        internal_relations = [
+            {"from": r["from"], "to": r["to"], "type": r.get("type")}
+            for r in self.relations.get("relations", [])
+            if r.get("from") in component_ids and r.get("to") in component_ids
+        ]
+        
+        # Find external relations (crossing module boundary)
+        external_relations = [
+            {"from": r["from"], "to": r["to"], "type": r.get("type"), "direction": "outgoing" if r.get("from") in component_ids else "incoming"}
+            for r in self.relations.get("relations", [])
+            if (r.get("from") in component_ids) != (r.get("to") in component_ids)
+        ]
+        
+        # Find endpoints for this module
+        endpoints = [
+            {"path": i.get("path"), "method": i.get("method")}
+            for i in self.interfaces.get("interfaces", [])
+            if i.get("type") == "rest_endpoint" and any(cid in str(i.get("implemented_by", "")) for cid in component_ids)
+        ]
+        
+        return {
+            "module": module,
+            "components": {"count": len(components), "items": components},
+            "internal_relations": {"count": len(internal_relations), "items": internal_relations[:50]},
+            "external_relations": {"count": len(external_relations), "items": external_relations[:50]},
+            "endpoints": {"count": len(endpoints), "items": endpoints}
+        }
+    
+    def list_modules(self) -> dict:
+        """
+        List all modules/packages in the codebase with component counts.
+        """
+        modules = {}
+        for comp in self.components.get("components", []):
+            module = comp.get("module", "unknown")
+            if module not in modules:
+                modules[module] = {"count": 0, "stereotypes": {}}
+            modules[module]["count"] += 1
+            stereo = comp.get("stereotype", "unknown")
+            modules[module]["stereotypes"][stereo] = modules[module]["stereotypes"].get(stereo, 0) + 1
+        
+        return {
+            "total_modules": len(modules),
+            "modules": [
+                {"name": name, "component_count": data["count"], "stereotypes": data["stereotypes"]}
+                for name, data in sorted(modules.items(), key=lambda x: -x[1]["count"])
+            ]
+        }
+    
+    # ========== Dependency Dimension Tools ==========
+    
+    def get_dependencies_tree(self, component_id: str, depth: int = 3, direction: str = "outgoing") -> dict:
+        """
+        Get full dependency tree for a component.
+        
+        Args:
+            component_id: Component ID or name
+            depth: How deep to traverse (default: 3)
+            direction: "outgoing" (what I depend on), "incoming" (what depends on me), or "both"
+        """
+        # Resolve component
+        if not component_id.startswith("component."):
+            result = self.get_component(component_id)
+            if "error" in result:
+                return result
+            if "component" in result:
+                component_id = result["component"]["id"]
+            else:
+                return {"error": "Ambiguous component name. Please use full ID."}
+        
+        visited = set()
+        tree = {"root": component_id, "root_name": self._get_component_name(component_id), "children": []}
+        
+        def build_tree(comp_id: str, current_depth: int) -> list:
+            if current_depth > depth or comp_id in visited:
+                return []
+            visited.add(comp_id)
+            
+            children = []
+            for rel in self.relations.get("relations", []):
+                target = None
+                if direction in ("outgoing", "both") and rel.get("from") == comp_id:
+                    target = rel["to"]
+                elif direction in ("incoming", "both") and rel.get("to") == comp_id:
+                    target = rel["from"]
+                
+                if target and target not in visited:
+                    children.append({
+                        "id": target,
+                        "name": self._get_component_name(target),
+                        "relation_type": rel.get("type"),
+                        "children": build_tree(target, current_depth + 1)
+                    })
+            return children
+        
+        tree["children"] = build_tree(component_id, 1)
+        tree["total_dependencies"] = len(visited) - 1
+        
+        return tree
+    
+    def get_circular_dependencies(self) -> dict:
+        """
+        Find potential circular dependencies in the codebase.
+        """
+        # Build adjacency list
+        adj = {}
+        for rel in self.relations.get("relations", []):
+            from_id = rel.get("from")
+            to_id = rel.get("to")
+            if from_id not in adj:
+                adj[from_id] = []
+            adj[from_id].append(to_id)
+        
+        cycles = []
+        visited = set()
+        path = []
+        path_set = set()
+        
+        def dfs(node):
+            if node in path_set:
+                # Found cycle
+                cycle_start = path.index(node)
+                cycle = path[cycle_start:] + [node]
+                cycles.append([self._get_component_name(n) for n in cycle])
+                return
+            if node in visited:
+                return
+            
+            visited.add(node)
+            path.append(node)
+            path_set.add(node)
+            
+            for neighbor in adj.get(node, []):
+                dfs(neighbor)
+            
+            path.pop()
+            path_set.remove(node)
+        
+        for node in adj:
+            if node not in visited:
+                dfs(node)
+        
+        return {
+            "cycles_found": len(cycles),
+            "cycles": cycles[:20]  # Limit output
+        }
+    
+    # ========== Data Dimension Tools ==========
+    
+    def get_entities(self) -> dict:
+        """
+        Get all entity/domain model classes.
+        """
+        entities = [
+            {
+                "id": c["id"],
+                "name": c["name"],
+                "module": c.get("module"),
+                "file": c.get("file_paths", [""])[0] if c.get("file_paths") else None
+            }
+            for c in self.components.get("components", [])
+            if c.get("stereotype", "").lower() in ("entity", "model", "domain", "aggregate", "value_object")
+        ]
+        
+        return {
+            "count": len(entities),
+            "entities": entities
+        }
+    
+    def get_entity_relationships(self, entity_name: str) -> dict:
+        """
+        Get all relationships for an entity (JPA relations, references, etc.).
+        
+        Args:
+            entity_name: Entity name (e.g., "DeedEntry", "Workflow")
+        """
+        result = self.get_component(entity_name)
+        if "error" in result:
+            return result
+        if "component" not in result:
+            return {"error": "Ambiguous entity name."}
+        
+        entity = result["component"]
+        entity_id = entity["id"]
+        
+        # Get relations
+        relations_result = self.get_relations_for(entity_id)
+        
+        # Categorize by relation type
+        jpa_relations = []
+        other_relations = []
+        
+        for rel in relations_result.get("outgoing", {}).get("relations", []):
+            if rel.get("type") in ("one_to_many", "many_to_one", "one_to_one", "many_to_many"):
+                jpa_relations.append(rel)
+            else:
+                other_relations.append(rel)
+        
+        return {
+            "entity": {"id": entity_id, "name": entity["name"]},
+            "jpa_relations": jpa_relations,
+            "other_relations": other_relations,
+            "referenced_by": relations_result.get("incoming", {}).get("relations", [])
+        }
+    
+    # ========== API Dimension Tools ==========
+    
+    def get_api_overview(self) -> dict:
+        """
+        Get complete API overview: all endpoints grouped by controller/resource.
+        """
+        endpoints = self.interfaces.get("interfaces", [])
+        rest_endpoints = [e for e in endpoints if e.get("type") == "rest_endpoint"]
+        
+        # Group by base path (first 2 segments)
+        by_resource = {}
+        for ep in rest_endpoints:
+            path = ep.get("path", "")
+            parts = path.strip("/").split("/")
+            resource = "/" + "/".join(parts[:2]) if len(parts) >= 2 else path
+            
+            if resource not in by_resource:
+                by_resource[resource] = []
+            by_resource[resource].append({
+                "path": path,
+                "method": ep.get("method"),
+                "implemented_by": ep.get("implemented_by")
+            })
+        
+        return {
+            "total_endpoints": len(rest_endpoints),
+            "resources": [
+                {"base_path": resource, "endpoint_count": len(eps), "endpoints": eps}
+                for resource, eps in sorted(by_resource.items())
+            ]
+        }
+    
+    def get_controllers_with_endpoints(self) -> dict:
+        """
+        Get all controllers with their endpoints.
+        """
+        controllers = [
+            c for c in self.components.get("components", [])
+            if c.get("stereotype", "").lower() in ("controller", "rest_controller", "resource")
+        ]
+        
+        result = []
+        for ctrl in controllers:
+            ctrl_endpoints = [
+                {"path": e.get("path"), "method": e.get("method")}
+                for e in self.interfaces.get("interfaces", [])
+                if e.get("type") == "rest_endpoint" and ctrl["id"] in str(e.get("implemented_by", ""))
+            ]
+            result.append({
+                "controller": ctrl["name"],
+                "id": ctrl["id"],
+                "endpoints": ctrl_endpoints
+            })
+        
+        return {
+            "controller_count": len(result),
+            "controllers": result
+        }
+    
+    # ========== Batch Query Tool ==========
+    
+    def batch_query(self, queries: list) -> dict:
+        """
+        Execute multiple queries in one call to minimize token usage.
+        
+        Args:
+            queries: List of query dicts, each with 'tool' and 'args'
+                    e.g., [{"tool": "get_component", "args": {"name": "WorkflowService"}},
+                           {"tool": "get_relations_for", "args": {"component_id": "..."}}]
+        """
+        results = []
+        tool_map = {
+            "get_component": self.get_component,
+            "get_component_by_id": self.get_component_by_id,
+            "list_components_by_stereotype": self.list_components_by_stereotype,
+            "list_components_by_layer": self.list_components_by_layer,
+            "search_components": self.search_components,
+            "get_relations_for": self.get_relations_for,
+            "get_call_graph": self.get_call_graph,
+            "get_dependencies_tree": self.get_dependencies_tree,
+            "get_endpoints": self.get_endpoints,
+            "get_endpoint_by_path": self.get_endpoint_by_path,
+            "get_routes": self.get_routes,
+            "get_evidence": self.get_evidence,
+            "get_evidence_for_component": self.get_evidence_for_component,
+            "get_module_overview": self.get_module_overview,
+            "list_modules": self.list_modules,
+            "get_entities": self.get_entities,
+            "get_entity_relationships": self.get_entity_relationships,
+            "get_api_overview": self.get_api_overview,
+            "get_controllers_with_endpoints": self.get_controllers_with_endpoints,
+            "get_architecture_summary": self.get_architecture_summary,
+            "get_statistics": self.get_statistics,
+        }
+        
+        for i, query in enumerate(queries):
+            tool_name = query.get("tool")
+            args = query.get("args", {})
+            
+            if tool_name not in tool_map:
+                results.append({"query_index": i, "error": f"Unknown tool: {tool_name}"})
+                continue
+            
+            try:
+                result = tool_map[tool_name](**args)
+                results.append({"query_index": i, "tool": tool_name, "result": result})
+            except Exception as e:
+                results.append({"query_index": i, "tool": tool_name, "error": str(e)})
+        
+        return {
+            "queries_executed": len(queries),
+            "results": results
+        }
+    
     # ========== Summary Tools ==========
     
     def get_architecture_summary(self) -> dict:

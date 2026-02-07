@@ -6,7 +6,7 @@ Collects:
 - Database tables (from SQL/migrations)
 - Entity relationships
 
-Output → data_model.json
+Output -> data_model.json
 """
 
 import re

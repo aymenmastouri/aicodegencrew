@@ -273,9 +273,9 @@ class SDLCOrchestrator:
             self.archive_knowledge(label=f"before_{phase_id}")
         
         # Execute
-        logger.info(f"\n{'─' * 60}")
+        logger.info(f"\n{'=' * 60}")
         logger.info(f"[Phase] {phase_id} - Starting")
-        logger.info(f"{'─' * 60}")
+        logger.info(f"{'=' * 60}")
         
         try:
             executable = self.phases[phase_id]

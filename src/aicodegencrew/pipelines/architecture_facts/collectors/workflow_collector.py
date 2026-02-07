@@ -12,7 +12,7 @@ Detects:
 8. NgRx Effects/Reducers
 9. RxJS Flow Patterns
 
-Output → workflows.json
+Output -> workflows.json
 """
 
 import re

@@ -7,7 +7,7 @@ Detects:
 - Styles
 - Component inputs/outputs
 
-Output feeds → components.json
+Output feeds -> components.json
 """
 
 import re

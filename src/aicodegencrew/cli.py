@@ -291,6 +291,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         "phase2_architecture_analysis" in phases_to_run
         or "analysis_only" in preset_str
         or "architecture_workflow" in preset_str
+        or "architecture_full" in preset_str
         or "planning" in preset_str
         or (not phases_to_run and not preset_str)
     )
@@ -307,6 +308,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     will_run_synthesis = (
         "phase3_architecture_synthesis" in phases_to_run
         or "architecture_workflow" in preset_str
+        or "architecture_full" in preset_str
         or "planning" in preset_str
         or (not phases_to_run and not preset_str)
     )

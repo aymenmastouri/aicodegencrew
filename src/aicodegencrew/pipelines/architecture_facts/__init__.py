@@ -5,7 +5,7 @@ Deterministic extraction of architecture facts from source code.
 NO LLM. NO interpretation. Only facts + evidence.
 
 Pipeline:
-    Index → Collectors (parallel) → Raw Facts → Model Builder → Canonical JSON
+    Index -> Collectors (parallel) -> Raw Facts -> Model Builder -> Canonical JSON
 
 Architecture:
     - Collectors: Extract raw facts with their own IDs

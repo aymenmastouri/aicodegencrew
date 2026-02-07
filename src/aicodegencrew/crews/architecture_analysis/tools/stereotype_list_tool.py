@@ -10,8 +10,8 @@ Usage:
 
 Relevance Sorting:
 - Components are sorted by architectural layer importance
-- Backend: controller → service → repository → entity → rest
-- Frontend: component → module → service → pipe → directive → rest
+- Backend: controller -> service -> repository -> entity -> rest
+- Frontend: component -> module -> service -> pipe -> directive -> rest
 """
 
 import json

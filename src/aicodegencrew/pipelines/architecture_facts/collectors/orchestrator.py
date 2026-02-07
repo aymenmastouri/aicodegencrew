@@ -7,14 +7,14 @@ This is the central point that:
 3. Returns combined facts organized by dimension
 
 Flow:
-    SystemCollector     → system facts
-    ContainerCollector  → container facts
-    ComponentCollector  → (runs specialists) → component facts
-    InterfaceCollector  → (runs specialists) → interface facts
-    DataModelCollector  → entity/table facts
-    RuntimeCollector    → scheduler/async facts
-    InfrastructureCollector → docker/k8s/ci facts
-    EvidenceCollector   → aggregates all evidence
+    SystemCollector     -> system facts
+    ContainerCollector  -> container facts
+    ComponentCollector  -> (runs specialists) -> component facts
+    InterfaceCollector  -> (runs specialists) -> interface facts
+    DataModelCollector  -> entity/table facts
+    RuntimeCollector    -> scheduler/async facts
+    InfrastructureCollector -> docker/k8s/ci facts
+    EvidenceCollector   -> aggregates all evidence
 """
 
 from pathlib import Path

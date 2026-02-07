@@ -7,9 +7,9 @@ Detects:
 - Service dependencies
 - Native JavaScript API Endpoints (e.g., embedded/native JS bridges)
 
-Output feeds → components.json (services)
-             → interfaces.json (JS API endpoints)
-             → relations (service dependencies, HTTP calls)
+Output feeds -> components.json (services)
+             -> interfaces.json (JS API endpoints)
+             -> relations (service dependencies, HTTP calls)
 """
 
 import re

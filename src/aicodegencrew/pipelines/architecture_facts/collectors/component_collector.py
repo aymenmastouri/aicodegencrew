@@ -11,7 +11,7 @@ Container-Aware:
 - Angular specialists run in containers with type="frontend"
 - Each specialist searches in the container's root_path
 
-Output → components.json
+Output -> components.json
 """
 
 from pathlib import Path

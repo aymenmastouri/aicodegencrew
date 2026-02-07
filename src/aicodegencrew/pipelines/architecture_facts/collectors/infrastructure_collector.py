@@ -8,7 +8,7 @@ Detects:
 - CI/CD pipelines
 - Environment configuration
 
-Output → infrastructure.json
+Output -> infrastructure.json
 """
 
 import re
