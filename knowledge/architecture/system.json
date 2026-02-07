@@ -2,7 +2,7 @@
   "id": "system",
   "name": "uvz",
   "description": "Architecture model for uvz",
-  "generated_at": "2026-02-07T16:09:21.592156",
+  "generated_at": "2026-02-07T19:31:32.615229",
   "bounded_contexts": [
     {
       "name": "de.bnotk.uvz.module.adapters.staticwebresources",
@@ -15,8 +15,8 @@
       "name": "de.bnotk.uvz.module.deedentry.dataaccess.api.dao",
       "component_count": 22,
       "stereotypes": [
-        "repository",
-        "rest_interface"
+        "rest_interface",
+        "repository"
       ]
     },
     {
@@ -24,8 +24,8 @@
       "component_count": 6,
       "stereotypes": [
         "controller",
-        "repository",
-        "service"
+        "service",
+        "repository"
       ]
     },
     {
@@ -130,8 +130,8 @@
       "name": "app",
       "component_count": 2,
       "stereotypes": [
-        "module",
-        "component"
+        "component",
+        "module"
       ]
     },
     {
@@ -428,22 +428,8 @@
       ]
     },
     {
-      "name": "workflow.services.workflow-change-aoid",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "http-util",
+      "name": "workflow.services.workflow-rest.mock",
       "component_count": 2,
-      "stereotypes": [
-        "interceptor"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-deletion",
-      "component_count": 4,
       "stereotypes": [
         "service"
       ]
@@ -452,50 +438,16 @@
       "name": "adapters.xnp",
       "component_count": 15,
       "stereotypes": [
-        "service",
-        "adapter"
+        "adapter",
+        "service"
       ]
     },
     {
-      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+      "name": "authentication",
       "component_count": 2,
       "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.services.deed-entry",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-reencryption.job-reencryption",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.mock",
-      "component_count": 2,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.api-generated.services",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
+        "guard",
+        "interceptor"
       ]
     },
     {
@@ -506,7 +458,35 @@
       ]
     },
     {
+      "name": "workflow.services.workflow-deletion",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.services",
+      "component_count": 6,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
       "name": "services",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-archive",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.services.archiving",
       "component_count": 3,
       "stereotypes": [
         "service"
@@ -520,8 +500,80 @@
       ]
     },
     {
+      "name": "workflow.services.workflow-change-aoid",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.archiving.adapter.xnp",
+      "component_count": 2,
+      "stereotypes": [
+        "adapter",
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.services.deed-entry",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-overview-page.services",
+      "component_count": 2,
+      "stereotypes": [
+        "resolver",
+        "service"
+      ]
+    },
+    {
       "name": "deed-entry.components.deed-successor-page.services",
       "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-reencryption.job-reencryption",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-validate-signature",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "http-util",
+      "component_count": 2,
+      "stereotypes": [
+        "interceptor"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.api-generated.services",
+      "component_count": 3,
       "stereotypes": [
         "service"
       ]
@@ -538,58 +590,6 @@
       "component_count": 2,
       "stereotypes": [
         "adapter"
-      ]
-    },
-    {
-      "name": "deed-entry.services.archiving",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.components.deed-form-page.services",
-      "component_count": 6,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-archive",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "adapters.archiving.adapter.xnp",
-      "component_count": 2,
-      "stereotypes": [
-        "service",
-        "adapter"
-      ]
-    },
-    {
-      "name": "deed-entry.components.deed-overview-page.services",
-      "component_count": 2,
-      "stereotypes": [
-        "resolver",
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-validate-signature",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "authentication",
-      "component_count": 2,
-      "stereotypes": [
-        "interceptor",
-        "guard"
       ]
     }
   ],
@@ -624,7 +624,7 @@
     "containers": 4,
     "components": 738,
     "interfaces": 125,
-    "relations": 169,
+    "relations": 190,
     "evidence": 1005,
     "dependencies": 170,
     "workflows": 40,
@@ -646,9 +646,9 @@
       "pipe": 67,
       "directive": 3,
       "adapter": 50,
+      "guard": 1,
       "interceptor": 4,
       "resolver": 4,
-      "guard": 1,
       "entity": 199,
       "scheduler": 1,
       "configuration": 1
