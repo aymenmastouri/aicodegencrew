@@ -1,0 +1,16 @@
+{
+  "endpoint_flows": [],
+  "schedulers": [
+    {
+      "id": "component.backend.core.execute",
+      "name": "execute",
+      "file_path": null
+    }
+  ],
+  "async_processors": [
+    {
+      "id": "component.frontend.components_deed-form-page_services.async_document_helper_service",
+      "name": "AsyncDocumentHelperService"
+    }
+  ]
+}
