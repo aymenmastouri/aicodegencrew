@@ -39,9 +39,10 @@
     }
   },
   "macro_architecture": {
-    "style": "Distributed",
+    "style": "Modular Monolith",
     "container_count": 4,
-    "reasoning": "Map-Reduce analysis of 4 containers with 737 total components",
+    "active_containers": 2,
+    "reasoning": "2 active containers (frontend, backend) with 738 total components. Backend uses Layered pattern, Frontend uses Component-Based pattern.",
     "scalability_approach": "horizontal",
     "deployment_model": "distributed",
     "communication_pattern": "sync REST"
@@ -57,29 +58,12 @@
       "layer_structure": [],
       "component_counts": {}
     },
-    "backend": {
-      "primary_pattern": "Layered",
-      "layer_structure": [
-        "Presentation (Controllers)",
-        "Service (Business Services)",
-        "Repository (Data Access / DAOs)",
-        "Domain (Entities)"
-      ],
-      "component_counts": {
-        "rest_interface": 21,
-        "controller": 32,
-        "service": 42,
-        "repository": 38,
-        "entity": 199,
-        "scheduler": 1
-      }
-    },
     "frontend": {
-      "primary_pattern": "Component-Based (modular Angular architecture)",
+      "primary_pattern": "Component-Based",
       "layer_structure": [
-        "Presentation Layer (Components, Directives, Pipes, UI Modules)",
-        "Business/Service Layer (Services, Guards, Resolvers, Interceptors)",
-        "Integration/Data Access Layer (Adapters, API Modules, HTTP Interceptors)"
+        "Presentation (Components, Directives, Pipes, Modules)",
+        "Business Logic (Services, Guards, Interceptors, Resolvers)",
+        "Data Access / Integration (Adapters, API Modules, HTTP interfaces)"
       ],
       "component_counts": {
         "module": 16,
@@ -92,34 +76,53 @@
         "resolver": 4,
         "guard": 1
       }
+    },
+    "backend": {
+      "primary_pattern": "Layered",
+      "layer_structure": [
+        "Presentation (Controllers / REST endpoints)",
+        "Service (Business logic services)",
+        "Repository (Data access objects)",
+        "Domain (Entity models)"
+      ],
+      "component_counts": {
+        "rest_interface": 21,
+        "controller": 32,
+        "service": 42,
+        "repository": 38,
+        "entity": 199,
+        "scheduler": 1
+      }
     }
   },
   "architecture_quality": {
     "separation_of_concerns": "good",
     "layer_violations_count": 0,
     "coupling_assessment": "loose",
-    "overall_grade": "A"
+    "relations_per_component": 0.23,
+    "overall_grade": "C"
   },
   "statistics": {
-    "total_components": 737,
-    "total_relations": 0,
+    "total_components": 738,
+    "total_relations": 169,
     "total_interfaces": 125,
     "containers_analyzed": 4,
+    "active_containers": 2,
     "stereotype_distribution": {
-      "rest_interface": 21,
-      "controller": 32,
-      "service": 173,
-      "repository": 38,
-      "entity": 199,
-      "scheduler": 1,
       "module": 16,
       "component": 128,
       "pipe": 67,
       "directive": 3,
+      "service": 173,
       "adapter": 50,
       "interceptor": 4,
       "resolver": 4,
-      "guard": 1
+      "guard": 1,
+      "rest_interface": 21,
+      "controller": 32,
+      "repository": 38,
+      "entity": 199,
+      "scheduler": 1
     }
   },
   "container_analyses": [
@@ -152,143 +155,36 @@
       }
     },
     {
-      "container": "backend",
-      "component_count": 333,
-      "relation_count": 0,
-      "interface_count": 95,
-      "summary": "The backend service follows a classic layered architecture built on Spring Boot, exposing a rich REST API for deed management, archiving, key handling and reporting. It implements the core business capabilities defined by the Deed Management and Archiving bounded context and integrates with external key, archiving, and reporting services as well as a security provider. While the technical foundation and functional coverage are solid, the codebase shows moderate separation of concerns, coupling, and cohesion, with notable technical debt such as oversized controllers, direct repository access from services, and anemic domain entities, resulting in an overall grade of B.",
-      "technical": {
-        "primary_pattern": "Layered",
-        "layers": [
-          "Presentation (Controllers)",
-          "Service (Business Services)",
-          "Repository (Data Access / DAOs)",
-          "Domain (Entities)"
-        ],
-        "technologies": [
-          "Spring Boot",
-          "Spring MVC",
-          "Spring Data JPA",
-          "Hibernate",
-          "Spring Security",
-          "Spring Scheduler",
-          "RestTemplate",
-          "JPA"
-        ],
-        "integration_style": "REST API"
-      },
-      "functional": {
-        "domain_concepts": [
-          "Action",
-          "DeedEntry",
-          "DocumentMetaData",
-          "HandoverDataSet",
-          "SignatureInfo",
-          "Participant",
-          "BusinessPurpose",
-          "Archiving",
-          "KeyManager",
-          "Report",
-          "Job",
-          "Connection",
-          "CorrectionNote",
-          "Lock"
-        ],
-        "capabilities": [
-          "Create, retrieve, update and delete actions",
-          "Manage deed entries and their lifecycle (creation, handover, locking, logging)",
-          "Handle document metadata storage and retrieval",
-          "Execute handover data set processing and history tracking",
-          "Manage signatures and signature information",
-          "Perform archiving operations including signing and token handling",
-          "Key management including re‑encryption and crypto‑state queries",
-          "Generate and serve business purpose data",
-          "Run scheduled jobs and background processing",
-          "Produce reports via REST endpoints",
-          "Expose a comprehensive REST API for external consumption"
-        ],
-        "bounded_context": "Deed Management and Archiving",
-        "integrations": [
-          "External Key Management Service (via RestTemplate)",
-          "External Archiving Service",
-          "External Reporting Service",
-          "Database (via Spring Data JPA / Hibernate)",
-          "Authentication/Authorization provider (Spring Security)",
-          "Potential external proxy / token authentication infrastructure"
-        ]
-      },
-      "quality": {
-        "separation_of_concerns": "moderate",
-        "coupling": "moderate",
-        "cohesion": "moderate",
-        "debt_indicators": [
-          "Large number of controllers (potentially oversized)",
-          "Services directly accessing repositories (tight layer coupling)",
-          "High count of entity classes suggesting anemic domain model",
-          "Missing explicit service interfaces for many implementations"
-        ],
-        "grade": "B",
-        "recommendations": [
-          "Refactor oversized controllers into smaller, purpose‑specific ones",
-          "Introduce service interfaces and depend on abstractions rather than concrete implementations",
-          "Encapsulate repository access within domain services to preserve layer boundaries",
-          "Consider consolidating related entities or applying inheritance/polymorphism to reduce entity explosion",
-          "Apply DTOs and mapper layers to decouple REST contracts from domain entities",
-          "Add unit/integration test coverage for service layer to highlight hidden coupling"
-        ]
-      },
-      "overall_assessment": "The backend delivers a comprehensive set of business functionalities on a robust Spring‑based stack, but architectural and code‑quality concerns—particularly around controller size, service‑repository coupling, and domain model design—limit its maintainability and scalability. Addressing these issues will elevate the system from a solid B grade toward an A‑level solution.",
-      "top_recommendations": [
-        "Refactor oversized controllers into modular, purpose‑specific controllers.",
-        "Introduce explicit service interfaces and program to abstractions to reduce coupling.",
-        "Encapsulate repository access within domain/services layers and apply DTOs to separate REST contracts from domain entities."
-      ],
-      "analysis": {
-        "primary_pattern": "Layered",
-        "layers": [
-          "Presentation (Controllers)",
-          "Service (Business Services)",
-          "Repository (Data Access / DAOs)",
-          "Domain (Entities)"
-        ],
-        "stereotype_distribution": {
-          "rest_interface": 21,
-          "controller": 32,
-          "service": 42,
-          "repository": 38,
-          "entity": 199,
-          "scheduler": 1
-        },
-        "total_components": 333,
-        "total_relations": 0,
-        "total_interfaces": 95
-      }
-    },
-    {
       "container": "frontend",
       "component_count": 404,
       "relation_count": 0,
       "interface_count": 30,
-      "summary": "The frontend container follows a component‑based Angular architecture with clear presentation, business, and integration layers, leveraging TypeScript, RxJS and the Angular CLI stack to expose a rich set of deed‑registry capabilities through REST adapters. While functional coverage is comprehensive, quality metrics reveal moderate separation of concerns, coupling and cohesion, and a high technical debt signal from the unusually large number of services, adapters and pipes, indicating opportunities to tighten abstractions and module boundaries.",
+      "summary": "The frontend container follows a component‑based Angular architecture with clear presentation, business‑logic, and data‑access layers, leveraging TypeScript, RxJS, and a suite of Angular features to interact with a REST‑based backend. It supports a rich set of deed‑registry and workflow capabilities, exposing domain concepts such as Deed, Document, and Notification through multiple service integrations. While the overall design is functional, the codebase shows moderate separation, coupling, and cohesion, with technical debt around oversized services, duplicated pipes and adapters, and insufficient interface contracts, resulting in a quality grade of C.",
       "technical": {
-        "primary_pattern": "Component-Based (modular Angular architecture)",
+        "primary_pattern": "Component-Based",
         "layers": [
-          "Presentation Layer (Components, Directives, Pipes, UI Modules)",
-          "Business/Service Layer (Services, Guards, Resolvers, Interceptors)",
-          "Integration/Data Access Layer (Adapters, API Modules, HTTP Interceptors)"
+          "Presentation (Components, Directives, Pipes, Modules)",
+          "Business Logic (Services, Guards, Interceptors, Resolvers)",
+          "Data Access / Integration (Adapters, API Modules, HTTP interfaces)"
         ],
         "technologies": [
           "Angular",
           "TypeScript",
           "RxJS",
           "Angular Router",
-          "Angular Forms",
-          "Angular HTTPClient",
-          "Angular Modules (Feature, Core, Shared)",
-          "HTML/CSS",
-          "Webpack/Angular CLI"
+          "Angular HttpClient",
+          "Angular Modules",
+          "Angular Services",
+          "Angular Guards",
+          "Angular Interceptors",
+          "Angular Pipes",
+          "Angular Directives"
         ],
-        "integration_style": "REST API (HTTP calls via services and adapters)"
+        "integration_style": "REST API",
+        "observations": [
+          "Extensive use of Angular modules provides modularity but some cross‑module imports have been detected.",
+          "Heavy reliance on pipes for business logic may dilute separation of concerns."
+        ]
       },
       "functional": {
         "domain_concepts": [
@@ -296,51 +192,37 @@
           "Document",
           "Workflow",
           "User",
-          "Authentication",
           "Notification",
           "Custody",
           "Reencryption",
-          "Job",
-          "Task",
-          "Report",
-          "NumberManagement",
-          "Settings",
-          "Session",
           "PDF",
-          "Metadata"
+          "Settings"
         ],
         "capabilities": [
           "Create, edit, view and delete deeds",
-          "Approve and validate deed signatures",
-          "Manage deed workflows (archive, finalize, change AOID, delete)",
-          "Handle document import/export (PDF, JSON)",
-          "Perform reencryption and related background jobs",
-          "Manage user authentication and authorization",
-          "Send and display notifications",
-          "Configure application settings and user preferences",
-          "Provide online help and guidance",
-          "Generate and view reports",
-          "Manage number allocation and registration",
-          "Interact with backend services via REST adapters"
+          "Approve and correct deeds",
+          "Manage deed‑related workflows (initiation, execution, archiving, deletion)",
+          "Import and export document data (JSON, PDF)",
+          "Generate and handle PDF representations of deeds",
+          "Authenticate and authorize users",
+          "Persist and retrieve user and application settings",
+          "Send and receive notifications",
+          "Perform document custody operations",
+          "Execute re‑encryption jobs and related tasks"
         ],
-        "bounded_context": "Deed Registry and Legal Document Management",
+        "bounded_context": "Deed Registry and Workflow Management",
         "integrations": [
-          "XnpAuthorizationNgAdapter (auth API)",
-          "XnpEndpointProvider (generic API gateway)",
-          "XnpPdfsEndpoint (PDF handling API)",
-          "NativeJsonImportAdapter (JSON import service)",
-          "XnpNotificationsEndpoint (notification service)",
-          "XnpAuthenticationAdapter (authentication service)",
-          "LspSecureFrameworkEndpoint (secure framework API)",
-          "LocalStorageSettingsAdapter (local storage persistence)",
-          "XnpDocumentAdapterService (document API)",
-          "XnpVvzEndpoint (external VVZ service)",
-          "NativeSessionAdapter (session management)",
-          "NativePdfAdapter (PDF processing)",
-          "HtmlCustodyAdapterService (custody API)",
-          "XnpCustodyAdapterService (custody management)",
-          "XnpLogNgAdapter (logging service)",
-          "Various REST endpoints defined in the interface list (e.g., /deed-entries, /document, /participants, /uvz, /access-denied, etc.)"
+          "Deed Registry REST API",
+          "Workflow REST API",
+          "Document Metadata REST API",
+          "Job and Task Management APIs",
+          "Re‑encryption API",
+          "Action API",
+          "Report Metadata API",
+          "Authentication/Authorization service",
+          "PDF generation service",
+          "Notification service",
+          "Local storage for client‑side settings"
         ]
       },
       "quality": {
@@ -348,33 +230,34 @@
         "coupling": "moderate",
         "cohesion": "moderate",
         "debt_indicators": [
-          "Very high number of services (131) – likely some are oversized or overlapping",
-          "Large number of adapters (50) – may indicate missing higher‑level abstraction or façade",
-          "Excessive pipe count (67) – potential duplication of transformation logic",
-          "No explicit relation mapping – hard to verify proper module boundaries"
+          "Excessive number of services (possible God services)",
+          "Large quantity of pipes (logic scattering)",
+          "Redundant adapters (potential duplication)",
+          "Limited explicit interfaces for service contracts",
+          "No visible relationship graph (hard to verify boundaries)"
         ],
         "grade": "C",
         "recommendations": [
-          "Identify and split large services into smaller, domain‑focused services",
-          "Introduce façade or gateway services to reduce direct component‑to‑adapter coupling",
-          "Consolidate similar pipes into shared utility functions or a limited set of reusable pipes",
-          "Review module imports/exports to enforce strict feature module boundaries",
-          "Add interface abstractions for adapters and services to ease testing and future replacements",
-          "Implement a linting rule set (e.g., ESLint with Angular‑specific rules) to detect cyclic dependencies and overly deep injection hierarchies"
+          "Identify and split oversized services into focused, cohesive units",
+          "Consolidate similar pipes into shared utility functions or services",
+          "Introduce clear interface abstractions for services and adapters",
+          "Review and deduplicate adapters; group them by domain or capability",
+          "Enforce strict module boundaries and avoid cross‑module imports",
+          "Add architectural documentation to clarify layer responsibilities"
         ]
       },
-      "overall_assessment": "The frontend delivers robust functional coverage for deed‑registry workflows using a solid Angular foundation, yet architectural drift—evident from the proliferation of services, adapters and pipes—creates maintainability risk. Addressing these quality concerns will improve modularity, testability and long‑term scalability.",
+      "overall_assessment": "The frontend container delivers the required functional breadth and employs a standard Angular stack, but architectural drift has introduced moderate technical debt. Service proliferation, pipe overuse, and lack of explicit contracts reduce maintainability and increase coupling. Addressing these issues will raise code quality, improve scalability, and align the implementation more closely with the intended component‑based separation of concerns.",
       "top_recommendations": [
-        "Consolidate and refactor oversized services into focused, domain‑specific units.",
-        "Introduce façade/gateway layers to decouple components from low‑level adapters.",
-        "Enforce strict feature‑module boundaries and clean up duplicate pipes."
+        "Refactor oversized services into smaller, domain‑focused units with clear interfaces.",
+        "Consolidate and rationalize pipes and adapters to eliminate duplication and centralize shared logic.",
+        "Enforce strict Angular module boundaries, introduce interface contracts, and document architecture to improve separation of concerns and reduce coupling."
       ],
       "analysis": {
-        "primary_pattern": "Component-Based (modular Angular architecture)",
+        "primary_pattern": "Component-Based",
         "layers": [
-          "Presentation Layer (Components, Directives, Pipes, UI Modules)",
-          "Business/Service Layer (Services, Guards, Resolvers, Interceptors)",
-          "Integration/Data Access Layer (Adapters, API Modules, HTTP Interceptors)"
+          "Presentation (Components, Directives, Pipes, Modules)",
+          "Business Logic (Services, Guards, Interceptors, Resolvers)",
+          "Data Access / Integration (Adapters, API Modules, HTTP interfaces)"
         ],
         "stereotype_distribution": {
           "module": 16,
@@ -391,13 +274,148 @@
         "total_relations": 0,
         "total_interfaces": 30
       }
+    },
+    {
+      "container": "backend",
+      "component_count": 333,
+      "relation_count": 0,
+      "interface_count": 95,
+      "summary": "The backend is built on a classic layered architecture using Spring Boot, Spring MVC, Spring Data JPA, Hibernate, Spring Security, and Spring Scheduler. It exposes a rich set of REST APIs that support the full lifecycle of legal deed management, including CRUD operations, document versioning, archiving, key management, workflow actions, reporting, and background job scheduling. The system integrates with external key‑management and archiving services, a relational database, and security infrastructure. While the separation of concerns is generally good, the codebase shows moderate coupling and cohesion, with a high number of entity, service, and controller classes that suggest architectural drift and potential maintainability challenges. Overall, the backend is feature‑complete and functional but would benefit from domain‑driven refinements and consolidation of responsibilities.",
+      "technical": {
+        "primary_pattern": "Layered",
+        "layers": [
+          "Presentation (Controllers / REST endpoints)",
+          "Service (Business logic services)",
+          "Repository (Data access objects)",
+          "Domain (Entity models)"
+        ],
+        "technologies": [
+          "Spring Boot",
+          "Spring MVC",
+          "Spring Data JPA",
+          "Hibernate",
+          "Spring Security",
+          "Spring Scheduler",
+          "RestTemplate",
+          "JPA",
+          "Jackson (JSON serialization)"
+        ],
+        "integration_style": "REST API"
+      },
+      "functional": {
+        "domain_concepts": [
+          "DeedEntry",
+          "DeedRegistry",
+          "DocumentMetaData",
+          "Action",
+          "Connection",
+          "SignatureInfo",
+          "Participant",
+          "KeyManager",
+          "Archiving",
+          "HandoverDataSet",
+          "CorrectionNote",
+          "BusinessPurpose",
+          "Report"
+        ],
+        "capabilities": [
+          "Create, read, update, and delete deed entries",
+          "Manage deed connections and logs",
+          "Handle document metadata and versioning",
+          "Execute archiving operations and token signing",
+          "Perform key management including re‑encryption and crypto state queries",
+          "Process actions and workflow steps",
+          "Generate and serve reports",
+          "Schedule and run background jobs (e.g., re‑encryption, archiving)",
+          "Manage handover data sets and successor batches",
+          "Apply correction notes to deeds",
+          "Expose REST APIs for all above functionalities",
+          "Perform health checks and system monitoring"
+        ],
+        "bounded_context": "Deed Registry and Archiving (Legal Document Management)",
+        "integrations": [
+          "External Key Management Service (via RestTemplate)",
+          "External Archiving Service",
+          "Relational Database accessed through Spring Data JPA / Hibernate",
+          "Spring Security for authentication/authorization",
+          "Scheduler / Job execution platform"
+        ]
+      },
+      "quality": {
+        "separation_of_concerns": "good",
+        "coupling": "moderate",
+        "cohesion": "moderate",
+        "debt_indicators": [
+          "Very large number of entity classes (199) suggests possible anemic domain model",
+          "High count of service implementations (42) may hide God services or duplicated logic",
+          "Potential direct repository usage from controllers (no explicit service layer for some endpoints)",
+          "Many REST controllers (32) could indicate scattered responsibilities"
+        ],
+        "grade": "B",
+        "recommendations": [
+          "Introduce a dedicated domain layer (aggregates, domain services) to encapsulate business rules and reduce reliance on entities as data carriers",
+          "Consolidate related controllers into grouped endpoints or use composition to avoid controller sprawl",
+          "Review service implementations for size and responsibility; split overly large services into focused ones",
+          "Ensure controllers interact only with service interfaces, never directly with repositories",
+          "Apply bounded‑context patterns to limit entity proliferation; consider DTOs instead of exposing raw entities",
+          "Add interface abstractions for repositories where appropriate to enable easier testing and lower coupling",
+          "Implement code ownership guidelines and static analysis to monitor architectural drift"
+        ]
+      },
+      "overall_assessment": "The backend delivers a comprehensive, well‑integrated set of capabilities for deed management and complies with a solid layered technical stack. However, the proliferation of entities, services, and controllers creates moderate coupling and reduces cohesion, raising maintenance risk. Addressing the identified technical debt will improve scalability, testability, and long‑term sustainability.",
+      "top_recommendations": [
+        "Introduce a dedicated domain layer with aggregates and domain services to centralize business logic.",
+        "Consolidate and group REST controllers to reduce sprawl and improve cohesion.",
+        "Refactor oversized services into focused, single‑responsibility services and enforce service‑only access to repositories."
+      ],
+      "analysis": {
+        "primary_pattern": "Layered",
+        "layers": [
+          "Presentation (Controllers / REST endpoints)",
+          "Service (Business logic services)",
+          "Repository (Data access objects)",
+          "Domain (Entity models)"
+        ],
+        "stereotype_distribution": {
+          "rest_interface": 21,
+          "controller": 32,
+          "service": 42,
+          "repository": 38,
+          "entity": 199,
+          "scheduler": 1
+        },
+        "total_components": 333,
+        "total_relations": 0,
+        "total_interfaces": 95
+      }
     }
   ],
-  "overall_grade": "A",
-  "executive_summary": "Map-Reduce analysis completed for 4 containers with 737 components.",
+  "overall_grade": "C",
+  "executive_summary": "uvz is a modular monolith system with 738 components across 2 active containers: frontend (404 components, Grade C), backend (333 components, Grade B). Overall architecture grade: C.",
   "top_recommendations": [
-    "Consider extracting large containers into separate services",
-    "Add API documentation for external interfaces",
-    "Implement health checks for all containers"
-  ]
+    "Refactor oversized services into smaller, domain‑focused units with clear interfaces.",
+    "Consolidate and rationalize pipes and adapters to eliminate duplication and centralize shared logic.",
+    "Enforce strict Angular module boundaries, introduce interface contracts, and document architecture to improve separation of concerns and reduce coupling.",
+    "Identify and split oversized services into focused, cohesive units",
+    "Consolidate similar pipes into shared utility functions or services",
+    "Introduce clear interface abstractions for services and adapters",
+    "Review and deduplicate adapters; group them by domain or capability",
+    "Enforce strict module boundaries and avoid cross‑module imports",
+    "Add architectural documentation to clarify layer responsibilities",
+    "Introduce a dedicated domain layer with aggregates and domain services to centralize business logic."
+  ],
+  "technical_debt": {
+    "indicators": [
+      "Excessive number of services (possible God services)",
+      "Large quantity of pipes (logic scattering)",
+      "Redundant adapters (potential duplication)",
+      "Limited explicit interfaces for service contracts",
+      "No visible relationship graph (hard to verify boundaries)",
+      "Very large number of entity classes (199) suggests possible anemic domain model",
+      "High count of service implementations (42) may hide God services or duplicated logic",
+      "Potential direct repository usage from controllers (no explicit service layer for some endpoints)",
+      "Many REST controllers (32) could indicate scattered responsibilities"
+    ],
+    "indicator_count": 9
+  }
 }
