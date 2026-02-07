@@ -31,7 +31,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/action/{type}",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.action_rest_service",
       "evidence_ids": [
         "ev_814"
       ]
@@ -42,7 +42,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/action/{id}",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.action_rest_service",
       "evidence_ids": [
         "ev_815"
       ]
@@ -53,7 +53,7 @@
       "type": "rest_endpoint",
       "path": "/web/uvz/",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.module_adapters_staticwebresources.static_content_controller",
       "evidence_ids": [
         "ev_816"
       ]
@@ -64,7 +64,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/keymanager/{groupId}/reencryptable",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
       "evidence_ids": [
         "ev_817"
       ]
@@ -75,7 +75,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/keymanager/cryptostate",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
       "evidence_ids": [
         "ev_818"
       ]
@@ -86,7 +86,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/archiving/sign-submission-token",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
       "evidence_ids": [
         "ev_819"
       ]
@@ -97,7 +97,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/archiving/sign-reencrytion-token",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
       "evidence_ids": [
         "ev_820"
       ]
@@ -108,7 +108,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/archiving/enabled",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
       "evidence_ids": [
         "ev_821"
       ]
@@ -119,7 +119,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/businesspurposes",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.business_purpose_rest_service_impl",
       "evidence_ids": [
         "ev_822"
       ]
@@ -130,7 +130,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/problem-connections",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.deed_entry_connection_rest_service",
       "evidence_ids": [
         "ev_823"
       ]
@@ -141,7 +141,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}/logs",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.deed_entry_log_rest_service",
       "evidence_ids": [
         "ev_824"
       ]
@@ -152,7 +152,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_825"
       ]
@@ -163,7 +163,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_827"
       ]
@@ -174,7 +174,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_829"
       ]
@@ -185,7 +185,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/to-be-signed",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_830"
       ]
@@ -196,7 +196,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/to-be-approved",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_831"
       ]
@@ -207,7 +207,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_834"
       ]
@@ -218,7 +218,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/bulkcapture",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_836"
       ]
@@ -229,7 +229,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}/signature-folder",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_838"
       ]
@@ -240,7 +240,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/document-handover",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_839"
       ]
@@ -251,7 +251,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/handover",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_840"
       ]
@@ -262,7 +262,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/successordeedselection",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_843"
       ]
@@ -273,7 +273,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/successordeedselection/{processType}",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_844"
       ]
@@ -284,7 +284,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}/correctionnote",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_846"
       ]
@@ -295,7 +295,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_847"
       ]
@@ -306,7 +306,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_848"
       ]
@@ -317,7 +317,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "DELETE",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_849"
       ]
@@ -328,7 +328,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_850"
       ]
@@ -339,7 +339,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/lock",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_851"
       ]
@@ -350,7 +350,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/participants",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_852"
       ]
@@ -361,7 +361,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries",
       "method": "DELETE",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_854"
       ]
@@ -372,7 +372,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/check/submittedwithcf",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_855"
       ]
@@ -383,7 +383,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedentries/check/isvalidforsigning",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
         "ev_856"
       ]
@@ -394,7 +394,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedregistry/locks",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
       "evidence_ids": [
         "ev_857"
       ]
@@ -405,7 +405,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedregistry/locks/{types}",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
       "evidence_ids": [
         "ev_858"
       ]
@@ -416,7 +416,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedregistry/lock/{type}",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
       "evidence_ids": [
         "ev_859"
       ]
@@ -427,7 +427,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/deedtypes",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.deed_type_rest_service_impl",
       "evidence_ids": [
         "ev_860"
       ]
@@ -438,7 +438,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/{deedEntryId}/document-copies",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_861"
       ]
@@ -449,7 +449,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/to-be-archived",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_862"
       ]
@@ -460,7 +460,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/operation-tokens",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_863"
       ]
@@ -471,7 +471,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/reference-hashes",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_864"
       ]
@@ -482,7 +482,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/check-reference-hashes",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_865"
       ]
@@ -493,7 +493,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/check-for-deletion",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_866"
       ]
@@ -504,7 +504,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/info",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_867"
       ]
@@ -515,7 +515,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/triggerWawi",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_868"
       ]
@@ -526,7 +526,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/archiving-failed",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_869"
       ]
@@ -537,7 +537,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/signing-info",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_870"
       ]
@@ -548,7 +548,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/report-metadata/signing-info",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_871"
       ]
@@ -559,7 +559,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/report-metadata/document-status",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_872"
       ]
@@ -570,7 +570,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/report-metadata/document-status-archive",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_873"
       ]
@@ -581,7 +581,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/eto",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_874"
       ]
@@ -592,7 +592,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/documents/{aoId}/reencryption-state",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
         "ev_875"
       ]
@@ -603,7 +603,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_876"
       ]
@@ -614,7 +614,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets",
       "method": "DELETE",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_877"
       ]
@@ -625,7 +625,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets/predecessor",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_878"
       ]
@@ -636,7 +636,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets/finalise-handover",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_879"
       ]
@@ -647,7 +647,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets/finalise-handover",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_880"
       ]
@@ -658,7 +658,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_881"
       ]
@@ -669,7 +669,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_882"
       ]
@@ -680,7 +680,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_883"
       ]
@@ -691,7 +691,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/handoverdatasets/accept",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
         "ev_884"
       ]
@@ -702,7 +702,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/reports/annual",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
         "ev_885"
       ]
@@ -713,7 +713,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/reports/annual/validate",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
         "ev_886"
       ]
@@ -724,7 +724,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/reports/annual-deed-register",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
         "ev_887"
       ]
@@ -735,7 +735,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/reports/annual-participants",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
         "ev_888"
       ]
@@ -746,7 +746,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/reports/deposited-inheritance-contracts",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
         "ev_889"
       ]
@@ -757,7 +757,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/job/retry",
       "method": "PATCH",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
         "ev_890"
       ]
@@ -768,7 +768,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/job/retry/{id}",
       "method": "PATCH",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
         "ev_891"
       ]
@@ -779,7 +779,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/job/metrics",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
         "ev_892"
       ]
@@ -790,7 +790,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/job/{type}/state",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
         "ev_893"
       ]
@@ -801,7 +801,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/job/reencryption/{jobId}/document",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.reencryption_job_rest_service",
       "evidence_ids": [
         "ev_894"
       ]
@@ -812,7 +812,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/notaryrepresentations",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.notary_representation_rest_service",
       "evidence_ids": [
         "ev_895"
       ]
@@ -823,7 +823,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/numbermanagement",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
         "ev_896"
       ]
@@ -834,7 +834,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/numbermanagement/validate",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
         "ev_897"
       ]
@@ -845,7 +845,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/numbermanagement/numberformat",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
         "ev_898"
       ]
@@ -856,7 +856,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/numbermanagement/numberformat",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
         "ev_899"
       ]
@@ -867,7 +867,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/numbermanagement/validate/bulkcapture",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
         "ev_900"
       ]
@@ -878,7 +878,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/official-activity-metadata",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
       "evidence_ids": [
         "ev_901"
       ]
@@ -889,7 +889,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/official-activity-metadata/notariesandchambers",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
       "evidence_ids": [
         "ev_902"
       ]
@@ -900,7 +900,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/official-activity-metadata/successors",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
       "evidence_ids": [
         "ev_903"
       ]
@@ -911,7 +911,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/report-metadata/",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
         "ev_904"
       ]
@@ -922,7 +922,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/report-metadata/to-be-signed",
       "method": "PUT",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
         "ev_905"
       ]
@@ -933,7 +933,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/report-metadata/",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
         "ev_906"
       ]
@@ -944,7 +944,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/report-metadata/{id}",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
         "ev_907"
       ]
@@ -955,7 +955,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/report-metadata/{id}",
       "method": "DELETE",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
         "ev_908"
       ]
@@ -966,7 +966,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/task",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
         "ev_909"
       ]
@@ -977,7 +977,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/task/initial",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
         "ev_910"
       ]
@@ -988,7 +988,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/task/{id}",
       "method": "PATCH",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
         "ev_911"
       ]
@@ -999,7 +999,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/task/{id}/work",
       "method": "PATCH",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
         "ev_912"
       ]
@@ -1010,7 +1010,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/task/{id}",
       "method": "DELETE",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
         "ev_913"
       ]
@@ -1021,7 +1021,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/workflow/{type}",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
         "ev_914"
       ]
@@ -1032,7 +1032,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/workflow/initial",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
         "ev_915"
       ]
@@ -1043,7 +1043,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/workflow",
       "method": "POST",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
         "ev_916"
       ]
@@ -1054,7 +1054,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/workflow/{id}/proceed",
       "method": "PATCH",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
         "ev_917"
       ]
@@ -1065,7 +1065,7 @@
       "type": "rest_endpoint",
       "path": "/uvz/v1/workflow/{id}/confirm",
       "method": "PATCH",
-      "implemented_by": null,
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
         "ev_918"
       ]
@@ -1076,7 +1076,7 @@
       "type": "route",
       "path": "/basic-data",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_basic-data-tab.basic_data_tab_component",
       "evidence_ids": [
         "ev_919"
       ]
@@ -1087,7 +1087,7 @@
       "type": "route",
       "path": "/remarks",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_remarks-data-tab.remarks_data_tab_component",
       "evidence_ids": [
         "ev_920"
       ]
@@ -1098,7 +1098,7 @@
       "type": "route",
       "path": "/registrations",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_registrations-data-tab.registrations_data_tab_component",
       "evidence_ids": [
         "ev_921"
       ]
@@ -1109,7 +1109,7 @@
       "type": "route",
       "path": "/participants",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_participants-data-tab.participants_data_tab_component",
       "evidence_ids": [
         "ev_922"
       ]
@@ -1120,7 +1120,7 @@
       "type": "route",
       "path": "/issuing-copy-notes",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_issuing-copy-notes-data-tab.issuing_copy_notes_data_tab_component",
       "evidence_ids": [
         "ev_923"
       ]
@@ -1131,7 +1131,7 @@
       "type": "route",
       "path": "/notes",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_correction-notes-tab-data.correction_notes_tab_data_component",
       "evidence_ids": [
         "ev_924"
       ]
@@ -1142,7 +1142,7 @@
       "type": "route",
       "path": "/links",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_connections-data-tab.connections_data_tab_component",
       "evidence_ids": [
         "ev_925"
       ]
@@ -1153,7 +1153,7 @@
       "type": "route",
       "path": "/document",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-form-page_tabs_document-data-tab.document_data_tab_component",
       "evidence_ids": [
         "ev_926"
       ]
@@ -1175,7 +1175,7 @@
       "type": "route",
       "path": "/uvz",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.adapters_authentication_login-page.login_page_component",
       "evidence_ids": [
         "ev_928"
       ]
@@ -1186,7 +1186,7 @@
       "type": "route",
       "path": "/access-denied",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.page_access-denied-page.access_denied_page_component",
       "evidence_ids": [
         "ev_929"
       ]
@@ -1197,7 +1197,7 @@
       "type": "route",
       "path": "/deed-entries",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-entry_components_deed-overview-page.deed_overview_page_component",
       "evidence_ids": [
         "ev_932"
       ]
@@ -1208,7 +1208,7 @@
       "type": "route",
       "path": "/deed-view/:deedEntryId",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-entry_components_deed-view-page.deed_view_page_component",
       "evidence_ids": [
         "ev_933"
       ]
@@ -1241,7 +1241,7 @@
       "type": "route",
       "path": "/deed-form/:deedEntryId",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.deed-entry_components_deed-form-page.deed_form_page_component",
       "evidence_ids": [
         "ev_936"
       ]
@@ -1252,7 +1252,7 @@
       "type": "route",
       "path": "/reports",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-report-page_report-configuration.report_configuration_component",
       "evidence_ids": [
         "ev_938"
       ]
@@ -1263,7 +1263,7 @@
       "type": "route",
       "path": "/annual/preview",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-report-page_annual-report-preview.annual_report_preview_component",
       "evidence_ids": [
         "ev_939"
       ]
@@ -1274,7 +1274,7 @@
       "type": "route",
       "path": "/annual-deed-register/preview",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-report-page_annual-deed-register-report-preview.annual_deed_register_report_preview_component",
       "evidence_ids": [
         "ev_940"
       ]
@@ -1285,7 +1285,7 @@
       "type": "route",
       "path": "/deposited-inheritance-contracts/preview",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-report-page_deposited-inheritance-contracts-preview.deposited_inheritance_contracts_preview_component",
       "evidence_ids": [
         "ev_941"
       ]
@@ -1296,7 +1296,7 @@
       "type": "route",
       "path": "/annual-participants/preview",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-report-page_annual-participants-report-preview.annual_participants_report_preview_component",
       "evidence_ids": [
         "ev_942"
       ]
@@ -1307,7 +1307,7 @@
       "type": "route",
       "path": "/reports-metadata/:id",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.report-metadata_report-readonly-view.report_readonly_view_component",
       "evidence_ids": [
         "ev_943"
       ]
@@ -1318,7 +1318,7 @@
       "type": "route",
       "path": "/reports-metadata",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.report-metadata_report-metadata-overview.report_metadata_overview_component",
       "evidence_ids": [
         "ev_944"
       ]
@@ -1329,7 +1329,7 @@
       "type": "route",
       "path": "/successor-depositing",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-mode-selection.deed_successor_mode_selection_component",
       "evidence_ids": [
         "ev_945"
       ]
@@ -1340,7 +1340,7 @@
       "type": "route",
       "path": "/complete",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-complete.deed_successor_page_component",
       "evidence_ids": [
         "ev_946"
       ]
@@ -1351,7 +1351,7 @@
       "type": "route",
       "path": "/partial",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-partial.deed_successor_partial_component",
       "evidence_ids": [
         "ev_947"
       ]
@@ -1362,7 +1362,7 @@
       "type": "route",
       "path": "/logging/:deedEntryId",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.logging.business_logging_component",
       "evidence_ids": [
         "ev_948"
       ]
@@ -1373,7 +1373,7 @@
       "type": "route",
       "path": "/settings",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.number-management_components.number_format_configuration_component",
       "evidence_ids": [
         "ev_949"
       ]
@@ -1384,7 +1384,7 @@
       "type": "route",
       "path": "/**",
       "method": "GET",
-      "implemented_by": null,
+      "implemented_by": "component.frontend.page_page-not-found-page.page_not_found_page_component",
       "evidence_ids": [
         "ev_950"
       ]
