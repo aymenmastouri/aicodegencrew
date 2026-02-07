@@ -9,7 +9,7 @@ Extracts shared infrastructure from C4Crew and Arc42Crew:
 
 Subclasses only need to implement:
 - crew_name: str property
-- agent_config_key: str property
+- agent_config: dict property (role, goal, backstory)
 - _get_extra_tools() -> list (optional)
 - _summarize_facts() -> dict
 - run() -> str
@@ -18,7 +18,6 @@ import json
 import logging
 import os
 import time
-import yaml
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
@@ -111,11 +110,6 @@ class MiniCrewBase(ABC):
         # Build template variables for tasks
         self.summaries = self._summarize_facts()
 
-        # Load agent config from YAML
-        agents_yaml_path = Path(self._get_agents_yaml_dir()) / "config" / "agents.yaml"
-        with open(agents_yaml_path, "r", encoding="utf-8") as f:
-            self.agents_config = yaml.safe_load(f)
-
         # MCP server config (resolved once, reused across mini-crews)
         self._mcp_server_path = self._resolve_mcp_server_path()
 
@@ -138,13 +132,8 @@ class MiniCrewBase(ABC):
 
     @property
     @abstractmethod
-    def agent_config_key(self) -> str:
-        """Key in agents.yaml, e.g. 'c4_architect' or 'arc42_architect'."""
-        ...
-
-    @abstractmethod
-    def _get_agents_yaml_dir(self) -> str:
-        """Return directory containing config/agents.yaml."""
+    def agent_config(self) -> dict[str, str]:
+        """Agent configuration dict with keys: role, goal, backstory."""
         ...
 
     @abstractmethod
@@ -252,8 +241,11 @@ class MiniCrewBase(ABC):
 
     def _create_agent(self) -> Agent:
         """Create a fresh agent with fresh LLM context."""
+        config = self.agent_config
         return Agent(
-            config=self.agents_config[self.agent_config_key],
+            role=config["role"],
+            goal=config["goal"],
+            backstory=config["backstory"],
             llm=self._create_llm(),
             tools=self._create_tools(),
             mcps=[self._create_mcp_config()],

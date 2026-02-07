@@ -335,6 +335,11 @@ class ArchitectureModelBuilder:
         self._old_to_new_component_id: Dict[str, str] = {}
         self._old_to_new_evidence_id: Dict[str, str] = {}
         self._name_to_component_id: Dict[str, str] = {}  # For deduplication
+        # Enhanced indices for disambiguation
+        self._name_to_component_ids: Dict[str, List[str]] = {}  # Multi-value: name -> [canonical_ids]
+        self._stereotype_name_to_id: Dict[str, str] = {}  # "stereotype:name" -> canonical_id
+        self._file_to_component_id: Dict[str, str] = {}  # file_path -> canonical_id
+        self._interface_to_impl_name: Dict[str, str] = {}  # "OrderService" -> "OrderServiceImpl"
     
     def add_containers(self, containers: List[Dict], evidence: Dict[str, CollectedEvidence]):
         """Add raw container data from ContainerDetector."""
@@ -537,6 +542,18 @@ class ArchitectureModelBuilder:
             for comp in group:
                 self._old_to_new_component_id[comp.id] = canonical_id
             self._name_to_component_id[base.name] = canonical_id
+
+            # Build enhanced indices
+            if base.name not in self._name_to_component_ids:
+                self._name_to_component_ids[base.name] = []
+            self._name_to_component_ids[base.name].append(canonical_id)
+            self._stereotype_name_to_id[f"{base.stereotype}:{base.name}"] = canonical_id
+            for fp in file_paths:
+                self._file_to_component_id[fp] = canonical_id
+            # Track interface-to-impl mapping (e.g. "OrderService" -> "OrderServiceImpl")
+            if base.name.endswith("Impl"):
+                iface_name = base.name[:-4]  # Remove "Impl" suffix
+                self._interface_to_impl_name[iface_name] = base.name
     
     def _normalize_interfaces(self):
         """Normalize interfaces with stable IDs."""
@@ -597,9 +614,17 @@ class ArchitectureModelBuilder:
             # Get relation type (support both 'type' and 'relation_type' attributes)
             rel_type = getattr(rel, 'type', None) or getattr(rel, 'relation_type', 'uses')
             
-            # Resolve from/to to canonical IDs
-            from_id = self._resolve_component_ref(rel.from_id)
-            to_id = self._resolve_component_ref(rel.to_id)
+            # Resolve from/to to canonical IDs (with disambiguation hints)
+            from_id = self._resolve_component_ref(
+                rel.from_id,
+                stereotype_hint=getattr(rel, 'from_stereotype_hint', None),
+                file_hint=getattr(rel, 'from_file_hint', None),
+            )
+            to_id = self._resolve_component_ref(
+                rel.to_id,
+                stereotype_hint=getattr(rel, 'to_stereotype_hint', None),
+                file_hint=getattr(rel, 'to_file_hint', None),
+            )
             
             # Skip if we couldn't resolve
             if not from_id or not to_id:
@@ -628,20 +653,72 @@ class ArchitectureModelBuilder:
                 evidence_ids=evidence_ids,
             ))
     
-    def _resolve_component_ref(self, ref: str) -> Optional[str]:
-        """Resolve a component reference to canonical ID."""
-        # Direct mapping from old ID
+    def _resolve_component_ref(
+        self,
+        ref: str,
+        stereotype_hint: str = None,
+        file_hint: str = None,
+    ) -> Optional[str]:
+        """
+        Resolve a component reference to canonical ID using 7-tier fallback.
+
+        Tiers:
+        1. Direct old-ID mapping
+        2. Already canonical
+        3. Exact name match (unambiguous)
+        4. Disambiguate by stereotype hint
+        5. Interface-to-implementation mapping
+        6. Fuzzy suffix match (e.g. "UserService" <-> "UserServiceImpl")
+        7. File path match
+        """
+        # Tier 1: Direct mapping from old ID
         if ref in self._old_to_new_component_id:
             return self._old_to_new_component_id[ref]
-        
-        # By name
-        if ref in self._name_to_component_id:
-            return self._name_to_component_id[ref]
-        
-        # Already canonical?
+
+        # Tier 2: Already canonical
         if ref in self.components:
             return ref
-        
+
+        # Tier 3: Exact name match — unambiguous
+        candidates = self._name_to_component_ids.get(ref, [])
+        if len(candidates) == 1:
+            return candidates[0]
+
+        # Tier 4: Disambiguate by stereotype hint (when multiple candidates)
+        if candidates and stereotype_hint:
+            key = f"{stereotype_hint}:{ref}"
+            if key in self._stereotype_name_to_id:
+                return self._stereotype_name_to_id[key]
+
+        # Tier 5: Interface-to-implementation mapping
+        # e.g. ref="OrderService" -> impl="OrderServiceImpl" -> canonical
+        impl_name = self._interface_to_impl_name.get(ref)
+        if impl_name:
+            impl_candidates = self._name_to_component_ids.get(impl_name, [])
+            if len(impl_candidates) == 1:
+                return impl_candidates[0]
+
+        # Tier 6: Fuzzy suffix match — try adding/removing "Impl"
+        if ref.endswith("Impl"):
+            base_name = ref[:-4]
+            base_candidates = self._name_to_component_ids.get(base_name, [])
+            if len(base_candidates) == 1:
+                return base_candidates[0]
+        else:
+            impl_candidates = self._name_to_component_ids.get(ref + "Impl", [])
+            if len(impl_candidates) == 1:
+                return impl_candidates[0]
+
+        # Tier 7: File path match
+        if file_hint:
+            canonical = self._file_to_component_id.get(file_hint)
+            if canonical:
+                return canonical
+
+        # If we have ambiguous candidates but no hints resolved them, take first
+        if candidates:
+            return candidates[0]
+
         return None
 
 

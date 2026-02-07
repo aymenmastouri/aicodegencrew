@@ -59,6 +59,10 @@ class EndpointFlowBuilder:
         self.component_by_name: Dict[str, CollectedComponent] = {
             c.name: c for c in components
         }
+        # Reverse lookup: adapter ID -> component name
+        self._id_to_name: Dict[str, str] = {c.id: c.name for c in components}
+
+        # Index relations by from_id (raw component NAME, since RelationHints use names)
         self.relations_from: Dict[str, List[CollectedRelation]] = {}
         for rel in relations:
             if rel.from_id not in self.relations_from:
@@ -150,7 +154,7 @@ class EndpointFlowBuilder:
         Recursively follow dependency relations to build call chain.
 
         Args:
-            component_id: Current component to explore
+            component_id: Current component to explore (adapter ID like comp_1_Name)
             chain: Chain being built (modified in-place)
             visited: Set of visited component IDs
             evidence_ids: List of evidence IDs (modified in-place)
@@ -159,8 +163,9 @@ class EndpointFlowBuilder:
         if max_depth <= 0:
             return
 
-        # Get all relations from this component
-        relations = self.relations_from.get(component_id, [])
+        # Relations use raw names as from_id/to_id, so look up by component NAME
+        component_name = self._id_to_name.get(component_id, component_id)
+        relations = self.relations_from.get(component_name, [])
 
         # Prioritize relations based on stereotype progression:
         # controller -> service -> repository -> entity
@@ -173,9 +178,10 @@ class EndpointFlowBuilder:
         }
 
         # Sort relations by target stereotype priority
+        # Note: rel.to_id is a raw component NAME, so look up by name
         sorted_relations = []
         for rel in relations:
-            target_component = self.component_by_id.get(rel.to_id)
+            target_component = self.component_by_name.get(rel.to_id)
             if target_component and target_component.id not in visited:
                 priority = stereotype_priority.get(target_component.stereotype, 99)
                 sorted_relations.append((priority, rel, target_component))

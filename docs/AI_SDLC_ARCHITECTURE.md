@@ -110,10 +110,10 @@ The initial implementation focuses on architecture facts extraction:
 |--------|-------|
 | Components | 738 |
 | Interfaces | 125 |
-| Relations | 169 |
+| Relations | 169 (raw), target 85%+ resolved |
 | Evidence Items | 1005 |
-| Relation Resolution | 54% (target: 85%) |
-| Endpoint Flows | 0 (to be implemented) |
+| Relation Resolution | 7-tier resolver (see 4.2.1) |
+| Endpoint Flows | Controller-Service-Repository chains (see 4.2.2) |
 
 ---
 
@@ -222,6 +222,7 @@ class MiniCrewBase(ABC):
 
     # Subclasses implement:
     crew_name: str          # "C4" or "Arc42"
+    agent_config: dict      # {"role": ..., "goal": ..., "backstory": ...}
     _summarize_facts()      # Create template variables
     run()                   # Execute all mini-crews
 ```
@@ -249,11 +250,9 @@ src/aicodegencrew/
 
         architecture_analysis/         # Phase 2: Architecture Analysis
             __init__.py
-            crew.py                    # ArchitectureAnalysisCrew
+            crew.py                    # ArchitectureAnalysisCrew (5 mini-crews, all Python)
             mapreduce_crew.py          # MapReduceAnalysisCrew (large repos)
-            config/
-                agents.yaml            # 4 agents: tech_architect, func_analyst, etc.
-                tasks.yaml             # analyze tasks per agent + merge task
+            container_crew.py          # ContainerAnalysisCrew (per-container)
             tools/
                 __init__.py
                 rag_query_tool.py      # ChromaDB semantic search
@@ -265,15 +264,11 @@ src/aicodegencrew/
 
             c4/                        # C4 Mini-Crews (5 crews)
                 __init__.py
-                crew.py                # C4Crew(MiniCrewBase) - task descriptions as Python constants
-                config/
-                    agents.yaml        # c4_architect agent
+                crew.py                # C4Crew(MiniCrewBase) - all Python, no YAML
 
-            arc42/                     # Arc42 Mini-Crews (7 crews)
+            arc42/                     # Arc42 Mini-Crews (15 crews)
                 __init__.py
-                crew.py                # Arc42Crew(MiniCrewBase) - task descriptions as Python constants
-                config/
-                    agents.yaml        # arc42_architect agent
+                crew.py                # Arc42Crew(MiniCrewBase) - all Python, no YAML
 
             tools/                     # Crew tools
                 __init__.py
@@ -301,9 +296,11 @@ src/aicodegencrew/
                 spring/                # Spring Boot specialists
                 angular/               # Angular specialists
                 database/              # Database specialists
-            model_builder.py
-            endpoint_flow_builder.py
+            model_builder.py           # Canonical ID generation + 7-tier resolver
+            endpoint_flow_builder.py   # Controller→Service→Repository chains
             dimension_writers.py
+            collectors/
+                fact_adapter.py        # RawFact→CollectedComponent/Interface/Relation
 
     shared/
         __init__.py
@@ -423,7 +420,9 @@ The collector system uses a modular architecture with an **Orchestrator** that c
 
 | Component | Purpose |
 |-----------|---------|
-| `EndpointFlowBuilder` | Builds request flow chains (Controller→Service→Repository) |
+| `FactAdapter` | Converts RawFact types to CollectedComponent/Interface/Relation (see 4.2.3) |
+| `ModelBuilder` | Deduplication, canonical ID generation, 7-tier relation resolution (see 4.2.1) |
+| `EndpointFlowBuilder` | Builds request flow chains Controller→Service→Repository (see 4.2.2) |
 | `QualityValidator` | Validates extracted facts for completeness |
 | `FactsWriter` | Writes architecture_facts.json and evidence_map.json |
 
@@ -484,26 +483,112 @@ The collector system uses a modular architecture with an **Orchestrator** that c
 | Use exact class/file names | Define flows or sequences |
 |  | Summarize or interpret |
 
+#### 4.2.1 Relation Resolution Pipeline
+
+Relations are collected as `RelationHint` objects by specialist collectors (e.g., constructor injection in `SpringServiceCollector`). These carry **disambiguation hints** to improve resolution accuracy:
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| `from_name` / `to_name` | Raw component names | `"ActionRestServiceImpl"` → `"ActionService"` |
+| `from_stereotype_hint` | Source stereotype | `"service"` |
+| `to_stereotype_hint` | Target stereotype | `"repository"` |
+| `from_file_hint` | Source file path | `"backend/src/.../ActionRestServiceImpl.java"` |
+| `to_file_hint` | Target file path | (optional) |
+
+**FactAdapter** (`collectors/fact_adapter.py`) converts `RelationHint` → `CollectedRelation`, preserving all hints. The `DimensionResultsAdapter` also extracts hints from serialized dict format.
+
+**ModelBuilder** (`model_builder.py`) resolves raw names to canonical IDs using a **7-tier fallback**:
+
+| Tier | Strategy | Example |
+|------|----------|---------|
+| 1 | Direct old-ID mapping | `"comp_1_ActionService"` → canonical |
+| 2 | Already canonical | `"component.backend.service.action_service"` |
+| 3 | Exact name match (unambiguous) | `"ActionService"` → 1 candidate |
+| 4 | Disambiguate by stereotype hint | `"service:ActionService"` → unique |
+| 5 | Interface-to-implementation | `"OrderService"` → `"OrderServiceImpl"` |
+| 6 | Fuzzy suffix match | `"UserService"` ↔ `"UserServiceImpl"` |
+| 7 | File path match | `from_file_hint` → component owning that file |
+
+Enhanced indices built during `_normalize_components()`:
+- `_name_to_component_ids`: Multi-value (name → list of canonical IDs)
+- `_stereotype_name_to_id`: `"stereotype:name"` → canonical ID
+- `_file_to_component_id`: File path → canonical ID
+- `_interface_to_impl_name`: `"OrderService"` → `"OrderServiceImpl"`
+
+#### 4.2.2 Endpoint Flow Builder
+
+`EndpointFlowBuilder` (`endpoint_flow_builder.py`) constructs evidence-based request chains from REST interfaces:
+
+```
+Interface: POST /workflow/create
+  → Controller: WorkflowController (via implemented_by)
+    → Service: WorkflowServiceImpl (via relation: uses)
+      → Repository: WorkflowRepository (via relation: uses)
+```
+
+**Key implementation details:**
+- `implemented_by` field on `CollectedInterface` links REST endpoints to controllers
+- Relations use raw component **names** (not adapter IDs), so chain following uses `_id_to_name` reverse lookup
+- Chain depth limited to 5 levels to prevent explosion
+- Stereotype-based priority sorting: controller(0) → service(1) → repository(2) → entity(3)
+- Only flows with 2+ chain elements are included in output
+
+#### 4.2.3 FactAdapter Pipeline
+
+The `FactAdapter` bridges new collector outputs (Raw types) to legacy types consumed by `ModelBuilder`:
+
+```
+Collectors (RawComponent, RawInterface, RelationHint)
+    │
+    ▼
+FactAdapter.to_collected_component()   → CollectedComponent
+FactAdapter.to_collected_interface()   → CollectedInterface  (with implemented_by)
+FactAdapter.to_collected_relation()    → CollectedRelation   (with disambiguation hints)
+    │
+    ▼
+DimensionResultsAdapter.convert()      → Dict consumed by ModelBuilder
+    │
+    ▼
+ModelBuilder.build()                   → CanonicalModel (normalized, deduplicated)
+```
+
+**Key transformations:**
+- `RawInterface.implemented_by_hint` → `CollectedInterface.implemented_by`
+- `RelationHint.evidence` (list) → iterated individually for evidence IDs
+- `RelationHint.type` → `CollectedRelation.relation_type`
+- Disambiguation hints (`from_stereotype_hint`, `to_stereotype_hint`, `from_file_hint`, `to_file_hint`) propagated through the full pipeline
+
 ---
 
-### 4.3 Phase 2: Architecture Analysis (NEW)
+### 4.3 Phase 2: Architecture Analysis (Mini-Crews Pattern)
 
 > **Reference Diagram:** [docs/diagrams/analysis-crew.drawio](diagrams/analysis-crew.drawio)
 
 | Attribute | Specification |
 |-----------|---------------|
-| Type | Crew (AI Agents) |
+| Type | Crew (AI Agents) - Mini-Crews Pattern |
 | Module | `crews/architecture_analysis/crew.py` |
+| Config | Python constants (no YAML) |
 | LLM Requirement | Yes |
 | Input | `architecture_facts.json` + ChromaDB Index |
 | Output | `knowledge/architecture/analyzed_architecture.json` |
+| Checkpoint | `.checkpoint_analysis.json` (resume on failure) |
 | Dependency | Phase 0 (Index) + Phase 1 (Facts) |
-| Status | In Progress |
+| Status | Implemented |
 
-#### Multi-Agent Analysis Pattern
+#### Mini-Crew Architecture
 
-The Analysis Crew uses **4 specialized agents** with different perspectives.
+The Analysis Crew uses **5 mini-crews** with **4 specialized agent types**,
+each mini-crew getting a fresh agent and fresh LLM context window.
 See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
+
+| Mini-Crew | Agent | Tasks | Output Files |
+|-----------|-------|-------|-------------|
+| `tech_analysis` | tech_architect | 4: macro, backend, frontend, quality | `01-04_*.json` |
+| `domain_analysis` | func_analyst | 4: domain, capabilities, contexts, states | `05-08_*.json` |
+| `workflow_analysis` | func_analyst | 4: workflows, sagas, runtime, api | `09-12_*.json` |
+| `quality_analysis` | quality_analyst | 4: complexity, debt, security, ops | `13-16_*.json` |
+| `synthesis` | synthesis_lead | 1: merge all 16 results | `analyzed_architecture.json` |
 
 #### Agents and Responsibilities
 
@@ -583,12 +668,15 @@ Instead, it uses strategies to analyze MORE data within the same context window:
 
 > See [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) for the agent context window layout.
 
-**Configuration (agents.yaml):**
+**Configuration (Python constants in crew.py):**
 
-```yaml
-tech_architect:
-  max_iter: 50      # Allow 50 tool calls before stopping
-  # Tool queries use limit=500 for comprehensive results
+```python
+AGENT_CONFIGS = {
+    "tech_architect": {"role": "Senior Technical Architect", ...},
+    "func_analyst":   {"role": "Senior Functional Analyst", ...},
+    "quality_analyst": {"role": "Senior Quality Architect", ...},
+    "synthesis_lead":  {"role": "Lead Architect - Synthesis", ...},
+}
 ```
 | **RAG Integration** | Semantic code search adds context beyond structure |
 

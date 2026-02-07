@@ -72,6 +72,11 @@ class CollectedRelation:
     to_id: str
     relation_type: str  # uses, implements, inherits, etc.
     evidence_ids: List[str] = field(default_factory=list)
+    # Disambiguation hints (carried from RelationHint)
+    from_stereotype_hint: str = ""
+    to_stereotype_hint: str = ""
+    from_file_hint: str = ""
+    to_file_hint: str = ""
 
 
 class FactAdapter:
@@ -190,9 +195,11 @@ class FactAdapter:
         elif hasattr(raw, 'http_method') and raw.http_method:
             method = raw.http_method
         
-        # Get implemented_by
+        # Get implemented_by (check implemented_by_hint first - that's the field on RawInterface)
         implemented_by = ""
-        if hasattr(raw, 'implemented_by') and raw.implemented_by:
+        if hasattr(raw, 'implemented_by_hint') and raw.implemented_by_hint:
+            implemented_by = raw.implemented_by_hint
+        elif hasattr(raw, 'implemented_by') and raw.implemented_by:
             implemented_by = raw.implemented_by
         elif hasattr(raw, 'component') and raw.component:
             implemented_by = raw.component
@@ -211,6 +218,7 @@ class FactAdapter:
             interface_type=iface_type,
             endpoint=path,
             method=method or "GET",
+            implemented_by=implemented_by,
             evidence_ids=evidence_ids,
             metadata={"implemented_by": implemented_by} if implemented_by else {},
         )
@@ -222,20 +230,24 @@ class FactAdapter:
         """
         Convert a RelationHint to CollectedRelation.
         """
-        # Get from_id (could be name or ID)
         from_id = hint.from_name
         to_id = hint.to_name
-        
-        # Evidence
+
+        # Evidence - iterate list of RawEvidence objects
         evidence_ids = []
         if hasattr(hint, 'evidence') and hint.evidence:
-            evidence_ids = [self._make_evidence_id(hint.evidence)]
-        
+            for ev in hint.evidence:
+                evidence_ids.append(self._make_evidence_id(ev))
+
         return CollectedRelation(
             from_id=from_id,
             to_id=to_id,
-            type=hint.relation_type,
+            relation_type=hint.type,
             evidence_ids=evidence_ids,
+            from_stereotype_hint=hint.from_stereotype_hint or "",
+            to_stereotype_hint=hint.to_stereotype_hint or "",
+            from_file_hint=hint.from_file_hint or "",
+            to_file_hint=hint.to_file_hint or "",
         )
     
     def to_collected_evidence(
@@ -382,12 +394,16 @@ class DimensionResultsAdapter:
         relations = []
         for hint in results.relation_hints:
             if isinstance(hint, dict):
-                # Already a dict
+                # Already a dict (serialized via RelationHint.to_dict())
                 rel = CollectedRelation(
                     from_id=hint.get("from_name", hint.get("from", "")),
                     to_id=hint.get("to_name", hint.get("to", "")),
                     relation_type=hint.get("relation_type", hint.get("type", "uses")),
                     evidence_ids=hint.get("evidence_ids", []),
+                    from_stereotype_hint=hint.get("from_stereotype", ""),
+                    to_stereotype_hint=hint.get("to_stereotype", ""),
+                    from_file_hint=hint.get("from_file", ""),
+                    to_file_hint=hint.get("to_file", ""),
                 )
             else:
                 # RelationHint object
