@@ -810,6 +810,25 @@ class ArchitectureAnalysisCrew:
                 result = crew.kickoff()
                 duration = time.time() - start_time
                 logger.info(f"[Phase2] Completed Mini-Crew: {name} ({duration:.1f}s)")
+
+                # Log success metric
+                try:
+                    from ...shared.utils.logger import log_metric
+                    tokens = getattr(result, 'token_usage', {})
+                    total_tokens = tokens.get('total_tokens', 0) if isinstance(tokens, dict) else 0
+                    log_metric(
+                        "mini_crew_complete",
+                        crew_type="Phase2",
+                        crew_name=name,
+                        duration_seconds=round(duration, 1),
+                        tasks=len(tasks),
+                        attempts=attempt,
+                        total_tokens=total_tokens,
+                        estimated=total_tokens == 0,
+                    )
+                except Exception:
+                    pass
+
                 self._save_checkpoint(name)
                 return str(result)
 
@@ -839,6 +858,18 @@ class ArchitectureAnalysisCrew:
                 raise
 
             finally:
+                if tracker and tracker.calls:
+                    try:
+                        from ...shared.utils.logger import log_metric as _log_metric
+                        _log_metric(
+                            "guardrail_summary",
+                            crew_name=name,
+                            total_calls=len(tracker.calls),
+                            unique_calls=len(set(tracker.calls)),
+                            blocked=len(tracker.calls) - len(set(tracker.calls)),
+                        )
+                    except Exception:
+                        pass
                 uninstall_guardrails(tracker)
 
         raise RuntimeError(f"Mini-crew {name} failed after {max_retries} attempts")
