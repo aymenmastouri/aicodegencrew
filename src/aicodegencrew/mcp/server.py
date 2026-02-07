@@ -17,6 +17,9 @@ Best Practices (from MCP docs):
     - Use logging to stderr instead
     - Validate all tool inputs
     - Return structured JSON responses
+    
+CRITICAL: This module MUST NOT import from aicodegencrew main package!
+          The main package logs to stdout which corrupts STDIO transport.
 """
 
 import json
@@ -321,6 +324,166 @@ def get_statistics() -> str:
     """
     tools = get_knowledge_tools()
     result = tools.get_statistics()
+    return json.dumps(result, indent=2)
+
+
+# ========== Module Dimension Tools ==========
+
+@mcp.tool()
+def get_module_overview(module: str) -> str:
+    """
+    Get complete overview of a module: all components, relations, and endpoints.
+    
+    Args:
+        module: Module name (e.g., "workflow", "deed", "user")
+    
+    Returns:
+        Complete module analysis with components, internal/external relations, and endpoints.
+    """
+    tools = get_knowledge_tools()
+    result = tools.get_module_overview(module)
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+def list_modules() -> str:
+    """
+    List all modules/packages in the codebase with component counts.
+    
+    Returns:
+        List of modules sorted by component count, with stereotype breakdown.
+    """
+    tools = get_knowledge_tools()
+    result = tools.list_modules()
+    return json.dumps(result, indent=2)
+
+
+# ========== Dependency Dimension Tools ==========
+
+@mcp.tool()
+def get_dependencies_tree(component_id: str, depth: int = 3, direction: str = "outgoing") -> str:
+    """
+    Get full dependency tree for a component.
+    
+    Args:
+        component_id: Component ID or name (e.g., "WorkflowService")
+        depth: How deep to traverse (default: 3, max recommended: 5)
+        direction: "outgoing" (what I depend on), "incoming" (what depends on me), or "both"
+    
+    Returns:
+        Hierarchical dependency tree with all transitive dependencies.
+    """
+    tools = get_knowledge_tools()
+    result = tools.get_dependencies_tree(component_id, depth, direction)
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+def get_circular_dependencies() -> str:
+    """
+    Find potential circular dependencies in the codebase.
+    
+    Returns:
+        List of dependency cycles (architectural smell that should be resolved).
+    """
+    tools = get_knowledge_tools()
+    result = tools.get_circular_dependencies()
+    return json.dumps(result, indent=2)
+
+
+# ========== Data Dimension Tools ==========
+
+@mcp.tool()
+def get_entities() -> str:
+    """
+    Get all entity/domain model classes.
+    
+    Returns:
+        List of all entities, models, aggregates, and value objects.
+    """
+    tools = get_knowledge_tools()
+    result = tools.get_entities()
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+def get_entity_relationships(entity_name: str) -> str:
+    """
+    Get all relationships for an entity (JPA relations, references, etc.).
+    
+    Args:
+        entity_name: Entity name (e.g., "DeedEntry", "Workflow")
+    
+    Returns:
+        JPA relations (OneToMany, ManyToOne, etc.) and other references.
+    """
+    tools = get_knowledge_tools()
+    result = tools.get_entity_relationships(entity_name)
+    return json.dumps(result, indent=2)
+
+
+# ========== API Dimension Tools ==========
+
+@mcp.tool()
+def get_api_overview() -> str:
+    """
+    Get complete API overview: all endpoints grouped by resource.
+    
+    Returns:
+        All REST endpoints organized by base path/resource.
+    """
+    tools = get_knowledge_tools()
+    result = tools.get_api_overview()
+    return json.dumps(result, indent=2)
+
+
+@mcp.tool()
+def get_controllers_with_endpoints() -> str:
+    """
+    Get all controllers with their endpoints.
+    
+    Returns:
+        List of controllers and the endpoints they expose.
+    """
+    tools = get_knowledge_tools()
+    result = tools.get_controllers_with_endpoints()
+    return json.dumps(result, indent=2)
+
+
+# ========== Batch Query Tool ==========
+
+@mcp.tool()
+def batch_query(queries: str) -> str:
+    """
+    Execute multiple queries in ONE call to minimize token usage.
+    This is the most efficient way to gather multiple pieces of information.
+    
+    Args:
+        queries: JSON array of query objects, each with 'tool' and 'args'.
+                 Example: '[{"tool": "get_component", "args": {"name": "WorkflowService"}},
+                           {"tool": "get_relations_for", "args": {"component_id": "..."}}]'
+    
+    Available tools for batch:
+        - get_component, get_component_by_id, search_components
+        - list_components_by_stereotype, list_components_by_layer
+        - get_relations_for, get_call_graph, get_dependencies_tree
+        - get_endpoints, get_endpoint_by_path, get_routes
+        - get_evidence, get_evidence_for_component
+        - get_module_overview, list_modules
+        - get_entities, get_entity_relationships
+        - get_api_overview, get_controllers_with_endpoints
+        - get_architecture_summary, get_statistics
+    
+    Returns:
+        Results for all queries in a single response.
+    """
+    tools = get_knowledge_tools()
+    try:
+        parsed_queries = json.loads(queries)
+    except json.JSONDecodeError as e:
+        return json.dumps({"error": f"Invalid JSON: {e}"})
+    
+    result = tools.batch_query(parsed_queries)
     return json.dumps(result, indent=2)
 
 

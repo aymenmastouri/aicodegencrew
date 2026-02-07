@@ -102,7 +102,7 @@ class Relation(BaseModel):
 
 class EndpointFlow(BaseModel):
     """
-    Evidence-based workflow: endpoint → controller → service → repository chain.
+    Evidence-based workflow: endpoint -> controller -> service -> repository chain.
     Deterministically extracted from code structure (no LLM).
     """
     id: str = Field(..., description="Unique flow ID")
@@ -140,7 +140,7 @@ class ArchitectureFacts(BaseModel):
     components: List[Component] = Field(default_factory=list, description="Components")
     interfaces: List[Interface] = Field(default_factory=list, description="Interfaces")
     relations: List[Relation] = Field(default_factory=list, description="Relations")
-    endpoint_flows: List[EndpointFlow] = Field(default_factory=list, description="Endpoint → Component call chains (for runtime view)")
+    endpoint_flows: List[EndpointFlow] = Field(default_factory=list, description="Endpoint -> Component call chains (for runtime view)")
 
     def validate_evidence(self, evidence_map: Dict[str, EvidenceItem]) -> List[str]:
         """Validate that all facts have evidence. Returns list of errors."""

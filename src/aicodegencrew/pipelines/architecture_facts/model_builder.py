@@ -9,7 +9,7 @@ This is NOT a collector. This is the normalization layer that:
 5. Merges evidence
 
 Pipeline:
-    Index → Collectors (parallel) → Raw Facts → Model Builder → Canonical JSON
+    Index -> Collectors (parallel) -> Raw Facts -> Model Builder -> Canonical JSON
 
 Collectors sammeln.
 Mapper verbindet.

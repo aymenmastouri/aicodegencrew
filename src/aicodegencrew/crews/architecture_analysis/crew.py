@@ -19,6 +19,7 @@ from typing import Optional, Dict, Any, List
 
 from crewai import Agent, Crew, Task, Process
 from crewai.project import CrewBase, agent, task, crew, before_kickoff, after_kickoff
+from crewai.mcp import MCPServerStdio
 from crewai_tools import FileWriterTool
 
 from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool, PartialResultsTool
@@ -229,23 +230,39 @@ class ArchitectureAnalysisCrew:
                 self._rag_tool,
                 self._stereotype_tool,
             ],
+            # MCP Server for token-efficient architecture queries
+            mcps=[
+                MCPServerStdio(
+                    command="python",
+                    args=["mcp_server.py"],
+                    cache_tools_list=True,
+                )
+            ],
             verbose=True,
         )
-    
+
     @agent
     def func_analyst(self) -> Agent:
         """Functional Analyst Agent."""
         return Agent(
-            config=self.agents_config['func_analyst'],
+            config=self.agents_config['func_architect'],
             tools=[
                 self._facts_stats_tool,  # Use FIRST for large repos
                 self._facts_tool,
                 self._rag_tool,
                 self._stereotype_tool,
             ],
+            # MCP Server for token-efficient architecture queries
+            mcps=[
+                MCPServerStdio(
+                    command="python",
+                    args=["mcp_server.py"],
+                    cache_tools_list=True,
+                )
+            ],
             verbose=True,
         )
-    
+
     @agent
     def quality_analyst(self) -> Agent:
         """Quality Analyst Agent."""
@@ -257,9 +274,17 @@ class ArchitectureAnalysisCrew:
                 self._rag_tool,
                 self._stereotype_tool,
             ],
+            # MCP Server for token-efficient architecture queries
+            mcps=[
+                MCPServerStdio(
+                    command="python",
+                    args=["mcp_server.py"],
+                    cache_tools_list=True,
+                )
+            ],
             verbose=True,
         )
-    
+
     @agent
     def synthesis_lead(self) -> Agent:
         """Synthesis Lead Agent."""
@@ -268,6 +293,14 @@ class ArchitectureAnalysisCrew:
             tools=[
                 self._partial_results_tool,  # Read all partial analysis outputs
                 self._file_writer,
+            ],
+            # MCP Server for token-efficient architecture queries
+            mcps=[
+                MCPServerStdio(
+                    command="python",
+                    args=["mcp_server.py"],
+                    cache_tools_list=True,
+                )
             ],
             verbose=True,
         )

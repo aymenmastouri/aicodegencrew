@@ -7,8 +7,8 @@ Detects:
 - Custom query methods (@Query)
 - Entity associations
 
-Output feeds → components.json (repositories)
-             → relations (repository -> entity)
+Output feeds -> components.json (repositories)
+             -> relations (repository -> entity)
 """
 
 import re

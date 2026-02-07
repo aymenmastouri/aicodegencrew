@@ -8,8 +8,8 @@ Detects:
 - Shared modules
 - Module dependencies (imports)
 
-Output feeds → components.json (modules)
-             → relations (module imports)
+Output feeds -> components.json (modules)
+             -> relations (module imports)
 """
 
 import re

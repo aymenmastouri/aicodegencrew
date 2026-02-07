@@ -6,7 +6,7 @@ This collector:
 2. Builds a unified evidence map
 3. Links evidence to facts
 
-Output → evidence.json
+Output -> evidence.json
 """
 
 from pathlib import Path

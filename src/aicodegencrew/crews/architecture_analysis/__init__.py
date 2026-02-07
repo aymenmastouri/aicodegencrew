@@ -13,11 +13,13 @@ Output: analyzed_architecture.json
 
 from .crew import ArchitectureAnalysisCrew
 from .mapreduce_crew import MapReduceAnalysisCrew
+from .container_crew import ContainerAnalysisCrew
 from .tools import FactsQueryTool, RAGQueryTool, StereotypeListTool
 
 __all__ = [
     "ArchitectureAnalysisCrew",
     "MapReduceAnalysisCrew",
+    "ContainerAnalysisCrew",
     "FactsQueryTool",
     "RAGQueryTool",
     "StereotypeListTool",

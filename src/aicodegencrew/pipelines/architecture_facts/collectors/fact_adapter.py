@@ -427,7 +427,17 @@ class DimensionResultsAdapter:
         }
     
     def _find_container_for_fact(self, fact: RawFact, containers: List[Dict]) -> str:
-        """Find which container a fact belongs to based on file path."""
+        """Find which container a fact belongs to based on file path or container_hint."""
+        # First check if fact has explicit container_hint
+        if hasattr(fact, 'container_hint') and fact.container_hint:
+            # Return the container_hint value (e.g., "frontend", "backend")
+            hint = fact.container_hint.lower()
+            for container in containers:
+                if container.get("name", "").lower() == hint:
+                    return container.get("name")
+            # If hint doesn't match any container, still use it
+            return fact.container_hint
+        
         if not hasattr(fact, 'file_path') or not fact.file_path:
             # Default to first container or unknown
             return containers[0].get("name", "unknown") if containers else "unknown"
@@ -444,10 +454,17 @@ class DimensionResultsAdapter:
         file_lower = file_path.lower()
         for container in containers:
             tech = container.get("technology", "").lower()
+            name = container.get("name", "").lower()
+            
+            # Spring Boot: .java files in backend
             if tech == "spring boot" and ".java" in file_lower:
-                return container.get("name", "backend")
-            if tech == "angular" and ".ts" in file_lower and "angular" in file_lower:
-                return container.get("name", "frontend")
+                if "backend" in file_lower or name in file_lower:
+                    return container.get("name", "backend")
+            
+            # Angular: .ts files (not spec.ts) in frontend
+            if tech == "angular" and ".ts" in file_lower and ".spec.ts" not in file_lower:
+                if "frontend" in file_lower or "src/app" in file_lower or name in file_lower:
+                    return container.get("name", "frontend")
         
         # Default
         return containers[0].get("name", "unknown") if containers else "unknown"

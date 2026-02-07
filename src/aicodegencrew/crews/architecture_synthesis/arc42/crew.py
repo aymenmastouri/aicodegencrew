@@ -17,6 +17,7 @@ from typing import List
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, llm, task, tool
 from crewai.agents.agent_builder.base_agent import BaseAgent
+from crewai.mcp import MCPServerStdio
 # Use our safe FileReadTool instead of crewai_tools.FileReadTool (prevents token overflow)
 from crewai_tools import DirectoryReadTool
 
@@ -273,6 +274,14 @@ IMPORTANT:
                 self.chunked_writer_tool(),
                 self.stereotype_list_tool(),
                 self.rag_query_tool(),
+            ],
+            # MCP Server for token-efficient architecture queries
+            mcps=[
+                MCPServerStdio(
+                    command="python",
+                    args=["mcp_server.py"],
+                    cache_tools_list=True,
+                )
             ],
             verbose=True,
             max_iter=30,          # Allow more iterations before forcing final answer

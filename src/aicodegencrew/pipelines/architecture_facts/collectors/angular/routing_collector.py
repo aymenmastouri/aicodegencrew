@@ -7,8 +7,8 @@ Detects:
 - Lazy loaded routes
 - Route parameters
 
-Output feeds → interfaces.json (routes)
-             → relations (route -> component)
+Output feeds -> interfaces.json (routes)
+             -> relations (route -> component)
 """
 
 import re

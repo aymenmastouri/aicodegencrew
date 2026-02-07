@@ -21,7 +21,7 @@ Container Types:
 - database: From docker-compose
 - external: External system references
 
-Output → containers.json
+Output -> containers.json
 """
 
 import re

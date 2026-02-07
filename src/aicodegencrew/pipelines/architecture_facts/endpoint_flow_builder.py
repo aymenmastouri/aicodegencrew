@@ -1,6 +1,6 @@
 """Endpoint Flow Builder - Constructs evidence-based workflow chains.
 
-Deterministically builds endpoint → controller → service → repository call chains
+Deterministically builds endpoint -> controller -> service -> repository call chains
 from collected components, interfaces, and relations.
 
 NO LLM. Only evidence-based construction from Phase 1 facts.
@@ -117,7 +117,7 @@ class EndpointFlowBuilder:
         visited = {controller.id}
         evidence_ids = list(interface.evidence_ids)  # Start with interface evidence
 
-        # Follow relations through layers: controller → service → repository
+        # Follow relations through layers: controller -> service -> repository
         self._follow_chain(controller.id, chain, visited, evidence_ids, max_depth=5)
 
         # Create flow ID
@@ -163,7 +163,7 @@ class EndpointFlowBuilder:
         relations = self.relations_from.get(component_id, [])
 
         # Prioritize relations based on stereotype progression:
-        # controller → service → repository → entity
+        # controller -> service -> repository -> entity
         stereotype_priority = {
             "controller": 0,
             "service": 1,
