@@ -547,7 +547,13 @@ class IndexingPipeline:
         stored_fp = meta.get("repo_fingerprint") or meta.get("repo_hash") or ""
 
         if stored_fp and current_fp != stored_fp:
-            return True, current_fp, fp_type, f"Changed: {stored_fp[:8]} -> {current_fp[:8]}"
+            # Auto-upgrade to smart mode: only re-index changed files
+            self.index_mode = "smart"
+            logger.info(
+                f"[AUTO->SMART] Repo changed ({stored_fp[:8]} -> {current_fp[:8]}), "
+                f"switching to incremental update (only changed files)"
+            )
+            return True, current_fp, fp_type, f"Incremental update: {stored_fp[:8]} -> {current_fp[:8]}"
 
         return False, current_fp, fp_type, f"Unchanged ({doc_count} chunks)"
 

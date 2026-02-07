@@ -14,6 +14,7 @@ from .logger import (
 )
 from .file_filters import should_include_file, collect_files
 from .ollama_client import OllamaClient
+from .tool_guardrails import install_guardrails, uninstall_guardrails
 
 __all__ = [
     "setup_logger",
@@ -29,4 +30,6 @@ __all__ = [
     "should_include_file",
     "collect_files",
     "OllamaClient",
+    "install_guardrails",
+    "uninstall_guardrails",
 ]

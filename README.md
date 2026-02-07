@@ -535,6 +535,7 @@ aicodegencrew/
 │   │   ├── validation.py           # Phase output validation
 │   │   ├── models/                 # Pydantic schemas (facts, analysis, outputs)
 │   │   └── utils/                  # Logger, token budget, file filters, Ollama client
+│   │       └── tool_guardrails.py  # Phase 0.5: Loop prevention + tool budgets
 │   │
 │   └── mcp/                        # Model Context Protocol
 │       ├── server.py               # MCP server (architecture knowledge queries)

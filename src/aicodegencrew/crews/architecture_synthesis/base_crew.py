@@ -33,6 +33,7 @@ from .tools import (
     StereotypeListTool,
 )
 from ..architecture_analysis.tools import RAGQueryTool
+from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,12 @@ _RETRY_DELAY_BASE = 5  # seconds, doubled each retry
 TOOL_INSTRUCTION = """
 CRITICAL INSTRUCTION: You MUST use the doc_writer tool to write the output file.
 Do NOT include the full document in your response text.
+
+MANDATORY RULES:
+1. If you are about to write more than 200 characters, STOP and call doc_writer.
+2. Your final message MUST be a one-liner confirmation.
+3. Do NOT call the same MCP tool more than twice with identical arguments.
+4. Maximum 10 tool calls per task, then you MUST call doc_writer.
 
 ## CORRECT EXECUTION PATTERN (follow this exactly):
 
@@ -292,6 +299,7 @@ class MiniCrewBase(ABC):
         start_time = time.time()
 
         for attempt in range(1, max_retries + 1):
+            tracker = None
             try:
                 crew = Crew(
                     agents=[tasks[0].agent],
@@ -302,6 +310,7 @@ class MiniCrewBase(ABC):
                     respect_context_window=True,
                     max_rpm=30,
                 )
+                tracker = install_guardrails()
                 result = crew.kickoff(inputs=self.summaries)
 
                 # === SUCCESS ===
@@ -367,6 +376,9 @@ class MiniCrewBase(ABC):
                     name, tasks, e, start_time, expected_files
                 )
                 raise
+
+            finally:
+                uninstall_guardrails(tracker)
 
         # Should never reach here, but satisfy type checker
         raise RuntimeError(f"Mini-crew {name} failed after {max_retries} attempts")
@@ -489,6 +501,10 @@ class MiniCrewBase(ABC):
                 logger.error(
                     f"[{self.crew_name}] {crew_name}: {file_path} NOT written and "
                     f"result too short/no markdown for fallback ({len(content)} chars)."
+                )
+                raise RuntimeError(
+                    f"Output file missing after fallback: {file_path} "
+                    f"(result={len(content)} chars). Retry with fresh agent."
                 )
 
     def _recover_missing_files(
