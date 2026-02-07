@@ -3,60 +3,65 @@
   "component_count": 333,
   "relation_count": 0,
   "interface_count": 95,
-  "summary": "The backend follows a classic layered architecture built on Spring Boot, exposing a REST API that orchestrates deed‑registry and document‑lifecycle management. While the technology stack (Spring MVC, Data JPA, Security, Hibernate, Scheduler) is solid, the implementation shows moderate separation of concerns, coupling, and cohesion. A large number of controllers, services, and entities create technical debt, and business logic is scattered across service classes without clear domain abstractions. Functional coverage is comprehensive, offering CRUD for deeds, handover datasets, signatures, archiving, key management, scheduled jobs, and reporting, but the codebase would benefit from stronger modularisation, DTO usage, and an application‑service façade.",
+  "summary": "The backend service follows a classic layered architecture built on Spring Boot, exposing a rich REST API for deed management, archiving, key handling and reporting. It implements the core business capabilities defined by the Deed Management and Archiving bounded context and integrates with external key, archiving, and reporting services as well as a security provider. While the technical foundation and functional coverage are solid, the codebase shows moderate separation of concerns, coupling, and cohesion, with notable technical debt such as oversized controllers, direct repository access from services, and anemic domain entities, resulting in an overall grade of B.",
   "technical": {
-    "architecture_pattern": "Layered",
+    "primary_pattern": "Layered",
     "layers": [
-      "Presentation (REST Controllers)",
-      "Service",
-      "Repository (DAO)",
+      "Presentation (Controllers)",
+      "Service (Business Services)",
+      "Repository (Data Access / DAOs)",
       "Domain (Entities)"
     ],
     "technologies": [
       "Spring Boot",
       "Spring MVC",
       "Spring Data JPA",
+      "Hibernate",
       "Spring Security",
-      "Hibernate/JPA",
       "Spring Scheduler",
-      "REST"
+      "RestTemplate",
+      "JPA"
     ],
-    "integration_style": "REST API",
-    "domain_concepts": [
-      "DeedEntry",
-      "HandoverDataSet",
-      "DocumentMetaData",
-      "SignatureInfo",
-      "Action",
-      "BusinessPurpose",
-      "KeyManager",
-      "Archiving",
-      "CorrectionNote",
-      "Participant",
-      "Job",
-      "Report"
-    ],
-    "integrations": [
-      "Relational Database via Spring Data JPA / Hibernate",
-      "External Key Management Service (e.g., Xnp KM)",
-      "External Archiving Service",
-      "REST clients / external APIs via ProxyRestTemplate",
-      "Spring Security authentication mechanisms"
-    ]
+    "integration_style": "REST API"
   },
   "functional": {
-    "bounded_context": "Deed Registry and Document Lifecycle Management",
+    "domain_concepts": [
+      "Action",
+      "DeedEntry",
+      "DocumentMetaData",
+      "HandoverDataSet",
+      "SignatureInfo",
+      "Participant",
+      "BusinessPurpose",
+      "Archiving",
+      "KeyManager",
+      "Report",
+      "Job",
+      "Connection",
+      "CorrectionNote",
+      "Lock"
+    ],
     "capabilities": [
-      "Create, retrieve, update, lock and log deed entries",
-      "Manage handover data sets and their lifecycle",
-      "Store and retrieve document metadata",
-      "Handle signatures and participant information",
-      "Execute actions and scheduled jobs",
-      "Perform archiving operations and token signing",
-      "Manage cryptographic keys and re‑encryption processes",
-      "Process correction notes and business purposes",
-      "Generate and expose reports via REST",
-      "Provide health‑check and monitoring services"
+      "Create, retrieve, update and delete actions",
+      "Manage deed entries and their lifecycle (creation, handover, locking, logging)",
+      "Handle document metadata storage and retrieval",
+      "Execute handover data set processing and history tracking",
+      "Manage signatures and signature information",
+      "Perform archiving operations including signing and token handling",
+      "Key management including re‑encryption and crypto‑state queries",
+      "Generate and serve business purpose data",
+      "Run scheduled jobs and background processing",
+      "Produce reports via REST endpoints",
+      "Expose a comprehensive REST API for external consumption"
+    ],
+    "bounded_context": "Deed Management and Archiving",
+    "integrations": [
+      "External Key Management Service (via RestTemplate)",
+      "External Archiving Service",
+      "External Reporting Service",
+      "Database (via Spring Data JPA / Hibernate)",
+      "Authentication/Authorization provider (Spring Security)",
+      "Potential external proxy / token authentication infrastructure"
     ]
   },
   "quality": {
@@ -64,35 +69,33 @@
     "coupling": "moderate",
     "cohesion": "moderate",
     "debt_indicators": [
-      "Large controllers (32 REST controllers, many with >200 lines)",
-      "Service classes directly accessing repositories (tight coupling)",
-      "Entity explosion (199 entities) without clear bounded sub‑domains",
-      "Missing domain service abstractions – business logic scattered across services",
-      "Potential God services (42 service implementations, some very large)",
-      "Insufficient segregation of DTOs vs. entities in REST layer"
+      "Large number of controllers (potentially oversized)",
+      "Services directly accessing repositories (tight layer coupling)",
+      "High count of entity classes suggesting anemic domain model",
+      "Missing explicit service interfaces for many implementations"
     ],
-    "grade": "C",
+    "grade": "B",
     "recommendations": [
-      "Refactor oversized controllers into smaller, purpose‑focused controllers or aggregate them by bounded context",
-      "Introduce clear domain service interfaces to decouple business logic from repository access",
-      "Group related entities into sub‑modules or packages reflecting bounded contexts to improve cohesion",
-      "Apply DTOs / mappers to separate API contracts from persistence models",
-      "Add façade or Application Service layer to orchestrate use‑cases, reducing direct controller‑to‑repository calls",
-      "Implement automated tests (unit & integration) for critical services to mitigate technical debt"
+      "Refactor oversized controllers into smaller, purpose‑specific ones",
+      "Introduce service interfaces and depend on abstractions rather than concrete implementations",
+      "Encapsulate repository access within domain services to preserve layer boundaries",
+      "Consider consolidating related entities or applying inheritance/polymorphism to reduce entity explosion",
+      "Apply DTOs and mapper layers to decouple REST contracts from domain entities",
+      "Add unit/integration test coverage for service layer to highlight hidden coupling"
     ]
   },
-  "overall_assessment": "The backend provides a rich functional set and leverages a mature Spring ecosystem, but architectural degradation—large monolithic controllers/services, lack of domain‑service boundaries, and excessive entity count—drives a moderate C grade and hampers maintainability and scalability.",
+  "overall_assessment": "The backend delivers a comprehensive set of business functionalities on a robust Spring‑based stack, but architectural and code‑quality concerns—particularly around controller size, service‑repository coupling, and domain model design—limit its maintainability and scalability. Addressing these issues will elevate the system from a solid B grade toward an A‑level solution.",
   "top_recommendations": [
-    "Introduce a dedicated Application Service (façade) layer to orchestrate use‑cases and isolate controllers from repository logic.",
-    "Refactor oversized controllers and services, applying DTOs and mappers to enforce API‑persistence separation.",
-    "Re‑organize entities into bounded‑context sub‑modules and create domain service interfaces to improve cohesion and reduce coupling."
+    "Refactor oversized controllers into modular, purpose‑specific controllers.",
+    "Introduce explicit service interfaces and program to abstractions to reduce coupling.",
+    "Encapsulate repository access within domain/services layers and apply DTOs to separate REST contracts from domain entities."
   ],
   "analysis": {
-    "primary_pattern": "Unknown",
+    "primary_pattern": "Layered",
     "layers": [
-      "Presentation (REST Controllers)",
-      "Service",
-      "Repository (DAO)",
+      "Presentation (Controllers)",
+      "Service (Business Services)",
+      "Repository (Data Access / DAOs)",
       "Domain (Entities)"
     ],
     "stereotype_distribution": {
