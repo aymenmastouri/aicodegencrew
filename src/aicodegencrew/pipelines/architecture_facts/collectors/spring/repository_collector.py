@@ -170,6 +170,7 @@ class SpringRepositoryCollector(DimensionCollector):
                 type="manages",
                 from_stereotype_hint="repository",
                 to_stereotype_hint="entity",
+                from_file_hint=str(rel_path),
             )
             
             relation.evidence.append(self._create_evidence(

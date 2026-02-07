@@ -300,7 +300,7 @@ python -m aicodegencrew index --force
 | Phase | Name | Type | LLM | Status | Description |
 |:-----:|------|:----:|:---:|:------:|-------------|
 | 0 | **Indexing** | Pipeline | No | Implemented | Vector-indexes repository into ChromaDB |
-| 1 | **Architecture Facts** | Pipeline | No | Implemented | Deterministic extraction of components, relations, interfaces |
+| 1 | **Architecture Facts** | Pipeline | No | Implemented | Deterministic extraction of components, relations, interfaces, endpoint flows |
 | 2 | **Architecture Analysis** | Crew | Yes | Implemented | Multi-agent analysis (4 analysts + Map-Reduce) |
 | 3 | **Architecture Synthesis** | Crew | Yes | Implemented | C4 + arc42 document generation (Mini-Crews pattern) |
 | 4 | **Review** | Crew | Yes | Planned | Cross-document consistency validation |
@@ -402,8 +402,8 @@ aicodegencrew/
 │   ├── main.py                     # Application entry point
 │   │
 │   ├── crews/                      # AI Agent Workflows (LLM required)
-│   │   ├── architecture_analysis/  # Phase 2: Multi-agent analysis
-│   │   │   ├── crew.py             #   Main crew (Map-Reduce orchestrator)
+│   │   ├── architecture_analysis/  # Phase 2: Multi-agent analysis (Mini-Crews)
+│   │   │   ├── crew.py             #   5 mini-crews, 17 tasks (all Python, no YAML)
 │   │   │   ├── mapreduce_crew.py   #   Map-Reduce for large repos
 │   │   │   ├── container_crew.py   #   Per-container analysis crew
 │   │   │   └── tools/              #   Facts query, RAG, statistics tools
@@ -411,8 +411,8 @@ aicodegencrew/
 │   │   └── architecture_synthesis/ # Phase 3: Document generation
 │   │       ├── base_crew.py        #   MiniCrewBase ABC (shared infrastructure)
 │   │       ├── crew.py             #   Top-level synthesis coordinator
-│   │       ├── c4/crew.py          #   C4 Mini-Crews (5 crews, 9 tasks)
-│   │       ├── arc42/crew.py       #   Arc42 Mini-Crews (7 crews, 14 tasks)
+│   │       ├── c4/crew.py          #   C4 Mini-Crews (5 crews, all Python)
+│   │       ├── arc42/crew.py       #   Arc42 Mini-Crews (15 crews, all Python)
 │   │       └── tools/              #   DocWriter, DrawIO, chunked writer
 │   │
 │   ├── pipelines/                  # Deterministic Pipelines (no LLM)
@@ -424,9 +424,11 @@ aicodegencrew/
 │   │   │
 │   │   └── architecture_facts/     # Phase 1: Facts extraction
 │   │       ├── pipeline.py
-│   │       ├── model_builder.py    #   Pydantic model assembly
+│   │       ├── model_builder.py    #   Canonical model + 7-tier relation resolver
+│   │       ├── endpoint_flow_builder.py  # Controller→Service→Repository chains
 │   │       ├── dimension_writers.py
 │   │       └── collectors/         #   20+ specialized collectors
+│   │           ├── fact_adapter.py  #   RawFact→Collected* adapter
 │   │           ├── spring/         #     Spring Boot (REST, services, repos, config)
 │   │           ├── angular/        #     Angular (components, modules, routing, services)
 │   │           └── database/       #     Database (migrations, tables, procedures)

@@ -35,6 +35,11 @@ class SpringServiceCollector(DimensionCollector):
     CONSTRUCTOR_PARAM_PATTERN = re.compile(
         r'(?:private|protected)\s+(?:final\s+)?(\w+)\s+(\w+)\s*[;,)]'
     )
+
+    # Field injection (@Autowired or @Inject on fields)
+    FIELD_INJECTION_PATTERN = re.compile(
+        r'@(?:Autowired|Inject)\s+(?:private|protected)\s+(?:final\s+)?(\w+)\s+(\w+)\s*;'
+    )
     
     def __init__(self, repo_path: Path, container_id: str = "backend"):
         super().__init__(repo_path)
@@ -178,6 +183,7 @@ class SpringServiceCollector(DimensionCollector):
                     type="uses",
                     from_stereotype_hint="service",
                     to_stereotype_hint="service",
+                    from_file_hint=str(rel_path),
                 )
                 
                 relation.evidence.append(self._create_evidence(
@@ -187,4 +193,32 @@ class SpringServiceCollector(DimensionCollector):
                     f"Constructor injection: {class_name} -> {dep_type}"
                 ))
                 
+                self.output.add_relation(relation)
+
+        # Also detect field injection (@Autowired / @Inject)
+        for match in self.FIELD_INJECTION_PATTERN.finditer(content):
+            dep_type = match.group(1)
+            dep_name = match.group(2)
+
+            actual_impl = self._interface_to_impl.get(dep_type, dep_type)
+
+            if actual_impl in self._service_names or dep_type in self._service_names:
+                line_num = content[:match.start()].count('\n') + 1
+
+                relation = RelationHint(
+                    from_name=class_name,
+                    to_name=dep_type,
+                    type="uses",
+                    from_stereotype_hint="service",
+                    to_stereotype_hint="service",
+                    from_file_hint=str(rel_path),
+                )
+
+                relation.evidence.append(self._create_evidence(
+                    file_path,
+                    line_num,
+                    line_num + 1,
+                    f"Field injection: {class_name} -> {dep_type}"
+                ))
+
                 self.output.add_relation(relation)
