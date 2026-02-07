@@ -5,7 +5,7 @@ description = "AI-powered SDLC automation using CrewAI with local Ollama models"
 authors = [{ name = "Aymen Mastouri", email = "aymen.mastouri@icloud.com" }]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "Proprietary" }
 keywords = ["ai", "crewai", "ollama", "sdlc", "code-generation", "rag"]
 
 dependencies = [

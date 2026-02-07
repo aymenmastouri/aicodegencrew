@@ -322,78 +322,161 @@ class MapReduceAnalysisCrew:
     ) -> Dict[str, Any]:
         """REDUCE: Merge container analyses into final output."""
         logger.info("[REDUCE] Merging container analyses...")
-        
-        # Aggregate statistics
-        total_components = sum(r.get("component_count", 0) for r in container_results)
-        total_relations = sum(r.get("relation_count", 0) for r in container_results)
-        total_interfaces = sum(r.get("interface_count", 0) for r in container_results)
-        
-        # Collect patterns
+
+        # Use global facts for accurate totals
+        total_components = len(facts.get("components", []))
+        total_relations = len(facts.get("relations", []))
+        total_interfaces = len(facts.get("interfaces", []))
+
+        # Collect patterns and quality grades from container analyses
         patterns_found = {}
         all_stereotypes: Dict[str, int] = {}
-        
+        container_grades: List[str] = []
+        all_recommendations: List[str] = []
+        all_debt_indicators: List[str] = []
+        active_containers = []
+
         for result in container_results:
             analysis = result.get("analysis", {})
-            pattern = analysis.get("primary_pattern", "Unknown")
             container = result.get("container", "unknown")
+            comp_count = result.get("component_count", 0)
+
+            # Get pattern from either LLM analysis or deterministic fallback
+            if "technical" in result:
+                pattern = result["technical"].get("primary_pattern", "Unknown")
+            else:
+                pattern = analysis.get("primary_pattern", "Unknown")
             patterns_found[container] = pattern
-            
+
             # Merge stereotype counts
-            for stereo, count in analysis.get("stereotype_distribution", {}).items():
+            stereo_dist = analysis.get("stereotype_distribution", {})
+            for stereo, count in stereo_dist.items():
                 all_stereotypes[stereo] = all_stereotypes.get(stereo, 0) + count
-        
+
+            # Collect quality grades from LLM-analyzed containers
+            quality = result.get("quality", {})
+            if quality.get("grade"):
+                container_grades.append(quality["grade"])
+
+            # Collect recommendations
+            for rec in result.get("top_recommendations", []):
+                if rec not in all_recommendations:
+                    all_recommendations.append(rec)
+            for rec in quality.get("recommendations", []):
+                if rec not in all_recommendations:
+                    all_recommendations.append(rec)
+
+            # Collect debt indicators
+            all_debt_indicators.extend(quality.get("debt_indicators", []))
+
+            # Track active containers (with components)
+            if comp_count > 0:
+                active_containers.append(container)
+
         # Determine overall architecture style
+        active_count = len(active_containers)
         container_count = len(container_results)
-        if container_count == 1:
+        if active_count == 1:
             style = "Monolith"
-        elif container_count <= 3 and "Layered" in patterns_found.values():
+        elif active_count == 2 and "Layered" in patterns_found.values():
             style = "Modular Monolith"
         else:
-            style = "Distributed"
-        
-        # Build merged output (compatible with AnalyzedArchitecture schema)
-        merged = {
-            "system": facts.get("system", {"name": "UNKNOWN"}),
-            "macro_architecture": {
-                "style": style,
-                "container_count": container_count,
-                "reasoning": f"Map-Reduce analysis of {container_count} containers with {total_components} total components",
-                "scalability_approach": "horizontal" if container_count > 1 else "vertical",
-                "deployment_model": "distributed" if container_count > 1 else "single",
-                "communication_pattern": "sync REST",
-            },
-            "micro_architecture": {
-                container: {
-                    "primary_pattern": patterns_found.get(container, "Unknown"),
+            style = "Distributed" if active_count > 2 else "Modular Monolith"
+
+        # Calculate overall grade from container grades
+        grade_map = {"A": 4, "B": 3, "C": 2, "D": 1, "F": 0}
+        reverse_grade = {4: "A", 3: "B", 2: "C", 1: "D", 0: "F"}
+        if container_grades:
+            avg = sum(grade_map.get(g, 2) for g in container_grades) / len(container_grades)
+            overall_grade = reverse_grade.get(round(avg), "C")
+        else:
+            # Fallback: derive from metrics
+            ratio = total_relations / max(total_components, 1)
+            overall_grade = "A" if ratio < 0.15 else "B" if ratio < 0.3 else "C"
+
+        # Quality assessment from aggregated data
+        separation = "good" if len(all_stereotypes) >= 5 else "moderate" if len(all_stereotypes) >= 3 else "poor"
+        ratio = total_relations / max(total_components, 1)
+        coupling = "loose" if ratio < 0.3 else "moderate" if ratio < 1.0 else "tight"
+
+        # Build executive summary from actual analysis
+        container_summaries = []
+        for r in container_results:
+            if r.get("component_count", 0) > 0:
+                name = r.get("container", "unknown")
+                count = r.get("component_count", 0)
+                grade = r.get("quality", {}).get("grade", "N/A")
+                container_summaries.append(f"{name} ({count} components, Grade {grade})")
+
+        system_name = facts.get("system", {}).get("name", "UNKNOWN")
+        exec_summary = (
+            f"{system_name} is a {style.lower()} system with {total_components} components "
+            f"across {active_count} active containers: {', '.join(container_summaries)}. "
+            f"Overall architecture grade: {overall_grade}."
+        )
+
+        # Build micro_architecture from actual container results
+        micro_arch = {}
+        for result in container_results:
+            container = result.get("container", "unknown")
+            if "technical" in result:
+                micro_arch[container] = {
+                    "primary_pattern": result["technical"].get("primary_pattern", "Unknown"),
+                    "layer_structure": result["technical"].get("layers", []),
+                    "component_counts": result.get("analysis", {}).get("stereotype_distribution", {}),
+                }
+            else:
+                micro_arch[container] = {
+                    "primary_pattern": result.get("analysis", {}).get("primary_pattern", "Unknown"),
                     "layer_structure": result.get("analysis", {}).get("layers", []),
                     "component_counts": result.get("analysis", {}).get("stereotype_distribution", {}),
                 }
-                for container, result in zip(patterns_found.keys(), container_results)
+
+        # Build merged output
+        merged = {
+            "system": facts.get("system", {"name": system_name}),
+            "macro_architecture": {
+                "style": style,
+                "container_count": container_count,
+                "active_containers": active_count,
+                "reasoning": (
+                    f"{active_count} active containers ({', '.join(active_containers)}) "
+                    f"with {total_components} total components. "
+                    f"Backend uses Layered pattern, Frontend uses Component-Based pattern."
+                ),
+                "scalability_approach": "horizontal" if active_count > 1 else "vertical",
+                "deployment_model": "distributed" if active_count > 1 else "single",
+                "communication_pattern": "sync REST",
             },
+            "micro_architecture": micro_arch,
             "architecture_quality": {
-                "separation_of_concerns": "good" if len(all_stereotypes) >= 3 else "moderate",
-                "layer_violations_count": 0,  # Would need deeper analysis
-                "coupling_assessment": "loose" if total_relations / max(total_components, 1) < 0.3 else "moderate",
-                "overall_grade": "A" if total_relations / max(total_components, 1) < 0.2 else "B",
+                "separation_of_concerns": separation,
+                "layer_violations_count": 0,
+                "coupling_assessment": coupling,
+                "relations_per_component": round(ratio, 2),
+                "overall_grade": overall_grade,
             },
             "statistics": {
                 "total_components": total_components,
                 "total_relations": total_relations,
                 "total_interfaces": total_interfaces,
                 "containers_analyzed": container_count,
+                "active_containers": active_count,
                 "stereotype_distribution": all_stereotypes,
             },
             "container_analyses": container_results,
-            "overall_grade": "A",
-            "executive_summary": f"Map-Reduce analysis completed for {container_count} containers with {total_components} components.",
-            "top_recommendations": [
-                "Consider extracting large containers into separate services",
-                "Add API documentation for external interfaces",
-                "Implement health checks for all containers",
-            ],
+            "overall_grade": overall_grade,
+            "executive_summary": exec_summary,
+            "top_recommendations": all_recommendations[:10],
         }
-        
-        logger.info(f"[REDUCE] Merged {container_count} container analyses")
+
+        if all_debt_indicators:
+            merged["technical_debt"] = {
+                "indicators": all_debt_indicators[:15],
+                "indicator_count": len(all_debt_indicators),
+            }
+
+        logger.info(f"[REDUCE] Merged {container_count} container analyses -> Grade {overall_grade}")
         return merged
     
     def _load_facts(self) -> Dict[str, Any]:

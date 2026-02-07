@@ -65,7 +65,7 @@
         <mxCell id="phase1-tasks" value="SpringCollector&lt;br&gt;AngularCollector&lt;br&gt;DatabaseCollector&lt;br&gt;IntegrationCollector&lt;br&gt;StyleCollector&lt;br&gt;EndpointFlowBuilder&lt;br&gt;WorkflowCollector" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#2E7D32;" vertex="1" parent="1">
           <mxGeometry x="260" y="190" width="180" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="phase1-output" value="733 Components&lt;br&gt;125 Interfaces&lt;br&gt;169 Relations&lt;br&gt;1005 Evidence" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontStyle=2;fontColor=#388E3C;" vertex="1" parent="1">
+        <mxCell id="phase1-output" value="738 Components&lt;br&gt;125 Interfaces&lt;br&gt;169 Relations&lt;br&gt;1005 Evidence" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontStyle=2;fontColor=#388E3C;" vertex="1" parent="1">
           <mxGeometry x="260" y="295" width="180" height="50" as="geometry" />
         </mxCell>
         <mxCell id="phase1-llm" value="No LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=9;fontStyle=1;fontColor=#2E7D32;" vertex="1" parent="1">
@@ -80,37 +80,37 @@
           <mxGeometry x="480" y="105" width="200" height="25" as="geometry" />
         </mxCell>
         
-        <!-- Phase 2: Synthesis -->
+        <!-- Phase 2: Analysis -->
         <mxCell id="phase2-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;shadow=1;" vertex="1" parent="1">
           <mxGeometry x="480" y="145" width="180" height="120" as="geometry" />
         </mxCell>
         <mxCell id="phase2-badge" value="PHASE 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=none;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="485" y="150" width="55" height="16" as="geometry" />
         </mxCell>
-        <mxCell id="phase2-title" value="&lt;b&gt;SYNTHESIS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=13;fontColor=#0D47A1;" vertex="1" parent="1">
+        <mxCell id="phase2-title" value="&lt;b&gt;ANALYSIS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=13;fontColor=#0D47A1;" vertex="1" parent="1">
           <mxGeometry x="480" y="168" width="180" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase2-tasks" value="C4 Crew (5 tasks)&lt;br&gt;Arc42 Crew (14 tasks)&lt;br&gt;Think First Pattern&lt;br&gt;Quality Gate" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
+        <mxCell id="phase2-tasks" value="MapReduce Multi-Agent&lt;br&gt;4 Specialized Analysts&lt;br&gt;Per-Container Analysis&lt;br&gt;Quality Grading" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
           <mxGeometry x="480" y="190" width="180" height="55" as="geometry" />
         </mxCell>
         <mxCell id="phase2-llm" value="LLM Required" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#C62828;fontSize=9;fontStyle=1;fontColor=#C62828;" vertex="1" parent="1">
           <mxGeometry x="580" y="245" width="70" height="16" as="geometry" />
         </mxCell>
         
-        <!-- Phase 3: Task Understanding -->
-        <mxCell id="phase3-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;shadow=1;dashed=1;" vertex="1" parent="1">
+        <!-- Phase 3: Synthesis -->
+        <mxCell id="phase3-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;shadow=1;" vertex="1" parent="1">
           <mxGeometry x="700" y="145" width="180" height="120" as="geometry" />
         </mxCell>
         <mxCell id="phase3-badge" value="PHASE 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565C0;strokeColor=none;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="705" y="150" width="55" height="16" as="geometry" />
         </mxCell>
-        <mxCell id="phase3-planned" value="PLANNED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9E9E9E;strokeColor=none;fontColor=#ffffff;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="phase3-implemented" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=8;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="830" y="150" width="45" height="14" as="geometry" />
         </mxCell>
-        <mxCell id="phase3-title" value="&lt;b&gt;TASK UNDERSTANDING&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#0D47A1;" vertex="1" parent="1">
+        <mxCell id="phase3-title" value="&lt;b&gt;SYNTHESIS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#0D47A1;" vertex="1" parent="1">
           <mxGeometry x="700" y="168" width="180" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase3-tasks" value="RAG Context Retrieval&lt;br&gt;Task Decomposition&lt;br&gt;Architecture-Aware Planning" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
+        <mxCell id="phase3-tasks" value="C4 Crew (5 tasks)&lt;br&gt;Arc42 Crew (14 tasks)&lt;br&gt;Think First Pattern" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
           <mxGeometry x="700" y="190" width="180" height="55" as="geometry" />
         </mxCell>
         
@@ -121,7 +121,7 @@
         <mxCell id="outputs-title" value="&lt;b&gt;Outputs&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#1B5E20;" vertex="1" parent="1">
           <mxGeometry x="490" y="290" width="80" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="outputs-list" value="architecture_facts.json | evidence_map.json | ChromaDB Index&lt;br&gt;c4/*.md | arc42/*.md | quality/*.md | *.drawio" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#388E3C;" vertex="1" parent="1">
+        <mxCell id="outputs-list" value="architecture_facts.json | evidence_map.json | ChromaDB Index&lt;br&gt;analyzed_architecture.json | c4/*.md | arc42/*.md | *.drawio" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#388E3C;" vertex="1" parent="1">
           <mxGeometry x="480" y="315" width="400" height="40" as="geometry" />
         </mxCell>
         
