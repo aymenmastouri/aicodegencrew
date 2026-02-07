@@ -66,17 +66,31 @@ class WorkflowCollector(DimensionCollector):
     FLOWABLE_PATTERN = re.compile(r'org\.flowable\.|FlowableEngine|ProcessEngine')
     
     # Workflow/Process Services
-    WORKFLOW_SERVICE_PATTERN = re.compile(r'class\s+(\w*(?:Workflow|Process|Flow)(?:Service|Handler|Manager|Executor)\w*)')
-    
+    WORKFLOW_SERVICE_PATTERN = re.compile(r'class\s+(\w*(?:Workflow|Process|Flow|Orchestrat)(?:Service|Handler|Manager|Executor|or)\w*)')
+
+    # Service orchestration patterns
+    ORCHESTRATION_PATTERN = re.compile(
+        r'class\s+(\w*(?:Orchestrat|Coordinat|Saga|Pipeline|Chain)(?:or|ion|Service|Handler)\w*)'
+    )
+
     # Transition methods
     TRANSITION_METHOD_PATTERN = re.compile(
-        r'(?:public|private|protected)\s+\w+\s+(transition|handle|change|update|set)(\w*Status|\w*State)\s*\(',
+        r'(?:public|private|protected)\s+\w+\s+(transition|handle|change|update|set|move)(\w*Status|\w*State)\s*\(',
         re.IGNORECASE
     )
-    
+
+    # Action dispatch patterns
+    ACTION_DISPATCH_PATTERN = re.compile(
+        r'(?:dispatch|execute|perform|process|handle)(?:Action|Command|Event)\s*\([^)]*(\w+Action|\w+Command)[^)]*\)',
+        re.IGNORECASE
+    )
+
     # Switch on action/state
-    SWITCH_PATTERN = re.compile(r'switch\s*\(\s*(\w*(?:action|state|status)\w*)\s*\)', re.IGNORECASE)
+    SWITCH_PATTERN = re.compile(r'switch\s*\(\s*(\w*(?:action|state|status|type)\w*)\s*\)', re.IGNORECASE)
     CASE_PATTERN = re.compile(r'case\s+(?:\w+\.)?([A-Z][A-Z0-9_]+)\s*:', re.MULTILINE)
+
+    # Chain/Pipeline patterns
+    CHAIN_PATTERN = re.compile(r'\.(?:then|andThen|chain|pipe|next)\s*\(', re.IGNORECASE)
     
     # === TypeScript/Angular Patterns ===
     XSTATE_PATTERN = re.compile(r'createMachine|useMachine|interpret\s*\(|Machine\s*\(')
@@ -198,20 +212,22 @@ class WorkflowCollector(DimensionCollector):
         """Collect Java-based workflows and state machines."""
         java_files = list(self.repo_path.rglob("*.java"))
         java_files = [f for f in java_files if not self._should_skip(f)]
-        
+
         logger.info(f"[WorkflowCollector] Scanning {len(java_files)} Java files for workflows")
-        
+
         for java_file in java_files:
             content = self._read_file_content(java_file)
             if not content:
                 continue
-            
+
             # Check for different workflow types
             self._check_spring_statemachine(java_file, content)
             self._check_camunda_flowable(java_file, content)
             self._check_custom_statemachine(java_file, content)
             self._check_status_enum(java_file, content)
             self._check_workflow_service(java_file, content)
+            self._check_service_orchestration(java_file, content)
+            self._check_action_dispatch(java_file, content)
     
     def _check_spring_statemachine(self, file_path: Path, content: str):
         """Check for Spring State Machine."""
@@ -434,7 +450,105 @@ class WorkflowCollector(DimensionCollector):
         
         self._workflows[f"service_{class_name}"] = workflow
         logger.debug(f"[WorkflowCollector] Found Workflow Service: {class_name} ({len(actions)} actions)")
-    
+
+    def _check_service_orchestration(self, file_path: Path, content: str):
+        """Check for service orchestration patterns."""
+        match = self.ORCHESTRATION_PATTERN.search(content)
+        if not match:
+            return
+
+        class_name = match.group(1)
+
+        # Check if already captured
+        if any(class_name in key for key in self._workflows):
+            return
+
+        # Find service calls (method calls on injected services)
+        service_calls = []
+        service_call_pattern = re.compile(
+            r'(?:this\.)?(\w+Service|\w+Repository|\w+Client)\s*\.\s*(\w+)\s*\(',
+            re.IGNORECASE
+        )
+        for m in service_call_pattern.finditer(content):
+            service_calls.append(f"{m.group(1)}.{m.group(2)}")
+
+        # Find chain/pipeline patterns
+        chain_count = len(self.CHAIN_PATTERN.findall(content))
+
+        # Detect saga pattern (compensating transactions)
+        has_saga = bool(re.search(r'compensat|rollback|undo|revert', content, re.IGNORECASE))
+
+        workflow = RawWorkflow(
+            name=class_name,
+            workflow_type='service_orchestration',
+            actions=list(set(service_calls))[:20],  # Limit
+            container_hint=self.container_id,
+            file_path=self._relative_path(file_path),
+        )
+
+        workflow.metadata['chain_count'] = chain_count
+        if has_saga:
+            workflow.tags.append('saga')
+            workflow.metadata['has_compensating_transactions'] = True
+
+        line_num = content[:match.start()].count('\n') + 1
+        workflow.add_evidence(
+            path=self._relative_path(file_path),
+            line_start=line_num,
+            line_end=line_num + 50,
+            reason=f"Service Orchestration: {class_name} ({len(service_calls)} service calls)"
+        )
+
+        self._workflows[f"orchestration_{class_name}"] = workflow
+        logger.debug(f"[WorkflowCollector] Found Orchestration: {class_name} ({len(service_calls)} calls)")
+
+    def _check_action_dispatch(self, file_path: Path, content: str):
+        """Check for action/command dispatch patterns (custom workflow engine)."""
+        # Look for action dispatch methods
+        dispatch_matches = list(self.ACTION_DISPATCH_PATTERN.finditer(content))
+        if len(dispatch_matches) < 2:  # Need multiple dispatches to be interesting
+            return
+
+        # Get class name
+        class_match = re.search(r'class\s+(\w+)', content)
+        if not class_match:
+            return
+
+        class_name = class_match.group(1)
+
+        # Check if already captured
+        if any(class_name in key for key in self._workflows):
+            return
+
+        # Extract action types
+        actions = []
+        for m in dispatch_matches:
+            actions.append(m.group(1))
+
+        # Also check for action enum/constant references
+        action_ref_pattern = re.compile(r'(\w+Action|\w+Command)\.(\w+)', re.IGNORECASE)
+        for m in action_ref_pattern.finditer(content):
+            actions.append(f"{m.group(1)}.{m.group(2)}")
+
+        workflow = RawWorkflow(
+            name=class_name,
+            workflow_type='action_dispatcher',
+            actions=list(set(actions))[:20],
+            container_hint=self.container_id,
+            file_path=self._relative_path(file_path),
+        )
+
+        line_num = content[:class_match.start()].count('\n') + 1
+        workflow.add_evidence(
+            path=self._relative_path(file_path),
+            line_start=line_num,
+            line_end=line_num + 50,
+            reason=f"Action Dispatcher: {class_name} ({len(actions)} actions)"
+        )
+
+        self._workflows[f"dispatcher_{class_name}"] = workflow
+        logger.debug(f"[WorkflowCollector] Found Action Dispatcher: {class_name}")
+
     # =========================================================================
     # TypeScript/Angular Collection
     # =========================================================================

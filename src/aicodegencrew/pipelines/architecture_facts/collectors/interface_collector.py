@@ -2,8 +2,9 @@
 InterfaceCollector - Aggregates interface facts.
 
 Collects:
-- REST endpoints (from Spring @RestController)
+- REST endpoints (from Spring @RestController, *RestService)
 - Angular routes
+- OpenAPI/Swagger specifications
 - Schedulers (@Scheduled)
 - Message listeners (Kafka, RabbitMQ)
 
@@ -16,7 +17,7 @@ from typing import Dict, List, Optional
 
 from .base import DimensionCollector, CollectorOutput, RawInterface
 from .spring import SpringRestCollector
-from .angular import AngularRoutingCollector
+from .angular import AngularRoutingCollector, OpenAPICollector
 from ....shared.utils.logger import logger
 
 
@@ -34,27 +35,30 @@ class InterfaceCollector(DimensionCollector):
     def collect(self) -> CollectorOutput:
         """Collect all interface facts."""
         self._log_start()
-        
+
         # Collect REST endpoints from Spring containers
         spring_containers = [c for c in self.containers if c.get("technology") == "Spring Boot"]
         for container in spring_containers:
             self._collect_rest_endpoints(container)
-        
+
         # Collect routes from Angular containers
         angular_containers = [c for c in self.containers if c.get("technology") == "Angular"]
         for container in angular_containers:
             self._collect_angular_routes(container)
-        
+
         # Fallback detection
         if not spring_containers and not angular_containers:
             self._fallback_detection()
-        
+
+        # Collect OpenAPI/Swagger specifications (always run)
+        self._collect_openapi_specs()
+
         # Collect schedulers (always run for any Java project)
         self._collect_schedulers()
-        
+
         # Collect message listeners
         self._collect_listeners()
-        
+
         self._log_end()
         return self.output
     
@@ -102,12 +106,28 @@ class InterfaceCollector(DimensionCollector):
         # Detect Spring
         if self._detect_spring():
             self._collect_rest_endpoints({"name": "backend", "root_path": ""})
-        
+
         # Detect Angular
         angular_root = self._find_angular_root()
         if angular_root:
             rel_path = str(angular_root.relative_to(self.repo_path)) if angular_root != self.repo_path else ""
             self._collect_angular_routes({"name": "frontend", "root_path": rel_path})
+
+    def _collect_openapi_specs(self):
+        """Collect OpenAPI/Swagger specifications from the project."""
+        logger.info("[InterfaceCollector] Collecting OpenAPI/Swagger specifications...")
+
+        openapi_collector = OpenAPICollector(self.repo_path)
+        openapi_output = openapi_collector.collect()
+
+        # Add all interfaces (endpoints from specs)
+        for fact in openapi_output.facts:
+            if isinstance(fact, RawInterface):
+                self.output.add_fact(fact)
+
+        # Add relations
+        for relation in openapi_output.relations:
+            self.output.add_relation(relation)
     
     def _detect_spring(self) -> bool:
         """Detect if project has Spring Boot."""

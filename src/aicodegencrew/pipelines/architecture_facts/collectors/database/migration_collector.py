@@ -1,9 +1,11 @@
 """
-MigrationCollector - Extracts database migration facts.
+MigrationCollector - Extracts database migration and SQL script facts.
 
 Detects:
 - Liquibase changelogs (XML/YAML)
 - Flyway migrations (SQL/Java)
+- DB-Admin correction/fix scripts
+- Custom SQL scripts (init, setup, data patches)
 - Migration history and dependencies
 
 Output feeds -> data_model.json
@@ -11,7 +13,7 @@ Output feeds -> data_model.json
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from ..base import DimensionCollector, CollectorOutput, RawEntity, RawFact
 from .....shared.utils.logger import logger
@@ -19,27 +21,46 @@ from .....shared.utils.logger import logger
 
 class MigrationCollector(DimensionCollector):
     """
-    Extracts database migration facts.
+    Extracts database migration and SQL script facts.
     """
-    
+
     DIMENSION = "migrations"
-    
+
+    # Skip directories
+    SKIP_DIRS = {'node_modules', 'dist', 'build', 'target', '.git', 'bin'}
+
+    # Known SQL script directories
+    SQL_SCRIPT_DIRS = [
+        'sql', 'scripts', 'db', 'database', 'migration', 'migrations',
+        'patches', 'fixes', 'corrections', 'admin', 'dba',
+        'init', 'setup', 'data', 'ddl', 'dml',
+    ]
+
     def __init__(self, repo_path: Path, container_id: str = "database"):
         super().__init__(repo_path)
         self.container_id = container_id
-    
+        self._processed_files: Set[Path] = set()
+
     def collect(self) -> CollectorOutput:
-        """Collect migration facts."""
+        """Collect migration and SQL script facts."""
         self._log_start()
-        
+
         # Detect and collect Liquibase
         self._collect_liquibase()
-        
+
         # Detect and collect Flyway
         self._collect_flyway()
-        
+
+        # Detect and collect custom SQL scripts (DB-Admin, corrections, etc.)
+        self._collect_custom_sql_scripts()
+
         self._log_end()
         return self.output
+
+    def _should_skip(self, path: Path) -> bool:
+        """Check if path should be skipped."""
+        path_str = str(path).lower()
+        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
     
     def _collect_liquibase(self):
         """Collect Liquibase changelog facts."""
@@ -50,18 +71,19 @@ class MigrationCollector(DimensionCollector):
             "**/db/changelog/**/*.yml",
             "**/liquibase/**/*.xml",
         ]
-        
+
         changelog_files = []
         for pattern in patterns:
             changelog_files.extend(self._find_files(pattern.split('/')[-1]))
-        
+
         if not changelog_files:
             return
-        
+
         logger.info(f"[MigrationCollector] Found {len(changelog_files)} Liquibase files")
-        
+
         for changelog_file in changelog_files:
             self._process_liquibase_file(changelog_file)
+            self._processed_files.add(changelog_file)
     
     def _process_liquibase_file(self, file_path: Path):
         """Process a Liquibase changelog file."""
@@ -259,5 +281,159 @@ class MigrationCollector(DimensionCollector):
             line_end=min(20, content.count('\n') + 1),
             reason=f"Flyway migration: {version} - {description}"
         )
-        
+
         self.output.add_fact(migration)
+        self._processed_files.add(file_path)
+
+    def _collect_custom_sql_scripts(self):
+        """Collect custom SQL scripts (DB-Admin, corrections, init, etc.)."""
+        sql_files: List[Path] = []
+
+        # Search in known SQL directories
+        for sql_dir in self.SQL_SCRIPT_DIRS:
+            for search_path in self.repo_path.rglob(sql_dir):
+                if not search_path.is_dir() or self._should_skip(search_path):
+                    continue
+
+                for sql_file in search_path.glob("*.sql"):
+                    if sql_file not in self._processed_files:
+                        sql_files.append(sql_file)
+
+        # Also search for SQL files with specific naming patterns
+        patterns = [
+            "*.sql",
+            "*_fix*.sql",
+            "*_patch*.sql",
+            "*_correction*.sql",
+            "*_hotfix*.sql",
+            "*init*.sql",
+            "*setup*.sql",
+            "*seed*.sql",
+        ]
+
+        for pattern in patterns:
+            for sql_file in self.repo_path.rglob(pattern):
+                if sql_file not in self._processed_files and not self._should_skip(sql_file):
+                    sql_files.append(sql_file)
+
+        # Remove duplicates
+        sql_files = list(set(sql_files) - self._processed_files)
+
+        if not sql_files:
+            return
+
+        logger.info(f"[MigrationCollector] Found {len(sql_files)} custom SQL scripts")
+
+        for sql_file in sql_files:
+            self._process_custom_sql_file(sql_file)
+
+    def _process_custom_sql_file(self, file_path: Path):
+        """Process a custom SQL script file."""
+        try:
+            content = file_path.read_text(encoding='utf-8', errors='ignore')
+        except Exception:
+            return
+
+        rel_path = self._relative_path(file_path)
+
+        # Categorize the script based on name and content
+        script_type = self._categorize_sql_script(file_path.name, content, rel_path)
+
+        # Detect operations and affected tables
+        operations = []
+        tables = set()
+
+        # DDL operations
+        for pattern, op_type in [
+            (r'CREATE\s+TABLE', 'CREATE TABLE'),
+            (r'ALTER\s+TABLE', 'ALTER TABLE'),
+            (r'DROP\s+TABLE', 'DROP TABLE'),
+            (r'CREATE\s+INDEX', 'CREATE INDEX'),
+            (r'CREATE\s+VIEW', 'CREATE VIEW'),
+            (r'CREATE\s+OR\s+REPLACE\s+VIEW', 'CREATE VIEW'),
+            (r'CREATE\s+PROCEDURE', 'CREATE PROCEDURE'),
+            (r'CREATE\s+FUNCTION', 'CREATE FUNCTION'),
+            (r'CREATE\s+TRIGGER', 'CREATE TRIGGER'),
+        ]:
+            for m in re.finditer(pattern + r'\s+(?:\w+\.)?(\w+)', content, re.IGNORECASE):
+                operations.append(f"{op_type} {m.group(1)}")
+                tables.add(m.group(1))
+
+        # DML operations
+        for pattern, op_type in [
+            (r'INSERT\s+INTO', 'INSERT'),
+            (r'UPDATE\s+', 'UPDATE'),
+            (r'DELETE\s+FROM', 'DELETE'),
+        ]:
+            for m in re.finditer(pattern + r'\s+(?:\w+\.)?(\w+)', content, re.IGNORECASE):
+                operations.append(f"{op_type} {m.group(1)}")
+                tables.add(m.group(1))
+
+        script = RawFact(
+            name=file_path.stem,
+            metadata={
+                "type": script_type,
+                "file": rel_path,
+                "operations": operations[:15],  # Limit
+                "tables": list(tables)[:20],
+                "line_count": content.count('\n') + 1,
+            }
+        )
+
+        script.tags.append("sql_script")
+        script.tags.append(script_type.replace('_', '-'))
+
+        # Add path-based tags
+        path_lower = rel_path.lower()
+        if 'admin' in path_lower or 'dba' in path_lower:
+            script.tags.append("admin")
+        if 'fix' in path_lower or 'patch' in path_lower or 'correction' in path_lower:
+            script.tags.append("correction")
+        if 'init' in path_lower or 'setup' in path_lower:
+            script.tags.append("initialization")
+
+        script.add_evidence(
+            path=rel_path,
+            line_start=1,
+            line_end=min(30, content.count('\n') + 1),
+            reason=f"SQL script: {file_path.name} ({script_type})"
+        )
+
+        self.output.add_fact(script)
+        self._processed_files.add(file_path)
+
+    def _categorize_sql_script(self, filename: str, content: str, path: str) -> str:
+        """Categorize a SQL script based on its name and content."""
+        filename_lower = filename.lower()
+        path_lower = path.lower()
+        content_lower = content.lower()
+
+        # Check filename patterns
+        if any(p in filename_lower for p in ['fix', 'patch', 'correction', 'hotfix']):
+            return 'correction_script'
+        if any(p in filename_lower for p in ['init', 'setup', 'bootstrap']):
+            return 'init_script'
+        if any(p in filename_lower for p in ['seed', 'data', 'insert']):
+            return 'data_script'
+        if any(p in filename_lower for p in ['cleanup', 'purge', 'archive']):
+            return 'cleanup_script'
+        if any(p in filename_lower for p in ['rollback', 'undo', 'revert']):
+            return 'rollback_script'
+
+        # Check path patterns
+        if any(p in path_lower for p in ['admin', 'dba']):
+            return 'admin_script'
+        if any(p in path_lower for p in ['correction', 'fixes', 'patches']):
+            return 'correction_script'
+
+        # Check content patterns
+        if re.search(r'CREATE\s+TABLE', content, re.IGNORECASE):
+            return 'ddl_script'
+        if re.search(r'INSERT\s+INTO|UPDATE\s+|DELETE\s+FROM', content, re.IGNORECASE):
+            return 'dml_script'
+        if re.search(r'CREATE\s+(PROCEDURE|FUNCTION|TRIGGER|PACKAGE)', content, re.IGNORECASE):
+            return 'plsql_script'
+        if re.search(r'GRANT|REVOKE', content, re.IGNORECASE):
+            return 'security_script'
+
+        return 'sql_script'
