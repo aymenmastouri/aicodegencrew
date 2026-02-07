@@ -2500,139 +2500,6 @@
       "reason": "@Component: WorkflowStatusControlComponent (uvz-workflow-status-control)",
       "chunk_id": null
     },
-    "ev.b77d03aad833": {
-      "id": "ev.b77d03aad833",
-      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
-      "lines": "19-25",
-      "reason": "@Injectable: WorkflowFinalizeReencryptionWorkService",
-      "chunk_id": null
-    },
-    "ev.48c48273b206": {
-      "id": "ev.48c48273b206",
-      "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
-      "lines": "73-79",
-      "reason": "@Injectable: DeedEntryRestService",
-      "chunk_id": null
-    },
-    "ev.86b5f19370f8": {
-      "id": "ev.86b5f19370f8",
-      "path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: DeedEntryLogService",
-      "chunk_id": null
-    },
-    "ev.81df8fd27526": {
-      "id": "ev.81df8fd27526",
-      "path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
-      "lines": "19-25",
-      "reason": "@Injectable: SettingsAdapterService",
-      "chunk_id": null
-    },
-    "ev.99bec2c7b0cc": {
-      "id": "ev.99bec2c7b0cc",
-      "path": "src\\app\\core\\application-initializer.service.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: ApplicationInitializerService",
-      "chunk_id": null
-    },
-    "ev.9a75824a7d66": {
-      "id": "ev.9a75824a7d66",
-      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: WorkflowFinalizeReencryptionTaskService",
-      "chunk_id": null
-    },
-    "ev.1adc2a09f6e0": {
-      "id": "ev.1adc2a09f6e0",
-      "path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
-      "lines": "20-26",
-      "reason": "@Injectable: XnpPdfAdapter",
-      "chunk_id": null
-    },
-    "ev.01514d3f45aa": {
-      "id": "ev.01514d3f45aa",
-      "path": "src\\app\\adapters\\archiving\\archiving.service.ts",
-      "lines": "33-39",
-      "reason": "@Injectable: ArchivingService",
-      "chunk_id": null
-    },
-    "ev.cf8dc2129cfc": {
-      "id": "ev.cf8dc2129cfc",
-      "path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: MockFileAdapterService",
-      "chunk_id": null
-    },
-    "ev.af32c16a759a": {
-      "id": "ev.af32c16a759a",
-      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: SortingService",
-      "chunk_id": null
-    },
-    "ev.54741f2b7c79": {
-      "id": "ev.54741f2b7c79",
-      "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
-      "lines": "80-86",
-      "reason": "@Injectable: SucessorHandoverProcessHelperService",
-      "chunk_id": null
-    },
-    "ev.e1b566a3fecf": {
-      "id": "ev.e1b566a3fecf",
-      "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
-      "lines": "12-18",
-      "reason": "@Injectable: WorkflowChangeAoidService",
-      "chunk_id": null
-    },
-    "ev.1a4480adc9ea": {
-      "id": "ev.1a4480adc9ea",
-      "path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: LspSecureFrameworkEndpoint",
-      "chunk_id": null
-    },
-    "ev.f9f0fa3ddb8a": {
-      "id": "ev.f9f0fa3ddb8a",
-      "path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
-      "lines": "23-29",
-      "reason": "@Injectable: XnpJsonImportAdapter",
-      "chunk_id": null
-    },
-    "ev.df83058e73f1": {
-      "id": "ev.df83058e73f1",
-      "path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: XnpPlatformEndpoint",
-      "chunk_id": null
-    },
-    "ev.7f295f8b08f2": {
-      "id": "ev.7f295f8b08f2",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
-      "lines": "153-159",
-      "reason": "@Injectable: CorrectionChangeDisplayService",
-      "chunk_id": null
-    },
-    "ev.f54ea469a3fb": {
-      "id": "ev.f54ea469a3fb",
-      "path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
-      "lines": "24-30",
-      "reason": "@Injectable: UvzNumberFormatConfigurationService",
-      "chunk_id": null
-    },
-    "ev.632814dcac86": {
-      "id": "ev.632814dcac86",
-      "path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
-      "lines": "15-21",
-      "reason": "@Injectable: HtmlCustodyAdapterService",
-      "chunk_id": null
-    },
-    "ev.3ca66dedd4b6": {
-      "id": "ev.3ca66dedd4b6",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-2-handler\\import-v1-6-2-handler.service.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot2",
-      "chunk_id": null
-    },
     "ev.875ca1609dc6": {
       "id": "ev.875ca1609dc6",
       "path": "src\\app\\core\\settings-initializer.ts",
@@ -2640,74 +2507,11 @@
       "reason": "@Injectable: SettingsInitializer",
       "chunk_id": null
     },
-    "ev.c890a31c763c": {
-      "id": "ev.c890a31c763c",
-      "path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: JsonAuthenticationAdapter",
-      "chunk_id": null
-    },
-    "ev.7464ca017f99": {
-      "id": "ev.7464ca017f99",
-      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: WorkflowValidateSignatureWorkService",
-      "chunk_id": null
-    },
-    "ev.853943d8d7a6": {
-      "id": "ev.853943d8d7a6",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: WorkflowBaseService",
-      "chunk_id": null
-    },
-    "ev.43bbf93df4a5": {
-      "id": "ev.43bbf93df4a5",
-      "path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
-      "lines": "16-22",
-      "reason": "@Injectable: XnpCustodyAdapterService",
-      "chunk_id": null
-    },
-    "ev.7b16416d7e76": {
-      "id": "ev.7b16416d7e76",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot0",
-      "chunk_id": null
-    },
-    "ev.3aa3b9784cb5": {
-      "id": "ev.3aa3b9784cb5",
-      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
-      "lines": "26-32",
-      "reason": "@Injectable: WorkflowArchiveJobService",
-      "chunk_id": null
-    },
-    "ev.7750b5859c47": {
-      "id": "ev.7750b5859c47",
-      "path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
-      "lines": "20-26",
-      "reason": "@Injectable: GlobalErrorHandlerService",
-      "chunk_id": null
-    },
-    "ev.feafaad057a1": {
-      "id": "ev.feafaad057a1",
-      "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: ReencryptionApiConfiguration",
-      "chunk_id": null
-    },
-    "ev.73f9fbf1f5c2": {
-      "id": "ev.73f9fbf1f5c2",
-      "path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
-      "lines": "19-25",
-      "reason": "@Injectable: BnotkGridHelperService",
-      "chunk_id": null
-    },
-    "ev.6f9cc0470c83": {
-      "id": "ev.6f9cc0470c83",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: TaskApiConfiguration",
+    "ev.2aa2b193bc23": {
+      "id": "ev.2aa2b193bc23",
+      "path": "src\\app\\shared\\services\\injector\\injector.service.ts",
+      "lines": "3-9",
+      "reason": "@Injectable: InjectorService",
       "chunk_id": null
     },
     "ev.93613c6d5a63": {
@@ -2717,200 +2521,18 @@
       "reason": "@Injectable: WorkflowDeletionTaskService",
       "chunk_id": null
     },
-    "ev.b9f6b4c6e86f": {
-      "id": "ev.b9f6b4c6e86f",
-      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
-      "lines": "19-25",
-      "reason": "@Injectable: ReencryptionFinalizationConfirmService",
-      "chunk_id": null
-    },
-    "ev.b0267f7e7d0f": {
-      "id": "ev.b0267f7e7d0f",
-      "path": "src\\app\\adapters\\authentication\\xnp\\XnpAuthenticationNgAdapter.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: XnpAuthenticationNgAdapter",
-      "chunk_id": null
-    },
-    "ev.22c95ef7645d": {
-      "id": "ev.22c95ef7645d",
-      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
-      "lines": "16-22",
-      "reason": "@Injectable: JobFinalizeReencryptionService",
-      "chunk_id": null
-    },
-    "ev.e2d351bd92ee": {
-      "id": "ev.e2d351bd92ee",
-      "path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: XnpFlyInNotificationNgAdapter",
-      "chunk_id": null
-    },
-    "ev.26ac72a82550": {
-      "id": "ev.26ac72a82550",
-      "path": "src\\app\\nsw-document-import\\document-import.service.ts",
-      "lines": "40-46",
-      "reason": "@Injectable: DocumentImportService",
-      "chunk_id": null
-    },
-    "ev.414575212bc1": {
-      "id": "ev.414575212bc1",
-      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
-      "lines": "18-24",
-      "reason": "@Injectable: LineNumberService",
-      "chunk_id": null
-    },
-    "ev.c181d4d88196": {
-      "id": "ev.c181d4d88196",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot1",
-      "chunk_id": null
-    },
-    "ev.aff84883987d": {
-      "id": "ev.aff84883987d",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
-      "lines": "40-46",
-      "reason": "@Injectable: DeedFormService",
-      "chunk_id": null
-    },
-    "ev.93fc296760c0": {
-      "id": "ev.93fc296760c0",
-      "path": "src\\app\\shared\\forms\\http-error-interceptor.service.ts",
-      "lines": "6-12",
-      "reason": "@Injectable: HttpErrorInterceptor",
-      "chunk_id": null
-    },
-    "ev.94c920b1aca0": {
-      "id": "ev.94c920b1aca0",
-      "path": "src\\app\\shared\\services\\button-deactivation.service.ts",
-      "lines": "4-10",
-      "reason": "@Injectable: ButtonDeactivationService",
-      "chunk_id": null
-    },
-    "ev.d258f05d6e57": {
-      "id": "ev.d258f05d6e57",
-      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
-      "lines": "16-22",
-      "reason": "@Injectable: JobReencryptionService",
-      "chunk_id": null
-    },
-    "ev.600b0f424345": {
-      "id": "ev.600b0f424345",
-      "path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
-      "lines": "4-10",
-      "reason": "@Injectable: FlyinNotificationAdapter",
-      "chunk_id": null
-    },
-    "ev.41120b2c665f": {
-      "id": "ev.41120b2c665f",
-      "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
-      "lines": "24-30",
-      "reason": "@Injectable: WorkflowDeletionWorkService",
-      "chunk_id": null
-    },
-    "ev.f5d1362fbdae": {
-      "id": "ev.f5d1362fbdae",
-      "path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: NotaryRepresentationService",
-      "chunk_id": null
-    },
-    "ev.ca73c555168d": {
-      "id": "ev.ca73c555168d",
-      "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: ReencryptionBaseService",
-      "chunk_id": null
-    },
-    "ev.464b17bae022": {
-      "id": "ev.464b17bae022",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
-      "lines": "85-91",
-      "reason": "@Injectable: TaskModuleMockService",
-      "chunk_id": null
-    },
-    "ev.ce2e36b104e9": {
-      "id": "ev.ce2e36b104e9",
-      "path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: TypeaheadDomService",
-      "chunk_id": null
-    },
-    "ev.acd1ee332dde": {
-      "id": "ev.acd1ee332dde",
-      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: WorkflowValidateSignatureService",
-      "chunk_id": null
-    },
-    "ev.2592a54a2e24": {
-      "id": "ev.2592a54a2e24",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts",
-      "lines": "11-17",
-      "reason": "@Injectable: DomainWorkflowService",
-      "chunk_id": null
-    },
-    "ev.6c0593eefe77": {
-      "id": "ev.6c0593eefe77",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
-      "lines": "155-161",
-      "reason": "@Injectable: WorkflowModuleMockService",
-      "chunk_id": null
-    },
-    "ev.227da9c817ed": {
-      "id": "ev.227da9c817ed",
-      "path": "src\\app\\shared\\authentication\\auth.guard.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: AuthGuard",
-      "chunk_id": null
-    },
-    "ev.5d975921323c": {
-      "id": "ev.5d975921323c",
-      "path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
-      "lines": "26-32",
-      "reason": "@Injectable: ReportMetadataRestService",
-      "chunk_id": null
-    },
-    "ev.ba8c7c68df53": {
-      "id": "ev.ba8c7c68df53",
-      "path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
-      "lines": "52-58",
-      "reason": "@Injectable: ActionService",
-      "chunk_id": null
-    },
-    "ev.ce46d6a2ac5e": {
-      "id": "ev.ce46d6a2ac5e",
-      "path": "src\\app\\deed-entry\\services\\deed-entry\\business-purpose-rest.service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: BusinessPurposeRestService",
-      "chunk_id": null
-    },
-    "ev.9c72fe694007": {
-      "id": "ev.9c72fe694007",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
+    "ev.9a75824a7d66": {
+      "id": "ev.9a75824a7d66",
+      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-task.service.ts",
       "lines": "14-20",
-      "reason": "@Injectable: KeepUnsavedBusinessObjectsService",
+      "reason": "@Injectable: WorkflowFinalizeReencryptionTaskService",
       "chunk_id": null
     },
-    "ev.61a02aa355ad": {
-      "id": "ev.61a02aa355ad",
-      "path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
-      "lines": "29-35",
-      "reason": "@Injectable: XnpAuthenticationAdapter",
-      "chunk_id": null
-    },
-    "ev.cb10840d583e": {
-      "id": "ev.cb10840d583e",
-      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
-      "lines": "6-12",
-      "reason": "@Injectable: SearchNotifyService",
-      "chunk_id": null
-    },
-    "ev.fce505e26a84": {
-      "id": "ev.fce505e26a84",
-      "path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: ActionBaseService",
+    "ev.8996dd6e17c1": {
+      "id": "ev.8996dd6e17c1",
+      "path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
+      "lines": "18-24",
+      "reason": "@Injectable: XnpAuthorizationNgAdapter",
       "chunk_id": null
     },
     "ev.780e8b618d6f": {
@@ -2920,11 +2542,74 @@
       "reason": "@Injectable: WorkflowChangeAoidJobService",
       "chunk_id": null
     },
-    "ev.509d6f15ea02": {
-      "id": "ev.509d6f15ea02",
-      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-work.service.ts",
-      "lines": "20-26",
-      "reason": "@Injectable: WorkflowReencryptionWorkService",
+    "ev.b1607f146a8f": {
+      "id": "ev.b1607f146a8f",
+      "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
+      "lines": "62-68",
+      "reason": "@Injectable: ReEncryptionHelperService",
+      "chunk_id": null
+    },
+    "ev.58eea1d12606": {
+      "id": "ev.58eea1d12606",
+      "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: DeedRegistryBaseService",
+      "chunk_id": null
+    },
+    "ev.3aa3b9784cb5": {
+      "id": "ev.3aa3b9784cb5",
+      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-job.service.ts",
+      "lines": "26-32",
+      "reason": "@Injectable: WorkflowArchiveJobService",
+      "chunk_id": null
+    },
+    "ev.6235cd5b177b": {
+      "id": "ev.6235cd5b177b",
+      "path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
+      "lines": "32-38",
+      "reason": "@Injectable: XnpEndpointProvider",
+      "chunk_id": null
+    },
+    "ev.a8aa56cfed63": {
+      "id": "ev.a8aa56cfed63",
+      "path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
+      "lines": "2-8",
+      "reason": "@Injectable: TooltipConfigService",
+      "chunk_id": null
+    },
+    "ev.12e5a6fa18b9": {
+      "id": "ev.12e5a6fa18b9",
+      "path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
+      "lines": "11-17",
+      "reason": "@Injectable: XnpPdfsEndpoint",
+      "chunk_id": null
+    },
+    "ev.4b90007c8114": {
+      "id": "ev.4b90007c8114",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot2Dot0",
+      "chunk_id": null
+    },
+    "ev.e1b566a3fecf": {
+      "id": "ev.e1b566a3fecf",
+      "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid.service.ts",
+      "lines": "12-18",
+      "reason": "@Injectable: WorkflowChangeAoidService",
+      "chunk_id": null
+    },
+    "ev.d3bd48ffd35b": {
+      "id": "ev.d3bd48ffd35b",
+      "path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
+      "lines": "22-28",
+      "reason": "@Injectable: DeedApprovalService",
+      "chunk_id": null
+    },
+    "ev.eed6d3116341": {
+      "id": "ev.eed6d3116341",
+      "path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
+      "lines": "17-23",
+      "reason": "@Injectable: ActivateIfUserAuthorized",
       "chunk_id": null
     },
     "ev.00b7e993aad5": {
@@ -2934,46 +2619,18 @@
       "reason": "@Injectable: NativeJsonImportAdapter",
       "chunk_id": null
     },
-    "ev.a39921f70cd6": {
-      "id": "ev.a39921f70cd6",
-      "path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
-      "lines": "6-12",
-      "reason": "@Injectable: OnlineHelpAdapterService",
+    "ev.009c73b61f95": {
+      "id": "ev.009c73b61f95",
+      "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
+      "lines": "77-83",
+      "reason": "@Injectable: DeedRegistryService",
       "chunk_id": null
     },
-    "ev.4292083cc63b": {
-      "id": "ev.4292083cc63b",
-      "path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
-      "lines": "48-54",
-      "reason": "@Injectable: XnpDocumentAdapterService",
-      "chunk_id": null
-    },
-    "ev.4fd437a8ddef": {
-      "id": "ev.4fd437a8ddef",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot1Dot1",
-      "chunk_id": null
-    },
-    "ev.132081596221": {
-      "id": "ev.132081596221",
-      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
-      "lines": "17-23",
-      "reason": "@Injectable: FinishReencryptionRestService",
-      "chunk_id": null
-    },
-    "ev.0afbd0442471": {
-      "id": "ev.0afbd0442471",
-      "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: DocumentMetadataBaseService",
-      "chunk_id": null
-    },
-    "ev.42fbda9edd56": {
-      "id": "ev.42fbda9edd56",
-      "path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
-      "lines": "28-34",
-      "reason": "@Injectable: BusyIndicatorInterceptor",
+    "ev.e67dbe9e0aad": {
+      "id": "ev.e67dbe9e0aad",
+      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: WorkflowReencryptionTaskService",
       "chunk_id": null
     },
     "ev.b30bc30acf30": {
@@ -2983,25 +2640,508 @@
       "reason": "@Injectable: XnpNotificationsEndpoint",
       "chunk_id": null
     },
-    "ev.fdd3f92b124e": {
-      "id": "ev.fdd3f92b124e",
-      "path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: XnpNotaryEndpoint",
-      "chunk_id": null
-    },
-    "ev.39ae5d8e3023": {
-      "id": "ev.39ae5d8e3023",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
-      "lines": "31-37",
-      "reason": "@Injectable: DocumentHelperService",
-      "chunk_id": null
-    },
-    "ev.01071218774f": {
-      "id": "ev.01071218774f",
-      "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
+    "ev.61a02aa355ad": {
+      "id": "ev.61a02aa355ad",
+      "path": "src\\app\\adapters\\authentication\\xnp\\impl\\XnpAuthenticationAdapter.ts",
       "lines": "29-35",
-      "reason": "@Injectable: HtmlDocumentAdapterService",
+      "reason": "@Injectable: XnpAuthenticationAdapter",
+      "chunk_id": null
+    },
+    "ev.1a4480adc9ea": {
+      "id": "ev.1a4480adc9ea",
+      "path": "src\\app\\adapters\\xnp\\LspSecureFrameworkEndpoint.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: LspSecureFrameworkEndpoint",
+      "chunk_id": null
+    },
+    "ev.188baf39caef": {
+      "id": "ev.188baf39caef",
+      "path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: DocumentCopyService",
+      "chunk_id": null
+    },
+    "ev.a624ed291239": {
+      "id": "ev.a624ed291239",
+      "path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: NumberManagementRestService",
+      "chunk_id": null
+    },
+    "ev.452cc3cf0558": {
+      "id": "ev.452cc3cf0558",
+      "path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
+      "lines": "163-169",
+      "reason": "@Injectable: LocalStorageSettingsAdapter",
+      "chunk_id": null
+    },
+    "ev.89839e3fc079": {
+      "id": "ev.89839e3fc079",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
+      "lines": "12-18",
+      "reason": "@Injectable: CorrectionObjectCreationService",
+      "chunk_id": null
+    },
+    "ev.7464ca017f99": {
+      "id": "ev.7464ca017f99",
+      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-work.service.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: WorkflowValidateSignatureWorkService",
+      "chunk_id": null
+    },
+    "ev.4292083cc63b": {
+      "id": "ev.4292083cc63b",
+      "path": "src\\app\\adapters\\document\\adapter\\xnp\\xnp-document-adapter.service.ts",
+      "lines": "48-54",
+      "reason": "@Injectable: XnpDocumentAdapterService",
+      "chunk_id": null
+    },
+    "ev.509d6f15ea02": {
+      "id": "ev.509d6f15ea02",
+      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-work.service.ts",
+      "lines": "20-26",
+      "reason": "@Injectable: WorkflowReencryptionWorkService",
+      "chunk_id": null
+    },
+    "ev.b42ea1722c08": {
+      "id": "ev.b42ea1722c08",
+      "path": "src\\app\\action\\services\\action\\action-domain.service.ts",
+      "lines": "30-36",
+      "reason": "@Injectable: ActionDomainService",
+      "chunk_id": null
+    },
+    "ev.41120b2c665f": {
+      "id": "ev.41120b2c665f",
+      "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-work.service.ts",
+      "lines": "24-30",
+      "reason": "@Injectable: WorkflowDeletionWorkService",
+      "chunk_id": null
+    },
+    "ev.5945bf14caf9": {
+      "id": "ev.5945bf14caf9",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: JobBaseService",
+      "chunk_id": null
+    },
+    "ev.1cdbda1051f1": {
+      "id": "ev.1cdbda1051f1",
+      "path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
+      "lines": "34-40",
+      "reason": "@Injectable: DeedDeleteService",
+      "chunk_id": null
+    },
+    "ev.f0e812c4dcf9": {
+      "id": "ev.f0e812c4dcf9",
+      "path": "src\\app\\shared\\token-bar\\token-data-mapper.service.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: TokenDataMapperService",
+      "chunk_id": null
+    },
+    "ev.7b16416d7e76": {
+      "id": "ev.7b16416d7e76",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-0-handler\\import-v1-6-0-handler.service.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot0",
+      "chunk_id": null
+    },
+    "ev.2f6bef1de6e5": {
+      "id": "ev.2f6bef1de6e5",
+      "path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
+      "lines": "16-22",
+      "reason": "@Injectable: XnpVvzEndpoint",
+      "chunk_id": null
+    },
+    "ev.4f24e9640a5b": {
+      "id": "ev.4f24e9640a5b",
+      "path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
+      "lines": "36-42",
+      "reason": "@Injectable: MockArchivingRetrievalHelperService",
+      "chunk_id": null
+    },
+    "ev.fae94a44dbe2": {
+      "id": "ev.fae94a44dbe2",
+      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
+      "lines": "11-17",
+      "reason": "@Injectable: ReencryptionConfirmService",
+      "chunk_id": null
+    },
+    "ev.c8d2cd759952": {
+      "id": "ev.c8d2cd759952",
+      "path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
+      "lines": "5-11",
+      "reason": "@Injectable: NativeSessionAdapter",
+      "chunk_id": null
+    },
+    "ev.464b17bae022": {
+      "id": "ev.464b17bae022",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\task-module-mock.service.ts",
+      "lines": "85-91",
+      "reason": "@Injectable: TaskModuleMockService",
+      "chunk_id": null
+    },
+    "ev.42fbda9edd56": {
+      "id": "ev.42fbda9edd56",
+      "path": "src\\app\\shared\\http-util\\busy-indicator-interceptor.service.ts",
+      "lines": "28-34",
+      "reason": "@Injectable: BusyIndicatorInterceptor",
+      "chunk_id": null
+    },
+    "ev.cb10840d583e": {
+      "id": "ev.cb10840d583e",
+      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\searchNotify.service.ts",
+      "lines": "6-12",
+      "reason": "@Injectable: SearchNotifyService",
+      "chunk_id": null
+    },
+    "ev.94ad780cd817": {
+      "id": "ev.94ad780cd817",
+      "path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: NativePdfAdapter",
+      "chunk_id": null
+    },
+    "ev.d191ca00f8e6": {
+      "id": "ev.d191ca00f8e6",
+      "path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
+      "lines": "17-23",
+      "reason": "@Injectable: BusinessPurposeResolverEnhancedSearch",
+      "chunk_id": null
+    },
+    "ev.853943d8d7a6": {
+      "id": "ev.853943d8d7a6",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-base-service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: WorkflowBaseService",
+      "chunk_id": null
+    },
+    "ev.b77d03aad833": {
+      "id": "ev.b77d03aad833",
+      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\workflow-finalize-reencryption-work.service.ts",
+      "lines": "19-25",
+      "reason": "@Injectable: WorkflowFinalizeReencryptionWorkService",
+      "chunk_id": null
+    },
+    "ev.2dcff30e7c6d": {
+      "id": "ev.2dcff30e7c6d",
+      "path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: DeedEntryPageManagerService",
+      "chunk_id": null
+    },
+    "ev.d3c2178903bd": {
+      "id": "ev.d3c2178903bd",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: JobApiConfiguration",
+      "chunk_id": null
+    },
+    "ev.632814dcac86": {
+      "id": "ev.632814dcac86",
+      "path": "src\\app\\adapters\\custody\\html-custody-adapter\\html-custody-adapter.service.ts",
+      "lines": "15-21",
+      "reason": "@Injectable: HtmlCustodyAdapterService",
+      "chunk_id": null
+    },
+    "ev.7f295f8b08f2": {
+      "id": "ev.7f295f8b08f2",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-change-display.service.ts",
+      "lines": "153-159",
+      "reason": "@Injectable: CorrectionChangeDisplayService",
+      "chunk_id": null
+    },
+    "ev.364c3890c227": {
+      "id": "ev.364c3890c227",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
+      "lines": "110-116",
+      "reason": "@Injectable: WorkflowModuleService",
+      "chunk_id": null
+    },
+    "ev.ce46d6a2ac5e": {
+      "id": "ev.ce46d6a2ac5e",
+      "path": "src\\app\\deed-entry\\services\\deed-entry\\business-purpose-rest.service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: BusinessPurposeRestService",
+      "chunk_id": null
+    },
+    "ev.43bbf93df4a5": {
+      "id": "ev.43bbf93df4a5",
+      "path": "src\\app\\adapters\\custody\\xnp\\xnp-custody-adapter.service.ts",
+      "lines": "16-22",
+      "reason": "@Injectable: XnpCustodyAdapterService",
+      "chunk_id": null
+    },
+    "ev.d626f18af316": {
+      "id": "ev.d626f18af316",
+      "path": "src\\app\\shared\\page\\busy-indicator\\services\\busy-indicator.service.ts",
+      "lines": "4-10",
+      "reason": "@Injectable: BusyIndicatorService",
+      "chunk_id": null
+    },
+    "ev.e18e29119e38": {
+      "id": "ev.e18e29119e38",
+      "path": "src\\app\\adapters\\logging\\xnp\\XnpLogNgAdapter.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: XnpLogNgAdapter",
+      "chunk_id": null
+    },
+    "ev.f573c49a4dbf": {
+      "id": "ev.f573c49a4dbf",
+      "path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
+      "lines": "114-120",
+      "reason": "@Injectable: PdfExportService",
+      "chunk_id": null
+    },
+    "ev.89485c7eb5a7": {
+      "id": "ev.89485c7eb5a7",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
+      "lines": "28-34",
+      "reason": "@Injectable: AsyncDocumentHelperService",
+      "chunk_id": null
+    },
+    "ev.44abb66a8cd1": {
+      "id": "ev.44abb66a8cd1",
+      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-has-errors-retry\\reencryption-has-errors-retry.service.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: ReencryptionHasErrorsRetryService",
+      "chunk_id": null
+    },
+    "ev.9c7f93843c43": {
+      "id": "ev.9c7f93843c43",
+      "path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
+      "lines": "28-34",
+      "reason": "@Injectable: XnpStorageSettingsAdapter",
+      "chunk_id": null
+    },
+    "ev.1eeff4df4238": {
+      "id": "ev.1eeff4df4238",
+      "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: DeedTypeRestService",
+      "chunk_id": null
+    },
+    "ev.d83e5c114e51": {
+      "id": "ev.d83e5c114e51",
+      "path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
+      "lines": "6-12",
+      "reason": "@Injectable: MockKeyManagerAdapterService",
+      "chunk_id": null
+    },
+    "ev.4fd437a8ddef": {
+      "id": "ev.4fd437a8ddef",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-1-1-handler\\import-v1-1-1-handler.service.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot1Dot1",
+      "chunk_id": null
+    },
+    "ev.2e6774050d8f": {
+      "id": "ev.2e6774050d8f",
+      "path": "src\\app\\adapters\\xnp\\XnpPdfMakeEndpoint.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: XnpPdfMakeEndpoint",
+      "chunk_id": null
+    },
+    "ev.5e0b8e58f1b8": {
+      "id": "ev.5e0b8e58f1b8",
+      "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
+      "lines": "20-26",
+      "reason": "@Injectable: WorkflowChangeAoidWorkService",
+      "chunk_id": null
+    },
+    "ev.e261ebba679b": {
+      "id": "ev.e261ebba679b",
+      "path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
+      "lines": "327-333",
+      "reason": "@Injectable: MockXnpEndpointProvider",
+      "chunk_id": null
+    },
+    "ev.552ec39e7d0f": {
+      "id": "ev.552ec39e7d0f",
+      "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
+      "lines": "27-33",
+      "reason": "@Injectable: HtmlSignatureAdapterService",
+      "chunk_id": null
+    },
+    "ev.cdcdc007271a": {
+      "id": "ev.cdcdc007271a",
+      "path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
+      "lines": "25-31",
+      "reason": "@Injectable: ArchiveSessionService",
+      "chunk_id": null
+    },
+    "ev.1451445441f3": {
+      "id": "ev.1451445441f3",
+      "path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: XnpSettingsEndpoint",
+      "chunk_id": null
+    },
+    "ev.48c48273b206": {
+      "id": "ev.48c48273b206",
+      "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-entry-rest.service.ts",
+      "lines": "73-79",
+      "reason": "@Injectable: DeedEntryRestService",
+      "chunk_id": null
+    },
+    "ev.26ac72a82550": {
+      "id": "ev.26ac72a82550",
+      "path": "src\\app\\nsw-document-import\\document-import.service.ts",
+      "lines": "40-46",
+      "reason": "@Injectable: DocumentImportService",
+      "chunk_id": null
+    },
+    "ev.600b0f424345": {
+      "id": "ev.600b0f424345",
+      "path": "src\\app\\adapters\\flyinnotification\\flyinNotificationAdapter\\flyinNotificationAdapter.ts",
+      "lines": "4-10",
+      "reason": "@Injectable: FlyinNotificationAdapter",
+      "chunk_id": null
+    },
+    "ev.730314999129": {
+      "id": "ev.730314999129",
+      "path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
+      "lines": "18-24",
+      "reason": "@Injectable: XnpDocumentsEndpoint",
+      "chunk_id": null
+    },
+    "ev.23a120f410c9": {
+      "id": "ev.23a120f410c9",
+      "path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
+      "lines": "28-34",
+      "reason": "@Injectable: BusinessLoggingResolverService",
+      "chunk_id": null
+    },
+    "ev.78e106d8798b": {
+      "id": "ev.78e106d8798b",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot4Dot0",
+      "chunk_id": null
+    },
+    "ev.94c920b1aca0": {
+      "id": "ev.94c920b1aca0",
+      "path": "src\\app\\shared\\services\\button-deactivation.service.ts",
+      "lines": "4-10",
+      "reason": "@Injectable: ButtonDeactivationService",
+      "chunk_id": null
+    },
+    "ev.762b1238644c": {
+      "id": "ev.762b1238644c",
+      "path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
+      "lines": "35-41",
+      "reason": "@Injectable: UserContextPermissionCheckService",
+      "chunk_id": null
+    },
+    "ev.36cc7cde185a": {
+      "id": "ev.36cc7cde185a",
+      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
+      "lines": "5-11",
+      "reason": "@Injectable: WorkflowArchiveService",
+      "chunk_id": null
+    },
+    "ev.861039cda2bb": {
+      "id": "ev.861039cda2bb",
+      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: ReencryptionCheckResolver",
+      "chunk_id": null
+    },
+    "ev.f9f0fa3ddb8a": {
+      "id": "ev.f9f0fa3ddb8a",
+      "path": "src\\app\\adapters\\json-import\\xnp\\xnp-json-import.ts",
+      "lines": "23-29",
+      "reason": "@Injectable: XnpJsonImportAdapter",
+      "chunk_id": null
+    },
+    "ev.ca4deaddb090": {
+      "id": "ev.ca4deaddb090",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot3Dot0",
+      "chunk_id": null
+    },
+    "ev.7750b5859c47": {
+      "id": "ev.7750b5859c47",
+      "path": "src\\app\\shared\\error-handling\\global-error-handler.service.ts",
+      "lines": "20-26",
+      "reason": "@Injectable: GlobalErrorHandlerService",
+      "chunk_id": null
+    },
+    "ev.c890a31c763c": {
+      "id": "ev.c890a31c763c",
+      "path": "src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: JsonAuthenticationAdapter",
+      "chunk_id": null
+    },
+    "ev.17a35125454b": {
+      "id": "ev.17a35125454b",
+      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: WorkflowArchiveTaskService",
+      "chunk_id": null
+    },
+    "ev.94c41b294837": {
+      "id": "ev.94c41b294837",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
+      "lines": "119-125",
+      "reason": "@Injectable: TaskModuleService",
+      "chunk_id": null
+    },
+    "ev.9c72fe694007": {
+      "id": "ev.9c72fe694007",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\keep-unsaved-business-objects.service.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: KeepUnsavedBusinessObjectsService",
+      "chunk_id": null
+    },
+    "ev.22c95ef7645d": {
+      "id": "ev.22c95ef7645d",
+      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-finalize-reencryption\\job-finalize-reencryption.service.ts",
+      "lines": "16-22",
+      "reason": "@Injectable: JobFinalizeReencryptionService",
+      "chunk_id": null
+    },
+    "ev.ca73c555168d": {
+      "id": "ev.ca73c555168d",
+      "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-base-service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: ReencryptionBaseService",
+      "chunk_id": null
+    },
+    "ev.2592a54a2e24": {
+      "id": "ev.2592a54a2e24",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-workflow.service.ts",
+      "lines": "11-17",
+      "reason": "@Injectable: DomainWorkflowService",
+      "chunk_id": null
+    },
+    "ev.3dd24a706a95": {
+      "id": "ev.3dd24a706a95",
+      "path": "src\\app\\adapters\\online-help-adapter\\xnp\\xnp-help-adapter.service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: XnpHelpAdapterService",
+      "chunk_id": null
+    },
+    "ev.5d3e3bd0abe7": {
+      "id": "ev.5d3e3bd0abe7",
+      "path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
+      "lines": "44-50",
+      "reason": "@Injectable: ReportMetadataService",
+      "chunk_id": null
+    },
+    "ev.00f3fbdfe723": {
+      "id": "ev.00f3fbdfe723",
+      "path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
+      "lines": "15-21",
+      "reason": "@Injectable: ReportService",
+      "chunk_id": null
+    },
+    "ev.01514d3f45aa": {
+      "id": "ev.01514d3f45aa",
+      "path": "src\\app\\adapters\\archiving\\archiving.service.ts",
+      "lines": "33-39",
+      "reason": "@Injectable: ArchivingService",
       "chunk_id": null
     },
     "ev.44a681e80420": {
@@ -3018,39 +3158,88 @@
       "reason": "@Injectable: XnpArchivingAdapterService",
       "chunk_id": null
     },
-    "ev.5945bf14caf9": {
-      "id": "ev.5945bf14caf9",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-base-service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: JobBaseService",
+    "ev.3ca66dedd4b6": {
+      "id": "ev.3ca66dedd4b6",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-2-handler\\import-v1-6-2-handler.service.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot2",
       "chunk_id": null
     },
-    "ev.e18e29119e38": {
-      "id": "ev.e18e29119e38",
-      "path": "src\\app\\adapters\\logging\\xnp\\XnpLogNgAdapter.ts",
+    "ev.fc124932eb9f": {
+      "id": "ev.fc124932eb9f",
+      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
       "lines": "10-16",
-      "reason": "@Injectable: XnpLogNgAdapter",
+      "reason": "@Injectable: ReencryptionFinalizationDoneService",
       "chunk_id": null
     },
-    "ev.2b436b234940": {
-      "id": "ev.2b436b234940",
-      "path": "src\\app\\shared\\authentication\\auth-http-interceptor.service.ts",
+    "ev.1adc2a09f6e0": {
+      "id": "ev.1adc2a09f6e0",
+      "path": "src\\app\\adapters\\pdf-report\\xnp\\XnpPdfAdapter.ts",
+      "lines": "20-26",
+      "reason": "@Injectable: XnpPdfAdapter",
+      "chunk_id": null
+    },
+    "ev.8de764915a75": {
+      "id": "ev.8de764915a75",
+      "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
+      "lines": "26-32",
+      "reason": "@Injectable: WorkflowDeletionJobService",
+      "chunk_id": null
+    },
+    "ev.0c2923981b00": {
+      "id": "ev.0c2923981b00",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-task.service.ts",
+      "lines": "61-67",
+      "reason": "@Injectable: DomainTaskService",
+      "chunk_id": null
+    },
+    "ev.fce505e26a84": {
+      "id": "ev.fce505e26a84",
+      "path": "src\\app\\action\\services\\action\\api-generated\\action-base-service.ts",
       "lines": "8-14",
-      "reason": "@Injectable: AuthenticationHttpInterceptor",
+      "reason": "@Injectable: ActionBaseService",
       "chunk_id": null
     },
-    "ev.552ec39e7d0f": {
-      "id": "ev.552ec39e7d0f",
-      "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-signature-adapter\\html-signature-adapter.service.ts",
-      "lines": "27-33",
-      "reason": "@Injectable: HtmlSignatureAdapterService",
+    "ev.6b5ed53120f8": {
+      "id": "ev.6b5ed53120f8",
+      "path": "src\\app\\adapters\\authentication\\xnp\\services\\notary-official-title-static-mapper.service.ts",
+      "lines": "4-10",
+      "reason": "@Injectable: NotaryOfficialTitleStaticMapperService",
       "chunk_id": null
     },
-    "ev.c8d2cd759952": {
-      "id": "ev.c8d2cd759952",
-      "path": "src\\app\\adapters\\session\\native\\native-session-adapter.ts",
-      "lines": "5-11",
-      "reason": "@Injectable: NativeSessionAdapter",
+    "ev.3968e74abd12": {
+      "id": "ev.3968e74abd12",
+      "path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: ChromePageContainerAdapterImpl",
+      "chunk_id": null
+    },
+    "ev.f60b22befc11": {
+      "id": "ev.f60b22befc11",
+      "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: DeedRegistryApiConfiguration",
+      "chunk_id": null
+    },
+    "ev.c0cf1b1b7617": {
+      "id": "ev.c0cf1b1b7617",
+      "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: DocumentMetadataApiConfiguration",
+      "chunk_id": null
+    },
+    "ev.f1c10833e93a": {
+      "id": "ev.f1c10833e93a",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
+      "lines": "16-22",
+      "reason": "@Injectable: ShortcutService",
+      "chunk_id": null
+    },
+    "ev.6ffe6af5f51e": {
+      "id": "ev.6ffe6af5f51e",
+      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
+      "lines": "11-17",
+      "reason": "@Injectable: ReencryptionFinalizationHasErrorsRetryService",
       "chunk_id": null
     },
     "ev.e2e8a5b983bd": {
@@ -3060,11 +3249,137 @@
       "reason": "@Injectable: WorkflowApiConfiguration",
       "chunk_id": null
     },
-    "ev.c583b74d7c9a": {
-      "id": "ev.c583b74d7c9a",
-      "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
-      "lines": "232-238",
-      "reason": "@Injectable: DocumentMetaDataService",
+    "ev.99bec2c7b0cc": {
+      "id": "ev.99bec2c7b0cc",
+      "path": "src\\app\\core\\application-initializer.service.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: ApplicationInitializerService",
+      "chunk_id": null
+    },
+    "ev.0570fd3a653a": {
+      "id": "ev.0570fd3a653a",
+      "path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
+      "lines": "12-18",
+      "reason": "@Injectable: DeedRegistryDomainService",
+      "chunk_id": null
+    },
+    "ev.2b436b234940": {
+      "id": "ev.2b436b234940",
+      "path": "src\\app\\shared\\authentication\\auth-http-interceptor.service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: AuthenticationHttpInterceptor",
+      "chunk_id": null
+    },
+    "ev.54741f2b7c79": {
+      "id": "ev.54741f2b7c79",
+      "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\sucessor-handover-process-helper.service.ts",
+      "lines": "80-86",
+      "reason": "@Injectable: SucessorHandoverProcessHelperService",
+      "chunk_id": null
+    },
+    "ev.670fa5c25f21": {
+      "id": "ev.670fa5c25f21",
+      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
+      "lines": "20-26",
+      "reason": "@Injectable: WorkflowArchiveWorkService",
+      "chunk_id": null
+    },
+    "ev.acd1ee332dde": {
+      "id": "ev.acd1ee332dde",
+      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: WorkflowValidateSignatureService",
+      "chunk_id": null
+    },
+    "ev.ccf51bcdd2db": {
+      "id": "ev.ccf51bcdd2db",
+      "path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
+      "lines": "21-27",
+      "reason": "@Injectable: XnpBroadcastAdapterService",
+      "chunk_id": null
+    },
+    "ev.a51896895c7e": {
+      "id": "ev.a51896895c7e",
+      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
+      "lines": "16-22",
+      "reason": "@Injectable: HandleSearchParamHelper",
+      "chunk_id": null
+    },
+    "ev.768b208956eb": {
+      "id": "ev.768b208956eb",
+      "path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
+      "lines": "26-32",
+      "reason": "@Injectable: XnpArchiveManagerEndpoint",
+      "chunk_id": null
+    },
+    "ev.0dcdc4d9bc8d": {
+      "id": "ev.0dcdc4d9bc8d",
+      "path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: JsonAuthorizationAdapter",
+      "chunk_id": null
+    },
+    "ev.19195f4b25d6": {
+      "id": "ev.19195f4b25d6",
+      "path": "src\\app\\deed-entry\\services\\document-metadata\\document-metadata-domain.service.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: DocumentMetadataDomainService",
+      "chunk_id": null
+    },
+    "ev.86b5f19370f8": {
+      "id": "ev.86b5f19370f8",
+      "path": "src\\app\\deed-entry\\services\\deed-entry-log\\deed-entry-log.service.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: DeedEntryLogService",
+      "chunk_id": null
+    },
+    "ev.01071218774f": {
+      "id": "ev.01071218774f",
+      "path": "src\\app\\adapters\\document\\adapter\\html-document-adapter\\html-document-adapter.service.ts",
+      "lines": "29-35",
+      "reason": "@Injectable: HtmlDocumentAdapterService",
+      "chunk_id": null
+    },
+    "ev.5d975921323c": {
+      "id": "ev.5d975921323c",
+      "path": "src\\app\\report-metadata\\services\\report-metadata-rest.service.ts",
+      "lines": "26-32",
+      "reason": "@Injectable: ReportMetadataRestService",
+      "chunk_id": null
+    },
+    "ev.b3e4718e655f": {
+      "id": "ev.b3e4718e655f",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
+      "lines": "19-25",
+      "reason": "@Injectable: DomainJobService",
+      "chunk_id": null
+    },
+    "ev.3e8174a9a5e4": {
+      "id": "ev.3e8174a9a5e4",
+      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: WorkflowValidateSignatureTaskService",
+      "chunk_id": null
+    },
+    "ev.0afbd0442471": {
+      "id": "ev.0afbd0442471",
+      "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-base-service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: DocumentMetadataBaseService",
+      "chunk_id": null
+    },
+    "ev.34c8b998c03a": {
+      "id": "ev.34c8b998c03a",
+      "path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
+      "lines": "6-12",
+      "reason": "@Injectable: ReportMetadataSignatureHelperService",
+      "chunk_id": null
+    },
+    "ev.558891487e95": {
+      "id": "ev.558891487e95",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
+      "lines": "16-22",
+      "reason": "@Injectable: NswDeedImportService",
       "chunk_id": null
     },
     "ev.7a9a86f9a0a1": {
@@ -3081,102 +3396,11 @@
       "reason": "@Injectable: TaskBaseService",
       "chunk_id": null
     },
-    "ev.f60b22befc11": {
-      "id": "ev.f60b22befc11",
-      "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api-configuration.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: DeedRegistryApiConfiguration",
-      "chunk_id": null
-    },
-    "ev.a624ed291239": {
-      "id": "ev.a624ed291239",
-      "path": "src\\app\\number-management\\services\\number-management-rest.service.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: NumberManagementRestService",
-      "chunk_id": null
-    },
-    "ev.8de764915a75": {
-      "id": "ev.8de764915a75",
-      "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion-job.service.ts",
-      "lines": "26-32",
-      "reason": "@Injectable: WorkflowDeletionJobService",
-      "chunk_id": null
-    },
-    "ev.4f24e9640a5b": {
-      "id": "ev.4f24e9640a5b",
-      "path": "src\\app\\deed-entry\\services\\archiving\\archiving-retrieval-helper.service.ts",
-      "lines": "36-42",
-      "reason": "@Injectable: MockArchivingRetrievalHelperService",
-      "chunk_id": null
-    },
-    "ev.364c3890c227": {
-      "id": "ev.364c3890c227",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\workflow-module.service.ts",
-      "lines": "110-116",
-      "reason": "@Injectable: WorkflowModuleService",
-      "chunk_id": null
-    },
-    "ev.35c027d0e94e": {
-      "id": "ev.35c027d0e94e",
-      "path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
-      "lines": "31-37",
-      "reason": "@Injectable: WorkflowBroadcastService",
-      "chunk_id": null
-    },
-    "ev.ca4deaddb090": {
-      "id": "ev.ca4deaddb090",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-3-0-handler\\import-v1-3-0-handler.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot3Dot0",
-      "chunk_id": null
-    },
-    "ev.d34ed7b5d06a": {
-      "id": "ev.d34ed7b5d06a",
-      "path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
-      "lines": "6-12",
-      "reason": "@Injectable: CustomDatepickerParserFormatter",
-      "chunk_id": null
-    },
-    "ev.d3bd48ffd35b": {
-      "id": "ev.d3bd48ffd35b",
-      "path": "src\\app\\deed-entry\\services\\deed-approval\\deed-approval.service.ts",
-      "lines": "22-28",
-      "reason": "@Injectable: DeedApprovalService",
-      "chunk_id": null
-    },
-    "ev.9c490e99569b": {
-      "id": "ev.9c490e99569b",
-      "path": "src\\app\\shared\\generic-modal-dialogs\\issue-copy-document-modal-dialog\\issue-copy-document-modal-view\\issue-copy-document-helper.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: IssueCopyDocumentHelper",
-      "chunk_id": null
-    },
-    "ev.a51896895c7e": {
-      "id": "ev.a51896895c7e",
-      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\handle-search-param.helper.ts",
-      "lines": "16-22",
-      "reason": "@Injectable: HandleSearchParamHelper",
-      "chunk_id": null
-    },
-    "ev.d626f18af316": {
-      "id": "ev.d626f18af316",
-      "path": "src\\app\\shared\\page\\busy-indicator\\services\\busy-indicator.service.ts",
-      "lines": "4-10",
-      "reason": "@Injectable: BusyIndicatorService",
-      "chunk_id": null
-    },
-    "ev.670fa5c25f21": {
-      "id": "ev.670fa5c25f21",
-      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-work.service.ts",
-      "lines": "20-26",
-      "reason": "@Injectable: WorkflowArchiveWorkService",
-      "chunk_id": null
-    },
-    "ev.861039cda2bb": {
-      "id": "ev.861039cda2bb",
-      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\reencryption-check.resolver.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: ReencryptionCheckResolver",
+    "ev.aff84883987d": {
+      "id": "ev.aff84883987d",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\deed-form.service.ts",
+      "lines": "40-46",
+      "reason": "@Injectable: DeedFormService",
       "chunk_id": null
     },
     "ev.c8162d3c035a": {
@@ -3186,263 +3410,11 @@
       "reason": "@Injectable: GetDeedEntryLockService",
       "chunk_id": null
     },
-    "ev.00f3fbdfe723": {
-      "id": "ev.00f3fbdfe723",
-      "path": "src\\app\\deed-entry\\services\\deed-reports\\report.service.ts",
-      "lines": "15-21",
-      "reason": "@Injectable: ReportService",
-      "chunk_id": null
-    },
-    "ev.188baf39caef": {
-      "id": "ev.188baf39caef",
-      "path": "src\\app\\deed-entry\\services\\document-copy\\document-copy-to.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: DocumentCopyService",
-      "chunk_id": null
-    },
-    "ev.12e5a6fa18b9": {
-      "id": "ev.12e5a6fa18b9",
-      "path": "src\\app\\adapters\\xnp\\XnpPdfsEndpoint.ts",
-      "lines": "11-17",
-      "reason": "@Injectable: XnpPdfsEndpoint",
-      "chunk_id": null
-    },
-    "ev.9dcf56ed5cf9": {
-      "id": "ev.9dcf56ed5cf9",
-      "path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: RateLimitingInterceptor",
-      "chunk_id": null
-    },
-    "ev.768b208956eb": {
-      "id": "ev.768b208956eb",
-      "path": "src\\app\\adapters\\xnp\\XnpArchiveManagerEndpoint.ts",
-      "lines": "26-32",
-      "reason": "@Injectable: XnpArchiveManagerEndpoint",
-      "chunk_id": null
-    },
-    "ev.eb98039e842d": {
-      "id": "ev.eb98039e842d",
-      "path": "src\\app\\deed-entry\\services\\official-activity-metadata\\official-activity-metadata.service.ts",
-      "lines": "12-18",
-      "reason": "@Injectable: OfficialActivityMetadataService",
-      "chunk_id": null
-    },
-    "ev.f507eb712ee8": {
-      "id": "ev.f507eb712ee8",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
-      "lines": "104-110",
-      "reason": "@Injectable: JobModuleService",
-      "chunk_id": null
-    },
-    "ev.94ad780cd817": {
-      "id": "ev.94ad780cd817",
-      "path": "src\\app\\adapters\\pdf-report\\native\\NativePdfAdapter.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: NativePdfAdapter",
-      "chunk_id": null
-    },
-    "ev.1f8643321c1f": {
-      "id": "ev.1f8643321c1f",
-      "path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: ActionApiConfiguration",
-      "chunk_id": null
-    },
-    "ev.7c907dc73385": {
-      "id": "ev.7c907dc73385",
-      "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerAdapter.ts",
-      "lines": "30-36",
-      "reason": "@Injectable: XnpPageContainerAdapter",
-      "chunk_id": null
-    },
-    "ev.fae94a44dbe2": {
-      "id": "ev.fae94a44dbe2",
-      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-confirm\\reencryption-confirm.service.ts",
-      "lines": "11-17",
-      "reason": "@Injectable: ReencryptionConfirmService",
-      "chunk_id": null
-    },
-    "ev.2aa2b193bc23": {
-      "id": "ev.2aa2b193bc23",
-      "path": "src\\app\\shared\\services\\injector\\injector.service.ts",
-      "lines": "3-9",
-      "reason": "@Injectable: InjectorService",
-      "chunk_id": null
-    },
-    "ev.17a35125454b": {
-      "id": "ev.17a35125454b",
-      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive-task.service.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: WorkflowArchiveTaskService",
-      "chunk_id": null
-    },
-    "ev.3e8174a9a5e4": {
-      "id": "ev.3e8174a9a5e4",
-      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-task.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: WorkflowValidateSignatureTaskService",
-      "chunk_id": null
-    },
-    "ev.b3e4718e655f": {
-      "id": "ev.b3e4718e655f",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-job.service.ts",
-      "lines": "19-25",
-      "reason": "@Injectable: DomainJobService",
-      "chunk_id": null
-    },
-    "ev.f1e3f8cbd4a5": {
-      "id": "ev.f1e3f8cbd4a5",
-      "path": "src\\app\\shared\\services\\redesign.service.mock.ts",
-      "lines": "2-8",
-      "reason": "@Injectable: RedesignServiceMock",
-      "chunk_id": null
-    },
-    "ev.89485c7eb5a7": {
-      "id": "ev.89485c7eb5a7",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\async-document-helper.service.ts",
-      "lines": "28-34",
-      "reason": "@Injectable: AsyncDocumentHelperService",
-      "chunk_id": null
-    },
-    "ev.89839e3fc079": {
-      "id": "ev.89839e3fc079",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\correction-object-creation.service.ts",
-      "lines": "12-18",
-      "reason": "@Injectable: CorrectionObjectCreationService",
-      "chunk_id": null
-    },
-    "ev.8996dd6e17c1": {
-      "id": "ev.8996dd6e17c1",
-      "path": "src\\app\\adapters\\authorization\\xnp\\XnpAuthorizationNgAdapter.ts",
-      "lines": "18-24",
-      "reason": "@Injectable: XnpAuthorizationNgAdapter",
-      "chunk_id": null
-    },
-    "ev.4c0401fee60b": {
-      "id": "ev.4c0401fee60b",
-      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
-      "lines": "5-11",
-      "reason": "@Injectable: HandoverDataSetService",
-      "chunk_id": null
-    },
-    "ev.91ef1ba41354": {
-      "id": "ev.91ef1ba41354",
-      "path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
-      "lines": "71-77",
-      "reason": "@Injectable: WorkflowReencryptionService",
-      "chunk_id": null
-    },
-    "ev.1451445441f3": {
-      "id": "ev.1451445441f3",
-      "path": "src\\app\\adapters\\xnp\\XnpSettingsEndpoint.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: XnpSettingsEndpoint",
-      "chunk_id": null
-    },
-    "ev.23a120f410c9": {
-      "id": "ev.23a120f410c9",
-      "path": "src\\app\\deed-entry\\components\\deed-view-page\\services\\business-logging.resolver.ts",
-      "lines": "28-34",
-      "reason": "@Injectable: BusinessLoggingResolverService",
-      "chunk_id": null
-    },
-    "ev.cdcdc007271a": {
-      "id": "ev.cdcdc007271a",
-      "path": "src\\app\\shared\\services\\archive-session-service\\archive-session.service.ts",
-      "lines": "25-31",
-      "reason": "@Injectable: ArchiveSessionService",
-      "chunk_id": null
-    },
-    "ev.f0e812c4dcf9": {
-      "id": "ev.f0e812c4dcf9",
-      "path": "src\\app\\shared\\token-bar\\token-data-mapper.service.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: TokenDataMapperService",
-      "chunk_id": null
-    },
-    "ev.829e2b9d3905": {
-      "id": "ev.829e2b9d3905",
-      "path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
-      "lines": "19-25",
-      "reason": "@Injectable: TypeaheadFilterService",
-      "chunk_id": null
-    },
-    "ev.d191ca00f8e6": {
-      "id": "ev.d191ca00f8e6",
-      "path": "src\\app\\shared\\enhanced-search\\business-purpose-resolver-enhanced-search.service.ts",
-      "lines": "17-23",
-      "reason": "@Injectable: BusinessPurposeResolverEnhancedSearch",
-      "chunk_id": null
-    },
-    "ev.9476377afdd0": {
-      "id": "ev.9476377afdd0",
-      "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: SignOperationTokenRestService",
-      "chunk_id": null
-    },
-    "ev.27ac28e69cf7": {
-      "id": "ev.27ac28e69cf7",
-      "path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
-      "lines": "32-38",
-      "reason": "@Injectable: GlobalArchivingHelperService",
-      "chunk_id": null
-    },
-    "ev.426ac48e458b": {
-      "id": "ev.426ac48e458b",
-      "path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: LoggingDataChangedAdapterService",
-      "chunk_id": null
-    },
-    "ev.dd60ec96b3d5": {
-      "id": "ev.dd60ec96b3d5",
-      "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: WorkflowChangeAoidTaskService",
-      "chunk_id": null
-    },
-    "ev.5e0b8e58f1b8": {
-      "id": "ev.5e0b8e58f1b8",
-      "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-work.service.ts",
-      "lines": "20-26",
-      "reason": "@Injectable: WorkflowChangeAoidWorkService",
-      "chunk_id": null
-    },
-    "ev.43a66fd10e64": {
-      "id": "ev.43a66fd10e64",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-1-handler\\import-v1-6-1-handler.service.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot1",
-      "chunk_id": null
-    },
-    "ev.0995f7e36cf7": {
-      "id": "ev.0995f7e36cf7",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot0",
-      "chunk_id": null
-    },
-    "ev.5d3e3bd0abe7": {
-      "id": "ev.5d3e3bd0abe7",
-      "path": "src\\app\\report-metadata\\services\\report-metadata.service.ts",
-      "lines": "44-50",
-      "reason": "@Injectable: ReportMetadataService",
-      "chunk_id": null
-    },
-    "ev.5ac46c998f2e": {
-      "id": "ev.5ac46c998f2e",
-      "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
-      "lines": "48-54",
-      "reason": "@Injectable: KeyManagerAdapterService",
-      "chunk_id": null
-    },
-    "ev.d83e5c114e51": {
-      "id": "ev.d83e5c114e51",
-      "path": "src\\app\\adapters\\reencryption\\mock\\mock-key-manager-adapter.service.ts",
-      "lines": "6-12",
-      "reason": "@Injectable: MockKeyManagerAdapterService",
+    "ev.d258f05d6e57": {
+      "id": "ev.d258f05d6e57",
+      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\job-reencryption.service.ts",
+      "lines": "16-22",
+      "reason": "@Injectable: JobReencryptionService",
       "chunk_id": null
     },
     "ev.98a291dd1ba3": {
@@ -3452,263 +3424,18 @@
       "reason": "@Injectable: DocumentAdapterHelperService",
       "chunk_id": null
     },
-    "ev.764e282d362a": {
-      "id": "ev.764e282d362a",
-      "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
-      "lines": "13-19",
-      "reason": "@Injectable: XnpPageContainerNgAdapter",
+    "ev.35c027d0e94e": {
+      "id": "ev.35c027d0e94e",
+      "path": "src\\app\\workflow\\services\\workflow-broadcast\\workflow-broadcast.service.ts",
+      "lines": "31-37",
+      "reason": "@Injectable: WorkflowBroadcastService",
       "chunk_id": null
     },
-    "ev.60ba1d2f4227": {
-      "id": "ev.60ba1d2f4227",
-      "path": "src\\app\\workflow\\services\\workflow-status\\workflow-status.service.ts",
-      "lines": "36-42",
-      "reason": "@Injectable: WorkflowStatusControlService",
-      "chunk_id": null
-    },
-    "ev.f573c49a4dbf": {
-      "id": "ev.f573c49a4dbf",
-      "path": "src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-export-service.ts",
-      "lines": "114-120",
-      "reason": "@Injectable: PdfExportService",
-      "chunk_id": null
-    },
-    "ev.e67dbe9e0aad": {
-      "id": "ev.e67dbe9e0aad",
-      "path": "src\\app\\workflow\\services\\workflow-reencryption\\job-reencryption\\workflow-reencryption-task.service.ts",
+    "ev.af32c16a759a": {
+      "id": "ev.af32c16a759a",
+      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\sorting.service.ts",
       "lines": "14-20",
-      "reason": "@Injectable: WorkflowReencryptionTaskService",
-      "chunk_id": null
-    },
-    "ev.452cc3cf0558": {
-      "id": "ev.452cc3cf0558",
-      "path": "src\\app\\adapters\\settings\\storage-adapter\\local-storage\\local-storage-settings-adapter.ts",
-      "lines": "163-169",
-      "reason": "@Injectable: LocalStorageSettingsAdapter",
-      "chunk_id": null
-    },
-    "ev.e261ebba679b": {
-      "id": "ev.e261ebba679b",
-      "path": "src\\app\\adapters\\xnp\\IXnpEndpointProvider.ts",
-      "lines": "327-333",
-      "reason": "@Injectable: MockXnpEndpointProvider",
-      "chunk_id": null
-    },
-    "ev.b1607f146a8f": {
-      "id": "ev.b1607f146a8f",
-      "path": "src\\app\\deed-entry\\components\\deed-successor-page\\services\\reencryption-helper.service.ts",
-      "lines": "62-68",
-      "reason": "@Injectable: ReEncryptionHelperService",
-      "chunk_id": null
-    },
-    "ev.1cdbda1051f1": {
-      "id": "ev.1cdbda1051f1",
-      "path": "src\\app\\deed-entry\\services\\deed-delete\\deed-delete.service.ts",
-      "lines": "34-40",
-      "reason": "@Injectable: DeedDeleteService",
-      "chunk_id": null
-    },
-    "ev.29b3dfb44b62": {
-      "id": "ev.29b3dfb44b62",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
-      "lines": "18-24",
-      "reason": "@Injectable: DocumentModalHelperService",
-      "chunk_id": null
-    },
-    "ev.b42ea1722c08": {
-      "id": "ev.b42ea1722c08",
-      "path": "src\\app\\action\\services\\action\\action-domain.service.ts",
-      "lines": "30-36",
-      "reason": "@Injectable: ActionDomainService",
-      "chunk_id": null
-    },
-    "ev.0dcdc4d9bc8d": {
-      "id": "ev.0dcdc4d9bc8d",
-      "path": "src\\app\\adapters\\authorization\\json-authorization-adapter\\json-authorization-adapter.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: JsonAuthorizationAdapter",
-      "chunk_id": null
-    },
-    "ev.762b1238644c": {
-      "id": "ev.762b1238644c",
-      "path": "src\\app\\adapters\\authorization\\xnp\\service\\user-context-permission-check.service.ts",
-      "lines": "35-41",
-      "reason": "@Injectable: UserContextPermissionCheckService",
-      "chunk_id": null
-    },
-    "ev.2f6bef1de6e5": {
-      "id": "ev.2f6bef1de6e5",
-      "path": "src\\app\\adapters\\xnp\\XnpVvzEndpoint.ts",
-      "lines": "16-22",
-      "reason": "@Injectable: XnpVvzEndpoint",
-      "chunk_id": null
-    },
-    "ev.5e6c0c6a9713": {
-      "id": "ev.5e6c0c6a9713",
-      "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
-      "lines": "5-11",
-      "reason": "@Injectable: WorkflowDeletionService",
-      "chunk_id": null
-    },
-    "ev.78e106d8798b": {
-      "id": "ev.78e106d8798b",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-4-0-handler\\import-v1-4-0-handler.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot4Dot0",
-      "chunk_id": null
-    },
-    "ev.4b90007c8114": {
-      "id": "ev.4b90007c8114",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-2-0-handler\\import-v1-2-0-handler.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: ImportHandlerServiceVersion1Dot2Dot0",
-      "chunk_id": null
-    },
-    "ev.19195f4b25d6": {
-      "id": "ev.19195f4b25d6",
-      "path": "src\\app\\deed-entry\\services\\document-metadata\\document-metadata-domain.service.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: DocumentMetadataDomainService",
-      "chunk_id": null
-    },
-    "ev.009c73b61f95": {
-      "id": "ev.009c73b61f95",
-      "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\services\\deed-registry.service.ts",
-      "lines": "77-83",
-      "reason": "@Injectable: DeedRegistryService",
-      "chunk_id": null
-    },
-    "ev.ef19b08a0ea2": {
-      "id": "ev.ef19b08a0ea2",
-      "path": "src\\app\\adapters\\archiving\\adapter\\mock-archiving-adapter\\mock-archiving-adapter.service.ts",
-      "lines": "26-32",
-      "reason": "@Injectable: MockArchivingAdapterService",
-      "chunk_id": null
-    },
-    "ev.36cc7cde185a": {
-      "id": "ev.36cc7cde185a",
-      "path": "src\\app\\workflow\\services\\workflow-archive\\workflow-archive.service.ts",
-      "lines": "5-11",
-      "reason": "@Injectable: WorkflowArchiveService",
-      "chunk_id": null
-    },
-    "ev.ccf51bcdd2db": {
-      "id": "ev.ccf51bcdd2db",
-      "path": "src\\app\\adapters\\xnp\\broadcast\\xnp-broadcast-adapter.service.ts",
-      "lines": "21-27",
-      "reason": "@Injectable: XnpBroadcastAdapterService",
-      "chunk_id": null
-    },
-    "ev.6ffe6af5f51e": {
-      "id": "ev.6ffe6af5f51e",
-      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-has-errors-retry\\reencryption-finalization-has-errors-retry.service.ts",
-      "lines": "11-17",
-      "reason": "@Injectable: ReencryptionFinalizationHasErrorsRetryService",
-      "chunk_id": null
-    },
-    "ev.34c8b998c03a": {
-      "id": "ev.34c8b998c03a",
-      "path": "src\\app\\report-metadata\\services\\report-metadata-signature-helper-service.ts",
-      "lines": "6-12",
-      "reason": "@Injectable: ReportMetadataSignatureHelperService",
-      "chunk_id": null
-    },
-    "ev.abb9c9531d0c": {
-      "id": "ev.abb9c9531d0c",
-      "path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
-      "lines": "20-26",
-      "reason": "@Injectable: AnnualReportActionResolver",
-      "chunk_id": null
-    },
-    "ev.eed6d3116341": {
-      "id": "ev.eed6d3116341",
-      "path": "src\\app\\shared\\authorization\\activate-if-user-authorized.ts",
-      "lines": "17-23",
-      "reason": "@Injectable: ActivateIfUserAuthorized",
-      "chunk_id": null
-    },
-    "ev.2e6774050d8f": {
-      "id": "ev.2e6774050d8f",
-      "path": "src\\app\\adapters\\xnp\\XnpPdfMakeEndpoint.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: XnpPdfMakeEndpoint",
-      "chunk_id": null
-    },
-    "ev.6235cd5b177b": {
-      "id": "ev.6235cd5b177b",
-      "path": "src\\app\\adapters\\xnp\\XnpEndpointProvider.ts",
-      "lines": "32-38",
-      "reason": "@Injectable: XnpEndpointProvider",
-      "chunk_id": null
-    },
-    "ev.3968e74abd12": {
-      "id": "ev.3968e74abd12",
-      "path": "src\\app\\adapters\\page-container-adapter\\impl\\mock\\chrome-page-container-adapter-impl.ts",
-      "lines": "9-15",
-      "reason": "@Injectable: ChromePageContainerAdapterImpl",
-      "chunk_id": null
-    },
-    "ev.0df84e84fdc8": {
-      "id": "ev.0df84e84fdc8",
-      "path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: XnpFsEndpoint",
-      "chunk_id": null
-    },
-    "ev.0570fd3a653a": {
-      "id": "ev.0570fd3a653a",
-      "path": "src\\app\\deed-entry\\services\\deed-registry\\deed-registry-domain.service.ts",
-      "lines": "12-18",
-      "reason": "@Injectable: DeedRegistryDomainService",
-      "chunk_id": null
-    },
-    "ev.6b5ed53120f8": {
-      "id": "ev.6b5ed53120f8",
-      "path": "src\\app\\adapters\\authentication\\xnp\\services\\notary-official-title-static-mapper.service.ts",
-      "lines": "4-10",
-      "reason": "@Injectable: NotaryOfficialTitleStaticMapperService",
-      "chunk_id": null
-    },
-    "ev.ef26652eec3b": {
-      "id": "ev.ef26652eec3b",
-      "path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
-      "lines": "32-38",
-      "reason": "@Injectable: FieldValidationService",
-      "chunk_id": null
-    },
-    "ev.fc124932eb9f": {
-      "id": "ev.fc124932eb9f",
-      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-done\\reencryption-finalization-done.service.ts",
-      "lines": "10-16",
-      "reason": "@Injectable: ReencryptionFinalizationDoneService",
-      "chunk_id": null
-    },
-    "ev.97a6255230ce": {
-      "id": "ev.97a6255230ce",
-      "path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
-      "lines": "12-18",
-      "reason": "@Injectable: LogData",
-      "chunk_id": null
-    },
-    "ev.1eeff4df4238": {
-      "id": "ev.1eeff4df4238",
-      "path": "src\\app\\deed-entry\\services\\deed-entry\\deed-type-rest.service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: DeedTypeRestService",
-      "chunk_id": null
-    },
-    "ev.9c0ee427b47e": {
-      "id": "ev.9c0ee427b47e",
-      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
-      "lines": "11-17",
-      "reason": "@Injectable: WorkflowValidateSignatureJobService",
-      "chunk_id": null
-    },
-    "ev.faa923edca67": {
-      "id": "ev.faa923edca67",
-      "path": "src\\app\\shared\\services\\redesign.service.ts",
-      "lines": "6-12",
-      "reason": "@Injectable: RedesignService",
+      "reason": "@Injectable: SortingService",
       "chunk_id": null
     },
     "ev.4cf36d06256b": {
@@ -3718,102 +3445,60 @@
       "reason": "@Injectable: XnpDataChangedAdapterService",
       "chunk_id": null
     },
-    "ev.44abb66a8cd1": {
-      "id": "ev.44abb66a8cd1",
-      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-has-errors-retry\\reencryption-has-errors-retry.service.ts",
-      "lines": "14-20",
-      "reason": "@Injectable: ReencryptionHasErrorsRetryService",
+    "ev.df83058e73f1": {
+      "id": "ev.df83058e73f1",
+      "path": "src\\app\\adapters\\xnp\\XnpPlatformEndpoint.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: XnpPlatformEndpoint",
       "chunk_id": null
     },
-    "ev.c0cf1b1b7617": {
-      "id": "ev.c0cf1b1b7617",
-      "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api-configuration.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: DocumentMetadataApiConfiguration",
-      "chunk_id": null
-    },
-    "ev.d3c2178903bd": {
-      "id": "ev.d3c2178903bd",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api-configuration.ts",
-      "lines": "7-13",
-      "reason": "@Injectable: JobApiConfiguration",
-      "chunk_id": null
-    },
-    "ev.0c2923981b00": {
-      "id": "ev.0c2923981b00",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\domain\\domain-task.service.ts",
-      "lines": "61-67",
-      "reason": "@Injectable: DomainTaskService",
-      "chunk_id": null
-    },
-    "ev.f1c10833e93a": {
-      "id": "ev.f1c10833e93a",
-      "path": "src\\app\\deed-entry\\components\\deed-form-page\\services\\shortcut.service.ts",
-      "lines": "16-22",
-      "reason": "@Injectable: ShortcutService",
-      "chunk_id": null
-    },
-    "ev.94c41b294837": {
-      "id": "ev.94c41b294837",
-      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\task-module.service.ts",
-      "lines": "119-125",
-      "reason": "@Injectable: TaskModuleService",
-      "chunk_id": null
-    },
-    "ev.3dd24a706a95": {
-      "id": "ev.3dd24a706a95",
-      "path": "src\\app\\adapters\\online-help-adapter\\xnp\\xnp-help-adapter.service.ts",
+    "ev.ccbf4644fc86": {
+      "id": "ev.ccbf4644fc86",
+      "path": "src\\app\\adapters\\xnp\\XnpSignatureEndpoint.ts",
       "lines": "8-14",
-      "reason": "@Injectable: XnpHelpAdapterService",
+      "reason": "@Injectable: XnpSignatureEndpoint",
       "chunk_id": null
     },
-    "ev.3514ac7fb1ac": {
-      "id": "ev.3514ac7fb1ac",
-      "path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
-      "lines": "29-35",
-      "reason": "@Injectable: DocumentArchivingRestService",
+    "ev.227da9c817ed": {
+      "id": "ev.227da9c817ed",
+      "path": "src\\app\\shared\\authentication\\auth.guard.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: AuthGuard",
       "chunk_id": null
     },
-    "ev.730314999129": {
-      "id": "ev.730314999129",
-      "path": "src\\app\\adapters\\xnp\\XnpDocumentsEndpoint.ts",
-      "lines": "18-24",
-      "reason": "@Injectable: XnpDocumentsEndpoint",
+    "ev.d34ed7b5d06a": {
+      "id": "ev.d34ed7b5d06a",
+      "path": "src\\app\\shared\\page\\custom-datepicker\\custom-datepicker-parser-formatter.ts",
+      "lines": "6-12",
+      "reason": "@Injectable: CustomDatepickerParserFormatter",
       "chunk_id": null
     },
-    "ev.2dcff30e7c6d": {
-      "id": "ev.2dcff30e7c6d",
-      "path": "src\\app\\deed-entry\\services\\page-manager-service\\DeedEntryPageManagerService.ts",
+    "ev.f507eb712ee8": {
+      "id": "ev.f507eb712ee8",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\services\\job-module.service.ts",
+      "lines": "104-110",
+      "reason": "@Injectable: JobModuleService",
+      "chunk_id": null
+    },
+    "ev.b9f6b4c6e86f": {
+      "id": "ev.b9f6b4c6e86f",
+      "path": "src\\app\\workflow\\services\\workflow-modal\\reencryption-finalization-confirm\\reencryption-finalization-confirm.service.ts",
+      "lines": "19-25",
+      "reason": "@Injectable: ReencryptionFinalizationConfirmService",
+      "chunk_id": null
+    },
+    "ev.c181d4d88196": {
+      "id": "ev.c181d4d88196",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-1-handler\\import-v1-5-1-handler.service.ts",
       "lines": "13-19",
-      "reason": "@Injectable: DeedEntryPageManagerService",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot1",
       "chunk_id": null
     },
-    "ev.58eea1d12606": {
-      "id": "ev.58eea1d12606",
-      "path": "src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-base-service.ts",
-      "lines": "8-14",
-      "reason": "@Injectable: DeedRegistryBaseService",
-      "chunk_id": null
-    },
-    "ev.a8aa56cfed63": {
-      "id": "ev.a8aa56cfed63",
-      "path": "src\\app\\shared\\tooltip-table\\tooltip-config.service.ts",
-      "lines": "2-8",
-      "reason": "@Injectable: TooltipConfigService",
-      "chunk_id": null
-    },
-    "ev.9c7f93843c43": {
-      "id": "ev.9c7f93843c43",
-      "path": "src\\app\\adapters\\settings\\storage-adapter\\xnp\\XnpStorageSettingsAdapter.ts",
-      "lines": "28-34",
-      "reason": "@Injectable: XnpStorageSettingsAdapter",
-      "chunk_id": null
-    },
-    "ev.558891487e95": {
-      "id": "ev.558891487e95",
-      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\nsw-deed-import.service.ts",
-      "lines": "16-22",
-      "reason": "@Injectable: NswDeedImportService",
+    "ev.0df84e84fdc8": {
+      "id": "ev.0df84e84fdc8",
+      "path": "src\\app\\adapters\\xnp\\XnpFsEndpoint.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: XnpFsEndpoint",
       "chunk_id": null
     },
     "ev.70804849b989": {
@@ -3823,11 +3508,326 @@
       "reason": "@Injectable: XnpFileApiAdapter",
       "chunk_id": null
     },
-    "ev.ccbf4644fc86": {
-      "id": "ev.ccbf4644fc86",
-      "path": "src\\app\\adapters\\xnp\\XnpSignatureEndpoint.ts",
+    "ev.0995f7e36cf7": {
+      "id": "ev.0995f7e36cf7",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-5-0-handler\\import-v1-5-0-handler.service.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot5Dot0",
+      "chunk_id": null
+    },
+    "ev.5e6c0c6a9713": {
+      "id": "ev.5e6c0c6a9713",
+      "path": "src\\app\\workflow\\services\\workflow-deletion\\workflow-deletion.service.ts",
+      "lines": "5-11",
+      "reason": "@Injectable: WorkflowDeletionService",
+      "chunk_id": null
+    },
+    "ev.6f9cc0470c83": {
+      "id": "ev.6f9cc0470c83",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api-configuration.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: TaskApiConfiguration",
+      "chunk_id": null
+    },
+    "ev.97a6255230ce": {
+      "id": "ev.97a6255230ce",
+      "path": "src\\app\\adapters\\xnp\\XnpLogEndpoint.ts",
+      "lines": "12-18",
+      "reason": "@Injectable: LogData",
+      "chunk_id": null
+    },
+    "ev.93fc296760c0": {
+      "id": "ev.93fc296760c0",
+      "path": "src\\app\\shared\\forms\\http-error-interceptor.service.ts",
+      "lines": "6-12",
+      "reason": "@Injectable: HttpErrorInterceptor",
+      "chunk_id": null
+    },
+    "ev.73f9fbf1f5c2": {
+      "id": "ev.73f9fbf1f5c2",
+      "path": "src\\app\\report-metadata\\services\\bnotk-grid-helper.service.ts",
+      "lines": "19-25",
+      "reason": "@Injectable: BnotkGridHelperService",
+      "chunk_id": null
+    },
+    "ev.132081596221": {
+      "id": "ev.132081596221",
+      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\finalize-reencryption\\rest\\finish-reencryption-rest.service.ts",
+      "lines": "17-23",
+      "reason": "@Injectable: FinishReencryptionRestService",
+      "chunk_id": null
+    },
+    "ev.f1e3f8cbd4a5": {
+      "id": "ev.f1e3f8cbd4a5",
+      "path": "src\\app\\shared\\services\\redesign.service.mock.ts",
+      "lines": "2-8",
+      "reason": "@Injectable: RedesignServiceMock",
+      "chunk_id": null
+    },
+    "ev.764e282d362a": {
+      "id": "ev.764e282d362a",
+      "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerNgAdapter.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: XnpPageContainerNgAdapter",
+      "chunk_id": null
+    },
+    "ev.9dcf56ed5cf9": {
+      "id": "ev.9dcf56ed5cf9",
+      "path": "src\\app\\shared\\http-util\\rate-limiting-interceptor.service.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: RateLimitingInterceptor",
+      "chunk_id": null
+    },
+    "ev.5ac46c998f2e": {
+      "id": "ev.5ac46c998f2e",
+      "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\services\\key-manager-adapter.service.ts",
+      "lines": "48-54",
+      "reason": "@Injectable: KeyManagerAdapterService",
+      "chunk_id": null
+    },
+    "ev.829e2b9d3905": {
+      "id": "ev.829e2b9d3905",
+      "path": "src\\app\\shared\\typeahead\\services\\typeahead-filter\\typeahead-filter.service.ts",
+      "lines": "19-25",
+      "reason": "@Injectable: TypeaheadFilterService",
+      "chunk_id": null
+    },
+    "ev.f5d1362fbdae": {
+      "id": "ev.f5d1362fbdae",
+      "path": "src\\app\\deed-entry\\services\\notary-representation\\notary-representation.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: NotaryRepresentationService",
+      "chunk_id": null
+    },
+    "ev.ef26652eec3b": {
+      "id": "ev.ef26652eec3b",
+      "path": "src\\app\\shared\\forms\\field-validation-service\\field-validation.service.ts",
+      "lines": "32-38",
+      "reason": "@Injectable: FieldValidationService",
+      "chunk_id": null
+    },
+    "ev.91ef1ba41354": {
+      "id": "ev.91ef1ba41354",
+      "path": "src\\app\\workflow\\services\\workflow-reencryption\\workflow-reencryption.service.ts",
+      "lines": "71-77",
+      "reason": "@Injectable: WorkflowReencryptionService",
+      "chunk_id": null
+    },
+    "ev.27ac28e69cf7": {
+      "id": "ev.27ac28e69cf7",
+      "path": "src\\app\\deed-entry\\services\\archiving\\global-archiving-helper.service.ts",
+      "lines": "32-38",
+      "reason": "@Injectable: GlobalArchivingHelperService",
+      "chunk_id": null
+    },
+    "ev.4c0401fee60b": {
+      "id": "ev.4c0401fee60b",
+      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\services\\handover-data-set.service.ts",
+      "lines": "5-11",
+      "reason": "@Injectable: HandoverDataSetService",
+      "chunk_id": null
+    },
+    "ev.faa923edca67": {
+      "id": "ev.faa923edca67",
+      "path": "src\\app\\shared\\services\\redesign.service.ts",
+      "lines": "6-12",
+      "reason": "@Injectable: RedesignService",
+      "chunk_id": null
+    },
+    "ev.feafaad057a1": {
+      "id": "ev.feafaad057a1",
+      "path": "src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api-configuration.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: ReencryptionApiConfiguration",
+      "chunk_id": null
+    },
+    "ev.9c490e99569b": {
+      "id": "ev.9c490e99569b",
+      "path": "src\\app\\shared\\generic-modal-dialogs\\issue-copy-document-modal-dialog\\issue-copy-document-modal-view\\issue-copy-document-helper.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: IssueCopyDocumentHelper",
+      "chunk_id": null
+    },
+    "ev.c583b74d7c9a": {
+      "id": "ev.c583b74d7c9a",
+      "path": "src\\app\\deed-entry\\services\\document-metadata\\api-generated\\services\\document-meta-data.service.ts",
+      "lines": "232-238",
+      "reason": "@Injectable: DocumentMetaDataService",
+      "chunk_id": null
+    },
+    "ev.9476377afdd0": {
+      "id": "ev.9476377afdd0",
+      "path": "src\\app\\adapters\\archiving\\adapter\\xnp\\sign-operation-token-rest.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: SignOperationTokenRestService",
+      "chunk_id": null
+    },
+    "ev.414575212bc1": {
+      "id": "ev.414575212bc1",
+      "path": "src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\services\\line-number.service.ts",
+      "lines": "18-24",
+      "reason": "@Injectable: LineNumberService",
+      "chunk_id": null
+    },
+    "ev.1f8643321c1f": {
+      "id": "ev.1f8643321c1f",
+      "path": "src\\app\\action\\services\\action\\api-generated\\action-api-configuration.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: ActionApiConfiguration",
+      "chunk_id": null
+    },
+    "ev.b0267f7e7d0f": {
+      "id": "ev.b0267f7e7d0f",
+      "path": "src\\app\\adapters\\authentication\\xnp\\XnpAuthenticationNgAdapter.ts",
       "lines": "8-14",
-      "reason": "@Injectable: XnpSignatureEndpoint",
+      "reason": "@Injectable: XnpAuthenticationNgAdapter",
+      "chunk_id": null
+    },
+    "ev.e2d351bd92ee": {
+      "id": "ev.e2d351bd92ee",
+      "path": "src\\app\\adapters\\flyinnotification\\xnp\\XnpFlyInNotificationNgAdapter.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: XnpFlyInNotificationNgAdapter",
+      "chunk_id": null
+    },
+    "ev.ef19b08a0ea2": {
+      "id": "ev.ef19b08a0ea2",
+      "path": "src\\app\\adapters\\archiving\\adapter\\mock-archiving-adapter\\mock-archiving-adapter.service.ts",
+      "lines": "26-32",
+      "reason": "@Injectable: MockArchivingAdapterService",
+      "chunk_id": null
+    },
+    "ev.eb98039e842d": {
+      "id": "ev.eb98039e842d",
+      "path": "src\\app\\deed-entry\\services\\official-activity-metadata\\official-activity-metadata.service.ts",
+      "lines": "12-18",
+      "reason": "@Injectable: OfficialActivityMetadataService",
+      "chunk_id": null
+    },
+    "ev.426ac48e458b": {
+      "id": "ev.426ac48e458b",
+      "path": "src\\app\\adapters\\data-changed\\impl\\mock\\logging-data-changed-adapter.service.ts",
+      "lines": "7-13",
+      "reason": "@Injectable: LoggingDataChangedAdapterService",
+      "chunk_id": null
+    },
+    "ev.ce2e36b104e9": {
+      "id": "ev.ce2e36b104e9",
+      "path": "src\\app\\shared\\typeahead\\services\\typeahead-dom\\typeahead-dom.service.ts",
+      "lines": "10-16",
+      "reason": "@Injectable: TypeaheadDomService",
+      "chunk_id": null
+    },
+    "ev.abb9c9531d0c": {
+      "id": "ev.abb9c9531d0c",
+      "path": "src\\app\\deed-entry\\components\\deed-report-page\\shared\\services\\annual-report-action.resolver.ts",
+      "lines": "20-26",
+      "reason": "@Injectable: AnnualReportActionResolver",
+      "chunk_id": null
+    },
+    "ev.a39921f70cd6": {
+      "id": "ev.a39921f70cd6",
+      "path": "src\\app\\adapters\\online-help-adapter\\html-online-help-adapter\\html-online-help-adapter.service.ts",
+      "lines": "6-12",
+      "reason": "@Injectable: OnlineHelpAdapterService",
+      "chunk_id": null
+    },
+    "ev.60ba1d2f4227": {
+      "id": "ev.60ba1d2f4227",
+      "path": "src\\app\\workflow\\services\\workflow-status\\workflow-status.service.ts",
+      "lines": "36-42",
+      "reason": "@Injectable: WorkflowStatusControlService",
+      "chunk_id": null
+    },
+    "ev.fdd3f92b124e": {
+      "id": "ev.fdd3f92b124e",
+      "path": "src\\app\\adapters\\xnp\\XnpNotaryEndpoint.ts",
+      "lines": "9-15",
+      "reason": "@Injectable: XnpNotaryEndpoint",
+      "chunk_id": null
+    },
+    "ev.cf8dc2129cfc": {
+      "id": "ev.cf8dc2129cfc",
+      "path": "src\\app\\adapters\\file-api-adapter\\mock-file-adapter\\mock-file-adapter.service.ts",
+      "lines": "8-14",
+      "reason": "@Injectable: MockFileAdapterService",
+      "chunk_id": null
+    },
+    "ev.29b3dfb44b62": {
+      "id": "ev.29b3dfb44b62",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-modal-helper.service.ts",
+      "lines": "18-24",
+      "reason": "@Injectable: DocumentModalHelperService",
+      "chunk_id": null
+    },
+    "ev.f54ea469a3fb": {
+      "id": "ev.f54ea469a3fb",
+      "path": "src\\app\\deed-entry\\services\\uvz-number-format-configuration\\uvz-number-format-configuration.service.ts",
+      "lines": "24-30",
+      "reason": "@Injectable: UvzNumberFormatConfigurationService",
+      "chunk_id": null
+    },
+    "ev.6c0593eefe77": {
+      "id": "ev.6c0593eefe77",
+      "path": "src\\app\\workflow\\services\\workflow-rest\\mock\\workflow-module-mock.service.ts",
+      "lines": "155-161",
+      "reason": "@Injectable: WorkflowModuleMockService",
+      "chunk_id": null
+    },
+    "ev.9c0ee427b47e": {
+      "id": "ev.9c0ee427b47e",
+      "path": "src\\app\\workflow\\services\\workflow-validate-signature\\workflow-validate-signature-job.service.ts",
+      "lines": "11-17",
+      "reason": "@Injectable: WorkflowValidateSignatureJobService",
+      "chunk_id": null
+    },
+    "ev.ba8c7c68df53": {
+      "id": "ev.ba8c7c68df53",
+      "path": "src\\app\\action\\services\\action\\api-generated\\services\\action.service.ts",
+      "lines": "52-58",
+      "reason": "@Injectable: ActionService",
+      "chunk_id": null
+    },
+    "ev.3514ac7fb1ac": {
+      "id": "ev.3514ac7fb1ac",
+      "path": "src\\app\\deed-entry\\services\\archiving\\document-archiving-rest.service.ts",
+      "lines": "29-35",
+      "reason": "@Injectable: DocumentArchivingRestService",
+      "chunk_id": null
+    },
+    "ev.7c907dc73385": {
+      "id": "ev.7c907dc73385",
+      "path": "src\\app\\adapters\\page-container-adapter\\impl\\xnp\\XnpPageContainerAdapter.ts",
+      "lines": "30-36",
+      "reason": "@Injectable: XnpPageContainerAdapter",
+      "chunk_id": null
+    },
+    "ev.dd60ec96b3d5": {
+      "id": "ev.dd60ec96b3d5",
+      "path": "src\\app\\workflow\\services\\workflow-change-aoid\\workflow-change-aoid-task.service.ts",
+      "lines": "14-20",
+      "reason": "@Injectable: WorkflowChangeAoidTaskService",
+      "chunk_id": null
+    },
+    "ev.43a66fd10e64": {
+      "id": "ev.43a66fd10e64",
+      "path": "src\\app\\deed-entry\\components\\deed-import\\services\\nsw-deed-import\\impl\\import-v1-6-1-handler\\import-v1-6-1-handler.service.ts",
+      "lines": "13-19",
+      "reason": "@Injectable: ImportHandlerServiceVersion1Dot6Dot1",
+      "chunk_id": null
+    },
+    "ev.39ae5d8e3023": {
+      "id": "ev.39ae5d8e3023",
+      "path": "src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\services\\document-helper.service.ts",
+      "lines": "31-37",
+      "reason": "@Injectable: DocumentHelperService",
+      "chunk_id": null
+    },
+    "ev.81df8fd27526": {
+      "id": "ev.81df8fd27526",
+      "path": "src\\app\\adapters\\settings\\settings-adapter\\settings-adapter.service.ts",
+      "lines": "19-25",
+      "reason": "@Injectable: SettingsAdapterService",
       "chunk_id": null
     },
     "ev.6060a329bd53": {
