@@ -1,13 +1,13 @@
 {
-  "total": 125,
+  "total": 226,
   "by_type": {
     "rest_endpoint": {
-      "count": 95,
+      "count": 196,
       "methods": {
-        "POST": 20,
-        "GET": 52,
-        "PUT": 12,
-        "DELETE": 5,
+        "POST": 30,
+        "GET": 128,
+        "DELETE": 14,
+        "PUT": 18,
         "PATCH": 6
       }
     },
@@ -33,7 +33,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.action_rest_service",
       "evidence_ids": [
-        "ev_814"
+        "ev_977"
       ]
     },
     {
@@ -44,7 +44,40 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.action_rest_service",
       "evidence_ids": [
-        "ev_815"
+        "ev_978"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a4535e01",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.action_rest_service",
+      "evidence_ids": [
+        "ev_979"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ddaebf3a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/logger",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.action_rest_service_impl",
+      "evidence_ids": [
+        "ev_980"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d1ecd440",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/info",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.action_rest_service_impl",
+      "evidence_ids": [
+        "ev_981"
       ]
     },
     {
@@ -55,7 +88,29 @@
       "method": "GET",
       "implemented_by": "component.backend.module_adapters_staticwebresources.static_content_controller",
       "evidence_ids": [
-        "ev_816"
+        "ev_982"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2cca99c5",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/jsonauth/user/to/authorization/service",
+      "method": "POST",
+      "implemented_by": "component.backend.impl_mock_rest.json_authorization_rest_service_impl",
+      "evidence_ids": [
+        "ev_983"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5f44bc1f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/jsonauth/user/from/authorization/service",
+      "method": "DELETE",
+      "implemented_by": "component.backend.impl_mock_rest.json_authorization_rest_service_impl",
+      "evidence_ids": [
+        "ev_984"
       ]
     },
     {
@@ -66,7 +121,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
       "evidence_ids": [
-        "ev_817"
+        "ev_985"
       ]
     },
     {
@@ -77,7 +132,40 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
       "evidence_ids": [
-        "ev_818"
+        "ev_986"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6b47cce9",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/crypto/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
+      "evidence_ids": [
+        "ev_987"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.25fcbf71",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/is/reencryption/possible",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.key_manager_rest_service_impl",
+      "evidence_ids": [
+        "ev_988"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bbea605b",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/crypto/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.key_manager_rest_service_impl",
+      "evidence_ids": [
+        "ev_989"
       ]
     },
     {
@@ -88,7 +176,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
       "evidence_ids": [
-        "ev_819"
+        "ev_990"
       ]
     },
     {
@@ -99,7 +187,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
       "evidence_ids": [
-        "ev_820"
+        "ev_991"
       ]
     },
     {
@@ -110,7 +198,40 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
       "evidence_ids": [
-        "ev_821"
+        "ev_992"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3f5d4efb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/validation/exception",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev_993"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6ef2897d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/assert/operation/signer/present",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev_994"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0ba5aa4d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/is/present",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev_995"
       ]
     },
     {
@@ -121,7 +242,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.business_purpose_rest_service_impl",
       "evidence_ids": [
-        "ev_822"
+        "ev_996"
       ]
     },
     {
@@ -132,7 +253,18 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.deed_entry_connection_rest_service",
       "evidence_ids": [
-        "ev_823"
+        "ev_997"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c56a81ad",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/problem/connections",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.deed_entry_connection_rest_service",
+      "evidence_ids": [
+        "ev_998"
       ]
     },
     {
@@ -143,7 +275,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.deed_entry_log_rest_service",
       "evidence_ids": [
-        "ev_824"
+        "ev_999"
       ]
     },
     {
@@ -154,7 +286,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_825"
+        "ev_1000"
       ]
     },
     {
@@ -165,7 +297,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_827"
+        "ev_1002"
       ]
     },
     {
@@ -176,7 +308,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_829"
+        "ev_1004"
       ]
     },
     {
@@ -187,7 +319,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_830"
+        "ev_1005"
       ]
     },
     {
@@ -198,7 +330,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_831"
+        "ev_1006"
       ]
     },
     {
@@ -209,7 +341,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_834"
+        "ev_1009"
       ]
     },
     {
@@ -220,7 +352,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_836"
+        "ev_1011"
       ]
     },
     {
@@ -231,7 +363,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_838"
+        "ev_1013"
       ]
     },
     {
@@ -242,7 +374,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_839"
+        "ev_1014"
       ]
     },
     {
@@ -253,7 +385,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_840"
+        "ev_1015"
       ]
     },
     {
@@ -264,7 +396,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_843"
+        "ev_1018"
       ]
     },
     {
@@ -275,7 +407,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_844"
+        "ev_1019"
       ]
     },
     {
@@ -286,7 +418,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_846"
+        "ev_1021"
       ]
     },
     {
@@ -297,7 +429,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_847"
+        "ev_1022"
       ]
     },
     {
@@ -308,7 +440,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_848"
+        "ev_1023"
       ]
     },
     {
@@ -319,7 +451,7 @@
       "method": "DELETE",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_849"
+        "ev_1024"
       ]
     },
     {
@@ -330,7 +462,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_850"
+        "ev_1025"
       ]
     },
     {
@@ -341,7 +473,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_851"
+        "ev_1026"
       ]
     },
     {
@@ -352,7 +484,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_852"
+        "ev_1027"
       ]
     },
     {
@@ -363,7 +495,7 @@
       "method": "DELETE",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_854"
+        "ev_1029"
       ]
     },
     {
@@ -374,7 +506,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_855"
+        "ev_1030"
       ]
     },
     {
@@ -385,7 +517,73 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
       "evidence_ids": [
-        "ev_856"
+        "ev_1031"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.515a3382",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/mark/predecessor/lock/in/progress",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1032"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f244a6cf",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/process/handover/for/b/not/o",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1033"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7f1ee1bb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/successor/deed/selection",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1034"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.243ebed8",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/cancel/handover/process",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1035"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.101d8bfb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deed/entry/registry/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1036"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a6953a48",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/is/any/deed/with/submit/with/error/flag/status",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1037"
       ]
     },
     {
@@ -396,7 +594,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
       "evidence_ids": [
-        "ev_857"
+        "ev_1038"
       ]
     },
     {
@@ -407,7 +605,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
       "evidence_ids": [
-        "ev_858"
+        "ev_1039"
       ]
     },
     {
@@ -418,7 +616,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
       "evidence_ids": [
-        "ev_859"
+        "ev_1040"
       ]
     },
     {
@@ -429,7 +627,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.deed_type_rest_service_impl",
       "evidence_ids": [
-        "ev_860"
+        "ev_1041"
       ]
     },
     {
@@ -440,7 +638,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_861"
+        "ev_1042"
       ]
     },
     {
@@ -451,7 +649,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_862"
+        "ev_1043"
       ]
     },
     {
@@ -462,7 +660,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_863"
+        "ev_1044"
       ]
     },
     {
@@ -473,7 +671,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_864"
+        "ev_1045"
       ]
     },
     {
@@ -484,7 +682,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_865"
+        "ev_1046"
       ]
     },
     {
@@ -495,7 +693,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_866"
+        "ev_1047"
       ]
     },
     {
@@ -506,7 +704,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_867"
+        "ev_1048"
       ]
     },
     {
@@ -517,7 +715,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_868"
+        "ev_1049"
       ]
     },
     {
@@ -528,7 +726,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_869"
+        "ev_1050"
       ]
     },
     {
@@ -539,7 +737,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_870"
+        "ev_1051"
       ]
     },
     {
@@ -550,7 +748,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_871"
+        "ev_1052"
       ]
     },
     {
@@ -561,7 +759,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_872"
+        "ev_1053"
       ]
     },
     {
@@ -572,7 +770,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_873"
+        "ev_1054"
       ]
     },
     {
@@ -583,7 +781,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_874"
+        "ev_1055"
       ]
     },
     {
@@ -594,7 +792,51 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
       "evidence_ids": [
-        "ev_875"
+        "ev_1056"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.279ee33e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/to/be/archived",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1057"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ea8629c6",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/flagged/documents/if/timeout/is/reached",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1058"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f9a85d13",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/trigger/wawi",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1059"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.be493b9f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/archiving/failed/documents",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1060"
       ]
     },
     {
@@ -605,7 +847,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_876"
+        "ev_1061"
       ]
     },
     {
@@ -616,7 +858,7 @@
       "method": "DELETE",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_877"
+        "ev_1062"
       ]
     },
     {
@@ -627,7 +869,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_878"
+        "ev_1063"
       ]
     },
     {
@@ -638,7 +880,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_879"
+        "ev_1064"
       ]
     },
     {
@@ -649,7 +891,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_880"
+        "ev_1065"
       ]
     },
     {
@@ -660,7 +902,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_881"
+        "ev_1066"
       ]
     },
     {
@@ -671,7 +913,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_882"
+        "ev_1067"
       ]
     },
     {
@@ -682,7 +924,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_883"
+        "ev_1068"
       ]
     },
     {
@@ -693,7 +935,612 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
       "evidence_ids": [
-        "ev_884"
+        "ev_1069"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b1a3079f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handover/info",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1070"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e5914fb2",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handover/data/sets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1071"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.565ec9c1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handover/data/sets/for/predecessor",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1072"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1456c6ef",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/final/handover/data/sets",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1073"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.cd4ef442",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/batch/ids/for/reencryption/retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1074"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.17e675db",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/business/purposes",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.business_purpose_rest_service_impl",
+      "evidence_ids": [
+        "ev_1075"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5835330b",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/warn",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_log_rest_service_impl",
+      "evidence_ids": [
+        "ev_1076"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7cebbcae",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/abs",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_log_rest_service_impl",
+      "evidence_ids": [
+        "ev_1077"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3fe7ca84",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entry/logs",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_log_rest_service_impl",
+      "evidence_ids": [
+        "ev_1078"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.552ca38d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/min",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1079"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.19eaf871",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/of",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1080"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.8d489754",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/to/list",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1081"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.04b7b7d4",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/with/obj/to/be/signed",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1082"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.decbec3e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/initial/deed/entry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1083"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.db7979fd",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/submit/initial/deed/entry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1084"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.69c1ef57",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/existing/deed/entry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1085"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7b22cb32",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/submit/existing/deed/entry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1086"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9e848665",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/bulk/capture/deed/entries",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1087"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7c581744",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/submit/bulk/capture/deed/entries",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1088"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.69b7a8c7",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/process/signature/folder",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1089"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1a04f819",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/debug",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1090"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b8505880",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/pageable",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1091"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.71243fd0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1092"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2ba7c155",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/for/successor/selection",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1093"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3f12e79d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/mark/predecessor/lock/in/progress",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1094"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1f839f4f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/preview/correction/note",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1095"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.871ba97c",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entry/assignment/count/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1096"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b732836a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/process/depositing/selection",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1097"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.eea4b3ef",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/skipped/uvz/number",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1098"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f912ed83",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/for/type/ahead/search",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1099"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.14564957",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/start/successor/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1100"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3b7acf33",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/start/successor/process",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1101"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bc83fe18",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/now",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1102"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.07d85149",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/lock/deed/entry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1103"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d5a8d439",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/user/details",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1104"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6b447283",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entry/lock",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1105"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4b2942c5",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/for/ids",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1106"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1454438d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/{ids}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1107"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9ac683df",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/internal",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1108"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0b001e54",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/locks",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1109"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.84ea9f80",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/build",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1110"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.cf077b9a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/ok",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1111"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9b781084",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1112"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a25fc517",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/types",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_type_rest_service_impl",
+      "evidence_ids": [
+        "ev_1113"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.36366c25",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/flagged/documents/if/timeout/is/reached",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1114"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.55dc3b24",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/notify/wa/wi",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1115"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.156dbfc8",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/record/successful/signature/in/document/metadata",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1116"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0b7063df",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/document/status",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1117"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2bc064b1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/document/status/archive",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1118"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.64e48eab",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/reencryption/state",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1119"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e4aa736e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/handover/data/sets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1120"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.8f7b0b0a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/final/handover/data/sets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1121"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f866acfd",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/batch/ids/for/successful/reencryption/retry",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1122"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6a9998b1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/batch/id/for/reencryption/retry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1123"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b806fdd0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/accept/handovers",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1124"
       ]
     },
     {
@@ -704,7 +1551,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
-        "ev_885"
+        "ev_1125"
       ]
     },
     {
@@ -715,7 +1562,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
-        "ev_886"
+        "ev_1126"
       ]
     },
     {
@@ -726,7 +1573,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
-        "ev_887"
+        "ev_1127"
       ]
     },
     {
@@ -737,7 +1584,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
-        "ev_888"
+        "ev_1128"
       ]
     },
     {
@@ -748,7 +1595,51 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.report_rest_service",
       "evidence_ids": [
-        "ev_889"
+        "ev_1129"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.90102df0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/generate/report/criteria/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1130"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b377e637",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/validate/report/criteria/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1131"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4b81fac1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/set/report/types",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1132"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.cc7b4763",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/is/annual/report/valid",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1133"
       ]
     },
     {
@@ -759,7 +1650,7 @@
       "method": "PATCH",
       "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
-        "ev_890"
+        "ev_1134"
       ]
     },
     {
@@ -770,7 +1661,7 @@
       "method": "PATCH",
       "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
-        "ev_891"
+        "ev_1135"
       ]
     },
     {
@@ -781,7 +1672,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
-        "ev_892"
+        "ev_1136"
       ]
     },
     {
@@ -792,7 +1683,29 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.job_rest_service",
       "evidence_ids": [
-        "ev_893"
+        "ev_1137"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.afa92643",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1138"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1787f71a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/retry/{work}/id",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1139"
       ]
     },
     {
@@ -803,7 +1716,51 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.reencryption_job_rest_service",
       "evidence_ids": [
-        "ev_894"
+        "ev_1140"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4862bbc1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1141"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bb0821e3",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/job/metrics",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1142"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.37db8644",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/job/completion/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1143"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.76355598",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/recent/reencrypted/document",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.reencryption_job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1144"
       ]
     },
     {
@@ -814,7 +1771,18 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.notary_representation_rest_service",
       "evidence_ids": [
-        "ev_895"
+        "ev_1145"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6e35ccff",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/notary/representations",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.notary_representation_rest_service_impl",
+      "evidence_ids": [
+        "ev_1146"
       ]
     },
     {
@@ -825,7 +1793,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
-        "ev_896"
+        "ev_1147"
       ]
     },
     {
@@ -836,7 +1804,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
-        "ev_897"
+        "ev_1148"
       ]
     },
     {
@@ -847,7 +1815,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
-        "ev_898"
+        "ev_1149"
       ]
     },
     {
@@ -858,7 +1826,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
-        "ev_899"
+        "ev_1150"
       ]
     },
     {
@@ -869,7 +1837,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
       "evidence_ids": [
-        "ev_900"
+        "ev_1151"
       ]
     },
     {
@@ -880,7 +1848,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
       "evidence_ids": [
-        "ev_901"
+        "ev_1152"
       ]
     },
     {
@@ -891,7 +1859,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
       "evidence_ids": [
-        "ev_902"
+        "ev_1153"
       ]
     },
     {
@@ -902,7 +1870,29 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
       "evidence_ids": [
-        "ev_903"
+        "ev_1154"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e2e1f7ac",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/successors",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
+      "evidence_ids": [
+        "ev_1155"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7b179081",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/official/activity/metadata/list",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.official_activity_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1156"
       ]
     },
     {
@@ -913,7 +1903,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
-        "ev_904"
+        "ev_1157"
       ]
     },
     {
@@ -924,7 +1914,7 @@
       "method": "PUT",
       "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
-        "ev_905"
+        "ev_1158"
       ]
     },
     {
@@ -935,7 +1925,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
-        "ev_906"
+        "ev_1159"
       ]
     },
     {
@@ -946,7 +1936,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
-        "ev_907"
+        "ev_1160"
       ]
     },
     {
@@ -957,7 +1947,40 @@
       "method": "DELETE",
       "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
       "evidence_ids": [
-        "ev_908"
+        "ev_1161"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bc2ecab0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/report/with/document/metadata",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1162"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f2bed239",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/report/signing/state/{id}",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1163"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f77e859e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/report/{id}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1164"
       ]
     },
     {
@@ -968,7 +1991,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
-        "ev_909"
+        "ev_1165"
       ]
     },
     {
@@ -979,7 +2002,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
-        "ev_910"
+        "ev_1166"
       ]
     },
     {
@@ -990,7 +2013,7 @@
       "method": "PATCH",
       "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
-        "ev_911"
+        "ev_1167"
       ]
     },
     {
@@ -1001,7 +2024,7 @@
       "method": "PATCH",
       "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
-        "ev_912"
+        "ev_1168"
       ]
     },
     {
@@ -1012,7 +2035,62 @@
       "method": "DELETE",
       "implemented_by": "component.backend.service_api_rest.task_rest_service",
       "evidence_ids": [
-        "ev_913"
+        "ev_1169"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.98959503",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/initial/task",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
+      "evidence_ids": [
+        "ev_1170"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e928e43d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/task",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1171"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c6277520",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1172"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.16240ab3",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/keep/alive",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1173"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.07da3585",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/task",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1174"
       ]
     },
     {
@@ -1023,7 +2101,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
-        "ev_914"
+        "ev_1175"
       ]
     },
     {
@@ -1034,7 +2112,7 @@
       "method": "GET",
       "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
-        "ev_915"
+        "ev_1176"
       ]
     },
     {
@@ -1045,7 +2123,7 @@
       "method": "POST",
       "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
-        "ev_916"
+        "ev_1177"
       ]
     },
     {
@@ -1056,7 +2134,7 @@
       "method": "PATCH",
       "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
-        "ev_917"
+        "ev_1178"
       ]
     },
     {
@@ -1067,7 +2145,40 @@
       "method": "PATCH",
       "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
       "evidence_ids": [
-        "ev_918"
+        "ev_1179"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5913aa41",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/initial/workflow",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
+      "evidence_ids": [
+        "ev_1180"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1766dad4",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/workflow",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev_1181"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7d3f88ec",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/workflow",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev_1182"
       ]
     },
     {
@@ -1078,7 +2189,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_basic-data-tab.basic_data_tab_component",
       "evidence_ids": [
-        "ev_919"
+        "ev_1183"
       ]
     },
     {
@@ -1089,7 +2200,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_remarks-data-tab.remarks_data_tab_component",
       "evidence_ids": [
-        "ev_920"
+        "ev_1184"
       ]
     },
     {
@@ -1100,7 +2211,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_registrations-data-tab.registrations_data_tab_component",
       "evidence_ids": [
-        "ev_921"
+        "ev_1185"
       ]
     },
     {
@@ -1111,7 +2222,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_participants-data-tab.participants_data_tab_component",
       "evidence_ids": [
-        "ev_922"
+        "ev_1186"
       ]
     },
     {
@@ -1122,7 +2233,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_issuing-copy-notes-data-tab.issuing_copy_notes_data_tab_component",
       "evidence_ids": [
-        "ev_923"
+        "ev_1187"
       ]
     },
     {
@@ -1133,7 +2244,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_correction-notes-tab-data.correction_notes_tab_data_component",
       "evidence_ids": [
-        "ev_924"
+        "ev_1188"
       ]
     },
     {
@@ -1144,7 +2255,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_connections-data-tab.connections_data_tab_component",
       "evidence_ids": [
-        "ev_925"
+        "ev_1189"
       ]
     },
     {
@@ -1155,7 +2266,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-form-page_tabs_document-data-tab.document_data_tab_component",
       "evidence_ids": [
-        "ev_926"
+        "ev_1190"
       ]
     },
     {
@@ -1166,7 +2277,7 @@
       "method": "GET",
       "implemented_by": null,
       "evidence_ids": [
-        "ev_927"
+        "ev_1191"
       ]
     },
     {
@@ -1177,7 +2288,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.adapters_authentication_login-page.login_page_component",
       "evidence_ids": [
-        "ev_928"
+        "ev_1192"
       ]
     },
     {
@@ -1188,7 +2299,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.page_access-denied-page.access_denied_page_component",
       "evidence_ids": [
-        "ev_929"
+        "ev_1193"
       ]
     },
     {
@@ -1199,7 +2310,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-entry_components_deed-overview-page.deed_overview_page_component",
       "evidence_ids": [
-        "ev_932"
+        "ev_1196"
       ]
     },
     {
@@ -1210,7 +2321,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-entry_components_deed-view-page.deed_view_page_component",
       "evidence_ids": [
-        "ev_933"
+        "ev_1197"
       ]
     },
     {
@@ -1221,7 +2332,7 @@
       "method": "GET",
       "implemented_by": null,
       "evidence_ids": [
-        "ev_934"
+        "ev_1198"
       ]
     },
     {
@@ -1232,7 +2343,7 @@
       "method": "GET",
       "implemented_by": null,
       "evidence_ids": [
-        "ev_935"
+        "ev_1199"
       ]
     },
     {
@@ -1243,7 +2354,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.deed-entry_components_deed-form-page.deed_form_page_component",
       "evidence_ids": [
-        "ev_936"
+        "ev_1200"
       ]
     },
     {
@@ -1254,7 +2365,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-report-page_report-configuration.report_configuration_component",
       "evidence_ids": [
-        "ev_938"
+        "ev_1202"
       ]
     },
     {
@@ -1265,7 +2376,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-report-page_annual-report-preview.annual_report_preview_component",
       "evidence_ids": [
-        "ev_939"
+        "ev_1203"
       ]
     },
     {
@@ -1276,7 +2387,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-report-page_annual-deed-register-report-preview.annual_deed_register_report_preview_component",
       "evidence_ids": [
-        "ev_940"
+        "ev_1204"
       ]
     },
     {
@@ -1287,7 +2398,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-report-page_deposited-inheritance-contracts-preview.deposited_inheritance_contracts_preview_component",
       "evidence_ids": [
-        "ev_941"
+        "ev_1205"
       ]
     },
     {
@@ -1298,7 +2409,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-report-page_annual-participants-report-preview.annual_participants_report_preview_component",
       "evidence_ids": [
-        "ev_942"
+        "ev_1206"
       ]
     },
     {
@@ -1309,7 +2420,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.report-metadata_report-readonly-view.report_readonly_view_component",
       "evidence_ids": [
-        "ev_943"
+        "ev_1207"
       ]
     },
     {
@@ -1320,7 +2431,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.report-metadata_report-metadata-overview.report_metadata_overview_component",
       "evidence_ids": [
-        "ev_944"
+        "ev_1208"
       ]
     },
     {
@@ -1331,7 +2442,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-mode-selection.deed_successor_mode_selection_component",
       "evidence_ids": [
-        "ev_945"
+        "ev_1209"
       ]
     },
     {
@@ -1342,7 +2453,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-complete.deed_successor_page_component",
       "evidence_ids": [
-        "ev_946"
+        "ev_1210"
       ]
     },
     {
@@ -1353,7 +2464,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-partial.deed_successor_partial_component",
       "evidence_ids": [
-        "ev_947"
+        "ev_1211"
       ]
     },
     {
@@ -1364,7 +2475,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.logging.business_logging_component",
       "evidence_ids": [
-        "ev_948"
+        "ev_1212"
       ]
     },
     {
@@ -1375,7 +2486,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.number-management_components.number_format_configuration_component",
       "evidence_ids": [
-        "ev_949"
+        "ev_1213"
       ]
     },
     {
@@ -1386,7 +2497,7 @@
       "method": "GET",
       "implemented_by": "component.frontend.page_page-not-found-page.page_not_found_page_component",
       "evidence_ids": [
-        "ev_950"
+        "ev_1214"
       ]
     },
     {
@@ -1397,7 +2508,7 @@
       "method": "GET",
       "implemented_by": null,
       "evidence_ids": [
-        "ev_951"
+        "ev_1215"
       ]
     }
   ]
