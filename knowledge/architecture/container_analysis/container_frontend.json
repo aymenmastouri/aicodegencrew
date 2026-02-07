@@ -3,13 +3,13 @@
   "component_count": 404,
   "relation_count": 0,
   "interface_count": 30,
-  "summary": "The frontend container follows a component‑based Angular architecture with clear presentation, business‑logic, and data‑access layers, leveraging TypeScript, RxJS, and a suite of Angular features to interact with a REST‑based backend. It supports a rich set of deed‑registry and workflow capabilities, exposing domain concepts such as Deed, Document, and Notification through multiple service integrations. While the overall design is functional, the codebase shows moderate separation, coupling, and cohesion, with technical debt around oversized services, duplicated pipes and adapters, and insufficient interface contracts, resulting in a quality grade of C.",
+  "summary": "The frontend container is built on a component‑based Angular architecture (Presentation, Service, Adapter layers) leveraging TypeScript, RxJS, Angular Material and RESTful API integration to support the full spectrum of deed‑registration capabilities. While the implementation covers a rich set of domain concepts and integrations, quality metrics reveal moderate separation of concerns, coupling and cohesion, with a high count of services, adapters and pipes that inflate maintenance risk, resulting in an overall grade of C.",
   "technical": {
     "primary_pattern": "Component-Based",
     "layers": [
-      "Presentation (Components, Directives, Pipes, Modules)",
-      "Business Logic (Services, Guards, Interceptors, Resolvers)",
-      "Data Access / Integration (Adapters, API Modules, HTTP interfaces)"
+      "Presentation (Components, Directives, Pipes, UI Modules)",
+      "Service (Services, Interceptors, Guards, Resolvers)",
+      "Adapter/Data Access (Adapter services, API modules)"
     ],
     "technologies": [
       "Angular",
@@ -17,18 +17,10 @@
       "RxJS",
       "Angular Router",
       "Angular HttpClient",
-      "Angular Modules",
-      "Angular Services",
-      "Angular Guards",
-      "Angular Interceptors",
-      "Angular Pipes",
-      "Angular Directives"
+      "Angular Material (or similar UI library)",
+      "RESTful API integration"
     ],
-    "integration_style": "REST API",
-    "observations": [
-      "Extensive use of Angular modules provides modularity but some cross‑module imports have been detected.",
-      "Heavy reliance on pipes for business logic may dilute separation of concerns."
-    ]
+    "integration_style": "REST API"
   },
   "functional": {
     "domain_concepts": [
@@ -36,37 +28,46 @@
       "Document",
       "Workflow",
       "User",
-      "Notification",
-      "Custody",
-      "Reencryption",
-      "PDF",
-      "Settings"
+      "Notary",
+      "Job",
+      "Task",
+      "Report",
+      "NumberManagement",
+      "Metadata",
+      "Participant",
+      "Remark",
+      "Connection",
+      "Signature"
     ],
     "capabilities": [
       "Create, edit, view and delete deeds",
-      "Approve and correct deeds",
-      "Manage deed‑related workflows (initiation, execution, archiving, deletion)",
-      "Import and export document data (JSON, PDF)",
-      "Generate and handle PDF representations of deeds",
-      "Authenticate and authorize users",
-      "Persist and retrieve user and application settings",
-      "Send and receive notifications",
-      "Perform document custody operations",
-      "Execute re‑encryption jobs and related tasks"
+      "Approve and correct deed entries",
+      "Manage deed workflow lifecycle (start, change, delete, reencryption)",
+      "Import and export documents (JSON, PDF, native formats)",
+      "Archive and retrieve document versions",
+      "Handle user authentication and authorization",
+      "Provide online help and notifications",
+      "Search and filter deed data (basic data, remarks, participants, connections)",
+      "Generate and export reports",
+      "Manage number assignments and sequencing",
+      "Execute background jobs and tasks",
+      "Interact with RESTful APIs for deed registry, document metadata, job and task services",
+      "Apply rate limiting, busy indicators and error handling for HTTP calls"
     ],
-    "bounded_context": "Deed Registry and Workflow Management",
+    "bounded_context": "Deed Registration and Notarial Services Management",
     "integrations": [
-      "Deed Registry REST API",
-      "Workflow REST API",
-      "Document Metadata REST API",
-      "Job and Task Management APIs",
-      "Re‑encryption API",
+      "Deed Registry API",
+      "Document Metadata API",
+      "Job API",
+      "Task API",
       "Action API",
-      "Report Metadata API",
-      "Authentication/Authorization service",
-      "PDF generation service",
-      "Notification service",
-      "Local storage for client‑side settings"
+      "Reencryption API",
+      "Authentication endpoint (XnpAuthenticationNgAdapter)",
+      "Notary endpoint (XnpNotaryEndpoint)",
+      "Online Help service",
+      "Local and XNP storage adapters",
+      "PDF generation service (XnpPdfAdapter)",
+      "External notification service (FlyinNotificationAdapter)"
     ]
   },
   "quality": {
@@ -74,34 +75,33 @@
     "coupling": "moderate",
     "cohesion": "moderate",
     "debt_indicators": [
-      "Excessive number of services (possible God services)",
-      "Large quantity of pipes (logic scattering)",
-      "Redundant adapters (potential duplication)",
-      "Limited explicit interfaces for service contracts",
-      "No visible relationship graph (hard to verify boundaries)"
+      "Very large number of services (131) – likely some services are too big or overlapping",
+      "Excessive number of adapters (50) – possible duplication of data‑access logic",
+      "High count of pipes (67) – business logic may be misplaced in presentation layer",
+      "Potential mixing of domain, application, and UI concerns within modules"
     ],
     "grade": "C",
     "recommendations": [
-      "Identify and split oversized services into focused, cohesive units",
-      "Consolidate similar pipes into shared utility functions or services",
-      "Introduce clear interface abstractions for services and adapters",
-      "Review and deduplicate adapters; group them by domain or capability",
-      "Enforce strict module boundaries and avoid cross‑module imports",
-      "Add architectural documentation to clarify layer responsibilities"
+      "Identify and split oversized services into smaller, focused ones or introduce facade layers",
+      "Consolidate similar adapters into a unified data‑access layer to reduce duplication",
+      "Move complex transformation logic from pipes into dedicated services",
+      "Review module boundaries; group related components, services, and adapters into feature‑specific modules",
+      "Introduce well‑defined interfaces between presentation and service layers to loosen coupling",
+      "Add documentation and tests for high‑traffic adapters to mitigate future maintenance risk"
     ]
   },
-  "overall_assessment": "The frontend container delivers the required functional breadth and employs a standard Angular stack, but architectural drift has introduced moderate technical debt. Service proliferation, pipe overuse, and lack of explicit contracts reduce maintainability and increase coupling. Addressing these issues will raise code quality, improve scalability, and align the implementation more closely with the intended component‑based separation of concerns.",
+  "overall_assessment": "The frontend provides comprehensive functional coverage and uses modern Angular tooling, but its architectural health is compromised by excessive service, adapter and pipe proliferation, leading to moderate cohesion and coupling. Refactoring to stricter modular boundaries and clearer responsibility allocation is needed to raise maintainability and scalability.",
   "top_recommendations": [
-    "Refactor oversized services into smaller, domain‑focused units with clear interfaces.",
-    "Consolidate and rationalize pipes and adapters to eliminate duplication and centralize shared logic.",
-    "Enforce strict Angular module boundaries, introduce interface contracts, and document architecture to improve separation of concerns and reduce coupling."
+    "Refactor oversized services into focused, purpose‑specific facades or smaller services.",
+    "Consolidate duplicate adapters into a unified data‑access layer with shared interfaces.",
+    "Extract heavy transformation logic from pipes into dedicated services to improve separation of concerns."
   ],
   "analysis": {
     "primary_pattern": "Component-Based",
     "layers": [
-      "Presentation (Components, Directives, Pipes, Modules)",
-      "Business Logic (Services, Guards, Interceptors, Resolvers)",
-      "Data Access / Integration (Adapters, API Modules, HTTP interfaces)"
+      "Presentation (Components, Directives, Pipes, UI Modules)",
+      "Service (Services, Interceptors, Guards, Resolvers)",
+      "Adapter/Data Access (Adapter services, API modules)"
     ],
     "stereotype_distribution": {
       "module": 16,
