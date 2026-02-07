@@ -227,103 +227,104 @@ def cmd_index(config: Config) -> int:
         return 1
 
 
+def _resolve_phases_to_run(
+    orchestrator: "SDLCOrchestrator",
+    preset: str | None,
+    phases: list[str] | None,
+) -> set[str]:
+    """Resolve which phases will run based on preset or explicit phases.
+
+    Uses phases_config.yaml as single source of truth instead of fragile
+    string matching.
+    """
+    if phases:
+        # Validate explicit phase names against config
+        known_phases = set(orchestrator.config.get("phases", {}).keys())
+        unknown = set(phases) - known_phases
+        if unknown:
+            raise ValueError(
+                f"Unknown phase(s): {', '.join(sorted(unknown))}. "
+                f"Valid phases: {', '.join(sorted(known_phases))}"
+            )
+        return set(phases)
+
+    if preset:
+        # Validate preset name against config
+        preset_phases = orchestrator.get_preset_phases(preset)
+        if not preset_phases:
+            known_presets = list(orchestrator.config.get("presets", {}).keys())
+            raise ValueError(
+                f"Unknown preset: '{preset}'. "
+                f"Valid presets: {', '.join(known_presets)}"
+            )
+        return set(preset_phases)
+
+    # Default: all enabled phases
+    return set(orchestrator.get_enabled_phases())
+
+
 def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None = None) -> int:
     """Run SDLC pipeline."""
     from .orchestrator import SDLCOrchestrator
     from .pipelines import IndexingPipeline, ArchitectureFactsPipeline
     from .crews import ArchitectureAnalysisCrew, ArchitectureSynthesisCrew
-    
+
     # Clean if requested
     if config.clean:
         clean_knowledge("all")
-    
+
     # Initialize orchestrator
     orchestrator = SDLCOrchestrator(config_path=config.config_path)
-    
+
+    # Resolve which phases will run (strict validation)
+    try:
+        planned_phases = _resolve_phases_to_run(orchestrator, preset, phases)
+    except ValueError as e:
+        logger.error(f"\n[ERROR] {e}")
+        return 1
+
+    logger.info(f"[CONFIG] Planned phases: {sorted(planned_phases)}")
+
     # --- Phase 0: Indexing ---
     if config.index_mode == "off":
         logger.info("[CONFIG] INDEX_MODE=off -> Skipping Phase 0")
         orchestrator.config["phases"]["phase0_indexing"]["enabled"] = False
-        orchestrator.context["phases"]["phase0_indexing"] = {
-            "phase": "phase0_indexing",
-            "status": "success",
-            "message": "Skipped (INDEX_MODE=off)",
-        }
-        orchestrator.context["knowledge"]["phase0_indexing"] = {
-            "status": "success",
-            "message": "Using existing index",
-        }
-    else:
+    elif "phase0_indexing" in planned_phases:
         indexing_pipeline = IndexingPipeline(
             repo_path=str(config.repo_path),
             index_mode=config.index_mode,
         )
         orchestrator.register_phase("phase0_indexing", indexing_pipeline)
-    
-    # Store shared context
-    orchestrator.context["shared"]["repo_path"] = str(config.repo_path)
-    orchestrator.context["shared"]["repo_name"] = config.repo_path.name
-    orchestrator.context["shared"]["output_dir"] = "./knowledge/architecture"
-    
+
     # --- Phase 1: Architecture Facts ---
-    phases_to_run = phases or []
-    preset_str = preset or ""
-    
-    will_run_phase1 = (
-        "phase1_architecture_facts" in phases_to_run
-        or "facts" in preset_str
-        or "architecture" in preset_str
-        or "planning" in preset_str
-        or (not phases_to_run and not preset_str)
-    )
-    
-    if will_run_phase1 and not config.no_clean:
-        clean_knowledge("phase1")
-    
-    facts_pipeline = ArchitectureFactsPipeline(
-        repo_path=str(config.repo_path),
-        output_dir="./knowledge/architecture",
-    )
-    orchestrator.register_phase("phase1_architecture_facts", facts_pipeline)
-    
-    # --- Phase 2: Architecture Analysis (NEW!) ---
-    will_run_analysis = (
-        "phase2_architecture_analysis" in phases_to_run
-        or "analysis_only" in preset_str
-        or "architecture_workflow" in preset_str
-        or "architecture_full" in preset_str
-        or "planning" in preset_str
-        or (not phases_to_run and not preset_str)
-    )
-    
-    if will_run_analysis:
-        # Use MapReduce for large repos (auto-fallback to standard for small repos)
+    if "phase1_architecture_facts" in planned_phases:
+        if not config.no_clean:
+            clean_knowledge("phase1")
+        facts_pipeline = ArchitectureFactsPipeline(
+            repo_path=str(config.repo_path),
+            output_dir="./knowledge/architecture",
+        )
+        orchestrator.register_phase("phase1_architecture_facts", facts_pipeline)
+
+    # --- Phase 2: Architecture Analysis ---
+    if "phase2_architecture_analysis" in planned_phases:
         from .crews.architecture_analysis import MapReduceAnalysisCrew
         analysis_crew = MapReduceAnalysisCrew(
             facts_path="./knowledge/architecture/architecture_facts.json"
         )
         orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
-    
+
     # --- Phase 3: Architecture Synthesis ---
-    will_run_synthesis = (
-        "phase3_architecture_synthesis" in phases_to_run
-        or "architecture_workflow" in preset_str
-        or "architecture_full" in preset_str
-        or "planning" in preset_str
-        or (not phases_to_run and not preset_str)
-    )
-    
-    if will_run_synthesis:
+    if "phase3_architecture_synthesis" in planned_phases:
         synthesis_crew = ArchitectureSynthesisCrew(
             facts_path="./knowledge/architecture/architecture_facts.json"
-            # Note: analyzed_path is auto-derived from facts_path in crew.py
         )
         orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
-    
+
     # Execute
     try:
         result = orchestrator.run(preset=preset, phases=phases)
-        
+
         if result.status == "success":
             logger.info(f"\n[OK] Pipeline successful!")
             logger.info(f"Time: {result.total_duration}")
@@ -331,7 +332,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         else:
             logger.error(f"\n[ERROR] Pipeline failed: {result.message}")
             return 1
-    
+
     except KeyboardInterrupt:
         logger.info("\n[WARN] Interrupted by user")
         return 130
@@ -358,8 +359,7 @@ def create_parser() -> argparse.ArgumentParser:
     run_parser = subparsers.add_parser("run", help="Run SDLC pipeline")
     run_parser.add_argument(
         "--preset",
-        choices=["indexing_only", "facts_only", "analysis_only", "architecture_workflow", "architecture_full", "planning_workflow"],
-        help="Run a preset combination of phases",
+        help="Run a preset combination of phases (see 'list' command for available presets)",
     )
     run_parser.add_argument(
         "--phases", nargs="+",

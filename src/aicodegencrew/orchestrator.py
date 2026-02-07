@@ -351,23 +351,34 @@ class SDLCOrchestrator:
         raise ValueError(f"Unknown executable type: {type(executable)}")
     
     def _check_dependencies(self, phase_id: str) -> bool:
-        """Check if phase dependencies are satisfied."""
+        """Check if phase dependencies are satisfied (existence + validation)."""
+        from .shared.validation import PhaseOutputValidator
+
         phase_config = self.get_phase_config(phase_id)
         dependencies = phase_config.get("dependencies", [])
-        
+
+        validator = PhaseOutputValidator()
+
         for dep in dependencies:
             # Check if ran successfully in this session
             if dep in self.results and self.results[dep].is_success():
                 continue
-            
+
             # Check if output files exist from previous run
             if self._outputs_exist(dep):
-                logger.info(f"[Orchestrator] Dependency {dep} satisfied (output exists)")
+                # Validate output quality
+                errors = validator.validate_phase(dep)
+                if errors:
+                    logger.warning(f"[Orchestrator] Dependency {dep} has validation warnings:")
+                    for err in errors[:5]:
+                        logger.warning(f"   - {err}")
+                else:
+                    logger.info(f"[Orchestrator] Dependency {dep} satisfied (output valid)")
                 continue
-            
+
             logger.error(f"[Orchestrator] Dependency not met: {phase_id} requires {dep}")
             return False
-        
+
         return True
     
     def _outputs_exist(self, phase_id: str) -> bool:
@@ -379,9 +390,9 @@ class SDLCOrchestrator:
                 "knowledge/architecture/evidence_map.json",
             ],
             "phase2_architecture_analysis": [
-                "knowledge/architecture/analysis/01_macro_architecture.json",
+                "knowledge/architecture/analyzed_architecture.json",
             ],
-            "phase2_architecture_synthesis": [
+            "phase3_architecture_synthesis": [
                 "knowledge/architecture/c4/c4-context.md",
             ],
         }

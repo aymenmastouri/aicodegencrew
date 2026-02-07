@@ -18,6 +18,7 @@ Step Logging:
 from __future__ import annotations
 
 import atexit
+import json as _json
 import logging
 import os
 import shutil
@@ -38,6 +39,7 @@ LOG_DIR = Path("logs")
 ARCHIVE_DIR = LOG_DIR / "archive"
 CURRENT_LOG = LOG_DIR / "current.log"
 ERRORS_LOG = LOG_DIR / "errors.log"
+METRICS_LOG = LOG_DIR / "metrics.jsonl"
 
 MAX_ARCHIVE_FILES = 20  # Keep last 20 session logs
 MAX_ERROR_SIZE = 5 * 1024 * 1024  # 5MB
@@ -137,6 +139,27 @@ class StepTracker:
             msg += f" - {item}"
         if self._logger:
             self._logger.info(f"       {msg}")
+
+
+# =============================================================================
+# JSON Formatter for structured logs (metrics.jsonl)
+# =============================================================================
+
+class JsonFormatter(logging.Formatter):
+    """Outputs log records as single-line JSON objects."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        entry = {
+            "ts": datetime.fromtimestamp(record.created).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "msg": record.getMessage(),
+        }
+        if hasattr(record, "metric_data"):
+            entry["data"] = record.metric_data
+        if record.exc_info and record.exc_info[1]:
+            entry["error"] = str(record.exc_info[1])
+        return _json.dumps(entry, default=str)
 
 
 # =============================================================================
@@ -287,8 +310,20 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
         except Exception as e:
             print(f"[WARN] Could not create error log: {e}")
         
+        # ==========================================================================
+        # Metrics Log - metrics.jsonl (structured JSON, one line per event)
+        # ==========================================================================
+        try:
+            metrics = logging.FileHandler(METRICS_LOG, mode='a', encoding='utf-8')
+            metrics.setLevel(logging.INFO)
+            metrics.setFormatter(JsonFormatter())
+            metrics.addFilter(lambda r: hasattr(r, 'metric_data'))
+            logger.addHandler(metrics)
+        except Exception as e:
+            print(f"[WARN] Could not create metrics log: {e}")
+
         logger.propagate = False
-        
+
         # Connect step tracker
         StepTracker.get().set_logger(logger)
         
@@ -349,6 +384,20 @@ def log_phase_end(phase: str, status: str = "success", duration: float = 0) -> N
         step_done(phase)
     else:
         step_fail(phase)
+
+
+def log_metric(event: str, **data) -> None:
+    """Log a structured metric event to metrics.jsonl.
+
+    Usage:
+        log_metric("mini_crew_complete", crew="context", duration=12.3, tokens=1500)
+        log_metric("phase_complete", phase="phase3", files_created=8)
+    """
+    record = logger.makeRecord(
+        logger.name, logging.INFO, "", 0, event, (), None,
+    )
+    record.metric_data = {"event": event, **data}
+    logger.handle(record)
 
 
 # Backward compatibility aliases

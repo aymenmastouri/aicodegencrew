@@ -1,138 +1,672 @@
 """
-Arc42 Crew - Phase 2 Subcrew
-=============================
-Erstellt alle 12 arc42 Kapitel + Quality Gate
+Arc42 Crew - Phase 3b: Mini-Crews Pattern
+==========================================
+Creates all 12 arc42 chapters + Quality Gate
 
-CrewAI Best Practices Applied:
-- Strategy 2: Building Blocks split into 4 sub-tasks (Controllers, Services, Entities, Repositories)
-- Strategy 3: Hierarchical task dependencies with context
-- Strategy 6: FactsQueryTool for RAG-based facts retrieval
-- Strategy 7: ChunkedWriterTool for large document generation
+Architecture Fix:
+- OLD: 1 Crew with 44 sequential tasks -> Context overflow after ~10 tasks
+- NEW: 6 Mini-Crews (2-3 tasks each) -> Fresh context per chapter group
+
+Each Mini-Crew starts with a fresh LLM context window.
+Data is passed via template variables (summaries), not inter-task context.
 """
-import json
-import os
+import logging
 from pathlib import Path
-from typing import List
 
-from crewai import Agent, Crew, LLM, Process, Task
-from crewai.project import CrewBase, agent, crew, llm, task, tool
-from crewai.agents.agent_builder.base_agent import BaseAgent
-from crewai.mcp import MCPServerStdio
-# Use our safe FileReadTool instead of crewai_tools.FileReadTool (prevents token overflow)
-from crewai_tools import DirectoryReadTool
+from crewai import Task
 
-from ..tools import (
-    DrawioDiagramTool, 
-    DocWriterTool,
-    FactsQueryTool,
-    ChunkedWriterTool,
-    StereotypeListTool,
-    FileReadTool,  # Safe version with size limits
-)
-from ...architecture_analysis.tools import RAGQueryTool
+from ..base_crew import MiniCrewBase, TOOL_INSTRUCTION
+from ..tools import ChunkedWriterTool
+
+logger = logging.getLogger(__name__)
 
 
-@CrewBase
-class Arc42Crew:
+# =============================================================================
+# TASK DESCRIPTIONS - Python constants instead of tasks.yaml
+# =============================================================================
+
+CH01_INTRODUCTION = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 1: Introduction and Goals (8-10 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools to gather REAL data:
+1. get_statistics() - System metrics overview
+2. get_architecture_summary() - Architecture style and patterns
+3. get_endpoints() - REST API endpoints
+4. list_components_by_stereotype(stereotype="controller") - Controllers
+5. list_components_by_stereotype(stereotype="service") - Services
+6. list_components_by_stereotype(stereotype="repository") - Repositories
+7. list_components_by_stereotype(stereotype="entity") - Entities
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/01-introduction.md using doc_writer tool.
+
+# 01 - Introduction and Goals
+
+## 1.1 Requirements Overview
+
+### 1.1.1 What is this System?
+- Full system description (not just one sentence!)
+- Business domain and subdomain classification
+- Primary business value delivered
+
+### 1.1.2 Essential Features
+Document the TOP 10 business capabilities with feature name, business value, and components involved.
+
+### 1.1.3 System Statistics
+| Metric | Count |
+|--------|-------|
+| Total Components | X |
+| Controllers | X |
+| Services | X |
+| Repositories | X |
+| Entities | X |
+| REST Endpoints | X |
+
+## 1.2 Quality Goals
+
+For EACH quality goal:
+| Attribute | Description |
+|-----------|-------------|
+| Goal | e.g., Maintainability |
+| Priority | 1-3 |
+| Rationale | Why? |
+| How Achieved | Which patterns? |
+
+Document at least 5 quality goals: Maintainability, Testability, Security, Performance, Scalability.
+
+## 1.3 Stakeholders
+| Role | Concern | Expectations | Contact |
+|------|---------|--------------|---------|
+
+Include at least 8 stakeholder roles.
+
+Write 8-10 pages with REAL data from tools. No placeholders.
+"""
+
+CH02_CONSTRAINTS = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 2: Architecture Constraints (6-8 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_statistics() - System overview
+2. get_architecture_summary() - Architecture decisions
+3. query_architecture_facts(category="containers") - Container technologies
+
+Summary data:
+{system_summary}
+{containers_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/02-constraints.md using doc_writer tool.
+
+# 02 - Architecture Constraints
+
+## 2.1 Technical Constraints
+For EACH constraint:
+| Aspect | Description |
+|--------|-------------|
+| Constraint | Name |
+| Background | Why? |
+| Impact | How it affects architecture |
+| Consequence | Resulting decisions |
+
+Categories: Programming Language, Framework, Database, Infrastructure, Security.
+
+## 2.2 Organizational Constraints
+| Constraint | Background | Consequence |
+|------------|------------|-------------|
+| Team structure | ... | Component ownership |
+| Development process | ... | Sprint-based delivery |
+| Deployment frequency | ... | Release automation |
+
+## 2.3 Convention Constraints
+| Convention | Description | Enforcement |
+|------------|-------------|-------------|
+| Naming conventions | Package, class, method naming | ... |
+| Code style | Formatting rules | ... |
+| API design | REST conventions | ... |
+
+Write 6-8 pages with REAL data from tools. No placeholders.
+"""
+
+CH03_CONTEXT = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 3: System Scope and Context (8-10 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_statistics() - System overview
+2. get_architecture_summary() - Architecture style
+3. get_endpoints() - REST API endpoints
+4. query_architecture_facts(category="containers") - Container details
+5. query_architecture_facts(category="interfaces") - API interfaces
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/03-context.md using doc_writer tool.
+
+# 03 - System Scope and Context
+
+## 3.1 Business Context
+
+### 3.1.1 Context Diagram (text-based ASCII)
+### 3.1.2 External Actors
+| Actor | Role | Interactions | Volume |
+|-------|------|--------------|--------|
+### 3.1.3 External Systems
+| System | Purpose | Protocol | Data Exchanged |
+|--------|---------|----------|----------------|
+
+## 3.2 Technical Context
+
+### 3.2.1 Technical Interfaces
+- REST API Surface
+- Database Connections
+- Message Channels
+
+### 3.2.2 Protocols and Formats
+- REST API: JSON over HTTPS
+- Database: JDBC
+- Caching: Redis (if applicable)
+
+## 3.3 External Dependencies
+### 3.3.1 Runtime Dependencies
+| Dependency | Version | Purpose | Criticality |
+|------------|---------|---------|-------------|
+### 3.3.2 Build Dependencies
+| Dependency | Version | Purpose |
+|------------|---------|---------|
+
+Write 8-10 pages with REAL data from tools. No placeholders.
+"""
+
+CH04_SOLUTION_STRATEGY = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 4: Solution Strategy (8-10 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_architecture_summary() - Architecture style and patterns
+2. get_statistics() - System metrics
+3. query_architecture_facts(category="containers") - Container details
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/04-solution-strategy.md using doc_writer tool.
+
+# 04 - Solution Strategy
+
+## 4.1 Technology Decisions
+For EACH major technology choice (ADR-lite format):
+| Aspect | Description |
+|--------|-------------|
+| Context | What problem? |
+| Decision | What was chosen? |
+| Rationale | Why this option? |
+| Alternatives | What else? |
+| Consequences | What follows? |
+
+Document decisions for: Backend Framework, Database Technology, Frontend Framework, Build Tool, Container Technology, Security Framework, API Design.
+
+## 4.2 Architecture Patterns
+
+### 4.2.1 Macro Architecture
+- Pattern name (e.g., Layered Architecture)
+- Key principles and layer responsibilities
+- Dependency rules
+
+### 4.2.2 Applied Patterns
+| Pattern | Purpose | Where Applied | Benefit |
+|---------|---------|---------------|---------|
+
+## 4.3 Achieving Quality Goals
+| Quality Goal | Solution Approach | Implemented By |
+|--------------|-------------------|----------------|
+
+Write 8-10 pages with REAL data from tools. No placeholders.
+"""
+
+CH05_BUILDING_BLOCKS = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 5: Building Block View (20-25 pages).
+
+THIS IS THE LARGEST CHAPTER. Use ALL available tools to get COMPLETE component lists.
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_statistics() - Component counts
+2. get_architecture_summary() - Layer structure
+3. list_components_by_stereotype(stereotype="controller") - ALL controllers
+4. list_components_by_stereotype(stereotype="service") - ALL services
+5. list_components_by_stereotype(stereotype="repository") - ALL repositories
+6. list_components_by_stereotype(stereotype="entity") - ALL entities
+7. search_components(query="config") - Configuration components
+8. query_architecture_facts(category="relations") - Dependencies
+
+Summary data:
+{system_summary}
+{containers_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/05-building-blocks.md using doc_writer tool.
+
+# 05 - Building Block View
+
+## 5.1 Overview
+- A-Architecture (Functional view)
+- T-Architecture (Technical view)
+- Building Block Hierarchy
+
+## 5.2 Whitebox Overall System (Level 1)
+- Container Overview with diagram (text-based)
+- Container Responsibilities
+
+## 5.3 Presentation Layer (Controllers)
+### 5.3.1 Layer Overview
+### 5.3.2 Controller Inventory (COMPLETE list in table)
+### 5.3.3 API Patterns
+### 5.3.4 Key Controllers Deep Dive (TOP 5)
+
+## 5.4 Business Layer (Services)
+### 5.4.1 Layer Overview
+### 5.4.2 Service Inventory (COMPLETE list in table)
+### 5.4.3 Service Patterns
+### 5.4.4 Key Services Deep Dive (TOP 5)
+### 5.4.5 Service Interactions
+
+## 5.5 Domain Layer (Entities)
+### 5.5.1 Layer Overview
+### 5.5.2 Entity Inventory (COMPLETE list in table)
+### 5.5.3 Domain Model Diagram (text-based)
+### 5.5.4 Key Entities Deep Dive (TOP 5)
+
+## 5.6 Persistence Layer (Repositories)
+### 5.6.1 Layer Overview
+### 5.6.2 Repository Inventory (COMPLETE list in table)
+### 5.6.3 Data Access Patterns
+
+## 5.7 Component Dependencies
+- Layer Dependency Rules
+- Dependency Matrix
+
+Write 20-25 pages with REAL data from tools. COMPLETE component inventories. No placeholders.
+"""
+
+CH06_RUNTIME = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 6: Runtime View (8-10 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_statistics() - System overview
+2. get_endpoints() - REST API endpoints
+3. get_architecture_summary() - Architecture patterns
+4. search_components(query="controller") - Find key controllers
+5. query_architecture_facts(category="relations") - Dependencies
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/06-runtime-view.md using doc_writer tool.
+
+# 06 - Runtime View
+
+## 6.1 Overview
+
+## 6.2 Key Scenarios
+Document at least 5 runtime scenarios with sequence diagrams (text-based):
+
+### Scenario 1: User Authentication
+```
+Client -> AuthController -> AuthService -> UserRepository -> Database
+```
+
+### Scenario 2: CRUD Create Operation
+### Scenario 3: CRUD Read with Pagination
+### Scenario 4: Business Process (most complex flow)
+### Scenario 5: Error Handling Scenario
+
+## 6.3 Interaction Patterns
+- Synchronous Interactions
+- Asynchronous Interactions (if any)
+
+## 6.4 Transaction Boundaries
+- Service layer demarcation
+- Rollback scenarios
+
+Write 8-10 pages with REAL data from tools. No placeholders.
+"""
+
+CH07_DEPLOYMENT = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 7: Deployment View (6-8 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_statistics() - System overview
+2. get_architecture_summary() - Infrastructure hints
+3. query_architecture_facts(category="containers") - Container details
+
+Summary data:
+{system_summary}
+{containers_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/07-deployment.md using doc_writer tool.
+
+# 07 - Deployment View
+
+## 7.1 Infrastructure Overview
+- Deployment Diagram (text-based)
+
+## 7.2 Infrastructure Nodes
+| Node | Type | Specification | Purpose |
+|------|------|---------------|---------|
+
+## 7.3 Container Deployment
+- Docker Configuration
+- Container Orchestration
+
+## 7.4 Environment Configuration
+- Development, Test, Production
+
+## 7.5 Network Topology
+- Network Zones and Firewall Rules
+
+## 7.6 Scaling Strategy
+| Container | Scaling Type | Trigger | Min | Max |
+|-----------|--------------|---------|-----|-----|
+
+Write 6-8 pages with REAL data from tools. No placeholders.
+"""
+
+CH08_CROSSCUTTING = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 8: Cross-cutting Concepts (8-10 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_statistics() - System overview
+2. get_architecture_summary() - Architecture patterns
+3. search_components(query="security") - Security components
+4. search_components(query="config") - Configuration components
+5. list_components_by_stereotype(stereotype="entity") - Domain model
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/08-crosscutting.md using doc_writer tool.
+
+# 08 - Cross-cutting Concepts
+
+## 8.1 Domain Model
+- Core Domain Concepts
+- Entity Relationships
+
+## 8.2 Security Concept
+- Authentication mechanism
+- Authorization mechanism
+- Security Patterns
+
+## 8.3 Persistence Concept
+- ORM Strategy
+- Transaction Management
+- Database Migrations
+
+## 8.4 Error Handling
+- Exception hierarchy
+- Error response format
+
+## 8.5 Logging and Monitoring
+- Logging framework
+- Log levels and strategy
+
+## 8.6 Testing Concept
+- Test pyramid
+- Test patterns
+
+## 8.7 Configuration Management
+- Property sources
+- Profile management
+
+Write 8-10 pages with REAL data from tools. No placeholders.
+"""
+
+CH09_DECISIONS = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 9: Architecture Decisions (8 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_architecture_summary() - Architecture style and patterns
+2. get_statistics() - System overview
+3. query_architecture_facts(category="containers") - Technology choices
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/09-decisions.md using doc_writer tool.
+
+# 09 - Architecture Decisions
+
+## 9.1 Decision Log Overview
+Summary of all ADRs.
+
+## 9.2 Architecture Decision Records
+Write at least 8 ADRs in this format:
+
+### ADR-001: [Title]
+| Aspect | Description |
+|--------|-------------|
+| Status | Accepted |
+| Context | What problem? |
+| Decision | What was decided? |
+| Rationale | Why? |
+| Consequences | What follows? |
+
+Cover decisions for: Architecture Style, Backend Framework, Database, Frontend, API Design, Authentication, Deployment, Caching.
+
+Write 8 pages with REAL data from tools. No placeholders.
+"""
+
+CH10_QUALITY = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 10: Quality Requirements (6 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_architecture_summary() - Quality attributes
+2. get_statistics() - System metrics
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/10-quality.md using doc_writer tool.
+
+# 10 - Quality Requirements
+
+## 10.1 Quality Tree
+Show quality attribute hierarchy (text-based tree diagram).
+
+## 10.2 Quality Scenarios
+Document at least 10 quality scenarios:
+| ID | Quality Attribute | Scenario | Expected Response | Priority |
+|----|-------------------|----------|-------------------|----------|
+
+## 10.3 Quality Metrics
+| Metric | Target | Measurement Method |
+|--------|--------|--------------------|
+
+Write 6 pages with REAL data from tools. No placeholders.
+"""
+
+CH11_RISKS = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 11: Risks and Technical Debt (6 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_architecture_summary() - Architecture assessment
+2. get_statistics() - System complexity metrics
+3. query_architecture_facts(category="relations") - Dependency risks
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/11-risks.md using doc_writer tool.
+
+# 11 - Risks and Technical Debt
+
+## 11.1 Risk Overview
+Summary table of all risks.
+
+## 11.2 Architecture Risks
+Document at least 5 risks:
+| ID | Risk | Severity | Probability | Impact | Mitigation |
+|----|------|----------|-------------|--------|------------|
+
+## 11.3 Technical Debt Inventory
+| ID | Debt Item | Category | Impact | Effort to Fix |
+|----|-----------|----------|--------|---------------|
+
+## 11.4 Mitigation Roadmap
+| Phase | Action | Priority | Timeline |
+|-------|--------|----------|----------|
+
+Write 6 pages with REAL data from tools. No placeholders.
+"""
+
+CH12_GLOSSARY = TOOL_INSTRUCTION + """
+Create the COMPLETE arc42 Chapter 12: Glossary (4 pages).
+
+## YOUR DATA SOURCES
+Use these MCP tools:
+1. get_statistics() - System terminology
+2. get_architecture_summary() - Architecture terms
+3. list_components_by_stereotype(stereotype="entity") - Domain terms
+
+Summary data:
+{system_summary}
+
+## DOCUMENT STRUCTURE
+Write to file: arc42/12-glossary.md using doc_writer tool.
+
+# 12 - Glossary
+
+## 12.1 Business Terms
+| Term | Definition |
+|------|-----------|
+
+## 12.2 Technical Terms
+| Term | Definition |
+|------|-----------|
+
+## 12.3 Abbreviations
+| Abbreviation | Full Form |
+|--------------|-----------|
+
+## 12.4 Architecture Patterns
+| Pattern | Definition | Where Used |
+|---------|-----------|------------|
+
+Write 4 pages. Include ALL domain-specific terms from the system.
+"""
+
+QUALITY_GATE_DESCRIPTION = """
+Quality review of all arc42 chapters.
+
+READ all chapter files using safe_file_read tool and validate:
+1. knowledge/architecture/arc42/01-introduction.md
+2. knowledge/architecture/arc42/02-constraints.md
+3. knowledge/architecture/arc42/03-context.md
+4. knowledge/architecture/arc42/04-solution-strategy.md
+5. knowledge/architecture/arc42/05-building-blocks.md
+6. knowledge/architecture/arc42/06-runtime-view.md
+7. knowledge/architecture/arc42/07-deployment.md
+8. knowledge/architecture/arc42/08-crosscutting.md
+9. knowledge/architecture/arc42/09-decisions.md
+10. knowledge/architecture/arc42/10-quality.md
+11. knowledge/architecture/arc42/11-risks.md
+12. knowledge/architecture/arc42/12-glossary.md
+
+Validate:
+- All 12 chapters complete
+- Each chapter has expected page count
+- Content based on REAL facts
+- No placeholder text
+
+Write quality report to: quality/arc42-report.md using doc_writer tool.
+"""
+
+
+class Arc42Crew(MiniCrewBase):
     """
-    Arc42 Crew - Creates all 12 arc42 chapters.
-    
-    Data Sources:
-    - architecture_facts.json (Phase 1): Exact component names, relations
-    - analyzed_architecture.json (Phase 2): Architecture styles, patterns, quality
+    Arc42 Crew - Creates all 12 arc42 chapters using Mini-Crews pattern.
+
+    Each chapter group runs in its own Mini-Crew with fresh LLM context.
+    This prevents context overflow that occurred with 44 tasks in 1 Crew.
+
+    Mini-Crews:
+    1. Intro+Constraints (chapters 1-2)
+    2. Context+Strategy (chapters 3-4)
+    3. Building Blocks (chapter 5 - largest chapter, own crew)
+    4. Runtime+Deployment (chapters 6-7)
+    5. Crosscutting+Decisions (chapters 8-9)
+    6. Quality+Risks+Glossary (chapters 10-12)
+    7. Quality Gate (validation)
     """
-    
-    agents_config = 'config/agents.yaml'
-    tasks_config = 'config/tasks.yaml'
-    
-    agents: List[BaseAgent]
-    tasks: List[Task]
-    
-    def __init__(
-        self, 
-        facts_path: str = "knowledge/architecture/architecture_facts.json",
-        analyzed_path: str = None,
-        chroma_dir: str = None
-    ):
-        """Initialize crew with architecture facts, analysis, and ChromaDB."""
-        self.facts_path = Path(facts_path)
-        self.analyzed_path = Path(analyzed_path) if analyzed_path else self.facts_path.parent / "analyzed_architecture.json"
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", ".cache/.chroma")
-        self.facts = self._load_facts()
-        self.analysis = self._load_analysis()
-        self.evidence_map = self._load_evidence_map()
-        self.summaries = self._summarize_facts()
-    
-    def _load_facts(self) -> dict:
-        """Load architecture facts from JSON file (Phase 1)."""
-        if self.facts_path.exists():
-            with open(self.facts_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        return {}
 
-    def _load_analysis(self) -> dict:
-        """Load architecture analysis from JSON file (Phase 2)."""
-        if self.analyzed_path.exists():
-            with open(self.analyzed_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        return {}
+    @property
+    def crew_name(self) -> str:
+        return "Arc42"
 
-    def _load_evidence_map(self) -> dict:
-        """Load evidence map (Phase 1 output) if available."""
-        evidence_path = self.facts_path.parent / "evidence_map.json"
-        if evidence_path.exists():
-            try:
-                with open(evidence_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            except Exception:
-                return {}
-        return {}
-    
+    @property
+    def agent_config_key(self) -> str:
+        return "arc42_architect"
+
+    def _get_agents_yaml_dir(self) -> str:
+        return str(Path(__file__).parent)
+
+    def _get_extra_tools(self) -> list:
+        """Arc42 needs ChunkedWriterTool for large chapters."""
+        return [ChunkedWriterTool()]
+
     def _summarize_facts(self) -> dict[str, str]:
-        """Create summaries combining Phase 1 facts and Phase 2 analysis.
-
-        IMPORTANT:
-        - Use Phase 1 facts for exact names and counts
-        - Use Phase 2 analysis for architecture interpretation
-        - If Phase 2 analysis is empty, use tools to discover
-        """
+        """Create summaries combining Phase 1 facts and Phase 2 analysis."""
         facts = self.facts
         analysis = self.analysis
 
         system_info = facts.get("system", {})
         system_name = system_info.get("name", "Unknown System")
-        
-        # Phase 2 analysis data
+
         arch_info = analysis.get("architecture", {})
-        quality_info = analysis.get("quality_attributes", {})
-        capabilities = analysis.get("capabilities", [])
-        risks = analysis.get("risks", [])
+        patterns = analysis.get("patterns", [])
 
         containers = facts.get("containers", [])
         components = facts.get("components", [])
         interfaces = facts.get("interfaces", [])
         relations = facts.get("relations", [])
 
-        # =====================================================================
-        # COMBINED SUMMARY - Facts + Analysis
-        # =====================================================================
-        tech_stack = sorted({c.get("technology", "Unknown") for c in containers if c.get("technology")})
-        
-        # Count by stereotype (raw data for agent)
+        tech_stack = sorted(
+            {c.get("technology", "Unknown") for c in containers if c.get("technology")}
+        )
+
         by_stereotype: dict[str, int] = {}
         for comp in components:
             stereo = comp.get("stereotype", "unknown")
             by_stereotype[stereo] = by_stereotype.get(stereo, 0) + 1
-        
-        # Architecture style from Phase 2
+
         arch_style = arch_info.get("primary_style", "UNKNOWN - use tools to discover")
-        patterns = analysis.get("patterns", [])
 
         system_summary = f"""SYSTEM: {system_name}
 
 ARCHITECTURE (from Phase 2 analysis):
 - Primary Style: {arch_style}
-- Patterns: {', '.join([p.get('name', 'unknown') for p in patterns]) if patterns else 'Use tools to discover'}
+- Patterns: {', '.join([p.get('name', str(p)) if isinstance(p, dict) else str(p) for p in patterns]) if patterns else 'Use tools to discover'}
 
 STATISTICS (from Phase 1 facts):
 - Containers: {len(containers)}
@@ -140,373 +674,104 @@ STATISTICS (from Phase 1 facts):
 - Interfaces: {len(interfaces)}
 - Relations: {len(relations)}
 
-TECHNOLOGIES (from containers):
+TECHNOLOGIES:
 {chr(10).join([f'- {t}' for t in tech_stack]) if tech_stack else '- Use tools to discover'}
 
 COMPONENT COUNTS BY STEREOTYPE:
 {chr(10).join([f'- {k}: {v}' for k, v in sorted(by_stereotype.items())]) if by_stereotype else '- Use tools to discover'}
 
-IMPORTANT: 
-- Use list_components_by_stereotype with stereotype="architecture_style" to find the architecture!
-- Use list_components_by_stereotype with stereotype="design_pattern" to find patterns!
-- Do NOT assume - DISCOVER from facts!"""
+IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_components_by_stereotype) to get REAL data!"""
 
-        # =====================================================================
-        # CONTAINERS (minimal - just list for reference)
-        # =====================================================================
         container_lines = [
             f"- {c.get('name', '?')}: {c.get('technology', '?')}"
             for c in containers
         ]
-        
-        containers_summary = f"""CONTAINERS (raw data):
+
+        containers_summary = f"""CONTAINERS:
 {chr(10).join(container_lines) if container_lines else '- Use query_architecture_facts to discover'}"""
 
-        # Components summary already in system_summary via by_stereotype
-        components_summary = "Use list_components_by_stereotype tool to query components by type."
-        
-        # Interfaces - just count
+        components_summary = (
+            "Use list_components_by_stereotype tool to query components by type."
+        )
         interfaces_summary = f"Total interfaces: {len(interfaces)}. Use query_architecture_facts with category='interfaces' for details."
-        
-        # Relations - just count  
         relations_summary = f"Total relations: {len(relations)}. Use query_architecture_facts with category='relations' for details."
-        
-        # Building blocks - agent must discover
         building_blocks_data = "Use list_components_by_stereotype for each layer (controller, service, repository, entity)."
 
-        def escape_braces(text: str) -> str:
-            return text.replace("{", "{{").replace("}", "}}")
-        
         return {
             "system_name": system_name,
-            "system_summary": escape_braces(system_summary),
-            "containers_summary": escape_braces(containers_summary),
-            "components_summary": escape_braces(components_summary),
-            "relations_summary": escape_braces(relations_summary),
-            "interfaces_summary": escape_braces(interfaces_summary),
-            "building_blocks_data": escape_braces(building_blocks_data),
+            "system_summary": self.escape_braces(system_summary),
+            "containers_summary": self.escape_braces(containers_summary),
+            "components_summary": self.escape_braces(components_summary),
+            "relations_summary": self.escape_braces(relations_summary),
+            "interfaces_summary": self.escape_braces(interfaces_summary),
+            "building_blocks_data": self.escape_braces(building_blocks_data),
         }
-    
-    @llm
-    def default_llm(self) -> LLM:
-        """Default LLM from environment variables."""
-        model = os.getenv("MODEL", "gpt-4o-mini")
-        api_base = os.getenv("API_BASE", "")
 
-        raw_max_tokens = os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000")
-        try:
-            max_tokens = int(raw_max_tokens)
-        except Exception:
-            max_tokens = 4000
-
-        num_retries = int(os.getenv("LLM_NUM_RETRIES", "10"))
-
-        # Some providers reject max_tokens<=0. Also guards against internal
-        # calculations producing negative values when prompts are large.
-        if max_tokens < 1:
-            max_tokens = 4000
-        
-        # Context window for the model - prevents sending too large prompts
-        # IMPORTANT: Reserve space for output tokens to prevent vllm/litellm from
-        # calculating negative max_tokens when input approaches context limit.
-        # The effective context for input = context_window - max_tokens (output reserve)
-        raw_context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
-        # Reserve output space: effective context window = total - output reserve
-        # This ensures litellm never calculates negative available tokens
-        output_reserve = max(max_tokens, 8000)  # Reserve at least 8k for output
-        context_window = raw_context_window - output_reserve
-        
-        return LLM(
-            model=model,
-            base_url=api_base,
-            temperature=0.1,
-            max_tokens=max_tokens,
-            context_window=context_window,  # Limit prompt size (output space reserved)
-            timeout=300,  # 5 min timeout for large contexts
-            num_retries=num_retries,
-        )
-    
-    @tool
-    def drawio_tool(self) -> DrawioDiagramTool:
-        """Tool for creating DrawIO diagrams."""
-        return DrawioDiagramTool()
-    
-    @tool
-    def doc_writer_tool(self) -> DocWriterTool:
-        """Tool for writing documentation."""
-        return DocWriterTool()
-    
-    @tool
-    def file_read_tool(self) -> FileReadTool:
-        """Tool for reading files."""
-        return FileReadTool()
-    
-    @tool
-    def facts_query_tool(self) -> FactsQueryTool:
-        """RAG-based tool for querying architecture facts (Strategy 6)."""
-        return FactsQueryTool(facts_path=str(self.facts_path))
-    
-    @tool
-    def chunked_writer_tool(self) -> ChunkedWriterTool:
-        """Tool for chunked document generation (Strategy 7)."""
-        return ChunkedWriterTool()
-    
-    @tool
-    def stereotype_list_tool(self) -> StereotypeListTool:
-        """Tool for listing components by stereotype (Strategy 2)."""
-        return StereotypeListTool(facts_path=str(self.facts_path))
-    
-    @tool
-    def rag_query_tool(self) -> RAGQueryTool:
-        """ChromaDB semantic search for code context."""
-        return RAGQueryTool(chroma_dir=self.chroma_dir)
-    
-    @agent
-    def arc42_architect(self) -> Agent:
-        """Arc42 Architect agent from YAML config."""
-        return Agent(
-            config=self.agents_config['arc42_architect'],  # type: ignore[index]
-            tools=[
-                self.drawio_tool(),
-                self.doc_writer_tool(),
-                self.file_read_tool(),
-                self.facts_query_tool(),
-                self.chunked_writer_tool(),
-                self.stereotype_list_tool(),
-                self.rag_query_tool(),
-            ],
-            # MCP Server for token-efficient architecture queries
-            mcps=[
-                MCPServerStdio(
-                    command="python",
-                    args=["mcp_server.py"],
-                    cache_tools_list=True,
-                )
-            ],
-            verbose=True,
-            max_iter=30,          # Allow more iterations before forcing final answer
-            max_retry_limit=10,   # Retry more on LLM empty responses
-        )
-    
     # -------------------------------------------------------------------------
-    # ARC42 TASKS - All Subtasks matching tasks.yaml
+    # PUBLIC API
     # -------------------------------------------------------------------------
-    
-    # ANALYZE SYSTEM SUBTASKS
-    @task
-    def analyze_system_datasources(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_datasources'])
-    
-    @task
-    def analyze_system_identity(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_identity'])
-    
-    @task
-    def analyze_system_architecture(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_architecture'])
-    
-    @task
-    def analyze_system_technology(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_technology'])
-    
-    @task
-    def analyze_system_components(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_components'])
-    
-    @task
-    def analyze_system_dependencies(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_dependencies'])
-    
-    @task
-    def analyze_system_integration(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_integration'])
-    
-    @task
-    def analyze_system_quality(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_quality'])
-    
-    @task
-    def analyze_system_risks(self) -> Task:
-        return Task(config=self.tasks_config['analyze_system_risks'])
-    
-    # CHAPTER 1: INTRODUCTION SUBTASKS
-    @task
-    def intro_requirements(self) -> Task:
-        return Task(config=self.tasks_config['intro_requirements'])
-    
-    @task
-    def intro_quality_goals(self) -> Task:
-        return Task(config=self.tasks_config['intro_quality_goals'])
-    
-    @task
-    def intro_stakeholders(self) -> Task:
-        return Task(config=self.tasks_config['intro_stakeholders'])
-    
-    @task
-    def intro_merge(self) -> Task:
-        return Task(config=self.tasks_config['intro_merge'])
-    
-    # CHAPTER 2: CONSTRAINTS SUBTASKS
-    @task
-    def constraints_technical(self) -> Task:
-        return Task(config=self.tasks_config['constraints_technical'])
-    
-    @task
-    def constraints_organizational(self) -> Task:
-        return Task(config=self.tasks_config['constraints_organizational'])
-    
-    @task
-    def constraints_conventions(self) -> Task:
-        return Task(config=self.tasks_config['constraints_conventions'])
-    
-    @task
-    def constraints_merge(self) -> Task:
-        return Task(config=self.tasks_config['constraints_merge'])
-    
-    # CHAPTER 3: CONTEXT SUBTASKS
-    @task
-    def context_business(self) -> Task:
-        return Task(config=self.tasks_config['context_business'])
-    
-    @task
-    def context_technical(self) -> Task:
-        return Task(config=self.tasks_config['context_technical'])
-    
-    @task
-    def context_dependencies(self) -> Task:
-        return Task(config=self.tasks_config['context_dependencies'])
-    
-    @task
-    def context_merge(self) -> Task:
-        return Task(config=self.tasks_config['context_merge'])
-    
-    # CHAPTER 4: SOLUTION STRATEGY SUBTASKS
-    @task
-    def strategy_technology(self) -> Task:
-        return Task(config=self.tasks_config['strategy_technology'])
-    
-    @task
-    def strategy_patterns(self) -> Task:
-        return Task(config=self.tasks_config['strategy_patterns'])
-    
-    @task
-    def strategy_quality(self) -> Task:
-        return Task(config=self.tasks_config['strategy_quality'])
-    
-    @task
-    def strategy_merge(self) -> Task:
-        return Task(config=self.tasks_config['strategy_merge'])
-    
-    # CHAPTER 5: BUILDING BLOCKS SUBTASKS
-    @task
-    def bb_overview(self) -> Task:
-        return Task(config=self.tasks_config['bb_overview'])
-    
-    @task
-    def bb_controllers(self) -> Task:
-        return Task(config=self.tasks_config['bb_controllers'])
-    
-    @task
-    def bb_services(self) -> Task:
-        return Task(config=self.tasks_config['bb_services'])
-    
-    @task
-    def bb_entities(self) -> Task:
-        return Task(config=self.tasks_config['bb_entities'])
-    
-    @task
-    def bb_repositories(self) -> Task:
-        return Task(config=self.tasks_config['bb_repositories'])
-    
-    @task
-    def bb_dependencies(self) -> Task:
-        return Task(config=self.tasks_config['bb_dependencies'])
-    
-    @task
-    def bb_merge(self) -> Task:
-        return Task(config=self.tasks_config['bb_merge'])
-    
-    # CHAPTER 6: RUNTIME VIEW SUBTASKS
-    @task
-    def runtime_scenarios(self) -> Task:
-        return Task(config=self.tasks_config['runtime_scenarios'])
-    
-    @task
-    def runtime_patterns(self) -> Task:
-        return Task(config=self.tasks_config['runtime_patterns'])
-    
-    @task
-    def runtime_merge(self) -> Task:
-        return Task(config=self.tasks_config['runtime_merge'])
-    
-    # CHAPTER 7: DEPLOYMENT VIEW SUBTASKS
-    @task
-    def deployment_infrastructure(self) -> Task:
-        return Task(config=self.tasks_config['deployment_infrastructure'])
-    
-    @task
-    def deployment_environments(self) -> Task:
-        return Task(config=self.tasks_config['deployment_environments'])
-    
-    @task
-    def deployment_merge(self) -> Task:
-        return Task(config=self.tasks_config['deployment_merge'])
-    
-    # CHAPTER 8: CROSSCUTTING SUBTASKS
-    @task
-    def crosscutting_domain(self) -> Task:
-        return Task(config=self.tasks_config['crosscutting_domain'])
-    
-    @task
-    def crosscutting_security(self) -> Task:
-        return Task(config=self.tasks_config['crosscutting_security'])
-    
-    @task
-    def crosscutting_persistence(self) -> Task:
-        return Task(config=self.tasks_config['crosscutting_persistence'])
-    
-    @task
-    def crosscutting_operations(self) -> Task:
-        return Task(config=self.tasks_config['crosscutting_operations'])
-    
-    @task
-    def crosscutting_merge(self) -> Task:
-        return Task(config=self.tasks_config['crosscutting_merge'])
-    
-    # CHAPTERS 9-12: SINGLE TASKS (small enough)
-    @task
-    def arc42_decisions(self) -> Task:
-        return Task(config=self.tasks_config['arc42_decisions'])
-    
-    @task
-    def arc42_quality(self) -> Task:
-        return Task(config=self.tasks_config['arc42_quality'])
-    
-    @task
-    def arc42_risks(self) -> Task:
-        return Task(config=self.tasks_config['arc42_risks'])
-    
-    @task
-    def arc42_glossary(self) -> Task:
-        return Task(config=self.tasks_config['arc42_glossary'])
-    
-    # QUALITY GATE
-    @task
-    def quality_gate(self) -> Task:
-        return Task(config=self.tasks_config['quality_gate'])
-    
-    @crew
-    def crew(self) -> Crew:
-        """Build the Arc42 crew."""
-        return Crew(
-            agents=self.agents,
-            tasks=self.tasks,
-            process=Process.sequential,
-            verbose=True,
-            memory=False,  # Disable memory to prevent context overflow
-        )
-    
+
     def run(self) -> str:
-        """Execute the crew with summaries as inputs."""
-        result = self.crew().kickoff(inputs=self.summaries)
-        return str(result)
+        """
+        Execute all 7 Mini-Crews sequentially with resume support.
+
+        On failure, completed mini-crews are checkpointed. Re-running
+        skips already-completed mini-crews automatically.
+        """
+        completed = self._load_checkpoint()
+        results = []
+
+        # Define mini-crews as (name, [(description, expected_output), ...])
+        mini_crews: list[tuple[str, list[tuple[str, str]]]] = [
+            ("intro-constraints", [
+                (CH01_INTRODUCTION, "Complete arc42 Introduction chapter (8-10 pages)"),
+                (CH02_CONSTRAINTS, "Complete arc42 Constraints chapter (6-8 pages)"),
+            ]),
+            ("context-strategy", [
+                (CH03_CONTEXT, "Complete arc42 Context chapter (8-10 pages)"),
+                (CH04_SOLUTION_STRATEGY, "Complete arc42 Solution Strategy chapter (8-10 pages)"),
+            ]),
+            ("building-blocks", [
+                (CH05_BUILDING_BLOCKS, "Complete arc42 Building Blocks chapter (20-25 pages)"),
+            ]),
+            ("runtime-deployment", [
+                (CH06_RUNTIME, "Complete arc42 Runtime View chapter (8-10 pages)"),
+                (CH07_DEPLOYMENT, "Complete arc42 Deployment View chapter (6-8 pages)"),
+            ]),
+            ("crosscutting-decisions", [
+                (CH08_CROSSCUTTING, "Complete arc42 Crosscutting chapter (8-10 pages)"),
+                (CH09_DECISIONS, "Complete arc42 Decisions chapter (8 pages)"),
+            ]),
+            ("quality-risks-glossary", [
+                (CH10_QUALITY, "Complete arc42 Quality chapter (6 pages)"),
+                (CH11_RISKS, "Complete arc42 Risks chapter (6 pages)"),
+                (CH12_GLOSSARY, "Complete arc42 Glossary (4 pages)"),
+            ]),
+        ]
+
+        for name, task_specs in mini_crews:
+            if not self.should_skip(name, completed):
+                agent = self._create_agent()
+                tasks = [
+                    Task(description=desc, expected_output=output, agent=agent)
+                    for desc, output in task_specs
+                ]
+                self._run_mini_crew(name, tasks)
+            results.append(f"{name}: Done")
+
+        # Quality Gate
+        if not self.should_skip("quality-gate", completed):
+            agent = self._create_agent()
+            self._run_mini_crew("quality-gate", [
+                Task(
+                    description=QUALITY_GATE_DESCRIPTION,
+                    expected_output="Arc42 Quality report written to quality/arc42-report.md",
+                    agent=agent,
+                ),
+            ])
+        results.append("Quality Gate: Done")
+
+        self._clear_checkpoint()
+        summary = "\n".join(results)
+        logger.info(f"[Arc42] All Mini-Crews completed:\n{summary}")
+        return summary

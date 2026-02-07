@@ -176,14 +176,22 @@ class ArchitectureSynthesisCrew:
     
     def run_c4_only(self) -> str:
         """Run only the C4 Crew."""
+        self._validate_prerequisites()
         logger.info("Running C4 Crew only...")
-        self.c4_crew = C4Crew(facts_path=str(self.facts_path))
+        self.c4_crew = C4Crew(
+            facts_path=str(self.facts_path),
+            analyzed_path=str(self.analyzed_path)
+        )
         return self.c4_crew.run()
-    
+
     def run_arc42_only(self) -> str:
         """Run only the Arc42 Crew."""
+        self._validate_prerequisites()
         logger.info("Running Arc42 Crew only...")
-        self.arc42_crew = Arc42Crew(facts_path=str(self.facts_path))
+        self.arc42_crew = Arc42Crew(
+            facts_path=str(self.facts_path),
+            analyzed_path=str(self.analyzed_path)
+        )
         return self.arc42_crew.run()
     
     def kickoff(self, inputs: dict = None) -> str:
