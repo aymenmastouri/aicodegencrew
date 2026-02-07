@@ -1,34 +1,83 @@
-[
-  {
-    "id": "backend",
-    "name": "backend",
-    "type": "backend",
-    "technology": "Spring Boot",
-    "path": "backend",
-    "category": "application"
-  },
-  {
-    "id": "e2e-xnp",
-    "name": "e2e-xnp",
-    "type": "test",
-    "technology": "Playwright",
-    "path": "e2e-xnp",
-    "category": "test"
-  },
-  {
-    "id": "frontend",
-    "name": "frontend",
-    "type": "frontend",
-    "technology": "Angular",
-    "path": "frontend",
-    "category": "application"
-  },
-  {
-    "id": "import-schema",
-    "name": "import-schema",
-    "type": "library",
-    "technology": "Java/Gradle",
-    "path": "import-schema",
-    "category": "library"
-  }
-]
+{
+  "total": 4,
+  "containers": [
+    {
+      "id": "container.backend",
+      "name": "backend",
+      "type": "backend",
+      "technology": "Spring Boot",
+      "category": "application",
+      "root_path": "backend",
+      "evidence_ids": [],
+      "metadata": {
+        "metadata": {
+          "build_system": "gradle",
+          "has_main_class": true
+        }
+      },
+      "component_count": 333,
+      "layer_distribution": {
+        "unknown": 22,
+        "presentation": 32,
+        "application": 42,
+        "dataaccess": 38,
+        "domain": 199
+      }
+    },
+    {
+      "id": "container.e2e_xnp",
+      "name": "e2e-xnp",
+      "type": "test",
+      "technology": "Playwright",
+      "category": "test",
+      "root_path": "e2e-xnp",
+      "evidence_ids": [],
+      "metadata": {
+        "metadata": {
+          "build_system": "npm",
+          "version": "1.0.0"
+        }
+      },
+      "component_count": 0,
+      "layer_distribution": {}
+    },
+    {
+      "id": "container.frontend",
+      "name": "frontend",
+      "type": "frontend",
+      "technology": "Angular",
+      "category": "application",
+      "root_path": "frontend",
+      "evidence_ids": [],
+      "metadata": {
+        "metadata": {
+          "build_system": "npm",
+          "version": "1.0.0"
+        }
+      },
+      "component_count": 404,
+      "layer_distribution": {
+        "presentation": 214,
+        "application": 131,
+        "unknown": 59
+      }
+    },
+    {
+      "id": "container.import_schema",
+      "name": "import-schema",
+      "type": "library",
+      "technology": "Java/Gradle",
+      "category": "library",
+      "root_path": "import-schema",
+      "evidence_ids": [],
+      "metadata": {
+        "metadata": {
+          "build_system": "gradle",
+          "has_main_class": false
+        }
+      },
+      "component_count": 0,
+      "layer_distribution": {}
+    }
+  ]
+}
