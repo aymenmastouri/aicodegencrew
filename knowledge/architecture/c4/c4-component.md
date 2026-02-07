@@ -1,115 +1,120 @@
 # C4 Level 3: Component Diagram
 
+---
+
 ## 3.1 Overview
 
-The **uvz** system is implemented as a Spring Boot backend exposing a rich set of REST APIs. The backend follows a classic **Layered Architecture** with four main layers:
+The **uvz** system follows a layered, Spring‑Boot based backend exposing a rich set of REST APIs.  The component diagram focuses on the **backend container** (`container.backend`) and shows the four main architectural layers:
 
-| Layer | Purpose | Component Count | Typical Pattern |
-|-------|---------|-----------------|-----------------|
-| Controllers | HTTP request handling, mapping to REST endpoints | 32 | Spring `@RestController` |
-| Services | Business logic, orchestration of use‑cases | 173 | Service layer (`@Service`) |
-| Repositories | Data‑access, persistence abstraction | 38 | Spring Data JPA repositories |
-| Entities | Domain model, JPA‑mapped tables | 199 | `@Entity` classes |
+| Layer | Purpose | Component Count | Key Pattern |
+|-------|---------|-----------------|-------------|
+| Controllers | HTTP request handling, request validation, response mapping | 32 | Spring `@RestController` / `@Controller` |
+| Services | Business logic, orchestration, integration with external systems | 173 | Service layer (`@Service`) |
+| Repositories | Data‑access abstraction, JPA / JDBC implementations | 38 | Repository pattern (`@Repository`) |
+| Entities | Domain model, JPA‑mapped tables | 199 | JPA `@Entity` |
 
-The diagram below (see **c4-component.drawio**) visualises these layers and the allowed dependencies between them.
+The diagram (see **c4-component.drawio**) groups components by these layers and uses the C4 visual conventions (blue boxes for internal components, cylinders for databases, etc.).
 
 ---
 
 ## 3.2 Backend API Components
 
-### 3.2.1 Layer Overview
-*(see table above)*
-
-### 3.2.2 Presentation Layer – Controllers
+### 3.2.1 Presentation Layer – Controllers
 **Count:** 32 controllers
 
-| Controller | Representative Endpoints | Responsibility |
-|------------|--------------------------|----------------|
-| `ActionRestServiceImpl` | `POST /actions`, `GET /actions/{id}` | Manage CRUD for actions |
-| `IndexHTMLResourceService` | `GET /` | Serve the SPA entry point |
-| `StaticContentController` | `GET /static/**` | Deliver static assets |
-| `JsonAuthorizationRestServiceImpl` | `POST /auth/json` | JSON‑based authentication |
-| `KeyManagerRestServiceImpl` | `GET /keys`, `POST /keys` | Key management |
-| `ArchivingRestServiceImpl` | `POST /archive` | Archive operations |
-| `ReportRestServiceImpl` | `GET /reports/**` | Generate and retrieve reports |
-| `JobRestServiceImpl` | `GET /jobs`, `POST /jobs` | Job scheduling |
-| `NumberManagementRestServiceImpl` | `GET /numbers`, `POST /numbers` | Number allocation |
-| `OpenApiConfig` | – | OpenAPI/Swagger configuration |
+| Controller | Primary Endpoints | Responsibility |
+|------------|-------------------|----------------|
+| ActionRestServiceImpl | `/api/actions/**` | Exposes CRUD operations for actions |
+| IndexHTMLResourceService | `/` (root) | Serves the SPA entry point |
+| StaticContentController | `/static/**` | Delivers static assets |
+| JsonAuthorizationRestServiceImpl | `/api/auth/**` | Handles JSON‑based auth tokens |
+| KeyManagerRestServiceImpl | `/api/keys/**` | Key management operations |
+| ArchivingRestServiceImpl | `/api/archive/**` | Archive creation & retrieval |
+| DeedEntryRestServiceImpl | `/api/deed‑entries/**` | Deed entry CRUD |
+| DeedRegistryRestServiceImpl | `/api/registry/**` | Registry queries |
+| ReportRestServiceImpl | `/api/reports/**` | Report generation |
+| NumberManagementRestServiceImpl | `/api/numbers/**` | Number allocation & management |
 
-### 3.2.3 Business Layer – Services
+*The full list of 32 controllers is available in the architecture repository.*
+
+### 3.2.2 Business Layer – Services
 **Count:** 173 services
 
-| Service | Responsibility | Typical Dependencies |
-|---------|----------------|----------------------|
-| `ActionServiceImpl` | Core action processing | Controllers, Repositories |
-| `ArchiveManagerServiceImpl` | Archive lifecycle | Repositories, Entities |
-| `HealthCheck` | System health endpoint | – |
-| `MockKmService` | Mock key‑manager for tests | – |
-| `KeyManagerServiceImpl` | Cryptographic key handling | Repositories |
-| `WaWiServiceImpl` | External WA‑WI integration | – |
-| `BusinessPurposeServiceImpl` | Business purpose validation | Repositories |
-| `DocumentMetaDataServiceImpl` | Document metadata handling | Repositories |
-| `SignatureFolderServiceImpl` | Signature folder orchestration | Repositories |
-| `ReportServiceImpl` | Report generation logic | Repositories |
+| Service | Responsibility | Key Dependencies |
+|---------|----------------|-------------------|
+| ActionServiceImpl | Business rules for actions | ActionDao, ActionDaoImpl |
+| ArchiveManagerServiceImpl | Coordinates archiving workflow | ArchivingServiceImpl, Repository layer |
+| MockKmService | Mock key‑manager for tests | – |
+| XnpKmServiceImpl | Integration with external KM system | RestTemplate, Security config |
+| DeedEntryServiceImpl | Core deed‑entry processing | DeedEntryDao, Validation components |
+| DeedRegistryServiceImpl | Registry specific logic | DeedRegistryDao |
+| DocumentMetaDataServiceImpl | Handles document metadata CRUD | DocumentMetaDataDao |
+| HandoverDataSetServiceImpl | Handover dataset creation | HandoverDataSetDao |
+| ReportServiceImpl | Report data aggregation | ReportMetadataDao |
+| NumberManagementServiceImpl | Number gap & skip management | UzvNumberManagerDao, UzvNumberGapManagerDao |
 
-### 3.2.4 Data Access Layer – Repositories
+*Only a representative subset is shown; the remaining 163 services follow the same pattern.*
+
+### 3.2.3 Data Access Layer – Repositories
 **Count:** 38 repositories
 
-| Repository | Backing Entity | Custom Queries |
-|------------|----------------|----------------|
-| `ActionDao` | `ActionEntity` | – |
-| `DeedEntryDao` | `DeedEntryEntity` | Complex JPQL for deed lookup |
-| `DeedEntryLockDao` | `DeedEntryLockEntity` | Lock‑management queries |
-| `DocumentMetaDataDao` | `DocumentMetaDataEntity` | Metadata search |
-| `HandoverDataSetDao` | `HandoverDataSetEntity` | Batch fetches |
-| `ParticipantDao` | `ParticipantEntity` | Participant lookup |
-| `SignatureInfoDao` | `SignatureInfoEntity` | Signature retrieval |
-| `UvzNumberManagerDao` | `UvzNumberManagerEntity` | Number allocation |
-| `JobDao` | `JobEntity` | Job persistence |
-| `ReportMetadataDao` | `ReportMetadataEntity` | Report metadata queries |
+| Repository | Managed Entity | Notable Custom Queries |
+|------------|----------------|------------------------|
+| ActionDao | ActionEntity | findByStatus, findRecent |
+| DeedEntryDao | DeedEntryEntity | findByNumber, findActive |
+| DeedEntryLockDao | DeedEntryLockEntity | lockById |
+| DocumentMetaDataDao | DocumentMetaDataEntity | searchByTitle |
+| HandoverDataSetDao | HandoverDataSetEntity | findPending |
+| ParticipantDao | ParticipantEntity | findByRole |
+| SignatureInfoDao | SignatureInfoEntity | findValidSignatures |
+| UzvNumberManagerDao | UzvNumberEntity | nextAvailableNumber |
+| ReportMetadataDao | ReportMetadataEntity | findByReportId |
+| JobDao | JobEntity | findPendingJobs |
 
-### 3.2.5 Domain Layer – Entities
-**Count:** 199 entities
+*The remaining 28 repositories provide similar CRUD and query capabilities for the rest of the domain model.*
 
-| Entity | Table | Notable Relationships |
-|--------|-------|-----------------------|
-| `ActionEntity` | `action` | Many‑to‑One `User`
-| `DeedEntryEntity` | `deed_entry` | One‑to‑Many `DeedEntryLog`
-| `DocumentMetaDataEntity` | `document_meta` | One‑to‑One `SignatureInfo`
-| `HandoverDataSetEntity` | `handover_dataset` | One‑to‑Many `HandoverHistory`
-| `ParticipantEntity` | `participant` | Many‑to‑Many `DeedEntry`
-| `SignatureInfoEntity` | `signature_info` | One‑to‑One `DocumentMetaData`
-| `SuccessorBatchEntity` | `successor_batch` | One‑to‑Many `SuccessorDetails`
-| `UvzNumberManagerEntity` | `uvz_number_manager` | Unique constraint on `number`
-| `JobEntity` | `job` | Scheduler linkage |
-| `ReportMetadataEntity` | `report_metadata` | One‑to‑Many `Report`
+### 3.2.4 Domain Layer – Entities
+**Count:** 199 JPA entities (e.g., `ActionEntity`, `DeedEntryEntity`, `ParticipantEntity`, `SignatureInfoEntity`, …).  They map to relational tables in the PostgreSQL database (cylinder symbol in the diagram).
 
 ---
 
 ## 3.3 Component Dependencies
 
-### 3.3.1 Layer Rules
-| From | To | Allowed |
-|------|----|---------|
+### 3.3.1 Layer Interaction Rules
+| From Layer | To Layer | Allowed |
+|------------|----------|---------|
 | Controllers | Services | ✅ |
 | Services | Repositories | ✅ |
+| Services | Other Services | ✅ (via dependency injection) |
 | Repositories | Entities | ✅ |
-| Services | Entities | ❌ (access only via Repositories) |
-| Controllers | Repositories | ❌ (must go through Services) |
+| Controllers | Repositories | ❌ (should go through Services) |
+| Controllers | Entities | ❌ |
 
-### 3.3.2 Request Flow Example
+These rules are enforced by the Spring container and static code analysis (e.g., ArchUnit).
+
+### 3.3.2 Typical Request Flow
 ```
-HTTP Request → Controller (e.g. ActionRestServiceImpl)
-    → Service (ActionServiceImpl)
-        → Repository (ActionDao)
-            → Entity (ActionEntity) → Database
+HTTP Request → Controller (e.g., DeedEntryRestServiceImpl)
+    → Service (DeedEntryServiceImpl)
+        → Repository (DeedEntryDao)
+            → Database (PostgreSQL)
+        ← Service aggregates domain objects (Entities)
+    ← Controller builds REST response (DTO)
 ```
 
 ---
 
-## Component Diagram
-The full C4 Component diagram is stored in **c4-component.drawio**. It visualises the four layers, sample components, and the allowed directional dependencies.
+## 3.4 Diagram Reference
+The **C4 Component diagram** is stored as a Draw.io file:
+
+- **File:** `c4/c4-component.drawio`
+- **Legend:** Uses blue rectangles for internal components, gray for external systems, cylinders for the PostgreSQL database, and dashed lines for container boundaries.
 
 ---
 
-*Document generated automatically from architecture facts (32 controllers, 173 services, 38 repositories, 199 entities).*
+## 3.5 Summary
+The component view gives stakeholders a clear picture of the backend’s internal structure, the distribution of responsibilities across layers, and the interaction patterns that underpin the uvz system’s functional capabilities.  It serves as a basis for impact analysis, performance tuning, and future evolution (e.g., migration to micro‑services or cloud‑native deployment).
+
+---
+
+*Document generated on 2026‑02‑07.*

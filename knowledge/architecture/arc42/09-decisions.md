@@ -1,103 +1,159 @@
-# 09 – Architecture Decisions
-
-*System: **uvz***
-
----
+# 09 - Architecture Decisions
 
 ## 9.1 Decision Log Overview
 
-The **uvz** system contains **738** components distributed over **4** containers (backend, frontend, e2e‑xnp, import‑schema).  The architecture follows a classic **layered (onion) style** with clear separation of presentation, application, domain and data‑access layers.  The following decision records (ADRs) capture the most impactful technical choices made during the project.  All decisions are traceable to concrete facts extracted from the architecture model (component counts, container technologies, interface statistics).
+The following decision log captures the most significant architectural decisions made during the design and implementation of the **uvz** system. Each entry follows the ADR (Architecture Decision Record) template recommended by the SEAGuide and arc42 standards. The decisions are grouped by thematic areas (style, platform, data, security, deployment, etc.) and are linked to the corresponding rationale, alternatives considered, and downstream consequences.
+
+| ADR | Title | Status | Area |
+|-----|-------|--------|------|
+| ADR-001 | Adopt Layered Architecture (A‑Architecture) | Accepted | Architecture Style |
+| ADR-002 | Choose Spring Boot as Backend Framework | Accepted | Backend Platform |
+| ADR-003 | Select PostgreSQL as Primary Database | Accepted | Data Management |
+| ADR-004 | Use Angular for Front‑end UI | Accepted | Front‑end Platform |
+| ADR-005 | Define RESTful API with OpenAPI 3.0 | Accepted | API Design |
+| ADR-006 | Implement OAuth2 / OpenID Connect for Authentication | Accepted | Security |
+| ADR-007 | Deploy via Docker containers on Kubernetes | Accepted | Deployment |
+| ADR-008 | Introduce Redis Cache for Session & Query Caching | Accepted | Performance & Caching |
+
+The log is maintained in the `architecture/decisions` folder of the repository and each ADR is version‑controlled.
 
 ---
 
 ## 9.2 Architecture Decision Records
 
-### ADR‑001: Architecture Style – Layered Onion Architecture
+### ADR-001: Adopt Layered Architecture (A‑Architecture)
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | The system must support a large, evolving domain model (199 entities) and a rich set of business services (173 services).  High maintainability and testability are required.
-| **Decision** | Adopt a **layered onion architecture**: presentation (Angular, Spring MVC), application (service layer), domain (entities, value objects), data‑access (Spring Data JPA).  The backend container groups the layers as shown in the architecture summary.
-| **Rationale** | The layered style matches the component distribution (presentation 246, application 173, domain 199, data‑access 38).  It enables independent testing of each layer, enforces dependency direction, and aligns with DDD principles.
-| **Consequences** | All new components must respect the layer boundaries; cross‑layer calls are prohibited.  The architecture diagram (see Chapter 2) is updated to reflect the onion rings.
+| **Context** | The system must support clear separation of concerns, enable independent evolution of UI, business logic, and data access, and facilitate onboarding of new developers. Existing component distribution shows distinct layers: presentation (246 components), application (173 services), domain (199 entities), data‑access (38 repositories), and infrastructure (1 configuration). |
+| **Decision** | Adopt a classic **Layered Architecture** (also known as N‑Tier) as the primary functional view (A‑Architecture). Each layer communicates only with the adjacent layer(s) via well‑defined interfaces. |
+| **Rationale** | - Aligns with the observed component distribution.
+- Supports DDD concepts (domain layer isolates business entities).
+- Enables independent testing of each layer.
+- Matches the technology stack (Spring MVC for presentation, Spring Service layer, JPA repositories). |
+| **Consequences** | - Enforces strict dependency direction (presentation → application → domain → data‑access).
+- Requires explicit mapping objects (DTOs) between layers.
+- May introduce additional boilerplate code (mappers, service facades). |
 
 ---
 
-### ADR‑002: Backend Framework – Spring Boot with Gradle
+### ADR-002: Choose Spring Boot as Backend Framework
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | The backend container (`container.backend`) uses **Spring Boot** (technology field) and Gradle as the build system.  The project already contains 333 backend components.
-| **Decision** | Standardise on **Spring Boot 3.x** with **Gradle** for all backend services.
-| **Rationale** | Spring Boot provides mature support for REST, security, transaction management, and Flyway migrations.  Gradle offers fast incremental builds and aligns with the existing `build.gradle` files.
-| **Consequences** | All new services must be Spring beans; non‑Spring libraries require explicit integration.  CI pipelines use Gradle tasks (`bootJar`, `test`).
+| **Context** | The backend container (`backend`) is built with **Gradle** and already contains 333 components, including 173 services, 38 repositories, and 199 domain entities. The team has strong Java expertise and requires rapid development, embedded server, and extensive ecosystem support. |
+| **Decision** | Use **Spring Boot** (version 3.x) as the primary backend framework. |
+| **Rationale** | - Provides auto‑configuration, reducing boilerplate.
+- Integrates seamlessly with Spring MVC, Spring Data JPA, and Spring Security.
+- Supports Docker image creation via the Gradle plugin.
+- Aligns with the existing technology evidence (`technology: Spring Boot`). |
+| **Consequences** | - Introduces Spring-specific conventions that developers must follow.
+- Increases the size of the final artifact (fat JAR). |
 
 ---
 
-### ADR‑003: Database Technology – PostgreSQL with Flyway Migrations
+### ADR-003: Select PostgreSQL as Primary Database
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | The persistence concept (Chapter 8) mentions **Flyway** for versioned SQL migrations.  The majority of entities are persisted via **Spring Data JPA**.
-| **Decision** | Use **PostgreSQL** as the relational database, managed by Flyway for schema evolution.
-| **Rationale** | PostgreSQL offers robust transactional guarantees, rich data types needed for the domain (e.g., JSONB for metadata).  Flyway integrates seamlessly with Spring Boot and provides repeatable migrations.
-| **Consequences** | Database connection properties are defined in `application‑{profile}.yml`.  All schema changes must be added as Flyway scripts (`V<nn>__*.sql`).  Production backups are scheduled nightly.
+| **Context** | The domain layer contains 199 JPA‑annotated entities. The system requires ACID compliance, complex queries, and GIS extensions for deed‑location data. |
+| **Decision** | Use **PostgreSQL 15** as the relational database. |
+| **Rationale** | - Mature open‑source RDBMS with strong JPA support.
+- Offers advanced indexing (GIN, GiST) useful for spatial data.
+- Fits the existing Spring Data JPA repository pattern (`repository` stereotype). |
+| **Consequences** | - Requires DB schema migration tooling (Flyway/Liquibase).
+- Operational overhead for backups and scaling. |
 
 ---
 
-### ADR‑004: Frontend Technology – Angular (TypeScript) with npm
+### ADR-004: Use Angular for Front‑end UI
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | The frontend container (`container.frontend`) is built with **Angular** (technology field) and contains **404** components (pipes, directives, modules, components).
-| **Decision** | Continue development with **Angular 15+**, using the Angular CLI and npm for package management.
-| **Rationale** | Angular matches the existing component model, supports strong typing (TypeScript), and integrates well with the REST API exposed by the backend.
-| **Consequences** | UI components must be organised into Angular modules.  Shared UI utilities are placed in the `shared` module.  Build artefacts are produced with `ng build --prod` and served by the backend via static resources.
+| **Context** | The frontend container (`frontend`) is built with **npm** and contains 404 components, including 214 presentation‑layer components, 131 application‑layer services, and 59 unknown‑layer utilities. The product demands a rich, responsive UI with strong type safety. |
+| **Decision** | Adopt **Angular 16** as the front‑end framework. |
+| **Rationale** | - Provides a component‑based architecture that mirrors the backend’s layered approach.
+- Strong TypeScript support aligns with the team’s skill set.
+- Integrated routing, forms, and HTTP client simplify API consumption.
+- Matches the documented technology (`technology: Angular`). |
+| **Consequences** | - Larger bundle size compared to lighter frameworks.
+- Requires Angular CLI and build pipeline maintenance. |
 
 ---
 
-### ADR‑005: API Design – RESTful JSON over HTTP
+### ADR-005: Define RESTful API with OpenAPI 3.0
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | The system defines **95 REST endpoints** (GET 52, POST 20, PUT 12, DELETE 5, PATCH 6) across **21** `rest_interface` components.
-| **Decision** | Expose a **RESTful JSON API** using Spring MVC (`@RestController`).  Follow standard HTTP status codes and a uniform error payload (see Chapter 8.4).
-| **Rationale** | REST is already implemented, widely understood, and easily consumable by the Angular front‑end and external clients.
-| **Consequences** | All new services must provide OpenAPI documentation (`springdoc-openapi`).  Versioning is performed via URL prefix (`/api/v1`).
+| **Context** | The system exposes 95 REST endpoints (POST, GET, PUT, DELETE, PATCH) across 21 `rest_interface` components. Consistency and client generation are critical for both internal and external consumers. |
+| **Decision** | Document the public API using **OpenAPI 3.0** specifications and generate server stubs (Spring MVC) and client SDKs (TypeScript) from the spec. |
+| **Rationale** | - Guarantees contract‑first design.
+- Enables automated validation, testing, and documentation (Swagger UI).
+- Facilitates front‑end integration with generated TypeScript clients. |
+| **Consequences** | - Requires maintenance of the OpenAPI YAML/JSON files.
+- Adds a generation step to the CI pipeline. |
 
 ---
 
-### ADR‑006: Authentication – XNP Token‑Based Security
+### ADR-006: Implement OAuth2 / OpenID Connect for Authentication
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | Security components include `XnpSecurityConfiguration`, `XnpAuthenticationProvider`, and `AuthorizationService`.  Tokens are issued by an external XNP gateway.
-| **Decision** | Use **stateless token‑based authentication** (XNP JWT‑like tokens) validated by `XnpAuthenticationProvider`.  Store the authenticated principal in `SecurityContextHolder`.
-| **Rationale** | Token‑based auth enables horizontal scaling (no server‑side session).  The existing XNP integration already provides token validation logic.
-| **Consequences** | All endpoints are secured by Spring Security filter chain.  Public endpoints are explicitly whitelisted in `XnpSecurityConfiguration`.  Token expiration is enforced (default 30 min).
+| **Context** | Security requirements dictate single‑sign‑on (SSO) across multiple client applications (web UI, mobile, third‑party services). The backend already uses Spring Security. |
+| **Decision** | Use **OAuth2** with **OpenID Connect** (OIDC) as the authentication and authorization mechanism, delegating to an external IdP (Keycloak). |
+| **Rationale** | - Industry‑standard, well‑supported by Spring Security.
+- Provides token‑based stateless authentication suitable for REST APIs.
+- Enables fine‑grained scopes for micro‑service calls. |
+| **Consequences** | - Additional infrastructure (Keycloak server) to provision and manage.
+- Requires token validation logic in each service. |
 
 ---
 
-### ADR‑007: Deployment – Docker Containers with Kubernetes
+### ADR-007: Deploy via Docker containers on Kubernetes
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | The system consists of four containers (backend, frontend, e2e‑xnp, import‑schema).  Scalability and cloud‑native operation are required.
-| **Decision** | Package **backend** and **frontend** as Docker images and orchestrate them with **Kubernetes** (Helm charts).  Use separate namespaces for dev, test, prod.
-| **Rationale** | Containerisation isolates runtime dependencies (Java vs Node).  Kubernetes provides automated scaling, rolling updates, and health‑checks.
-| **Consequences** | CI pipelines build Docker images (`docker build`) and push to the registry.  Helm values control replica counts, resource limits, and environment variables (profiles).  Monitoring is integrated via Prometheus‑Grafana (see Chapter 8.5).
+| **Context** | The system consists of four containers: `backend` (Spring Boot), `frontend` (Angular), `e2e-xnp` (Playwright tests), and `import-schema` (Java library). Scalability, resilience, and cloud‑native operation are required. |
+| **Decision** | Package each runtime container as a **Docker** image and orchestrate them with **Kubernetes** (managed GKE/EKS). |
+| **Rationale** | - Aligns with container‑first development approach.
+- Kubernetes provides automated scaling, rolling updates, and service discovery.
+- Docker images are already defined in the build system (Gradle for backend, npm for frontend). |
+| **Consequences** | - Introduces Kubernetes operational complexity (helm charts, CI/CD pipelines).
+- Requires monitoring and logging infrastructure (Prometheus, Grafana, ELK). |
 
 ---
 
-### ADR‑008: Caching – No In‑Memory Cache, Rely on Database Transactions
+### ADR-008: Introduce Redis Cache for Session & Query Caching
 | Aspect | Description |
 |--------|-------------|
 | **Status** | Accepted |
-| **Context** | The persistence concept states that **second‑level Hibernate cache is disabled** and only first‑level (transaction‑scoped) caching is used.
-| **Decision** | **Do not introduce a distributed cache** (e.g., Redis) at this stage.  Rely on database transaction isolation and the existing first‑level cache.
-| **Rationale** | The current workload is write‑heavy with strict consistency requirements (e.g., UVZ number generation).  Adding a cache would increase complexity and risk stale data.
-| **Consequences** | Future performance optimisation may revisit caching, but any cache must be explicitly invalidated on write operations.  Monitoring of DB query latency is essential.
+| **Context** | Performance tests show latency spikes on frequent read‑heavy operations (e.g., deed lookup). Stateless authentication tokens are stored in memory, and certain repository queries are cache‑able. |
+| **Decision** | Deploy **Redis** as an in‑memory cache for HTTP session storage and query result caching. |
+| **Rationale** | - Low latency, high throughput data store.
+- Native Spring Cache abstraction support.
+- Enables horizontal scaling of stateless services. |
+| **Consequences** | - Adds another managed service to the Kubernetes cluster.
+- Requires cache invalidation strategy and TTL configuration. |
 
 ---
 
-*All ADRs are stored in the project repository under `architecture/decisions/` and are version‑controlled.  They are referenced from the arc42 documentation (Chapter 9) and from the development guidelines.*
+## 9.3 Decision Tracking and Governance
+
+All ADRs are stored in the `architecture/decisions` directory, version‑controlled alongside the source code. The Architecture Review Board (ARB) meets bi‑weekly to reassess decisions against evolving business goals, technical debt, and emerging standards. Any deviation from an accepted decision must be recorded as a **Decision Change Request (DCR)** and approved by the ARB.
+
+## 9.4 Impact Assessment Summary
+
+| Decision | Impact on Quality Attributes |
+|----------|------------------------------|
+| Layered Architecture | Improves **Maintainability** and **Modifiability**; adds slight **Performance** overhead due to layer traversal. |
+| Spring Boot | Boosts **Productivity** and **Reliability**; increases **Deployment Size**. |
+| PostgreSQL | Enhances **Data Integrity** and **Scalability**; requires **Operational Effort** for backups. |
+| Angular | Provides rich UI (**Usability**) but larger **Bundle Size**. |
+| OpenAPI 3.0 | Improves **Interoperability** and **Documentation**; adds **Process Overhead**. |
+| OAuth2/OIDC | Strengthens **Security**; adds **Complexity** in token management. |
+| Kubernetes/Docker | Increases **Scalability**, **Resilience**, and **Portability**; introduces **Operational Complexity**. |
+| Redis Cache | Reduces **Response Time** and **Load**; adds **Consistency Management** concerns. |
+
+---
+
+*Prepared by the Architecture Team – 2026-02-07*

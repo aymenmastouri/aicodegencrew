@@ -4,107 +4,92 @@
 
 | Term | Definition |
 |------|------------|
-| ActionEntity | Core domain object that captures a user‑initiated action within the UVZ system. |
-| ActionStreamEntity | Represents a chronological stream of `ActionEntity` instances for audit and replay. |
-| ChangeEntity | Stores a single change record applied to a deed or registration. |
-| ConnectionEntity | Models a logical connection between two participants in a handover process. |
-| CorrectionNoteEntity | Holds correction notes attached to a deed during validation. |
-| DeedCreatorHandoverInfoEntity | Contains metadata supplied by the creator when handing over a deed. |
-| DeedEntryEntity | Primary representation of a deed entry in the registry. |
+| ActionEntity | Represents a single action performed on a deed, storing timestamps and actor information. |
+| ActionStreamEntity | Captures a chronological stream of actions related to a deed for audit purposes. |
+| ChangeEntity | Holds details of a change request applied to a deed record. |
+| ConnectionEntity | Models the relationship between participants in a deed transaction. |
+| CorrectionNoteEntity | Stores notes describing corrections made to deed metadata. |
+| DeedCreatorHandoverInfoEntity | Contains hand‑over information supplied by the creator of a deed. |
+| DeedEntryEntity | Core domain object representing a deed entry in the registry. |
 | DeedEntryLockEntity | Tracks lock state of a deed entry to prevent concurrent modifications. |
-| DeedEntryLogEntity | Immutable log of all state transitions for a deed entry. |
-| DeedRegistryLockEntity | Global lock information for the deed registry during batch operations. |
-| DocumentMetaDataEntity | Metadata describing a document stored in the system (type, size, checksum). |
-| FinalHandoverDataSetEntity | Finalised data set that is handed over to the successor authority. |
-| HandoverDataSetEntity | Intermediate data set prepared for handover. |
-| HandoverDmdWorkEntity | Work items generated during the handover of a deed. |
+| DeedEntryLogEntity | Persistent log of all operations performed on a deed entry. |
+| DeedRegistryLockEntity | Global lock used during batch registry operations. |
+| DocumentMetaDataEntity | Holds metadata (type, size, checksum) for documents attached to deeds. |
+| FinalHandoverDataSetEntity | Finalised data set prepared for hand‑over to the land registry. |
+| HandoverDataSetEntity | Intermediate data set used during the hand‑over process. |
+| HandoverDmdWorkEntity | Represents work items generated for a hand‑over demand. |
 | HandoverHistoryDeedEntity | Historical record of a deed that has been handed over. |
-| HandoverHistoryEntity | Aggregate of all handover events for a given registration. |
+| HandoverHistoryEntity | General history of hand‑over events for a deed. |
 | IssuingCopyNoteEntity | Note attached to a copy of a deed that is issued to a participant. |
-| ParticipantEntity | Represents a natural or legal person participating in a registration. |
-| RegistrationEntity | Central aggregate root for a land registration case. |
-| RemarkEntity | Free‑form comment attached to any domain object. |
-| SignatureInfoEntity | Stores signature data (signer, timestamp, algorithm) for a deed. |
-| SuccessorBatchEntity | Batch of successor deeds processed together. |
-| SuccessorDeedSelectionEntity | Candidate deed selected as a successor during handover. |
-| SuccessorDeedSelectionMetaEntity | Metadata describing the selection criteria for a successor deed. |
-| SuccessorDetailsEntity | Detailed information about a selected successor deed. |
-| SuccessorSelectionTextEntity | Human‑readable description of the successor selection outcome. |
-| UvzNumberGapManagerEntity | Manages gaps in the UVZ number sequence. |
-| UvzNumberManagerEntity | Generates the next UVZ number for a new registration. |
+| ParticipantEntity | Domain object describing a participant (owner, buyer, authority) in a deed. |
+| RegistrationEntity | Represents the registration event of a deed in the official register. |
+| RemarkEntity | Free‑form comment attached to a deed for internal use. |
+| SignatureInfoEntity | Stores information about signatures (signer, method, timestamp) on a deed. |
+| SuccessorBatchEntity | Batch of successor deeds generated during a succession process. |
+| SuccessorDeedSelectionEntity | Temporary entity used while selecting successor deeds. |
+| SuccessorDeedSelectionMetaEntity | Metadata describing the selection criteria for successor deeds. |
+| SuccessorDetailsEntity | Detailed information about a successor deed. |
+| SuccessorSelectionTextEntity | Textual description used in UI for successor selection. |
+| UvzNumberGapManagerEntity | Manages gaps in the UVZ numbering sequence. |
+| UvzNumberManagerEntity | Central manager for UVZ number allocation. |
 | UvzNumberSkipManagerEntity | Handles skipped UVZ numbers due to cancellations. |
 | JobEntity | Represents a scheduled background job (e.g., batch processing). |
-
-*The list above includes the most frequently referenced domain entities (199 total). Only a representative subset is shown for readability.*
 
 ## 12.2 Technical Terms
 
 | Term | Definition |
 |------|------------|
-| Container | Deployment unit (Docker/Kubernetes) that hosts a set of related components. In UVZ there are four containers: `frontend`, `backend`, `database`, `test‑runner`. |
-| Component | Reusable building block with a well‑defined interface. UVZ contains 738 components across all layers. |
-| Interface | Contract that defines how components communicate (e.g., REST endpoint, Java interface). |
-| Relation | Directed connection between two components (uses, manages, imports, references). 169 relations are recorded. |
-| REST Endpoint | HTTP‑based service contract exposed by a `rest_interface` component. UVZ defines 95 REST endpoints (GET, POST, PUT, DELETE, PATCH). |
-| Service | Business‑logic class annotated with `@Service` in Spring Boot. 173 services implement the application layer. |
-| Repository | Persistence abstraction (`@Repository`) that encapsulates data‑access logic. 38 repositories map domain entities to the relational database. |
-| Controller | Spring MVC `@RestController` that maps HTTP requests to service calls. 32 controllers expose the public API. |
-| Module | Angular module (`NgModule`) that groups related UI components, directives and pipes. 16 modules structure the frontend. |
-| Pipe | Angular pipe used for data transformation in templates. 67 pipes are defined. |
-| Directive | Angular directive that manipulates the DOM or adds behaviour to components. 3 directives are present. |
-| Adapter | Component that adapts an external API or legacy system to the internal model. 50 adapters bridge third‑party services. |
-| Interceptor | Spring `HandlerInterceptor` or Angular HTTP interceptor that adds cross‑cutting concerns (e.g., logging, security). 4 interceptors are configured. |
-| Guard | Angular route guard (`CanActivate`) that protects navigation based on authentication/authorization. 1 guard is defined. |
-| Scheduler | Spring `@Scheduled` task that runs periodic background jobs. 1 scheduler is used for batch processing. |
-| Configuration | Centralised configuration class (`@Configuration`) that defines beans and external properties. Only 1 configuration component exists. |
-| Resolver | GraphQL or custom resolver that translates queries into service calls. 4 resolvers are present. |
-| Entity | JPA‑annotated domain object persisted in the relational database. 199 entities model the UVZ domain. |
-| Pipe (Backend) | Java `java.util.stream` pipe used in service pipelines (not to be confused with Angular pipe). |
-| Route | Angular routing definition that maps a URL path to a component. 29 routes are defined. |
-| Route Guard | Angular guard that protects a route; implemented as a `CanActivate` interface. |
+| Controller | Spring MVC component that receives HTTP requests, validates input and delegates to services. |
+| Service | Business‑logic component (application layer) that orchestrates domain entities and repositories. |
+| Repository | Data‑access component implementing persistence operations for entities (e.g., JPA repositories). |
+| Entity | Domain object mapped to a database table (JPA @Entity). |
+| Module | Angular or Spring module that groups related components, services and configuration. |
+| Component | UI building block in Angular or a reusable Spring bean. |
+| Pipe | Angular pipe used to transform data in templates. |
+| Directive | Angular directive that manipulates DOM behaviour. |
+| Adapter | Structural component that adapts external APIs to internal models. |
+| Guard | Angular route guard that protects navigation based on authentication/authorization. |
+| Interceptor | Spring or Angular interceptor that intercepts requests/responses for cross‑cutting concerns. |
+| Resolver | Angular resolver that pre‑fetches data before route activation. |
+| Scheduler | Spring @Scheduled component that runs periodic background jobs. |
+| Configuration | Spring @Configuration class that defines beans and externalised settings. |
+| REST Interface | Public HTTP API exposing resources via standard REST verbs (GET, POST, PUT, DELETE, PATCH). |
+| Route | Angular routing definition mapping a URL path to a component. |
+| Route Guard | Mechanism that decides whether a route can be activated based on runtime checks. |
+| DTO (Data Transfer Object) | Lightweight object used to transfer data between layers without exposing domain entities. |
+| CRUD | Acronym for Create, Read, Update, Delete – basic data‑manipulation operations. |
+| DI (Dependency Injection) | Design pattern used by Spring and Angular to inject required collaborators at runtime. |
 
 ## 12.3 Abbreviations
 
 | Abbreviation | Full Form |
 |--------------|-----------|
-| UVZ | **U**niversal **V**erzeichnis **Z**ahl (the core registration number system) |
+| UVZ | Unique Vz (system name for the deed‑entry platform) |
 | API | Application Programming Interface |
 | UI | User Interface |
 | DB | Database |
-| CRUD | Create, Read, Update, Delete |
-| DDD | Domain‑Driven Design |
-| MVC | Model‑View‑Controller |
-| REST | Representational State Transfer |
-| JWT | JSON Web Token |
-| CI | Continuous Integration |
-| CD | Continuous Delivery |
-| UI | User Interface |
-| HTML | HyperText Markup Language |
-| CSS | Cascading Style Sheets |
-| TS | TypeScript |
-| JVM | Java Virtual Machine |
 | JPA | Java Persistence API |
-| SQL | Structured Query Language |
-| HTTP | Hypertext Transfer Protocol |
-| HTTPS | HTTP Secure |
-| TLS | Transport Layer Security |
-| IDE | Integrated Development Environment |
-| IDE | Integrated Development Environment |
+| MVC | Model‑View‑Controller |
+| DTO | Data Transfer Object |
+| CRUD | Create, Read, Update, Delete |
+| DI | Dependency Injection |
+| CI/CD | Continuous Integration / Continuous Delivery |
 | QA | Quality Assurance |
+| HTTP | Hypertext Transfer Protocol |
+| JSON | JavaScript Object Notation |
+| XML | eXtensible Markup Language |
 
 ## 12.4 Architecture Patterns
 
 | Pattern | Definition | Where Used |
 |---------|------------|------------|
-| Layered Architecture | Classic separation of concerns into presentation, application, domain, data‑access and infrastructure layers. UVZ follows this structure with 5 explicit layers (presentation, application, domain, data‑access, infrastructure). |
-| Domain‑Driven Design (DDD) | Strategic design approach that models complex business domains using bounded contexts and rich domain entities. All `*Entity` classes belong to the **Domain** layer and are managed by repositories. |
-| Repository Pattern | Provides a collection‑like interface for accessing domain objects, decoupling the domain model from persistence details. Implemented by the 38 Spring `@Repository` components. |
-| Service Layer | Encapsulates business logic in stateless `@Service` beans, orchestrating repositories and other services. 173 services constitute the **Application** layer. |
-| Model‑View‑Controller (MVC) | Separates UI (Angular components), request handling (`@RestController`), and business logic (`@Service`). Controllers act as the *Controller* part, services as *Model*, and Angular components as *View*. |
-| Adapter Pattern | Allows UVZ to integrate external systems (e.g., external land‑registry APIs) without leaking their specifics into the core domain. 50 adapter components implement this pattern. |
-| Interceptor / Guard Pattern | Cross‑cutting concerns (security, logging, transaction) are applied via Spring interceptors and Angular route guards. |
-| Scheduler / Quartz Pattern | Periodic background processing (batch jobs, number gap management) is handled by a single Spring `@Scheduled` component. |
-| Configuration as Code | All runtime configuration is expressed in a single Spring `@Configuration` class, enabling externalised property management. |
-| Micro‑frontend (partial) | The Angular frontend is split into multiple feature modules (16 modules) that can be developed and deployed independently. |
+| Layered Architecture | Organises the system into horizontal layers (Presentation, Application, Domain, Data Access, Infrastructure) with strict dependency direction. | All modules – presentation (controllers), application (services), domain (entities), data‑access (repositories), infrastructure (configuration). |
+| MVC (Model‑View‑Controller) | Separates UI (View) from request handling (Controller) and business model (Model). | Angular front‑end and Spring MVC controllers. |
+| Repository Pattern | Provides a collection‑like interface for accessing domain objects, abstracting persistence details. | Spring Data JPA repositories for all `*Entity` classes. |
+| Service Layer | Encapsulates business use‑cases, coordinating multiple repositories and domain objects. | All `*ServiceImpl` components in the application layer (173 services). |
+| Dependency Injection | Framework‑managed injection of required collaborators, promoting loose coupling. | Spring `@Autowired` and Angular DI containers. |
+| Configuration‑as‑Code | Externalises configuration into code‑based classes or property files, enabling version control. | Single `Configuration` component in the infrastructure layer. |
+| Scheduler / Batch Pattern | Executes recurring background jobs without manual intervention. | `JobEntity` processed by Spring `@Scheduled` components. |
+| Guard / Interceptor Pattern | Implements cross‑cutting concerns such as security, logging, and validation. | Angular `Guard` for route protection; Spring `Interceptor` for request logging. |
 
-*All patterns listed are derived from the actual component distribution and technology stack of the UVZ system.*
+*Statistics (as of the latest analysis): 738 components, 199 domain entities, 173 services, 38 repositories, 32 controllers, 21 REST interfaces, 4 interceptors, 1 guard, 1 scheduler, 1 configuration component.*

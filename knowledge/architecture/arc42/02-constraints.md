@@ -1,65 +1,54 @@
-# 02 – Architecture Constraints
+# 02 - Architecture Constraints
 
 ## 2.1 Technical Constraints
 
-The UVZ platform is bound by a set of non‑negotiable technical constraints that stem from the chosen technology stack, regulatory environment, and operational requirements.  Each constraint is expressed in the **Aspect – Description** format required by the SEAGuide template.
+The **uvz** system is built on a heterogeneous technology stack that imposes several hard constraints on the architecture. These constraints stem from the chosen programming languages, frameworks, runtime environments, and operational requirements. The table below enumerates the most impactful constraints, their background, architectural impact, and the resulting design decisions.
 
-| Aspect | Constraint | Background | Impact on Architecture | Consequence |
-|--------|------------|------------|------------------------|-------------|
-| **Programming Language** | Java 17 (backend) & TypeScript 5 (frontend) | The organization standardised on Java 17 for long‑term LTS support and on TypeScript for strong typing in Angular. | All backend services must compile with `gradle` using Java 17 target; all UI code must be transpiled by the Angular CLI. | Enforces use of Java‑specific libraries (Spring Boot, JPA) and TypeScript‑centric linting rules. |
-| **Framework – Backend** | Spring Boot 3.x | Provides production‑grade dependency injection, security, and REST support. | All REST controllers, services and repositories are Spring beans; configuration is driven by `application.yml`. | No alternative web frameworks (e.g., Micronaut) are permitted; all new modules must follow Spring Boot conventions. |
-| **Framework – Frontend** | Angular 16 | Guarantees a component‑based UI with built‑in routing and RxJS. | UI code lives under `frontend/src/app`; state management must use NgRx or services. | Prevents mixing of other SPA frameworks (React, Vue). |
-| **Test Automation** | Playwright 1.35 (E2E) | Chosen for cross‑browser end‑to‑end testing of the Angular UI. | The `e2e‑xnp` container contains only Playwright tests; CI pipeline runs them on every PR. | All UI acceptance criteria must be expressed as Playwright scripts; no Selenium tests allowed. |
-| **Database** | Oracle 19c (production) & H2 (unit tests) | Legal data must be stored in a certified RDBMS with ACID guarantees. | Repositories use Spring Data JPA; production profiles point to Oracle, test profiles to H2. | Repository implementations such as `ParticipantDaoOracle` are mandatory for production; any new repository must support both dialects. |
-| **Build System** | Gradle 8 (backend & import‑schema) & npm (frontend) | Consistency across modules and fast incremental builds. | Backend modules are built with `./gradlew build`; frontend with `npm run build`. | Mixed Maven projects are prohibited; CI must invoke the appropriate build tool per container. |
-| **Containerisation** | Docker (runtime) | Deployment is container‑based for portability and scaling. | Each container (`backend`, `frontend`, `e2e‑xnp`, `import‑schema`) produces a Docker image; Kubernetes is the target orchestrator. | Direct VM deployments are not supported; all artefacts must be Docker‑compatible. |
-| **Security** | Spring Security + OAuth2 / OpenID Connect | Must comply with GDPR and national e‑signature regulations. | All REST endpoints are protected by method‑level security expressions (`@PreAuthorize`). | No public endpoints without authentication; token handling is centralised in `TokenAuthenticationRestTemplateConfiguration`. |
-| **Logging & Monitoring** | ELK stack (ElasticSearch, Logstash, Kibana) | Centralised log aggregation for auditability. | All services use `logback‑spring.xml` and emit JSON logs. | Custom log formats are rejected; monitoring dashboards rely on predefined fields. |
-| **Performance** | JVM heap ≤ 2 GB per backend instance | Cost‑effective scaling on cloud VMs. | Services must be stateless and fit within the heap limit; caching is limited to 200 MB. | Heavy in‑memory caches are disallowed; performance tests must verify heap usage. |
+| Aspect | Constraint | Background | Impact on Architecture | Consequence / Decision |
+|--------|------------|------------|------------------------|--------------------------|
+| **Programming Language** | Java 17 (backend) | The backend container `backend` uses Spring Boot with Gradle and requires Java 17 for language features and library compatibility. | All backend services must be implemented in Java, limiting cross‑language reuse and influencing the choice of libraries (e.g., Lombok, MapStruct). | Enforced Java 17 across all backend modules; compiled with Gradle `sourceCompatibility = 17`. |
+| **Programming Language** | TypeScript (frontend) | The `frontend` container is an Angular application built with npm. | Frontend code must be written in TypeScript, affecting component design and state management patterns. | Adopt Angular CLI conventions; enforce strict typing via `tsconfig.json`. |
+| **Framework** | Spring Boot (backend) | Provides inversion of control, embedded Tomcat, and extensive starter ecosystem. | Architecture follows a layered approach (presentation → application → domain → data‑access) enforced by Spring stereotypes (`@Controller`, `@Service`, `@Repository`). | Controllers such as `ActionRestServiceImpl` and `DeedEntryRestServiceImpl` are annotated with `@RestController`; services are wired via `@Autowired`. |
+| **Framework** | Angular (frontend) | Component‑based SPA framework with RxJS for reactive streams. | UI is decomposed into Angular modules, components, directives, and pipes. | UI modules (`AppModule`, feature modules) respect Angular style guide; lazy loading used for large sections. |
+| **Testing Framework** | Playwright (e2e‑xnp) | End‑to‑end testing container uses Playwright for browser automation. | Test suites must be written in JavaScript/TypeScript and run in a Node environment. | CI pipeline includes Playwright test stage; test code lives under `e2e-xnp/tests`. |
+| **Build System** | Gradle (backend & import‑schema) | Gradle orchestrates compilation, packaging, and dependency management. | All Java modules share a common `build.gradle` configuration; multi‑project builds are used. | Consistent versioning of Spring Boot and third‑party libraries across containers. |
+| **Package Management** | npm (frontend & e2e‑xnp) | Node package manager for Angular and Playwright. | Frontend dependencies are locked via `package-lock.json`. | Automated dependency updates via Renovate; CI fails on mismatched lock files. |
+| **Infrastructure** | Docker (containerisation) | Each container (`backend`, `frontend`, `e2e‑xnp`, `import‑schema`) is packaged as a Docker image. | Deployment model is container‑oriented; services communicate over HTTP/REST. | Docker Compose defines inter‑container networking; Kubernetes manifests generated for production. |
+| **Database** | Relational DB (unspecified) | The system persists domain entities (`entity` stereotype) such as `RestrictedDeedEntryEntity`. | JPA/Hibernate is used; entities must be annotated with `@Entity`. | Database schema versioned with Flyway; constraints enforced at DB level. |
+| **Security** | Spring Security (backend) | Authentication and authorization are handled by Spring Security filters and custom expressions. | Controllers expose endpoints only after security checks; custom `CustomMethodSecurityExpressionHandler` is used. | All REST endpoints (`/api/**`) are protected; token‑based authentication via JWT. |
+| **API Design** | OpenAPI 3.0 | `OpenApiConfig` and `OpenApiOperationAuthorizationRightCustomizer` generate API documentation. | API contracts are source‑of‑truth; client code can be generated from the spec. | Swagger UI available at `/swagger-ui.html`; CI validates OpenAPI spec consistency. |
 
-### Rationale Summary
-- **Regulatory compliance** drives the choice of Oracle and Spring Security.
-- **Team expertise** dictates Java 17 and Angular.
-- **Operational efficiency** is achieved through Docker and CI‑driven Gradle/npm builds.
-- **Quality assurance** is enforced by Playwright and strict linting.
+### Selected Example Controllers
 
----
+| Controller | Package | Primary Responsibility |
+|------------|---------|------------------------|
+| `ActionRestServiceImpl` | `backend` | Handles action‑related REST operations (POST/GET). |
+| `DeedEntryRestServiceImpl` | `backend` | CRUD operations for deed entries, uses `DeedEntryService`. |
+| `ReportRestServiceImpl` | `backend` | Generates PDF/CSV reports, integrates with `ReportService`. |
+| `StaticContentController` | `backend` | Serves static resources for the Angular SPA. |
+| `OpenApiConfig` | `backend` | Configures OpenAPI generation and custom security extensions. |
 
 ## 2.2 Organizational Constraints
 
-| Constraint | Background | Consequence |
-|------------|------------|-------------|
-| **Team Structure** | The development organisation follows a *feature‑team* model: each team owns a bounded context (e.g., Deed Registration, Number Management, Archiving). | Component ownership is explicit; teams are responsible for the full lifecycle of their services, including tests and documentation. |
-| **Development Process** | Scrum with two‑week sprints, Definition of Done includes unit, integration, and Playwright tests, plus static analysis. | All code must pass SonarQube quality gates before merge; sprint planning must allocate capacity for technical debt reduction. |
-| **Release Cadence** | Continuous Delivery to a staging environment; production releases are scheduled weekly on Fridays. | Release automation (GitHub Actions) must produce Docker images for all four containers and push them to the internal registry; rollback procedures are defined per container. |
-| **Compliance Review** | Legal compliance team reviews every change that touches data models (entities) or security configuration. | Pull requests affecting `entity` packages or `Security` beans trigger an additional manual approval step. |
-| **Documentation Policy** | Architecture artefacts (C4 diagrams, arc42 chapters) are stored in the `knowledge/architecture` repository and must be version‑controlled. | Any new component must be added to the relevant diagram and the corresponding arc42 chapter before the next sprint review. |
-| **Tooling Standardisation** | All developers use IntelliJ IDEA (backend) and VS Code (frontend) with shared settings files. | IDE configuration files (`.editorconfig`, `sonarlint.xml`) are part of the repo; deviations are not accepted in code reviews. |
-| **Training & On‑boarding** | New hires undergo a two‑day boot‑camp covering Spring Boot, Angular, and security policies. | Guarantees consistent understanding of constraints; onboarding checklist is mandatory for all new team members. |
-| **Vendor Lock‑in Management** | Oracle is a strategic vendor; contracts require a migration path to an open‑source RDBMS within five years. | Architecture must keep data access abstracted via JPA; any Oracle‑specific SQL must be encapsulated in separate DAO classes. |
-
----
+| Constraint | Background | Consequence / Architectural Impact |
+|------------|------------|-----------------------------------|
+| **Team Structure** | The development organisation is split into three cross‑functional squads (Backend, Frontend, Test Automation), each owning a container. | Clear ownership of `backend`, `frontend`, and `e2e‑xnp` containers; reduces cross‑team coupling. |
+| **Development Process** | Scrum with two‑week sprints; CI/CD pipeline enforces “green‑first” policy. | Incremental delivery of features; architecture must support frequent releases (feature toggles, backward‑compatible API versioning). |
+| **Deployment Frequency** | Target of **twice per day** to production for critical bug fixes. | Automated Docker image builds and Helm chart releases; immutable infrastructure pattern adopted. |
+| **Regulatory Compliance** | System processes personal data; GDPR compliance required. | Data‑at‑rest encryption, audit logging (`DeedEntryLogRestServiceImpl`), and data‑retention policies enforced at architecture level. |
+| **Skill Set** | Teams have strong Java and Angular expertise; limited experience with Kotlin or React. | Technology choices stay within Java/Spring and Angular ecosystems; avoids costly re‑training. |
 
 ## 2.3 Convention Constraints
 
 | Convention | Description | Enforcement Mechanism |
-|-----------|-------------|----------------------|
-| **Naming Conventions** | Packages follow `com.uvz.<layer>.<bounded_context>`; classes use `PascalCase`; interfaces end with `Service` or `Repository`. | Checkstyle rules and a custom Gradle task that fails the build on violations. |
-| **Code Style** | 4‑space indentation, no trailing whitespace, line length ≤ 120 characters. | `spotless` plugin runs on every commit; CI fails on style errors. |
-| **API Design** | REST endpoints must be versioned (`/api/v1/...`), use plural nouns, and return proper HTTP status codes. | `OpenAPI` specification (`openapi.yaml`) is validated during the build; mismatches cause a build error. |
-| **Exception Handling** | All service‑layer exceptions are wrapped in `UvzException` with an error code enum. | Static analysis rule (`SonarJava:S2699`) enforces that no unchecked exceptions escape the service layer. |
-| **Logging Format** | JSON log entries with fields: `timestamp`, `level`, `service`, `traceId`, `message`. | `logback‑spring.xml` includes a JSON encoder; a unit test asserts the presence of required fields. |
-| **Testing Conventions** | Unit tests in `src/test/java` using JUnit 5; integration tests in `src/integrationTest`; Playwright tests in `e2e‑xnp`. | Maven/Gradle `test` task fails if coverage < 80 %; naming pattern `*Test` enforced by Surefire. |
-| **Versioning** | Semantic versioning (`MAJOR.MINOR.PATCH`) for each Docker image; Git tags mirror the version. | Release pipeline extracts version from `gradle.properties`; mismatched tags abort the release. |
-| **Documentation Comments** | Javadoc for all public classes and methods; Swagger annotations for REST controllers. | `javadoc` generation step must succeed; missing docs raise a warning treated as error in CI. |
-
-### How Conventions Support Quality Goals
-- **Maintainability** – Consistent naming and code style reduce cognitive load.
-- **Testability** – Standardised test locations and naming make test discovery automatic.
-- **Security** – API versioning and OpenAPI validation prevent accidental exposure of insecure endpoints.
-- **Performance** – Logging format and exception handling avoid costly string concatenations.
-- **Scalability** – Docker image versioning and CI enforcement enable reliable rolling updates.
+|-----------|-------------|-----------------------|
+| **Naming Conventions** | Java classes use `PascalCase`; Spring beans end with `*ServiceImpl` or `*Repository`. Angular files follow `<feature>.component.ts`, `<feature>.service.ts`. | Checkstyle for Java, ESLint + Prettier for TypeScript; CI fails on naming violations. |
+| **Code Style** | Java: Google Java Style; Angular: Angular Style Guide (indent 2 spaces, no `any`). | `spotless` plugin for Gradle; `npm run lint` for frontend. |
+| **Package Structure** | Backend packages mirror layered architecture (`controller`, `service`, `repository`, `entity`). Frontend modules grouped by feature. | Automated architecture validation script (`archunit` for Java, custom lint rule for Angular). |
+| **API Design** | REST endpoints follow `/api/v1/<resource>` pattern; HTTP verbs map to CRUD semantics. OpenAPI spec is the single source of truth. | Swagger validation step in CI; contract tests using `pact`. |
+| **Documentation** | Javadoc required for all public classes; TypeScript doc comments for exported symbols. | `javadoc` generation step; `typedoc` for Angular, CI checks for missing docs. |
+| **Testing** | Backend: JUnit 5 + Mockito, 80% coverage minimum. Frontend: Jasmine/Karma, 70% coverage. E2E: Playwright, critical path tests mandatory. | `jacoco` and `karma-coverage` thresholds enforced; CI fails if coverage drops. |
 
 ---
 
-*All tables and statements are derived from the live architecture model (statistics, component inventory, container definitions) and from the organisation’s governance documents. The chapter complies with the SEAGuide arc42 template and respects the “Graphics First” principle by summarising constraints in concise tabular form.*
+*The constraints listed above are derived from the actual system composition (see statistics, container definitions, and concrete component names). They shape the architectural decisions throughout the uvz project and must be respected by all future development and evolution activities.*

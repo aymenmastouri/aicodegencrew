@@ -1,97 +1,114 @@
-# 07 - Deployment View
+# 07 – Deployment View
+
+---
 
 ## 7.1 Infrastructure Overview
 
-The **uvz** system is deployed as a set of four logical containers that run on a Kubernetes‑based cloud platform (or on‑premise VMs – the architecture is technology‑agnostic).  The containers are:
+The **uvz** system is deployed as a set of four logical containers that map directly to the technology stack identified during the architectural analysis:
 
-| Container ID | Technology | Role | Component Count |
-|--------------|------------|------|-----------------|
-| `container.backend` | Spring Boot (Java, Gradle) | Core business‑logic micro‑service – exposes 95 REST endpoints, hosts all controllers, services, repositories and the single configuration component. | 333 |
-| `container.frontend` | Angular (npm) | Single‑page web UI – consumes the backend REST API, runs in the browser. | 404 |
-| `container.e2e_xnp` | Playwright (npm) | End‑to‑end test harness – executes UI tests against the frontend and backend in CI pipelines. | 0 |
-| `container.import_schema` | Java/Gradle library | Build‑time schema import utility – not part of the runtime but packaged with the backend. | 0 |
+| Container | Technology | Primary Role |
+|-----------|------------|--------------|
+| **backend** | Spring Boot (Gradle) | Business‑logic services, REST API, data access |
+| **frontend** | Angular (npm) | Single‑page UI, client‑side routing |
+| **e2e‑xnp** | Playwright (npm) | End‑to‑end test harness (continuous‑integration) |
+| **import‑schema** | Java/Gradle library | Schema import utilities (offline batch jobs) |
 
-The deployment diagram (text‑based) shows the high‑level topology:
+The deployment is orchestrated on a Kubernetes cluster (or Docker‑Compose for small‑scale environments).  All containers are packaged as Docker images and run in isolated pods.  The diagram below (Mermaid) gives a high‑level view of the runtime topology.
 
+```mermaid
+flowchart TB
+    subgraph "Internet"
+        User["User Browser"]
+    end
+    subgraph "DMZ"
+        LB[Load Balancer]
+    end
+    subgraph "K8s Cluster"
+        subgraph "Namespace: uvz-prod"
+            FE["frontend (Angular)\nDocker Image: uvz-frontend:1.2"]
+            BE["backend (Spring Boot)\nDocker Image: uvz-backend:1.2"]
+            DB[("PostgreSQL DB\nuvz-db")]
+            E2E["e2e‑xnp (Playwright)\nDocker Image: uvz-e2e:1.0"]
+            IMP["import‑schema (Java)\nUtility Pod"]
+        end
+    end
+    User -->|HTTPS| LB --> FE --> BE --> DB
+    BE -->|REST| FE
+    E2E -->|API Calls| BE
+    IMP -->|JDBC| DB
 ```
-+-------------------+        +-------------------+        +-------------------+
-|   Frontend (NG)   |  HTTPS |   Backend (SB)    |  JDBC  |   Database (RDB) |
-| container.frontend| <----> | container.backend | <----> |   PostgreSQL      |
-+-------------------+        +-------------------+        +-------------------+
-        ^                         ^
-        |                         |
-        |   +-------------------+ |
-        +---|   E2E Tests (PW)  | |
-            container.e2e_xnp   |
-            +-------------------+
-```
 
-*All containers are placed behind a TLS‑terminating ingress controller.  The backend connects to a managed PostgreSQL instance via a private network.  The e2e‑xnp container runs in a separate CI namespace and accesses the frontend through the same ingress.
+*Legend*: arrows denote network traffic direction; the load balancer terminates TLS and forwards HTTP(S) to the frontend service.  The frontend communicates with the backend over the internal service mesh.  The backend accesses a PostgreSQL database (managed outside the container set).  The e2e‑xnp container runs in the CI pipeline and targets the same backend endpoints.
 
 ---
 
 ## 7.2 Infrastructure Nodes
 
 | Node | Type | Specification | Purpose |
-|------|------|---------------|---------|
-| **Ingress Controller** | Software (NGINX/Traefik) | 2 vCPU, 2 GB RAM, TLS termination, rate‑limiting | Exposes HTTPS endpoints for frontend and backend, routes traffic based on path prefixes. |
-| **Kubernetes Worker** | VM (Linux) | 4 vCPU, 8 GB RAM, SSD storage | Hosts the four containers; provides pod scheduling, health‑checks, and auto‑scaling. |
-| **PostgreSQL Instance** | Managed DB service | 8 vCPU, 32 GB RAM, 500 GB SSD, automated backups | Persists domain entities (199 entity classes) and audit logs. |
-| **Object Storage** | S3‑compatible bucket | 5 TB capacity, versioning enabled | Stores archived document binaries used by the `ArchiveStorageService`. |
-| **CI Runner** | Container host | 2 vCPU, 4 GB RAM | Executes the `container.e2e_xnp` Playwright tests on each pull request. |
-| **Artifact Registry** | Docker registry | Unlimited | Holds Docker images for `backend`, `frontend`, and `import‑schema`. |
+|------|------|----------------|---------|
+| **Load Balancer** | HAProxy / Cloud LB | 2 vCPU, 2 GB RAM, TLS termination | Distribute inbound traffic, provide high availability |
+| **Frontend Pod** | Angular Docker container | 1 vCPU, 1 GB RAM per replica | Serve static assets, client‑side routing |
+| **Backend Pod** | Spring Boot Docker container | 2 vCPU, 4 GB RAM per replica | Execute business logic, expose REST API |
+| **Database** | PostgreSQL (managed service) | 4 vCPU, 16 GB RAM, 200 GB SSD | Persist domain entities (≈199 entities) |
+| **e2e‑xnp Runner** | Playwright Docker container | 2 vCPU, 2 GB RAM | Execute end‑to‑end test suites in CI |
+| **Import‑Schema Job** | Java/Gradle utility pod | 1 vCPU, 1 GB RAM (on‑demand) | Import external schemas into the domain model |
 
 ---
 
 ## 7.3 Container Deployment
 
-### Docker Images
+### 7.3.1 Docker Images
 
 | Container | Image Repository | Tag | Build System |
 |-----------|------------------|-----|--------------|
-| `backend` | `registry.company.com/uvz/backend` | `{{git.sha}}` | Gradle (Spring Boot) |
-| `frontend` | `registry.company.com/uvz/frontend` | `{{git.sha}}` | npm (Angular CLI) |
-| `e2e_xnp` | `registry.company.com/uvz/e2e-xnp` | `latest` | npm (Playwright) |
-| `import_schema` | `registry.company.com/uvz/import-schema` | `{{git.sha}}` | Gradle (library) |
+| backend | `registry.company.com/uvz/backend` | `1.2.0` | Gradle (Java 17) |
+| frontend | `registry.company.com/uvz/frontend` | `1.2.0` | npm (Angular 15) |
+| e2e‑xnp | `registry.company.com/uvz/e2e-xnp` | `1.0.0` | npm (Playwright 1.38) |
+| import‑schema | `registry.company.com/uvz/import-schema` | `1.0.0` | Gradle |
 
-### Kubernetes Manifests (simplified)
+### 7.3.2 Kubernetes Manifests (excerpt)
 
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: uvz-backend
+  labels:
+    app: uvz
+    tier: backend
 spec:
-  replicas: 3            # scaling defined in 7.6
+  replicas: 3   # horizontal scaling (see 7.6)
   selector:
     matchLabels:
-      app: uvz-backend
+      app: uvz
+      tier: backend
   template:
     metadata:
       labels:
-        app: uvz-backend
+        app: uvz
+        tier: backend
     spec:
       containers:
-        - name: backend
-          image: registry.company.com/uvz/backend:{{git.sha}}
-          ports:
-            - containerPort: 8080
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "${ENVIRONMENT}"
-          resources:
-            limits:
-              cpu: "2"
-              memory: "2Gi"
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 15
+      - name: backend
+        image: registry.company.com/uvz/backend:1.2.0
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+        envFrom:
+        - configMapRef:
+            name: uvz-backend-config
 ```
 
-A similar `Deployment` exists for `frontend` (replicas 2) and `e2e_xnp` (run‑once Job).  The `import_schema` library is packaged inside the backend image and does not have its own deployment.
+The same pattern is applied to the **frontend** and **e2e‑xnp** deployments, adjusting `replicas`, `resources`, and `ports` accordingly.
+
+### 7.3.3 Orchestration & CI/CD
+
+* **GitLab CI** builds Docker images on merge‑requests, pushes them to the internal registry, and triggers a Helm upgrade.
+* **Helm chart** `uvz` defines values for each environment (dev, test, prod) – image tags, replica counts, resource limits, and environment‑specific ConfigMaps.
+* **Argo Rollouts** provides progressive delivery with canary analysis for the backend service.
 
 ---
 
@@ -99,29 +116,43 @@ A similar `Deployment` exists for `frontend` (replicas 2) and `e2e_xnp` (run�
 
 | Environment | Config Source | Key Differences |
 |-------------|---------------|-----------------|
-| **Development** | `.env.dev` (ConfigMap) | Uses an in‑memory H2 database, debug logging, `SPRING_PROFILES_ACTIVE=dev`. |
-| **Test** | `.env.test` (ConfigMap) | Connects to a dedicated PostgreSQL test instance, enables Flyway migrations, `SPRING_PROFILES_ACTIVE=test`. |
-| **Production** | Secrets Manager + ConfigMap | TLS certificates, connection to managed PostgreSQL with IAM authentication, `SPRING_PROFILES_ACTIVE=prod`, rate‑limiting enabled on ingress. |
+| **Development** | `ConfigMap uvz-dev-config` | In‑memory H2 DB, debug logging, `spring.profiles.active=dev` |
+| **Test** | `ConfigMap uvz-test-config` | PostgreSQL test instance, reduced replica count (1), `spring.profiles.active=test` |
+| **Production** | `ConfigMap uvz-prod-config` | Managed PostgreSQL (HA), replica count 3 (backend) / 2 (frontend), TLS enforced, `spring.profiles.active=prod` |
 
-All containers read their configuration via Spring Boot’s externalized configuration mechanism (environment variables, ConfigMaps, Secrets).  The Angular frontend consumes a `runtime-config.json` generated at container start‑up to point to the correct backend base URL.
+**Backend configuration excerpt (prod)**:
+
+```properties
+server.port=8080
+spring.datasource.url=jdbc:postgresql://uvz-db.prod.company.com:5432/uvz
+spring.datasource.username=uvz_user
+spring.datasource.password=${DB_PASSWORD}
+logging.level.root=INFO
+management.endpoints.web.exposure.include=health,info,metrics
+```
+
+**Frontend environment variables (prod)** are injected at build time via `ng build --configuration=production` and served by the container’s Nginx static file server.
 
 ---
 
 ## 7.5 Network Topology
 
-```
-[Internet] ── TLS ── Ingress (NGINX) ──+──► Frontend Pod (Angular)
-                                      |
-                                      +──► Backend Pod (Spring Boot) ──► PostgreSQL (private subnet)
-                                      |
-                                      +──► Object Storage (S3) (VPC endpoint)
-                                      |
-                                      +──► CI Runner (e2e_xnp) – accesses Ingress via internal DNS
-```
+The system is segmented into three security zones:
 
-* **Network Zones** – Public zone (Ingress), Private zone (backend, DB, storage).  Security groups allow only the Ingress to reach the backend on port 8080 and only the backend to reach the database on port 5432.
-* **Firewall Rules** – Deny all inbound traffic except TLS 443 to the Ingress; backend pods accept traffic only from the Ingress IP range.
-* **Service Mesh (optional)** – If a service mesh such as Istio is introduced, mutual TLS would be enforced between backend and database.
+1. **DMZ** – Public‑facing load balancer and TLS termination.
+2. **Application Zone** – Kubernetes cluster (frontend, backend, e2e‑xnp). Only internal traffic is allowed between pods.
+3. **Data Zone** – Managed PostgreSQL instance, reachable **only** from backend pods over a private VPC subnet.
+
+### Firewall Rules (simplified)
+
+| Source | Destination | Protocol | Port | Action |
+|--------|-------------|----------|------|--------|
+| Internet | Load Balancer | TCP | 443 | Allow |
+| Load Balancer | Frontend Pods | TCP | 80 | Allow |
+| Frontend Pods | Backend Pods | TCP | 8080 | Allow |
+| Backend Pods | PostgreSQL | TCP | 5432 | Allow (private subnet) |
+| CI Runner | e2e‑xnp Pods | TCP | 8080 | Allow |
+| All other | All | – | – | Deny |
 
 ---
 
@@ -129,26 +160,26 @@ All containers read their configuration via Spring Boot’s externalized configu
 
 | Container | Scaling Type | Trigger | Min Replicas | Max Replicas |
 |-----------|--------------|---------|--------------|--------------|
-| `backend` | Horizontal Pod Autoscaler (CPU‑based) | CPU > 70 % for 2 min | 2 | 10 |
-| `frontend` | Horizontal Pod Autoscaler (request‑rate) | HTTP requests > 1500 rps | 2 | 6 |
-| `e2e_xnp` | Job‑based (run‑on‑commit) | CI pipeline event | 0 | 1 |
-| `import_schema` | N/A (library) | – | – | – |
+| **backend** | Horizontal Pod Autoscaler (CPU) | CPU > 70 % for 2 min | 2 | 6 |
+| **frontend** | Horizontal Pod Autoscaler (Requests) | HTTP request rate > 1500 rps | 2 | 4 |
+| **e2e‑xnp** | Manual (CI only) | – | 0 (run on demand) | 1 |
+| **import‑schema** | On‑Demand Job | – | 0 | 1 |
 
-The HPA uses the Kubernetes metrics server.  Scaling decisions are logged to Prometheus and visualised in Grafana dashboards.  Autoscaling respects pod disruption budgets to guarantee at least one healthy replica during rolling updates.
-
----
-
-## 7.7 Deployment Pipeline (summary)
-
-1. **Commit** → GitHub triggers CI.
-2. **Build** – Gradle builds the backend JAR, npm builds the Angular bundle; Docker images are created and pushed to the internal registry.
-3. **Test** – Unit tests, integration tests, and Playwright e2e tests (`container.e2e_xnp`) run.
-4. **Release** – Helm chart is rendered with the new image tags and applied to the target cluster (dev → test → prod).
-5. **Verification** – Smoke tests hit the health endpoint (`/actuator/health`) and a subset of public REST endpoints.
-6. **Rollback** – Helm rollback to the previous release if health checks fail.
-
-All steps are documented in the project’s `README.md` and enforced by the CI pipeline.
+The **backend** container hosts 333 components (including 199 domain entities, 42 application services, 38 repositories, etc.) and therefore requires the highest resource allocation.  The **frontend** container contains 404 UI components (directives, pipes, modules) and scales based on request volume.
 
 ---
 
-*The deployment view follows the SEAGuide “Graphics First” principle: the textual description complements the ASCII‑art diagram, the node table, and the scaling matrix, allowing stakeholders to grasp the physical layout, technology stack, and operational behaviour without redundant prose.*
+## 7.7 Deployment Checklist (per release)
+
+1. **Build** Docker images for all containers and push to registry.
+2. **Update** Helm values file with new image tags.
+3. **Run** `helm upgrade --install uvz ./chart -f values-prod.yaml`.
+4. **Validate** health endpoints (`/actuator/health`) for backend and `/status` for frontend.
+5. **Perform** canary rollout (10 % traffic) and monitor `latency` and `error rate` metrics.
+6. **Promote** to full traffic after successful canary.
+7. **Run** e2e‑xnp test suite against the new deployment.
+8. **Document** version bump in release notes.
+
+---
+
+*The deployment view aligns with the SEAGuide principle of “Graphics First” – the Mermaid diagram and tables convey the essential infrastructure information without redundant narrative.*
