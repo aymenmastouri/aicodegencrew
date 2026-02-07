@@ -36,6 +36,10 @@ from ..architecture_analysis.tools import RAGQueryTool
 
 logger = logging.getLogger(__name__)
 
+# Retry settings for transient LLM connection failures
+_MAX_RETRIES = 2
+_RETRY_DELAY_BASE = 5  # seconds, doubled each retry
+
 
 # Shared tool instruction for all doc-writing tasks (with few-shot example)
 TOOL_INSTRUCTION = """
@@ -265,12 +269,16 @@ class MiniCrewBase(ABC):
         expected_files: list[str] | None = None,
     ) -> str:
         """
-        Run a Mini-Crew with fresh context.
+        Run a Mini-Crew with fresh context, retry, and recovery.
 
         Each Mini-Crew gets a fresh agent and fresh LLM context,
         preventing the context overflow that occurs with many sequential tasks.
 
-        Records checkpoint with timing for resume capability.
+        Reliability features:
+        - Retries with exponential backoff on transient connection errors
+        - Logs failure metrics (not just successes) for diagnostics
+        - Attempts output file recovery on non-retryable errors
+        - Records checkpoint with timing for resume capability
 
         Args:
             name: Mini-crew identifier for logging/checkpointing.
@@ -279,73 +287,133 @@ class MiniCrewBase(ABC):
                 completion. If files are missing but the result contains
                 markdown content, the result is written as a fallback.
         """
+        max_retries = int(os.getenv("CREW_MAX_RETRIES", str(_MAX_RETRIES)))
         logger.info(f"[{self.crew_name}] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
         start_time = time.time()
 
-        crew = Crew(
-            agents=[tasks[0].agent],
-            tasks=tasks,
-            process=Process.sequential,
-            verbose=True,
-            memory=False,
-            respect_context_window=True,
-            max_rpm=30,
+        for attempt in range(1, max_retries + 1):
+            try:
+                crew = Crew(
+                    agents=[tasks[0].agent],
+                    tasks=tasks,
+                    process=Process.sequential,
+                    verbose=True,
+                    memory=False,
+                    respect_context_window=True,
+                    max_rpm=30,
+                )
+                result = crew.kickoff(inputs=self.summaries)
+
+                # === SUCCESS ===
+                duration = time.time() - start_time
+                token_info = self._extract_token_usage(result)
+                logger.info(
+                    f"[{self.crew_name}] Completed Mini-Crew: {name} "
+                    f"({duration:.1f}s, ~{token_info.get('total_tokens', '?')} tokens)"
+                )
+
+                result_str = str(result)
+                if expected_files:
+                    self._validate_and_fallback(name, result_str, expected_files)
+
+                checkpoint = {
+                    "crew": name,
+                    "status": "completed",
+                    "duration_seconds": round(duration, 1),
+                    "tasks": len(tasks),
+                    "attempts": attempt,
+                    **token_info,
+                }
+                self._checkpoints.append(checkpoint)
+                self._save_checkpoint()
+
+                from ...shared.utils.logger import log_metric
+                log_metric(
+                    "mini_crew_complete",
+                    crew_type=self.crew_name,
+                    crew_name=name,
+                    duration_seconds=round(duration, 1),
+                    tasks=len(tasks),
+                    attempts=attempt,
+                    **token_info,
+                )
+                return result_str
+
+            except (ConnectionError, TimeoutError, OSError) as e:
+                # Transient connection error — retry with backoff
+                if attempt < max_retries:
+                    delay = _RETRY_DELAY_BASE * (2 ** (attempt - 1))
+                    logger.warning(
+                        f"[{self.crew_name}] {name}: Connection error "
+                        f"(attempt {attempt}/{max_retries}), "
+                        f"retrying in {delay}s: {e}"
+                    )
+                    time.sleep(delay)
+                    # Fresh agent to avoid stale LLM connections
+                    new_agent = self._create_agent()
+                    for t in tasks:
+                        t.agent = new_agent
+                    continue
+
+                # Final attempt failed
+                self._handle_crew_failure(
+                    name, tasks, e, start_time, expected_files
+                )
+                raise
+
+            except Exception as e:
+                # Non-retryable: Pydantic validation, unexpected errors
+                self._handle_crew_failure(
+                    name, tasks, e, start_time, expected_files
+                )
+                raise
+
+        # Should never reach here, but satisfy type checker
+        raise RuntimeError(f"Mini-crew {name} failed after {max_retries} attempts")
+
+    def _handle_crew_failure(
+        self,
+        name: str,
+        tasks: list[Task],
+        error: Exception,
+        start_time: float,
+        expected_files: list[str] | None,
+    ) -> None:
+        """Handle mini-crew failure: log metric, save checkpoint, attempt recovery."""
+        duration = time.time() - start_time
+        error_type = type(error).__name__
+        error_msg = str(error)[:500]
+
+        logger.error(
+            f"[{self.crew_name}] Failed Mini-Crew: {name} "
+            f"({duration:.1f}s, {error_type}): {error_msg}"
         )
 
-        try:
-            result = crew.kickoff(inputs=self.summaries)
-            duration = time.time() - start_time
+        # Log failure metric to metrics.jsonl
+        from ...shared.utils.logger import log_metric
+        log_metric(
+            "mini_crew_failed",
+            crew_type=self.crew_name,
+            crew_name=name,
+            duration_seconds=round(duration, 1),
+            tasks=len(tasks),
+            error_type=error_type,
+            error=error_msg,
+        )
 
-            # Extract token usage from CrewAI result
-            token_info = self._extract_token_usage(result)
-            logger.info(
-                f"[{self.crew_name}] Completed Mini-Crew: {name} "
-                f"({duration:.1f}s, ~{token_info.get('total_tokens', '?')} tokens)"
-            )
+        # Attempt to recover missing output files
+        if expected_files:
+            self._recover_missing_files(name, expected_files)
 
-            # Validate expected output files and fallback-write if needed
-            result_str = str(result)
-            if expected_files:
-                self._validate_and_fallback(name, result_str, expected_files)
-
-            # Record checkpoint, persist, and log metric
-            checkpoint = {
-                "crew": name,
-                "status": "completed",
-                "duration_seconds": round(duration, 1),
-                "tasks": len(tasks),
-                **token_info,
-            }
-            self._checkpoints.append(checkpoint)
-            self._save_checkpoint()
-
-            # Structured metric for metrics.jsonl
-            from ...shared.utils.logger import log_metric
-            log_metric(
-                "mini_crew_complete",
-                crew_type=self.crew_name,
-                crew_name=name,
-                duration_seconds=round(duration, 1),
-                tasks=len(tasks),
-                **token_info,
-            )
-
-            return result_str
-
-        except Exception as e:
-            duration = time.time() - start_time
-            logger.error(
-                f"[{self.crew_name}] Failed Mini-Crew: {name} ({duration:.1f}s): {e}"
-            )
-
-            self._checkpoints.append({
-                "crew": name,
-                "status": "failed",
-                "duration_seconds": round(duration, 1),
-                "tasks": len(tasks),
-                "error": str(e),
-            })
-            raise
+        # Record failed checkpoint
+        self._checkpoints.append({
+            "crew": name,
+            "status": "failed",
+            "duration_seconds": round(duration, 1),
+            "tasks": len(tasks),
+            "error": error_msg,
+        })
+        self._save_checkpoint()
 
     # -------------------------------------------------------------------------
     # OUTPUT VALIDATION
@@ -409,7 +477,7 @@ class MiniCrewBase(ABC):
 
             # File missing — try fallback from result
             content = self._extract_content(result)
-            if len(content) > 500 and ("# " in content or "## " in content):
+            if len(content) > 300 and ("# " in content or "## " in content):
                 logger.warning(
                     f"[{self.crew_name}] {crew_name}: {file_path} NOT written by agent! "
                     f"Fallback-writing {len(content)} chars from result."
@@ -422,6 +490,63 @@ class MiniCrewBase(ABC):
                     f"[{self.crew_name}] {crew_name}: {file_path} NOT written and "
                     f"result too short/no markdown for fallback ({len(content)} chars)."
                 )
+
+    def _recover_missing_files(
+        self, crew_name: str, expected_files: list[str]
+    ) -> None:
+        """Generate minimal stub documents for missing output files after failure.
+
+        When a mini-crew fails entirely (e.g. Pydantic validation error),
+        this creates skeleton documents from facts so the documentation set
+        isn't left with gaps. Stubs are clearly marked as auto-generated.
+        """
+        base = Path("knowledge/architecture")
+        facts = self.facts
+        system_name = facts.get("system", {}).get("name", "System")
+
+        for file_path in expected_files:
+            full = base / file_path
+            if full.exists() and full.stat().st_size > 100:
+                continue
+            if file_path.endswith(".drawio"):
+                continue  # Can't auto-generate diagrams
+
+            # Build minimal content from facts
+            stem = Path(file_path).stem
+            containers = facts.get("containers", [])
+            components = facts.get("components", [])
+
+            by_stereo: dict[str, int] = {}
+            for comp in components:
+                s = comp.get("stereotype", "unknown")
+                by_stereo[s] = by_stereo.get(s, 0) + 1
+
+            stats_lines = "\n".join(
+                f"| {s} | {n} |" for s, n in sorted(by_stereo.items())
+            )
+            container_lines = "\n".join(
+                f"| {c.get('name', '?')} | {c.get('technology', '?')} |"
+                for c in containers
+            )
+
+            content = (
+                f"# {stem}\n\n"
+                f"> **Auto-generated stub** — the AI agent failed to produce "
+                f"this document. Re-run the pipeline to generate full content.\n\n"
+                f"## System: {system_name}\n\n"
+                f"### Component Statistics\n\n"
+                f"| Stereotype | Count |\n|---|---|\n{stats_lines}\n\n"
+                f"### Containers\n\n"
+                f"| Name | Technology |\n|---|---|\n{container_lines}\n"
+            )
+
+            full.parent.mkdir(parents=True, exist_ok=True)
+            with open(full, "w", encoding="utf-8") as f:
+                f.write(content)
+            logger.warning(
+                f"[{self.crew_name}] {crew_name}: Recovery-generated stub "
+                f"for {file_path} ({len(content)} chars)"
+            )
 
     # -------------------------------------------------------------------------
     # CHECKPOINT PERSISTENCE

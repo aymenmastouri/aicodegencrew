@@ -788,30 +788,90 @@ class ArchitectureAnalysisCrew:
         return tasks
 
     def _run_mini_crew(self, name: str, tasks: List[Task]) -> str:
-        """Run a mini-crew with fresh context."""
+        """Run a mini-crew with fresh context, retry on transient errors."""
+        max_retries = int(os.getenv("CREW_MAX_RETRIES", "2"))
         logger.info(f"[Phase2] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
         start_time = time.time()
 
-        crew = Crew(
-            agents=[tasks[0].agent],
-            tasks=tasks,
-            process=Process.sequential,
-            verbose=True,
-            memory=False,
-            max_rpm=30,
-            planning=False,
-        )
+        for attempt in range(1, max_retries + 1):
+            try:
+                crew = Crew(
+                    agents=[tasks[0].agent],
+                    tasks=tasks,
+                    process=Process.sequential,
+                    verbose=True,
+                    memory=False,
+                    max_rpm=30,
+                    planning=False,
+                )
+                result = crew.kickoff()
+                duration = time.time() - start_time
+                logger.info(f"[Phase2] Completed Mini-Crew: {name} ({duration:.1f}s)")
+                self._save_checkpoint(name)
+                return str(result)
 
+            except (ConnectionError, TimeoutError, OSError) as e:
+                if attempt < max_retries:
+                    delay = 5 * (2 ** (attempt - 1))
+                    logger.warning(
+                        f"[Phase2] {name}: Connection error "
+                        f"(attempt {attempt}/{max_retries}), "
+                        f"retrying in {delay}s: {e}"
+                    )
+                    time.sleep(delay)
+                    # Fresh agent for retry
+                    new_agent = self._create_agent(
+                        self._agent_key_for_crew(name),
+                        self._create_analysis_tools(),
+                    )
+                    for t in tasks:
+                        t.agent = new_agent
+                    continue
+                # Final attempt
+                self._log_crew_failure(name, tasks, e, start_time)
+                raise
+
+            except Exception as e:
+                self._log_crew_failure(name, tasks, e, start_time)
+                raise
+
+        raise RuntimeError(f"Mini-crew {name} failed after {max_retries} attempts")
+
+    def _agent_key_for_crew(self, crew_name: str) -> str:
+        """Map mini-crew name to agent config key."""
+        mapping = {
+            "tech_analysis": "tech_architect",
+            "domain_analysis": "func_analyst",
+            "workflow_analysis": "func_analyst",
+            "quality_analysis": "quality_analyst",
+            "synthesis": "synthesis_lead",
+        }
+        return mapping.get(crew_name, "tech_architect")
+
+    def _log_crew_failure(
+        self, name: str, tasks: List[Task], error: Exception, start_time: float
+    ) -> None:
+        """Log failure metric and error details."""
+        duration = time.time() - start_time
+        error_type = type(error).__name__
+        error_msg = str(error)[:500]
+        logger.error(
+            f"[Phase2] Failed Mini-Crew: {name} "
+            f"({duration:.1f}s, {error_type}): {error_msg}"
+        )
         try:
-            result = crew.kickoff()
-            duration = time.time() - start_time
-            logger.info(f"[Phase2] Completed Mini-Crew: {name} ({duration:.1f}s)")
-            self._save_checkpoint(name)
-            return str(result)
-        except Exception as e:
-            duration = time.time() - start_time
-            logger.error(f"[Phase2] Failed Mini-Crew: {name} ({duration:.1f}s): {e}")
-            raise
+            from ...shared.utils.logger import log_metric
+            log_metric(
+                "mini_crew_failed",
+                crew_type="Phase2",
+                crew_name=name,
+                duration_seconds=round(duration, 1),
+                tasks=len(tasks),
+                error_type=error_type,
+                error=error_msg,
+            )
+        except Exception:
+            pass  # Don't let metric logging break error handling
 
     # =========================================================================
     # CHECKPOINT
