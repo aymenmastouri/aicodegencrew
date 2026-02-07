@@ -284,8 +284,7 @@ src/aicodegencrew/
 
         indexing/                      # Phase 0: Repository Indexing
             __init__.py
-            pipeline.py               # IndexingPipeline
-            indexing_pipeline.py       # ensure_repo_indexed
+            indexing_pipeline.py       # IndexingPipeline + IndexingState + ensure_repo_indexed
             ...
 
         architecture_facts/            # Phase 1: Architecture Facts
@@ -847,7 +846,7 @@ knowledge/architecture/
 | Use doc_writer tool for output | Write content in response text |
 | Use exact names from facts | Add business context |
 | Write readable documentation | Clutter output with evidence IDs |
-| Use DrawIO for diagrams (XML) | Use Mermaid or ASCII diagrams |
+| Use DrawIO for diagrams (XML) | Use Mermaid, PlantUML, or ASCII diagrams |
 
 ---
 

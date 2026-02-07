@@ -29,6 +29,7 @@ from crewai.mcp import MCPServerStdio
 from crewai_tools import FileWriterTool
 
 from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool, PartialResultsTool
+from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 
 # MCP server script path (project root)
 _MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
@@ -794,6 +795,7 @@ class ArchitectureAnalysisCrew:
         start_time = time.time()
 
         for attempt in range(1, max_retries + 1):
+            tracker = None
             try:
                 crew = Crew(
                     agents=[tasks[0].agent],
@@ -804,6 +806,7 @@ class ArchitectureAnalysisCrew:
                     max_rpm=30,
                     planning=False,
                 )
+                tracker = install_guardrails()
                 result = crew.kickoff()
                 duration = time.time() - start_time
                 logger.info(f"[Phase2] Completed Mini-Crew: {name} ({duration:.1f}s)")
@@ -834,6 +837,9 @@ class ArchitectureAnalysisCrew:
             except Exception as e:
                 self._log_crew_failure(name, tasks, e, start_time)
                 raise
+
+            finally:
+                uninstall_guardrails(tracker)
 
         raise RuntimeError(f"Mini-crew {name} failed after {max_retries} attempts")
 
