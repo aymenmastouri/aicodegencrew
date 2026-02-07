@@ -1,0 +1,130 @@
+{
+  "container": "frontend",
+  "component_count": 404,
+  "relation_count": 0,
+  "interface_count": 30,
+  "summary": "The frontend container is built on a component‑based, layered Angular architecture that cleanly separates presentation, business‑logic, and infrastructure concerns using a rich set of Angular technologies (NgModules, RxJS, Angular Material, etc.). It supports a wide range of deed‑registry capabilities through REST APIs and local storage. While the overall design is solid, the codebase shows moderate coupling and cohesion, with duplication in services, adapters, and pipes, leading to a quality grade of C and a noticeable technical debt surface.",
+  "technical": {
+    "primary_pattern": "Component-Based with Layered architecture",
+    "layers": [
+      "Presentation (Components, Directives, Pipes, UI Modules)",
+      "Business Logic / Service (Services, Guards, Resolvers, Interceptors)",
+      "Infrastructure / Integration (Adapters, Endpoint services, HTTP interceptors)"
+    ],
+    "technologies": [
+      "Angular",
+      "TypeScript",
+      "RxJS",
+      "Angular Router",
+      "Angular HttpClient",
+      "Angular Modules (NgModule)",
+      "Angular Forms",
+      "Angular Material (presumed UI library)",
+      "RESTful HTTP APIs"
+    ],
+    "integration_style": "REST API over HTTP"
+  },
+  "functional": {
+    "bounded_context": "Deed Registry & Document Processing",
+    "domain_concepts": [
+      "Deed",
+      "Document",
+      "Workflow",
+      "User",
+      "Signature",
+      "Custody",
+      "Archiving",
+      "Import/Export",
+      "Metadata",
+      "Task",
+      "Job",
+      "Report",
+      "NumberManagement",
+      "Settings",
+      "Connection",
+      "Participant",
+      "Remark",
+      "Note"
+    ],
+    "capabilities": [
+      "User authentication & authorization",
+      "Create, edit, view, and delete deed entries",
+      "Display deed overviews and status headers",
+      "Manage deed workflows (initiate, modify, delete)",
+      "Validate and process digital signatures",
+      "Import and export deed data (JSON, PDF)",
+      "Archive and retrieve documents",
+      "Handle custody operations for documents",
+      "Manage document metadata and settings",
+      "Execute background jobs and tasks",
+      "Generate reports and statistical data",
+      "Perform number management and allocation",
+      "Provide inline help and documentation",
+      "Apply form validation and field validation",
+      "Handle error reporting, rate limiting and busy indicators",
+      "Persist user preferences in local storage"
+    ],
+    "integrations": [
+      "DeedRegistry API (REST)",
+      "DocumentMetadata API (REST)",
+      "Action API (REST)",
+      "Reencryption API (REST)",
+      "Job API (REST)",
+      "Task API (REST)",
+      "Custody Service API",
+      "Archiving Service API",
+      "PDF generation endpoint (XnpPdfMakeEndpoint)",
+      "Local storage (client‑side persistence)",
+      "Authentication service (JSON authentication adapter)"
+    ]
+  },
+  "quality": {
+    "separation_of_concerns": "moderate",
+    "coupling": "moderate",
+    "cohesion": "moderate",
+    "debt_indicators": [
+      "Large number of services (potential duplication)",
+      "Versioned ImportHandler services indicating code duplication",
+      "High count of pipes (possible over‑fragmentation)",
+      "Many adapters acting as thin wrappers without clear abstraction",
+      "Modules containing mixed responsibilities"
+    ],
+    "grade": "C",
+    "recommendations": [
+      "Consolidate similar services and adapters into shared abstractions",
+      "Introduce facade or interface layers to reduce direct component‑service coupling",
+      "Group related pipes into dedicated utility modules or libraries",
+      "Refactor versioned ImportHandler services using a strategy or plugin pattern",
+      "Enforce stricter feature‑module boundaries to keep presentation, business, and infrastructure layers separate",
+      "Add explicit TypeScript interfaces for services to enable dependency inversion and easier testing"
+    ]
+  },
+  "overall_assessment": "The frontend container delivers the required domain functionality with a well‑defined layered Angular stack, but moderate coupling, duplicated services, and fragmented utilities inflate maintenance effort. The C grade reflects this debt; targeted refactoring and clearer module boundaries will raise both quality and developer productivity.",
+  "top_recommendations": [
+    "Consolidate similar services and adapters into shared abstractions",
+    "Refactor versioned ImportHandler services using a strategy or plugin pattern",
+    "Enforce stricter feature‑module boundaries to maintain clear separation of concerns"
+  ],
+  "analysis": {
+    "primary_pattern": "Component-Based with Layered architecture",
+    "layers": [
+      "Presentation (Components, Directives, Pipes, UI Modules)",
+      "Business Logic / Service (Services, Guards, Resolvers, Interceptors)",
+      "Infrastructure / Integration (Adapters, Endpoint services, HTTP interceptors)"
+    ],
+    "stereotype_distribution": {
+      "module": 16,
+      "component": 128,
+      "pipe": 67,
+      "directive": 3,
+      "service": 131,
+      "adapter": 50,
+      "guard": 1,
+      "interceptor": 4,
+      "resolver": 4
+    },
+    "total_components": 404,
+    "total_relations": 0,
+    "total_interfaces": 30
+  }
+}
