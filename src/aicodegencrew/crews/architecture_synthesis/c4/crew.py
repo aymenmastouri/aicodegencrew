@@ -27,6 +27,13 @@ logger = logging.getLogger(__name__)
 CONTEXT_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
 Create the COMPLETE C4 Level 1: System Context document.
 
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get system metrics
+2. get_architecture_summary() -> get architecture style and patterns
+3. get_endpoints() -> get REST API endpoints
+4. doc_writer(file_path="c4/c4-context.md", content="# C4 Level 1: System Context\\n\\n## 1.1 Overview\\n...")
+5. Respond: "File c4/c4-context.md written successfully."
+
 ## YOUR DATA SOURCES
 Use these MCP tools to gather REAL data:
 1. get_statistics() - System metrics overview
@@ -86,6 +93,11 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 CONTEXT_DIAGRAM_DESCRIPTION = """
 Create a C4 Context DrawIO DIAGRAM.
 
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get system data for diagram nodes
+2. create_drawio_diagram(file_path="c4/c4-context.drawio", nodes=[...], edges=[...])
+3. Respond: "Diagram c4/c4-context.drawio created successfully."
+
 {system_summary}
 
 Use create_drawio_diagram tool with these specifications:
@@ -107,6 +119,13 @@ Create nodes and edges based on REAL facts, not generic placeholders.
 
 CONTAINER_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
 Create the COMPLETE C4 Level 2: Container Diagram document.
+
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get system metrics
+2. query_architecture_facts(category="containers") -> get container details
+3. get_architecture_summary() -> get architecture style
+4. doc_writer(file_path="c4/c4-container.md", content="# C4 Level 2: Container Diagram\\n\\n## 2.1 Overview\\n...")
+5. Respond: "File c4/c4-container.md written successfully."
 
 ## YOUR DATA SOURCES
 Use these MCP tools:
@@ -162,6 +181,11 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 CONTAINER_DIAGRAM_DESCRIPTION = """
 Create a C4 Container DrawIO DIAGRAM.
 
+## EXECUTION EXAMPLE (follow this pattern):
+1. query_architecture_facts(category="containers") -> get container data for nodes
+2. create_drawio_diagram(file_path="c4/c4-container.drawio", nodes=[...], edges=[...])
+3. Respond: "Diagram c4/c4-container.drawio created successfully."
+
 {system_summary}
 {containers_summary}
 
@@ -185,6 +209,14 @@ Use query_architecture_facts(category="containers") to get REAL container data.
 
 COMPONENT_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
 Create the COMPLETE C4 Level 3: Component Diagram document.
+
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get component counts per layer
+2. list_components_by_stereotype(stereotype="controller") -> get all controllers
+3. list_components_by_stereotype(stereotype="service") -> get all services
+4. list_components_by_stereotype(stereotype="repository") -> get all repositories
+5. doc_writer(file_path="c4/c4-component.md", content="# C4 Level 3: Component Diagram\\n\\n## 3.1 Overview\\n...")
+6. Respond: "File c4/c4-component.md written successfully."
 
 ## YOUR DATA SOURCES
 Use these MCP tools:
@@ -259,6 +291,11 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 COMPONENT_DIAGRAM_DESCRIPTION = """
 Create a C4 Component DrawIO DIAGRAM.
 
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get component counts per layer
+2. create_drawio_diagram(file_path="c4/c4-component.drawio", nodes=[...], edges=[...])
+3. Respond: "Diagram c4/c4-component.drawio created successfully."
+
 {system_summary}
 {components_summary}
 
@@ -282,6 +319,13 @@ Use get_statistics() to get REAL component counts for each layer.
 
 DEPLOYMENT_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
 Create the COMPLETE C4 Level 4: Deployment Diagram document.
+
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get system overview
+2. query_architecture_facts(category="containers") -> get container details
+3. get_architecture_summary() -> get infrastructure hints
+4. doc_writer(file_path="c4/c4-deployment.md", content="# C4 Level 4: Deployment Diagram\\n\\n## 4.1 Overview\\n...")
+5. Respond: "File c4/c4-deployment.md written successfully."
 
 ## YOUR DATA SOURCES
 Use these MCP tools:
@@ -340,6 +384,11 @@ Write 4-6 pages with REAL data from tools. No placeholders.
 
 DEPLOYMENT_DIAGRAM_DESCRIPTION = """
 Create a C4 Deployment DrawIO DIAGRAM.
+
+## EXECUTION EXAMPLE (follow this pattern):
+1. query_architecture_facts(category="containers") -> get container data for nodes
+2. create_drawio_diagram(file_path="c4/c4-deployment.drawio", nodes=[...], edges=[...])
+3. Respond: "Diagram c4/c4-deployment.drawio created successfully."
 
 {system_summary}
 {containers_summary}
@@ -547,22 +596,26 @@ By type: {', '.join(f'{t}:{c}' for t, c in sorted(rel_by_type.items()))}"""
 
         mini_crews = [
             ("context", CONTEXT_DOC_DESCRIPTION, "Complete C4 Context document (6-8 pages)",
-             CONTEXT_DIAGRAM_DESCRIPTION, "C4 Context DrawIO diagram created"),
+             CONTEXT_DIAGRAM_DESCRIPTION, "C4 Context DrawIO diagram created",
+             ["c4/c4-context.md", "c4/c4-context.drawio"]),
             ("container", CONTAINER_DOC_DESCRIPTION, "Complete C4 Container document (6-8 pages)",
-             CONTAINER_DIAGRAM_DESCRIPTION, "C4 Container DrawIO diagram created"),
+             CONTAINER_DIAGRAM_DESCRIPTION, "C4 Container DrawIO diagram created",
+             ["c4/c4-container.md", "c4/c4-container.drawio"]),
             ("component", COMPONENT_DOC_DESCRIPTION, "Complete C4 Component document (6-8 pages)",
-             COMPONENT_DIAGRAM_DESCRIPTION, "C4 Component DrawIO diagram created"),
+             COMPONENT_DIAGRAM_DESCRIPTION, "C4 Component DrawIO diagram created",
+             ["c4/c4-component.md", "c4/c4-component.drawio"]),
             ("deployment", DEPLOYMENT_DOC_DESCRIPTION, "Complete C4 Deployment document (4-6 pages)",
-             DEPLOYMENT_DIAGRAM_DESCRIPTION, "C4 Deployment DrawIO diagram created"),
+             DEPLOYMENT_DIAGRAM_DESCRIPTION, "C4 Deployment DrawIO diagram created",
+             ["c4/c4-deployment.md", "c4/c4-deployment.drawio"]),
         ]
 
-        for name, doc_desc, doc_output, diag_desc, diag_output in mini_crews:
+        for name, doc_desc, doc_output, diag_desc, diag_output, expected_files in mini_crews:
             if not self.should_skip(name, completed):
                 agent = self._create_agent()
                 self._run_mini_crew(name, [
                     Task(description=doc_desc, expected_output=doc_output, agent=agent),
                     Task(description=diag_desc, expected_output=diag_output, agent=agent),
-                ])
+                ], expected_files=expected_files)
             results.append(f"{name.title()}: Done")
 
         # Quality Gate

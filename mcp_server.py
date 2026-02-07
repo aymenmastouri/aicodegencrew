@@ -167,20 +167,43 @@ class KnowledgeTools:
         ]}
     
     def get_architecture_summary(self) -> dict:
-        """Get high-level architecture summary."""
+        """Get high-level architecture summary with breakdowns."""
         return {
-            "components": {"total": self.components.get("total", 0)},
-            "relations": {"total": self.relations.get("total", 0)},
-            "interfaces": {"total": self.interfaces.get("total", 0)}
+            "components": {
+                "total": self.components.get("total", 0),
+                "by_layer": self.components.get("by_layer", {}),
+                "by_stereotype": self.components.get("by_stereotype", {}),
+            },
+            "relations": {
+                "total": self.relations.get("total", 0),
+                "by_type": self.relations.get("by_type", {}),
+            },
+            "interfaces": {
+                "total": self.interfaces.get("total", 0),
+                "by_type": self.interfaces.get("by_type", {}),
+            },
         }
-    
+
     def get_statistics(self) -> dict:
         """Get detailed statistics."""
+        comp_data = self.components
+        rel_data = self.relations
+        iface_data = self.interfaces
         return {
             "knowledge_path": str(self.config.knowledge_path),
-            "components": self.components.get("total", 0),
-            "relations": self.relations.get("total", 0),
-            "interfaces": self.interfaces.get("total", 0)
+            "components": {
+                "total": comp_data.get("total", 0),
+                "layers": list(comp_data.get("by_layer", {}).keys()),
+                "stereotypes": list(comp_data.get("by_stereotype", {}).keys()),
+            },
+            "relations": {
+                "total": rel_data.get("total", 0),
+                "types": list(rel_data.get("by_type", {}).keys()),
+            },
+            "interfaces": {
+                "total": iface_data.get("total", 0),
+                "types": list(iface_data.get("by_type", {}).keys()),
+            },
         }
 
 

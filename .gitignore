@@ -150,14 +150,11 @@ knowledge/architecture/evidence/
 # knowledge/architecture/analyzed_architecture.json
 # knowledge/architecture/analysis_*.json
 
-# Archive folder (timestamped backups for recovery)
+# Archive folder (timestamped backups for recovery) - ONLY this is ignored
 knowledge/architecture/archive/
 
-# Phase 3 outputs (regenerated each run)
-knowledge/architecture/arc42/*.md
-knowledge/architecture/c4/*.md
-knowledge/architecture/c4/diagrams/*.drawio
-knowledge/architecture/quality/
+# Checkpoint files (runtime state, not needed in git)
+knowledge/architecture/.checkpoint_*.json
 
 # Reports (regenerated)
 reports/*.md
@@ -170,7 +167,3 @@ reports/*.md
 !knowledge/architecture/.gitkeep
 !reports/.gitkeep
 !logs/.gitkeep
-knowledge/architecture/c4/c4-component.drawio
-knowledge/architecture/c4/c4-container.drawio
-knowledge/architecture/c4/c4-context.drawio
-knowledge/architecture/c4/c4-deployment.drawio
