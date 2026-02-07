@@ -9,8 +9,10 @@
 # =============================================================================
 
 from .crew import ArchitectureSynthesisCrew
+from .base_crew import MiniCrewBase
 
 __all__ = [
     "ArchitectureSynthesisCrew",
+    "MiniCrewBase",
 ]
 

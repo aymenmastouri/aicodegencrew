@@ -1,0 +1,201 @@
+"""
+Phase Output Validation
+========================
+Validates data contracts between SDLC phases.
+
+Each phase has required output files with expected structure.
+Validation runs before a dependent phase starts.
+
+Usage:
+    validator = PhaseOutputValidator()
+    errors = validator.validate_phase("phase1_architecture_facts")
+    if errors:
+        raise ValueError(f"Phase 1 output invalid: {errors}")
+"""
+import json
+import logging
+from pathlib import Path
+from typing import Any
+
+from pydantic import ValidationError
+
+from .models.architecture_facts_schema import ArchitectureFacts
+
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Phase Output Specifications
+# =============================================================================
+
+PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
+    "phase0_indexing": {
+        "required_paths": [".cache/.chroma"],
+        "description": "ChromaDB vector index",
+    },
+    "phase1_architecture_facts": {
+        "required_paths": [
+            "knowledge/architecture/architecture_facts.json",
+            "knowledge/architecture/evidence_map.json",
+        ],
+        "schema": "architecture_facts",
+        "min_components": 1,
+        "min_containers": 1,
+        "description": "Architecture facts JSON (ground truth)",
+    },
+    "phase2_architecture_analysis": {
+        "required_paths": [
+            "knowledge/architecture/analyzed_architecture.json",
+        ],
+        "schema": "analyzed_architecture",
+        "required_keys": ["architecture", "patterns"],
+        "description": "AI-analyzed architecture JSON",
+    },
+    "phase3_architecture_synthesis": {
+        "required_paths": [
+            "knowledge/architecture/c4/c4-context.md",
+            "knowledge/architecture/c4/c4-container.md",
+            "knowledge/architecture/c4/c4-component.md",
+            "knowledge/architecture/c4/c4-deployment.md",
+        ],
+        "min_file_size": 500,  # Minimum bytes per output file
+        "description": "C4 + Arc42 documentation",
+    },
+}
+
+
+class PhaseOutputValidator:
+    """Validates phase output files and data contracts."""
+
+    def validate_phase(self, phase_id: str) -> list[str]:
+        """
+        Validate outputs for a completed phase.
+
+        Returns list of error messages (empty = valid).
+        """
+        spec = PHASE_OUTPUT_SPECS.get(phase_id)
+        if not spec:
+            return []  # No spec defined = nothing to validate
+
+        errors = []
+
+        # 1. Check required files exist
+        for path_str in spec.get("required_paths", []):
+            path = Path(path_str)
+            if not path.exists():
+                errors.append(f"Missing output: {path_str}")
+            elif path.is_file() and path.stat().st_size == 0:
+                errors.append(f"Empty output: {path_str}")
+
+        if errors:
+            return errors  # Can't validate content without files
+
+        # 2. Schema validation
+        schema_type = spec.get("schema")
+        if schema_type == "architecture_facts":
+            errors.extend(self._validate_facts(spec))
+        elif schema_type == "analyzed_architecture":
+            errors.extend(self._validate_analysis(spec))
+
+        # 3. Minimum file size check
+        min_size = spec.get("min_file_size", 0)
+        if min_size:
+            for path_str in spec.get("required_paths", []):
+                path = Path(path_str)
+                if path.is_file() and path.stat().st_size < min_size:
+                    errors.append(
+                        f"Output too small: {path_str} "
+                        f"({path.stat().st_size} bytes, min {min_size})"
+                    )
+
+        return errors
+
+    def validate_dependency(self, phase_id: str) -> list[str]:
+        """
+        Validate that a phase's dependencies are satisfied.
+
+        This is called BEFORE a phase starts to ensure input data is valid.
+        """
+        from ..orchestrator import SDLCOrchestrator
+
+        # Load config to find dependencies
+        orchestrator = SDLCOrchestrator()
+        phase_config = orchestrator.get_phase_config(phase_id)
+        dependencies = phase_config.get("dependencies", [])
+
+        all_errors = []
+        for dep_id in dependencies:
+            errors = self.validate_phase(dep_id)
+            if errors:
+                all_errors.append(f"Dependency {dep_id} invalid:")
+                all_errors.extend(f"  - {e}" for e in errors)
+
+        return all_errors
+
+    # -------------------------------------------------------------------------
+    # Schema-specific validators
+    # -------------------------------------------------------------------------
+
+    def _validate_facts(self, spec: dict) -> list[str]:
+        """Validate architecture_facts.json against Pydantic schema."""
+        errors = []
+        facts_path = Path("knowledge/architecture/architecture_facts.json")
+
+        try:
+            with open(facts_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as e:
+            return [f"Invalid JSON in {facts_path}: {e}"]
+
+        # Pydantic validation
+        try:
+            facts = ArchitectureFacts(**data)
+        except ValidationError as e:
+            return [f"Schema validation failed: {e.error_count()} errors"]
+
+        # Content validation
+        min_comp = spec.get("min_components", 0)
+        if len(facts.components) < min_comp:
+            errors.append(
+                f"Too few components: {len(facts.components)} (min {min_comp})"
+            )
+
+        min_cont = spec.get("min_containers", 0)
+        if len(facts.containers) < min_cont:
+            errors.append(
+                f"Too few containers: {len(facts.containers)} (min {min_cont})"
+            )
+
+        # Evidence cross-reference
+        evidence_path = Path("knowledge/architecture/evidence_map.json")
+        if evidence_path.exists():
+            try:
+                with open(evidence_path, "r", encoding="utf-8") as f:
+                    evidence_data = json.load(f)
+                ev_errors = facts.validate_evidence(evidence_data)
+                if ev_errors:
+                    errors.append(
+                        f"Evidence validation: {len(ev_errors)} broken references"
+                    )
+            except Exception:
+                pass
+
+        return errors
+
+    def _validate_analysis(self, spec: dict) -> list[str]:
+        """Validate analyzed_architecture.json structure."""
+        errors = []
+        analysis_path = Path("knowledge/architecture/analyzed_architecture.json")
+
+        try:
+            with open(analysis_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as e:
+            return [f"Invalid JSON in {analysis_path}: {e}"]
+
+        # Check required top-level keys
+        for key in spec.get("required_keys", []):
+            if key not in data:
+                errors.append(f"Missing key '{key}' in analysis output")
+
+        return errors

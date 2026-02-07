@@ -115,7 +115,9 @@ class DrawioDiagramTool(BaseTool):
             
             # Write to file
             base_dir = Path("knowledge/architecture")
-            full_path = base_dir / file_path
+            # Strip base_dir prefix if agent already included it (prevents double-nesting)
+            clean_path = file_path.replace("knowledge/architecture/", "").replace("knowledge\\architecture\\", "")
+            full_path = base_dir / clean_path
             full_path.parent.mkdir(parents=True, exist_ok=True)
             full_path.write_text(drawio_content, encoding='utf-8')
             

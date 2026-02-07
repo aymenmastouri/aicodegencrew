@@ -46,9 +46,10 @@ class DocWriterTool(BaseTool):
         try:
             # Base directory for architecture docs
             base_dir = Path("knowledge/architecture")
-            
-            # Resolve the full path
-            full_path = base_dir / file_path
+
+            # Strip base_dir prefix if agent already included it (prevents double-nesting)
+            clean_path = file_path.replace("knowledge/architecture/", "").replace("knowledge\\architecture\\", "")
+            full_path = base_dir / clean_path
             
             # Check if file exists and overwrite is False
             if full_path.exists() and not overwrite:
