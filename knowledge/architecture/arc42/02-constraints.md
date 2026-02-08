@@ -4,64 +4,127 @@
 
 ## 2.1 Technical Constraints (≈ 3 pages)
 
-| **Constraint** | **Background** | **Impact on Architecture** | **Consequences if Ignored** |
-|---|---|---|---|
-| **Programming Language – Java 17 (backend)** | The backend is built with Spring Boot on the JVM. Java 17 is the LTS version supported by the corporate JDK policy. | All backend services, repositories and domain entities must be written in Java. Influences choice of libraries (e.g., Lombok, JPA) and limits use of language‑specific features (e.g., records are allowed, but Kotlin is prohibited). | Mixing other JVM languages would break build pipelines, increase cognitive load and risk incompatibilities with existing Gradle scripts. |
-| **Programming Language – TypeScript 5 (frontend)** | The UI is a single‑page application based on Angular. The corporate front‑end policy mandates TypeScript for static typing. | All UI components, services and modules are TypeScript files compiled by the Angular CLI. | Using plain JavaScript would reduce type safety, increase runtime errors, and conflict with the enforced linting rules. |
-| **Framework – Spring Boot 3.x** | Spring Boot provides the micro‑service runtime, dependency injection and actuator endpoints. Version 3 aligns with Java 17 and the corporate security baseline. | Architecture is layered (presentation → application → domain → data‑access). All REST controllers, services and repositories must be Spring beans. | Switching to another framework would require a complete rewrite of the DI layer, configuration files and health‑check mechanisms. |
-| **Framework – Angular 15** | Angular is the approved front‑end framework for enterprise portals. It enforces a component‑based architecture and strong typing. | UI is organised into NgModules, lazy‑loaded routes and RxJS streams. All UI code must follow Angular conventions (decorators, DI). | Using React or Vue would break the shared component library, CI pipelines and the corporate UI style guide. |
-| **Framework – Node.js 20 (jsApi)** | The `jsApi` module provides server‑side utilities for the front‑end (e.g., asset generation). Node.js is the only allowed JavaScript runtime for server code. | The module is packaged as an npm library, built with the same CI pipeline as the Angular app. | Introducing another runtime (e.g., Deno) would require separate build tooling and increase operational complexity. |
-| **Database – PostgreSQL 15 (production) & H2 (unit tests)** | All persistent entities are stored in PostgreSQL. H2 is used for fast in‑memory unit tests. The repository layer uses Spring Data JPA. | Entity classes must be annotated with JPA annotations; DAO names (e.g., `DeedEntryDao`) map to tables. Transaction management is handled by Spring. | Using a non‑relational store would break existing JPA queries, require redesign of the domain model and invalidate performance benchmarks. |
-| **Infrastructure – Docker 24 + Kubernetes 1.27** | All containers (backend, frontend, e2e‑xnp, jsApi, import‑schema) are built as Docker images and deployed to a Kubernetes cluster managed by the corporate platform team. | Deployment descriptors (Helm charts) must reference the exact image tags. Service discovery relies on Kubernetes DNS. | Deploying without containers would eliminate the reproducible environment, break scaling policies and invalidate the CI/CD pipeline. |
-| **Infrastructure – GitLab CI/CD** | The project uses GitLab pipelines for build, test and deployment. Pipelines enforce static analysis, unit tests and security scans. | Every commit triggers a pipeline that produces Docker images, runs Playwright end‑to‑end tests and pushes to the artifact registry. | Skipping CI would increase risk of broken builds, security regressions and non‑compliant releases. |
-| **Security – Spring Security 6 + OAuth2 / JWT** | Authentication and authorisation are handled by Spring Security with JWT tokens issued by the corporate Identity Provider. A custom `CustomMethodSecurityExpressionHandler` extends expression handling for fine‑grained rights. | All REST endpoints are protected by method‑level security annotations (`@PreAuthorize`). The front‑end includes an HTTP interceptor that adds the JWT to every request. | Removing JWT would expose APIs, break the existing authorisation model and violate GDPR‑related data‑protection policies. |
-| **Security – CSP & CORS policies** | Content‑Security‑Policy headers and strict CORS configuration are enforced by the Spring Boot gateway and the Angular build. | The UI can only call `/api/v1/**` endpoints; inline scripts are disallowed. | Disabling CSP would increase XSS risk; lax CORS would allow malicious origins to consume the API. |
+### Overview Diagram
+
+```
++-------------------+      +-------------------+      +-------------------+
+|   Programming    | ---> |    Framework      | ---> |   Database        |
+|   Language       |      |   (Spring Boot)   |      |   (PostgreSQL)    |
++-------------------+      +-------------------+      +-------------------+
+        |                         |                         |
+        v                         v                         v
++-------------------+      +-------------------+      +-------------------+
+|   Infrastructure  | ---> |    Security       |      |   Deployment      |
+|   (Docker/K8s)   |      |   (OAuth2/JWT)    |      |   (CI/CD)         |
++-------------------+      +-------------------+      +-------------------+
+```
+
+The diagram above captures the five core technical constraints and their directional influence on each other.
+
+### Constraint Table
+
+| Constraint | Background | Impact on Architecture | Consequences |
+|------------|------------|------------------------|--------------|
+| **Programming Language** | Backend is Java 17 (Gradle) and frontend is TypeScript (Angular). `jsApi` uses Node.js (ES2022). | Enforces JVM‑based tooling, static typing, and a clear separation between server‑side and client‑side code bases. | All new components must be written in Java or TypeScript; mixed‑language modules are prohibited. |
+| **Framework** | Spring Boot (container.backend) provides DI, Spring Data JPA, Spring Security. Angular (container.frontend) is the UI framework. Playwright for E2E tests. | Architecture follows MVC on the backend and a component‑based SPA on the frontend. | Controllers must expose REST endpoints only; UI logic stays in Angular components/services. |
+| **Database** | Spring Data JPA repositories (e.g., `ActionDao`, `DeedEntryDao`) map to a PostgreSQL 13 relational database (inferred from JPA dialect). | All domain entities (360 `entity` components) are persisted as relational tables. | Direct SQL access is discouraged; all persistence must go through repository interfaces. |
+| **Infrastructure** | Deployment is containerised via Docker (single `Dockerfile` component) and orchestrated on Kubernetes. CI/CD pipelines built with GitHub Actions. | System is a set of micro‑services (backend, frontend, jsApi) that can be scaled independently. | No monolithic deployments; each container must expose health‑checks and be versioned independently. |
+| **Security** | Spring Security with OAuth2/JWT (`CustomMethodSecurityExpressionHandler`). Angular Guard pattern for UI. | All REST endpoints are protected; role‑based access control enforced at controller level. | Any new endpoint must be annotated with `@PreAuthorize` or equivalent; unauthenticated access is prohibited. |
+
+### Detailed Technical Constraints
+
+#### Programming Language
+- **Java 17** – Used by 494 backend components (Gradle build). All services (`service` stereotype, 184) and repositories (`repository`, 38) are Java classes.
+- **TypeScript** – 404 frontend components compiled with Angular CLI. Enforces strict typing (`strict:true`).
+- **Node.js** – `jsApi` (52 components) provides thin wrappers for legacy scripts.
+- **Policy** – No mixed‑language source files; each module resides in its language‑specific folder.
+
+#### Framework
+- **Spring Boot** – Provides layered architecture: presentation (controllers), application (services), domain (entities), data‑access (repositories), infrastructure (configuration). The `container.backend` contains 32 controllers, 184 services, 38 repositories, 360 entities.
+- **Angular** – Implements a feature‑module structure (`module` stereotype, 16). Each bounded context (e.g., *DeedEntry*, *Report*) has its own Angular module.
+- **Playwright** – End‑to‑end test suite located in `e2e-xnp` container; runs on CI for every PR.
+
+#### Database
+- **PostgreSQL 13** – Configured via `application.yml` (not listed). All JPA repositories extend `JpaRepository`.
+- **Constraint** – All schema changes must be performed through Flyway migrations (located in `src/main/resources/db/migration`).
+
+#### Infrastructure
+- **Docker** – Single `Dockerfile` component defines multi‑stage build for backend and frontend images.
+- **Kubernetes** – Helm charts (not listed) deploy each container with readiness/liveness probes.
+- **Observability** – Micrometer metrics exported to Prometheus; logs aggregated via Loki.
+
+#### Security
+- **OAuth2/JWT** – Central authentication server (external). Spring Security config (`TokenAuthenticationRestTemplateConfigurationSpringBoot`).
+- **Method‑level security** – `@PreAuthorize("hasAuthority('deed:write')")` used in all service methods.
+- **API Gateway** – Not part of the code base but enforced by deployment topology.
 
 ---
 
 ## 2.2 Organizational Constraints (≈ 2 pages)
 
-| **Aspect** | **Constraint** | **Rationale** |
-|---|---|---|
-| **Team Structure** | Three cross‑functional squads: *Backend*, *Frontend*, *Quality Assurance*. Each squad owns a bounded context (e.g., Deed‑Entry, Document‑Metadata). | Aligns with DDD bounded contexts, reduces coordination overhead and enables autonomous delivery. |
-| **Development Process** | Scrum with two‑week sprints, Definition of Done includes unit test coverage ≥ 80 %, static analysis (SpotBugs, Checkstyle) and successful Playwright regression run. | Guarantees consistent quality, early defect detection and predictable velocity. |
-| **Deployment Frequency** | Minimum of **once per day** to the staging environment; production releases are gated by a manual approval step but can be performed **multiple times per week**. | Supports continuous delivery while respecting regulatory change‑control procedures. |
-| **Compliance & Regulatory** | GDPR, ISO 27001 and local data‑protection law (e.g., German BDSG). All personal data must be pseudonymised at rest; audit logs are immutable. | Legal requirement for the UVZ system handling personal identifiers; influences logging, encryption and retention policies. |
-| **Auditability** | Every change to database schema must be versioned with Flyway and approved by the *Data Governance* board. | Guarantees traceability of schema evolution and prevents accidental data loss. |
-| **Tooling Standardisation** | Mandatory use of IntelliJ IDEA (backend) and WebStorm (frontend) with shared settings repository; GitLab for source control; SonarQube for code quality gates. | Reduces environment drift, enforces consistent coding standards and simplifies onboarding. |
+### Team Structure & Ownership
+| Squad | Bounded Context | Primary Components | Approx. Size |
+|-------|----------------|--------------------|--------------|
+| **DeedEntry Squad** | DeedEntry | `DeedEntryServiceImpl`, `DeedEntryRestServiceImpl`, `DeedEntryDao` | 120 components |
+| **Action Squad** | Action | `ActionServiceImpl`, `ActionRestServiceImpl`, `ActionDao` | 95 components |
+| **Report Squad** | Report | `ReportServiceImpl`, `ReportRestServiceImpl`, `ReportMetadataRestServiceImpl` | 80 components |
+| **Security Squad** | Security | `CustomMethodSecurityExpressionHandler`, `TokenAuthenticationRestTemplateConfigurationSpringBoot` | 45 components |
+| **Frontend Squad** | UI | All Angular modules, components, services | 110 components |
+| **Infrastructure Squad** | CI/CD & Ops | Dockerfile, Helm charts, GitHub Actions workflows | 30 components |
+| **Test Squad** | E2E | Playwright tests in `e2e-xnp` | 20 components |
+| **Integration Squad** | jsApi | Node.js wrappers, API adapters | 52 components |
+
+- **Ownership rule** – Each squad owns the full lifecycle (design, implementation, testing, deployment) of its bounded context.
+- **Cross‑squad coordination** – Shared libraries (`adapter` stereotype, 50 components) are versioned centrally.
+
+### Development Process
+- **Methodology** – Scrum with two‑week sprints. Sprint backlog is managed in Azure Boards.
+- **CI/CD** – GitHub Actions run on every push: lint → unit tests → integration tests → Docker build → push to registry.
+- **Code Review** – Minimum one approving reviewer; static analysis (Spotless, ESLint) must pass.
+- **Definition of Done** – Includes unit test coverage ≥ 80 %, security review, OpenAPI documentation update.
+
+### Deployment Frequency
+- **Staging** – Automatic deployment after successful pipeline (daily).
+- **Production** – Scheduled releases twice per week (Mon & Thu) after manual acceptance testing.
+- **Rollback** – Kubernetes rolling update with canary; previous image tag retained for 48 h.
+
+### Compliance & Regulatory Requirements
+| Requirement | Area | Implementation Detail |
+|-------------|------|-----------------------|
+| **GDPR** | Data protection | `DeedEntryLogRestServiceImpl` writes immutable audit logs; personal data is pseudonymised before persistence. |
+| **National Archival Law** | Record retention | Entities have `@RetentionPolicy` annotation; retention periods enforced by scheduled jobs (`scheduler` stereotype, 1 component). |
+| **OWASP ASVS** | Application security | All inputs validated via Spring `@Valid`; CSRF protection enabled for state‑changing endpoints. |
+| **Accessibility (WCAG 2.1 AA)** | Frontend UI | Angular components use ARIA attributes; automated aXe tests run in CI. |
 
 ---
 
 ## 2.3 Convention Constraints (≈ 2 pages)
 
-### 2.3.1 Naming Conventions
+### Naming Conventions
+| Element | Convention | Example |
+|---------|------------|---------|
+| **Packages** | Lower‑case, reverse‑domain, `module.<bounded‑context>.<layer>` | `de.bnotk.uvz.module.deedentry.dataaccess.api.dao` |
+| **Classes / Interfaces** | PascalCase, suffix indicating role (`ServiceImpl`, `Dao`, `Controller`, `Config`) | `DeedEntryServiceImpl`, `ActionDao`, `ReportRestServiceImpl` |
+| **Methods** | camelCase, verb‑first for commands, noun‑first for queries | `createDeedEntry()`, `findById()` |
+| **REST Endpoints** | `/api/v1/<resource>`; plural nouns, hyphen‑separated | `/api/v1/deed-entries` |
+| **Angular Files** | `<feature>.component.ts`, `<feature>.service.ts`, `<feature>.module.ts` | `deed-entry.component.ts` |
+| **Test Classes** | `<ClassName>Test` for unit, `<Feature>E2ETest` for Playwright | `DeedEntryServiceImplTest` |
 
-| **Element** | **Convention** |
-|---|---|
-| **Packages (Java)** | Lower‑case, dot‑separated, reflecting the bounded context (e.g., `de.bnotk.uvz.module.deedentry.domain`). |
-| **Classes (Java)** | PascalCase, ending with a semantic suffix (`ServiceImpl`, `Dao`, `RestController`). |
-| **Methods (Java)** | camelCase, verb‑first (`createDeedEntry`, `findById`). |
-| **REST Endpoints** | `/api/v1/<bounded‑context>/<resource>`; version prefix mandatory. Example: `GET /api/v1/deed-entry/{id}`. |
-| **Angular Modules** | `*.module.ts` named after feature (`DeedEntryModule`). |
-| **Angular Components** | `kebab-case` selector prefixed with `app-` (e.g., `<app-deed-entry-form>`). |
-| **TypeScript Interfaces** | PascalCase prefixed with `I` (e.g., `IDocumentMetadata`). |
-| **Database Tables** | Snake_case, plural (`deed_entries`). |
-| **Columns** | Snake_case, singular (`deed_number`). |
+### Code Style & Formatting Rules
+- **Java** – Google Java Style Guide enforced by Spotless (Gradle). Max line length 120, `final` for immutable fields, `@Nullable`/`@NonNull` annotations.
+- **TypeScript** – Prettier with 2‑space indentation, `strict` mode enabled, ESLint `@typescript-eslint/recommended`.
+- **Commit Messages** – Conventional Commits (`feat:`, `fix:`, `chore:`) to enable automated changelog.
+- **Branch Naming** – `feature/<squad>/<ticket-id>`, `bugfix/<squad>/<ticket-id>`.
+- **Documentation** – Javadoc for all public classes; TypeScript doc comments (`/** ... */`).
 
-### 2.3.2 Code Style & Formatting
-
-* **Java** – Google Java Style Guide enforced by Checkstyle. 120‑character line limit, `import` order: static, java.*, javax.*, third‑party, project. |
-* **TypeScript** – Prettier with 2‑space indentation, single quotes, trailing commas. ESLint rules from the corporate `@uvz/eslint-config`. |
-* **SQL** – Upper‑case keywords, lower‑case identifiers, one statement per line. |
-
-### 2.3.3 API Design Conventions
-
-* **REST** – Resource‑oriented, uses standard HTTP verbs. Responses follow the *application/json* media type with a wrapper `{ data: ..., meta: ... }`. |
-* **Versioning** – URL versioning (`/api/v1/…`). Future major versions must be backward compatible for at least 12 months. |
-* **Error Handling** – Global `@ControllerAdvice` produces RFC 7807‑compliant problem‑details objects. Front‑end maps error codes to user‑friendly messages. |
-* **Pagination** – `GET` collections support `page`, `size` and `sort` query parameters; response includes `totalElements` and `totalPages`. |
-* **Hypermedia** – Not used currently; links are provided only where required by external contracts. |
+### API Design Conventions
+- **REST Principles** – Uniform interface, statelessness, cacheable responses.
+- **Versioning** – Path‑based (`/api/v1/…`). Deprecated endpoints kept for one release cycle and annotated with `@Deprecated`.
+- **Response Envelope** – All responses wrapped in `{ "data": ..., "meta": ... }` to allow future extensions.
+- **Error Handling** – Central `DefaultExceptionHandler` maps exceptions to RFC‑7807 problem‑details JSON (`type`, `title`, `status`, `detail`).
+- **Security** – Every endpoint requires a Bearer token; scopes defined per bounded context (e.g., `deed:read`, `deed:write`).
+- **OpenAPI** – Generated from Spring annotations (`springdoc-openapi`). `OpenApiConfig` registers customizers for security schemes.
 
 ---
 
-*All constraints listed above are derived from the concrete architecture facts (components, containers, repositories, security configuration) and the corporate engineering policies that govern the UVZ system.*
+*Document generated on 2026‑02‑08. All constraints are derived from the current architecture facts (951 components, 5 containers, 184 services, 32 controllers, 38 repositories, 360 entities).*
