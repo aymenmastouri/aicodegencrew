@@ -45,30 +45,42 @@ class ComponentCollector(DimensionCollector):
         super().__init__(repo_path)
         self.containers = containers or []
     
+    # Technologies handled by Spring specialists (Java-based)
+    _SPRING_TECHNOLOGIES = {"Spring Boot", "Java/Gradle", "Java/Maven"}
+
     def collect(self) -> CollectorOutput:
         """Collect components from all relevant specialists."""
         self._log_start()
-        
-        # Collect from Spring containers
-        spring_containers = self._get_containers_by_technology("Spring Boot")
-        for container in spring_containers:
+
+        # Collect from Java-based containers (Spring Boot, Java/Gradle, Java/Maven)
+        java_containers = self._get_containers_by_technologies(self._SPRING_TECHNOLOGIES)
+        for container in java_containers:
             self._collect_spring_components(container)
-        
+
         # Collect from Angular containers
         angular_containers = self._get_containers_by_technology("Angular")
         for container in angular_containers:
             self._collect_angular_components(container)
-        
-        # Fallback: if no containers, detect and run anyway
-        if not spring_containers and not angular_containers:
+
+        # Collect from Node.js containers (basic TS/JS class detection)
+        node_containers = self._get_containers_by_technologies({"Node.js", "Node.js/TypeScript"})
+        for container in node_containers:
+            self._collect_node_components(container)
+
+        # Fallback: if no containers at all, detect and run anyway
+        if not java_containers and not angular_containers and not node_containers:
             self._fallback_detection()
-        
+
         self._log_end()
         return self.output
-    
+
     def _get_containers_by_technology(self, technology: str) -> List[Dict]:
         """Get containers matching a technology."""
         return [c for c in self.containers if c.get("technology") == technology]
+
+    def _get_containers_by_technologies(self, technologies: set) -> List[Dict]:
+        """Get containers matching any of the given technologies."""
+        return [c for c in self.containers if c.get("technology") in technologies]
     
     def _get_container_root(self, container: Dict) -> Path:
         """Get the root path for a container."""
@@ -121,6 +133,59 @@ class ComponentCollector(DimensionCollector):
         service_output = service_collector.collect()
         self._merge_output(service_output)
     
+    def _collect_node_components(self, container: Dict):
+        """Detect exported classes/functions in a Node.js/TypeScript container."""
+        import re
+
+        container_root = self._get_container_root(container)
+        container_name = container.get("name", "node")
+
+        logger.info(f"[ComponentCollector] Scanning Node.js/TS exports for '{container_name}' in {container_root}")
+
+        ts_files = list(container_root.rglob("*.ts")) + list(container_root.rglob("*.js"))
+        ts_files = [f for f in ts_files if "node_modules" not in str(f) and "dist" not in str(f)]
+
+        count = 0
+        for fpath in ts_files:
+            try:
+                content = fpath.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                continue
+
+            # Match: export class Foo / export function bar / export default class
+            for m in re.finditer(
+                r"export\s+(?:default\s+)?(?:class|function|const)\s+(\w+)", content
+            ):
+                name = m.group(1)
+                # Determine stereotype from naming conventions
+                lower = name.lower()
+                if lower.endswith("service"):
+                    stereo = "service"
+                elif lower.endswith("controller") or lower.endswith("handler"):
+                    stereo = "controller"
+                elif lower.endswith("model") or lower.endswith("entity"):
+                    stereo = "entity"
+                elif lower.endswith("spec") or lower.endswith("test"):
+                    stereo = "test"
+                else:
+                    stereo = "component"
+
+                rel_path = str(fpath.relative_to(self.repo_path))
+                self.output.add_fact(RawComponent(
+                    name=name,
+                    stereotype=stereo,
+                    container_hint=container_name,
+                    file_path=rel_path,
+                    metadata={
+                        "source": "node_export_scan",
+                        "technology": "TypeScript" if fpath.suffix == ".ts" else "JavaScript",
+                        "line_number": content[:m.start()].count("\n") + 1,
+                    },
+                ))
+                count += 1
+
+        logger.info(f"[ComponentCollector] Found {count} Node.js/TS exports in '{container_name}'")
+
     def _fallback_detection(self):
         """Fallback: detect technologies without container info."""
         logger.info("[ComponentCollector] No containers provided, running fallback detection...")
