@@ -151,7 +151,8 @@ The initial implementation focuses on architecture facts extraction:
 | Module | Location | Responsibility |
 |--------|----------|----------------|
 | **Orchestrator** | `orchestrator.py` | Phase coordination (register - run) |
-| CLI | `cli.py` | Command-line interface |
+| CLI | `cli.py` | Command-line interface, repo resolution |
+| GitRepoManager | `shared/utils/git_repo_manager.py` | Clone/pull remote Git repos |
 | Pipelines | `pipelines/` | Deterministic processes (Phase 0, 1) |
 | Crews | `crews/` | AI agent workflows (Phase 2+) |
 | Shared | `shared/` | Common utilities, models, tools |
@@ -311,6 +312,7 @@ src/aicodegencrew/
             logger.py                  # Logger + RUN_ID + JsonFormatter + log_metric()
             tool_guardrails.py         # ToolCallTracker + install/uninstall hooks
             crew_callbacks.py          # step_callback + task_callback (logger-based)
+            git_repo_manager.py        # GitRepoManager (clone/pull remote repos)
             token_budget.py            # Token budget configuration
             file_filters.py
             ollama_client.py
@@ -418,6 +420,13 @@ The collector system uses a modular architecture with an **Orchestrator** that c
 | `AngularRoutingCollector` | angular/ | RouterModule, routes |
 | `OracleTableCollector` | database/ | CREATE TABLE (multi-dialect) |
 | `MigrationCollector` | database/ | Flyway, Liquibase |
+
+**ComponentCollector** also handles:
+| Technology | Detection | Container Match |
+|------------|-----------|-----------------|
+| Spring Boot / Java/Gradle / Java/Maven | Spring specialist collectors | `_get_containers_by_technologies()` |
+| Angular | Angular specialist collectors | `_get_containers_by_technology()` |
+| Node.js / Node.js/TypeScript | `export class/function/const` scan | `_get_containers_by_technologies()` |
 
 #### Additional Components
 
@@ -979,14 +988,45 @@ exist in `architecture_facts.json`.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `PROJECT_PATH` | Target repository path | Required |
+| `PROJECT_PATH` | Target repository path (local) | Required (unless `GIT_REPO_URL` set) |
+| `GIT_REPO_URL` | Git HTTPS URL to clone (optional, overrides `PROJECT_PATH`) | Empty (disabled) |
+| `GIT_BRANCH` | Git branch to checkout (empty = auto-detect main/master) | Empty |
 | `OLLAMA_BASE_URL` | Ollama server endpoint | `http://127.0.0.1:11434` |
 | `MODEL` | LLM model identifier | `gpt-oss-120b` |
 | `EMBED_MODEL` | Embedding model identifier | `all-minilm:latest` |
 | `INDEX_MODE` | Indexing behavior | `auto` |
 | `LLM_PROVIDER` | LLM provider selection | `local` |
 
-### 6.2 LLM Provider Configuration
+### 6.2 Git Repository Support
+
+Instead of pointing to a local directory via `PROJECT_PATH`, you can specify a Git HTTPS URL.
+The system clones the repository into `.cache/repos/<repo_name>/` and keeps it up-to-date on subsequent runs.
+
+| Setting | Description |
+|---------|-------------|
+| **Priority** | `GIT_REPO_URL` > `PROJECT_PATH` (backward-compatible) |
+| **Default Branch** | Auto-detected via `git ls-remote --symref` (main/master), fallback: `main` |
+| **Credentials** | Prompted interactively via `getpass` on first clone, cached in-memory only |
+| **Submodules** | Always cloned/updated (`--recurse-submodules`) |
+| **Clone Location** | `.cache/repos/<repo_name>/` |
+| **Update** | `git fetch --all --prune` + `checkout` + `pull --ff-only` |
+| **Security** | `GIT_TERMINAL_PROMPT=0` (no hanging), credentials never logged |
+
+**Usage via .env:**
+```env
+GIT_REPO_URL=https://gitlab.example.com/team/project.git
+GIT_BRANCH=           # empty = auto-detect
+```
+
+**Usage via CLI (overrides .env):**
+```bash
+python -m aicodegencrew run --preset architecture_full --git-url https://gitlab.example.com/team/project.git --branch develop
+python -m aicodegencrew index --git-url https://gitlab.example.com/team/project.git
+```
+
+**Module:** `shared/utils/git_repo_manager.py` (`GitRepoManager` class)
+
+### 6.3 LLM Provider Configuration
 
 | Provider | Configuration | Notes |
 |----------|---------------|-------|
@@ -995,7 +1035,7 @@ exist in `architecture_facts.json`.
 
 Embeddings utilize local Ollama exclusively, independent of LLM provider configuration.
 
-### 6.3 INDEX_MODE Configuration
+### 6.4 INDEX_MODE Configuration
 
 | Mode | Description |
 |------|-------------|
@@ -1064,6 +1104,8 @@ python -m aicodegencrew run --phases phase3_architecture_synthesis
 | `--phases P1 P2` | Run specific phases by ID |
 | `--repo-path PATH` | Target repository path |
 | `--index-mode MODE` | Override INDEX_MODE (`off`, `auto`, `force`, `smart`) |
+| `--git-url URL` | Git HTTPS URL (overrides `GIT_REPO_URL` in .env) |
+| `--branch NAME` | Git branch (overrides `GIT_BRANCH` in .env) |
 | `--clean` | Clean knowledge directories before running |
 | `--no-clean` | Skip auto-cleaning |
 | `--config PATH` | Custom phases_config.yaml path |
@@ -1235,7 +1277,20 @@ pip install -e .
 copy .env.example .env
 ```
 
-Edit `.env` to configure `PROJECT_PATH` and other parameters as required.
+Edit `.env` to configure repository access and other parameters:
+
+**Option A: Local repository**
+```env
+PROJECT_PATH=C:\path\to\your\repo
+```
+
+**Option B: Git URL (clones automatically)**
+```env
+GIT_REPO_URL=https://gitlab.example.com/team/project.git
+GIT_BRANCH=          # empty = auto-detect default branch
+```
+
+Both can be set simultaneously. `GIT_REPO_URL` takes priority when set.
 
 ---
 

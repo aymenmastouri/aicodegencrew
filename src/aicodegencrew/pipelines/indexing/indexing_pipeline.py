@@ -64,7 +64,7 @@ class IndexingConfig:
             index_mode=index_mode or os.getenv("INDEX_MODE", "auto"),
             chroma_dir=chroma_dir or os.getenv("CHROMA_DIR", None),
             collection_name=os.getenv("COLLECTION_NAME", "repo_docs"),
-            include_submodules=os.getenv("INCLUDE_SUBMODULES", "true").lower() == "true",
+            include_submodules=True,
             batch_size=int(os.getenv("INDEX_BATCH_SIZE", "50")),
             max_total_files=int(os.getenv("INDEX_MAX_TOTAL_FILES", "8000")),
             max_total_chunks=int(os.getenv("INDEX_MAX_TOTAL_CHUNKS", "50000")),
@@ -866,12 +866,9 @@ class IndexingPipeline:
 def ensure_repo_indexed(
     repo_path: str = None,
     force_reindex: bool = False,
-    include_submodules: bool = None,
 ) -> str:
     """Backward-compatible entry point for ``cmd_index``."""
     mode = "force" if force_reindex else "auto"
     pipeline = IndexingPipeline(repo_path=repo_path, index_mode=mode)
-    if include_submodules is not None:
-        pipeline.config.include_submodules = include_submodules
     result = pipeline.kickoff()
     return result.get("message", str(result))

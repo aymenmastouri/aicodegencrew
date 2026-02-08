@@ -56,7 +56,6 @@ class Config:
     no_clean: bool
     git_repo_url: str
     git_branch: str
-    include_submodules: bool
 
     @classmethod
     def from_env(cls, **overrides) -> "Config":
@@ -74,7 +73,6 @@ class Config:
         # Git repo URL: CLI override > env > empty (disabled)
         git_url = overrides.get("git_repo_url") or os.getenv("GIT_REPO_URL", "")
         git_branch = overrides.get("git_branch") or os.getenv("GIT_BRANCH", "")
-        include_submodules = os.getenv("INCLUDE_SUBMODULES", "true").lower() in ("true", "1", "yes")
 
         return cls(
             repo_path=Path(repo),
@@ -84,7 +82,6 @@ class Config:
             no_clean=overrides.get("no_clean", False),
             git_repo_url=git_url.strip(),
             git_branch=git_branch.strip(),
-            include_submodules=include_submodules,
         )
 
 
@@ -181,7 +178,6 @@ def _resolve_repo_path(config: Config) -> Path:
     manager = GitRepoManager(
         repo_url=config.git_repo_url,
         branch=config.git_branch,
-        include_submodules=config.include_submodules,
     )
     return manager.ensure_repo()
 

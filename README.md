@@ -157,11 +157,18 @@ python -m aicodegencrew list
 ## Quick Start
 
 ```bash
-# Set the target repository in .env:
+# Option A: Local repository — set PROJECT_PATH in .env
 #   PROJECT_PATH=/path/to/your/repo
+
+# Option B: Git URL — clones automatically into .cache/repos/
+#   GIT_REPO_URL=https://gitlab.example.com/team/project.git
+#   GIT_BRANCH=         # empty = auto-detect main/master
 
 # Run the complete architecture workflow (Phases 0-3)
 python -m aicodegencrew run --preset architecture_workflow
+
+# Or specify the Git URL directly via CLI
+python -m aicodegencrew run --preset architecture_workflow --git-url https://gitlab.example.com/team/project.git
 ```
 
 ---
@@ -172,11 +179,21 @@ python -m aicodegencrew run --preset architecture_workflow
 
 Copy `.env.example` to `.env` and configure:
 
-#### Required
+#### Repository
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `PROJECT_PATH` | Absolute path to the repository to analyze | `C:\repos\my-project` |
+| `PROJECT_PATH` | Local path to the repository to analyze | `C:\repos\my-project` |
+| `GIT_REPO_URL` | Git HTTPS URL (optional, overrides `PROJECT_PATH`) | `https://gitlab.example.com/team/project.git` |
+| `GIT_BRANCH` | Branch to checkout (empty = auto-detect main/master) | `develop` |
+
+When `GIT_REPO_URL` is set, the repo is cloned into `.cache/repos/<name>/` and updated on each run.
+Credentials are prompted interactively on first clone and cached in-memory only (never written to disk or logs).
+
+#### LLM
+
+| Variable | Description | Example |
+|----------|-------------|---------|
 | `LLM_PROVIDER` | LLM provider type | `local` or `onprem` |
 | `MODEL` | LLM model identifier | `qwen2.5-coder:7b` or `gpt-oss-120b` |
 | `API_BASE` | LLM API endpoint URL | `http://localhost:11434/v1` |
@@ -250,6 +267,8 @@ python -m aicodegencrew <command> [options]
 | `--phases <p1> [p2] ...` | Run specific phases by name |
 | `--index-mode <mode>` | Override `INDEX_MODE` (`off` / `auto` / `force` / `smart`) |
 | `--repo-path <path>` | Override `PROJECT_PATH` from `.env` |
+| `--git-url <url>` | Git HTTPS URL (overrides `GIT_REPO_URL` in `.env`) |
+| `--branch <name>` | Git branch (overrides `GIT_BRANCH` in `.env`) |
 | `--clean` | Clean knowledge directories before running |
 | `--no-clean` | Skip auto-cleaning of knowledge directories |
 | `--config <path>` | Custom path to `phases_config.yaml` |
@@ -262,6 +281,8 @@ python -m aicodegencrew <command> [options]
 | `--force`, `-f` | Force re-index (shortcut for `--mode force`) |
 | `--smart`, `-s` | Smart incremental (shortcut for `--mode smart`) |
 | `--repo <path>` | Repository path (overrides `PROJECT_PATH`) |
+| `--git-url <url>` | Git HTTPS URL (overrides `GIT_REPO_URL` in `.env`) |
+| `--branch <name>` | Git branch (overrides `GIT_BRANCH` in `.env`) |
 
 ### `list` Options
 
@@ -384,8 +405,14 @@ python -m aicodegencrew run --preset facts_only --no-clean
 #### Other Repository
 
 ```bash
-# Analyze a different repository
+# Analyze a different local repository
 python -m aicodegencrew run --preset architecture_workflow --repo-path C:\repos\other-project
+
+# Analyze a remote Git repository (clones automatically)
+python -m aicodegencrew run --preset architecture_workflow --git-url https://gitlab.example.com/team/project.git
+
+# Specify a branch
+python -m aicodegencrew run --preset architecture_workflow --git-url https://gitlab.example.com/team/project.git --branch develop
 
 # List available phases and presets
 python -m aicodegencrew list
@@ -535,6 +562,7 @@ aicodegencrew/
 │   │   ├── validation.py           # Phase output validation
 │   │   ├── models/                 # Pydantic schemas (facts, analysis, outputs)
 │   │   └── utils/                  # Logger, token budget, file filters, Ollama client
+│   │       ├── git_repo_manager.py # Git clone/pull for remote repos
 │   │       └── tool_guardrails.py  # Phase 0.5: Loop prevention + tool budgets
 │   │
 │   └── mcp/                        # Model Context Protocol

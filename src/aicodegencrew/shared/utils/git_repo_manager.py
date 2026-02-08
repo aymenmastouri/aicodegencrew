@@ -23,20 +23,19 @@ class GitRepoManager:
     Args:
         repo_url: HTTPS Git URL (e.g. https://gitlab.example.com/team/project.git)
         branch: Branch name. Empty string = auto-detect default branch.
-        include_submodules: Whether to clone/update submodules.
         cache_base: Base directory for cloned repos (default: .cache/repos).
+
+    Submodules are always cloned/updated.
     """
 
     def __init__(
         self,
         repo_url: str,
         branch: str = "",
-        include_submodules: bool = True,
         cache_base: Path | None = None,
     ) -> None:
         self.repo_url = repo_url.strip()
         self._branch = branch.strip()
-        self.include_submodules = include_submodules
         self._cache_base = cache_base or Path(".cache/repos")
         self._username: str | None = None
         self._password: str | None = None
@@ -180,9 +179,7 @@ class GitRepoManager:
 
     def _do_clone(self, url: str) -> None:
         """Execute the actual git clone command."""
-        cmd = ["clone", "--branch", self._branch, url, str(self.clone_dir)]
-        if self.include_submodules:
-            cmd.insert(1, "--recurse-submodules")
+        cmd = ["clone", "--recurse-submodules", "--branch", self._branch, url, str(self.clone_dir)]
         self._run_git(cmd, cwd=None)
 
     def _update_existing(self) -> None:
@@ -201,9 +198,7 @@ class GitRepoManager:
         # Checkout and pull target branch
         self._run_git(["checkout", self._branch], cwd=cwd)
         self._run_git(["pull", "--ff-only"], cwd=cwd)
-
-        if self.include_submodules:
-            self._run_git(["submodule", "update", "--init", "--recursive"], cwd=cwd)
+        self._run_git(["submodule", "update", "--init", "--recursive"], cwd=cwd)
 
         logger.info(f"[GIT] Updated to latest {self._branch}")
 
