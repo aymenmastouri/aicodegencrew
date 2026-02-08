@@ -15,6 +15,7 @@ from .logger import (
 from .file_filters import should_include_file, collect_files
 from .ollama_client import OllamaClient
 from .tool_guardrails import install_guardrails, uninstall_guardrails
+from .git_repo_manager import GitRepoManager
 
 __all__ = [
     "setup_logger",
@@ -32,4 +33,5 @@ __all__ = [
     "OllamaClient",
     "install_guardrails",
     "uninstall_guardrails",
+    "GitRepoManager",
 ]

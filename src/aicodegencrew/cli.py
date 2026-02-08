@@ -54,26 +54,37 @@ class Config:
     config_path: str | None
     clean: bool
     no_clean: bool
-    
+    git_repo_url: str
+    git_branch: str
+    include_submodules: bool
+
     @classmethod
     def from_env(cls, **overrides) -> "Config":
         """Create config from environment with optional overrides."""
         repo = overrides.get("repo_path") or os.getenv("PROJECT_PATH") or os.getenv("REPO_PATH", ".")
         mode = overrides.get("index_mode") or os.getenv("INDEX_MODE", "auto")
-        
+
         # Validate index_mode
         valid_modes = ("off", "auto", "force", "smart")
         mode = mode.lower().strip()
         if mode not in valid_modes:
             logger.warning(f"[WARN] Unknown INDEX_MODE '{mode}', defaulting to 'auto'")
             mode = "auto"
-        
+
+        # Git repo URL: CLI override > env > empty (disabled)
+        git_url = overrides.get("git_repo_url") or os.getenv("GIT_REPO_URL", "")
+        git_branch = overrides.get("git_branch") or os.getenv("GIT_BRANCH", "")
+        include_submodules = os.getenv("INCLUDE_SUBMODULES", "true").lower() in ("true", "1", "yes")
+
         return cls(
             repo_path=Path(repo),
             index_mode=mode,
             config_path=overrides.get("config_path"),
             clean=overrides.get("clean", False),
             no_clean=overrides.get("no_clean", False),
+            git_repo_url=git_url.strip(),
+            git_branch=git_branch.strip(),
+            include_submodules=include_submodules,
         )
 
 
@@ -153,6 +164,29 @@ def clean_knowledge(phase: str = "all") -> None:
 
 
 # =============================================================================
+# Git Repository Resolution
+# =============================================================================
+
+def _resolve_repo_path(config: Config) -> Path:
+    """Resolve the effective repository path.
+
+    If GIT_REPO_URL is set, clone/pull the repo and return the local clone path.
+    Otherwise, return config.repo_path as-is (backward-compatible).
+    """
+    if not config.git_repo_url:
+        return config.repo_path
+
+    from .shared.utils.git_repo_manager import GitRepoManager
+
+    manager = GitRepoManager(
+        repo_url=config.git_repo_url,
+        branch=config.git_branch,
+        include_submodules=config.include_submodules,
+    )
+    return manager.ensure_repo()
+
+
+# =============================================================================
 # Commands
 # =============================================================================
 
@@ -189,21 +223,22 @@ def cmd_list(config: Config) -> int:
 def cmd_index(config: Config) -> int:
     """Run indexing pipeline only."""
     from .pipelines.indexing import ensure_repo_indexed
-    
+
+    repo_path = _resolve_repo_path(config)
     chroma_dir = Path(os.getenv("CHROMA_DIR", ".cache/.chroma"))
-    
+
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")
     logger.info("=" * 60)
-    logger.info(f"Repository : {config.repo_path}")
+    logger.info(f"Repository : {repo_path}")
     logger.info(f"INDEX_MODE : {config.index_mode}")
     logger.info(f"ChromaDB   : {chroma_dir}")
     logger.info("")
-    
+
     if config.index_mode == "off":
         logger.info("[SKIP] INDEX_MODE=off - Indexing disabled")
         return 0
-    
+
     force_reindex = False
     if config.index_mode == "force":
         if chroma_dir.exists():
@@ -214,9 +249,9 @@ def cmd_index(config: Config) -> int:
         logger.info("[SMART] Incremental update only")
     else:
         logger.info("[AUTO] Index if needed")
-    
+
     try:
-        ensure_repo_indexed(str(config.repo_path), force_reindex=force_reindex)
+        ensure_repo_indexed(str(repo_path), force_reindex=force_reindex)
         logger.info("\n[OK] Indexing completed!")
         return 0
     except KeyboardInterrupt:
@@ -269,6 +304,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     from .pipelines import IndexingPipeline, ArchitectureFactsPipeline
     from .crews import ArchitectureAnalysisCrew, ArchitectureSynthesisCrew
 
+    # Resolve repo path (clone from Git URL if configured)
+    repo_path = _resolve_repo_path(config)
+
     # Clean if requested
     if config.clean:
         clean_knowledge("all")
@@ -291,7 +329,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         orchestrator.config["phases"]["phase0_indexing"]["enabled"] = False
     elif "phase0_indexing" in planned_phases:
         indexing_pipeline = IndexingPipeline(
-            repo_path=str(config.repo_path),
+            repo_path=str(repo_path),
             index_mode=config.index_mode,
         )
         orchestrator.register_phase("phase0_indexing", indexing_pipeline)
@@ -301,7 +339,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         if not config.no_clean:
             clean_knowledge("phase1")
         facts_pipeline = ArchitectureFactsPipeline(
-            repo_path=str(config.repo_path),
+            repo_path=str(repo_path),
             output_dir="./knowledge/architecture",
         )
         orchestrator.register_phase("phase1_architecture_facts", facts_pipeline)
@@ -386,7 +424,15 @@ def create_parser() -> argparse.ArgumentParser:
         "--config",
         help="Path to phases_config.yaml",
     )
-    
+    run_parser.add_argument(
+        "--git-url",
+        help="Git repository URL (overrides GIT_REPO_URL in .env)",
+    )
+    run_parser.add_argument(
+        "--branch",
+        help="Git branch (overrides GIT_BRANCH in .env, empty=auto-detect)",
+    )
+
     # --- index command ---
     index_parser = subparsers.add_parser("index", help="Index repository")
     index_parser.add_argument(
@@ -406,7 +452,15 @@ def create_parser() -> argparse.ArgumentParser:
         "--repo",
         help="Repository path (default: PROJECT_PATH from .env)",
     )
-    
+    index_parser.add_argument(
+        "--git-url",
+        help="Git repository URL (overrides GIT_REPO_URL in .env)",
+    )
+    index_parser.add_argument(
+        "--branch",
+        help="Git branch (overrides GIT_BRANCH in .env, empty=auto-detect)",
+    )
+
     # --- list command ---
     list_parser = subparsers.add_parser("list", help="List available phases")
     list_parser.add_argument(
@@ -447,14 +501,16 @@ def main(argv: list[str] | None = None) -> int:
             mode = "smart"
         else:
             mode = args.mode
-        
+
         config = Config.from_env(
             repo_path=args.repo,
             index_mode=mode,
+            git_repo_url=args.git_url,
+            git_branch=args.branch,
         )
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
         return cmd_index(config)
-    
+
     # --- run ---
     if args.command == "run":
         config = Config.from_env(
@@ -463,6 +519,8 @@ def main(argv: list[str] | None = None) -> int:
             config_path=args.config,
             clean=args.clean,
             no_clean=args.no_clean,
+            git_repo_url=args.git_url,
+            git_branch=args.branch,
         )
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
         return cmd_run(config, preset=args.preset, phases=args.phases)
