@@ -1,84 +1,61 @@
-# C4 Level 1: System Context
+# C4 Level 1 – System Context
 
 ## 1.1 Overview
-The **uvz** system is a comprehensive deed‑entry management platform. It exposes a rich set of REST APIs for actions, key‑management, archiving, document handling, number management and workflow orchestration. The system is built with a **Spring Boot** backend, an **Angular** frontend, a **Node.js** JavaScript API, and supporting test and library containers.
+The **uvz** system is a comprehensive deed‑entry management platform.  It exposes a rich set of REST APIs (≈ 196 endpoints) that support creation, modification, signing, archiving and reporting of deed entries.  The system is built with a **Spring Boot** backend, an **Angular** frontend, a **Node.js** JavaScript API and a Playwright based end‑to‑end test suite.
 
 ## 1.2 The System
 | Attribute | Value |
 |-----------|-------|
 | **Name** | uvz |
-| **Type** | Web‑based enterprise application |
-| **Purpose** | Manage deed entries, signatures, archiving and related business processes |
-| **Domain** | Not explicitly defined (deed‑entry / registry) |
-| **Technology Stack** | Angular, Spring Boot, Node.js, Playwright, Gradle |
-| **Containers** | 5 (backend, frontend, jsApi, e2e‑xnp, import‑schema) |
-| **Components** | 951 |
-| **Interfaces** | 226 REST endpoints |
-| **Relations** | 190 |
+| **Type** | Enterprise application (backend + frontend) |
+| **Purpose** | Manage deed entries, signatures, hand‑over processes and related reporting |
+| **Domain** | Not explicitly defined in the source facts |
+| **Technology Stack** | Spring Boot, Angular, Node.js, Playwright, Gradle, npm |
+| **Containers** | backend, frontend, jsApi, e2e‑xnp, import‑schema |
 
 ## 1.3 Actors and Users
 ### 1.3.1 Human Actors
 | Actor | Role | Primary Interactions |
 |-------|------|----------------------|
-| **End‑User** | Uses the web UI to create, view and sign deed entries | Calls UI‑driven REST endpoints (e.g., `/uvz/v1/deedentries`) |
-| **Administrator** | Manages system configuration, monitoring and batch jobs | Calls admin APIs (`/uvz/v1/job/*`, `/uvz/v1/reports/*`) |
-| **External Auth Service** | Provides authentication/authorization tokens | Interacts via `/jsonauth/*` endpoints |
+| **Deed Clerk** | Creates, updates and signs deed entries via the web UI | Uses the Angular frontend (HTTPS) to call the backend REST API |
+| **Administrator** | Configures system, monitors jobs, manages security | Accesses management endpoints (e.g. `/uvz/v1/job/metrics`) |
+| **External Notary** | Consumes signed deed documents | Calls public REST endpoints (e.g. `/uvz/v1/documents/{deedEntryId}/document-copies`) |
 
 ### 1.3.2 System Actors
-| System | Role | Protocol | Data Flow |
-|--------|------|----------|----------|
-| **Browser** | UI client | HTTPS/JSON | UI → Frontend (Angular) → Backend |
-| **External Notary Service** | Notary representation data | HTTPS/JSON | Backend ↔ `/uvz/v1/notaryrepresentations` |
-| **External Storage / Archive** | Persistent document storage | HTTPS/JSON | Backend ↔ Archiving endpoints |
+| System | Role | Protocol |
+|--------|------|----------|
+| **Frontend (Angular)** | Presentation layer for human users | HTTPS/REST |
+| **JavaScript API (Node.js)** | Provides auxiliary services to the frontend | HTTPS/REST |
+| **Playwright Test Suite** | Automated end‑to‑end verification | Internal HTTP calls |
 
 ## 1.4 External Systems
-### 1.4.1 Databases (internal)
-| Database | Type | Purpose |
-|----------|------|---------|
-| **PostgreSQL (assumed)** | Relational | Stores deed entries, logs, metadata, locks |
-| **MongoDB (assumed)** | Document | Stores document copies and archival data |
+| External System | Purpose | Protocol |
+|----------------|---------|----------|
+| **Document Archive Service** (not part of the code base) | Stores archived deed documents | HTTPS/REST |
+| **Authentication Provider** (e.g. OAuth2) | Issues JWT tokens for API access | HTTPS/OAuth2 |
 
-### 1.4.2 External Services
-| Service | Purpose | Protocol |
-|---------|---------|----------|
-| **Authentication Service** | User authentication & token issuance | HTTPS/JSON |
-| **Notary Representation Service** | Provides notary data for deeds | HTTPS/JSON |
-| **External Reporting Service** | Generates annual reports | HTTPS/JSON |
+> *No database containers are defined as external systems in the available facts; the backend persists data internally.*
 
 ## 1.5 Communication Protocols
 | From | To | Protocol | Data Format |
 |------|----|----------|------------|
-| Browser → Frontend | HTTPS | JSON/HTML |
-| Frontend → Backend | HTTPS | JSON (REST) |
-| Backend → Database | JDBC / Driver | SQL |
-| Backend → External Services | HTTPS | JSON |
-| Backend → jsApi (Node.js) | HTTP | JSON |
+| Human (Web UI) | Frontend (Angular) | HTTPS | JSON |
+| Frontend (Angular) | Backend (Spring Boot) | HTTPS/REST | JSON |
+| Backend (Spring Boot) | JavaScript API (Node.js) | HTTPS/REST | JSON |
+| Backend | External Document Archive | HTTPS/REST | JSON |
+| Backend | Authentication Provider | HTTPS/OAuth2 | JWT |
 
-## 1.6 Containers (high‑level view)
-| Container ID | Name | Type | Technology | Component Count |
-|--------------|------|------|------------|-----------------|
-| container.backend | backend | application | Spring Boot | 494 |
-| container.frontend | frontend | application | Angular | 404 |
-| container.js_api | jsApi | application | Node.js | 52 |
-| container.e2e_xnp | e2e‑xnp | test | Playwright | 0 |
-| container.import_schema | import‑schema | library | Java/Gradle | 0 |
+## 1.6 Context Diagram
+The visual System Context diagram is stored as a Draw.io file:
 
-## 1.7 REST API Overview (selected endpoints)
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/uvz/v1/deedentries` | Create a new deed entry |
-| GET | `/uvz/v1/deedentries/{id}` | Retrieve deed entry details |
-| PUT | `/uvz/v1/deedentries/{id}` | Update deed entry |
-| DELETE | `/uvz/v1/deedentries/{id}` | Delete deed entry |
-| POST | `/uvz/v1/archiving/sign-submission-token` | Request signing token for archiving |
-| GET | `/uvz/v1/keymanager/cryptostate` | Retrieve crypto state |
-| POST | `/jsonauth/user/to/authorization/service` | Authenticate user |
-| GET | `/uvz/v1/reports/annual` | Fetch annual report |
-| PATCH | `/uvz/v1/job/retry/{id}` | Retry a failed job |
-| ... | ... | (196 total endpoints) |
+- **File:** `c4/c4-context.drawio`
+- **Diagram name:** *uvz – System Context*
 
-## 1.8 Context Diagram
-The System Context diagram is stored as **c4-context.drawio** and visualises the system (blue box), external actors (person icons), external systems (gray boxes) and the primary communication protocols (solid lines). See the diagram file for a graphical representation.
+The diagram follows the SEAGuide C4 conventions:
+- Blue boxes – internal containers (backend, frontend, jsApi, e2e‑xnp, import‑schema)
+- Gray boxes – external systems (Document Archive, Authentication Provider)
+- Person icons – human actors (Deed Clerk, Administrator, External Notary)
+- Dashed lines – trust boundaries
 
 ---
-*Document generated automatically from architecture facts (statistics, containers, endpoints).*
+*Generated from real architecture facts (951 components, 5 containers, 196 REST endpoints).*
