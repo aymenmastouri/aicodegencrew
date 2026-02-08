@@ -3,72 +3,109 @@
   "component_count": 494,
   "relation_count": 0,
   "interface_count": 196,
-  "summary": "The backend container of the Document Processing system is structured in a layered architecture with clear separation of concerns, loose coupling, and moderate cohesion. It leverages Spring Boot and JPA for robust development, with REST API as the integration style. The system manages various domain concepts such as actions, documents, users, and archiving operations, integrating with services like Key Manager, Archiving Service, and external APIs. Quality-wise, while the separation of concerns is good, there are areas for improvement including refactoring large controllers and implementing abstraction layers to enhance maintainability.",
+  "summary": "The backend follows a classic layered architecture built on Spring Boot, exposing REST APIs for a rich legal document and deed management domain. It implements a broad set of capabilities—from CRUD actions and key‑management to archiving and scheduled jobs—while integrating with relational databases, external KMS, and authorization services. Quality analysis shows moderate separation of concerns, coupling, and cohesion, with a C grade reflecting architectural debt such as thin or God controllers/services and an anemic domain model. Targeted refactoring toward clearer service interfaces, stronger domain‑driven design, and tighter layer boundaries will raise maintainability and scalability.",
   "technical": {
-    "architecture": "Layered",
+    "primary_pattern": "Layered",
     "layers": [
-      "Presentation",
-      "Service",
-      "Repository"
+      "Presentation (Controller/REST Interface)",
+      "Service (Business Logic)",
+      "Repository (Data Access)",
+      "Domain (Entity)"
     ],
     "technologies": [
       "Spring Boot",
-      "JPA"
+      "Spring MVC",
+      "Spring Data JPA",
+      "JPA/Hibernate",
+      "Spring Security",
+      "Spring Scheduler",
+      "RestTemplate",
+      "Jackson (JSON serialization)",
+      "Embedded Tomcat"
     ],
     "integration_style": "REST API"
   },
   "functional": {
     "domain_concepts": [
       "Action",
-      "Document",
-      "User",
       "DeedEntry",
+      "DeedEntryLog",
+      "DeedEntryLock",
+      "DeedRegistry",
+      "DocumentMetaData",
       "HandoverDataSet",
+      "FinalHandoverDataSet",
+      "SignatureInfo",
+      "Participant",
       "KeyManager",
-      "Archiving"
+      "Archiving",
+      "BusinessPurpose",
+      "Connection",
+      "CorrectionNote",
+      "Change",
+      "Report",
+      "Job",
+      "User",
+      "AuthorizationToken"
     ],
     "capabilities": [
-      "Manage actions",
-      "Process documents",
-      "Handle user authentication and authorization",
-      "Manage deed entries",
-      "Handle handover data sets",
-      "Manage key management",
-      "Handle archiving operations"
+      "Create, read, update, and delete actions",
+      "Persist and manage deed entries, including connections, logs and locks",
+      "Handle document metadata storage and retrieval",
+      "Perform handover data‑set management and finalization",
+      "Execute archiving operations and sign submission/re‑encryption tokens",
+      "Manage cryptographic keys, re‑encryption state and key‑manager queries",
+      "Provide business‑purpose lookup and validation services",
+      "Generate reports and export data",
+      "Schedule and run background jobs (e.g., re‑encryption, cleanup)",
+      "Expose REST APIs for all domain operations",
+      "Perform health‑check monitoring",
+      "Integrate with external authentication/authorization services via JSON auth",
+      "Apply correction notes and change tracking"
     ],
-    "bounded_context": "Document Processing",
+    "bounded_context": "Legal Document & Deed Management with Archiving and Cryptographic Key Handling",
     "integrations": [
-      "Key Manager",
-      "Archiving Service",
-      "External API X",
-      "Database Y"
+      "Relational Database (JPA/Hibernate)",
+      "External Key‑Management Service (KM) via RestTemplate",
+      "External Authorization Service (JSON‑auth)",
+      "External Archiving/Storage system",
+      "Spring Security for authentication/authorization",
+      "Scheduler/Job infrastructure (Spring Scheduler)",
+      "REST clients for external APIs"
     ]
   },
   "quality": {
-    "separation_of_concerns": "good",
-    "coupling": "loose",
+    "separation_of_concerns": "moderate",
+    "coupling": "moderate",
     "cohesion": "moderate",
     "debt_indicators": [
-      "Large controllers",
-      "Missing abstractions"
+      "Large number of controllers and services (potentially thin or God controllers/services)",
+      "High entity count suggests possible anemic domain model and tight coupling to persistence",
+      "Missing clear service interfaces for many implementations",
+      "Potential business logic leakage into controller layer"
     ],
-    "grade": "B",
+    "grade": "C",
     "recommendations": [
-      "Refactor large controllers",
-      "Implement abstraction layers"
+      "Introduce service interfaces and depend on abstractions rather than concrete implementations",
+      "Consolidate related controllers into cohesive modules or group by bounded context",
+      "Refactor oversized services into smaller, focused components",
+      "Apply domain‑driven design principles to move business logic into domain layer and reduce anemic entities",
+      "Add architectural guidelines to enforce layer boundaries and reduce cross‑layer dependencies"
     ]
   },
-  "overall_assessment": "The backend container is well-architected with clear separation of concerns and loose coupling, supporting the document processing functionalities effectively. However, there is room for improvement in terms of code organization and abstraction to enhance maintainability and scalability.",
+  "overall_assessment": "The backend is functionally comprehensive and technically aligned with modern Spring‑based practices, but architectural quality suffers from moderate coupling and anemic domain modeling. The current design permits rapid feature addition but hampers long‑term maintainability. Addressing the identified debt—especially by introducing clear abstractions, tightening layer boundaries, and enriching the domain layer—will significantly improve cohesion, reduce coupling, and elevate the overall grade.",
   "top_recommendations": [
-    "Refactor large controllers to improve modularity and maintainability.",
-    "Implement abstraction layers to reduce complexity and enhance separation of concerns."
+    "Introduce service interfaces and depend on abstractions rather than concrete implementations",
+    "Apply domain‑driven design principles to move business logic into the domain layer and reduce anemic entities",
+    "Refactor oversized services into smaller, focused components"
   ],
   "analysis": {
-    "primary_pattern": "Unknown",
+    "primary_pattern": "Layered",
     "layers": [
-      "Presentation",
-      "Service",
-      "Repository"
+      "Presentation (Controller/REST Interface)",
+      "Service (Business Logic)",
+      "Repository (Data Access)",
+      "Domain (Entity)"
     ],
     "stereotype_distribution": {
       "rest_interface": 21,

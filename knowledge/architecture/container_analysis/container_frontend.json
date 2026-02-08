@@ -3,54 +3,73 @@
   "component_count": 404,
   "relation_count": 0,
   "interface_count": 30,
-  "summary": "The frontend container is designed using a component-based architecture with Angular and TypeScript, supporting document processing functionalities through REST API integrations. It manages workflows, processes documents, handles user authentication, and provides forms and views for deeds and documents within the Document Processing bounded context.",
+  "summary": "The frontend container is a component‑based Angular application built with TypeScript, RxJS, HTML/CSS and Bootstrap, organized into presentation, service, adapter, and core/shared layers and consuming a rich set of REST APIs. It supports the full deed registry and workflow domain, exposing capabilities such as deed management, document processing, authentication, notifications, reporting, and bulk operations. Quality analysis shows moderate separation of concerns, coupling and cohesion, but a high technical debt due to an excess of services, components, pipes, and adapters, leading to a grade of C and several refactoring opportunities.",
   "technical": {
-    "architecture": "Component-Based",
+    "primary_pattern": "Component-Based",
     "layers": [
-      "Presentation",
-      "Service",
-      "Adapter"
+      "Presentation (Components, Directives, Pipes, Modules)",
+      "Service (Services, Resolvers, Guards, Interceptors)",
+      "Adapter (Adapter services for external endpoints)",
+      "Core/Shared (CoreModule, SharedModule)"
     ],
     "technologies": [
       "Angular",
-      "TypeScript"
+      "TypeScript",
+      "RxJS",
+      "HTML/CSS",
+      "Bootstrap (UI styling)",
+      "REST APIs (via HttpClient)"
     ],
     "integration_style": "REST API"
   },
   "functional": {
     "domain_concepts": [
-      "Workflow",
-      "Document",
-      "User",
       "Deed",
+      "Document",
+      "Workflow",
+      "User",
       "Signature",
-      "Correction Notes",
-      "Business Purpose"
+      "Notification",
+      "Metadata",
+      "Report",
+      "Task",
+      "Job",
+      "Registration",
+      "Participant",
+      "Note",
+      "Connection",
+      "CorrectionNote"
     ],
     "capabilities": [
-      "Manage workflows",
-      "Process documents",
-      "Handle user authentication",
-      "Manage corrections",
-      "Provide forms and views for deeds and documents"
+      "Create, view, edit, approve and delete deeds",
+      "Manage deed workflows including archiving, deletion, reencryption and task handling",
+      "Import and process documents with metadata extraction and signature verification",
+      "Handle authentication and authorization (login, token management, guards)",
+      "Send and display notifications and alerts",
+      "Generate and present reports and analytics",
+      "Provide online help and contextual assistance",
+      "Manage numbers and identifiers within the system",
+      "Interact with external services via adapters (key management, secure framework, file storage, signature services)",
+      "Perform bulk data operations (bulk capture, bulk import)",
+      "Enforce rate limiting, busy indication and error handling for HTTP calls"
     ],
-    "bounded_context": "Document Processing",
+    "bounded_context": "Deed Registry & Workflow Management",
     "integrations": [
-      "/basic-data",
-      "/remarks",
-      "/registrations",
-      "/participants",
-      "/issuing-copy-notes",
-      "/notes",
-      "/links",
-      "/document",
-      "/",
-      "/uvz",
-      "/access-denied",
-      "/deed-entries",
-      "/deed-view/:deedEntryId",
-      "/deed-form",
-      "/deed-form-bulk-capture"
+      "Xnp backend endpoints (XnpEndpointProvider, XnpPageContainerNgAdapter, etc.)",
+      "Key Manager Adapter Service",
+      "LSP Secure Framework Endpoint",
+      "Help Service Adapter",
+      "Notifications Endpoint",
+      "Signature Endpoint",
+      "File API Adapter",
+      "Action API",
+      "Reencryption API",
+      "Deed Registry API",
+      "Document Metadata API",
+      "Job API",
+      "Task API",
+      "Report Metadata API",
+      "Platform Endpoint"
     ]
   },
   "quality": {
@@ -58,35 +77,44 @@
     "coupling": "moderate",
     "cohesion": "moderate",
     "debt_indicators": [
-      "Large controllers/services",
-      "Missing abstractions"
+      "Excessive number of services (131) with versioned duplicates",
+      "High count of components (128) leading to potential oversized UI modules",
+      "Large number of pipes (67) indicating possible over‑fragmentation of presentation logic",
+      "Many adapters (50) without clear façade or abstraction layer",
+      "Potential mixing of business logic into services and adapters"
     ],
-    "grade": "B",
+    "grade": "C",
     "recommendations": [
-      "Refactor large services into smaller, more focused ones",
-      "Introduce abstraction layers to reduce direct integrations"
+      "Consolidate version‑specific services into a single, configurable service or use strategy pattern",
+      "Introduce façade or domain‑service layers to decouple components from low‑level adapters",
+      "Refactor oversized components into smaller, reusable child components",
+      "Review and reduce the number of pipes; combine related transformations where possible",
+      "Group related services into feature‑specific modules to improve cohesion and discoverability",
+      "Document and enforce clear boundaries between presentation, service, and adapter layers"
     ]
   },
-  "overall_assessment": "The frontend container demonstrates a moderate level of separation of concerns, coupling, and cohesion, but it also exhibits some technical debt indicators such as large controllers/services and missing abstractions. The architecture is well-suited for document processing tasks and supports the required functionalities.",
+  "overall_assessment": "The frontend is functionally comprehensive but suffers from structural bloat and moderate quality concerns; addressing service duplication, component size, and clearer layering will significantly improve maintainability and performance.",
   "top_recommendations": [
-    "Refactor large services into smaller, more focused ones",
-    "Introduce abstraction layers to reduce direct integrations"
+    "Consolidate version‑specific services into a single configurable service or apply the strategy pattern",
+    "Introduce façade/domain‑service layers to isolate components from low‑level adapters",
+    "Refactor oversized components into smaller, reusable child components"
   ],
   "analysis": {
-    "primary_pattern": "Unknown",
+    "primary_pattern": "Component-Based",
     "layers": [
-      "Presentation",
-      "Service",
-      "Adapter"
+      "Presentation (Components, Directives, Pipes, Modules)",
+      "Service (Services, Resolvers, Guards, Interceptors)",
+      "Adapter (Adapter services for external endpoints)",
+      "Core/Shared (CoreModule, SharedModule)"
     ],
     "stereotype_distribution": {
       "module": 16,
       "component": 128,
       "pipe": 67,
       "directive": 3,
-      "adapter": 50,
       "service": 131,
       "interceptor": 4,
+      "adapter": 50,
       "resolver": 4,
       "guard": 1
     },
