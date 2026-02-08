@@ -1,128 +1,125 @@
-# C4 Level 3: Component Diagram
+# C4 Level 3: Component Diagram (uvz System)
 
 ## 3.1 Overview
+The backend container (`container.backend`) implements the core business functionality of the **uvz** deed‑entry management platform.  It follows a classic **Layered Architecture** (Presentation → Application → Data‑Access → Domain) built with **Spring Boot**.
 
-The **uvz** system is a Spring‑Boot based backend that implements the core business functionality for deed‑entry management.  All runtime code lives in the `container.backend` container (Spring Boot).  The component diagram focuses on the internal structure of this container.
+## 3.2 Layer Summary
+| Layer | Purpose | Component Count | Typical Pattern |
+|-------|---------|-----------------|-----------------|
+| Presentation (Controllers) | HTTP request handling, REST endpoints | 32 | Spring `@RestController` |
+| Application (Services) | Business logic, orchestration | 184 | Service layer, Transactional | 
+| Data‑Access (Repositories) | Persistence, JPA/SQL access | 38 | Repository pattern, Spring Data JPA |
+| Domain (Entities) | JPA entity model | 360 | `@Entity` with relationships |
 
-| Layer | Purpose | Component Count |
-|-------|----------|-----------------|
-| Controllers | HTTP request handling (REST) | 32 |
-| Services | Business logic, orchestration | 184 |
-| Repositories | Data‑access (JPA) | 38 |
-| Entities | Domain model (JPA entities) | 360 |
-
-The diagram does **not** show every individual component (that would be unreadable).  Instead it aggregates by layer and highlights representative samples.
-
----
-
-## 3.2 Backend API Components
-
-### 3.2.1 Layer Overview
-
-| Layer | Key Stereotype | Typical Technology |
-|-------|----------------|--------------------|
-| Controllers | `@RestController` | Spring MVC, Spring WebFlux |
-| Services | `@Service` | Spring Service Layer, Transaction Management |
-| Repositories | `@Repository` / Spring Data JPA | JPA, Hibernate |
-| Entities | `@Entity` | JPA, Hibernate |
-
-### 3.2.2 Controllers (sample)
-
+## 3.3 Controllers (Presentation Layer)
 | Controller | Primary Endpoint(s) | Responsibility |
-|------------|--------------------|----------------|
-| `ActionRestServiceImpl` | `/api/actions/**` | CRUD for Action domain objects |
-| `IndexHTMLResourceService` | `/` (root) | Serves static index page |
-| `StaticContentController` | `/static/**` | Serves static assets |
-| `JsonAuthorizationRestServiceImpl` | `/api/auth/**` | JSON‑based authentication/authorization |
-| `KeyManagerRestServiceImpl` | `/api/keys/**` | Management of cryptographic keys |
-| `ArchivingRestServiceImpl` | `/api/archive/**` | Archive creation and retrieval |
-| `DeedEntryRestServiceImpl` | `/api/deed‑entries/**` | Full CRUD for deed entries |
-| `ReportRestServiceImpl` | `/api/reports/**` | Generation of various reports |
-| `NumberManagementRestServiceImpl` | `/api/numbers/**` | Number allocation and gap management |
-| `JobRestServiceImpl` | `/api/jobs/**` | Background job control |
+|------------|-------------------|----------------|
+| ActionRestServiceImpl | `/api/actions/**` | CRUD for Action entities |
+| IndexHTMLResourceService | `/` (root) | Serves static index page |
+| StaticContentController | `/static/**` | Serves static resources |
+| CustomMethodSecurityExpressionHandler | – | Security expression handling |
+| JsonAuthorizationRestServiceImpl | `/api/auth/**` | JSON‑based auth handling |
+| ProxyRestTemplateConfiguration | – | Configures outbound REST templates |
+| TokenAuthenticationRestTemplateConfigurationSpringBoot | – | Token auth for outbound calls |
+| KeyManagerRestServiceImpl | `/api/keymanager/**` | Key management API |
+| ArchivingRestServiceImpl | `/api/archiving/**` | Archive operations |
+| BusinessPurposeRestServiceImpl | `/api/business‑purpose/**` | Business purpose CRUD |
+| DeedEntryConnectionRestServiceImpl | `/api/deed‑connection/**` | Manage deed connections |
+| DeedEntryLogRestServiceImpl | `/api/deed‑log/**` | Deed log access |
+| DeedEntryRestServiceImpl | `/api/deed‑entry/**` | Core deed entry CRUD |
+| DeedRegistryRestServiceImpl | `/api/deed‑registry/**` | Registry operations |
+| DeedTypeRestServiceImpl | `/api/deed‑type/**` | Deed type management |
+| DocumentMetaDataRestServiceImpl | `/api/document‑meta/**` | Document metadata API |
+| HandoverDataSetRestServiceImpl | `/api/handover‑dataset/**` | Handover data set handling |
+| ReportRestServiceImpl | `/api/report/**` | Reporting API |
+| OpenApiConfig | `/v3/api-docs/**` | OpenAPI documentation |
+| OpenApiOperationAuthorizationRightCustomizer | – | Secures OpenAPI ops |
+| ResourceFactory | – | Helper for resource creation |
+| DefaultExceptionHandler | – | Global exception handling |
+| JobRestServiceImpl | `/api/job/**` | Job management |
+| ReencryptionJobRestServiceImpl | `/api/reencryption‑job/**` | Re‑encryption jobs |
+| NotaryRepresentationRestServiceImpl | `/api/notary‑representation/**` | Notary representation API |
+| NumberManagementRestServiceImpl | `/api/number‑management/**` | Number management API |
+| OfficialActivityMetadataRestServiceImpl | `/api/official‑activity/**` | Official activity metadata |
+| ReportMetadataRestServiceImpl | `/api/report‑metadata/**` | Report metadata API |
+| TaskRestServiceImpl | `/api/task/**` | Task management |
+| WorkflowRestServiceImpl | `/api/workflow/**` | Workflow orchestration |
+| … (remaining controllers omitted for brevity) |
 
-### 3.2.3 Services (sample)
+## 3.4 Services (Application Layer)
+The service layer contains **184** components.  Below is a representative subset (alphabetical):
+- `ActionServiceImpl` – core action processing
+- `ActionWorkerService` – async worker for actions
+- `HealthCheck` – actuator health endpoint
+- `ArchiveManagerServiceImpl` – archive lifecycle management
+- `MockKmService` / `XnpKmServiceImpl` – mock / real key‑manager integration
+- `KeyManagerServiceImpl` – key‑manager business logic
+- `WaWiServiceImpl` – integration with external WaWi system
+- `ArchivingOperationSignerImpl` – signs archive operations
+- `ArchivingServiceImpl` – high‑level archiving API
+- `DeedEntryConnectionServiceImpl` – connection handling
+- `DeedEntryLogServiceImpl` – log handling
+- `DeedEntryServiceImpl` – main deed entry CRUD
+- `DeedRegistryServiceImpl` – registry functions
+- `DeedTypeServiceImpl` – type management
+- `DocumentMetaDataServiceImpl` – document metadata handling
+- `HandoverDataSetServiceImpl` – handover data set processing
+- `SignatureFolderServiceImpl` – signature folder ops
+- `ReportServiceImpl` – report generation
+- `JobServiceImpl` – background job execution
+- `NumberManagementServiceImpl` – number allocation
+- `OfficialActivityMetaDataServiceImpl` – official activity data
+- `ReportMetadataServiceImpl` – report metadata handling
+- `TaskServiceImpl` – task orchestration
+- `WorkflowServiceImpl` – workflow engine
+- `ReencryptionWorkflowStateMachine` – state machine for re‑encryption
+- `WorkflowStateMachineProvider` – provides state machines
+- *(frontend services omitted – they belong to the `container.frontend` and are not part of the backend component diagram)*
 
-| Service | Responsibility |
-|---------|----------------|
-| `ActionServiceImpl` | Business rules for actions |
-| `HealthCheck` | Liveness / readiness probes |
-| `ArchiveManagerServiceImpl` | Coordination of archive lifecycle |
-| `MockKmService` | Mock implementation for key‑manager integration |
-| `KeyManagerServiceImpl` | Cryptographic key handling |
-| `WaWiServiceImpl` | Integration with external WaWi system |
-| `DeedEntryServiceImpl` | Core deed‑entry processing |
-| `DeedRegistryServiceImpl` | Registry‑wide operations |
-| `ReportServiceImpl` | Report data aggregation |
-| `NumberManagementServiceImpl` | Number range allocation logic |
-
-### 3.2.4 Repositories (sample)
-
+## 3.5 Repositories (Data‑Access Layer)
+The data‑access layer consists of **38** Spring Data repositories.  Key examples:
 | Repository | Managed Entity |
 |------------|----------------|
-| `ActionDao` | `ActionEntity` |
-| `DeedEntryDao` | `DeedEntryEntity` |
-| `DeedEntryLockDao` | `DeedEntryLockEntity` |
-| `DocumentMetaDataDao` | `DocumentMetaDataEntity` |
-| `HandoverDataSetDao` | `HandoverDataSetEntity` |
-| `ParticipantDao` | `ParticipantEntity` |
-| `SignatureInfoDao` | `SignatureInfoEntity` |
-| `UvzNumberManagerDao` | `UvzNumberManagerEntity` |
-| `JobDao` | `JobEntity` |
-| `ReportMetadataDao` | `ReportMetadataEntity` |
+| ActionDao | `ActionEntity` |
+| DeedEntryDao | `DeedEntryEntity` |
+| DeedEntryConnectionDao | `DeedEntryConnectionEntity` |
+| DeedEntryLockDao | `DeedEntryLockEntity` |
+| DeedEntryLogsDao | `DeedEntryLogEntity` |
+| DeedRegistryLockDao | `DeedRegistryLockEntity` |
+| DocumentMetaDataDao | `DocumentMetaDataEntity` |
+| HandoverDataSetDao | `HandoverDataSetEntity` |
+| ParticipantDao | `ParticipantEntity` |
+| SignatureInfoDao | `SignatureInfoEntity` |
+| SuccessorBatchDao | `SuccessorBatchEntity` |
+| UvzNumberManagerDao | `UvzNumberManagerEntity` |
+| JobDao | `JobEntity` |
+| ReportMetadataDao | `ReportMetadataEntity` |
+| TaskDao | `TaskEntity` |
+| WorkflowDao | `WorkflowEntity` |
+| … (others omitted) |
 
-### 3.2.5 Entities (sample)
+## 3.6 Domain Model (Entities)
+The system defines **360** JPA entities (e.g., `ActionEntity`, `DeedEntryEntity`, `UvzNumberEntity`, `WorkflowEntity`).  They are grouped by bounded contexts (Action, DeedEntry, Archiving, NumberManagement, Workflow, etc.) and are persisted in the relational database used by the backend container.
 
-| Entity | Table (approx.) |
-|--------|-----------------|
-| `ActionEntity` | `action` |
-| `DeedEntryEntity` | `deed_entry` |
-| `DeedEntryLogEntity` | `deed_entry_log` |
-| `DocumentMetaDataEntity` | `document_metadata` |
-| `HandoverDataSetEntity` | `handover_dataset` |
-| `ParticipantEntity` | `participant` |
-| `SignatureInfoEntity` | `signature_info` |
-| `UvzNumberManagerEntity` | `uvz_number_manager` |
-| `JobEntity` | `job` |
-| `ReportMetadataEntity` | `report_metadata` |
-
----
-
-## 3.3 Component Dependencies
-
-### 3.3.1 Layer Rules
-
-| From \ To | Controllers | Services | Repositories | Entities |
-|-----------|------------|----------|--------------|----------|
-| Controllers | ✅ (self) | ✅ (calls) | ❌ (should not) | ❌ |
-| Services | ❌ | ✅ (self) | ✅ (uses) | ❌ |
-| Repositories | ❌ | ✅ (uses) | ✅ (self) | ✅ (maps) |
-| Entities | ❌ | ❌ | ✅ (persisted by) | ✅ (self) |
-
-### 3.3.2 Typical Request Flow
-
+## 3.7 Component Interaction Overview
 ```
-HTTP Request → Controller (REST) → Service (business) → Repository (JPA) → Database
+HTTP Request → Controller (REST) → Service (Transactional) → Repository (Spring Data JPA) → Database
 ```
+Typical call‑graph examples:
+1. **Create Deed Entry**
+   - `DeedEntryRestServiceImpl` receives `POST /api/deed-entry`
+   - Delegates to `DeedEntryServiceImpl`
+   - Calls `DeedEntryDao.save()`
+   - Persists `DeedEntryEntity`
+2. **Archive Deed**
+   - `ArchivingRestServiceImpl` → `ArchiveManagerServiceImpl` → `ArchivingServiceImpl`
+   - Uses `ArchivingOperationSignerImpl` and `DeedEntryDao` to mark archived
+3. **Re‑encryption Workflow**
+   - `WorkflowRestServiceImpl` → `WorkflowServiceImpl` → `ReencryptionWorkflowStateMachine`
+   - Persists state via `WorkflowDao`
 
-### 3.3.3 Example Interaction (Deed Entry Creation)
-1. **POST** `/api/deed‑entries` hits `DeedEntryRestServiceImpl`.
-2. Controller validates input and forwards to `DeedEntryServiceImpl`.
-3. Service performs domain checks, invokes `DeedEntryDao` to persist a new `DeedEntryEntity`.
-4. Repository returns the persisted entity; service enriches with generated numbers via `NumberManagementServiceImpl`.
-5. Service returns DTO; controller serialises to JSON response.
-
----
-
-## 3.4 Diagram
-
-The full component diagram is stored as a Draw.io file:
-
-- **File:** `c4/c4-component.drawio`
-- The diagram follows the SEAGuide C4 visual conventions (blue boxes for internal components, gray for external systems, cylinders for databases, person icons for users, dashed lines for boundaries).
-
-> **Note:** The diagram aggregates the 32 controllers, 184 services, 38 repositories and 360 entities into the four logical layers shown above.  Individual component boxes are omitted for readability; the sample tables provide concrete examples.
+## 3.8 Diagram Reference
+A Draw.io component diagram (`c4-component.drawio`) visualises the four layers, the major services, and their repository dependencies.  The diagram follows the SEAGuide C4 visual conventions (blue boxes for internal components, cylinders for databases, dashed boundaries for layers).
 
 ---
-
-*Document generated automatically from architecture facts (statistics, component listings, and repository data).*
+*Document generated automatically from architecture facts (32 controllers, 184 services, 38 repositories, 360 entities).*
