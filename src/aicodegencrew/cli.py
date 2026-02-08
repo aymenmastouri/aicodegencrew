@@ -355,6 +355,26 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         )
         orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
 
+    # --- Phase 4: Development Planning (Hybrid Pipeline) ---
+    if "phase4_development_planning" in planned_phases:
+        from .pipelines.development_planning import DevelopmentPlanningPipeline
+
+        # Get input file from config or environment
+        input_dir = os.getenv("TASK_INPUT_DIR", "./inputs/tasks")
+        input_files = list(Path(input_dir).glob("*")) if Path(input_dir).exists() else []
+
+        if input_files:
+            # Process first input file (can be extended to process all)
+            planning_pipeline = DevelopmentPlanningPipeline(
+                input_file=str(input_files[0]),
+                facts_path="./knowledge/architecture/architecture_facts.json",
+                analyzed_path="./knowledge/architecture/analyzed_architecture.json",
+                output_dir="./knowledge/development",
+            )
+            orchestrator.register_phase("phase4_development_planning", planning_pipeline)
+        else:
+            logger.warning(f"[Phase4] No input files found in {input_dir}, skipping phase")
+
     # Execute
     try:
         result = orchestrator.run(preset=preset, phases=phases)
