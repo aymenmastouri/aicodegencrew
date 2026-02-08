@@ -9,6 +9,7 @@ Usage:
 - rag_query(query="TODO FIXME", limit=20)
 """
 
+import json
 import os
 from pathlib import Path
 from typing import Type, Dict, Any, Optional, List, ClassVar
@@ -29,7 +30,7 @@ class RAGQueryInput(BaseModel):
     )
     limit: int = Field(
         default=10,
-        description="Maximum number of results to return (default 10, max 20)"
+        description="Maximum number of results to return (default 10, max 10)"
     )
     file_filter: str = Field(
         default="",
@@ -91,12 +92,9 @@ class RAGQueryTool(BaseTool):
         if env_path and Path(env_path).exists():
             return env_path
         
-        # Check standard locations relative to knowledge dir
-        knowledge_dir = Path("knowledge/architecture")
-        if knowledge_dir.exists():
-            base_dir = Path.cwd()
-        else:
-            base_dir = Path(__file__).parent.parent.parent.parent.parent.parent  # Up to project root
+        # Resolve project root from __file__ (stable, independent of CWD)
+        # __file__ = src/aicodegencrew/crews/architecture_analysis/tools/rag_query_tool.py
+        base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
         
         for rel_path in self.CHROMA_PATHS:
             full_path = base_dir / rel_path
@@ -156,14 +154,12 @@ class RAGQueryTool(BaseTool):
         
         Args:
             query: Natural language search query
-            limit: Max results (capped at 20)
+            limit: Max results (capped at 10)
             file_filter: Optional file path filter
             
         Returns:
             JSON string with matching code snippets
         """
-        import json
-        
         try:
             collection = self._get_collection()
             
@@ -208,7 +204,6 @@ class RAGQueryTool(BaseTool):
                     
                     formatted_results.append({
                         "file_path": metadata.get("file_path", "unknown"),
-                        "chunk_type": metadata.get("chunk_type", "code"),
                         "relevance_score": round(1 - distance, 3) if distance else 0,
                         "content": content,
                     })
@@ -228,5 +223,4 @@ class RAGQueryTool(BaseTool):
             
         except Exception as e:
             logger.error(f"RAG query error: {e}")
-            import json
             return json.dumps({"error": str(e), "results": []})

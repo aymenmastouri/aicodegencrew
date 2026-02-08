@@ -744,6 +744,10 @@ class ArchitectureModel:
         evidence: Dict[str, Dict],
         dependencies: List[Dict] = None,
         workflows: List[Dict] = None,
+        data_model: Dict = None,
+        runtime: List[Dict] = None,
+        infrastructure: List[Dict] = None,
+        tech_versions: List[Dict] = None,
     ):
         self.system_name = system_name
         self.containers = containers
@@ -753,6 +757,10 @@ class ArchitectureModel:
         self.evidence = evidence
         self.dependencies = dependencies or []
         self.workflows = workflows or []
+        self.data_model = data_model or {}
+        self.runtime = runtime or []
+        self.infrastructure = infrastructure or []
+        self.tech_versions = tech_versions or []
     
     def get_components_by_layer(self, layer: str) -> List[CanonicalComponent]:
         """Get all components in a specific layer."""
@@ -784,6 +792,7 @@ class ArchitectureModel:
         for comp in self.components.values():
             stereotype_counts[comp.stereotype] = stereotype_counts.get(comp.stereotype, 0) + 1
         
+        data_model = self.data_model or {}
         return {
             "system_name": self.system_name,
             "containers": len(self.containers),
@@ -793,6 +802,12 @@ class ArchitectureModel:
             "evidence": len(self.evidence),
             "dependencies": len(self.dependencies),
             "workflows": len(self.workflows),
+            "entities": len(data_model.get("entities", [])),
+            "tables": len(data_model.get("tables", [])),
+            "migrations": len(data_model.get("migrations", [])),
+            "runtime": len(self.runtime),
+            "infrastructure": len(self.infrastructure),
+            "tech_versions": len(self.tech_versions),
             "by_layer": layer_counts,
             "by_stereotype": stereotype_counts,
         }

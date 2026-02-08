@@ -170,13 +170,27 @@ class ArchitectureFactsPipeline:
             # Build the canonical model
             canonical_model = model_builder.build()
             
-            # Add dependencies and workflows from DimensionResults
-            # (these don't need normalization - pass through directly)
+            # Add dimensions from DimensionResults that pass through directly
+            # (these don't need normalization by the model builder)
             canonical_model.dependencies = [
                 self._fact_to_dict(d) for d in results.dependencies
             ]
             canonical_model.workflows = [
                 self._fact_to_dict(w) for w in results.workflows
+            ]
+            canonical_model.data_model = {
+                "entities": [self._fact_to_dict(e) for e in results.entities],
+                "tables": [self._fact_to_dict(t) for t in results.tables],
+                "migrations": [self._fact_to_dict(m) for m in results.migrations],
+            }
+            canonical_model.runtime = [
+                self._fact_to_dict(r) for r in results.runtime
+            ]
+            canonical_model.infrastructure = [
+                self._fact_to_dict(i) for i in results.infrastructure
+            ]
+            canonical_model.tech_versions = [
+                self._fact_to_dict(tv) for tv in getattr(results, 'tech_versions', [])
             ]
             
             stats = canonical_model.get_statistics()
