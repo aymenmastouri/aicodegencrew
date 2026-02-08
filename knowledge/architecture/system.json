@@ -2,7 +2,7 @@
   "id": "system",
   "name": "uvz",
   "description": "Architecture model for uvz",
-  "generated_at": "2026-02-08T16:15:01.630871",
+  "generated_at": "2026-02-08T18:50:11.604867",
   "bounded_contexts": [
     {
       "name": "de.bnotk.uvz.module.adapters.staticwebresources",
@@ -15,17 +15,17 @@
       "name": "de.bnotk.uvz.module.deedentry.dataaccess.api.dao",
       "component_count": 22,
       "stereotypes": [
-        "repository",
-        "rest_interface"
+        "rest_interface",
+        "repository"
       ]
     },
     {
       "name": "de.bnotk.uvz.module.deedentry.dataaccess.api.dao.impl",
       "component_count": 6,
       "stereotypes": [
+        "service",
         "controller",
-        "repository",
-        "service"
+        "repository"
       ]
     },
     {
@@ -130,16 +130,16 @@
       "name": "app",
       "component_count": 2,
       "stereotypes": [
-        "module",
-        "component"
+        "component",
+        "module"
       ]
     },
     {
       "name": "core",
       "component_count": 3,
       "stereotypes": [
-        "module",
-        "service"
+        "service",
+        "module"
       ]
     },
     {
@@ -153,40 +153,40 @@
       "name": "action.services.action.api-generated",
       "component_count": 3,
       "stereotypes": [
-        "module",
-        "service"
+        "service",
+        "module"
       ]
     },
     {
       "name": "adapters.reencryption.xnp.api-generated",
       "component_count": 3,
       "stereotypes": [
-        "module",
-        "service"
+        "service",
+        "module"
       ]
     },
     {
       "name": "deed-entry.services.deed-registry.api-generated",
       "component_count": 3,
       "stereotypes": [
-        "module",
-        "service"
+        "service",
+        "module"
       ]
     },
     {
       "name": "deed-entry.services.document-metadata.api-generated",
       "component_count": 3,
       "stereotypes": [
-        "module",
-        "service"
+        "service",
+        "module"
       ]
     },
     {
       "name": "workflow.services.workflow-rest.api-generated",
       "component_count": 9,
       "stereotypes": [
-        "module",
-        "service"
+        "service",
+        "module"
       ]
     },
     {
@@ -238,8 +238,8 @@
       "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.document-archiving-overlay",
       "component_count": 2,
       "stereotypes": [
-        "directive",
-        "component"
+        "component",
+        "directive"
       ]
     },
     {
@@ -384,8 +384,8 @@
       "name": "enhanced-search",
       "component_count": 2,
       "stereotypes": [
-        "resolver",
-        "component"
+        "component",
+        "resolver"
       ]
     },
     {
@@ -428,16 +428,8 @@
       ]
     },
     {
-      "name": "authentication",
-      "component_count": 2,
-      "stereotypes": [
-        "guard",
-        "interceptor"
-      ]
-    },
-    {
-      "name": "deed-entry.services.archiving",
-      "component_count": 3,
+      "name": "report-metadata.services",
+      "component_count": 4,
       "stereotypes": [
         "service"
       ]
@@ -450,6 +442,64 @@
       ]
     },
     {
+      "name": "workflow.services.workflow-change-aoid",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "http-util",
+      "component_count": 2,
+      "stereotypes": [
+        "interceptor"
+      ]
+    },
+    {
+      "name": "adapters.xnp",
+      "component_count": 15,
+      "stereotypes": [
+        "adapter",
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.services",
+      "component_count": 6,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-validate-signature",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.domain",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-overview-page.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service",
+        "resolver"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-reencryption.job-reencryption",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
       "name": "deed-entry.components.deed-overview-page.deed-overview.services",
       "component_count": 3,
       "stereotypes": [
@@ -457,22 +507,7 @@
       ]
     },
     {
-      "name": "adapters.xnp",
-      "component_count": 15,
-      "stereotypes": [
-        "service",
-        "adapter"
-      ]
-    },
-    {
-      "name": "adapters.page-container-adapter.impl.xnp",
-      "component_count": 2,
-      "stereotypes": [
-        "adapter"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-reencryption.job-reencryption",
+      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
       "component_count": 3,
       "stereotypes": [
         "service"
@@ -486,20 +521,6 @@
       ]
     },
     {
-      "name": "deed-entry.components.deed-form-page.services",
-      "component_count": 6,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.api-generated.services",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
       "name": "deed-entry.services.deed-entry",
       "component_count": 4,
       "stereotypes": [
@@ -507,71 +528,22 @@
       ]
     },
     {
-      "name": "workflow.services.workflow-validate-signature",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "report-metadata.services",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+      "name": "adapters.page-container-adapter.impl.xnp",
       "component_count": 2,
       "stereotypes": [
-        "service"
+        "adapter"
       ]
     },
     {
-      "name": "deed-entry.components.deed-overview-page.services",
+      "name": "authentication",
       "component_count": 2,
       "stereotypes": [
-        "resolver",
-        "service"
+        "interceptor",
+        "guard"
       ]
     },
     {
-      "name": "workflow.services.workflow-change-aoid",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.components.deed-successor-page.services",
-      "component_count": 2,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.mock",
-      "component_count": 2,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "http-util",
-      "component_count": 2,
-      "stereotypes": [
-        "interceptor"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.domain",
+      "name": "deed-entry.services.archiving",
       "component_count": 3,
       "stereotypes": [
         "service"
@@ -586,6 +558,34 @@
       ]
     },
     {
+      "name": "workflow.services.workflow-rest.mock",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.api-generated.services",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "deed-entry.components.deed-successor-page.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
       "name": "services",
       "component_count": 3,
       "stereotypes": [
@@ -596,8 +596,8 @@
       "name": "jsApi.src.impl",
       "component_count": 7,
       "stereotypes": [
-        "component",
-        "service"
+        "service",
+        "component"
       ]
     },
     {
@@ -690,9 +690,19 @@
     "components": 951,
     "interfaces": 226,
     "relations": 190,
-    "evidence": 1275,
+    "evidence": 2508,
     "dependencies": 170,
     "workflows": 42,
+    "entities": 433,
+    "tables": 0,
+    "migrations": 0,
+    "runtime": 1,
+    "infrastructure": 1,
+    "tech_versions": 8,
+    "security_details": 143,
+    "validation": 149,
+    "tests": 925,
+    "error_handling": 23,
     "by_layer": {
       "unknown": 81,
       "presentation": 287,
@@ -710,8 +720,8 @@
       "component": 169,
       "pipe": 67,
       "directive": 3,
-      "interceptor": 4,
       "adapter": 50,
+      "interceptor": 4,
       "resolver": 4,
       "guard": 1,
       "entity": 360,
