@@ -1,0 +1,23 @@
+{
+  "docker": {
+    "total": 0,
+    "items": []
+  },
+  "kubernetes": {
+    "total": 0,
+    "items": []
+  },
+  "ci_cd": {
+    "total": 0,
+    "items": []
+  },
+  "configuration": {
+    "total": 1,
+    "items": [
+      {
+        "id": "component.infrastructure.core.dockerfile",
+        "name": "Dockerfile"
+      }
+    ]
+  }
+}
