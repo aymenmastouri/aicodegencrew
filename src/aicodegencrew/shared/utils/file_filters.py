@@ -18,7 +18,8 @@ INDEXABLE_EXTENSIONS = {
     ".py", ".java", ".kt", ".xml", ".properties", ".yml", ".yaml",
     ".md", ".ts", ".tsx", ".html", ".scss", ".css", ".json",
     ".gradle", ".toml", ".js", ".jsx", ".go", ".rs", ".cs",
-    ".cpp", ".c", ".h", ".hpp", ".sh", ".bash"
+    ".cpp", ".c", ".h", ".hpp", ".sh", ".bash",
+    ".feature", ".sql"
 }
 
 # Directories to skip (faster than pattern matching)

@@ -748,6 +748,10 @@ class ArchitectureModel:
         runtime: List[Dict] = None,
         infrastructure: List[Dict] = None,
         tech_versions: List[Dict] = None,
+        security_details: List[Dict] = None,
+        validation: List[Dict] = None,
+        tests: List[Dict] = None,
+        error_handling: List[Dict] = None,
     ):
         self.system_name = system_name
         self.containers = containers
@@ -761,6 +765,10 @@ class ArchitectureModel:
         self.runtime = runtime or []
         self.infrastructure = infrastructure or []
         self.tech_versions = tech_versions or []
+        self.security_details = security_details or []
+        self.validation = validation or []
+        self.tests = tests or []
+        self.error_handling = error_handling or []
     
     def get_components_by_layer(self, layer: str) -> List[CanonicalComponent]:
         """Get all components in a specific layer."""
@@ -808,6 +816,10 @@ class ArchitectureModel:
             "runtime": len(self.runtime),
             "infrastructure": len(self.infrastructure),
             "tech_versions": len(self.tech_versions),
+            "security_details": len(self.security_details),
+            "validation": len(self.validation),
+            "tests": len(self.tests),
+            "error_handling": len(self.error_handling),
             "by_layer": layer_counts,
             "by_stereotype": stereotype_counts,
         }
