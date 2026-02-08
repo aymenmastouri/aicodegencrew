@@ -90,7 +90,7 @@ MANDATORY RULES:
 
 ### Erwartete Verbesserung
 - "Completed but no files": ~20% → ~2%
-- MCP loops: eliminated (hard budget of 10 calls + 2 identical max)
+- MCP loops: eliminated (hard budget of 25 calls + 3 identical max)
 - Tool-Compliance: ~60% → ~75% (before any prompt changes)
 - Aufwand: 1-2 Tage — **DONE**
 
@@ -297,6 +297,15 @@ Output File
 ✅ DONE:      Phase 1 — Few-Shot + Tool-Policy zentral
               (TOOL_INSTRUCTION with examples, per-task EXECUTION EXAMPLE blocks)
 
+✅ DONE:      Phase 1.5 — Output Quality Maximierung
+              - Token limits: 32K→100K input, 4K→16K output, 32K→120K context
+              - Tool guardrails: 10→25 max calls, 2→3 max identical
+              - Chapter splitting: Ch06 (2 sub-crews), Ch08 (2 sub-crews)
+              - Task descriptions: explicit sections, 8-12 pages target, more tool calls
+              - MapReduce: dynamic patterns (no hardcoded strings), multi-dim quality
+              - Arc42 mini-crews: 16→18 (4 new sub-crews, 2 old removed)
+              - Expected: ~46 pages → 100-120 pages, pipeline ~45-60 min
+
 Naechster:    Phase 4 — Deterministischer Tool-Planner
               (Pre-fetch MCP data in Python, agent only writes content)
               Hoechster ROI mit 120B model + guardrails
@@ -380,5 +389,5 @@ python train_lora.py --base-model qwen2.5-72b --data traces/filtered/ --epochs 3
 ---
 
 *Erstellt: 2026-02-07*
-*Aktualisiert: 2026-02-08 (Phase 0.5 + Phase 1 IMPLEMENTED, auto->smart indexing)*
+*Aktualisiert: 2026-02-08 (Phase 0.5 + Phase 1 + Phase 1.5 IMPLEMENTED)*
 *Projekt: AICodeGenCrew*

@@ -5,7 +5,12 @@ Creates all 12 arc42 chapters + Quality Gate
 
 Architecture Fix:
 - OLD: 1 Crew with 44 sequential tasks -> Context overflow after ~10 tasks
-- NEW: 6 Mini-Crews (2-3 tasks each) -> Fresh context per chapter group
+- NEW: 18 Mini-Crews (1 task each) -> Fresh context per chapter/sub-chapter
+
+Chapters 5, 6, and 8 are split into sub-crews for maximum output quality:
+- Chapter 5: 4 sub-crews (overview, controllers, services, domain)
+- Chapter 6: 2 sub-crews (API flows, business flows)
+- Chapter 8: 2 sub-crews (technical concepts, patterns)
 
 Each Mini-Crew starts with a fresh LLM context window.
 Data is passed via template variables (summaries), not inter-task context.
@@ -27,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 ARC42_AGENT_CONFIG = {
     "role": "Senior Software Architect - SEAGuide Documentation Expert",
-    "goal": "Create comprehensive ~100 page arc42 documentation following SEAGuide standards",
+    "goal": "Create comprehensive 100-120 page arc42 documentation following SEAGuide standards",
     "backstory": (
         "You are a SENIOR SOFTWARE ARCHITECT with expertise in creating professional\n"
         "architecture documentation following Capgemini's SEAGuide standard.\n"
@@ -42,8 +47,8 @@ ARC42_AGENT_CONFIG = {
         "   - Understandability over completeness\n"
         "\n"
         "2. COMPREHENSIVE COVERAGE\n"
-        "   - Each chapter should be 4-10 pages\n"
-        "   - Total documentation ~100 pages\n"
+        "   - Each chapter should be 8-12 pages\n"
+        "   - Total documentation 100-120 pages\n"
         "   - Include tables, examples, diagrams\n"
         "   - Real data from facts, not generic text\n"
         "\n"
@@ -80,7 +85,7 @@ ARC42_AGENT_CONFIG = {
         "4. Write comprehensive chapters with tables, diagrams, examples\n"
         "\n"
         "## OUTPUT QUALITY RULES\n"
-        "- Each chapter 4-10 pages minimum\n"
+        "- Each chapter 8-12 pages minimum\n"
         "- Use tables for structured data (components, decisions, risks)\n"
         "- Include text-based diagrams where appropriate\n"
         "- Reference specific component names from facts\n"
@@ -103,239 +108,137 @@ ARC42_AGENT_CONFIG = {
 # =============================================================================
 
 CH01_INTRODUCTION = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 1: Introduction and Goals (8-10 pages).
+Create the COMPLETE arc42 Chapter 1: Introduction and Goals (8-12 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 1.1 Requirements Overview (3 pages)
+- Full system description with business domain classification
+- Primary business value and target users
+- Feature inventory table with ALL business capabilities (derive from controller/service names)
+- System statistics table (components, controllers, services, repos, entities, endpoints)
+### 1.2 Quality Goals (2 pages)
+- Quality goal table with measurable targets for each attribute
+- At least 5 goals: Maintainability, Testability, Security, Performance, Scalability
+- For EACH: Priority, Rationale, How Achieved (which patterns), Measurement
+### 1.3 Stakeholders (2 pages)
+- Stakeholder table with at least 8 roles
+- For EACH: Role, Concern, Expectations, Key Interactions
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_statistics() -> get component counts
 2. get_architecture_summary() -> get architecture style, patterns
-3. list_components_by_stereotype(stereotype="controller") -> get controller list
-4. list_components_by_stereotype(stereotype="service") -> get service list
-5. doc_writer(file_path="arc42/01-introduction.md", content="# 01 - Introduction and Goals\\n\\n## 1.1 Requirements Overview\\n...")
-6. Respond: "File arc42/01-introduction.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools to gather REAL data:
-1. get_statistics() - System metrics overview
-2. get_architecture_summary() - Architecture style and patterns
-3. get_endpoints() - REST API endpoints
-4. list_components_by_stereotype(stereotype="controller") - Controllers
-5. list_components_by_stereotype(stereotype="service") - Services
-6. list_components_by_stereotype(stereotype="repository") - Repositories
-7. list_components_by_stereotype(stereotype="entity") - Entities
+3. list_components_by_stereotype(stereotype="controller") -> get ALL controllers
+4. list_components_by_stereotype(stereotype="service") -> get ALL services
+5. list_components_by_stereotype(stereotype="repository") -> get ALL repositories
+6. list_components_by_stereotype(stereotype="entity") -> get ALL entities
+7. get_endpoints() -> get REST API endpoints
+8. doc_writer(file_path="arc42/01-introduction.md", content="# 01 - Introduction and Goals\\n\\n## 1.1 Requirements Overview\\n...")
+9. Respond: "File arc42/01-introduction.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/01-introduction.md using doc_writer tool.
-
-# 01 - Introduction and Goals
-
-## 1.1 Requirements Overview
-
-### 1.1.1 What is this System?
-- Full system description (not just one sentence!)
-- Business domain and subdomain classification
-- Primary business value delivered
-
-### 1.1.2 Essential Features
-Document the TOP 10 business capabilities with feature name, business value, and components involved.
-
-### 1.1.3 System Statistics
-| Metric | Count |
-|--------|-------|
-| Total Components | X |
-| Controllers | X |
-| Services | X |
-| Repositories | X |
-| Entities | X |
-| REST Endpoints | X |
-
-## 1.2 Quality Goals
-
-For EACH quality goal:
-| Attribute | Description |
-|-----------|-------------|
-| Goal | e.g., Maintainability |
-| Priority | 1-3 |
-| Rationale | Why? |
-| How Achieved | Which patterns? |
-
-Document at least 5 quality goals: Maintainability, Testability, Security, Performance, Scalability.
-
-## 1.3 Stakeholders
-| Role | Concern | Expectations | Contact |
-|------|---------|--------------|---------|
-
-Include at least 8 stakeholder roles.
-
-Write 8-10 pages with REAL data from tools. No placeholders.
+Write 8-12 pages with REAL data from tools. No placeholders.
 """
 
 CH02_CONSTRAINTS = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 2: Architecture Constraints (6-8 pages).
+Create the COMPLETE arc42 Chapter 2: Architecture Constraints (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 2.1 Technical Constraints (3 pages)
+- Constraint table for: Programming Language, Framework, Database, Infrastructure, Security
+- For EACH: Constraint name, Background, Impact on architecture, Consequences
+### 2.2 Organizational Constraints (2 pages)
+- Team structure, development process, deployment frequency
+- Compliance and regulatory requirements
+### 2.3 Convention Constraints (2 pages)
+- Naming conventions (packages, classes, methods, REST endpoints)
+- Code style and formatting rules
+- API design conventions (REST, versioning)
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_statistics() -> get system overview
-2. get_architecture_summary() -> get architecture decisions
+2. get_architecture_summary() -> get architecture decisions and patterns
 3. query_architecture_facts(category="containers") -> get container technologies
-4. doc_writer(file_path="arc42/02-constraints.md", content="# 02 - Architecture Constraints\\n\\n## 2.1 Technical Constraints\\n...")
-5. Respond: "File arc42/02-constraints.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System overview
-2. get_architecture_summary() - Architecture decisions
-3. query_architecture_facts(category="containers") - Container technologies
+4. rag_query(query="naming convention package structure") -> naming patterns
+5. rag_query(query="configuration properties spring") -> framework constraints
+6. doc_writer(file_path="arc42/02-constraints.md", content="# 02 - Architecture Constraints\\n...")
+7. Respond: "File arc42/02-constraints.md written successfully."
 
 Summary data:
 {system_summary}
 {containers_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/02-constraints.md using doc_writer tool.
-
-# 02 - Architecture Constraints
-
-## 2.1 Technical Constraints
-For EACH constraint:
-| Aspect | Description |
-|--------|-------------|
-| Constraint | Name |
-| Background | Why? |
-| Impact | How it affects architecture |
-| Consequence | Resulting decisions |
-
-Categories: Programming Language, Framework, Database, Infrastructure, Security.
-
-## 2.2 Organizational Constraints
-| Constraint | Background | Consequence |
-|------------|------------|-------------|
-| Team structure | ... | Component ownership |
-| Development process | ... | Sprint-based delivery |
-| Deployment frequency | ... | Release automation |
-
-## 2.3 Convention Constraints
-| Convention | Description | Enforcement |
-|------------|-------------|-------------|
-| Naming conventions | Package, class, method naming | ... |
-| Code style | Formatting rules | ... |
-| API design | REST conventions | ... |
-
-Write 6-8 pages with REAL data from tools. No placeholders.
+Write 8-10 pages with REAL data from tools. No placeholders.
 """
 
 CH03_CONTEXT = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 3: System Scope and Context (8-10 pages).
+Create the COMPLETE arc42 Chapter 3: System Scope and Context (8-12 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 3.1 Business Context (3 pages)
+- Context diagram (text-based ASCII showing system + external actors)
+- External actors table: | Actor | Role | Interactions | Volume |
+- External systems table: | System | Purpose | Protocol | Data Exchanged |
+### 3.2 Technical Context (3 pages)
+- Technical interfaces: REST API surface, database connections, message channels
+- Protocols and formats table
+- Complete API endpoint inventory (summarized by domain)
+### 3.3 External Dependencies (2 pages)
+- Runtime dependencies table: | Dependency | Version | Purpose | Criticality |
+- Build dependencies table
+- Infrastructure dependencies
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_statistics() -> get system overview
-2. get_endpoints() -> get REST API endpoints
-3. query_architecture_facts(category="interfaces") -> get API interface details
-4. doc_writer(file_path="arc42/03-context.md", content="# 03 - System Scope and Context\\n\\n## 3.1 Business Context\\n...")
-5. Respond: "File arc42/03-context.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System overview
-2. get_architecture_summary() - Architecture style
-3. get_endpoints() - REST API endpoints
-4. query_architecture_facts(category="containers") - Container details
-5. query_architecture_facts(category="interfaces") - API interfaces
+2. get_architecture_summary() -> get architecture style
+3. get_endpoints() -> get ALL REST API endpoints
+4. query_architecture_facts(category="containers") -> get container details
+5. query_architecture_facts(category="interfaces") -> get API interfaces
+6. rag_query(query="external system integration database") -> external deps
+7. doc_writer(file_path="arc42/03-context.md", content="# 03 - System Scope and Context\\n...")
+8. Respond: "File arc42/03-context.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/03-context.md using doc_writer tool.
-
-# 03 - System Scope and Context
-
-## 3.1 Business Context
-
-### 3.1.1 Context Diagram (text-based ASCII)
-### 3.1.2 External Actors
-| Actor | Role | Interactions | Volume |
-|-------|------|--------------|--------|
-### 3.1.3 External Systems
-| System | Purpose | Protocol | Data Exchanged |
-|--------|---------|----------|----------------|
-
-## 3.2 Technical Context
-
-### 3.2.1 Technical Interfaces
-- REST API Surface
-- Database Connections
-- Message Channels
-
-### 3.2.2 Protocols and Formats
-- REST API: JSON over HTTPS
-- Database: JDBC
-- Caching: Redis (if applicable)
-
-## 3.3 External Dependencies
-### 3.3.1 Runtime Dependencies
-| Dependency | Version | Purpose | Criticality |
-|------------|---------|---------|-------------|
-### 3.3.2 Build Dependencies
-| Dependency | Version | Purpose |
-|------------|---------|---------|
-
-Write 8-10 pages with REAL data from tools. No placeholders.
+Write 8-12 pages with REAL data from tools. No placeholders.
 """
 
 CH04_SOLUTION_STRATEGY = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 4: Solution Strategy (8-10 pages).
+Create the COMPLETE arc42 Chapter 4: Solution Strategy (8-12 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 4.1 Technology Decisions (4 pages)
+- ADR-lite table for EACH major technology: Backend Framework, Database, Frontend, Build Tool,
+  Container Technology, Security Framework, API Design
+- For EACH: Context, Decision, Rationale, Alternatives, Consequences
+### 4.2 Architecture Patterns (3 pages)
+- Macro architecture: pattern name, layer responsibilities, dependency rules
+- Applied patterns table: | Pattern | Purpose | Where Applied | Benefit |
+- At least 8 patterns from the codebase
+### 4.3 Achieving Quality Goals (2 pages)
+- Table: | Quality Goal | Solution Approach | Implemented By |
+- Map quality goals to concrete architectural decisions
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_architecture_summary() -> get architecture style, patterns, layers
 2. get_statistics() -> get system metrics
 3. query_architecture_facts(category="containers") -> get container technologies
-4. doc_writer(file_path="arc42/04-solution-strategy.md", content="# 04 - Solution Strategy\\n\\n## 4.1 Technology Decisions\\n...")
-5. Respond: "File arc42/04-solution-strategy.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_architecture_summary() - Architecture style and patterns
-2. get_statistics() - System metrics
-3. query_architecture_facts(category="containers") - Container details
+4. list_components_by_stereotype(stereotype="configuration") -> get config components
+5. rag_query(query="architecture pattern repository service") -> pattern details
+6. rag_query(query="framework spring boot version") -> framework info
+7. doc_writer(file_path="arc42/04-solution-strategy.md", content="# 04 - Solution Strategy\\n...")
+8. Respond: "File arc42/04-solution-strategy.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/04-solution-strategy.md using doc_writer tool.
-
-# 04 - Solution Strategy
-
-## 4.1 Technology Decisions
-For EACH major technology choice (ADR-lite format):
-| Aspect | Description |
-|--------|-------------|
-| Context | What problem? |
-| Decision | What was chosen? |
-| Rationale | Why this option? |
-| Alternatives | What else? |
-| Consequences | What follows? |
-
-Document decisions for: Backend Framework, Database Technology, Frontend Framework, Build Tool, Container Technology, Security Framework, API Design.
-
-## 4.2 Architecture Patterns
-
-### 4.2.1 Macro Architecture
-- Pattern name (e.g., Layered Architecture)
-- Key principles and layer responsibilities
-- Dependency rules
-
-### 4.2.2 Applied Patterns
-| Pattern | Purpose | Where Applied | Benefit |
-|---------|---------|---------------|---------|
-
-## 4.3 Achieving Quality Goals
-| Quality Goal | Solution Approach | Implemented By |
-|--------------|-------------------|----------------|
-
-Write 8-10 pages with REAL data from tools. No placeholders.
+Write 8-12 pages with REAL data from tools. No placeholders.
 """
 
 # Chapter 5 is split into 4 sub-crews to avoid truncation.
@@ -343,506 +246,473 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 # Arc42Crew.run() merges them into the final 05-building-blocks.md.
 
 CH05_PART1_OVERVIEW = TOOL_INSTRUCTION + """
-Create arc42 Chapter 5 PART 1: Overview and System Whitebox (4-5 pages).
+Create arc42 Chapter 5 PART 1: Overview and System Whitebox (6-8 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 5.1 Overview (2 pages)
+- A-Architecture (Functional view): business capabilities mapped to layers
+- T-Architecture (Technical view): containers hosting building blocks
+- Building Block Hierarchy with total counts per stereotype
+### 5.2 Whitebox Overall System (Level 1) (4-6 pages)
+- Container overview diagram (text-based ASCII)
+- Container responsibilities table: | Container | Technology | Purpose | Component Count |
+- Layer dependency rules diagram
+- Component distribution across containers
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_statistics() -> get component counts per layer
-2. get_architecture_summary() -> get layer structure
+2. get_architecture_summary() -> get layer structure and patterns
 3. query_architecture_facts(category="containers") -> get container details
-4. doc_writer(file_path="arc42/05-part1-overview.md", content="# 05 - Building Block View\\n\\n## 5.1 Overview\\n...")
-5. Respond: "File arc42/05-part1-overview.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - Component counts
-2. get_architecture_summary() - Layer structure
-3. query_architecture_facts(category="containers") - Container details
+4. list_components_by_stereotype(stereotype="controller") -> count controllers
+5. list_components_by_stereotype(stereotype="service") -> count services
+6. list_components_by_stereotype(stereotype="repository") -> count repos
+7. list_components_by_stereotype(stereotype="entity") -> count entities
+8. doc_writer(file_path="arc42/05-part1-overview.md", content="# 05 - Building Block View\\n...")
+9. Respond: "File arc42/05-part1-overview.md written successfully."
 
 Summary data:
 {system_summary}
 {containers_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/05-part1-overview.md using doc_writer tool.
-
-# 05 - Building Block View
-
-## 5.1 Overview
-- A-Architecture (Functional view): how business capabilities map to layers
-- T-Architecture (Technical view): how containers host building blocks
-- Building Block Hierarchy: total counts per layer (controller, service, repository, entity)
-
-## 5.2 Whitebox Overall System (Level 1)
-### Container Overview Diagram (text-based ASCII)
-### Container Responsibilities Table
-| Container | Technology | Purpose | Components |
-|-----------|-----------|---------|------------|
-
-Write 4-5 pages with REAL data from tools. No placeholders.
+Write 6-8 pages with REAL data from tools. No placeholders.
 """
 
 CH05_PART2_CONTROLLERS = TOOL_INSTRUCTION + """
-Create arc42 Chapter 5 PART 2: Presentation Layer / Controllers (5-6 pages).
+Create arc42 Chapter 5 PART 2: Presentation Layer / Controllers (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 5.3.1 Layer Overview (1 page)
+- Controller layer responsibilities and patterns
+### 5.3.2 Controller Inventory (3-4 pages)
+- COMPLETE table of ALL controllers: | # | Controller | Package | Endpoints | Description |
+### 5.3.3 API Patterns (1-2 pages)
+- REST conventions, URL naming, HTTP methods, response formats
+### 5.3.4 Key Controllers Deep Dive — TOP 5 (3-4 pages)
+- For EACH: All endpoints, operations, delegation to services, validation, security
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. list_components_by_stereotype(stereotype="controller") -> get ALL controllers
-2. get_endpoints() -> get REST API endpoint list
-3. doc_writer(file_path="arc42/05-part2-controllers.md", content="## 5.3 Presentation Layer (Controllers)\\n\\n### 5.3.1 Layer Overview\\n...")
-4. Respond: "File arc42/05-part2-controllers.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. list_components_by_stereotype(stereotype="controller") - ALL controllers
-2. get_endpoints() - REST API endpoints
-3. get_statistics() - Component counts
+2. get_endpoints() -> get ALL REST API endpoints
+3. get_statistics() -> get component counts
+4. query_architecture_facts(category="relations") -> get controller dependencies
+5. rag_query(query="REST controller endpoint mapping") -> API patterns
+6. doc_writer(file_path="arc42/05-part2-controllers.md", content="## 5.3 Presentation Layer\\n...")
+7. Respond: "File arc42/05-part2-controllers.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/05-part2-controllers.md using doc_writer tool.
-
-## 5.3 Presentation Layer (Controllers)
-
-### 5.3.1 Layer Overview
-Controllers expose the system's REST API. Describe the layer role.
-
-### 5.3.2 Controller Inventory
-List ALL controllers in a table:
-| # | Controller | Package | Description |
-|---|------------|---------|-------------|
-(COMPLETE list — every controller from list_components_by_stereotype!)
-
-### 5.3.3 API Patterns
-| Pattern | Description |
-|---------|-------------|
-
-### 5.3.4 Key Controllers Deep Dive (TOP 5)
-For each top controller: Endpoint, Operations, Delegation, Validation, Security.
-
-Write 5-6 pages with REAL data. COMPLETE controller inventory. No placeholders.
+Write 8-10 pages with REAL data. COMPLETE controller inventory. No placeholders.
 """
 
 CH05_PART3_SERVICES = TOOL_INSTRUCTION + """
-Create arc42 Chapter 5 PART 3: Business Layer / Services (5-6 pages).
+Create arc42 Chapter 5 PART 3: Business Layer / Services (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 5.4.1 Layer Overview (1 page)
+- Service layer responsibilities, bounded contexts, business rules
+### 5.4.2 Service Inventory (3-4 pages)
+- COMPLETE table of ALL services: | # | Service | Package | Interface? | Description |
+### 5.4.3 Service Patterns (1-2 pages)
+- Interface/Implementation pattern, transaction boundaries, service composition
+### 5.4.4 Key Services Deep Dive — TOP 5 (2-3 pages)
+- For EACH: Core responsibilities, transaction management, dependencies, events
+### 5.4.5 Service Interactions (1 page)
+- Key service-to-service dependencies with direction
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. list_components_by_stereotype(stereotype="service") -> get ALL services
 2. get_architecture_summary() -> get architecture patterns
-3. doc_writer(file_path="arc42/05-part3-services.md", content="## 5.4 Business Layer (Services)\\n\\n### 5.4.1 Layer Overview\\n...")
-4. Respond: "File arc42/05-part3-services.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. list_components_by_stereotype(stereotype="service") - ALL services
-2. get_architecture_summary() - Architecture patterns
-3. get_statistics() - Component counts
+3. get_statistics() -> get component counts
+4. query_architecture_facts(category="relations") -> get service dependencies
+5. rag_query(query="service implementation transaction") -> service patterns
+6. doc_writer(file_path="arc42/05-part3-services.md", content="## 5.4 Business Layer\\n...")
+7. Respond: "File arc42/05-part3-services.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/05-part3-services.md using doc_writer tool.
-
-## 5.4 Business Layer (Services)
-
-### 5.4.1 Layer Overview
-Services contain core business rules. Describe bounded contexts.
-
-### 5.4.2 Service Inventory
-List ALL services in a table:
-| # | Service | Package | Description |
-|---|---------|---------|-------------|
-(COMPLETE list — every service from list_components_by_stereotype!)
-
-### 5.4.3 Service Patterns
-| Pattern | Where Used |
-|---------|------------|
-
-### 5.4.4 Key Services Deep Dive (TOP 5)
-For each: Core responsibilities, Transactions, Events, Collaboration.
-
-### 5.4.5 Service Interactions
-Key service-to-service dependencies.
-
-Write 5-6 pages with REAL data. COMPLETE service inventory. No placeholders.
+Write 8-10 pages with REAL data. COMPLETE service inventory. No placeholders.
 """
 
 CH05_PART4_DOMAIN = TOOL_INSTRUCTION + """
-Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies (5-6 pages).
+Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 5.5 Domain Layer — Entities (3-4 pages)
+- Layer overview: JPA entities, aggregate roots, value objects
+- COMPLETE entity inventory: | # | Entity | Package | Key Attributes | Description |
+- Key entities deep dive (TOP 5): attributes, relationships, lifecycle, validation
+### 5.6 Persistence Layer — Repositories (2-3 pages)
+- Layer overview: data access patterns
+- COMPLETE repository inventory: | # | Repository | Entity | Custom Queries | Description |
+- Data access patterns (Spring Data JPA, custom queries, specifications)
+### 5.7 Component Dependencies (2-3 pages)
+- Layer dependency rules with direction
+- Dependency matrix: | From/To | Controller | Service | Repository | Entity |
+- Dependency statistics and coupling analysis
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. list_components_by_stereotype(stereotype="entity") -> get ALL entities
 2. list_components_by_stereotype(stereotype="repository") -> get ALL repositories
 3. query_architecture_facts(category="relations") -> get dependency data
-4. doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer (Entities)\\n\\n### 5.5.1 Layer Overview\\n...")
-5. Respond: "File arc42/05-part4-domain.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. list_components_by_stereotype(stereotype="entity") - ALL entities
-2. list_components_by_stereotype(stereotype="repository") - ALL repositories
-3. query_architecture_facts(category="relations") - Dependencies
-4. get_statistics() - Component counts
+4. get_statistics() -> get component counts
+5. rag_query(query="entity JPA relationship mapping") -> entity details
+6. rag_query(query="repository custom query specification") -> repo patterns
+7. doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer\\n...")
+8. Respond: "File arc42/05-part4-domain.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/05-part4-domain.md using doc_writer tool.
-
-## 5.5 Domain Layer (Entities)
-
-### 5.5.1 Layer Overview
-Entities represent persistent domain state. JPA-annotated POJOs.
-
-### 5.5.2 Entity Inventory
-List ALL entities in a table:
-| # | Entity | Package | Description |
-|---|--------|---------|-------------|
-(COMPLETE list — every entity from list_components_by_stereotype!)
-
-### 5.5.3 Key Entities Deep Dive (TOP 5)
-For each: Attributes, Relationships, Lifecycle, Validation.
-
-## 5.6 Persistence Layer (Repositories)
-
-### 5.6.1 Layer Overview
-### 5.6.2 Repository Inventory (COMPLETE list in table)
-### 5.6.3 Data Access Patterns
-
-## 5.7 Component Dependencies
-- Layer Dependency Rules
-- Dependency Matrix (which layers call which)
-
-Write 5-6 pages with REAL data. COMPLETE inventories. No placeholders.
+Write 8-10 pages with REAL data. COMPLETE inventories. No placeholders.
 """
 
-CH06_RUNTIME = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 6: Runtime View (8-10 pages).
+CH06_PART1_API_FLOWS = TOOL_INSTRUCTION + """
+Create arc42 Chapter 6 Part 1: API Runtime Flows (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 6.1 Runtime View Overview (1 page)
+- Purpose of runtime documentation
+- How to read sequence diagrams
+### 6.2 Authentication Flow (2 pages)
+- Login sequence with ALL components involved
+- Token refresh / session management
+### 6.3 CRUD Operation Flows (3 pages)
+- CREATE: Full request flow from client to database and back
+- READ: Single item + list with pagination
+- UPDATE: Optimistic locking / versioning
+- DELETE: Cascade behavior
+### 6.4 REST API Request Lifecycle (2 pages)
+- Request validation, serialization, error mapping
+- HTTP status code strategy
+- Content negotiation
 
 ## EXECUTION EXAMPLE (follow this pattern):
-1. get_endpoints() -> get REST API endpoints for scenario design
+1. get_endpoints() -> get ALL REST API endpoints
 2. get_architecture_summary() -> get architecture patterns
-3. query_architecture_facts(category="relations") -> get component dependencies
-4. doc_writer(file_path="arc42/06-runtime-view.md", content="# 06 - Runtime View\\n\\n## 6.1 Overview\\n...")
-5. Respond: "File arc42/06-runtime-view.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System overview
-2. get_endpoints() - REST API endpoints
-3. get_architecture_summary() - Architecture patterns
-4. search_components(query="controller") - Find key controllers
-5. query_architecture_facts(category="relations") - Dependencies
+3. list_components_by_stereotype(stereotype="controller") -> get controllers
+4. list_components_by_stereotype(stereotype="service") -> get services
+5. list_components_by_stereotype(stereotype="repository") -> get repositories
+6. query_architecture_facts(category="relations") -> get component dependencies
+7. rag_query(query="request flow authentication") -> get auth flow details
+8. doc_writer(file_path="arc42/06-part1-api-flows.md", content="# 06 - Runtime View\\n\\n## 6.1 Overview\\n...")
+9. Respond: "File arc42/06-part1-api-flows.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
-Write to file: arc42/06-runtime-view.md using doc_writer tool.
-
-# 06 - Runtime View
-
-## 6.1 Overview
-
-## 6.2 Key Scenarios
-Document at least 5 runtime scenarios with sequence diagrams (text-based):
-
-### Scenario 1: User Authentication
-```
-Client -> AuthController -> AuthService -> UserRepository -> Database
-```
-
-### Scenario 2: CRUD Create Operation
-### Scenario 3: CRUD Read with Pagination
-### Scenario 4: Business Process (most complex flow)
-### Scenario 5: Error Handling Scenario
-
-## 6.3 Interaction Patterns
-- Synchronous Interactions
-- Asynchronous Interactions (if any)
-
-## 6.4 Transaction Boundaries
-- Service layer demarcation
-- Rollback scenarios
-
+Write to file: arc42/06-part1-api-flows.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
+Include text-based sequence diagrams for EACH flow showing exact component names.
+"""
+
+CH06_PART2_BUSINESS_FLOWS = TOOL_INSTRUCTION + """
+Create arc42 Chapter 6 Part 2: Business Process Flows (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 6.5 Core Business Workflows (3 pages)
+- Primary business process end-to-end (e.g., deed entry creation workflow)
+- State transitions with component responsibilities
+- Workflow orchestration pattern
+### 6.6 Complex Business Scenarios (3 pages)
+- Multi-step approval/validation flows
+- Cross-service transactions
+- Batch processing flows
+### 6.7 Error and Recovery Scenarios (2 pages)
+- Exception propagation through layers
+- Compensation/rollback patterns
+- Retry strategies
+### 6.8 Asynchronous Patterns (1-2 pages)
+- Scheduled tasks and cron jobs
+- Event-driven interactions (if any)
+- Background processing
+
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get system overview
+2. get_architecture_summary() -> get architecture patterns
+3. list_components_by_stereotype(stereotype="service") -> get ALL services
+4. query_architecture_facts(category="relations") -> get dependencies
+5. rag_query(query="workflow state transition") -> get workflow details
+6. rag_query(query="scheduled task batch") -> get async patterns
+7. rag_query(query="exception error handling") -> get error handling
+8. doc_writer(file_path="arc42/06-part2-business-flows.md", content="## 6.5 Core Business Workflows\\n...")
+9. Respond: "File arc42/06-part2-business-flows.md written successfully."
+
+Summary data:
+{system_summary}
+
+Write to file: arc42/06-part2-business-flows.md using doc_writer tool.
+Write 8-10 pages with REAL data from tools. No placeholders.
+Include text-based sequence diagrams showing exact component names from facts.
 """
 
 CH07_DEPLOYMENT = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 7: Deployment View (6-8 pages).
+Create the COMPLETE arc42 Chapter 7: Deployment View (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 7.1 Infrastructure Overview (2 pages)
+- Deployment diagram (text-based ASCII)
+- Infrastructure summary
+### 7.2 Infrastructure Nodes (2 pages)
+- Node table: | Node | Type | Specification | Purpose |
+- Container-to-node mapping
+### 7.3 Container Deployment (2 pages)
+- Docker configuration details
+- Container orchestration (Kubernetes/Docker Compose)
+- Build pipeline (Maven/Gradle -> Docker image)
+### 7.4 Environment Configuration (1-2 pages)
+- Development, Test, Staging, Production environments
+- Environment-specific settings
+### 7.5 Network Topology (1 page)
+- Network zones and firewall rules
+- Load balancing strategy
+### 7.6 Scaling Strategy (1 page)
+- Scaling table: | Container | Scaling Type | Trigger | Min | Max |
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_statistics() -> get system overview
 2. query_architecture_facts(category="containers") -> get container details
 3. get_architecture_summary() -> get infrastructure hints
-4. doc_writer(file_path="arc42/07-deployment.md", content="# 07 - Deployment View\\n\\n## 7.1 Infrastructure Overview\\n...")
-5. Respond: "File arc42/07-deployment.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System overview
-2. get_architecture_summary() - Infrastructure hints
-3. query_architecture_facts(category="containers") - Container details
+4. rag_query(query="docker dockerfile kubernetes deployment") -> deployment config
+5. rag_query(query="application properties profile environment") -> env config
+6. doc_writer(file_path="arc42/07-deployment.md", content="# 07 - Deployment View\\n...")
+7. Respond: "File arc42/07-deployment.md written successfully."
 
 Summary data:
 {system_summary}
 {containers_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/07-deployment.md using doc_writer tool.
-
-# 07 - Deployment View
-
-## 7.1 Infrastructure Overview
-- Deployment Diagram (text-based)
-
-## 7.2 Infrastructure Nodes
-| Node | Type | Specification | Purpose |
-|------|------|---------------|---------|
-
-## 7.3 Container Deployment
-- Docker Configuration
-- Container Orchestration
-
-## 7.4 Environment Configuration
-- Development, Test, Production
-
-## 7.5 Network Topology
-- Network Zones and Firewall Rules
-
-## 7.6 Scaling Strategy
-| Container | Scaling Type | Trigger | Min | Max |
-|-----------|--------------|---------|-----|-----|
-
-Write 6-8 pages with REAL data from tools. No placeholders.
+Write 8-10 pages with REAL data from tools. No placeholders.
 """
 
-CH08_CROSSCUTTING = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 8: Cross-cutting Concepts (8-10 pages).
+CH08_PART1_TECHNICAL = TOOL_INSTRUCTION + """
+Create arc42 Chapter 8 Part 1: Technical Crosscutting Concepts (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 8.1 Domain Model (2 pages)
+- Core domain concepts with entity relationship diagram (text-based)
+- Entity inventory table: | Entity | Key Attributes | Relationships |
+- Aggregate boundaries
+### 8.2 Security Concept (2 pages)
+- Authentication mechanism (Spring Security, JWT, OAuth2, etc.)
+- Authorization model (roles, permissions)
+- Security annotations and filters
+- CSRF, XSS, injection prevention
+### 8.3 Persistence Concept (2 pages)
+- ORM strategy (JPA/Hibernate configuration)
+- Transaction management (@Transactional boundaries)
+- Connection pooling
+- Database migration strategy (Flyway/Liquibase)
+### 8.4 Error Handling and Exception Strategy (1-2 pages)
+- Exception hierarchy (custom exceptions, base classes)
+- Global exception handler (@ControllerAdvice)
+- Error response format (JSON structure)
+- HTTP status code mapping
+### 8.5 Logging and Monitoring (1-2 pages)
+- Logging framework and configuration
+- Log levels strategy per layer
+- Structured logging format
+- Health checks and metrics endpoints
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_architecture_summary() -> get architecture patterns
-2. search_components(query="security") -> find security components
-3. list_components_by_stereotype(stereotype="entity") -> get domain model
-4. doc_writer(file_path="arc42/08-crosscutting.md", content="# 08 - Cross-cutting Concepts\\n\\n## 8.1 Domain Model\\n...")
-5. Respond: "File arc42/08-crosscutting.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System overview
-2. get_architecture_summary() - Architecture patterns
-3. search_components(query="security") - Security components
-4. search_components(query="config") - Configuration components
-5. list_components_by_stereotype(stereotype="entity") - Domain model
+2. list_components_by_stereotype(stereotype="entity") -> get ALL entities
+3. search_components(query="security") -> find security components
+4. search_components(query="exception") -> find error handling
+5. rag_query(query="security authentication authorization") -> security details
+6. rag_query(query="logging slf4j logback") -> logging config
+7. rag_query(query="exception handling ControllerAdvice") -> error handling
+8. rag_query(query="transaction management Transactional") -> persistence
+9. doc_writer(file_path="arc42/08-part1-technical.md", content="# 08 - Cross-cutting Concepts\\n\\n## 8.1 Domain Model\\n...")
+10. Respond: "File arc42/08-part1-technical.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
-Write to file: arc42/08-crosscutting.md using doc_writer tool.
+Write to file: arc42/08-part1-technical.md using doc_writer tool.
+Write 8-10 pages with REAL data from tools. No placeholders.
+"""
 
-# 08 - Cross-cutting Concepts
+CH08_PART2_PATTERNS = TOOL_INSTRUCTION + """
+Create arc42 Chapter 8 Part 2: Architecture Patterns and Conventions (8-10 pages).
 
-## 8.1 Domain Model
-- Core Domain Concepts
-- Entity Relationships
+## REQUIRED SECTIONS (do NOT skip any):
+### 8.6 Dependency Injection Patterns (2 pages)
+- Constructor injection conventions
+- Bean lifecycle management
+- Component scanning strategy
+- Profile-based configuration
+### 8.7 Caching Strategy (1-2 pages)
+- Cache levels (application, HTTP, database)
+- Cache invalidation patterns
+- Cacheable operations
+### 8.8 Validation Concept (1-2 pages)
+- Bean validation (JSR-380)
+- Custom validators
+- Validation at each layer (controller, service, entity)
+### 8.9 Configuration Management (2 pages)
+- Property sources and profiles (application.yml, application-{profile}.yml)
+- Environment-specific configuration
+- Externalized configuration
+- Feature toggles
+### 8.10 Testing Concept (2 pages)
+- Test pyramid strategy
+- Unit test patterns (Mockito, JUnit)
+- Integration test setup (@SpringBootTest)
+- Test data management
+### 8.11 Internationalization (1 page)
+- i18n support (if detected)
+- Message bundles, locale handling
 
-## 8.2 Security Concept
-- Authentication mechanism
-- Authorization mechanism
-- Security Patterns
+## EXECUTION EXAMPLE (follow this pattern):
+1. get_statistics() -> get system overview
+2. get_architecture_summary() -> get patterns
+3. search_components(query="config") -> find configuration components
+4. search_components(query="cache") -> find caching components
+5. rag_query(query="configuration properties profile") -> config details
+6. rag_query(query="validation Bean JSR") -> validation patterns
+7. rag_query(query="test junit mockito SpringBootTest") -> testing patterns
+8. rag_query(query="dependency injection constructor autowired") -> DI patterns
+9. doc_writer(file_path="arc42/08-part2-patterns.md", content="## 8.6 Dependency Injection Patterns\\n...")
+10. Respond: "File arc42/08-part2-patterns.md written successfully."
 
-## 8.3 Persistence Concept
-- ORM Strategy
-- Transaction Management
-- Database Migrations
+Summary data:
+{system_summary}
 
-## 8.4 Error Handling
-- Exception hierarchy
-- Error response format
-
-## 8.5 Logging and Monitoring
-- Logging framework
-- Log levels and strategy
-
-## 8.6 Testing Concept
-- Test pyramid
-- Test patterns
-
-## 8.7 Configuration Management
-- Property sources
-- Profile management
-
+Write to file: arc42/08-part2-patterns.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 """
 
 CH09_DECISIONS = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 9: Architecture Decisions (8 pages).
+Create the COMPLETE arc42 Chapter 9: Architecture Decisions (8-12 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 9.1 Decision Log Overview (1 page)
+- Summary table of ALL ADRs with status and date
+### 9.2 Architecture Decision Records (7-11 pages)
+- Write at least 10 ADRs, each with: Status, Context, Decision, Rationale, Alternatives, Consequences
+- Cover: Architecture Style, Backend Framework, Database, Frontend, API Design, Authentication,
+  Deployment Strategy, Caching, Logging Framework, Testing Strategy
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_architecture_summary() -> get architecture style, patterns
 2. query_architecture_facts(category="containers") -> get technology choices
 3. get_statistics() -> get system metrics
-4. doc_writer(file_path="arc42/09-decisions.md", content="# 09 - Architecture Decisions\\n\\n## 9.1 Decision Log Overview\\n...")
-5. Respond: "File arc42/09-decisions.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_architecture_summary() - Architecture style and patterns
-2. get_statistics() - System overview
-3. query_architecture_facts(category="containers") - Technology choices
+4. get_endpoints() -> get API design decisions
+5. rag_query(query="architecture decision spring framework") -> framework decisions
+6. rag_query(query="database configuration persistence") -> DB decisions
+7. doc_writer(file_path="arc42/09-decisions.md", content="# 09 - Architecture Decisions\\n...")
+8. Respond: "File arc42/09-decisions.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/09-decisions.md using doc_writer tool.
-
-# 09 - Architecture Decisions
-
-## 9.1 Decision Log Overview
-Summary of all ADRs.
-
-## 9.2 Architecture Decision Records
-Write at least 8 ADRs in this format:
-
-### ADR-001: [Title]
-| Aspect | Description |
-|--------|-------------|
-| Status | Accepted |
-| Context | What problem? |
-| Decision | What was decided? |
-| Rationale | Why? |
-| Consequences | What follows? |
-
-Cover decisions for: Architecture Style, Backend Framework, Database, Frontend, API Design, Authentication, Deployment, Caching.
-
-Write 8 pages with REAL data from tools. No placeholders.
+Write 8-12 pages with REAL data from tools. No placeholders.
 """
 
 CH10_QUALITY = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 10: Quality Requirements (6 pages).
+Create the COMPLETE arc42 Chapter 10: Quality Requirements (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 10.1 Quality Tree (2 pages)
+- Quality attribute hierarchy (text-based tree diagram)
+- ISO 25010 mapping for each quality attribute
+### 10.2 Quality Scenarios (4-5 pages)
+- At least 15 quality scenarios in table format
+- Cover: Performance, Security, Maintainability, Reliability, Usability, Portability
+- For EACH: | ID | Attribute | Stimulus | Response | Measure | Priority |
+### 10.3 Quality Metrics (2-3 pages)
+- Metrics table: | Metric | Target | Measurement Method | Current |
+- Code quality metrics, performance targets, security requirements
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_architecture_summary() -> get quality attributes, patterns
-2. get_statistics() -> get system metrics
-3. doc_writer(file_path="arc42/10-quality.md", content="# 10 - Quality Requirements\\n\\n## 10.1 Quality Tree\\n...")
-4. Respond: "File arc42/10-quality.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_architecture_summary() - Quality attributes
-2. get_statistics() - System metrics
+2. get_statistics() -> get system metrics (component counts, relations)
+3. list_components_by_stereotype(stereotype="controller") -> count for metrics
+4. query_architecture_facts(category="relations") -> coupling metrics
+5. rag_query(query="quality performance test") -> quality indicators
+6. doc_writer(file_path="arc42/10-quality.md", content="# 10 - Quality Requirements\\n...")
+7. Respond: "File arc42/10-quality.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/10-quality.md using doc_writer tool.
-
-# 10 - Quality Requirements
-
-## 10.1 Quality Tree
-Show quality attribute hierarchy (text-based tree diagram).
-
-## 10.2 Quality Scenarios
-Document at least 10 quality scenarios:
-| ID | Quality Attribute | Scenario | Expected Response | Priority |
-|----|-------------------|----------|-------------------|----------|
-
-## 10.3 Quality Metrics
-| Metric | Target | Measurement Method |
-|--------|--------|--------------------|
-
-Write 6 pages with REAL data from tools. No placeholders.
+Write 8-10 pages with REAL data from tools. No placeholders.
 """
 
 CH11_RISKS = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 11: Risks and Technical Debt (6 pages).
+Create the COMPLETE arc42 Chapter 11: Risks and Technical Debt (8-10 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 11.1 Risk Overview (1 page)
+- Risk heat map (text-based) and summary table
+### 11.2 Architecture Risks (3-4 pages)
+- At least 8 risks with: | ID | Risk | Severity | Probability | Impact | Mitigation |
+- Categories: structural, technology, organizational, operational
+### 11.3 Technical Debt Inventory (2-3 pages)
+- At least 10 debt items: | ID | Debt Item | Category | Impact | Effort to Fix |
+- Categories: code quality, missing tests, outdated dependencies, architectural violations
+### 11.4 Mitigation Roadmap (2 pages)
+- Prioritized action plan: | Phase | Action | Priority | Timeline | Effort |
+- Quick wins vs. strategic improvements
 
 ## EXECUTION EXAMPLE (follow this pattern):
-1. get_architecture_summary() -> get architecture assessment
+1. get_architecture_summary() -> get architecture assessment and quality
 2. get_statistics() -> get system complexity metrics
 3. query_architecture_facts(category="relations") -> get dependency risks
-4. doc_writer(file_path="arc42/11-risks.md", content="# 11 - Risks and Technical Debt\\n\\n## 11.1 Risk Overview\\n...")
-5. Respond: "File arc42/11-risks.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_architecture_summary() - Architecture assessment
-2. get_statistics() - System complexity metrics
-3. query_architecture_facts(category="relations") - Dependency risks
+4. list_components_by_stereotype(stereotype="component") -> generic components (potential debt)
+5. rag_query(query="deprecated legacy TODO FIXME") -> technical debt indicators
+6. rag_query(query="coupling dependency circular") -> coupling risks
+7. doc_writer(file_path="arc42/11-risks.md", content="# 11 - Risks and Technical Debt\\n...")
+8. Respond: "File arc42/11-risks.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/11-risks.md using doc_writer tool.
-
-# 11 - Risks and Technical Debt
-
-## 11.1 Risk Overview
-Summary table of all risks.
-
-## 11.2 Architecture Risks
-Document at least 5 risks:
-| ID | Risk | Severity | Probability | Impact | Mitigation |
-|----|------|----------|-------------|--------|------------|
-
-## 11.3 Technical Debt Inventory
-| ID | Debt Item | Category | Impact | Effort to Fix |
-|----|-----------|----------|--------|---------------|
-
-## 11.4 Mitigation Roadmap
-| Phase | Action | Priority | Timeline |
-|-------|--------|----------|----------|
-
-Write 6 pages with REAL data from tools. No placeholders.
+Write 8-10 pages with REAL data from tools. No placeholders.
 """
 
 CH12_GLOSSARY = TOOL_INSTRUCTION + """
-Create the COMPLETE arc42 Chapter 12: Glossary (4 pages).
+Create the COMPLETE arc42 Chapter 12: Glossary (6-8 pages).
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 12.1 Business Terms (2-3 pages)
+- ALL domain-specific business terms derived from entity and service names
+- Table: | Term | Definition | Related Components |
+### 12.2 Technical Terms (2 pages)
+- Framework, pattern, and technology terms
+- Table: | Term | Definition | Context |
+### 12.3 Abbreviations (1 page)
+- ALL abbreviations found in code and configuration
+- Table: | Abbreviation | Full Form | Context |
+### 12.4 Architecture Patterns (1-2 pages)
+- All detected architecture and design patterns
+- Table: | Pattern | Definition | Where Used | Benefit |
 
 ## EXECUTION EXAMPLE (follow this pattern):
 1. get_statistics() -> get system terminology
 2. list_components_by_stereotype(stereotype="entity") -> get domain terms
-3. get_architecture_summary() -> get architecture terms
-4. doc_writer(file_path="arc42/12-glossary.md", content="# 12 - Glossary\\n\\n## 12.1 Business Terms\\n...")
-5. Respond: "File arc42/12-glossary.md written successfully."
-
-## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System terminology
-2. get_architecture_summary() - Architecture terms
-3. list_components_by_stereotype(stereotype="entity") - Domain terms
+3. list_components_by_stereotype(stereotype="service") -> get business terms
+4. get_architecture_summary() -> get architecture terms
+5. get_endpoints() -> get API terms
+6. rag_query(query="domain model business terminology") -> domain knowledge
+7. doc_writer(file_path="arc42/12-glossary.md", content="# 12 - Glossary\\n...")
+8. Respond: "File arc42/12-glossary.md written successfully."
 
 Summary data:
 {system_summary}
 
-## DOCUMENT STRUCTURE
 Write to file: arc42/12-glossary.md using doc_writer tool.
-
-# 12 - Glossary
-
-## 12.1 Business Terms
-| Term | Definition |
-|------|-----------|
-
-## 12.2 Technical Terms
-| Term | Definition |
-|------|-----------|
-
-## 12.3 Abbreviations
-| Abbreviation | Full Form |
-|--------------|-----------|
-
-## 12.4 Architecture Patterns
-| Pattern | Definition | Where Used |
-|---------|-----------|------------|
-
-Write 4 pages. Include ALL domain-specific terms from the system.
+Write 6-8 pages. Include ALL domain-specific terms from the system. No placeholders.
 """
 
 QUALITY_GATE_DESCRIPTION = """
@@ -880,8 +750,14 @@ class Arc42Crew(MiniCrewBase):
     This prevents context overflow that occurred with 44 tasks in 1 Crew.
 
     Mini-Crews (1 task each for reliability with on-prem models):
-    1-12. One crew per arc42 chapter (fresh LLM context each)
-    13. Quality Gate (validation)
+    1-8. Chapters 1-5 (ch05 split into 4 sub-crews)
+    9-10. Chapter 6 (runtime view split into 2 sub-crews)
+    11. Chapter 7 (deployment)
+    12-13. Chapter 8 (crosscutting split into 2 sub-crews)
+    14-17. Chapters 9-12
+    18. Quality Gate (validation)
+
+    Total: 18 mini-crews (was 16 before ch06/ch08 splitting)
     """
 
     @property
@@ -1007,6 +883,78 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
             )
 
     # -------------------------------------------------------------------------
+    # MERGE RUNTIME VIEW
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _merge_runtime_view() -> None:
+        """Merge 2 runtime-view part files into 06-runtime-view.md."""
+        base = Path("knowledge/architecture/arc42")
+        parts = [
+            "06-part1-api-flows.md",
+            "06-part2-business-flows.md",
+        ]
+
+        merged_lines: list[str] = []
+        for part_file in parts:
+            path = base / part_file
+            if path.exists() and path.stat().st_size > 100:
+                content = path.read_text(encoding="utf-8").strip()
+                # Remove duplicate chapter title from part 2
+                if merged_lines and content.startswith("# 06"):
+                    lines = content.split("\n", 1)
+                    content = lines[1].strip() if len(lines) > 1 else content
+                merged_lines.append(content)
+                merged_lines.append("")  # blank separator
+                logger.info(f"[Arc42] Merged {part_file} ({len(content)} chars)")
+            else:
+                logger.warning(f"[Arc42] Part file missing: {part_file}")
+
+        if merged_lines:
+            merged = "\n".join(merged_lines)
+            target = base / "06-runtime-view.md"
+            target.write_text(merged, encoding="utf-8")
+            logger.info(
+                f"[Arc42] Merged runtime-view: {len(merged)} chars -> {target}"
+            )
+
+    # -------------------------------------------------------------------------
+    # MERGE CROSSCUTTING
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _merge_crosscutting() -> None:
+        """Merge 2 crosscutting part files into 08-crosscutting.md."""
+        base = Path("knowledge/architecture/arc42")
+        parts = [
+            "08-part1-technical.md",
+            "08-part2-patterns.md",
+        ]
+
+        merged_lines: list[str] = []
+        for part_file in parts:
+            path = base / part_file
+            if path.exists() and path.stat().st_size > 100:
+                content = path.read_text(encoding="utf-8").strip()
+                # Remove duplicate chapter title from part 2
+                if merged_lines and content.startswith("# 08"):
+                    lines = content.split("\n", 1)
+                    content = lines[1].strip() if len(lines) > 1 else content
+                merged_lines.append(content)
+                merged_lines.append("")  # blank separator
+                logger.info(f"[Arc42] Merged {part_file} ({len(content)} chars)")
+            else:
+                logger.warning(f"[Arc42] Part file missing: {part_file}")
+
+        if merged_lines:
+            merged = "\n".join(merged_lines)
+            target = base / "08-crosscutting.md"
+            target.write_text(merged, encoding="utf-8")
+            logger.info(
+                f"[Arc42] Merged crosscutting: {len(merged)} chars -> {target}"
+            )
+
+    # -------------------------------------------------------------------------
     # PUBLIC API
     # -------------------------------------------------------------------------
 
@@ -1028,49 +976,55 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
         # in a crew (writes ch03 but not ch04, etc.).
         mini_crews: list[tuple[str, list[tuple[str, str]], list[str]]] = [
             ("introduction", [
-                (CH01_INTRODUCTION, "Complete arc42 Introduction chapter (8-10 pages)"),
+                (CH01_INTRODUCTION, "Complete arc42 Introduction chapter (8-12 pages)"),
             ], ["arc42/01-introduction.md"]),
             ("constraints", [
-                (CH02_CONSTRAINTS, "Complete arc42 Constraints chapter (6-8 pages)"),
+                (CH02_CONSTRAINTS, "Complete arc42 Constraints chapter (8-10 pages)"),
             ], ["arc42/02-constraints.md"]),
             ("context", [
-                (CH03_CONTEXT, "Complete arc42 Context chapter (8-10 pages)"),
+                (CH03_CONTEXT, "Complete arc42 Context chapter (8-12 pages)"),
             ], ["arc42/03-context.md"]),
             ("solution-strategy", [
-                (CH04_SOLUTION_STRATEGY, "Complete arc42 Solution Strategy chapter (8-10 pages)"),
+                (CH04_SOLUTION_STRATEGY, "Complete arc42 Solution Strategy chapter (8-12 pages)"),
             ], ["arc42/04-solution-strategy.md"]),
             ("building-blocks-overview", [
-                (CH05_PART1_OVERVIEW, "Building Blocks overview and system whitebox (4-5 pages)"),
+                (CH05_PART1_OVERVIEW, "Building Blocks overview and system whitebox (6-8 pages)"),
             ], ["arc42/05-part1-overview.md"]),
             ("building-blocks-controllers", [
-                (CH05_PART2_CONTROLLERS, "Building Blocks presentation layer (5-6 pages)"),
+                (CH05_PART2_CONTROLLERS, "Building Blocks presentation layer (8-10 pages)"),
             ], ["arc42/05-part2-controllers.md"]),
             ("building-blocks-services", [
-                (CH05_PART3_SERVICES, "Building Blocks business layer (5-6 pages)"),
+                (CH05_PART3_SERVICES, "Building Blocks business layer (8-10 pages)"),
             ], ["arc42/05-part3-services.md"]),
             ("building-blocks-domain", [
-                (CH05_PART4_DOMAIN, "Building Blocks domain and persistence (5-6 pages)"),
+                (CH05_PART4_DOMAIN, "Building Blocks domain and persistence (8-10 pages)"),
             ], ["arc42/05-part4-domain.md"]),
-            ("runtime-view", [
-                (CH06_RUNTIME, "Complete arc42 Runtime View chapter (8-10 pages)"),
-            ], ["arc42/06-runtime-view.md"]),
+            ("runtime-view-api-flows", [
+                (CH06_PART1_API_FLOWS, "Arc42 Runtime View Part 1: API flows (8-10 pages)"),
+            ], ["arc42/06-part1-api-flows.md"]),
+            ("runtime-view-business-flows", [
+                (CH06_PART2_BUSINESS_FLOWS, "Arc42 Runtime View Part 2: Business flows (8-10 pages)"),
+            ], ["arc42/06-part2-business-flows.md"]),
             ("deployment", [
-                (CH07_DEPLOYMENT, "Complete arc42 Deployment View chapter (6-8 pages)"),
+                (CH07_DEPLOYMENT, "Complete arc42 Deployment View chapter (8-10 pages)"),
             ], ["arc42/07-deployment.md"]),
-            ("crosscutting", [
-                (CH08_CROSSCUTTING, "Complete arc42 Crosscutting chapter (8-10 pages)"),
-            ], ["arc42/08-crosscutting.md"]),
+            ("crosscutting-technical", [
+                (CH08_PART1_TECHNICAL, "Arc42 Crosscutting Part 1: Technical concepts (8-10 pages)"),
+            ], ["arc42/08-part1-technical.md"]),
+            ("crosscutting-patterns", [
+                (CH08_PART2_PATTERNS, "Arc42 Crosscutting Part 2: Patterns (8-10 pages)"),
+            ], ["arc42/08-part2-patterns.md"]),
             ("decisions", [
-                (CH09_DECISIONS, "Complete arc42 Decisions chapter (8 pages)"),
+                (CH09_DECISIONS, "Complete arc42 Decisions chapter (8-12 pages)"),
             ], ["arc42/09-decisions.md"]),
             ("quality", [
-                (CH10_QUALITY, "Complete arc42 Quality chapter (6 pages)"),
+                (CH10_QUALITY, "Complete arc42 Quality chapter (8-10 pages)"),
             ], ["arc42/10-quality.md"]),
             ("risks", [
-                (CH11_RISKS, "Complete arc42 Risks chapter (6 pages)"),
+                (CH11_RISKS, "Complete arc42 Risks chapter (8-10 pages)"),
             ], ["arc42/11-risks.md"]),
             ("glossary", [
-                (CH12_GLOSSARY, "Complete arc42 Glossary (4 pages)"),
+                (CH12_GLOSSARY, "Complete arc42 Glossary (6-8 pages)"),
             ], ["arc42/12-glossary.md"]),
         ]
 
@@ -1084,8 +1038,10 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
                 self._run_mini_crew(name, tasks, expected_files=expected_files)
             results.append(f"{name}: Done")
 
-        # Merge building-blocks part files into final 05-building-blocks.md
+        # Merge part files into final chapter files
         self._merge_building_blocks()
+        self._merge_runtime_view()
+        self._merge_crosscutting()
 
         # Quality Gate
         if not self.should_skip("quality-gate", completed):

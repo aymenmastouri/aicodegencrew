@@ -234,7 +234,7 @@ class MiniCrewBase(ABC):
 | **Token Tracking** | Per mini-crew token usage with summary |
 | **MCP Singleton** | MCP server path resolved once, reused |
 | **Structured Metrics** | `log_metric()` writes to `metrics.jsonl` with `run_id` |
-| **Tool Guardrails** | Blocks identical/runaway tool calls via CrewAI hooks |
+| **Tool Guardrails** | Blocks identical (>3x) / runaway (>25) tool calls via CrewAI hooks |
 | **Retry with Backoff** | Retries on `ConnectionError/TimeoutError/OSError` |
 | **Output Recovery** | Generates stub docs from facts on crew failure |
 
@@ -270,7 +270,7 @@ src/aicodegencrew/
                 __init__.py
                 crew.py                # C4Crew(MiniCrewBase) - all Python, no YAML
 
-            arc42/                     # Arc42 Mini-Crews (15 crews)
+            arc42/                     # Arc42 Mini-Crews (18 crews)
                 __init__.py
                 crew.py                # Arc42Crew(MiniCrewBase) - all Python, no YAML
 
@@ -659,7 +659,7 @@ Instead, it uses strategies to analyze MORE data within the same context window:
 
 | Aspect | Standard Mode | Deep Analysis Mode |
 |--------|---------------|-------------------|
-| Tool calls per agent | 5-10 | 20-50 |
+| Tool calls per agent | 5-25 | 20-50 |
 | Runtime | 2-5 minutes | 30-40 minutes |
 | max_iter (CrewAI) | 25 | 50 |
 | Query limit | 50 items | 500 items |
@@ -724,7 +724,7 @@ and fresh LLM context**. Data is passed via template variables, not inter-task c
 ```
 ArchitectureSynthesisCrew.run():
     C4Crew.run()     → 5 Mini-Crews (9 tasks total)
-    Arc42Crew.run()  → 7 Mini-Crews (14 tasks total)
+    Arc42Crew.run()  → 18 Mini-Crews (18 tasks total, 1 task per crew)
 ```
 
 Both inherit from `MiniCrewBase` which provides shared infrastructure.
@@ -739,17 +739,32 @@ Both inherit from `MiniCrewBase` which provides shared infrastructure.
 | `deployment` | doc + diagram | `c4/c4-deployment.md` + `.drawio` |
 | `quality` | validation | `quality/c4-report.md` |
 
-#### Arc42Crew: 7 Mini-Crews (14 tasks)
+#### Arc42Crew: 18 Mini-Crews (1 task each)
 
-| Mini-Crew | Chapters | Output |
-|-----------|----------|--------|
-| `intro-constraints` | 1-2 | `01-introduction.md`, `02-constraints.md` |
-| `context-strategy` | 3-4 | `03-context.md`, `04-solution-strategy.md` |
-| `building-blocks` | 5 | `05-building-blocks.md` (largest chapter) |
-| `runtime-deployment` | 6-7 | `06-runtime-view.md`, `07-deployment.md` |
-| `crosscutting-decisions` | 8-9 | `08-crosscutting.md`, `09-decisions.md` |
-| `quality-risks-glossary` | 10-12 | `10-quality.md`, `11-risks.md`, `12-glossary.md` |
+| Mini-Crew | Chapter | Output |
+|-----------|---------|--------|
+| `introduction` | 1 | `01-introduction.md` |
+| `constraints` | 2 | `02-constraints.md` |
+| `context` | 3 | `03-context.md` |
+| `solution-strategy` | 4 | `04-solution-strategy.md` |
+| `building-blocks-overview` | 5.1-5.2 | `05-part1-overview.md` |
+| `building-blocks-controllers` | 5.3 | `05-part2-controllers.md` |
+| `building-blocks-services` | 5.4 | `05-part3-services.md` |
+| `building-blocks-domain` | 5.5-5.7 | `05-part4-domain.md` |
+| `runtime-view-api-flows` | 6.1-6.4 | `06-part1-api-flows.md` |
+| `runtime-view-business-flows` | 6.5-6.8 | `06-part2-business-flows.md` |
+| `deployment` | 7 | `07-deployment.md` |
+| `crosscutting-technical` | 8.1-8.5 | `08-part1-technical.md` |
+| `crosscutting-patterns` | 8.6-8.11 | `08-part2-patterns.md` |
+| `decisions` | 9 | `09-decisions.md` |
+| `quality` | 10 | `10-quality.md` |
+| `risks` | 11 | `11-risks.md` |
+| `glossary` | 12 | `12-glossary.md` |
 | `quality-gate` | validation | `quality/arc42-report.md` |
+
+Chapters 5, 6, and 8 are split into sub-crews. After all sub-crews complete,
+merge functions combine part files into the final chapter files (e.g.,
+`05-part1...4` → `05-building-blocks.md`).
 
 #### Task Descriptions as Python Constants
 

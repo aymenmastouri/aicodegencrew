@@ -390,9 +390,12 @@ class MapReduceAnalysisCrew:
             avg = sum(grade_map.get(g, 2) for g in container_grades) / len(container_grades)
             overall_grade = reverse_grade.get(round(avg), "C")
         else:
-            # Fallback: derive from metrics
+            # Fallback: multi-dimensional quality assessment
             ratio = total_relations / max(total_components, 1)
-            overall_grade = "A" if ratio < 0.15 else "B" if ratio < 0.3 else "C"
+            stereo_score = min(len(all_stereotypes) / 6, 1.0)  # Separation of concerns
+            coupling_score = min(1.0 - (ratio / 2.0), 1.0) if ratio < 2.0 else 0.0
+            combined = (stereo_score + coupling_score) / 2
+            overall_grade = "A" if combined > 0.75 else "B" if combined > 0.5 else "C" if combined > 0.25 else "D"
 
         # Quality assessment from aggregated data
         separation = "good" if len(all_stereotypes) >= 5 else "moderate" if len(all_stereotypes) >= 3 else "poor"
@@ -442,7 +445,7 @@ class MapReduceAnalysisCrew:
                 "reasoning": (
                     f"{active_count} active containers ({', '.join(active_containers)}) "
                     f"with {total_components} total components. "
-                    f"Backend uses Layered pattern, Frontend uses Component-Based pattern."
+                    f"Patterns: {', '.join(f'{k}: {v}' for k, v in patterns_found.items())}."
                 ),
                 "scalability_approach": "horizontal" if active_count > 1 else "vertical",
                 "deployment_model": "distributed" if active_count > 1 else "single",
