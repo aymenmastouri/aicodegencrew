@@ -903,1100 +903,8 @@
         "file_path": null
       },
       {
-        "id": "component.backend.core.clean_reencryption_documents_for_at_uvzuslnvv_3973",
-        "name": "clean_reencryption_documents_for_at_UVZUSLNVV-3973",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.02_clear_uvz_policies",
-        "name": "02-clear-uvz-policies",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_4305",
-        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4305",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5321_part_02_correct_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5321-part-02-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_4280",
-        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4280",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_36_0_datacorrections_uvzuslnvv_2360_bulk",
-        "name": "uvz_1_36_0_datacorrections_UVZUSLNVV-2360_bulk",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_2_delete_wrong_rows_after_import",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_2_delete_wrong_rows_after_import",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_51_1_datacorrections_uvzuslnvv_4676",
-        "name": "uvz_1_51_1_datacorrections_UVZUSLNVV-4676",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_48_001",
-        "name": "platform_migrate_settings_dml_v1.48_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.check_db_sequences",
-        "name": "checkDbSequences",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_36_001",
-        "name": "platform_migrate_settings_dml_v1.36_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_53_001",
-        "name": "platform_migrate_settings_dml_v1.53_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.enable_constraint",
-        "name": "enable-constraint",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5290_part_03_identify_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5290-part-03-identify-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.clean_documents_for_at_uvzuslnvv_3217",
-        "name": "clean_documents_for_at_UVZUSLNVV-3217",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.06_toggle_vpd",
-        "name": "06-toggle-vpd",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.r__001__insert__contract__data",
-        "name": "R__001_Insert_Contract_Data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_52_0_datacorrections_uvzuslnvv_4727",
-        "name": "uvz_1_52_0_datacorrections_UVZUSLNVV-4727",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_0_prepare_and_precalculate",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_0_prepare_and_precalculate",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_39_1_datacorrections",
-        "name": "uvz_1_39_1_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_44_0_datacorrections_uvzuslnvv_3971_dryrun",
-        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3971_dryrun",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.export_primary_keys",
-        "name": "exportPrimaryKeys",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_44_0_datacorrections_uvzuslnvv_4017",
-        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-4017",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_40_1_datacorrections",
-        "name": "uvz_1_40_1_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.prepare_staging_tables",
-        "name": "prepare-staging-tables",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_2",
-        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-2",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.01_platform_vpd_ddl",
-        "name": "01-platform-vpd-ddl",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.cleanup_schema_contents",
-        "name": "cleanup-schema-contents",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.show_handover_integrity",
-        "name": "show-handover-integrity",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_01_identify_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-01-identify-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_03_gather_correction_statistics",
-        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-03-gather-correction-statistics",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.r__001__insert__dao__data",
-        "name": "R__001_Insert_Dao_Data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.deed_entry_statistic",
-        "name": "deed-entry-statistic",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_34_0_analyze_fix_uvzuslnvv_2781",
-        "name": "uvz_1_34_0_analyze_fix_UVZUSLNVV-2781",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_4196",
-        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4196",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5321_part_01_identify_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5321-part-01-identify-data",
-        "module": "",
-        "file_path": null
-      },
-      {
         "id": "component.backend.core.createtable",
         "name": "createtable",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_46_0_datacorrections_uvzuslnvv_4169",
-        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-4169",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.00_drop_create_users",
-        "name": "00-drop-create-users",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.gather_plan_stats",
-        "name": "gather-plan-stats",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.cleanup_organization_contents",
-        "name": "cleanup-organization-contents",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.r__002__insert__dao__data__handover",
-        "name": "R__002_Insert_Dao_Data_Handover",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_67_0_datacorrections_uatest_uaint_uadev",
-        "name": "uvz_1_67_0_datacorrections_UATEST_UAINT_UADEV",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_35_001",
-        "name": "platform_migrate_settings_dml_v1.35_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_61_0_datacorrections_uvzuslnvv_5290_part_02_correct_data",
-        "name": "uvz_1_61_0_datacorrections_UVZUSLNVV-5290-part-02-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_30_3_datacorrections",
-        "name": "uvz_1_30_3_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_20_datacorrections",
-        "name": "uvz_1_20_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.remove_document_by_uvznr_or_aoid_uvzuslnvv_4102",
-        "name": "remove_document_by_uvznr_or_aoid_UVZUSLNVV-4102",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.restore_documents_for_at_uvzuslnvv_3949",
-        "name": "restore_documents_for_at_UVZUSLNVV-3949",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_19_001",
-        "name": "platform_migrate_settings_dml_v1.19_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_03_correct_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-03-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_59_0_datacorrections_uvzuslnvv_4505_part_01",
-        "name": "uvz_1_59_0_datacorrections_UVZUSLNVV-4505-part-01",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_41_0_datacorrections_uvzuslnvv_3518",
-        "name": "uvz_1_41_0_datacorrections_UVZUSLNVV-3518",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_30_0_analyze_uvzuslnvv_2135",
-        "name": "uvz_1_30_0_analyze_UVZUSLNVV-2135",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5388_part_01_identify_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5388-part-01-identify-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_17_001",
-        "name": "platform_migrate_settings_dml_v1.17_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_65_0_datacorrections_uvzuslnvv_5387_correct_data",
-        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5387-correct_data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_65_0_datacorrections_uvzuslnvv_5219_part_01_identify_data",
-        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5219-part-01-identify-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_35_002",
-        "name": "platform_migrate_settings_dml_v1.35_002",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_50_001",
-        "name": "platform_migrate_settings_dml_v1.50_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.01_sys_vpd_context_ddl",
-        "name": "01-sys-vpd-context-ddl",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.clean_handover_for_at",
-        "name": "clean_handover_for_at",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.cleanup_staging_contents",
-        "name": "cleanup-staging-contents",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_46_0_datacorrections_uvzuslnvv_3792_02_mark_change_aoid",
-        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-3792_02_mark_change_aoid",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.call_context_set_function",
-        "name": "call_context_set_function",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_43_1_datacorrections_uvzuslnvv_3966",
-        "name": "uvz_1_43_1_datacorrections_UVZUSLNVV-3966",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_5172",
-        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5172",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.01_vpd_platform_grants_ddl",
-        "name": "01-vpd-platform-grants-ddl",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_36_1_datacorrections_uatest_uvzuslnvv_3217",
-        "name": "uvz_1_36_1_datacorrections_UATEST_UVZUSLNVV-3217",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_56_0_datacorrections_uvzuslnvv_5083",
-        "name": "uvz_1_56_0_datacorrections_UVZUSLNVV-5083",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_39_001",
-        "name": "platform_migrate_settings_dml_v1.39_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_64_0_datacorrections_uvzuslnvv_5463_part_02_correct_data",
-        "name": "uvz_1_64_0_datacorrections_UVZUSLNVV-5463-part-02-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_3_migrate_handover_history",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_3_migrate_handover_history",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_29_datacorrections",
-        "name": "uvz_1_29_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_30_001",
-        "name": "platform_migrate_settings_dml_v1.30_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.03_vpd_policy_functions_uvz_ddl",
-        "name": "03-vpd-policy-functions-uvz-ddl",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.05_vpd_corrections_uvz",
-        "name": "05-vpd-corrections-uvz",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_5262_migrate_handover_history",
-        "name": "UVZUSLNVV-5262_migrate_handover_history",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.registration_org_association_integrity_correction",
-        "name": "registration-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_55_0_datacorrections_uvzuslnvv_4726",
-        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-4726",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_0_prepare_and_precalculate",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_0_prepare_and_precalculate",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_2_document_wawi_reactivation_by_table",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_2_document-wawi-reactivation-by-table",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.vpd_dao_test_data_handover",
-        "name": "vpd-dao-test-data-handover",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_55_0_datacorrections_uvzuslnvv_4871",
-        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-4871",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.test_toggle_vpd",
-        "name": "test-toggle-vpd",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.04_vpd_policies_uvz_ddl",
-        "name": "04-vpd-policies-uvz-ddl",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.02_login_trigger_ddl",
-        "name": "02-login-trigger-ddl",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_25_001",
-        "name": "platform_migrate_settings_dml_v1.25_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.create_deeds_in_bulk",
-        "name": "create-deeds-in-bulk",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_46_001",
-        "name": "platform_migrate_settings_dml_v1.46_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.cleanup_db_content_reset_sequence",
-        "name": "cleanup-db-content-reset-sequence",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_3833_icn__erroneous__data__count",
-        "name": "UVZUSLNVV-3833_ICN_Erroneous_Data_Count",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_51_1_datacorrections_uvzuslnvv_4662",
-        "name": "uvz_1_51_1_datacorrections_UVZUSLNVV-4662",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_35_0_datacorrections_uatest_uvzuslnvv_2917",
-        "name": "uvz_1_35_0_datacorrections_UATEST_UVZUSLNVV-2917",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.remark_org_association_integrity_correction",
-        "name": "remark-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.issuing_copy_note_org_association_integrity_correction",
-        "name": "issuing-copy-note-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.cleanup_schema",
-        "name": "cleanup_schema",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_22_datacorrections",
-        "name": "uvz_1_22_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.disable_constraint",
-        "name": "disable-constraint",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_4",
-        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-4",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_50_1_datacorrections_uvzuslnvv_4476_dryrun",
-        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4476_dryrun",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_51_0_datacorrections_uvzuslnvv_4647",
-        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4647",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_54_6_datacorrections_uvzuslnvv_4953",
-        "name": "uvz_1_54_6_datacorrections_UVZUSLNVV-4953",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_02_correct_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-02-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_51_0_datacorrections_uvzuslnvv_4637",
-        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4637",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_55_0_datacorrections_uvzuslnvv_5052",
-        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-5052",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_3709_02_migrate_handover_data",
-        "name": "UVZUSLNVV-3709_02_migrate_handover_data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_26_001",
-        "name": "platform_migrate_settings_dml_v1.26_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_34_1_datacorrections",
-        "name": "uvz_1_34_1_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_51_001",
-        "name": "platform_migrate_settings_dml_v1.51_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.02_vpd_platform_hmac_keys_dml",
-        "name": "02-vpd-platform-hmac-keys-dml",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_4472_workflow_engine_overview",
-        "name": "UVZUSLNVV-4472_workflow-engine-overview",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_50_0_datacorrections_uvzuslnvv_4530",
-        "name": "uvz_1_50_0_datacorrections_UVZUSLNVV-4530",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_39_0_datacorrections",
-        "name": "uvz_1_39_0_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_5275_part_02",
-        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5275-part-02",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_53_0_datacorrections_uvzuslnvv_4853",
-        "name": "uvz_1_53_0_datacorrections_UVZUSLNVV-4853",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.clean_documents_for_at",
-        "name": "clean_documents_for_at",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.deedentry_lock_org_association_integrity_correction",
-        "name": "deedentry-lock-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.participant_org_association_integrity_correction",
-        "name": "participant-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_50_002",
-        "name": "platform_migrate_settings_dml_v1.50_002",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.patch_db_sequences",
-        "name": "patchDbSequences",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_02_update_based_on_corrections",
-        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-02-update-based-on-corrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_5396_remove_final_handover_dataset_records_by_aoids",
-        "name": "UVZUSLNVV-5396_remove_final_handover_dataset_records_by_aoids",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5474_correct_data",
-        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5474-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_5_document_changes",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_5_document_changes",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_46_0_datacorrections_uvzuslnvv_3792_01_data_select",
-        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-3792_01_data_select",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.vpd_dao_test_data",
-        "name": "vpd-dao-test-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.successor_deed_selection_org_association_integrity_correction",
-        "name": "successor-deed-selection-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_35_0_datacorrections",
-        "name": "uvz_1_35_0_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_62_001",
-        "name": "platform_migrate_settings_dml_v1.62_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_51_0_datacorrections_uvzuslnvv_4467",
-        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4467",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_3_cleanup_temp_table",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_3_cleanup-temp-table",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_1",
-        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-1",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_3748_year_statistics_deedentry",
-        "name": "UVZUSLNVV-3748_year_statistics_deedentry",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.01_clear_vpd_common",
-        "name": "01-clear-vpd-common",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.print_schema",
-        "name": "print_schema",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.check_org_association_integrity",
-        "name": "check-org-association-integrity",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_3",
-        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-3",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_41_0_datacorrections_uvzuslnvv_3503",
-        "name": "uvz_1_41_0_datacorrections_UVZUSLNVV-3503",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_1_restore_dmd_table",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_1_restore_dmd_table",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5130_part_01_identify_data",
-        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5130-part-01-identify-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_32_datacorrections",
-        "name": "uvz_1_32_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.find_ownership_changed_logs_of_document_uvzuslnvv_4374",
-        "name": "find_ownership_changed_logs_of_document_UVZUSLNVV-4374",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_48_0_datacorrections_uvzuslnvv_4325",
-        "name": "uvz_1_48_0_datacorrections_UVZUSLNVV-4325",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_30_0_datacorrections_uatest",
-        "name": "uvz_1_30_0_datacorrections_UATEST",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_01_collect_corrections",
-        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-01-collect-corrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_61_0_datacorrections_uvzuslnvv_5290_part_01_identify_data",
-        "name": "uvz_1_61_0_datacorrections_UVZUSLNVV-5290-part-01-identify-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.calculate_cost",
-        "name": "calculate-cost",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_36_0_datacorrections_uvzuslnvv_2360",
-        "name": "uvz_1_36_0_datacorrections_UVZUSLNVV-2360",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_34_001",
-        "name": "platform_migrate_settings_dml_v1.34_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.correction_note_org_association_integrity_correction",
-        "name": "correction-note-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_45_001",
-        "name": "platform_migrate_settings_dml_v1.45_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_59_0_datacorrections_uvzuslnvv_4505_part_02",
-        "name": "uvz_1_59_0_datacorrections_UVZUSLNVV-4505-part-02",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_65_0_datacorrections_uvzuslnvv_5219_part_02_correct_data",
-        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5219-part-02-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5130_part_02_correct_data",
-        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5130-part-02-correct-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_39_0_datacorrections_uvzuslnvv_3293",
-        "name": "uvz_1_39_0_datacorrections_UVZUSLNVV-3293",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.01_test_policies_cleared",
-        "name": "01-test-policies-cleared",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.00_drop_context",
-        "name": "00-drop-context",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_4472_identify_workflow_work_with_predecessor",
-        "name": "UVZUSLNVV-4472_identify-workflow-work-with-predecessor",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_42_001",
-        "name": "platform_migrate_settings_dml_v1.42_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.connection_org_association_integrity_correction",
-        "name": "connection-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_33_datacorrections",
-        "name": "uvz_1_33_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_54_003",
-        "name": "platform_migrate_settings_dml_v1.54_003",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_4780",
-        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-4780",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_44_0_datacorrections_uvzuslnvv_3971",
-        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3971",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.export_to_csv",
-        "name": "exportToCsv",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_5275_part_01",
-        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5275-part-01",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_55_001",
-        "name": "platform_migrate_settings_dml_v1.55_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_56_001",
-        "name": "platform_migrate_settings_dml_v1.56_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_50_1_datacorrections_uvzuslnvv_4476",
-        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4476",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_64_0_datacorrections_uvzuslnvv_5463_part_01_reset_deleted_data",
-        "name": "uvz_1_64_0_datacorrections_UVZUSLNVV-5463-part-01-reset-deleted-data",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_3533_fk_analyse",
-        "name": "UVZUSLNVV-3533_fk_analyse",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.prepare_db",
-        "name": "prepare-db",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.find_blocked_work_in_progress_uvzuslnvv_5107",
-        "name": "find_blocked_work_in_progress_UVZUSLNVV-5107",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_53_0_datacorrections_uvzuslnvv_4843",
-        "name": "uvz_1_53_0_datacorrections_UVZUSLNVV-4843",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_39_0_datacorrections_uvzuslnvv_3292",
-        "name": "uvz_1_39_0_datacorrections_UVZUSLNVV-3292",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_3709_01_handover_org_names",
-        "name": "UVZUSLNVV-3709_01_handover_org_names",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.document_meta_data_org_association_integrity_correction",
-        "name": "document-meta-data-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_36_2_datacorrections",
-        "name": "uvz_1_36_2_datacorrections",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.deletion_trigger_timestamp",
-        "name": "deletion_trigger_timestamp",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_3957_dryrun",
-        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-3957_dryrun",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.deedentry_log_org_association_integrity_correction",
-        "name": "deedentry-log-org-association-integrity-correction",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.uvzuslnvv_4372_migrate_archiving_org_from_handover_history",
-        "name": "UVZUSLNVV-4372_migrate_archiving_org_from_handover_history",
         "module": "",
         "file_path": null
       },
@@ -2007,44 +915,80 @@
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5595_identify_data",
-        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5595-identify-data",
+        "id": "component.backend.core.uvzuslnvv_4433_change_aoid_events_group",
+        "name": "UVZUSLNVV-4433_change_aoid_events_group",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_36_0_datacorrections_fix_uvzuslnvv_1726",
-        "name": "uvz_1_36_0_datacorrections_fix_UVZUSLNVV-1726",
+        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_3",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-3",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvzuslnvv_3884__update__deed__for__retry_wawi",
-        "name": "UVZUSLNVV-3884_Update_Deed-For_Retry-WAWI",
+        "id": "component.backend.core.uvz_1_50_0_datacorrections_uvzuslnvv_4530",
+        "name": "uvz_1_50_0_datacorrections_UVZUSLNVV-4530",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.cleanup_db",
-        "name": "cleanup-db",
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_39_001",
+        "name": "platform_migrate_settings_dml_v1.39_001",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.doc_wawi_report",
-        "name": "doc_wawi_report",
+        "id": "component.backend.core.uvzuslnvv_4472_workflow_engine_overview",
+        "name": "UVZUSLNVV-4472_workflow-engine-overview",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.functions",
-        "name": "functions",
+        "id": "component.backend.core.patch_db_sequences",
+        "name": "patchDbSequences",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.perform_multi_successor_handover",
-        "name": "perform-multi-successor-handover",
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_25_001",
+        "name": "platform_migrate_settings_dml_v1.25_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_48_0_datacorrections_uvzuslnvv_4325",
+        "name": "uvz_1_48_0_datacorrections_UVZUSLNVV-4325",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_37_001",
+        "name": "platform_migrate_settings_dml_v1.37_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_46_0_datacorrections_uvzuslnvv_3792_02_mark_change_aoid",
+        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-3792_02_mark_change_aoid",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_44_0_datacorrections_uvzuslnvv_3971_dryrun",
+        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3971_dryrun",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_02_update_based_on_corrections",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-02-update-based-on-corrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_4472_identify_workflow_work_with_predecessor",
+        "name": "UVZUSLNVV-4472_identify-workflow-work-with-predecessor",
         "module": "",
         "file_path": null
       },
@@ -2055,14 +999,704 @@
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_50_1_datacorrections_uvzuslnvv_4472",
-        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4472",
+        "id": "component.backend.core.prepare_staging_tables",
+        "name": "prepare-staging-tables",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.deed_entry_statistic",
+        "name": "deed-entry-statistic",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.show_handover_integrity",
+        "name": "show-handover-integrity",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_65_0_datacorrections_uvzuslnvv_5219_part_01_identify_data",
+        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5219-part-01-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.export_primary_keys",
+        "name": "exportPrimaryKeys",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_21_datacorrections",
+        "name": "uvz_1_21_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_2",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-2",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_36_0_datacorrections_uvzuslnvv_2360",
+        "name": "uvz_1_36_0_datacorrections_UVZUSLNVV-2360",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_4305",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4305",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_26_001",
+        "name": "platform_migrate_settings_dml_v1.26_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_5275_part_01",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5275-part-01",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_50_002",
+        "name": "platform_migrate_settings_dml_v1.50_002",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_34_0_analyze_fix_uvzuslnvv_2781",
+        "name": "uvz_1_34_0_analyze_fix_UVZUSLNVV-2781",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_3957_dryrun",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-3957_dryrun",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_35_1_datacorrections_uvzuslnvv_2967",
+        "name": "uvz_1_35_1_datacorrections_UVZUSLNVV-2967",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_55_0_datacorrections_uvzuslnvv_4726",
+        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-4726",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_30_0_datacorrections_uatest",
+        "name": "uvz_1_30_0_datacorrections_UATEST",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_35_002",
+        "name": "platform_migrate_settings_dml_v1.35_002",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5321_part_01_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5321-part-01-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.document_statistics",
+        "name": "document_statistics",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_4372_migrate_archiving_org_from_handover_history",
+        "name": "UVZUSLNVV-4372_migrate_archiving_org_from_handover_history",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5595_identify_data",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5595-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.01_clear_vpd_common",
+        "name": "01-clear-vpd-common",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5290_part_03_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5290-part-03-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_50_001",
+        "name": "platform_migrate_settings_dml_v1.50_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.print_schema",
+        "name": "print_schema",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.move_organization",
+        "name": "move-organization",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.04_vpd_policies_uvz_ddl",
+        "name": "04-vpd-policies-uvz-ddl",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_3709_02_migrate_handover_data",
+        "name": "UVZUSLNVV-3709_02_migrate_handover_data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.document_meta_data_org_association_integrity_correction",
+        "name": "document-meta-data-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.successor_deed_selection_org_association_integrity_correction",
+        "name": "successor-deed-selection-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.export_to_csv",
+        "name": "exportToCsv",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_3748_year_statistics_deedentry",
+        "name": "UVZUSLNVV-3748_year_statistics_deedentry",
         "module": "",
         "file_path": null
       },
       {
         "id": "component.backend.core.uvz_1_44_0_datacorrections_uvzuslnvv_3957",
         "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3957",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.02_login_trigger_ddl",
+        "name": "02-login-trigger-ddl",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.01_vpd_platform_grants_ddl",
+        "name": "01-vpd-platform-grants-ddl",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_46_001",
+        "name": "platform_migrate_settings_dml_v1.46_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_59_0_datacorrections_uvzuslnvv_4505_part_02",
+        "name": "uvz_1_59_0_datacorrections_UVZUSLNVV-4505-part-02",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.vpd_dao_test_data",
+        "name": "vpd-dao-test-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_3533_fk_analyse",
+        "name": "UVZUSLNVV-3533_fk_analyse",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_3_migrate_handover_history",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_3_migrate_handover_history",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_4196",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4196",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5388_part_02_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5388-part-02-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_22_datacorrections",
+        "name": "uvz_1_22_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_41_0_datacorrections_uvzuslnvv_3503",
+        "name": "uvz_1_41_0_datacorrections_UVZUSLNVV-3503",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_5262_migrate_handover_history",
+        "name": "UVZUSLNVV-5262_migrate_handover_history",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_64_0_datacorrections_uvzuslnvv_5463_part_02_correct_data",
+        "name": "uvz_1_64_0_datacorrections_UVZUSLNVV-5463-part-02-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_20_datacorrections",
+        "name": "uvz_1_20_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_36_2_datacorrections",
+        "name": "uvz_1_36_2_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_32_datacorrections",
+        "name": "uvz_1_32_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_35_0_datacorrections_uatest_uvzuslnvv_2917",
+        "name": "uvz_1_35_0_datacorrections_UATEST_UVZUSLNVV-2917",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_55_0_datacorrections_uvzuslnvv_4871",
+        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-4871",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_36_0_datacorrections_uvzuslnvv_2360_bulk",
+        "name": "uvz_1_36_0_datacorrections_UVZUSLNVV-2360_bulk",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.gather_plan_stats",
+        "name": "gather-plan-stats",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_65_0_datacorrections_uvzuslnvv_5387_correct_data",
+        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5387-correct_data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_43_001",
+        "name": "platform_migrate_settings_dml_v1.43_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_4",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-4",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5321_part_02_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5321-part-02-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.03_vpd_policy_functions_uvz_ddl",
+        "name": "03-vpd-policy-functions-uvz-ddl",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.deletion_trigger_timestamp",
+        "name": "deletion_trigger_timestamp",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_59_0_datacorrections_uvzuslnvv_4505_part_01",
+        "name": "uvz_1_59_0_datacorrections_UVZUSLNVV-4505-part-01",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.cleanup_db",
+        "name": "cleanup-db",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_36_001",
+        "name": "platform_migrate_settings_dml_v1.36_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.deedentry_lock_org_association_integrity_correction",
+        "name": "deedentry-lock-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.01_platform_vpd_ddl",
+        "name": "01-platform-vpd-ddl",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.find_blocked_work_in_progress_uvzuslnvv_5107",
+        "name": "find_blocked_work_in_progress_UVZUSLNVV-5107",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5130_part_02_correct_data",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5130-part-02-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_1_apply_wawi_reactivation_by_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_1_apply-wawi-reactivation-by-table",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_51_1_datacorrections_uvzuslnvv_4662",
+        "name": "uvz_1_51_1_datacorrections_UVZUSLNVV-4662",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.test_toggle_vpd",
+        "name": "test-toggle-vpd",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.remark_org_association_integrity_correction",
+        "name": "remark-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_47_0_datacorrections_uvzuslnvv_4280",
+        "name": "uvz_1_47_0_datacorrections_UVZUSLNVV-4280",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.remove_document_by_uvznr_or_aoid_uvzuslnvv_4102",
+        "name": "remove_document_by_uvznr_or_aoid_UVZUSLNVV-4102",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_3709_01_handover_org_names",
+        "name": "UVZUSLNVV-3709_01_handover_org_names",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.clean_documents_for_at_uvzuslnvv_3217",
+        "name": "clean_documents_for_at_UVZUSLNVV-3217",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_5172",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5172",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_51_0_datacorrections_uvzuslnvv_4467",
+        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4467",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_48_001",
+        "name": "platform_migrate_settings_dml_v1.48_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_39_1_datacorrections",
+        "name": "uvz_1_39_1_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_53_0_datacorrections_uvzuslnvv_4853",
+        "name": "uvz_1_53_0_datacorrections_UVZUSLNVV-4853",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_0_prepare_and_precalculate",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_0_prepare_and_precalculate",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5650",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5650",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_67_0_datacorrections_uatest_uaint_uadev",
+        "name": "uvz_1_67_0_datacorrections_UATEST_UAINT_UADEV",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_5396_remove_final_handover_dataset_records_by_aoids",
+        "name": "UVZUSLNVV-5396_remove_final_handover_dataset_records_by_aoids",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.cleanup_organization_contents",
+        "name": "cleanup-organization-contents",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_01_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-01-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_3884__update__deed__for__retry_wawi",
+        "name": "UVZUSLNVV-3884_Update_Deed-For_Retry-WAWI",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_56_001",
+        "name": "platform_migrate_settings_dml_v1.56_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.disable_constraint",
+        "name": "disable-constraint",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_51_0_datacorrections_uvzuslnvv_4637",
+        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4637",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_5275_part_02",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-5275-part-02",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_0_prepare_and_precalculate",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_0_prepare_and_precalculate",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5388_part_01_identify_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5388-part-01-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_43_1_datacorrections_uvzuslnvv_3966",
+        "name": "uvz_1_43_1_datacorrections_UVZUSLNVV-3966",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_29_datacorrections",
+        "name": "uvz_1_29_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.02_vpd_platform_hmac_keys_dml",
+        "name": "02-vpd-platform-hmac-keys-dml",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_51_001",
+        "name": "platform_migrate_settings_dml_v1.51_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_51_0_datacorrections_uvzuslnvv_4647",
+        "name": "uvz_1_51_0_datacorrections_UVZUSLNVV-4647",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5130_part_01_identify_data",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5130-part-01-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_6_cleanup_temp_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_6_cleanup_temp_table",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_2_document_wawi_reactivation_by_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_2_document-wawi-reactivation-by-table",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_42_001",
+        "name": "platform_migrate_settings_dml_v1.42_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.functions",
+        "name": "functions",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_61_0_datacorrections_uvzuslnvv_5290_part_01_identify_data",
+        "name": "uvz_1_61_0_datacorrections_UVZUSLNVV-5290-part-01-identify-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_50_1_datacorrections_uvzuslnvv_4472",
+        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4472",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_39_0_datacorrections_uvzuslnvv_3292",
+        "name": "uvz_1_39_0_datacorrections_UVZUSLNVV-3292",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_51_1_datacorrections_uvzuslnvv_4676",
+        "name": "uvz_1_51_1_datacorrections_UVZUSLNVV-4676",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.00_drop_create_users",
+        "name": "00-drop-create-users",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.r__002__insert__dao__data__handover",
+        "name": "R__002_Insert_Dao_Data_Handover",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.prepare_db",
+        "name": "prepare-db",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.check_org_association_integrity",
+        "name": "check-org-association-integrity",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_55_0_datacorrections_uvzuslnvv_5052",
+        "name": "uvz_1_55_0_datacorrections_UVZUSLNVV-5052",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_03_gather_correction_statistics",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-03-gather-correction-statistics",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.cleanup_staging_contents",
+        "name": "cleanup-staging-contents",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.participant_org_association_integrity_correction",
+        "name": "participant-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.r__001__insert__contract__data",
+        "name": "R__001_Insert_Contract_Data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.import_staging_to_target",
+        "name": "import-staging-to-target",
         "module": "",
         "file_path": null
       },
@@ -2079,74 +1713,284 @@
         "file_path": null
       },
       {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_37_001",
-        "name": "platform_migrate_settings_dml_v1.37_001",
-        "module": "",
-        "file_path": null
-      },
-      {
-        "id": "component.backend.core.import_staging_to_target",
-        "name": "import-staging-to-target",
-        "module": "",
-        "file_path": null
-      },
-      {
         "id": "component.backend.core.platform_migrate_settings_dml_v1_33_001",
         "name": "platform_migrate_settings_dml_v1.33_001",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.platform_migrate_settings_dml_v1_43_001",
-        "name": "platform_migrate_settings_dml_v1.43_001",
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_1_restore_dmd_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_1_restore_dmd_table",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_6_cleanup_temp_table",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_6_cleanup_temp_table",
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_17_001",
+        "name": "platform_migrate_settings_dml_v1.17_001",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_5388_part_02_correct_data",
-        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-5388-part-02-correct-data",
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_5_document_changes",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_5_document_changes",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.move_organization",
-        "name": "move-organization",
+        "id": "component.backend.core.uvz_1_34_1_datacorrections",
+        "name": "uvz_1_34_1_datacorrections",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.document_statistics",
-        "name": "document_statistics",
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_53_001",
+        "name": "platform_migrate_settings_dml_v1.53_001",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_21_datacorrections",
-        "name": "uvz_1_21_datacorrections",
+        "id": "component.backend.core.uvz_1_46_0_datacorrections_uvzuslnvv_3792_01_data_select",
+        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-3792_01_data_select",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_35_1_datacorrections_uvzuslnvv_2967",
-        "name": "uvz_1_35_1_datacorrections_UVZUSLNVV-2967",
+        "id": "component.backend.core.cleanup_db_content_reset_sequence",
+        "name": "cleanup-db-content-reset-sequence",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvzuslnvv_4433_change_aoid_events_group",
-        "name": "UVZUSLNVV-4433_change_aoid_events_group",
+        "id": "component.backend.core.find_ownership_changed_logs_of_document_uvzuslnvv_4374",
+        "name": "find_ownership_changed_logs_of_document_UVZUSLNVV-4374",
         "module": "",
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_1_apply_wawi_reactivation_by_table",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_1_apply-wawi-reactivation-by-table",
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_62_001",
+        "name": "platform_migrate_settings_dml_v1.62_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_40_1_datacorrections",
+        "name": "uvz_1_40_1_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5656_part_2_delete_wrong_rows_after_import",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5656_part_2_delete_wrong_rows_after_import",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_44_0_datacorrections_uvzuslnvv_3971",
+        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-3971",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_54_6_datacorrections_uvzuslnvv_4953",
+        "name": "uvz_1_54_6_datacorrections_UVZUSLNVV-4953",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.06_toggle_vpd",
+        "name": "06-toggle-vpd",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5597_correct_data_part_1",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5597-correct-data-part-1",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.cleanup_schema_contents",
+        "name": "cleanup-schema-contents",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_36_1_datacorrections_uatest_uvzuslnvv_3217",
+        "name": "uvz_1_36_1_datacorrections_UATEST_UVZUSLNVV-3217",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_39_0_datacorrections_uvzuslnvv_3293",
+        "name": "uvz_1_39_0_datacorrections_UVZUSLNVV-3293",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_35_0_datacorrections",
+        "name": "uvz_1_35_0_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_56_0_datacorrections_uvzuslnvv_5083",
+        "name": "uvz_1_56_0_datacorrections_UVZUSLNVV-5083",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.clean_handover_for_at",
+        "name": "clean_handover_for_at",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_45_001",
+        "name": "platform_migrate_settings_dml_v1.45_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.perform_multi_successor_handover",
+        "name": "perform-multi-successor-handover",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.02_clear_uvz_policies",
+        "name": "02-clear-uvz-policies",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_50_1_datacorrections_uvzuslnvv_4476_dryrun",
+        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4476_dryrun",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.call_context_set_function",
+        "name": "call_context_set_function",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_19_001",
+        "name": "platform_migrate_settings_dml_v1.19_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5814_part_3_cleanup_temp_table",
+        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5814_part_3_cleanup-temp-table",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_35_001",
+        "name": "platform_migrate_settings_dml_v1.35_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_60_0_datacorrections_uvzuslnvv_4780",
+        "name": "uvz_1_60_0_datacorrections_UVZUSLNVV-4780",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_41_0_datacorrections_uvzuslnvv_3518",
+        "name": "uvz_1_41_0_datacorrections_UVZUSLNVV-3518",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_02_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-02-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_53_0_datacorrections_uvzuslnvv_4843",
+        "name": "uvz_1_53_0_datacorrections_UVZUSLNVV-4843",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_65_0_datacorrections_uvzuslnvv_5219_part_02_correct_data",
+        "name": "uvz_1_65_0_datacorrections_UVZUSLNVV-5219-part-02-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_30_0_analyze_uvzuslnvv_2135",
+        "name": "uvz_1_30_0_analyze_UVZUSLNVV-2135",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.01_sys_vpd_context_ddl",
+        "name": "01-sys-vpd-context-ddl",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.05_vpd_corrections_uvz",
+        "name": "05-vpd-corrections-uvz",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_55_001",
+        "name": "platform_migrate_settings_dml_v1.55_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_44_0_datacorrections_uvzuslnvv_4017",
+        "name": "uvz_1_44_0_datacorrections_UVZUSLNVV-4017",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_58_0_datacorrections_uvzuslnvv_5080_part_01_collect_corrections",
+        "name": "uvz_1_58_0_datacorrections_UVZUSLNVV-5080_part-01-collect-corrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.01_test_policies_cleared",
+        "name": "01-test-policies-cleared",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_36_0_datacorrections_fix_uvzuslnvv_1726",
+        "name": "uvz_1_36_0_datacorrections_fix_UVZUSLNVV-1726",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.clean_reencryption_documents_for_at_uvzuslnvv_3973",
+        "name": "clean_reencryption_documents_for_at_UVZUSLNVV-3973",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.enable_constraint",
+        "name": "enable-constraint",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_46_0_datacorrections_uvzuslnvv_4169",
+        "name": "uvz_1_46_0_datacorrections_UVZUSLNVV-4169",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.check_db_sequences",
+        "name": "checkDbSequences",
         "module": "",
         "file_path": null
       },
@@ -2157,8 +2001,164 @@
         "file_path": null
       },
       {
-        "id": "component.backend.core.uvz_1_69_0_datacorrections_uvzuslnvv_5650",
-        "name": "uvz_1_69_0_datacorrections_UVZUSLNVV-5650",
+        "id": "component.backend.core.calculate_cost",
+        "name": "calculate-cost",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_33_datacorrections",
+        "name": "uvz_1_33_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.issuing_copy_note_org_association_integrity_correction",
+        "name": "issuing-copy-note-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.00_drop_context",
+        "name": "00-drop-context",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_64_0_datacorrections_uvzuslnvv_5463_part_01_reset_deleted_data",
+        "name": "uvz_1_64_0_datacorrections_UVZUSLNVV-5463-part-01-reset-deleted-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.connection_org_association_integrity_correction",
+        "name": "connection-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.vpd_dao_test_data_handover",
+        "name": "vpd-dao-test-data-handover",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_61_0_datacorrections_uvzuslnvv_5290_part_02_correct_data",
+        "name": "uvz_1_61_0_datacorrections_UVZUSLNVV-5290-part-02-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_34_001",
+        "name": "platform_migrate_settings_dml_v1.34_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_30_3_datacorrections",
+        "name": "uvz_1_30_3_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvzuslnvv_3833_icn__erroneous__data__count",
+        "name": "UVZUSLNVV-3833_ICN_Erroneous_Data_Count",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.cleanup_schema",
+        "name": "cleanup_schema",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_39_0_datacorrections",
+        "name": "uvz_1_39_0_datacorrections",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.restore_documents_for_at_uvzuslnvv_3949",
+        "name": "restore_documents_for_at_UVZUSLNVV-3949",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_62_0_datacorrections_uvzuslnvv_3613_part_03_correct_data",
+        "name": "uvz_1_62_0_datacorrections_UVZUSLNVV-3613-part-03-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.create_deeds_in_bulk",
+        "name": "create-deeds-in-bulk",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.clean_documents_for_at",
+        "name": "clean_documents_for_at",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.correction_note_org_association_integrity_correction",
+        "name": "correction-note-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.doc_wawi_report",
+        "name": "doc_wawi_report",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.r__001__insert__dao__data",
+        "name": "R__001_Insert_Dao_Data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_54_003",
+        "name": "platform_migrate_settings_dml_v1.54_003",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.deedentry_log_org_association_integrity_correction",
+        "name": "deedentry-log-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.registration_org_association_integrity_correction",
+        "name": "registration-org-association-integrity-correction",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.platform_migrate_settings_dml_v1_30_001",
+        "name": "platform_migrate_settings_dml_v1.30_001",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_52_0_datacorrections_uvzuslnvv_4727",
+        "name": "uvz_1_52_0_datacorrections_UVZUSLNVV-4727",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_66_0_datacorrections_uvzuslnvv_5474_correct_data",
+        "name": "uvz_1_66_0_datacorrections_UVZUSLNVV-5474-correct-data",
+        "module": "",
+        "file_path": null
+      },
+      {
+        "id": "component.backend.core.uvz_1_50_1_datacorrections_uvzuslnvv_4476",
+        "name": "uvz_1_50_1_datacorrections_UVZUSLNVV-4476",
         "module": "",
         "file_path": null
       }
