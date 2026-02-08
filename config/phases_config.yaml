@@ -144,97 +144,113 @@ phases:
 
   # =========================================================================
   # =========================================================================
-  # CREW: Phase 4 - Review and Consistency Guard (PLANNED)
+  # PIPELINE: Phase 4 - Development Planning (HYBRID ARCHITECTURE) ⚡
   # =========================================================================
-  # Type:      Crew
-  # Location:  crews/review/ (planned)
-  # Purpose:   Ensure consistency across outputs
-  # Tasks:     Facts vs C4 vs arc42 consistency check
+  # Type:      Pipeline (Hybrid: Deterministic + 1 LLM Call)
+  # Location:  pipelines/development_planning/
+  # Architecture:
+  #   Stage 1: Input Parser (deterministic, <1s)
+  #   Stage 2: Component Discovery (RAG + scoring, 2-5s)
+  #   Stage 3: Pattern Matcher (TF-IDF + rules, 1-3s)
+  #   Stage 4: Plan Generator (LLM call, 15-30s)
+  #   Stage 5: Validator (Pydantic, <1s)
+  #
+  # Total Duration: 18-40 seconds (vs 5-7 minutes with CrewAI)
+  # LLM Calls: 1 (vs 5 with CrewAI)
+  # Success Rate: 95%+ (deterministic stages)
+  #
+  # Input:
+  #   - inputs/tasks/ (JIRA XML, DOCX, Excel, logs, etc.)
+  #   - architecture_facts.json (Phase 1, all 17 keys)
+  #   - analyzed_architecture.json (Phase 2)
+  #   - ChromaDB (Phase 0, semantic search)
+  #
+  # Output: knowledge/development/{task_id}_plan.json
+  #   - affected_components (from ChromaDB RAG + scoring)
+  #   - implementation_steps
+  #   - test_strategy (from 925 test patterns, TF-IDF similarity)
+  #   - security_considerations (from 143 security details)
+  #   - validation_strategy (from 149 validation patterns)
+  #   - error_handling (from 23 error patterns)
+  #   - architecture_context (from analyzed_architecture.json)
+  #   - risks, complexity estimate
   # =========================================================================
-  phase4_review:
-    enabled: false
-    name: "Review and Consistency Guard"
-    description: "Validate consistency across generated documentation"
-    type: crew
+  phase4_development_planning:
+    enabled: true
+    name: "Development Planning (Hybrid Pipeline)"
+    description: "Fast, evidence-based implementation plans using hybrid architecture"
+    type: pipeline
     required: false
     order: 4
-    dependencies: [phase3_architecture_synthesis]
+    dependencies: [phase2_architecture_analysis]
     config:
-      output_dir: "./knowledge/architecture/quality"
+      output_dir: "./knowledge/development"
+      input_dirs:
+        tasks: "./inputs/tasks"
+        requirements: "./inputs/requirements"
+        logs: "./inputs/logs"
+        reference: "./inputs/reference"
 
   # =========================================================================
-  # CREW: Phase 5 - Development Planning (PLANNED)
+  # CREW: Phase 5 - Code Generation (PLANNED)
   # =========================================================================
   # Type:      Crew (AI Agents)
-  # Location:  crews/development/ (planned)
-  # Purpose:   Derive work items from architecture
-  # Tasks:     Architecture debt/risk, backlog items, work packages
+  # Location:  crews/code_generation/ (planned)
+  # Purpose:   Feature implementation following architecture patterns
+  # Tasks:     Generate code matching existing service/component patterns
+  # Input:     Task plan from Phase 4 + architecture patterns
+  # Output:    New code files (Java/TypeScript)
   # =========================================================================
-  phase5_development:
+  phase5_code_generation:
     enabled: false
-    name: "Development Planning"
-    description: "Generate development tasks from architecture analysis"
+    name: "Code Generation"
+    description: "Feature implementation following architecture patterns"
     type: crew
     required: false
     order: 5
-    dependencies: [phase4_review]
-    config:
-      output_dir: "./knowledge/development"
-
-  # =========================================================================
-  # CREW: Phase 6 - Code Generation (PLANNED)
-  # =========================================================================
-  # Type:      Crew (AI Agents)
-  # Location:  crews/codegen/ (planned)
-  # Purpose:   Generate feature code, refactoring PRs
-  # Tasks:     Feature implementation, code improvements
-  # =========================================================================
-  phase6_codegen:
-    enabled: false
-    name: "Code Generation"
-    description: "Generate feature code and refactoring PRs"
-    type: crew
-    required: false
-    order: 6
-    dependencies: [phase5_development]
+    dependencies: [phase4_task_understanding]
     config:
       output_dir: "./knowledge/codegen"
 
   # =========================================================================
-  # CREW: Phase 7 - Test Generation (PLANNED)
+  # CREW: Phase 6 - Test Generation (PLANNED)
   # =========================================================================
   # Type:      Crew (AI Agents)
-  # Location:  crews/testing/ (planned)
-  # Purpose:   Generate unit tests, integration tests
-  # Tasks:     Test coverage analysis, test generation
+  # Location:  crews/test_generation/ (planned)
+  # Purpose:   Generate tests matching existing test patterns
+  # Tasks:     Unit tests, integration tests following 925 existing patterns
+  # Input:     Generated code from Phase 5 + test patterns
+  # Output:    JUnit/Jest test files
   # =========================================================================
-  phase7_testing:
+  phase6_test_generation:
     enabled: false
     name: "Test Generation"
-    description: "Generate unit tests and integration tests"
+    description: "Generate tests matching existing patterns"
     type: crew
     required: false
-    order: 7
-    dependencies: [phase6_codegen]
+    order: 6
+    dependencies: [phase5_code_generation]
     config:
       output_dir: "./knowledge/testing"
 
   # =========================================================================
-  # PIPELINE: Phase 8 - Deployment Automation (PLANNED)
+  # PIPELINE: Phase 7 - Review + Deploy (PLANNED)
   # =========================================================================
   # Type:      Pipeline (deterministic)
-  # Location:  pipelines/deployment/ (planned)
-  # Purpose:   CI/CD configs, release notes
-  # Tasks:     Pipeline generation, release management
+  # Location:  pipelines/review_deploy/ (planned)
+  # Purpose:   Build validation, CI/CD integration, PR merge
+  # Tasks:     Compile check, run tests, create PR, merge
+  # Input:     Generated code + tests from Phase 5-6
+  # Output:    Merged PR, deployed code
   # =========================================================================
-  phase8_deployment:
+  phase7_review_deploy:
     enabled: false
-    name: "Deployment Automation"
-    description: "Generate CI/CD configs and release notes"
+    name: "Review + Deploy"
+    description: "Build validation, CI/CD integration, PR merge"
     type: pipeline
     required: false
-    order: 8
-    dependencies: [phase7_testing]
+    order: 7
+    dependencies: [phase6_test_generation]
     config:
       output_dir: "./knowledge/deployment"
 
@@ -272,13 +288,13 @@ presets:
     - phase2_architecture_analysis
     - phase3_architecture_synthesis
 
-  # Architecture + Review (with consistency checks)
+  # Architecture + Development Planning
   architecture_full:
     - phase0_indexing
     - phase1_architecture_facts
     - phase2_architecture_analysis
     - phase3_architecture_synthesis
-    - phase4_review
+    - phase4_development_planning
 
   # Full SDLC pipeline (all phases)
   full_pipeline:
@@ -286,8 +302,7 @@ presets:
     - phase1_architecture_facts
     - phase2_architecture_analysis
     - phase3_architecture_synthesis
-    - phase4_review
-    - phase5_development
-    - phase6_codegen
-    - phase7_testing
-    - phase8_deployment
+    - phase4_development_planning
+    - phase5_code_generation
+    - phase6_test_generation
+    - phase7_review_deploy
