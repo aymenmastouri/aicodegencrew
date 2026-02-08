@@ -2,7 +2,7 @@
   "id": "system",
   "name": "uvz",
   "description": "Architecture model for uvz",
-  "generated_at": "2026-02-08T18:50:11.604867",
+  "generated_at": "2026-02-08T18:59:30.415793",
   "bounded_contexts": [
     {
       "name": "de.bnotk.uvz.module.adapters.staticwebresources",
@@ -15,17 +15,17 @@
       "name": "de.bnotk.uvz.module.deedentry.dataaccess.api.dao",
       "component_count": 22,
       "stereotypes": [
-        "rest_interface",
-        "repository"
+        "repository",
+        "rest_interface"
       ]
     },
     {
       "name": "de.bnotk.uvz.module.deedentry.dataaccess.api.dao.impl",
       "component_count": 6,
       "stereotypes": [
+        "repository",
         "service",
-        "controller",
-        "repository"
+        "controller"
       ]
     },
     {
@@ -130,8 +130,8 @@
       "name": "app",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "module"
+        "module",
+        "component"
       ]
     },
     {
@@ -238,8 +238,8 @@
       "name": "deed-entry.components.deed-form-page.tabs.document-data-tab.document-archiving-overlay",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "directive"
+        "directive",
+        "component"
       ]
     },
     {
@@ -384,8 +384,8 @@
       "name": "enhanced-search",
       "component_count": 2,
       "stereotypes": [
-        "component",
-        "resolver"
+        "resolver",
+        "component"
       ]
     },
     {
@@ -428,38 +428,24 @@
       ]
     },
     {
-      "name": "report-metadata.services",
-      "component_count": 4,
+      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
+      "component_count": 3,
       "stereotypes": [
         "service"
       ]
     },
     {
-      "name": "workflow.services.workflow-archive",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-change-aoid",
-      "component_count": 4,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "http-util",
+      "name": "authentication",
       "component_count": 2,
       "stereotypes": [
+        "guard",
         "interceptor"
       ]
     },
     {
-      "name": "adapters.xnp",
-      "component_count": 15,
+      "name": "deed-entry.components.deed-overview-page.deed-overview.services",
+      "component_count": 3,
       "stereotypes": [
-        "adapter",
         "service"
       ]
     },
@@ -468,6 +454,27 @@
       "component_count": 6,
       "stereotypes": [
         "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.api-generated.services",
+      "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-deletion",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.page-container-adapter.impl.xnp",
+      "component_count": 2,
+      "stereotypes": [
+        "adapter"
       ]
     },
     {
@@ -485,39 +492,32 @@
       ]
     },
     {
-      "name": "deed-entry.components.deed-overview-page.services",
-      "component_count": 2,
-      "stereotypes": [
-        "service",
-        "resolver"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-reencryption.job-reencryption",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "deed-entry.components.deed-overview-page.deed-overview.services",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-reencryption.job-finalize-reencryption",
-      "component_count": 3,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-deletion",
+      "name": "workflow.services.workflow-archive",
       "component_count": 4,
       "stereotypes": [
         "service"
+      ]
+    },
+    {
+      "name": "report-metadata.services",
+      "component_count": 4,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "adapters.archiving.adapter.xnp",
+      "component_count": 2,
+      "stereotypes": [
+        "service",
+        "adapter"
+      ]
+    },
+    {
+      "name": "http-util",
+      "component_count": 2,
+      "stereotypes": [
+        "interceptor"
       ]
     },
     {
@@ -528,44 +528,36 @@
       ]
     },
     {
-      "name": "adapters.page-container-adapter.impl.xnp",
-      "component_count": 2,
+      "name": "adapters.xnp",
+      "component_count": 15,
       "stereotypes": [
+        "service",
         "adapter"
       ]
     },
     {
-      "name": "authentication",
-      "component_count": 2,
+      "name": "workflow.services.workflow-change-aoid",
+      "component_count": 4,
       "stereotypes": [
-        "interceptor",
-        "guard"
+        "service"
       ]
     },
     {
-      "name": "deed-entry.services.archiving",
+      "name": "deed-entry.components.deed-successor-page.services",
+      "component_count": 2,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-reencryption.job-reencryption",
       "component_count": 3,
       "stereotypes": [
         "service"
       ]
     },
     {
-      "name": "adapters.archiving.adapter.xnp",
-      "component_count": 2,
-      "stereotypes": [
-        "adapter",
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.mock",
-      "component_count": 2,
-      "stereotypes": [
-        "service"
-      ]
-    },
-    {
-      "name": "workflow.services.workflow-rest.api-generated.services",
+      "name": "deed-entry.services.archiving",
       "component_count": 3,
       "stereotypes": [
         "service"
@@ -579,15 +571,23 @@
       ]
     },
     {
-      "name": "deed-entry.components.deed-successor-page.services",
+      "name": "deed-entry.components.deed-overview-page.services",
       "component_count": 2,
       "stereotypes": [
+        "resolver",
         "service"
       ]
     },
     {
       "name": "services",
       "component_count": 3,
+      "stereotypes": [
+        "service"
+      ]
+    },
+    {
+      "name": "workflow.services.workflow-rest.mock",
+      "component_count": 2,
       "stereotypes": [
         "service"
       ]
@@ -721,9 +721,9 @@
       "pipe": 67,
       "directive": 3,
       "adapter": 50,
-      "interceptor": 4,
-      "resolver": 4,
       "guard": 1,
+      "resolver": 4,
+      "interceptor": 4,
       "entity": 360,
       "scheduler": 1,
       "configuration": 1
