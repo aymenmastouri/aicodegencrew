@@ -1,0 +1,377 @@
+{
+  "system": {
+    "id": "system",
+    "name": "uvz",
+    "statistics": {
+      "system_name": "uvz",
+      "containers": 5,
+      "components": 951,
+      "interfaces": 226,
+      "relations": 190,
+      "evidence": 1275,
+      "dependencies": 170,
+      "workflows": 42,
+      "by_layer": {
+        "unknown": 81,
+        "presentation": 287,
+        "application": 184,
+        "dataaccess": 38,
+        "domain": 360,
+        "infrastructure": 1
+      },
+      "by_stereotype": {
+        "rest_interface": 21,
+        "controller": 32,
+        "service": 184,
+        "repository": 38,
+        "module": 16,
+        "component": 169,
+        "pipe": 67,
+        "directive": 3,
+        "adapter": 50,
+        "interceptor": 4,
+        "resolver": 4,
+        "guard": 1,
+        "entity": 360,
+        "scheduler": 1,
+        "configuration": 1
+      }
+    }
+  },
+  "macro_architecture": {
+    "style": "Modular Monolith",
+    "container_count": 5,
+    "active_containers": 2,
+    "reasoning": "2 active containers (frontend, backend) with 951 total components. Backend uses Layered pattern, Frontend uses Component-Based pattern.",
+    "scalability_approach": "horizontal",
+    "deployment_model": "distributed",
+    "communication_pattern": "sync REST"
+  },
+  "micro_architecture": {
+    "e2e-xnp": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
+    },
+    "jsApi": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
+    },
+    "import-schema": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [],
+      "component_counts": {}
+    },
+    "frontend": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [
+        "Presentation",
+        "Service",
+        "Adapter"
+      ],
+      "component_counts": {
+        "module": 16,
+        "component": 128,
+        "pipe": 67,
+        "directive": 3,
+        "adapter": 50,
+        "service": 131,
+        "interceptor": 4,
+        "resolver": 4,
+        "guard": 1
+      }
+    },
+    "backend": {
+      "primary_pattern": "Unknown",
+      "layer_structure": [
+        "Presentation",
+        "Service",
+        "Repository"
+      ],
+      "component_counts": {
+        "rest_interface": 21,
+        "controller": 32,
+        "service": 42,
+        "repository": 38,
+        "entity": 360,
+        "scheduler": 1
+      }
+    }
+  },
+  "architecture_quality": {
+    "separation_of_concerns": "good",
+    "layer_violations_count": 0,
+    "coupling_assessment": "loose",
+    "relations_per_component": 0.2,
+    "overall_grade": "B"
+  },
+  "statistics": {
+    "total_components": 951,
+    "total_relations": 190,
+    "total_interfaces": 226,
+    "containers_analyzed": 5,
+    "active_containers": 2,
+    "stereotype_distribution": {
+      "module": 16,
+      "component": 128,
+      "pipe": 67,
+      "directive": 3,
+      "adapter": 50,
+      "service": 173,
+      "interceptor": 4,
+      "resolver": 4,
+      "guard": 1,
+      "rest_interface": 21,
+      "controller": 32,
+      "repository": 38,
+      "entity": 360,
+      "scheduler": 1
+    }
+  },
+  "container_analyses": [
+    {
+      "container": "e2e-xnp",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
+      }
+    },
+    {
+      "container": "jsApi",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
+      }
+    },
+    {
+      "container": "import-schema",
+      "component_count": 0,
+      "relation_count": 0,
+      "interface_count": 0,
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [],
+        "stereotype_distribution": {},
+        "total_components": 0,
+        "total_relations": 0,
+        "total_interfaces": 0
+      }
+    },
+    {
+      "container": "frontend",
+      "component_count": 404,
+      "relation_count": 0,
+      "interface_count": 30,
+      "summary": "The frontend container is designed using a component-based architecture with Angular and TypeScript, supporting document processing functionalities through REST API integrations. It manages workflows, processes documents, handles user authentication, and provides forms and views for deeds and documents within the Document Processing bounded context.",
+      "technical": {
+        "architecture": "Component-Based",
+        "layers": [
+          "Presentation",
+          "Service",
+          "Adapter"
+        ],
+        "technologies": [
+          "Angular",
+          "TypeScript"
+        ],
+        "integration_style": "REST API"
+      },
+      "functional": {
+        "domain_concepts": [
+          "Workflow",
+          "Document",
+          "User",
+          "Deed",
+          "Signature",
+          "Correction Notes",
+          "Business Purpose"
+        ],
+        "capabilities": [
+          "Manage workflows",
+          "Process documents",
+          "Handle user authentication",
+          "Manage corrections",
+          "Provide forms and views for deeds and documents"
+        ],
+        "bounded_context": "Document Processing",
+        "integrations": [
+          "/basic-data",
+          "/remarks",
+          "/registrations",
+          "/participants",
+          "/issuing-copy-notes",
+          "/notes",
+          "/links",
+          "/document",
+          "/",
+          "/uvz",
+          "/access-denied",
+          "/deed-entries",
+          "/deed-view/:deedEntryId",
+          "/deed-form",
+          "/deed-form-bulk-capture"
+        ]
+      },
+      "quality": {
+        "separation_of_concerns": "moderate",
+        "coupling": "moderate",
+        "cohesion": "moderate",
+        "debt_indicators": [
+          "Large controllers/services",
+          "Missing abstractions"
+        ],
+        "grade": "B",
+        "recommendations": [
+          "Refactor large services into smaller, more focused ones",
+          "Introduce abstraction layers to reduce direct integrations"
+        ]
+      },
+      "overall_assessment": "The frontend container demonstrates a moderate level of separation of concerns, coupling, and cohesion, but it also exhibits some technical debt indicators such as large controllers/services and missing abstractions. The architecture is well-suited for document processing tasks and supports the required functionalities.",
+      "top_recommendations": [
+        "Refactor large services into smaller, more focused ones",
+        "Introduce abstraction layers to reduce direct integrations"
+      ],
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [
+          "Presentation",
+          "Service",
+          "Adapter"
+        ],
+        "stereotype_distribution": {
+          "module": 16,
+          "component": 128,
+          "pipe": 67,
+          "directive": 3,
+          "adapter": 50,
+          "service": 131,
+          "interceptor": 4,
+          "resolver": 4,
+          "guard": 1
+        },
+        "total_components": 404,
+        "total_relations": 0,
+        "total_interfaces": 30
+      }
+    },
+    {
+      "container": "backend",
+      "component_count": 494,
+      "relation_count": 0,
+      "interface_count": 196,
+      "summary": "The backend container of the Document Processing system is structured in a layered architecture with clear separation of concerns, loose coupling, and moderate cohesion. It leverages Spring Boot and JPA for robust development, with REST API as the integration style. The system manages various domain concepts such as actions, documents, users, and archiving operations, integrating with services like Key Manager, Archiving Service, and external APIs. Quality-wise, while the separation of concerns is good, there are areas for improvement including refactoring large controllers and implementing abstraction layers to enhance maintainability.",
+      "technical": {
+        "architecture": "Layered",
+        "layers": [
+          "Presentation",
+          "Service",
+          "Repository"
+        ],
+        "technologies": [
+          "Spring Boot",
+          "JPA"
+        ],
+        "integration_style": "REST API"
+      },
+      "functional": {
+        "domain_concepts": [
+          "Action",
+          "Document",
+          "User",
+          "DeedEntry",
+          "HandoverDataSet",
+          "KeyManager",
+          "Archiving"
+        ],
+        "capabilities": [
+          "Manage actions",
+          "Process documents",
+          "Handle user authentication and authorization",
+          "Manage deed entries",
+          "Handle handover data sets",
+          "Manage key management",
+          "Handle archiving operations"
+        ],
+        "bounded_context": "Document Processing",
+        "integrations": [
+          "Key Manager",
+          "Archiving Service",
+          "External API X",
+          "Database Y"
+        ]
+      },
+      "quality": {
+        "separation_of_concerns": "good",
+        "coupling": "loose",
+        "cohesion": "moderate",
+        "debt_indicators": [
+          "Large controllers",
+          "Missing abstractions"
+        ],
+        "grade": "B",
+        "recommendations": [
+          "Refactor large controllers",
+          "Implement abstraction layers"
+        ]
+      },
+      "overall_assessment": "The backend container is well-architected with clear separation of concerns and loose coupling, supporting the document processing functionalities effectively. However, there is room for improvement in terms of code organization and abstraction to enhance maintainability and scalability.",
+      "top_recommendations": [
+        "Refactor large controllers to improve modularity and maintainability.",
+        "Implement abstraction layers to reduce complexity and enhance separation of concerns."
+      ],
+      "analysis": {
+        "primary_pattern": "Unknown",
+        "layers": [
+          "Presentation",
+          "Service",
+          "Repository"
+        ],
+        "stereotype_distribution": {
+          "rest_interface": 21,
+          "controller": 32,
+          "service": 42,
+          "repository": 38,
+          "entity": 360,
+          "scheduler": 1
+        },
+        "total_components": 494,
+        "total_relations": 0,
+        "total_interfaces": 196
+      }
+    }
+  ],
+  "overall_grade": "B",
+  "executive_summary": "uvz is a modular monolith system with 951 components across 2 active containers: frontend (404 components, Grade B), backend (494 components, Grade B). Overall architecture grade: B.",
+  "top_recommendations": [
+    "Refactor large services into smaller, more focused ones",
+    "Introduce abstraction layers to reduce direct integrations",
+    "Refactor large controllers to improve modularity and maintainability.",
+    "Implement abstraction layers to reduce complexity and enhance separation of concerns.",
+    "Refactor large controllers",
+    "Implement abstraction layers"
+  ],
+  "technical_debt": {
+    "indicators": [
+      "Large controllers/services",
+      "Missing abstractions",
+      "Large controllers",
+      "Missing abstractions"
+    ],
+    "indicator_count": 4
+  }
+}

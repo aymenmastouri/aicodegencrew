@@ -1,102 +1,85 @@
 {
   "container": "backend",
-  "component_count": 333,
+  "component_count": 494,
   "relation_count": 0,
-  "interface_count": 95,
-  "summary": "The backend container implements a layered Spring Boot architecture (Presentation, Service, Repository, Domain) to support a legal deed and document management bounded context. It exposes REST APIs for external clients, handles business logic for deeds, actions, metadata, cryptographic key management, archiving, scheduled jobs, and reporting, and integrates with external key‑management and archiving services as well as a relational database via JPA/Hibernate. While the overall design follows solid architectural principles, moderate coupling and cohesion issues arise from oversized controllers, mixed service/DAO responsibilities, and a sprawling domain model, leading to a quality grade of B.",
+  "interface_count": 196,
+  "summary": "The backend container of the Document Processing system is structured in a layered architecture with clear separation of concerns, loose coupling, and moderate cohesion. It leverages Spring Boot and JPA for robust development, with REST API as the integration style. The system manages various domain concepts such as actions, documents, users, and archiving operations, integrating with services like Key Manager, Archiving Service, and external APIs. Quality-wise, while the separation of concerns is good, there are areas for improvement including refactoring large controllers and implementing abstraction layers to enhance maintainability.",
   "technical": {
-    "primary_pattern": "Layered",
+    "architecture": "Layered",
     "layers": [
-      "Presentation (Controllers/REST Interfaces)",
-      "Service (Business Logic)",
-      "Repository (Data Access)",
-      "Domain (Entities)"
+      "Presentation",
+      "Service",
+      "Repository"
     ],
     "technologies": [
       "Spring Boot",
-      "Spring MVC",
-      "Spring Data JPA",
-      "Spring Security",
-      "Spring Scheduler",
-      "JPA/Hibernate"
+      "JPA"
     ],
     "integration_style": "REST API"
   },
   "functional": {
     "domain_concepts": [
       "Action",
+      "Document",
+      "User",
       "DeedEntry",
-      "DocumentMetaData",
       "HandoverDataSet",
-      "SignatureInfo",
       "KeyManager",
-      "Archiving",
-      "BusinessPurpose",
-      "Report",
-      "Job"
+      "Archiving"
     ],
     "capabilities": [
-      "Create, retrieve and manage deed entries",
-      "Log and track deed actions and connections",
-      "Handle document metadata and archiving",
-      "Manage cryptographic keys and re‑encryption",
-      "Execute scheduled jobs and background processing",
-      "Generate reports and business‑purpose data",
-      "Expose RESTful APIs for external clients"
+      "Manage actions",
+      "Process documents",
+      "Handle user authentication and authorization",
+      "Manage deed entries",
+      "Handle handover data sets",
+      "Manage key management",
+      "Handle archiving operations"
     ],
-    "bounded_context": "Legal Deed and Document Management",
+    "bounded_context": "Document Processing",
     "integrations": [
-      "External Key Management Service (XnpKmServiceImpl)",
-      "External Archiving Service",
-      "Relational Database via JPA/Hibernate",
-      "External REST clients via ProxyRestTemplateConfiguration"
+      "Key Manager",
+      "Archiving Service",
+      "External API X",
+      "Database Y"
     ]
   },
   "quality": {
-    "separation_of_concerns": "moderate",
-    "coupling": "moderate",
+    "separation_of_concerns": "good",
+    "coupling": "loose",
     "cohesion": "moderate",
     "debt_indicators": [
-      "Controllers with many endpoints (potentially large controllers)",
-      "Service layer contains DAO implementations (mixing data‑access responsibilities)",
-      "High number of entity classes (possible duplication or overly fine‑grained model)",
-      "Missing explicit interfaces for external integrations (e.g., Key Management, Archiving)",
-      "Potential God‑service classes handling multiple unrelated concerns"
+      "Large controllers",
+      "Missing abstractions"
     ],
     "grade": "B",
     "recommendations": [
-      "Refactor large controller classes into smaller, purpose‑focused controllers",
-      "Introduce service interfaces and move DAO implementations out of the service layer",
-      "Group related entities into sub‑domains or packages to improve domain cohesion",
-      "Create abstraction layers (facade or adapter) for external services like XnpKmService and Archiving",
-      "Apply DDD bounded‑context boundaries to limit the size of the domain model",
-      "Review and reduce the number of service classes by consolidating similar business logic"
+      "Refactor large controllers",
+      "Implement abstraction layers"
     ]
   },
-  "overall_assessment": "The backend demonstrates a well‑structured layered approach and comprehensive functional coverage, but moderate technical debt in controller and service design hampers maintainability and scalability. Addressing the identified coupling and cohesion issues will elevate the quality from B to an A‑level rating.",
+  "overall_assessment": "The backend container is well-architected with clear separation of concerns and loose coupling, supporting the document processing functionalities effectively. However, there is room for improvement in terms of code organization and abstraction to enhance maintainability and scalability.",
   "top_recommendations": [
-    "Refactor large controller classes into smaller, purpose‑focused controllers",
-    "Introduce service interfaces and separate DAO implementations from business services",
-    "Create abstraction (facade/adapter) layers for external Key Management and Archiving services"
+    "Refactor large controllers to improve modularity and maintainability.",
+    "Implement abstraction layers to reduce complexity and enhance separation of concerns."
   ],
   "analysis": {
-    "primary_pattern": "Layered",
+    "primary_pattern": "Unknown",
     "layers": [
-      "Presentation (Controllers/REST Interfaces)",
-      "Service (Business Logic)",
-      "Repository (Data Access)",
-      "Domain (Entities)"
+      "Presentation",
+      "Service",
+      "Repository"
     ],
     "stereotype_distribution": {
       "rest_interface": 21,
       "controller": 32,
       "service": 42,
       "repository": 38,
-      "entity": 199,
+      "entity": 360,
       "scheduler": 1
     },
-    "total_components": 333,
+    "total_components": 494,
     "total_relations": 0,
-    "total_interfaces": 95
+    "total_interfaces": 196
   }
 }
