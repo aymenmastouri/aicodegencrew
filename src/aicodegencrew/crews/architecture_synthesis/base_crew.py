@@ -50,14 +50,20 @@ Do NOT include the full document in your response text.
 MANDATORY RULES:
 1. If you are about to write more than 200 characters, STOP and call doc_writer.
 2. Your final message MUST be a one-liner confirmation.
-3. Do NOT call the same MCP tool more than twice with identical arguments.
-4. Maximum 10 tool calls per task, then you MUST call doc_writer.
+3. Do NOT call the same MCP tool more than 3 times with identical arguments.
+4. Maximum 25 tool calls per task, then you MUST call doc_writer.
 
 ## CORRECT EXECUTION PATTERN (follow this exactly):
 
-Step 1: Call MCP tools to gather REAL data (2-4 tool calls).
+Step 1: Call MCP tools to gather REAL data (4-10 tool calls). Query EVERY stereotype,
+        get endpoints, get relations. More data = better documentation.
 Step 2: Call doc_writer(file_path="<path>", content="# Full markdown document...") ONCE.
 Step 3: Respond ONLY with a short confirmation message.
+
+If your content exceeds 15000 characters, use chunked_writer instead of doc_writer:
+1. chunked_writer(mode="create", file_path="<path>", content="first part...")
+2. chunked_writer(mode="append", file_path="<path>", content="next part...")
+3. chunked_writer(mode="finalize", file_path="<path>", content="")
 
 ## EXAMPLE OF CORRECT EXECUTION:
 
@@ -79,8 +85,9 @@ Your response: "File arc42/01-introduction.md written successfully (8 pages)."
 - Calling the same MCP tool repeatedly without making progress
 
 ## RIGHT:
-- Call MCP tools 2-4 times to gather data
+- Call MCP tools 4-10 times to gather data (query all stereotypes, endpoints, relations)
 - Call doc_writer ONCE with the COMPLETE document as the content parameter
+- For very large documents (>15000 chars), use chunked_writer instead
 - Your response is ONLY a short confirmation message
 """
 

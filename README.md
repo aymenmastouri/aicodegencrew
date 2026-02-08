@@ -219,9 +219,9 @@ Credentials are prompted interactively on first clone and cached in-memory only 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MAX_LLM_INPUT_TOKENS` | `32000` | Max input tokens per LLM call |
-| `MAX_LLM_OUTPUT_TOKENS` | `4000` | Max output tokens per LLM call |
-| `LLM_CONTEXT_WINDOW` | `120000` | Total LLM context window size |
+| `MAX_LLM_INPUT_TOKENS` | `100000` | Max input tokens per LLM call |
+| `MAX_LLM_OUTPUT_TOKENS` | `16000` | Max output tokens per LLM call (~12 pages per crew) |
+| `LLM_CONTEXT_WINDOW` | `120000` | Total LLM context window size (gpt-oss-120b) |
 
 #### Output & Logging
 
@@ -537,7 +537,7 @@ aicodegencrew/
 │   │       ├── base_crew.py        #   MiniCrewBase ABC (shared infrastructure)
 │   │       ├── crew.py             #   Top-level synthesis coordinator
 │   │       ├── c4/crew.py          #   C4 Mini-Crews (5 crews, all Python)
-│   │       ├── arc42/crew.py       #   Arc42 Mini-Crews (15 crews, all Python)
+│   │       ├── arc42/crew.py       #   Arc42 Mini-Crews (18 crews, all Python)
 │   │       └── tools/              #   DocWriter, DrawIO, chunked writer
 │   │
 │   ├── pipelines/                  # Deterministic Pipelines (no LLM)

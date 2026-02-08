@@ -39,7 +39,7 @@ class ToolCallTracker:
     - max_total: after N total calls, only allow output tools (doc_writer, etc.)
     """
 
-    def __init__(self, max_identical: int = 2, max_total: int = 10):
+    def __init__(self, max_identical: int = 3, max_total: int = 25):
         self.max_identical = max_identical
         self.max_total = max_total
         self.calls: list[str] = []  # list of "tool:args_hash" keys
@@ -114,7 +114,7 @@ class ToolCallTracker:
 
 
 def install_guardrails(
-    max_identical: int = 2, max_total: int = 10
+    max_identical: int = 3, max_total: int = 25
 ) -> ToolCallTracker:
     """Create and install a ToolCallTracker for a crew execution.
 
