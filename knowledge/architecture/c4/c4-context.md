@@ -9,7 +9,7 @@
 | Stereotype | Count |
 |---|---|
 | adapter | 50 |
-| component | 128 |
+| component | 169 |
 | configuration | 1 |
 | controller | 32 |
 | directive | 3 |
@@ -22,7 +22,7 @@
 | resolver | 4 |
 | rest_interface | 21 |
 | scheduler | 1 |
-| service | 173 |
+| service | 184 |
 
 ### Containers
 
