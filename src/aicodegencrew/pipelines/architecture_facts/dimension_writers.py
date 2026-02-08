@@ -596,6 +596,10 @@ class CanonicalModelWriter:
             "tech_versions": model.tech_versions or [],
             "dependencies": model.dependencies,
             "workflows": model.workflows,
+            "security_details": getattr(model, 'security_details', []),
+            "validation": getattr(model, 'validation', []),
+            "tests": getattr(model, 'tests', []),
+            "error_handling": getattr(model, 'error_handling', []),
             "endpoint_flows": endpoint_flows or [],
             "evidence": list(model.evidence.values()),
         }

@@ -163,6 +163,50 @@ class RawEntity(RawFact):
 
 
 @dataclass
+class RawSecurityDetail(RawFact):
+    """A security detail fact (method-level security, CSRF, CORS)."""
+    security_type: str = ""  # pre_authorize, secured, roles_allowed, csrf, cors
+    roles: List[str] = field(default_factory=list)
+    method: str = ""  # Method name
+    class_name: str = ""  # Class containing the security annotation
+    file_path: str = ""
+    container_hint: str = ""
+
+
+@dataclass
+class RawValidationRule(RawFact):
+    """A validation rule fact (Bean Validation, custom validators)."""
+    validation_type: str = ""  # not_null, not_blank, size, pattern, min, max, custom
+    constraint: str = ""  # The constraint expression (e.g. "min=1, max=100")
+    target_class: str = ""  # DTO/Entity class
+    target_field: str = ""  # Field being validated
+    file_path: str = ""
+    container_hint: str = ""
+
+
+@dataclass
+class RawTestFact(RawFact):
+    """A test fact (unit, integration, e2e tests)."""
+    test_type: str = ""  # unit, integration, e2e, cucumber, playwright
+    framework: str = ""  # junit, spring_boot_test, cucumber, playwright, jasmine
+    scenarios: List[str] = field(default_factory=list)  # Test/scenario names
+    tested_component_hint: str = ""  # Guessed component under test
+    file_path: str = ""
+    container_hint: str = ""
+
+
+@dataclass
+class RawErrorHandlingFact(RawFact):
+    """An error handling fact (exception handlers, advice, custom exceptions)."""
+    handling_type: str = ""  # exception_handler, controller_advice, custom_exception, interceptor
+    exception_class: str = ""  # Exception class handled/defined
+    http_status: str = ""  # HTTP status code returned
+    handler_method: str = ""  # Method name
+    file_path: str = ""
+    container_hint: str = ""
+
+
+@dataclass
 class RawRuntimeFact(RawFact):
     """A runtime behavior fact (scheduler, async, workflow)."""
     type: str = ""  # scheduler, async, workflow_trigger, background_job

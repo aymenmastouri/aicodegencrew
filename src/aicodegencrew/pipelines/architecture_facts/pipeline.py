@@ -74,9 +74,13 @@ class ArchitectureFactsPipeline:
             "name": getattr(fact, 'name', 'unknown'),
         }
         # Add all non-None attributes
-        for attr in ['type', 'workflow_type', 'stereotype', 'container_hint', 'file_path', 
+        for attr in ['type', 'workflow_type', 'stereotype', 'container_hint', 'file_path',
                      'module', 'layer_hint', 'path', 'method', 'version', 'scope', 'group',
-                     'states', 'transitions', 'actions']:
+                     'states', 'transitions', 'actions',
+                     'security_type', 'roles', 'class_name',
+                     'validation_type', 'constraint', 'target_class', 'target_field',
+                     'test_type', 'framework', 'scenarios', 'tested_component_hint',
+                     'handling_type', 'exception_class', 'http_status', 'handler_method']:
             if hasattr(fact, attr):
                 val = getattr(fact, attr)
                 if val is not None and val != "" and val != []:
@@ -192,10 +196,23 @@ class ArchitectureFactsPipeline:
             canonical_model.tech_versions = [
                 self._fact_to_dict(tv) for tv in getattr(results, 'tech_versions', [])
             ]
+            canonical_model.security_details = [
+                self._fact_to_dict(s) for s in getattr(results, 'security_details', [])
+            ]
+            canonical_model.validation = [
+                self._fact_to_dict(v) for v in getattr(results, 'validation', [])
+            ]
+            canonical_model.tests = [
+                self._fact_to_dict(t) for t in getattr(results, 'tests', [])
+            ]
+            canonical_model.error_handling = [
+                self._fact_to_dict(e) for e in getattr(results, 'error_handling', [])
+            ]
             
             stats = canonical_model.get_statistics()
             logger.info(f"[Phase1] Canonical model: {stats['components']} components, {stats['relations']} relations")
             logger.info(f"[Phase1] Dependencies: {stats['dependencies']}, Workflows: {stats['workflows']}")
+            logger.info(f"[Phase1] Security: {stats.get('security_details', 0)}, Validation: {stats.get('validation', 0)}, Tests: {stats.get('tests', 0)}, Errors: {stats.get('error_handling', 0)}")
             
             # Step 4: Build endpoint flows
             logger.info("\n[Phase1] Step 4: Building endpoint flows...")

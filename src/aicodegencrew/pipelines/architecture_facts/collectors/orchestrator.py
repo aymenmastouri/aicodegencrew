@@ -33,6 +33,10 @@ from .infrastructure_collector import InfrastructureCollector
 from .dependency_collector import DependencyCollector
 from .workflow_collector import WorkflowCollector
 from .techstack_version_collector import TechStackVersionCollector
+from .security_detail_collector import SecurityDetailCollector
+from .validation_collector import ValidationCollector
+from .test_collector import TestCollector
+from .error_handling_collector import ErrorHandlingCollector
 from .evidence_collector import EvidenceCollector
 
 from ....shared.utils.logger import logger
@@ -75,6 +79,18 @@ class DimensionResults:
     # Technology versions (for upgrade planning)
     tech_versions: List[RawFact] = field(default_factory=list)
 
+    # Security details (method-level security, CSRF, CORS)
+    security_details: List[RawFact] = field(default_factory=list)
+
+    # Validation rules (Bean Validation, custom validators)
+    validation: List[RawFact] = field(default_factory=list)
+
+    # Tests (unit, integration, e2e, cucumber)
+    tests: List[RawFact] = field(default_factory=list)
+
+    # Error handling (exception handlers, advice, custom exceptions)
+    error_handling: List[RawFact] = field(default_factory=list)
+
     # All relations (hints for model builder)
     relation_hints: List[Dict] = field(default_factory=list)
 
@@ -96,6 +112,10 @@ class DimensionResults:
             "dependencies": len(self.dependencies),
             "workflows": len(self.workflows),
             "tech_versions": len(self.tech_versions),
+            "security_details": len(self.security_details),
+            "validation": len(self.validation),
+            "tests": len(self.tests),
+            "error_handling": len(self.error_handling),
             "relation_hints": len(self.relation_hints),
             "evidence_items": len(self.evidence),
         }
@@ -151,9 +171,13 @@ class CollectorOrchestrator:
             "name": fact.name,
         }
         # Add all non-None attributes
-        for attr in ['type', 'workflow_type', 'stereotype', 'container_hint', 'file_path', 
+        for attr in ['type', 'workflow_type', 'stereotype', 'container_hint', 'file_path',
                      'module', 'layer_hint', 'path', 'method', 'version', 'scope', 'group',
-                     'states', 'transitions', 'actions']:
+                     'states', 'transitions', 'actions',
+                     'security_type', 'roles', 'class_name',
+                     'validation_type', 'constraint', 'target_class', 'target_field',
+                     'test_type', 'framework', 'scenarios', 'tested_component_hint',
+                     'handling_type', 'exception_class', 'http_status', 'handler_method']:
             if hasattr(fact, attr):
                 val = getattr(fact, attr)
                 if val is not None and val != "" and val != []:
@@ -184,47 +208,63 @@ class CollectorOrchestrator:
         logger.info("[CollectorOrchestrator] Starting architecture extraction...")
         
         # 1. System facts
-        logger.info("[CollectorOrchestrator] Step 1/10: System facts...")
+        logger.info("[CollectorOrchestrator] Step 1/15: System facts...")
         self._run_system_collector()
         
         # 2. Container detection
-        logger.info("[CollectorOrchestrator] Step 2/10: Container detection...")
+        logger.info("[CollectorOrchestrator] Step 2/15: Container detection...")
         self._run_container_collector()
         
         # 3. Component extraction (includes specialists)
-        logger.info("[CollectorOrchestrator] Step 3/10: Component extraction...")
+        logger.info("[CollectorOrchestrator] Step 3/15: Component extraction...")
         self._run_component_collector()
         
         # 4. Interface extraction
-        logger.info("[CollectorOrchestrator] Step 4/10: Interface extraction...")
+        logger.info("[CollectorOrchestrator] Step 4/15: Interface extraction...")
         self._run_interface_collector()
         
         # 5. Data model extraction
-        logger.info("[CollectorOrchestrator] Step 5/10: Data model extraction...")
+        logger.info("[CollectorOrchestrator] Step 5/15: Data model extraction...")
         self._run_data_model_collector()
         
         # 6. Runtime extraction
-        logger.info("[CollectorOrchestrator] Step 6/10: Runtime extraction...")
+        logger.info("[CollectorOrchestrator] Step 6/15: Runtime extraction...")
         self._run_runtime_collector()
         
         # 7. Infrastructure extraction
-        logger.info("[CollectorOrchestrator] Step 7/10: Infrastructure extraction...")
+        logger.info("[CollectorOrchestrator] Step 7/15: Infrastructure extraction...")
         self._run_infrastructure_collector()
         
         # 8. Dependencies extraction
-        logger.info("[CollectorOrchestrator] Step 8/10: Dependencies extraction...")
+        logger.info("[CollectorOrchestrator] Step 8/15: Dependencies extraction...")
         self._run_dependency_collector()
         
         # 9. Workflows extraction
-        logger.info("[CollectorOrchestrator] Step 9/11: Workflows extraction...")
+        logger.info("[CollectorOrchestrator] Step 9/15: Workflows extraction...")
         self._run_workflow_collector()
 
         # 10. Technology versions extraction
-        logger.info("[CollectorOrchestrator] Step 10/11: Technology versions extraction...")
+        logger.info("[CollectorOrchestrator] Step 10/15: Technology versions extraction...")
         self._run_techstack_version_collector()
 
-        # 11. Evidence aggregation
-        logger.info("[CollectorOrchestrator] Step 11/11: Evidence aggregation...")
+        # 11. Security details extraction
+        logger.info("[CollectorOrchestrator] Step 11/15: Security details extraction...")
+        self._run_security_detail_collector()
+
+        # 12. Validation rules extraction
+        logger.info("[CollectorOrchestrator] Step 12/15: Validation rules extraction...")
+        self._run_validation_collector()
+
+        # 13. Tests extraction
+        logger.info("[CollectorOrchestrator] Step 13/15: Tests extraction...")
+        self._run_test_collector()
+
+        # 14. Error handling extraction
+        logger.info("[CollectorOrchestrator] Step 14/15: Error handling extraction...")
+        self._run_error_handling_collector()
+
+        # 15. Evidence aggregation
+        logger.info("[CollectorOrchestrator] Step 15/15: Evidence aggregation...")
         self._aggregate_evidence()
         
         # Log statistics
@@ -511,6 +551,62 @@ class CollectorOrchestrator:
             })
         self._write_json("tech_versions.json", versions_out)
 
+    def _run_security_detail_collector(self) -> None:
+        """Run SecurityDetailCollector for method-level security, CSRF, CORS."""
+        collector = SecurityDetailCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.security_details.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} security details")
+
+        details_out = [self._fact_to_dict(s) for s in self.results.security_details]
+        self._write_json("security_details.json", details_out)
+
+    def _run_validation_collector(self) -> None:
+        """Run ValidationCollector for Bean Validation, custom validators."""
+        collector = ValidationCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.validation.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} validation rules")
+
+        validation_out = [self._fact_to_dict(v) for v in self.results.validation]
+        self._write_json("validation.json", validation_out)
+
+    def _run_test_collector(self) -> None:
+        """Run TestCollector for unit, integration, e2e tests."""
+        collector = TestCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.tests.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} test facts")
+
+        tests_out = [self._fact_to_dict(t) for t in self.results.tests]
+        self._write_json("tests.json", tests_out)
+
+    def _run_error_handling_collector(self) -> None:
+        """Run ErrorHandlingCollector for exception handlers, advice, custom exceptions."""
+        collector = ErrorHandlingCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.error_handling.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} error handling facts")
+
+        error_out = [self._fact_to_dict(e) for e in self.results.error_handling]
+        self._write_json("error_handling.json", error_out)
+
     def _aggregate_evidence(self) -> None:
         """Build final evidence map."""
         self.results.evidence = self.evidence_collector.build_evidence_map()
@@ -560,6 +656,10 @@ class CollectorOrchestrator:
                 "category": getattr(v, 'category', ''),
                 "source_file": getattr(v, 'source_file', ''),
             } for v in self.results.tech_versions],
+            "security_details": [self._fact_to_dict(s) for s in self.results.security_details],
+            "validation": [self._fact_to_dict(v) for v in self.results.validation],
+            "tests": [self._fact_to_dict(t) for t in self.results.tests],
+            "error_handling": [self._fact_to_dict(e) for e in self.results.error_handling],
             "evidence": {k: v.to_dict() if hasattr(v, 'to_dict') else v for k, v in self.results.evidence.items()},
             "statistics": self.results.get_statistics(),
         }
