@@ -11,77 +11,68 @@
   },
   "development_plan": {
     "affected_components": [
-      "ProxyRestTemplateConfiguration",
-      "ReencryptionJobRestServiceImpl",
-      "JsonAuthorizationRestServiceImpl",
+      "IndexHTMLResourceService",
       "DeedEntryConnectionRestServiceImpl",
-      "DeedTypeRestServiceImpl",
-      "DeedEntryLogRestServiceImpl",
-      "RestrictedDeedEntryDaoImpl",
-      "StaticContentController",
-      "OfficialActivityMetadataRestServiceImpl",
-      "TokenAuthenticationRestTemplateConfigurationSpringBoot"
+      "DeedRegistryRestServiceImpl",
+      "DeedEntryRestServiceImpl",
+      "ProxyRestTemplateConfiguration",
+      "CustomMethodSecurityExpressionHandler",
+      "BusinessPurposeRestServiceImpl",
+      "OpenApiOperationAuthorizationRightCustomizer",
+      "OpenApiConfig",
+      "ArchivingRestServiceImpl"
     ],
     "interfaces": [
-      "GET /web/uvz/ (implemented_by: StaticContentController)",
-      "POST /jsonauth/user/to/authorization/service (implemented_by: JsonAuthorizationRestServiceImpl)",
-      "DELETE /jsonauth/user/from/authorization/service (implemented_by: JsonAuthorizationRestServiceImpl)",
-      "GET /uvz/v1/deedtypes (implemented_by: DeedTypeRestServiceImpl)",
-      "GET /warn (implemented_by: DeedEntryLogRestServiceImpl)",
-      "GET /abs (implemented_by: DeedEntryLogRestServiceImpl)",
-      "GET /deed/entry/logs (implemented_by: DeedEntryLogRestServiceImpl)",
-      "GET /deed/types (implemented_by: DeedTypeRestServiceImpl)",
-      "GET /recent/reencrypted/document (implemented_by: ReencryptionJobRestServiceImpl)",
-      "GET /official/activity/metadata/list (implemented_by: OfficialActivityMetadataRestServiceImpl)"
+      "GET /validation/exception",
+      "GET /assert/operation/signer/present",
+      "GET /is/present",
+      "GET /uvz/v1/businesspurposes",
+      "GET /uvz/v1/deedentries",
+      "POST /uvz/v1/deedentries",
+      "GET /uvz/v1/deedentries/{id}",
+      "GET /uvz/v1/deedentries/to-be-signed",
+      "GET /uvz/v1/deedentries/to-be-approved",
+      "PUT /uvz/v1/deedentries/{id}"
     ],
     "dependencies": [],
     "implementation_steps": [
-      "1. Update Node.js version to the LTS release required by Angular 19 (modify .nvmrc and CI pipelines).",
-      "2. Upgrade TypeScript to the version compatible with Angular 19 (update tsconfig.json and package.json).",
-      "3. Replace Angular core packages from 18 to 19 using ng update (run ng update @angular/core@19 @angular/cli@19).",
-      "4. Update Pattern Library (bnotk/ds-ng) to version 12.6.0 in package.json and run npm install.",
-      "5. Align ng-bootstrap to the version that includes the UVZUSLNVV-5824 patch (apply patch file, update package.json).",
-      "6. Upgrade ng-select and ng-option-highlight to the latest compatible versions (modify imports in components using them).",
-      "7. Update ag-grid-angular and ag-grid-community to versions supporting Angular 19 (adjust grid options if API changes).",
-      "8. Refactor any deprecated Angular 18 APIs found in the affected components (e.g., StaticContentController, JsonAuthorizationRestServiceImpl).",
-      "9. Verify that the vertical action bar component still compiles and functions with PL 12.6.0 (run Storybook checks).",
-      "10. Remove leftover files, modules, or CSS classes that belong exclusively to Angular 18 or PL 11.3.1 (search and delete).",
-      "11. Run full application build and resolve any compilation errors (update import paths, adjust typings).",
-      "12. Execute unit and integration test suites; fix failing tests caused by the upgrade.",
-      "13. Update CI/CD pipelines to use the new Node.js, TypeScript, and Angular versions.",
-      "14. Document the upgrade steps, version changes, and any manual migration notes in the project README."
+      "1. Update Node.js version in .nvmrc / package.json to the version required by Angular 19 (e.g., >=20.x).",
+      "2. Upgrade TypeScript to the version compatible with Angular 19 (e.g., 5.4).",
+      "3. Modify package.json dependencies: replace \"@angular/core\": \"18.x\" with \"@angular/core\": \"19.x\" and update all Angular packages accordingly.",
+      "4. Update Pattern Library (PL) dependency to \"@bnotk/ds-ng\": \"12.6.0\" in package.json.",
+      "5. Align third‑party libraries to versions compatible with Angular 19: ng-bootstrap, ng-select, ng-option-highlight, ag-grid-angular, ag-grid-community (use the versions referenced in Filip Misiorek's analysis).",
+      "6. Apply the custom ng-bootstrap patch from UVZUSLNVV-5824 and run npm install to ensure the patched code is included.",
+      "7. Refactor any Angular 18 specific APIs (e.g., deprecated lifecycle hooks) in the front‑end source files; update imports in components that reference old PL 11.3.1 assets.",
+      "8. In IndexHTMLResourceService, adjust the served index.html to reference the new Angular bundle filenames and PL 12.6.0 CSS/JS assets.",
+      "9. Verify that the vertical action bar component still loads (it is deprecated but supported until PL 13.2.0); update its module imports if necessary.",
+      "10. Remove obsolete Angular 18 and PL 11.3.1 files from the repository (e.g., old polyfills, style sheets) after confirming they are not required by Angular 19/PL 12.6.0.",
+      "11. Run full build, fix compilation errors, and update CI pipeline to use the new Node.js and TypeScript versions.",
+      "12. Execute regression test suite and update failing tests to align with Angular 19 APIs."
     ],
     "test_strategy": {
       "unit_tests": [
-        "Compile all Angular modules with Angular 19 and assert no TypeScript errors.",
-        "Test that ng-bootstrap components render correctly after applying the UVZUSLNVV-5824 patch.",
-        "Validate that ng-select dropdowns work with the upgraded ng-select version."
+        "Run existing unit tests for all Angular components after upgrade; add tests for any newly introduced PL 12.6.0 components.",
+        "Create unit tests for the vertical action bar to ensure it renders correctly with PL 12.6.0."
       ],
       "integration_tests": [
-        "End‑to‑end test of the vertical action bar through Storybook to ensure visual and functional integrity.",
-        "API integration test for each discovered interface to confirm that backend controllers still respond after the frontend upgrade."
+        "Execute integration tests for all REST endpoints listed in interfaces to verify that front‑end calls succeed with the upgraded bundles.",
+        "Perform end‑to‑end tests for critical user flows (e.g., deed entry creation, business purpose retrieval) using the upgraded UI."
       ],
       "similar_patterns": []
     },
     "security_considerations": [
-      "Ensure CORS configuration allows only trusted origins (cors in ActionRestService).",
-      "Verify CSRF protection is enabled for state‑changing operations (csrf in AbstractSecurityConfiguration).",
-      "Ensure CORS configuration allows only trusted origins (cors in AbstractSecurityConfiguration).",
-      "Ensure CORS configuration allows only trusted origins (cors in JsonAuthorizationRestServiceImpl).",
-      "Apply pre_authorize security pattern where appropriate (pre_authorize in KeyManagerRestService)."
+      "Ensure CORS configuration allows only trusted origins (security pattern: cors in ActionRestService).",
+      "Verify CSRF protection is enabled for all state‑changing operations (security pattern: csrf in AbstractSecurityConfiguration).",
+      "Confirm pre_authorize annotations are present on sensitive services (security pattern: pre_authorize in KeyManagerRestService)."
     ],
     "validation_strategy": [
-      "Add @NotNull annotation to prevent null values (not_null on DeedEntry).",
-      "Add @Valid annotation to enforce nested validation (valid on DeedEntryRestService).",
-      "Add @NotBlank annotation to required string fields (not_blank on KmConfig).",
-      "Add @Min annotation to enforce minimum numeric values (min on KmConfig).",
-      "Add @Max annotation to enforce maximum numeric values (max on KmConfig)."
+      "Add @NotNull annotations to DeedEntry fields as recommended (validation pattern: not_null on DeedEntry).",
+      "Add @Valid annotations to DeedEntryRestService method parameters (validation pattern: valid on DeedEntryRestService).",
+      "Apply @NotBlank, @Min, and @Max annotations to KmConfig properties (validation patterns: not_blank, min, max on KmConfig)."
     ],
     "error_handling": [
-      "Create or reuse a custom RuntimeException for domain‑specific errors (RuntimeException custom_exception).",
-      "Add @ExceptionHandler for generic Exception in a global exception handler (Exception exception_handler).",
-      "Add @ExceptionHandler for HttpClientErrorException in a global exception handler (HttpClientErrorException exception_handler).",
-      "Add @ExceptionHandler for HttpRequestMethodNotSupportedException in a global exception handler (HttpRequestMethodNotSupportedException exception_handler)."
+      "Create or reuse custom RuntimeException classes for domain errors (error pattern: RuntimeException custom_exception).",
+      "Add @ExceptionHandler methods for generic Exception, HttpClientErrorException, and HttpRequestMethodNotSupportedException in a global exception handler (error patterns: exception_handler)."
     ],
     "architecture_context": {
       "style": "Modular Monolith",
@@ -92,13 +83,12 @@
       ]
     },
     "estimated_complexity": "Medium",
-    "complexity_reasoning": "The upgrade touches core framework versions, multiple third‑party UI libraries, and requires removal of deprecated code while preserving the vertical action bar, leading to moderate effort across many components.",
-    "estimated_files_changed": 45,
+    "complexity_reasoning": "The upgrade touches core front‑end framework, multiple third‑party libraries, and requires coordination with backend services for asset delivery, but the modular monolith structure limits impact to well‑defined components.",
+    "estimated_files_changed": 115,
     "risks": [
-      "Breaking changes in Angular 19 may cause runtime errors in legacy components.",
-      "Incompatible versions of ng-bootstrap or ag‑grid could require additional code adjustments.",
-      "Residual Angular 18 specific code might be missed, leading to hidden bugs.",
-      "CI/CD pipeline failures due to mismatched Node.js or TypeScript versions."
+      "Incompatible third‑party library versions causing runtime errors.",
+      "Deprecated vertical action bar may be removed in future PL releases, leading to hidden breakage.",
+      "Potential mismatches between backend served assets (IndexHTMLResourceService) and new bundle filenames."
     ],
     "evidence_sources": {
       "components": "architecture_facts.json",
