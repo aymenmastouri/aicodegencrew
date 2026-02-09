@@ -289,16 +289,18 @@ def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
 
     # Generate PDF with pandoc
     print(f"  Generating PDF: {pdf_path.name}...")
-    subprocess.run(
+
+    # Try with xelatex first (best quality, needs LaTeX)
+    result = subprocess.run(
         [
             "pandoc",
             str(md_path),
             "-o", str(pdf_path),
-            "--pdf-engine=xelatex",  # Better Unicode support
-            "-V", "geometry:margin=1in",  # Page margins
+            "--pdf-engine=xelatex",
+            "-V", "geometry:margin=1in",
             "-V", "fontsize=11pt",
             "-V", "colorlinks=true",
-            "--toc",  # Table of contents
+            "--toc",
             "--toc-depth=2",
         ],
         cwd=str(ROOT),
@@ -309,9 +311,33 @@ def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
     if pdf_path.exists():
         print(f"  PDF generated: {pdf_path.name} ({pdf_path.stat().st_size:,} bytes)")
         return True
-    else:
-        print("  WARNING: PDF generation failed.")
-        return False
+
+    # xelatex failed, try simpler HTML-based conversion
+    print("  xelatex not found, trying HTML-based conversion...")
+    result = subprocess.run(
+        [
+            "pandoc",
+            str(md_path),
+            "-o", str(pdf_path),
+            "--pdf-engine=wkhtmltopdf",
+            "--toc",
+            "--toc-depth=2",
+        ],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+    )
+
+    if pdf_path.exists():
+        print(f"  PDF generated: {pdf_path.name} ({pdf_path.stat().st_size:,} bytes)")
+        return True
+
+    # Both failed
+    print("  WARNING: PDF generation failed.")
+    print("  Reason: LaTeX engine not installed.")
+    print("  To generate PDF: choco install miktex -y")
+    print("  Alternative: Use markdown version (USER_GUIDE.md)")
+    return False
 
 
 def assemble_release(version: str, wheel: Path, docker_tar: Path | None):
