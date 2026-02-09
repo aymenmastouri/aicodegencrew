@@ -1,11 +1,6 @@
----
-title: AICodeGenCrew - User Guide
-subtitle: Version 0.1.0 | Capgemini Proprietary
----
-
 # AICodeGenCrew - User Guide
 
-**Version 0.1.0 | Capgemini <img src="../logos/Capgemini_Primary-spade_Capgemini-Blue.png" height="32" style="vertical-align:middle" alt="" /> Proprietary**
+**Version 0.1.0 | Capgemini Proprietary**
 
 ---
 
@@ -70,13 +65,12 @@ AICodeGenCrew operates through a five-phase pipeline, each optimized for specifi
 
 The distribution package (`aicodegencrew-v0.1.0.zip`) contains the following components:
 
-**Default (Protected Binary):**
 ```
 aicodegencrew-v0.1.0/
-├── aicodegencrew.exe (Win) / aicodegencrew (Linux/Mac)  ← Protected binary
+├── aicodegencrew-0.1.0-py3-none-any.whl   ← Installable Python package (compiled wheel)
 ├── .env.example                            ← Environment configuration template
 ├── install.bat / install.sh                ← Platform-specific installation scripts
-├── uninstall.bat / uninstall.sh            ← Platform-specific uninstallation scripts
+├── uninstall.bat / uninstall.sh            ← Platform-specific uninstall scripts
 ├── docker-compose.yml                      ← Docker Compose orchestration file
 ├── config/
 │   └── phases_config.yaml                  ← Pipeline phase definitions (reference)
@@ -85,30 +79,14 @@ aicodegencrew-v0.1.0/
 └── CHANGELOG.md                            ← Release notes and version history
 ```
 
-**Alternative (Wheel - internal use only):**
-```
-aicodegencrew-v0.1.0/
-├── aicodegencrew-0.1.0-py3-none-any.whl   ← Python package (source code readable)
-├── .env.example
-├── install.bat / install.sh
-├── uninstall.bat / uninstall.sh
-├── docker-compose.yml
-├── config/
-│   └── phases_config.yaml
-├── USER_GUIDE.md
-├── USER_GUIDE.pdf
-└── CHANGELOG.md
-```
-
 ### Component Descriptions
 
 | File | Purpose | Installation Requirement |
 |------|---------|-------------------------|
-| `.exe` | Protected native binary (default) | Required (run directly or use install script) |
-| `.whl` | Python wheel package (internal use only) | Required (install via `pip`) |
+| `.whl` | Python wheel package containing the compiled application | Required (install via `pip`) |
 | `.env.example` | Configuration template with all environment variables | Required (copy to `.env` and customize) |
-| `install.bat` / `.sh` | Automated installation scripts for rapid deployment | Optional (alternative to manual setup) |
-| `uninstall.bat` / `.sh` | Automated uninstallation scripts | Optional (alternative to manual removal) |
+| `install.bat` / `.sh` | Automated installation scripts for rapid deployment | Optional (alternative to manual `pip install`) |
+| `uninstall.bat` / `.sh` | Automated uninstall scripts for clean removal | Optional (alternative to manual `pip uninstall`) |
 | `docker-compose.yml` | Container orchestration for Docker-based deployment | Optional (Docker environments only) |
 | `phases_config.yaml` | Phase execution definitions (read-only reference) | Informational (embedded in package) |
 | `USER_GUIDE.md` / `.pdf` | Complete technical and user documentation | Informational |
@@ -268,26 +246,25 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
 ```
 START HERE
 │
-├─ Did you receive a protected binary (.exe)? (Default delivery)
-│  ├─ YES: Go to Option A (Protected Binary) - No Python needed, 2 min
-│  └─ NO: Check what you received
+├─ Do you have Python 3.10+ installed?
+│  ├─ YES: Go to Option A (Wheel Package) - Simpler, 5 min
+│  └─ NO: Go to Option B (Docker) - No Python needed
 │
-├─ Did you receive a wheel package (.whl)? (Internal use only)
-│  ├─ YES: Go to Option B (Wheel Package) - Requires Python 3.10+
-│  └─ NO: Contact your administrator
+├─ Does your team use Docker?
+│  ├─ YES: Go to Option B (Docker) - Team standard
+│  └─ NO: Go to Option A (Wheel Package)
 │
-└─ Does your team use Docker?
-   ├─ YES: Go to Option C (Docker) - Team standard
-   └─ NO: Use Option A or B above
+└─ Want quickest setup?
+   Use install.bat/install.sh (Windows/Linux/Mac) - Automated
 ```
 
 **Comparison:**
 
-| Method | Time | Prerequisites | Python Required | Code Protection |
-|--------|------|---------------|-----------------|------------------|
-| **Protected Binary** | 2 min | None | No | Cannot be decompiled |
-| **Wheel (pip)** | 5 min | Python 3.10+ | Yes | Source code readable |
-| **Docker** | 10 min | Docker 20+ | No | Containerized |
+| Method | Time | Prerequisites | Isolation | Team Use |
+|--------|------|---------------|-----------|----------|
+| **Wheel (pip)** | 5 min | Python 3.10+ | Medium | Individual |
+| **Quick Install** | 2 min | Python 3.10+ | Medium | Individual |
+| **Docker** | 10 min | Docker 20+ | High | Team |
 
 Continue to Section 6 (Installation) with your chosen method
 
@@ -296,13 +273,11 @@ Continue to Section 6 (Installation) with your chosen method
 ## 6. Installation
 
 Choose your method from Section 5. Jump to:
-- **Protected Binary (Default):** Section 6.1 (install.bat/install.sh)
-- **Wheel Package (Internal):** Section 6.2 (pip install)
+- **Quick Setup:** Section 6.1 (install.bat/install.sh)
+- **Wheel Package:** Section 6.2 (pip install)
 - **Docker:** Section 6.3 (docker-compose)
 
-### 6.1 Protected Binary Installation (Default)
-
-The default delivery is a protected binary that does not require Python.
+### 6.1 Quick Setup (Recommended for First-Time)
 
 **Windows:**
 ```bat
@@ -316,24 +291,14 @@ chmod +x install.sh
 ```
 
 **What it does:**
-1. Copies binary to Program Files (Windows) or `/usr/local/bin` (Linux/Mac)
-2. Adds to PATH (optional)
-3. Verifies installation
-
-**Alternative: Run directly from folder:**
-```bash
-# Windows
-aicodegencrew.exe --help
-
-# Linux/Mac
-./aicodegencrew --help
-```
+1. Checks Python version
+2. Installs wheel with pip
+3. Pulls Ollama embedding model
+4. Verifies installation
 
 Skip to Section 7 (Configuration)
 
-### 6.2 Wheel Package (Internal Use Only)
-
-This method is for internal development only. The wheel contains readable source code.
+### 6.2 Manual: Wheel Package
 
 You received a `.whl` file from the development team.
 
@@ -349,7 +314,7 @@ aicodegencrew --help
 - Python 3.10 - 3.12
 - Ollama (for embeddings): https://ollama.com/
 
-### 6.3 Docker
+### 6.3 Manual: Docker
 
 You received a Docker image (`.tar.gz` file or access to a registry).
 
@@ -370,25 +335,6 @@ docker run aicodegencrew:latest --help
 ### 6.4 Uninstall
 
 To completely remove AICodeGenCrew from your system:
-
-**Method 1: Using Uninstall Scripts (Recommended)**
-
-**Windows:**
-```bat
-uninstall.bat
-```
-
-**Linux/macOS:**
-```bash
-chmod +x uninstall.sh
-./uninstall.sh
-```
-
-The uninstall script will:
-- Remove the Python package (`pip uninstall`)
-- Display a reminder about data folders that remain
-
-**Method 2: Manual Uninstall**
 
 **Wheel installation (Windows/Linux/Mac):**
 ```bash

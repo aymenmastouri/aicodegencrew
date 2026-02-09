@@ -3,17 +3,15 @@
 Build Release Package for AICodeGenCrew.
 
 Creates a distribution-ready package with:
-  - Protected native binary (Nuitka) - default, cannot be decompiled
-  - Python wheel (.whl) - optional, for internal use only
-  - Docker image (.tar.gz) - optional
+  - Python wheel (.whl) — no source code
+  - Docker image (.tar.gz) — optional
   - Configuration template (.env.example)
   - User documentation (USER_GUIDE.md + USER_GUIDE.pdf)
   - phases_config.yaml
   - docker-compose.yml
 
 Usage:
-    python scripts/build_release.py                              # Build protected binary (default)
-    python scripts/build_release.py --wheel                      # Build wheel (internal use only)
+    python scripts/build_release.py                              # Build current version
     python scripts/build_release.py --bump patch                 # 0.1.0 -> 0.1.1
     python scripts/build_release.py --bump minor                 # 0.1.0 -> 0.2.0
     python scripts/build_release.py --bump major                 # 0.1.0 -> 1.0.0
@@ -23,7 +21,6 @@ Usage:
 
 import argparse
 import os
-import platform
 import re
 import shutil
 import subprocess
@@ -36,8 +33,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 RELEASE = DIST / "release"
-SRC = ROOT / "src" / "aicodegencrew"
-NUITKA_DIST = DIST / "nuitka"
 PYPROJECT = ROOT / "pyproject.toml"
 CHANGELOG = ROOT / "CHANGELOG.md"
 
@@ -241,111 +236,6 @@ def build_wheel() -> Path:
     return wheel
 
 
-def build_nuitka(version: str) -> Path:
-    """
-    Build protected native binary with Nuitka.
-    
-    Nuitka compiles Python to C, then to native machine code.
-    This makes reverse engineering extremely difficult.
-    """
-    print("\n[2/4] Building protected binary with Nuitka...")
-    
-    # Ensure Nuitka is installed
-    print("  Checking Nuitka installation...")
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "nuitka", "--version"],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            raise FileNotFoundError()
-        print(f"  Nuitka version: {result.stdout.strip().splitlines()[0]}")
-    except FileNotFoundError:
-        print("  Installing Nuitka...")
-        run([sys.executable, "-m", "pip", "install", "--quiet", "nuitka", "ordered-set", "zstandard"])
-    
-    # Clean previous build
-    if NUITKA_DIST.exists():
-        shutil.rmtree(NUITKA_DIST)
-    NUITKA_DIST.mkdir(parents=True)
-    
-    # Determine output filename based on platform
-    is_windows = platform.system() == "Windows"
-    exe_name = "aicodegencrew.exe" if is_windows else "aicodegencrew"
-    output_path = NUITKA_DIST / exe_name
-    
-    # Main entry point module
-    main_module = SRC / "main.py"
-    
-    # Build Nuitka command with protection options
-    nuitka_cmd = [
-        sys.executable, "-m", "nuitka",
-        # Output
-        f"--output-dir={NUITKA_DIST}",
-        f"--output-filename={exe_name}",
-        
-        # Compilation mode - standalone binary with all dependencies
-        "--standalone",
-        "--onefile",  # Single executable file
-        
-        # Protection options (macht Reverse Engineering sehr schwer)
-        "--no-pyi-file",          # Keine Type-Stub-Dateien
-        "--remove-output",        # Entfernt temporäre Build-Dateien
-        
-        # Include all required packages
-        "--follow-imports",
-        f"--include-package=aicodegencrew",
-        f"--include-package-data=aicodegencrew",
-        
-        # Product info (embedded in binary)
-        f"--product-name=AICodeGenCrew",
-        f"--product-version={version}",
-        f"--file-version={version}",
-        f"--file-description=AI Code Generation Crew - Architecture Analysis Tool",
-        f"--copyright=Copyright 2024-2026",
-        
-        # Performance
-        "--lto=yes",              # Link-Time Optimization
-        "--assume-yes-for-downloads",  # Auto-download dependencies
-        
-        # Entry point
-        str(main_module),
-    ]
-    
-    # Windows-specific: hide console for GUI mode (optional)
-    # nuitka_cmd.append("--windows-console-mode=disable")
-    
-    print("  Compiling to native binary (this may take 5-15 minutes)...")
-    print(f"  Command: {' '.join(nuitka_cmd[:8])}...")
-    
-    result = subprocess.run(
-        nuitka_cmd,
-        cwd=str(ROOT),
-        capture_output=False,  # Show Nuitka progress
-    )
-    
-    if result.returncode != 0:
-        print("ERROR: Nuitka compilation failed")
-        sys.exit(1)
-    
-    # Find the generated executable
-    if not output_path.exists():
-        # Nuitka might put it in a subfolder
-        exe_candidates = list(NUITKA_DIST.rglob(exe_name))
-        if exe_candidates:
-            output_path = exe_candidates[0]
-        else:
-            print(f"ERROR: Cannot find compiled binary {exe_name}")
-            sys.exit(1)
-    
-    size_mb = output_path.stat().st_size / (1024 * 1024)
-    print(f"  Protected binary: {output_path.name} ({size_mb:.1f} MB)")
-    print(f"  ✓ Code protection: Native machine code - sehr schwer zu dekompilieren!")
-    
-    return output_path
-
-
 def build_docker(version: str) -> Path | None:
     """Build Docker image and export as .tar.gz."""
     print("\n[2/4] Building Docker image...")
@@ -416,20 +306,18 @@ def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
                 break
 
     # Try with xelatex first (best quality, needs LaTeX)
-    pandoc_args = [
-        "pandoc",
-        str(md_path),
-        "-o", str(pdf_path),
-        f"--pdf-engine={xelatex_cmd}",
-        "-V", "geometry:margin=1in",
-        "-V", "fontsize=11pt",
-        "-V", "colorlinks=true",
-        "--toc",
-        "--toc-depth=2",
-    ]
-
     result = subprocess.run(
-        pandoc_args,
+        [
+            "pandoc",
+            str(md_path),
+            "-o", str(pdf_path),
+            f"--pdf-engine={xelatex_cmd}",
+            "-V", "geometry:margin=1in",
+            "-V", "fontsize=11pt",
+            "-V", "colorlinks=true",
+            "--toc",
+            "--toc-depth=2",
+        ],
         cwd=str(ROOT),
         capture_output=True,
         text=True,
@@ -439,12 +327,8 @@ def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
         print(f"  PDF generated: {pdf_path.name} ({pdf_path.stat().st_size:,} bytes)")
         return True
 
-    # xelatex failed, show error
-    if result.stderr:
-        print(f"  LaTeX error: {result.stderr[:500]}")
-
-    # Try simpler HTML-based conversion
-    print("  xelatex generation failed, trying HTML-based conversion...")
+    # xelatex failed, try simpler HTML-based conversion
+    print("  xelatex not found, trying HTML-based conversion...")
     result = subprocess.run(
         [
             "pandoc",
@@ -471,22 +355,16 @@ def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
     return False
 
 
-def assemble_release(version: str, wheel: Path | None, docker_tar: Path | None, nuitka_exe: Path | None = None):
+def assemble_release(version: str, wheel: Path, docker_tar: Path | None):
     """Assemble release package."""
     print("\n[3/4] Assembling release package...")
-    
-    is_nuitka_build = nuitka_exe is not None
 
     if RELEASE.exists():
         shutil.rmtree(RELEASE)
     RELEASE.mkdir(parents=True)
 
-    # Copy main artifact: Nuitka binary or Wheel
-    if is_nuitka_build:
-        shutil.copy2(nuitka_exe, RELEASE / nuitka_exe.name)
-        print(f"  \u2713 Protected binary: {nuitka_exe.name}")
-    else:
-        shutil.copy2(wheel, RELEASE / wheel.name)
+    # Wheel
+    shutil.copy2(wheel, RELEASE / wheel.name)
 
     # Docker image (optional)
     if docker_tar and docker_tar.exists():
@@ -513,110 +391,6 @@ def assemble_release(version: str, wheel: Path | None, docker_tar: Path | None, 
     if CHANGELOG.exists():
         shutil.copy2(CHANGELOG, RELEASE / "CHANGELOG.md")
 
-    # Create install scripts based on build type
-    if is_nuitka_build:
-        _create_nuitka_install_scripts(version, nuitka_exe)
-    else:
-        _create_wheel_install_scripts(version, wheel)
-
-    print(f"  Release directory: {RELEASE}")
-
-
-def _create_nuitka_install_scripts(version: str, nuitka_exe: Path):
-    """Create install scripts for protected Nuitka binary."""
-    exe_name = nuitka_exe.name
-    is_windows = exe_name.endswith(".exe")
-    
-    # Windows install
-    install_bat = RELEASE / "install.bat"
-    install_bat.write_text(
-        f"@echo off\n"
-        f"echo Installing AICodeGenCrew v{version} (Protected Binary)...\n"
-        f"echo.\n"
-        f"echo Copying executable to C:\\Program Files\\AICodeGenCrew\\...\n"
-        f"mkdir \"C:\\Program Files\\AICodeGenCrew\" 2>nul\n"
-        f"copy /Y \"{exe_name}\" \"C:\\Program Files\\AICodeGenCrew\\\"\n"
-        f"echo.\n"
-        f"echo Adding to PATH...\n"
-        f"setx PATH \"%PATH%;C:\\Program Files\\AICodeGenCrew\" /M 2>nul || (\n"
-        f"    echo Note: Could not add to PATH automatically. Run as Administrator or add manually.\n"
-        f")\n"
-        f"echo.\n"
-        f"echo Installation complete!\n"
-        f"echo.\n"
-        f"echo Next steps:\n"
-        f"echo   1. Copy .env.example to your project folder as .env\n"
-        f"echo   2. Edit .env with your settings\n"
-        f"echo   3. Start Ollama: ollama serve\n"
-        f"echo   4. Run: aicodegencrew --env .env plan\n"
-        f"echo.\n"
-        f"echo Alternative: Run directly from this folder:\n"
-        f"echo   {exe_name} --env .env plan\n"
-        f"echo.\n"
-        f"pause\n",
-        encoding="utf-8",
-    )
-
-    # Linux/macOS install
-    install_sh = RELEASE / "install.sh"
-    linux_exe = exe_name.replace(".exe", "") if is_windows else exe_name
-    install_sh.write_text(
-        f"#!/bin/bash\n"
-        f"set -e\n"
-        f'echo "Installing AICodeGenCrew v{version} (Protected Binary)..."\n'
-        f'echo ""\n'
-        f'echo "Copying executable to /usr/local/bin/..."\n'
-        f'sudo cp "{linux_exe}" /usr/local/bin/aicodegencrew\n'
-        f'sudo chmod +x /usr/local/bin/aicodegencrew\n'
-        f'echo ""\n'
-        f'echo "Installation complete!"\n'
-        f'echo ""\n'
-        f'echo "Next steps:"\n'
-        f'echo "  1. Copy .env.example to your project folder as .env"\n'
-        f'echo "  2. Edit .env with your settings"\n'
-        f'echo "  3. Start Ollama: ollama serve"\n'
-        f'echo "  4. Run: aicodegencrew --env .env plan"\n',
-        encoding="utf-8",
-    )
-    install_sh.chmod(0o755)
-
-    # Windows uninstall
-    uninstall_bat = RELEASE / "uninstall.bat"
-    uninstall_bat.write_text(
-        "@echo off\n"
-        "echo Uninstalling AICodeGenCrew...\n"
-        "echo.\n"
-        "del /F /Q \"C:\\Program Files\\AICodeGenCrew\\aicodegencrew.exe\" 2>nul\n"
-        "rmdir \"C:\\Program Files\\AICodeGenCrew\" 2>nul\n"
-        "echo.\n"
-        "echo AICodeGenCrew has been uninstalled.\n"
-        "echo.\n"
-        "echo Note: Configuration files (.env) and generated knowledge base\n"
-        "echo       remain in their respective directories.\n"
-        "echo.\n"
-        "pause\n",
-        encoding="utf-8",
-    )
-
-    # Linux/macOS uninstall
-    uninstall_sh = RELEASE / "uninstall.sh"
-    uninstall_sh.write_text(
-        "#!/bin/bash\n"
-        'echo "Uninstalling AICodeGenCrew..."\n'
-        'echo ""\n'
-        "sudo rm -f /usr/local/bin/aicodegencrew\n"
-        'echo ""\n'
-        'echo "AICodeGenCrew has been uninstalled."\n'
-        'echo ""\n'
-        'echo "Note: Configuration files (.env) and generated knowledge base"\n'
-        'echo "      remain in their respective directories."\n',
-        encoding="utf-8",
-    )
-    uninstall_sh.chmod(0o755)
-
-
-def _create_wheel_install_scripts(version: str, wheel: Path):
-    """Create install scripts for wheel package."""
     # Create install script (Windows)
     install_bat = RELEASE / "install.bat"
     install_bat.write_text(
@@ -651,7 +425,6 @@ def _create_wheel_install_scripts(version: str, wheel: Path):
         f'echo "  3. Run: aicodegencrew --env .env plan"\n',
         encoding="utf-8",
     )
-    install_sh.chmod(0o755)
 
     # Create uninstall script (Windows)
     uninstall_bat = RELEASE / "uninstall.bat"
@@ -696,6 +469,8 @@ def _create_wheel_install_scripts(version: str, wheel: Path):
     )
     uninstall_sh.chmod(0o755)
 
+    print(f"  Release directory: {RELEASE}")
+
 
 def create_release_zip(version: str) -> Path:
     """Create properly structured ZIP file for distribution."""
@@ -729,13 +504,11 @@ def create_release_zip(version: str) -> Path:
     return zip_path
 
 
-def print_summary(version: str, docker: bool, nuitka: bool, zip_path: Path):
+def print_summary(version: str, docker: bool, zip_path: Path):
     """Print release summary."""
     print("\n[4/4] Release summary")
     print("=" * 60)
     print(f"  Version:    {version}")
-    build_type = "Protected Native Binary (Nuitka)" if nuitka else "Python Wheel"
-    print(f"  Build Type: {build_type}")
     print(f"  Directory:  {RELEASE}")
     print(f"  ZIP file:   {zip_path.name}")
     print()
@@ -757,14 +530,6 @@ def print_summary(version: str, docker: bool, nuitka: bool, zip_path: Path):
 
     print("=" * 60)
     print()
-    
-    if nuitka:
-        print("Code Protection:")
-        print("  ✓ Native machine code - Source code ist nicht extrahierbar!")
-        print("  ✓ Keine Python-Bytecode-Dateien (.pyc) in der Delivery")
-        print("  ✓ Reverse Engineering extrem schwierig")
-        print()
-    
     print("Delivery instructions:")
     print(f"  1. Send '{zip_path.name}' to the end user")
     print(f"  2. User extracts ZIP -> 'aicodegencrew-v{version}/' folder")
@@ -782,17 +547,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/build_release.py                       # Build protected binary (default)
-  python scripts/build_release.py --wheel               # Build wheel (internal use only)
+  python scripts/build_release.py                       # Build current version
   python scripts/build_release.py --bump patch          # 0.1.0 -> 0.1.1
-  python scripts/build_release.py --bump patch --wheel  # Wheel + version bump
   python scripts/build_release.py --bump minor --tag    # 0.1.0 -> 0.2.0 + git tag
   python scripts/build_release.py --bump patch --tag --docker  # Full release
-
-Code Protection (Default):
-  Default build uses Nuitka to compile to native machine code.
-  The binary cannot be decompiled back to Python source code.
-  Use --wheel only for internal development purposes.
 """,
     )
     parser.add_argument(
@@ -802,10 +560,6 @@ Code Protection (Default):
     parser.add_argument(
         "--tag", action="store_true",
         help="Create git tag (commits pyproject.toml + CHANGELOG.md, tags vX.Y.Z)",
-    )
-    parser.add_argument(
-        "--wheel", action="store_true",
-        help="Build wheel package instead of protected binary (internal use only)",
     )
     parser.add_argument("--docker", action="store_true", help="Build Docker image")
     parser.add_argument("--push", action="store_true", help="Push Docker image to registry")
@@ -829,14 +583,8 @@ Code Protection (Default):
         print(f"AICodeGenCrew Release Builder v{version}")
         print("=" * 60)
 
-    # Step 1: Build Nuitka binary (default) or wheel
-    nuitka_exe = None
-    wheel = None
-    
-    if args.wheel:
-        wheel = build_wheel()
-    else:
-        nuitka_exe = build_nuitka(version)
+    # Step 1: Build wheel
+    wheel = build_wheel()
 
     # Step 2: Docker (optional)
     docker_tar = None
@@ -847,7 +595,7 @@ Code Protection (Default):
         push_docker(version, args.registry)
 
     # Step 3: Assemble release
-    assemble_release(version, wheel, docker_tar, nuitka_exe)
+    assemble_release(version, wheel, docker_tar)
 
     # Step 3.5: Create ZIP file
     zip_path = create_release_zip(version)
@@ -857,7 +605,7 @@ Code Protection (Default):
         git_tag(version)
 
     # Summary
-    print_summary(version, args.docker, not args.wheel, zip_path)
+    print_summary(version, args.docker, zip_path)
 
 
 if __name__ == "__main__":
