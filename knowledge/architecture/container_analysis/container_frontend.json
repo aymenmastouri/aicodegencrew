@@ -3,111 +3,99 @@
   "component_count": 404,
   "relation_count": 0,
   "interface_count": 30,
-  "summary": "The frontend container is a component‑based Angular application built with TypeScript, RxJS, and Angular Material, organized into presentation, service, integration, core/shared, and routing layers. It implements the Deed Registry and Workflow Management bounded context, exposing capabilities such as user authentication, deed CRUD, workflow approval, digital signature validation, document archiving, notification handling, reporting, and extensive REST API integrations. While the architecture follows Angular best‑practice layering, moderate coupling, cohesion, and separation of concerns, technical debt signals oversized services, an excess of adapters and pipes, and insufficient module boundaries, resulting in a quality grade of C.",
+  "summary": "The Frontend container is a component‑based Angular application organized into presentation, service, and adapter layers. It implements a rich set of deed‑management and document‑workflow capabilities through REST integrations, and follows good separation of concerns with high cohesion, though moderate coupling and some architectural debt (excessive services, adapters, and pipes) are evident.",
   "technical": {
-    "primary_pattern": "Component-Based",
+    "primary_pattern": "Component-Based (Angular)",
     "layers": [
-      "Presentation (Components, Directives, Pipes)",
-      "Service (Services, Guards, Interceptors)",
-      "Adapter/Integration (Adapters, API Modules)",
-      "Core/Shared (CoreModule, SharedModule)",
-      "Routing (Guards, Resolvers)"
+      "Presentation Layer (Components, Directives, Pipes, Guards, Interceptors)",
+      "Service Layer (Services, Resolvers, Domain Services, API Services)",
+      "Adapter/Data Integration Layer (Adapters, API Modules, Http Clients)"
     ],
     "technologies": [
       "Angular",
       "TypeScript",
       "RxJS",
       "Angular Router",
-      "Angular HTTP Client",
-      "Angular Material",
-      "RESTful APIs"
+      "Angular HttpClient",
+      "Angular Modules (NgModule)",
+      "Angular Guards & Interceptors"
     ],
-    "integration_style": "REST API"
+    "integration_style": "REST API via HttpClient"
   },
   "functional": {
-    "bounded_context": "Deed Registry and Workflow Management",
     "domain_concepts": [
       "Deed",
       "Document",
       "Workflow",
-      "User",
-      "Signature",
-      "Notification",
-      "Archive",
-      "NumberManagement",
+      "Task",
       "Report",
-      "Session",
-      "Authentication",
+      "User",
       "Settings",
-      "Help"
+      "Authorization",
+      "Pdf",
+      "Note",
+      "Connection"
     ],
     "capabilities": [
-      "User authentication and session management",
-      "Create, edit, view, and delete deeds",
-      "Deed approval and correction workflow",
-      "Validate and apply digital signatures",
-      "Archive and retrieve documents",
-      "Manage notifications and alerts",
-      "Generate and view reports",
-      "Handle number allocation and formatting",
-      "Import/export deed data (JSON, bulk capture)",
-      "Search and filter deed entries",
-      "Re‑encryption and security key management",
-      "Provide online help and documentation",
-      "Configure application settings",
-      "Interact with multiple RESTful backend services"
+      "Create, view, edit and delete deeds",
+      "Approve and correct deed entries",
+      "Manage deed‑related workflows and tasks (archive, reencryption, job execution)",
+      "Handle document metadata and PDF generation/display",
+      "Import and export data (JSON import, bulk capture)",
+      "User authentication, authorization and session management",
+      "Configure application settings and key management",
+      "Log business events and audit trails",
+      "Generate and retrieve reports and analytics",
+      "Interact with multiple REST APIs for deed registry, document metadata, tasks, jobs, and reencryption"
     ],
+    "bounded_context": "Deed Management and Document‑Workflow Processing",
     "integrations": [
-      "Xnp Platform API (XnpPlatformEndpoint)",
-      "Signature Service API (XnpSignatureEndpoint)",
-      "Notification Service API (XnpNotificationsEndpoint)",
-      "Archive Manager API (XnpArchiveManagerEndpoint)",
-      "Key Management API (KeyManagerAdapterService)",
-      "Logging API (XnpLogNgAdapter)",
-      "Authentication API (JsonAuthenticationAdapter)",
-      "Document Metadata API (DocumentMetadataApiModule)",
-      "Deed Registry API (DeedRegistryApiModule)",
-      "Job & Task Scheduling APIs (JobApiModule, TaskApiModule)",
-      "Report Metadata API (ReportMetadataModule)",
-      "Online Help API (XnpHelpAdapterService)",
-      "Settings API (SettingsAdapterService)"
+      "DeedRegistryApi (REST endpoint)",
+      "DocumentMetadataApi (REST endpoint)",
+      "TaskApi (REST endpoint)",
+      "JobApi (REST endpoint)",
+      "ReencryptionApi (REST endpoint)",
+      "ActionApi (REST endpoint)",
+      "Authorization service (JSON Authorization Adapter)",
+      "KeyManager service (KeyManagerAdapter)",
+      "Logging service (LoggingDataChangedAdapter)",
+      "PDF handling service (NativePdfAdapter)",
+      "Settings service (SettingsAdapterService)",
+      "Platform endpoint (XnpPlatformEndpoint)"
     ]
   },
   "quality": {
-    "separation_of_concerns": "moderate",
+    "separation_of_concerns": "good",
     "coupling": "moderate",
-    "cohesion": "moderate",
+    "cohesion": "high",
     "debt_indicators": [
-      "Large services (e.g., DomainWorkflowService, ArchivingService)",
-      "Excessive number of adapters (50+)",
-      "High count of pipes (67) indicating possible over‑use",
-      "Potentially monolithic feature modules",
-      "Limited apparent interface segregation"
+      "Excessive number of services (potential God services)",
+      "Proliferation of adapters (possible duplication)",
+      "Large number of pipes (scattered transformation logic)",
+      "Potential over‑centralized CoreModule causing hidden coupling"
     ],
-    "grade": "C",
+    "grade": "B",
     "recommendations": [
-      "Refactor oversized services into smaller, domain‑focused services",
-      "Consolidate or group related adapters to reduce duplication",
-      "Review and prune pipes; combine where possible or replace with component logic",
-      "Introduce clearer module boundaries (feature modules) to enforce separation of concerns",
-      "Apply interface segregation principles to services and adapters",
-      "Implement architectural guidelines to limit component/service proliferation"
+      "Refactor large services into smaller, domain‑focused services or facades",
+      "Consolidate similar adapters into generic API client wrappers",
+      "Group related pipes into feature modules or replace with reusable utility functions",
+      "Review CoreModule imports to ensure only truly shared services reside there",
+      "Introduce clear interface contracts between presentation and service layers",
+      "Apply feature‑module boundaries more strictly to enforce separation of concerns"
     ]
   },
-  "overall_assessment": "The frontend delivers the required business capabilities and follows a sensible Angular architecture, but its moderate coupling and cohesion together with several technical‑debt hotspots (large services, adapter explosion, pipe overuse) limit maintainability and scalability, placing it at a C grade.",
+  "overall_assessment": "The frontend is well‑structured and implements its domain effectively, but technical debt around service and adapter proliferation and some coupling via the CoreModule should be addressed to sustain scalability and maintainability.",
   "top_recommendations": [
-    "Refactor large services into focused, domain‑specific services",
-    "Consolidate and rationalize adapters to reduce duplication and surface area",
-    "Introduce well‑defined feature modules to improve separation of concerns and enforce interface segregation"
+    "Refactor large services into smaller, domain‑focused services or facades",
+    "Consolidate similar adapters into generic API client wrappers",
+    "Apply stricter feature‑module boundaries and review CoreModule imports"
   ],
   "analysis": {
-    "primary_pattern": "Component-Based",
+    "primary_pattern": "Component-Based (Angular)",
     "layers": [
-      "Presentation (Components, Directives, Pipes)",
-      "Service (Services, Guards, Interceptors)",
-      "Adapter/Integration (Adapters, API Modules)",
-      "Core/Shared (CoreModule, SharedModule)",
-      "Routing (Guards, Resolvers)"
+      "Presentation Layer (Components, Directives, Pipes, Guards, Interceptors)",
+      "Service Layer (Services, Resolvers, Domain Services, API Services)",
+      "Adapter/Data Integration Layer (Adapters, API Modules, Http Clients)"
     ],
     "stereotype_distribution": {
       "module": 16,
@@ -117,8 +105,8 @@
       "adapter": 50,
       "service": 131,
       "resolver": 4,
-      "interceptor": 4,
-      "guard": 1
+      "guard": 1,
+      "interceptor": 4
     },
     "total_components": 404,
     "total_relations": 0,
