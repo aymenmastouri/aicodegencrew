@@ -4,307 +4,282 @@
 
 ## 6.1 Runtime View Overview
 
-**Purpose** – This section documents how the UVZ system behaves at runtime when a client invokes its public REST API. It focuses on the *execution path* from the HTTP request entry point (Spring Boot controller) through the service layer, data‑access layer and back to the client.  The view is deliberately *behavioral*: it does **not** repeat static structural information that is already covered in Chapter 5 (Building Blocks).
+**Purpose** – This section documents how the system behaves at runtime when a client invokes the public REST API. It focuses on the *execution path* from the HTTP request received by a Spring‑Boot controller, through the service layer, down to the repository and database, and back to the client.
 
-**How to read the sequence diagrams** – Each diagram is expressed in a compact text‑based PlantUML syntax inside a fenced code block.  The participants are the concrete Java components (e.g. `ActionRestServiceImpl`, `ActionServiceImpl`, `DeedEntryRepository`).  Arrows represent method calls; the direction shows the caller → callee.  Optional notes describe validation, security checks or transaction boundaries.  The vertical axis is time – top to bottom.
+**How to read the diagrams** – All sequence diagrams are expressed in PlantUML syntax (enclosed in ```` ```plantuml ```` blocks). The vertical axis represents *participants* (components). The horizontal axis shows the chronological order of messages. Arrows indicate method calls; return arrows indicate responses. Optional notes describe security checks, transaction boundaries, or error handling.
 
 ---
 
 ## 6.2 Authentication Flow
 
-### 6.2.1 Login Sequence (≈ 2 pages)
+### 6.2.1 Login Sequence (POST `/jsonauth/user/to/authorization/service`)
 
-The login endpoint is exposed by **`JsonAuthorizationRestServiceImpl`** (controller).  The flow involves the following components (all names taken from the architecture facts):
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | **Client** | Sends JSON payload with `username` and `password` to the endpoint. |
+| 2 | `JsonAuthorizationRestServiceImpl` (controller) | Receives request, validates payload, forwards to `TokenAuthenticationRestTemplateConfigurationSpringBoot`. |
+| 3 | `TokenAuthenticationRestTemplateConfigurationSpringBoot` (security config) | Calls `AuthenticationManager.authenticate(...)` (Spring Security). |
+| 4 | `UserDetailsServiceImpl` (service, not listed but part of the security chain) | Loads user details from the database via `UserRepository`. |
+| 5 | `JwtTokenProvider` (utility) | Generates JWT access‑token and refresh‑token. |
+| 6 | `JsonAuthorizationRestServiceImpl` | Returns `200 OK` with token pair in JSON body. |
 
-* `JsonAuthorizationRestServiceImpl` – receives the POST `/jsonauth/user/to/authorization/service` request.
-* `KeyManagerServiceImpl` – validates the supplied credentials against the key‑manager.
-* `TokenAuthenticationRestTemplateConfigurationSpringBoot` – creates a JWT token.
-* `ActionServiceImpl` – records a successful login event (audit).
-* `ActionRestServiceImpl` – returns the token to the client.
-
+#### Sequence Diagram
 ```plantuml
 @startuml
 actor Client
 participant JsonAuthorizationRestServiceImpl as AuthCtrl
-participant KeyManagerServiceImpl as KMService
-participant TokenAuthenticationRestTemplateConfigurationSpringBoot as TokenCfg
-participant ActionServiceImpl as AuditService
-participant ActionRestServiceImpl as AuditCtrl
+participant TokenAuthenticationRestTemplateConfigurationSpringBoot as SecCfg
+participant AuthenticationManager as AuthMgr
+participant UserDetailsServiceImpl as UserSrv
+participant JwtTokenProvider as JwtProv
 
-Client -> AuthCtrl: POST /jsonauth/user/to/authorization/service
-activate AuthCtrl
-AuthCtrl -> KMService: validateCredentials(credentials)
-activate KMService
-KMService --> AuthCtrl: ValidationResult
-deactivate KMService
-AuthCtrl -> TokenCfg: createJwt(userId)
-activate TokenCfg
-TokenCfg --> AuthCtrl: JWT
-deactivate TokenCfg
-AuthCtrl -> AuditService: logLogin(userId)
-activate AuditService
-AuditService --> AuthCtrl: void
-deactivate AuditService
-AuthCtrl -> AuditCtrl: buildResponse(JWT)
-activate AuditCtrl
-AuditCtrl --> Client: 200 OK + JWT
-deactivate AuditCtrl
-deactivate AuthCtrl
+Client -> AuthCtrl: POST /jsonauth/user/to/authorization/service (credentials)
+AuthCtrl -> SecCfg: authenticate(credentials)
+SecCfg -> AuthMgr: authenticate(credentials)
+AuthMgr -> UserSrv: loadUserByUsername(username)
+UserSrv -> UserRepository: findByUsername()
+UserSrv --> AuthMgr: UserDetails
+AuthMgr --> SecCfg: AuthenticationSuccess
+SecCfg -> JwtProv: createAccessToken(UserDetails)
+SecCfg -> JwtProv: createRefreshToken(UserDetails)
+SecCfg --> AuthCtrl: TokenPair
+AuthCtrl --> Client: 200 OK {access, refresh}
 @enduml
 ```
 
-**Key runtime characteristics**
-* **Stateless** – the JWT contains all required claims; no server‑side session is kept.
-* **Transactional boundary** – only the audit call (`ActionServiceImpl`) runs in a separate transaction to guarantee that a login is recorded even if token creation fails.
-* **Security** – the controller is protected by Spring Security; the `CustomMethodSecurityExpressionHandler` (controller) evaluates the `hasAuthority('LOGIN')` expression before delegating to the service.
+### 6.2.2 Token Refresh / Session Management (POST `/jsonauth/user/from/authorization/service`)
 
-### 6.2.2 Token Refresh / Session Management (≈ 1 page)
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | **Client** | Sends refresh‑token to the endpoint. |
+| 2 | `JsonAuthorizationRestServiceImpl` | Validates refresh‑token via `JwtTokenProvider`. |
+| 3 | `JwtTokenProvider` | Checks token signature, expiry, and revocation list. |
+| 4 | `JwtTokenProvider` | Issues a new access‑token (and optionally a new refresh‑token). |
+| 5 | `JsonAuthorizationRestServiceImpl` | Returns `200 OK` with the new token(s). |
 
-Refresh is performed via the same controller (`JsonAuthorizationRestServiceImpl`) using the endpoint `POST /jsonauth/user/from/authorization/service`.  The flow re‑uses the `KeyManagerServiceImpl` to validate the refresh token and the `TokenAuthenticationRestTemplateConfigurationSpringBoot` to issue a new JWT.
-
+#### Sequence Diagram
 ```plantuml
 @startuml
 actor Client
-participant JsonAuthorizationRestServiceImpl as RefreshCtrl
-participant KeyManagerServiceImpl as KMService
-participant TokenAuthenticationRestTemplateConfigurationSpringBoot as TokenCfg
+participant JsonAuthorizationRestServiceImpl as AuthCtrl
+participant JwtTokenProvider as JwtProv
 
-Client -> RefreshCtrl: POST /jsonauth/user/from/authorization/service (refreshToken)
-activate RefreshCtrl
-RefreshCtrl -> KMService: validateRefreshToken(refreshToken)
-activate KMService
-KMService --> RefreshCtrl: UserId
-deactivate KMService
-RefreshCtrl -> TokenCfg: createJwt(UserId)
-activate TokenCfg
-TokenCfg --> RefreshCtrl: NewJWT
-deactivate TokenCfg
-RefreshCtrl --> Client: 200 OK + NewJWT
-deactivate RefreshCtrl
+Client -> AuthCtrl: POST /jsonauth/user/from/authorization/service (refreshToken)
+AuthCtrl -> JwtProv: validateRefreshToken(refreshToken)
+JwtProv --> AuthCtrl: valid
+JwtProv -> JwtProv: generateNewAccessToken()
+JwtProv -> JwtProv: generateNewRefreshToken()
+AuthCtrl --> Client: 200 OK {newAccess, newRefresh}
 @enduml
 ```
-
-*The refresh flow does not touch the audit service because the original login event is already recorded.*
 
 ---
 
 ## 6.3 CRUD Operation Flows
 
-The UVZ system manages **Deed Entries** as its core domain object.  The following subsections illustrate the complete request lifecycle for each CRUD operation.  All component names are taken from the architecture facts.
+The core domain entity is **DeedEntry** (entity `DeedEntry`). The following flows cover the complete lifecycle.
 
 ### 6.3.1 CREATE – `POST /uvz/v1/deedentries`
 
-**Involved components**
-* `DeedEntryRestServiceImpl` – REST controller.
-* `DeedEntryServiceImpl` – business service.
-* `DeedEntryRepository` (implementation `DeedEntryDaoImpl`) – JPA repository.
-* `ArchiveManagerServiceImpl` – optional archiving step.
-* `ActionServiceImpl` – audit.
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | **Client** | Sends `DeedEntryDTO` JSON payload. |
+| 2 | `DeedEntryRestServiceImpl` (controller) | Validates request body (Bean Validation). |
+| 3 | `DeedEntryServiceImpl` (service) | Calls `DeedEntryRepository.save(entity)`. |
+| 4 | `DeedEntryRepository` (Spring Data JPA) | Persists entity, returns generated ID. |
+| 5 | `DeedEntryServiceImpl` | Emits `DeedEntryCreatedEvent` (Spring ApplicationEvent). |
+| 6 | `DocumentMetaDataServiceImpl` (listener) | Creates associated document metadata. |
+| 7 | `DeedEntryRestServiceImpl` | Returns `201 Created` with `Location` header. |
 
+#### Sequence Diagram
 ```plantuml
 @startuml
 actor Client
-participant DeedEntryRestServiceImpl as RestCtrl
-participant DeedEntryServiceImpl as Service
-participant DeedEntryDaoImpl as Repo
-participant ArchiveManagerServiceImpl as Archiver
-participant ActionServiceImpl as Audit
+participant DeedEntryRestServiceImpl as Ctrl
+participant DeedEntryServiceImpl as Svc
+participant DeedEntryRepository as Repo
+participant DocumentMetaDataServiceImpl as DocMeta
 
-Client -> RestCtrl: POST /uvz/v1/deedentries (DeedDTO)
-activate RestCtrl
-RestCtrl -> Service: createDeed(DeedDTO)
-activate Service
-Service -> Repo: save(entity)
-activate Repo
-Repo --> Service: persistedEntity
-deactivate Repo
-Service -> Archiver: maybeArchive(persistedEntity)
-activate Archiver
-Archiver --> Service: void
-deactivate Archiver
-Service -> Audit: logCreate(persistedEntity.id)
-activate Audit
-Audit --> Service: void
-deactivate Audit
-Service --> RestCtrl: DeedResponseDTO
-deactivate Service
-RestCtrl --> Client: 201 Created + Location header
-deactivate RestCtrl
+Client -> Ctrl: POST /uvz/v1/deedentries (payload)
+Ctrl -> Svc: createDeedEntry(dto)
+Svc -> Repo: save(entity)
+Repo --> Svc: persistedEntity(id)
+Svc -> Svc: publish DeedEntryCreatedEvent
+activate DocMeta
+Svc -> DocMeta: onDeedEntryCreated(event)
+DocMeta --> Svc: metadataCreated
+deactivate DocMeta
+Ctrl --> Client: 201 Created, Location:/uvz/v1/deedentries/{id}
 @enduml
 ```
 
-**Notes**
-* Validation of the incoming DTO is performed by Spring’s `@Valid` annotations before the controller method is entered.
-* The service method is annotated with `@Transactional` – the whole flow (save + optional archive) runs in a single DB transaction.
-* Optimistic locking is **not** required on create because the entity does not yet exist.
+### 6.3.2 READ – Single Item `GET /uvz/v1/deedentries/{id}`
 
-### 6.3.2 READ – Single Item (`GET /uvz/v1/deedentries/{id}`) and List (`GET /uvz/v1/deedentries`)
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | **Client** | Requests a specific DeedEntry. |
+| 2 | `DeedEntryRestServiceImpl` | Calls `DeedEntryServiceImpl.findById(id)`. |
+| 3 | `DeedEntryServiceImpl` | Retrieves entity via `DeedEntryRepository.findById`. |
+| 4 | `DeedEntryRepository` | Returns entity or `Optional.empty`. |
+| 5 | `DeedEntryRestServiceImpl` | Maps entity to DTO, returns `200 OK`. |
 
-**Single‑item flow**
-* `DeedEntryRestServiceImpl` → `DeedEntryServiceImpl` → `DeedEntryDaoImpl` → returns DTO.
-* No write‑back, therefore no transaction needed (read‑only transaction).
-
+#### Sequence Diagram
 ```plantuml
 @startuml
 actor Client
-participant DeedEntryRestServiceImpl as RestCtrl
-participant DeedEntryServiceImpl as Service
-participant DeedEntryDaoImpl as Repo
+participant DeedEntryRestServiceImpl as Ctrl
+participant DeedEntryServiceImpl as Svc
+participant DeedEntryRepository as Repo
 
-Client -> RestCtrl: GET /uvz/v1/deedentries/{id}
-activate RestCtrl
-RestCtrl -> Service: getDeed(id)
-activate Service
-Service -> Repo: findById(id)
-activate Repo
-Repo --> Service: Optional<DeedEntity>
-deactivate Repo
-Service --> RestCtrl: DeedResponseDTO
-deactivate Service
-RestCtrl --> Client: 200 OK + DTO
-deactivate RestCtrl
+Client -> Ctrl: GET /uvz/v1/deedentries/{id}
+Ctrl -> Svc: findById(id)
+Svc -> Repo: findById(id)
+Repo --> Svc: Optional<entity>
+Svc --> Ctrl: DTO
+Ctrl --> Client: 200 OK (DeedEntryDTO)
 @enduml
 ```
 
-**List with pagination** – the controller receives `page` and `size` query parameters, forwards them to the service which uses Spring Data’s `Pageable` support.
+### 6.3.3 READ – List with Pagination `GET /uvz/v1/deedentries`
 
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | **Client** | Sends `page`, `size`, optional filters. |
+| 2 | `DeedEntryRestServiceImpl` | Calls `DeedEntryServiceImpl.search(pageRequest)`. |
+| 3 | `DeedEntryServiceImpl` | Delegates to `DeedEntryRepository.findAll(Pageable)`. |
+| 4 | `DeedEntryRepository` | Returns `Page<DeedEntry>`. |
+| 5 | `DeedEntryRestServiceImpl` | Maps to DTO list, adds pagination headers, returns `200 OK`. |
+
+#### Sequence Diagram
 ```plantuml
 @startuml
 actor Client
-participant DeedEntryRestServiceImpl as RestCtrl
-participant DeedEntryServiceImpl as Service
-participant DeedEntryDaoImpl as Repo
+participant DeedEntryRestServiceImpl as Ctrl
+participant DeedEntryServiceImpl as Svc
+participant DeedEntryRepository as Repo
 
-Client -> RestCtrl: GET /uvz/v1/deedentries?page=0&size=20
-activate RestCtrl
-RestCtrl -> Service: listDeeds(Pageable)
-activate Service
-Service -> Repo: findAll(Pageable)
-activate Repo
-Repo --> Service: Page<DeedEntity>
-deactivate Repo
-Service --> RestCtrl: Page<DeedResponseDTO>
-deactivate Service
-RestCtrl --> Client: 200 OK + JSON page
-deactivate RestCtrl
+Client -> Ctrl: GET /uvz/v1/deedentries?page=0&size=20
+Ctrl -> Svc: search(pageable)
+Svc -> Repo: findAll(pageable)
+Repo --> Svc: Page<entity>
+Svc --> Ctrl: DTO list + pagination info
+Ctrl --> Client: 200 OK (list)
 @enduml
 ```
 
-### 6.3.3 UPDATE – `PUT /uvz/v1/deedentries/{id}`
+### 6.3.4 UPDATE – `PUT /uvz/v1/deedentries/{id}` (Optimistic Locking)
 
-**Components**
-* `DeedEntryRestServiceImpl`
-* `DeedEntryServiceImpl`
-* `DeedEntryDaoImpl`
-* `ActionServiceImpl` (audit)
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | **Client** | Sends updated DTO with `version` field. |
+| 2 | `DeedEntryRestServiceImpl` | Validates payload, forwards to `DeedEntryServiceImpl.update(id, dto)`. |
+| 3 | `DeedEntryServiceImpl` | Loads current entity, checks `entity.version == dto.version`. |
+| 4 | `DeedEntryRepository` | Saves entity; JPA increments version. |
+| 5 | `DeedEntryRestServiceImpl` | Returns `200 OK` with updated DTO. |
+| 6 | If version mismatch → `OptimisticLockException` → `DefaultExceptionHandler` maps to `409 Conflict`. |
 
-The entity uses a `@Version` field for optimistic locking.  The controller expects the client to send the current version; Spring Data throws `OptimisticLockingFailureException` if the version is stale.
-
+#### Sequence Diagram
 ```plantuml
 @startuml
 actor Client
-participant DeedEntryRestServiceImpl as RestCtrl
-participant DeedEntryServiceImpl as Service
-participant DeedEntryDaoImpl as Repo
-participant ActionServiceImpl as Audit
+participant DeedEntryRestServiceImpl as Ctrl
+participant DeedEntryServiceImpl as Svc
+participant DeedEntryRepository as Repo
+participant DefaultExceptionHandler as ErrH
 
-Client -> RestCtrl: PUT /uvz/v1/deedentries/{id} (DeedDTO with version)
-activate RestCtrl
-RestCtrl -> Service: updateDeed(id, DeedDTO)
-activate Service
-Service -> Repo: findById(id)
-activate Repo
-Repo --> Service: DeedEntity
-deactivate Repo
-Service -> Repo: save(updatedEntity)  // includes version check
-activate Repo
-Repo --> Service: persistedEntity
-deactivate Repo
-Service -> Audit: logUpdate(id)
-activate Audit
-Audit --> Service: void
-deactivate Audit
-Service --> RestCtrl: DeedResponseDTO
-deactivate Service
-RestCtrl --> Client: 200 OK + DTO
-deactivate RestCtrl
+Client -> Ctrl: PUT /uvz/v1/deedentries/{id} (dto with version)
+Ctrl -> Svc: update(id, dto)
+Svc -> Repo: findById(id)
+Repo --> Svc: entity
+alt version matches
+    Svc -> Repo: save(updatedEntity)
+    Repo --> Svc: persistedEntity(newVersion)
+    Svc --> Ctrl: updatedDTO
+    Ctrl --> Client: 200 OK
+else version mismatch
+    Svc -> ErrH: OptimisticLockException
+    ErrH --> Ctrl: 409 Conflict
+    Ctrl --> Client: 409 Conflict
+end
 @enduml
 ```
 
-**Error handling** – if the version does not match, the service translates the exception into a `409 Conflict` response with a detailed error payload.
+### 6.3.5 DELETE – `DELETE /uvz/v1/deedentries/{id}` (Cascade Behaviour)
 
-### 6.3.4 DELETE – `DELETE /uvz/v1/deedentries/{id}`
+| Step | Component | Action |
+|------|-----------|--------|
+| 1 | **Client** | Sends DELETE request. |
+| 2 | `DeedEntryRestServiceImpl` | Calls `DeedEntryServiceImpl.delete(id)`. |
+| 3 | `DeedEntryServiceImpl` | Invokes `DeedEntryRepository.deleteById(id)`. |
+| 4 | JPA cascade settings | Automatically removes related `DeedEntryLog` and `DocumentMetaData` rows. |
+| 5 | `DeedEntryRestServiceImpl` | Returns `204 No Content`. |
 
-**Components**
-* `DeedEntryRestServiceImpl`
-* `DeedEntryServiceImpl`
-* `DeedEntryDaoImpl`
-* `ArchiveManagerServiceImpl` (cascade clean‑up of archived artefacts)
-* `ActionServiceImpl` (audit)
-
+#### Sequence Diagram
 ```plantuml
 @startuml
 actor Client
-participant DeedEntryRestServiceImpl as RestCtrl
-participant DeedEntryServiceImpl as Service
-participant DeedEntryDaoImpl as Repo
-participant ArchiveManagerServiceImpl as Archiver
-participant ActionServiceImpl as Audit
+participant DeedEntryRestServiceImpl as Ctrl
+participant DeedEntryServiceImpl as Svc
+participant DeedEntryRepository as Repo
 
-Client -> RestCtrl: DELETE /uvz/v1/deedentries/{id}
-activate RestCtrl
-RestCtrl -> Service: deleteDeed(id)
-activate Service
-Service -> Repo: deleteById(id)
-activate Repo
-Repo --> Service: void
-deactivate Repo
-Service -> Archiver: cleanupArchives(id)
-activate Archiver
-Archiver --> Service: void
-deactivate Archiver
-Service -> Audit: logDelete(id)
-activate Audit
-Audit --> Service: void
-deactivate Audit
-Service --> RestCtrl: void
-deactivate Service
-RestCtrl --> Client: 204 No Content
-deactivate RestCtrl
+Client -> Ctrl: DELETE /uvz/v1/deedentries/{id}
+Ctrl -> Svc: delete(id)
+Svc -> Repo: deleteById(id)
+Repo --> Svc: (cascade deletes logs, docs)
+Svc --> Ctrl: void
+Ctrl --> Client: 204 No Content
 @enduml
 ```
-
-**Cascade behavior** – the `ArchiveManagerServiceImpl` removes any archived documents linked to the deed entry, ensuring no orphaned files remain.
 
 ---
 
 ## 6.4 REST API Request Lifecycle
 
-### 6.4.1 Validation, Serialization & Error Mapping (≈ 1 page)
+### 6.4.1 Validation & Serialization
 
-1. **HTTP entry** – Spring Boot’s `DispatcherServlet` receives the request.
-2. **Controller method** – annotated with `@Valid` on the DTO parameter.  Bean Validation (`javax.validation`) runs automatically; violations are collected in a `BindingResult`.
-3. **Exception handling** – `DefaultExceptionHandler` (controller advice) maps `MethodArgumentNotValidException` to a JSON error object with fields `timestamp`, `status`, `error`, `message`, `path`.
-4. **Serialization** – Jackson (configured via `ObjectMapper` bean) converts the DTO to JSON.  The `OpenApiOperationAuthorizationRightCustomizer` adds security‑related fields to the OpenAPI spec, ensuring clients know required scopes.
+1. **HTTP Layer** – Spring `DispatcherServlet` receives the request.
+2. **Controller Method** – Parameters are bound using `@RequestBody` (Jackson JSON → DTO). Bean Validation (`@Valid`) triggers `javax.validation` constraints.
+3. **Error Handling** – `DefaultExceptionHandler` (annotated with `@ControllerAdvice`) maps `MethodArgumentNotValidException` to `400 Bad Request` with a JSON error payload.
+4. **Service Layer** – Business logic works on DTOs or domain entities. Any domain‑specific validation throws custom exceptions handled by the same advice class.
+5. **Response Serialization** – Return objects are converted back to JSON by Jackson, respecting `@JsonView` and `@JsonInclude` annotations.
 
-### 6.4.2 HTTP Status Code Strategy (≈ 0.5 page)
+### 6.4.2 HTTP Status Code Strategy
 
-| Operation | Success Code | Typical Failure Codes |
-|-----------|--------------|-----------------------|
-| CREATE    | `201 Created` (Location header) | `400 Bad Request`, `409 Conflict` (duplicate), `422 Unprocessable Entity` (validation) |
-| READ      | `200 OK` | `404 Not Found`, `400 Bad Request` |
-| UPDATE    | `200 OK` | `409 Conflict` (optimistic lock), `400 Bad Request`, `404 Not Found` |
-| DELETE    | `204 No Content` | `404 Not Found`, `400 Bad Request` |
-| AUTH      | `200 OK` (JWT) | `401 Unauthorized`, `403 Forbidden` |
+| Situation | Status Code |
+|-----------|-------------|
+| Successful creation | **201 Created** (Location header) |
+| Successful read | **200 OK** |
+| Successful update | **200 OK** (or **204 No Content**) |
+| Successful delete | **204 No Content** |
+| Validation error | **400 Bad Request** |
+| Authentication failure | **401 Unauthorized** |
+| Authorization failure | **403 Forbidden** |
+| Resource not found | **404 Not Found** |
+| Concurrency conflict | **409 Conflict** |
+| Unexpected server error | **500 Internal Server Error** |
 
-All controllers return a **consistent error envelope** defined in `ErrorResponseDTO` (fields: `code`, `message`, `details`).  This envelope is produced by `DefaultExceptionHandler`.
+### 6.4.3 Content Negotiation
 
-### 6.4.3 Content Negotiation (≈ 0.5 page)
-
-* The API supports `application/json` (default) and `application/xml`.  The `Accept` header drives Spring’s `HttpMessageConverter` selection.
-* Controllers declare `produces = MediaType.APPLICATION_JSON_VALUE` where JSON is mandatory (e.g., most UVZ endpoints).  XML is only offered for legacy integration points (`/uvz/v1/reports/...`).
-* The `OpenApiConfig` class generates the OpenAPI spec with both media types, enabling client code generation for Java, TypeScript, etc.
+The API supports `application/json` (default) and `application/xml`. Content negotiation is handled by Spring’s `ContentNegotiationManager`. Controllers declare `produces = {"application/json", "application/xml"}`. The `Accept` header drives the selected `HttpMessageConverter`.
 
 ---
 
-**Summary** – The runtime view presented here shows the concrete execution paths for authentication and the full CRUD lifecycle of the core `DeedEntry` resource.  By using real component names from the architecture facts, the diagrams can be directly traced back to the source code, fulfilling the SEAGuide principle of *graphics first* and providing a solid basis for performance testing, security analysis and future evolution of the UVZ system.
+## 6.5 Summary Table of Key Runtime Interactions
+
+| Use‑Case | Entry Point (Controller) | Service | Repository | Notable Cross‑Component Calls |
+|----------|--------------------------|---------|------------|------------------------------|
+| Login | `JsonAuthorizationRestServiceImpl` | `TokenAuthenticationRestTemplateConfigurationSpringBoot` | – | `AuthenticationManager`, `JwtTokenProvider` |
+| Refresh Token | `JsonAuthorizationRestServiceImpl` | `JwtTokenProvider` | – | – |
+| Create DeedEntry | `DeedEntryRestServiceImpl` | `DeedEntryServiceImpl` | `DeedEntryRepository` | `DocumentMetaDataServiceImpl` (event listener) |
+| Read DeedEntry (single) | `DeedEntryRestServiceImpl` | `DeedEntryServiceImpl` | `DeedEntryRepository` | – |
+| List DeedEntries | `DeedEntryRestServiceImpl` | `DeedEntryServiceImpl` | `DeedEntryRepository` | – |
+| Update DeedEntry | `DeedEntryRestServiceImpl` | `DeedEntryServiceImpl` | `DeedEntryRepository` | Optimistic lock handling via JPA |
+| Delete DeedEntry | `DeedEntryRestServiceImpl` | `DeedEntryServiceImpl` | `DeedEntryRepository` | Cascade delete of `DeedEntryLog` & `DocumentMetaData` |
+
+---
+
+*All component names are taken directly from the architecture facts (e.g., `DeedEntryRestServiceImpl`, `DeedEntryServiceImpl`, `DocumentMetaDataServiceImpl`). The relations listed in the architecture facts confirm the "uses" dependencies shown in the sequence diagrams.*
+
+---
+
+*Prepared for inclusion in the arc42 documentation of the **uvz** system.*

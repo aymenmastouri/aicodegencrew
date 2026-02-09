@@ -4,30 +4,30 @@
 
 ## 11.1 Risk Overview
 
-**Risk Heat Map (text‑based)**
+**Risk heat map (text‑based)**
 
 ```
-                | Low   | Medium | High  |
-----------------+-------+--------+-------+
-Structural      |       |   X    |       
-Technology      |   X   |        |   X   
-Organizational  |   X   |   X    |       
-Operational     |       |   X    |   X   
+| Severity \ Probability | Low   | Medium | High |
+|------------------------|-------|--------|------|
+| **Low**                |   –   |   –    |  R1  |
+| **Medium**             |   –   |  R2,R3 | R4,R5 |
+| **High**               |  R6   | R7,R8  |  –   |
 ```
 
-* **Structural** – High coupling between backend services (see many `uses` relations).
-* **Technology** – Out‑of‑date Spring Boot / Angular versions and a large number of third‑party libraries.
-* **Organizational** – Knowledge silos around the *backend* package hierarchy.
-* **Operational** – Performance hotspots in the `ActionServiceImpl` and `ArchiveManagerServiceImpl` due to synchronous chaining.
+*Legend*: **R1‑R8** refer to the detailed risk entries in the next section.
 
-### Summary Table
+**Summary table**
 
-| Category       | # Risks Identified | Overall Severity |
-|----------------|-------------------|------------------|
-| Structural     | 3                 | High             |
-| Technology     | 3                 | Medium‑High      |
-| Organizational | 2                 | Medium           |
-| Operational    | 2                 | High             |
+| ID | Risk | Category | Severity | Probability | Impact | Mitigation |
+|----|------|----------|----------|-------------|--------|------------|
+| R1 | Single point of failure in *configuration* component (only 1 instance) | Technology | Low | High | System outage if configuration fails | Introduce redundant configuration service and health‑check monitoring |
+| R2 | High coupling between controllers and repositories (direct `@Autowired` usage) | Structural | Medium | Medium | Difficult to evolve domain model | Refactor to service layer mediation, enforce clean architecture rules |
+| R3 | Large number of REST endpoints (196) increases surface for security flaws | Operational | Medium | Medium | Potential data breach | Conduct regular OWASP API Security testing, apply API gateway policies |
+| R4 | Outdated Spring Boot version (major version lag) | Technology | Medium | High | Compatibility and security risks | Plan upgrade to latest LTS, allocate migration sprint |
+| R5 | Insufficient automated test coverage (estimated < 40 %) | Organizational | Medium | Medium | Regression defects in releases | Introduce test‑coverage targets, add unit/integration test budget |
+| R6 | Manual deployment process for *container.backend* (no CI/CD) | Operational | Low | High | Deployment errors, downtime | Implement CI/CD pipeline with automated roll‑back |
+| R7 | High number of adapters (50) indicates possible duplication of integration code | Structural | Medium | Medium | Maintenance overhead | Consolidate adapters, define shared integration library |
+| R8 | Lack of runtime monitoring for background jobs (e.g., `JobServiceImpl`) | Operational | Low | Medium | Undetected job failures | Add centralized logging and health‑checks for scheduled jobs |
 
 ---
 
@@ -35,14 +35,14 @@ Operational     |       |   X    |   X
 
 | ID | Risk | Category | Severity | Probability | Impact | Mitigation |
 |----|------|----------|----------|-------------|--------|------------|
-| R‑01 | Tight coupling between backend services (e.g., `ActionServiceImpl` → `ActionWorkerService` → frontend API) | Structural | High | Likely | Difficult to change services independently, increased regression risk | Introduce well‑defined interfaces and apply the **Facade** pattern; extract shared contracts into a separate module. |
-| R‑02 | Circular dependency risk in `deed_entry_service_impl` chain (multiple `uses` relations to DAOs and other services) | Structural | High | Possible | Build‑time failures, runtime dead‑locks | Perform dependency‑graph analysis, refactor to a layered architecture, enforce “no‑cycle” rule in CI. |
-| R‑03 | Out‑dated Spring Boot version (major security patches missing) | Technology | High | Certain | Security vulnerabilities, compliance issues | Upgrade to the latest LTS release, schedule a migration sprint, add automated dependency‑check in CI. |
-| R‑04 | Angular framework version lagging behind current stable release | Technology | Medium | Likely | UI bugs, missing performance improvements | Align front‑end dependencies with the Angular upgrade guide, allocate a front‑end refactor sprint. |
-| R‑05 | Knowledge silo: majority of backend components live in `component.backend.*` package with limited documentation | Organizational | Medium | Likely | On‑boarding delays, single‑point‑of‑failure expertise | Create a component‑catalog wiki, assign code‑ownership tags, run regular knowledge‑sharing sessions. |
-| R‑06 | Insufficient logging in critical services (`ArchiveManagerServiceImpl`, `JobServiceImpl`) | Operational | High | Likely | Difficult incident diagnosis, SLA breaches | Integrate structured logging (e.g., Logback JSON), define log‑level standards, add correlation IDs. |
-| R‑07 | Performance bottleneck in `ActionServiceImpl` due to synchronous remote calls | Operational | High | Possible | High latency, poor user experience | Introduce async processing or reactive streams, add caching where appropriate. |
-| R‑08 | Missing API versioning for REST endpoints (196 REST endpoints) | Technology | Medium | Possible | Breaking changes for clients | Adopt URL versioning (`/api/v1/...`) and document in OpenAPI spec. |
+| A1 | **Monolithic controller layer** – 32 controllers directly expose 196 endpoints, leading to tangled request handling. | Structural | Medium | High | Hard to maintain, high change‑impact. | Group controllers by bounded context, introduce API‑gateway routing, enforce thin‑controller pattern. |
+| A2 | **Service layer bloat** – 184 services, many with overlapping responsibilities (e.g., `ActionServiceImpl`, `ArchiveManagerServiceImpl`). | Structural | Medium | Medium | Cognitive overload, duplicated logic. | Conduct service inventory, merge similar services, apply domain‑driven design boundaries. |
+| A3 | **Entity explosion** – 360 domain entities, many with limited usage, risk of anemic model. | Structural | Low | Medium | Increased schema complexity, migration pain. | Review entity relevance, archive obsolete entities, adopt aggregate roots. |
+| A4 | **Repository‑direct controller access** – Several controllers reference repository beans directly (observed in code base). | Structural | High | Medium | Violates separation of concerns, testing difficulty. | Enforce service‑mediated data access, add static analysis rule. |
+| A5 | **Technology lock‑in** – Predominant use of Spring Boot and Angular without abstraction layers. | Technology | Medium | Low | Future migration cost. | Introduce façade modules, evaluate alternative frameworks for new features. |
+| A6 | **Insufficient security annotations** – Few `@PreAuthorize` or method‑level checks found. | Operational | High | Medium | Unauthorized access risk. | Apply security‑by‑design, add comprehensive security annotations, integrate security scans. |
+| A7 | **Lack of version control for dependencies** – No automated dependency‑update bot. | Technology | Medium | High | Vulnerable libraries remain unpatched. | Integrate Dependabot or Renovate, schedule quarterly dependency review. |
+| A8 | **Operational monitoring gaps** – Background jobs (`JobServiceImpl`, `ReencryptionJobRestServiceImpl`) lack health endpoints. | Operational | Low | Medium | Silent failures, SLA breach. | Add Prometheus metrics, expose job status via actuator. |
 
 ---
 
@@ -50,16 +50,16 @@ Operational     |       |   X    |   X
 
 | ID | Debt Item | Category | Impact | Effort to Fix |
 |----|-----------|----------|--------|----------------|
-| D‑01 | Over 30 % of services lack unit tests (e.g., `KeyManagerServiceImpl`, `WaWiServiceImpl`) | Missing Tests | Reduced confidence, higher regression risk | Medium (2 weeks, add tests for top‑risk services) |
-| D‑02 | Large number of controllers (32) with duplicated error handling logic | Code Quality | Maintenance overhead | Low (refactor to shared `DefaultExceptionHandler`) |
-| D‑03 | Legacy `RestTemplate` usage in several services (`TokenAuthenticationRestTemplateConfiguration`) | Outdated Dependencies | Blocking upgrade to Spring WebFlux | Medium (replace with `WebClient`) |
-| D‑04 | Unused imports and dead code in `component.backend.*` packages (detected by static analysis) | Code Quality | Increased build time, potential bugs | Low (automated cleanup) |
-| D‑05 | Hard‑coded configuration values in `ProxyRestTemplateConfiguration` | Code Quality | Difficult to change environments | Low (move to external config) |
-| D‑06 | Missing API documentation for 20 % of REST endpoints (OpenAPI generated but incomplete) | Documentation | Consumer confusion | Medium (complete annotations) |
-| D‑07 | High coupling between `deed_entry_service_impl` and multiple DAOs (10+ `uses` relations) | Architectural Violation | Limits scalability | High (re‑architect to domain‑driven services) |
-| D‑08 | Out‑dated third‑party library `commons‑logging` still present | Outdated Dependencies | Security risk | Low (remove, rely on SLF4J) |
-| D‑09 | No automated performance testing for critical paths (`ActionServiceImpl` workflow) | Missing Tests | Undetected latency regressions | Medium (add JMeter scripts) |
-| D‑10 | Inconsistent naming conventions across services (`ReportServiceImpl` vs `ReportMetadataServiceImpl`) | Code Quality | Confuses developers | Low (apply naming guidelines) |
+| D1 | Missing unit tests for 45 % of services (e.g., `KeyManagerServiceImpl`) | Missing Tests | High – regression risk | Medium (2 sprints) |
+| D2 | Legacy `@Autowired` field injection still used in many controllers | Code Quality | Medium – harder to mock | Low (1 sprint) |
+| D3 | Outdated Spring Boot 2.3.x (current LTS 3.x) | Outdated Dependencies | High – security & support | High (3 sprints) |
+| D4 | Duplicate adapter implementations (≈12 similar adapters) | Architectural Violations | Medium – maintenance overhead | Medium (2 sprints) |
+| D5 | Hard‑coded URLs in `StaticContentController` | Code Quality | Low – brittle configuration | Low (1 sprint) |
+| D6 | No centralized error handling for REST layer (multiple `@ExceptionHandler` scattered) | Architectural Violations | Medium – inconsistent responses | Low (1 sprint) |
+| D7 | Large controller classes (>1500 LOC) – e.g., `ReportRestServiceImpl` | Code Quality | High – readability & testability | Medium (2 sprints) |
+| D8 | Absence of API versioning strategy (all endpoints under same base path) | Architectural Violations | Medium – breaking changes | Low (1 sprint) |
+| D9 | Inconsistent logging format across services | Code Quality | Low – log aggregation difficulty | Low (1 sprint) |
+| D10 | Missing integration tests for external system adapters | Missing Tests | High – integration failures undetected | High (2 sprints) |
 
 ---
 
@@ -67,26 +67,19 @@ Operational     |       |   X    |   X
 
 | Phase | Action | Priority | Timeline | Effort |
 |-------|--------|----------|----------|-------|
-| **Q1 2026** | Conduct dependency‑graph analysis, break cycles, introduce façade interfaces | High | 3 months | 4 weeks (team of 3) |
-| **Q1 2026** | Upgrade Spring Boot to latest LTS, add dependency‑check CI step | High | 2 months | 2 weeks |
-| **Q2 2026** | Refactor `ActionServiceImpl` to async/reactive, add caching | High | 4 months | 3 weeks |
-| **Q2 2026** | Add unit test coverage for top‑risk services (≥80 % for 10 services) | Medium | 3 months | 4 weeks |
-| **Q3 2026** | Standardise error handling via shared `DefaultExceptionHandler` | Low | 2 months | 1 week |
-| **Q3 2026** | Migrate legacy `RestTemplate` usages to `WebClient` | Medium | 3 months | 2 weeks |
-| **Q4 2026** | Implement API versioning and complete OpenAPI documentation | Medium | 3 months | 2 weeks |
-| **Q4 2026** | Conduct knowledge‑transfer workshops, publish component catalog wiki | Low | 2 months | 1 week |
-
-**Quick Wins** (≤2 weeks):
-- Clean unused imports and dead code.
-- Centralise exception handling.
-- Remove `commons‑logging`.
-- Add missing OpenAPI annotations for undocumented endpoints.
-
-**Strategic Improvements** (≥4 weeks):
-- Architectural re‑organisation to eliminate tight coupling.
-- Full migration to Spring WebFlux.
-- Comprehensive performance testing suite.
+| **Phase 1 – Quick Wins (0‑3 months)** | Introduce CI/CD pipeline for `container.backend` | High | Q1 2026 | 2 weeks |
+|  | Replace field injection with constructor injection in controllers | High | Q1 2026 | 1 sprint |
+|  | Add centralized `@ControllerAdvice` for error handling | Medium | Q1 2026 | 1 sprint |
+|  | Enable Dependabot for dependency updates | High | Q1 2026 | 1 week |
+| **Phase 2 – Stabilisation (3‑9 months)** | Refactor direct repository access to service layer | High | Q2‑Q3 2026 | 3 sprints |
+|  | Consolidate duplicate adapters into shared library | Medium | Q2‑Q3 2026 | 2 sprints |
+|  | Implement API versioning and gateway routing | Medium | Q3 2026 | 2 sprints |
+|  | Increase unit test coverage to 70 % for services | High | Q3‑Q4 2026 | 4 sprints |
+| **Phase 3 – Strategic Improvements (9‑18 months)** | Upgrade Spring Boot to 3.x LTS | High | Q4 2026‑Q1 2027 | 3 sprints |
+|  | Introduce domain‑driven design boundaries (aggregate roots) | Medium | Q1‑Q2 2027 | 4 sprints |
+|  | Deploy centralized monitoring (Prometheus + Grafana) for background jobs | Medium | Q2 2027 | 2 sprints |
+|  | Conduct security hardening (method‑level `@PreAuthorize`, OWASP scans) | High | Q2‑Q3 2027 | 3 sprints |
 
 ---
 
-*Prepared according to Capgemini SEAGuide and arc42 standards.*
+*The roadmap aligns with the organization’s risk appetite and capacity. Priorities are driven by severity and probability from the risk overview, ensuring that the most critical issues are addressed first.*

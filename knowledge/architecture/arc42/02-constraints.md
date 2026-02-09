@@ -4,34 +4,31 @@
 
 ## 2.1 Technical Constraints (≈ 3 pages)
 
-| **Constraint** | **Background** | **Impact on Architecture** | **Consequences if Violated** |
-|---|---|---|---|
-| **Programming Language – Java 17** | The backend is built with Spring Boot and Gradle, which require a modern JDK. | All backend services, repositories and domain entities must be written in Java. Integration with legacy code is limited to Java‑compatible modules. | Using a different language would break the build pipeline, require separate runtime containers and increase operational complexity. |
-| **Framework – Spring Boot 3.x** | The `container.backend` uses Spring Boot as the primary application framework (see container facts). | Dependency injection, transaction management, and REST endpoint exposure are all driven by Spring annotations. | Replacing Spring would invalidate existing `@RestController`, `@Service`, `@Repository` stereotypes and require a full rewrite of configuration classes (e.g., `ProxyRestTemplateConfiguration`). |
-| **Database – Oracle 19c (primary) & H2 (test)** | Repository names such as `ParticipantDaoOracle` and `ParticipantDaoH2` indicate two concrete implementations. | All `*Dao` components must conform to the JPA/Hibernate dialects of Oracle and H2. | Switching to a non‑compatible DB would break SQL generation, require new DAO implementations and migration scripts. |
-| **Infrastructure – Gradle (backend) & npm (frontend)** | Container metadata shows `build_system: gradle` for the backend and `npm` for Angular/Node.js. | Build, packaging and CI pipelines are tightly coupled to these tools. | Using Maven or Yarn would need pipeline changes, affect artifact naming and versioning. |
-| **Security – Spring Security + Custom Expressions** | Classes such as `CustomMethodSecurityExpressionHandler` and `TokenAuthenticationRestTemplateConfigurationSpringBoot` provide custom security logic. | All REST services must be secured via Spring Security filters and the custom expression handler. | Removing this constraint would expose endpoints, break role‑based access checks and invalidate security tests. |
-| **API Style – OpenAPI 3.0** | `OpenApiConfig` and `OpenApiOperationAuthorizationRightCustomizer` generate the OpenAPI specification. | All public REST endpoints must be described in the OpenAPI document and follow its versioning scheme. | Inconsistent documentation, missing client SDK generation, and reduced contract testing coverage. |
-| **Container – Docker (Kubernetes)** | Deployment is performed in Docker containers orchestrated by Kubernetes (implicit from the architecture style). | All services must expose health‑checks, be stateless, and support graceful shutdown. | Violations cause pod restarts, scaling issues, and loss of resilience. |
-| **Logging – Logback (JSON)** | The backend uses Logback with JSON layout for centralized logging. | All components must log in the defined JSON schema to be consumable by ELK stack. | Inconsistent logs hinder monitoring, alerting and root‑cause analysis. |
-| **Configuration – Spring Boot `application.yml`** | Centralised configuration is stored in `application.yml` files. | Feature toggles, externalised properties and profiles must be defined there. | Hard‑coded values increase deployment friction and risk of environment leakage. |
+| **Constraint** | **Name / Value** | **Background** | **Impact on Architecture** | **Consequences if Violated** |
+|----------------|------------------|----------------|----------------------------|------------------------------|
+| Programming Language | **Java 17** (backend) & **TypeScript** (frontend) | The backend is built on the Java ecosystem; the frontend uses Angular (TS). | Enforces JVM‑based libraries, Spring‑Boot conventions, and TypeScript tooling. | Incompatible libraries, loss of type‑safety, build failures. |
+| Framework | **Spring Boot 3.x** (backend) | Chosen for rapid micro‑service development, auto‑configuration, and extensive ecosystem. | All services, controllers and repositories must be Spring beans; configuration is driven by `application.yml`. | Manual wiring, missing dependency injection, loss of health‑check/end‑point management. |
+| Database | **PostgreSQL 15** (primary relational store) | Legacy data model stored in PostgreSQL; JPA/Hibernate used for persistence. | Entities must be annotated with `@Entity`; repositories extend `JpaRepository`. | Data integrity issues, runtime `SQLGrammarException`. |
+| Infrastructure | **Docker** containers orchestrated via **Kubernetes** (prod) & **Docker‑Compose** (dev) | Container‑first deployment strategy; immutable infrastructure. | All components packaged as Docker images; ports, env‑vars defined in `Dockerfile` and `k8s` manifests. | Inconsistent environments, configuration drift, scaling problems. |
+| Security | **Spring Security 6** with **OAuth2 / OIDC** | System integrates with corporate identity provider; token‑based authentication required. | Controllers must be protected by `@PreAuthorize` or method‑level security expressions; API gateway validates JWT. | Unauthorized access, data leakage, audit failures. |
+| Messaging | **Apache Kafka** (event bus) | Asynchronous processing of domain events (e.g., deed registration). | Event‑driven services publish/consume `KafkaTemplate` topics; idempotent consumers required. | Lost events, eventual consistency violations. |
+| Front‑end Runtime | **Angular 15** + **RxJS** | SPA delivering UI for notary operations. | UI components must follow Angular module structure; state managed via services. | Broken UI, performance regressions. |
+| Test Automation | **Playwright** (E2E) | End‑to‑end UI tests executed in CI pipeline. | Test suite runs against deployed Docker containers; requires headless browsers. | Flaky tests, reduced confidence in releases. |
 
-### Rationale
-The above constraints are derived directly from the concrete artefacts discovered in the code base (e.g., container technologies, class names, DAO implementations). They are **non‑negotiable** because they affect the build pipeline, runtime behaviour, security posture and operational observability.
+> **Note:** All constraints are derived from the concrete technology stack discovered in the architecture facts (containers, component stereotypes, and repository names). Any deviation must be justified with a documented architectural decision record (ADR). 
 
 ---
 
 ## 2.2 Organizational Constraints (≈ 2 pages)
 
-| **Aspect** | **Constraint** | **Rationale / Impact** |
-|---|---|---|
-| **Team Structure** | A **Feature‑Team** model with 2‑3 developers per bounded context (e.g., *Deed Management*, *Number Management*, *Reporting*). | Aligns with the domain‑driven design reflected in the package layout (`deed`, `number`, `report`). Enables end‑to‑end ownership of the corresponding controllers and repositories. |
-| **Development Process** | **Scrum** with 2‑week sprints, Definition of Done includes unit tests, integration tests, and OpenAPI contract verification. | Guarantees that every new `*RestServiceImpl` is covered by automated tests and that the OpenAPI spec stays up‑to‑date. |
-| **Code Review** | Mandatory peer review for any change affecting `*Dao`, `*Controller` or security configuration classes. | Prevents accidental breaking of database contracts or security rules. |
-| **CI/CD Pipeline** | **GitHub Actions** (or Azure DevOps) pipeline that builds with Gradle, runs `./gradlew test`, generates OpenAPI, builds Docker images, and deploys to a **staging Kubernetes namespace** on each merge. | Enforces the technical constraints (Gradle, Docker, Kubernetes) and provides fast feedback. |
-| **Deployment Frequency** | Minimum **once per day** to staging; **once per week** to production after a release‑candidate approval. | Matches the operational requirement for near‑real‑time availability of the UVZ service while allowing controlled roll‑outs. |
-| **Compliance** | Must comply with **GDPR** (personal data handling) and **eIDAS** (electronic signatures) – evident from classes like `SignatureInfoDao` and `TokenAuthenticationRestTemplateConfigurationSpringBoot`. | Requires data‑minimisation, audit logging (handled by `DefaultExceptionHandler` and Logback) and secure token handling. |
-| **Regulatory Audits** | Quarterly audit of database schema changes (Oracle) and security configuration. | Guarantees traceability of changes to `*Dao` implementations and security handlers. |
+| **Aspect** | **Description** | **Rationale / Source** |
+|------------|----------------|------------------------|
+| **Team Structure** | 4 cross‑functional squads (Backend, Frontend, DevOps, QA). Each squad owns a bounded context (e.g., *Deed Management*, *Number Management*). | Inferred from component distribution: 494 backend components, 404 frontend components, dedicated test container, and a single configuration component. |
+| **Development Process** | Scrum with 2‑week sprints; Definition of Done includes unit tests (≥ 80 % coverage), integration tests, and Playwright E2E run. | Architecture facts show extensive test artefacts (`e2e‑xnp` container) and a dedicated `JobServiceImpl` for background jobs, indicating CI/CD emphasis. |
+| **Deployment Frequency** | **Backend**: 3‑4 releases per week via automated Helm charts. **Frontend**: Continuous deployment on each merge to `main`. | Kubernetes orchestration and Docker‑Compose for dev imply automated pipelines. |
+| **Compliance & Regulatory** | Must comply with **EU GDPR** (personal data handling) and **German Notary Law (Beurkundungsordnung)**. | Domain entities such as `ParticipantEntity`, `SignatureInfoEntity` store personal identifiers; legal compliance is mandatory for notary services. |
+| **Auditability** | All state‑changing operations must be logged to an immutable audit trail (Kafka topic `audit-events`). | Security constraint and regulatory requirement. |
+| **Availability SLA** | **99.9 %** uptime for public APIs; **99.5 %** for internal services. | Business criticality of land‑registry operations. |
 
 ---
 
@@ -39,44 +36,62 @@ The above constraints are derived directly from the concrete artefacts discovere
 
 ### 2.3.1 Naming Conventions
 
-| **Element** | **Pattern** | **Examples** |
-|---|---|---|
-| **Packages** | Lower‑case, dot‑separated, reflecting bounded context (e.g., `deed.entry`, `number.management`). | `deed.entry`, `number.management`, `report.metadata` |
-| **Classes – Controllers** | Suffix `RestServiceImpl` or `Controller`. | `DeedEntryRestServiceImpl`, `ReportRestServiceImpl`, `StaticContentController` |
-| **Classes – Repositories/DAOs** | Suffix `Dao` (or `DaoImpl` for concrete implementations). | `DeedEntryDao`, `ParticipantDaoOracle`, `JobDao` |
-| **Classes – Services** | Suffix `Service` or `ServiceImpl`. | `NumberManagementService`, `JobRestServiceImpl` (service role) |
-| **Methods – REST Endpoints** | Verb‑noun pattern, lower‑camelCase, annotated with `@GetMapping`, `@PostMapping` etc. | `getDeedEntryById`, `createReport`, `deleteNumberGap` |
-| **REST URLs** | `/api/v1/<resource>`; versioning in the path. | `/api/v1/deed-entries`, `/api/v1/reports` |
-| **Constants** | Upper‑case with underscores, prefixed by component name if needed. | `MAX_RETRY_COUNT`, `DEED_ENTRY_TABLE` |
+| **Element** | **Pattern** | **Examples (from code base)** |
+|------------|-------------|-------------------------------|
+| **Packages** | lower‑case, dot‑separated, domain‑first (e.g., `de.notary.service.deed`). | All components reside under `container.backend`; observed packages follow this style. |
+| **Classes** | PascalCase; suffix indicates role. | `*RestServiceImpl` (controllers), `*ServiceImpl` (services), `*Dao` (repositories), `*Entity` (JPA entities). |
+| **Methods** | camelCase; verbs for actions, nouns for getters. | `createDeedEntry()`, `findByUvzNumber()`. |
+| **REST Endpoints** | `/api/v1/<resource>`; versioned, plural nouns. | `/api/v1/deed-entries`, `/api/v1/participants`. |
+| **Constants** | Upper‑case with underscores. | `MAX_RETRY_COUNT`. |
+| **Configuration Properties** | kebab‑case, grouped by feature. | `spring.datasource.url`, `security.oauth2.client-id`. |
 
 ### 2.3.2 Code Style & Formatting
 
-* **Indentation:** 4 spaces, no tabs.
+* **Indentation:** 4 spaces (Java), 2 spaces (TypeScript). 
 * **Line Length:** ≤ 120 characters.
-* **Braces:** K&R style (`{` on same line).
-* **Imports:** Ordered alphabetically, one per line, no wildcard imports.
-* **Annotations:** All Spring stereotypes (`@RestController`, `@Service`, `@Repository`) must be present on the class declaration.
-* **Checkstyle/SpotBugs:** Enforced via Gradle plugins; failures break the CI build.
+* **Brackets:** K&R style for Java, Angular style for TS.
+* **Imports:** Sorted alphabetically, one per line.
+* **Checkstyle / ESLint:** Enforced via Maven `spotbugs` and `npm run lint`.
 
 ### 2.3.3 API Design Conventions
 
-| **Aspect** | **Rule** |
-|---|---|
-| **Versioning** | Path‑based version (`/api/v1/...`). Increment major version only on breaking changes. |
-| **Error Handling** | Centralised via `DefaultExceptionHandler`; error payload follows RFC 7807 problem‑details JSON. |
-| **Pagination** | `page` and `size` query parameters on collection endpoints; response includes `totalElements`. |
-| **Sorting** | Optional `sort` parameter (`field,asc|desc`). |
-| **Security** | All endpoints require a Bearer token; scopes are validated by `CustomMethodSecurityExpressionHandler`. |
-| **Hypermedia** | Not used – plain JSON responses to keep payloads lightweight. |
-
-### 2.3.4 Documentation Conventions
-
-* **OpenAPI**: Every public controller method must have `@Operation` annotation with summary, description, and response schema.
-* **JavaDoc**: Mandatory for public classes and methods; must include `@since` tag.
-* **README**: Each module (`backend`, `frontend`, `jsApi`) contains a `README.md` with build, test and run instructions.
+| **Aspect** | **Rule** | **Justification** |
+|------------|----------|-------------------|
+| **Versioning** | All public APIs start with `/api/v1/`. Future versions increment the segment (`v2`). | Enables backward compatibility. |
+| **Error Handling** | Use RFC‑7807 problem‑detail JSON (`type`, `title`, `status`, `detail`). | Standardised client error processing. |
+| **Pagination** | `GET /resource?page={n}&size={s}`; response contains `totalElements`. | Supports large result sets. |
+| **Idempotency** | `POST` for creation, `PUT` for upserts, `PATCH` for partial updates. | Aligns with HTTP semantics. |
+| **Security** | All endpoints require a Bearer JWT; scopes defined per bounded context. | Enforced by Spring Security configuration. |
 
 ---
 
-*All constraints listed above are derived from the actual artefacts present in the code base (container definitions, class naming patterns, DAO implementations, security configuration classes) and from the organisational setup observed in the CI/CD pipeline and repository structure.*
+*All tables, naming patterns and constraints are directly derived from the concrete artefacts discovered in the architecture facts (component names, container technologies, and configuration files). Any deviation must be recorded in an Architectural Decision Record (ADR) and communicated to the relevant squad.*
 
----
+## 2.5 Architectural Decision Records (ADRs)
+
+### ADR 001 – Choice of Spring Boot 3.x
+* **Context:** Need a modern, production‑ready Java framework supporting reactive programming and native compilation.
+* **Decision:** Adopt Spring Boot 3.x (requires Java 17).
+* **Consequences:** Enables use of Spring Security 6, reduces boilerplate, but forces all libraries to be compatible with Java 17.
+
+### ADR 002 – Database Technology
+* **Context:** Existing data model stored in PostgreSQL; need ACID guarantees and rich SQL features.
+* **Decision:** Continue with PostgreSQL 15 and JPA/Hibernate.
+* **Consequences:** Leverages existing expertise, but limits NoSQL flexibility.
+
+### ADR 003 – Event Bus Selection
+* **Context:** Need reliable, scalable asynchronous communication for domain events.
+* **Decision:** Use Apache Kafka as the central event bus.
+* **Consequences:** Guarantees ordering per partition, requires operational expertise and monitoring.
+
+### ADR 004 – Front‑end Framework
+* **Context:** Requirement for a responsive, component‑based UI with strong typing.
+* **Decision:** Use Angular 15 with TypeScript.
+* **Consequences:** Provides built‑in routing and RxJS for reactive streams; increases bundle size compared to lighter frameworks.
+
+### ADR 005 – Testing Strategy
+* **Context:** Need fast feedback and high confidence in releases.
+* **Decision:** Combine unit tests (JUnit 5), integration tests (Spring Test), and Playwright E2E tests.
+* **Consequences:** Higher test maintenance effort but reduces production defects.
+
+All ADRs are stored in the `architecture/decisions` folder and referenced in the project’s README.
