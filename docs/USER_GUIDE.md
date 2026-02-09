@@ -67,7 +67,7 @@ When you unpack the delivery package, you'll find:
 aicodegencrew-v0.1.0/
 ├── aicodegencrew-0.1.0-py3-none-any.whl   ← The tool (install this)
 ├── .env.example                            ← Configuration template
-├── install.bat / install.sh                ← Quick installer (Windows/Linux)
+├── install.bat / install.sh                ← Quick installer (Windows/Linux/Mac)
 ├── docker-compose.yml                      ← Docker setup (alternative)
 ├── config/
 │   └── phases_config.yaml                  ← Phase definitions (reference)
@@ -172,7 +172,7 @@ START HERE
 │  └─ NO: Go to Option A (Wheel Package)
 │
 └─ Want quickest setup?
-   Use install.bat/install.sh (Windows/Linux) - Automated
+   Use install.bat/install.sh (Windows/Linux/Mac) - Automated
 ```
 
 **Comparison:**
@@ -249,6 +249,46 @@ docker run aicodegencrew:latest --help
 **Requirements:**
 - Docker 20+
 
+### 6.4 Uninstall
+
+To completely remove AICodeGenCrew from your system:
+
+**Wheel installation (Windows/Linux/Mac):**
+```bash
+# Uninstall the package
+pip uninstall aicodegencrew -y
+
+# Remove data and cache (optional, choose one)
+# Windows:
+rmdir /s /q .cache knowledge logs
+
+# Linux/Mac:
+rm -rf .cache knowledge logs
+```
+
+**Docker installation:**
+```bash
+# Remove container
+docker rm -f aicodegencrew
+
+# Remove image
+docker rmi aicodegencrew:latest
+
+# Remove volumes (optional - deletes all data)
+docker volume rm aicodegencrew_data
+```
+
+**What gets removed:**
+- Python package: `pip uninstall` removes the tool
+- Data folders: `.cache`, `knowledge`, `logs` must be deleted manually
+- Configuration: `.env` file stays (delete manually if needed)
+- Your repository: NEVER touched (stays safe)
+
+**What stays:**
+- Your `.env` file (in case you reinstall)
+- Your input folders (`TASK_INPUT_DIR`, etc.)
+- Your source code repository (`PROJECT_PATH`)
+
 ---
 
 ## 7. Configuration
@@ -269,6 +309,13 @@ Edit `.env` with your project-specific values:
 # REQUIRED: Path to the repository you want to analyze
 PROJECT_PATH=C:\repos\my-project
 
+# Phase 4 only: Input folders (for development planning)
+# Leave these OUT if you only want architecture docs (Phases 0-3)
+TASK_INPUT_DIR=C:\work\my-project\tasks             # JIRA XML, DOCX, PDF, TXT
+REQUIREMENTS_DIR=C:\work\my-project\requirements    # Requirements (Excel, DOCX, PDF)
+LOGS_DIR=C:\work\my-project\logs                    # Log files (.log, .txt, .xlsx)
+REFERENCE_DIR=C:\work\my-project\reference          # Mockups, diagrams
+
 # REQUIRED: LLM endpoint
 LLM_PROVIDER=onprem
 MODEL=gpt-oss-120b
@@ -279,6 +326,18 @@ OPENAI_API_KEY=your-api-key-here
 OLLAMA_BASE_URL=http://127.0.0.1:11434
 EMBED_MODEL=nomic-embed-text:latest
 ```
+
+**What are these input folders?**
+
+| Variable | Used by | Contents | Required? |
+|----------|---------|----------|-----------|
+| `PROJECT_PATH` | All phases | Your source code repository | YES |
+| `TASK_INPUT_DIR` | Phase 4 only | JIRA exports (.xml), tickets (.docx), bug reports (.txt) | Only for `plan` command |
+| `REQUIREMENTS_DIR` | Phase 4 only | Requirements docs (.xlsx, .docx, .pdf) | Optional |
+| `LOGS_DIR` | Phase 4 only | Application logs (.log, .txt, .xlsx) | Optional |
+| `REFERENCE_DIR` | Phase 4 only | UI mockups, architecture diagrams | Optional |
+
+**Important:** Input folders must be OUTSIDE your code repository!
 
 ### Step 3: Start Ollama
 
@@ -317,7 +376,7 @@ your-workspace/              ← Your chosen directory
 │   │   ├── c4/              ← Phase 3 C4 diagrams
 │   │   └── arc42/           ← Phase 3 arc42 chapters
 │   └── development/
-│       └── PROJ-123_plan.json ← Phase 4 development plan
+│       └── ${TASK_ID}_plan.json ← Phase 4 development plan (one per task)
 ├── architecture-docs/       ← Multi-format exports (if Phase 3 run)
 │   ├── c4/
 │   │   ├── c4-context.confluence
@@ -335,15 +394,41 @@ your-workspace/              ← Your chosen directory
 ### What Stays SEPARATE
 
 Your INPUT files are NOT in the tool's folder:
+
+**Windows example:**
 ```
-C:\repos\my-project\        ← Your repository (PROJECT_PATH in .env)
-C:\work\inputs\tasks\       ← Your JIRA XMLs (TASK_INPUT_DIR in .env)
+C:\repos\my-project\                    ← Your repository (PROJECT_PATH)
+C:\work\my-project\
+├── tasks\                              ← JIRA exports (TASK_INPUT_DIR)
+│   ├── PROJ-123.xml                    ← JIRA XML export
+│   ├── BUG-456.docx                    ← Bug report document
+│   └── FEATURE-789.txt                 ← Feature request text
+├── requirements\                       ← Requirements (REQUIREMENTS_DIR)
+│   ├── business-requirements.xlsx
+│   └── technical-spec.docx
+├── logs\                               ← Application logs (LOGS_DIR)
+│   ├── application.log
+│   └── error-analysis.xlsx
+└── reference\                          ← Reference materials (REFERENCE_DIR)
+    ├── ui-mockup.pdf
+    └── architecture-diagram.drawio
+```
+
+**Linux/Mac example:**
+```
+/home/user/repos/my-project/            ← Your repository (PROJECT_PATH)
+/home/user/work/my-project/
+├── tasks/                              ← TASK_INPUT_DIR
+├── requirements/                       ← REQUIREMENTS_DIR
+├── logs/                               ← LOGS_DIR
+└── reference/                          ← REFERENCE_DIR
 ```
 
 **Why separate?**
-- Keeps tool outputs isolated
+- Keeps tool outputs isolated from your source code
 - Prevents accidental deletion of your source code
 - Allows multiple projects with same tool installation
+- Input folders can be shared across team (e.g., network drive)
 
 ---
 
@@ -608,17 +693,22 @@ After running `aicodegencrew plan`, you'll find development plans in `knowledge/
 
 ```
 knowledge/development/
-├── PROJ-123_plan.json      ← Your development plan
-├── PROJ-456_plan.json      ← If multiple tasks processed
+├── ${TASK_ID}_plan.json    ← One file per task (e.g., PROJ-123_plan.json)
+├── ${TASK_ID}_plan.json    ← Multiple tasks = multiple files
 └── ...
 ```
+
+**File naming:** The `${TASK_ID}` is extracted from:
+- JIRA XML exports: `<key>PROJ-123</key>`
+- DOCX filename: `PROJ-123_feature_request.docx` → extracts `PROJ-123`
+- TXT filename: `bug_ISSUE-456.txt` → extracts `ISSUE-456`
 
 **Example JSON structure:**
 
 ```json
 {
-  "task_id": "PROJ-123",
-  "title": "Implement user authentication",
+  "task_id": "PROJ-123",                              ← Matches filename
+  "title": "Implement user authentication",           ← From JIRA summary or doc title
   "affected_components": [...]  ← Which code files/classes to modify
   "implementation_steps": [...]  ← Step-by-step coding instructions
   "test_strategy": {
