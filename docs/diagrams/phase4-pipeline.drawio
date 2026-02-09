@@ -1,0 +1,269 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="phase4-pipeline" name="Phase 4 Development Planning Pipeline">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Phase 4: Development Planning Pipeline (Hybrid Architecture)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Subtitle -->
+        <mxCell id="subtitle" value="18-40 seconds | 1 LLM call | 95%+ success rate | 100% data utilization" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="400" y="60" width="600" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Input Sources -->
+        <!-- User Inputs Group -->
+        <mxCell id="user-inputs-label" value="User Inputs" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-tasks" value="inputs/tasks/&#xa;(JIRA XML, DOCX, Excel)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="155" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-requirements" value="inputs/requirements/&#xa;(Specs, docs)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="205" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-logs" value="inputs/logs/&#xa;(Error logs, traces)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="255" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-reference" value="inputs/reference/&#xa;(Examples, patterns)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="305" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Phase Outputs Group -->
+        <mxCell id="phase-outputs-label" value="Phase Outputs (0-2)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="40" y="370" width="200" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-phase0" value="ChromaDB&#xa;(Phase 0)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="405" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-phase1" value="architecture_facts.json&#xa;(Phase 1 - 17 keys)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="455" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="input-phase2" value="analyzed_architecture.json&#xa;(Phase 2)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="505" width="200" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Stage 1: Input Parser -->
+        <mxCell id="stage1" value="Stage 1: Input Parser&#xa;(Deterministic, &lt;1s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="320" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stage1-desc" value="• Auto-detect format (.xml, .docx, .xlsx, .txt)&#xa;• JIRA XML: ALL content (description, comments,&#xa;  metadata, assignee, dates, fix version)&#xa;• DOCX: Title, sections, tables&#xa;• Excel: All sheets, data rows&#xa;• Text: Full content, error patterns" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="320" y="220" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Stage 2: Component Discovery -->
+        <mxCell id="stage2" value="Stage 2: Component Discovery&#xa;(RAG + Scoring, 2-5s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="580" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stage2-desc" value="• ChromaDB semantic search&#xa;• Multi-signal scoring:&#xa;  - Semantic: 40%&#xa;  - Name: 30%&#xa;  - Package: 20%&#xa;  - Stereotype: 10%" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="580" y="230" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Stage 3: Pattern Matcher -->
+        <mxCell id="stage3" value="Stage 3: Pattern Matcher&#xa;(TF-IDF + Rules, 1-3s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="840" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stage3-desc" value="• Test patterns: TF-IDF (925 tests)&#xa;• Security: Rule-based (143 configs)&#xa;• Validation: Regex (149 patterns)&#xa;• Error handling: Keywords (23)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="840" y="230" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Stage 4: Plan Generator (LLM) -->
+        <mxCell id="stage4" value="Stage 4: Plan Generator&#xa;(LLM Call, 15-30s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1100" y="160" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stage4-desc" value="• ONLY LLM STAGE&#xa;• Synthesizes all previous outputs&#xa;• Generates implementation plan&#xa;• Structured output (Pydantic)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="230" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Stage 5: Validator -->
+        <mxCell id="stage5" value="Stage 5: Validator&#xa;(Pydantic, &lt;1s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1100" y="360" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stage5-desc" value="• Schema validation&#xa;• Completeness checks&#xa;• Layer compliance&#xa;• Component reference validation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="430" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Output -->
+        <mxCell id="output" value="Output:&#xa;{task_id}_plan.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1100" y="560" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-desc" value="• affected_components&#xa;• implementation_steps&#xa;• test_strategy&#xa;• security_considerations&#xa;• validation_strategy&#xa;• error_handling&#xa;• architecture_context&#xa;• workflow_context&#xa;• complete_task_context&#xa;  (JIRA: all comments, metadata,&#xa;  assignee, dates, discussions)&#xa;• risks, complexity" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="630" width="200" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Input -> Stage 1 -->
+        <mxCell id="arrow-input-stage1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="input-tasks" target="stage1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Stage 1 -> Stage 2 -->
+        <mxCell id="arrow-stage1-stage2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage1" target="stage2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="label-task" value="TaskInput" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="530" y="165" width="60" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: ChromaDB -> Stage 2 -->
+        <mxCell id="arrow-chroma-stage2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="input-phase0" target="stage2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Phase1 -> Stage 2 -->
+        <mxCell id="arrow-phase1-stage2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="input-phase1" target="stage2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Stage 2 -> Stage 3 -->
+        <mxCell id="arrow-stage2-stage3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage2" target="stage3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="label-components" value="Components" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="790" y="165" width="70" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Phase1 -> Stage 3 -->
+        <mxCell id="arrow-phase1-stage3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="input-phase1" target="stage3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="335" />
+              <mxPoint x="280" y="500" />
+              <mxPoint x="840" y="500" />
+              <mxPoint x="840" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrows: Stage 3 -> Stage 4 -->
+        <mxCell id="arrow-stage3-stage4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage3" target="stage4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="label-patterns" value="Patterns" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="165" width="60" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Phase2 -> Stage 4 -->
+        <mxCell id="arrow-phase2-stage4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;dashed=1;" edge="1" parent="1" source="input-phase2" target="stage4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="405" />
+              <mxPoint x="280" y="540" />
+              <mxPoint x="1100" y="540" />
+              <mxPoint x="1100" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrows: Stage 4 -> Stage 5 -->
+        <mxCell id="arrow-stage4-stage5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage4" target="stage5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="label-plan" value="ImplementationPlan" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="270" width="110" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Stage 5 -> Output -->
+        <mxCell id="arrow-stage5-output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage5" target="output">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="label-validated" value="Validated" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="470" width="60" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend-title" value="Legend:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="560" width="60" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-deterministic" value="Deterministic Stage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="600" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-llm" value="LLM Stage (Only 1!)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-input" value="Input Source" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="680" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-phase-output" value="Phase Output (From 0-2)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="720" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-final-output" value="Final Output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="760" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Performance Stats -->
+        <mxCell id="stats-title" value="Performance Stats:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="240" y="560" width="140" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stats-duration" value="Total: 18-40 seconds" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="600" width="200" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stats-llm" value="LLM Calls: 1 (vs 5 with CrewAI)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="625" width="200" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stats-success" value="Success Rate: 95%+ (deterministic)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="650" width="240" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stats-data" value="Data Utilization: 100% (all 17 keys)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="675" width="220" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stats-vs-crewai" value="vs CrewAI: 10-20x faster" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="240" y="700" width="200" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Data Utilization -->
+        <mxCell id="data-title" value="100% Data Utilization (17 keys):" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="560" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="data-stage2" value="Stage 2: components, interfaces, relations, dependencies" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="600" width="350" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="data-stage3" value="Stage 3: tests (925), security (143), validation (149), errors (23)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="625" width="400" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="data-stage4" value="Stage 4: technology_stack, domain_model, quality_attributes," style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="650" width="380" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="data-stage4b" value="          architectural_styles, workflow_patterns, layers" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500" y="670" width="380" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

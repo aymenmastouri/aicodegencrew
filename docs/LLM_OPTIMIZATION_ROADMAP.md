@@ -108,7 +108,7 @@ In jeder Task-Description ein konkretes Beispiel:
 
 ```
 EXAMPLE of correct execution:
-Step 1: get_statistics() -> {"components": 738, "relations": 169, ...}
+Step 1: get_statistics() -> {"components": 951, "relations": 169, ...}
 Step 2: list_components_by_stereotype("service") -> [ServiceA, ServiceB, ...]
 Step 3: get_endpoints() -> [{path: "/api/...", method: "GET"}, ...]
 Step 4: doc_writer(file_path="arc42/05-building-blocks.md", content="# 05 - Building Block View\n\n## 5.1 Overview\n...")
@@ -205,7 +205,7 @@ Die Daten existieren bereits im Projekt:
     {"role": "assistant", "content": null, "tool_calls": [
       {"function": {"name": "get_statistics", "arguments": "{}"}}
     ]},
-    {"role": "tool", "content": "{\"components\": 738, ...}"},
+    {"role": "tool", "content": "{\"components\": 951, ...}"},
     {"role": "assistant", "content": null, "tool_calls": [
       {"function": {"name": "list_components_by_stereotype", "arguments": "{\"stereotype\": \"service\"}"}}
     ]},
@@ -291,13 +291,13 @@ Output File
 ## Empfohlener Pfad
 
 ```
-✅ DONE:      Phase 0.5 — Guardrails + Stop Conditions + Loop Breaker
+[DONE]      Phase 0.5 — Guardrails + Stop Conditions + Loop Breaker
               (tool_guardrails.py, TOOL_INSTRUCTION rules, output gate)
 
-✅ DONE:      Phase 1 — Few-Shot + Tool-Policy zentral
+[DONE]      Phase 1 — Few-Shot + Tool-Policy zentral
               (TOOL_INSTRUCTION with examples, per-task EXECUTION EXAMPLE blocks)
 
-✅ DONE:      Phase 1.5 — Output Quality Maximierung
+[DONE]      Phase 1.5 — Output Quality Maximierung
               - Token limits: 32K→100K input, 4K→16K output, 32K→120K context
               - Tool guardrails: 10→25 max calls, 2→3 max identical
               - Chapter splitting: Ch06 (2 sub-crews), Ch08 (2 sub-crews)

@@ -62,10 +62,10 @@
         <mxCell id="phase1-title" value="&lt;b&gt;ARCHITECTURE FACTS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#1B5E20;" vertex="1" parent="1">
           <mxGeometry x="260" y="168" width="180" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase1-tasks" value="SpringCollector&lt;br&gt;AngularCollector&lt;br&gt;DatabaseCollector&lt;br&gt;IntegrationCollector&lt;br&gt;StyleCollector&lt;br&gt;EndpointFlowBuilder&lt;br&gt;WorkflowCollector" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#2E7D32;" vertex="1" parent="1">
+        <mxCell id="phase1-tasks" value="31 Collectors in 4 groups:&lt;br&gt;spring/ (5) | angular/ (6)&lt;br&gt;database/ (5) | standalone/ (15)&lt;br&gt;Deterministic extraction" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#2E7D32;" vertex="1" parent="1">
           <mxGeometry x="260" y="190" width="180" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="phase1-output" value="738 Components&lt;br&gt;125 Interfaces&lt;br&gt;169 Relations&lt;br&gt;1005 Evidence" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontStyle=2;fontColor=#388E3C;" vertex="1" parent="1">
+        <mxCell id="phase1-output" value="951+ Components&lt;br&gt;125+ Interfaces&lt;br&gt;169+ Relations&lt;br&gt;1005+ Evidence" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontStyle=2;fontColor=#388E3C;" vertex="1" parent="1">
           <mxGeometry x="260" y="295" width="180" height="50" as="geometry" />
         </mxCell>
         <mxCell id="phase1-llm" value="No LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=9;fontStyle=1;fontColor=#2E7D32;" vertex="1" parent="1">
@@ -110,7 +110,7 @@
         <mxCell id="phase3-title" value="&lt;b&gt;SYNTHESIS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#0D47A1;" vertex="1" parent="1">
           <mxGeometry x="700" y="168" width="180" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase3-tasks" value="C4 Crew (5 tasks)&lt;br&gt;Arc42 Crew (14 tasks)&lt;br&gt;Think First Pattern" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
+        <mxCell id="phase3-tasks" value="C4 Crew (5 mini-crews)&lt;br&gt;Arc42 Crew (18 mini-crews)&lt;br&gt;1 task per crew" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
           <mxGeometry x="700" y="190" width="180" height="55" as="geometry" />
         </mxCell>
         
@@ -129,19 +129,61 @@
         <mxCell id="layer3-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;opacity=30;dashed=1;" vertex="1" parent="1">
           <mxGeometry x="910" y="100" width="420" height="280" as="geometry" />
         </mxCell>
-        <mxCell id="layer3-label" value="LAYER 3: EXECUTION (Planned)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#E65100;" vertex="1" parent="1">
+        <mxCell id="layer3-label" value="LAYER 3: EXECUTION (Partially Implemented)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#E65100;" vertex="1" parent="1">
           <mxGeometry x="920" y="105" width="250" height="25" as="geometry" />
         </mxCell>
         
-        <!-- Phases 4-6 -->
-        <mxCell id="phase456-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;dashed=1;" vertex="1" parent="1">
-          <mxGeometry x="920" y="145" width="400" height="100" as="geometry" />
+        <!-- Phase 4: Development Planning (IMPLEMENTED) -->
+        <mxCell id="phase4-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="145" width="130" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="phase456-title" value="&lt;b&gt;PHASES 4-6: Code Generation, Testing, Deploy&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontColor=#E65100;" vertex="1" parent="1">
-          <mxGeometry x="920" y="155" width="400" height="25" as="geometry" />
+        <mxCell id="phase4-badge" value="PHASE 4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E65100;strokeColor=none;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="925" y="150" width="55" height="16" as="geometry" />
         </mxCell>
-        <mxCell id="phase456-tasks" value="Phase 4: Code Generation (Pattern-Compliant)&lt;br&gt;Phase 5: Test Generation (Unit + Integration)&lt;br&gt;Phase 6: Review + Deploy (CI/CD, Auto-Merge)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#F57C00;" vertex="1" parent="1">
-          <mxGeometry x="920" y="185" width="400" height="50" as="geometry" />
+        <mxCell id="phase4-impl" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="150" width="45" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="phase4-title" value="&lt;b&gt;DEV PLANNING&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="920" y="168" width="130" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="phase4-tasks" value="Hybrid Pipeline&lt;br&gt;5 stages, 1 LLM call&lt;br&gt;18-40s" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
+          <mxGeometry x="920" y="190" width="130" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 5: Code Generation (SKELETON) -->
+        <mxCell id="phase5-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="145" width="120" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="phase5-badge" value="PHASE 5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E65100;strokeColor=none;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1065" y="150" width="55" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="phase5-title" value="&lt;b&gt;CODE GEN&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="168" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="phase5-tasks" value="Pattern-Compliant&lt;br&gt;Architecture-Aware" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="190" width="120" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 6: Test Generation (SKELETON) -->
+        <mxCell id="phase6-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="145" width="120" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="phase6-badge" value="PHASE 6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E65100;strokeColor=none;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1195" y="150" width="55" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="phase6-title" value="&lt;b&gt;TEST GEN&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="168" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="phase6-tasks" value="Unit + Integration&lt;br&gt;CI/CD Ready" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
+          <mxGeometry x="1190" y="190" width="120" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows between Phase 4-5-6 -->
+        <mxCell id="arrow-p4-p5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="phase4-box" target="phase5-box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-p5-p6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="phase5-box" target="phase6-box">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
         <!-- LAYER 4: FEEDBACK -->
@@ -151,7 +193,7 @@
         <mxCell id="layer4-label" value="LAYER 4: FEEDBACK (Planned)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#7B1FA2;" vertex="1" parent="1">
           <mxGeometry x="930" y="270" width="250" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="phase7-title" value="&lt;b&gt;Phase 7: Learning&lt;/b&gt; - Quality Metrics, Pattern Learning, Knowledge Update" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#7B1FA2;" vertex="1" parent="1">
+        <mxCell id="phase7-title" value="&lt;b&gt;Phase 7: Review + Deploy&lt;/b&gt; - CI/CD Integration, Build Validation, Auto-Merge" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#7B1FA2;" vertex="1" parent="1">
           <mxGeometry x="920" y="300" width="400" height="30" as="geometry" />
         </mxCell>
         
@@ -168,7 +210,7 @@
         <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#1565C0;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="phase2-box" target="phase3-box">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="phase3-box" target="phase456-box">
+        <mxCell id="arrow5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="phase3-box" target="phase4-box">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         
@@ -222,7 +264,7 @@
         <mxCell id="principles-title" value="&lt;b&gt;EVIDENCE-FIRST PRINCIPLES&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontColor=#E65100;" vertex="1" parent="1">
           <mxGeometry x="570" y="405" width="280" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="principles-content" value="1. Phase 1 creates SINGLE SOURCE OF TRUTH&lt;br&gt;2. If not in facts.json, MUST NOT appear in output&lt;br&gt;3. LLMs synthesize - they do NOT discover&lt;br&gt;4. Evidence IDs are internal only&lt;br&gt;5. Think First: Analyze before Document" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontColor=#333333;spacingLeft=10;spacingTop=5;" vertex="1" parent="1">
+        <mxCell id="principles-content" value="1. Phase 1 creates SINGLE SOURCE OF TRUTH&lt;br&gt;2. If not in facts.json, MUST NOT appear in output&lt;br&gt;3. LLMs synthesize - they do NOT discover&lt;br&gt;4. Evidence IDs are internal only&lt;br&gt;5. Mini-Crews: Fresh crew per chapter/level" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontColor=#333333;spacingLeft=10;spacingTop=5;" vertex="1" parent="1">
           <mxGeometry x="570" y="435" width="360" height="95" as="geometry" />
         </mxCell>
         

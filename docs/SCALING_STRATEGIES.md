@@ -75,10 +75,10 @@ merge_container_analyses:
 ```
 
 **Advantages**:
-- ✅ Smaller context per agent (~200-400 vs 826 components)
-- ✅ 3x faster with parallel execution
-- ✅ Scales to 100k+ components (just add more containers)
-- ✅ Better failure isolation
+- [x] Smaller context per agent (~200-400 vs 951+ components)
+- [x] 3x faster with parallel execution
+- [x] Scales to 100k+ components (just add more containers)
+- [x] Better failure isolation
 
 **Effort**: Medium (2-3 days)
 
@@ -102,13 +102,13 @@ Level 3: Component Details (on demand)
 **Use Case**: Interactive exploration, large repos where full analysis isn't needed.
 
 **Advantages**:
-- ✅ Instant initial results
-- ✅ Lazy loading of details
-- ✅ User controls depth
+- [x] Instant initial results
+- [x] Lazy loading of details
+- [x] User controls depth
 
 **Disadvantages**:
-- ❌ Requires UI/interaction model changes
-- ❌ May miss cross-component patterns
+- [ ] Requires UI/interaction model changes
+- [ ] May miss cross-component patterns
 
 **Effort**: High (5+ days)
 
@@ -143,14 +143,14 @@ def analyze_chunked(total_components):
 ```
 
 **Advantages**:
-- ✅ Simple implementation
-- ✅ Works with existing tools (offset/limit already implemented)
-- ✅ Predictable memory usage
+- [x] Simple implementation
+- [x] Works with existing tools (offset/limit already implemented)
+- [x] Predictable memory usage
 
 **Disadvantages**:
-- ❌ Sequential (no parallelization)
-- ❌ May miss cross-chunk relationships
-- ❌ Requires careful merge logic
+- [ ] Sequential (no parallelization)
+- [ ] May miss cross-chunk relationships
+- [ ] Requires careful merge logic
 
 **Effort**: Low-Medium (1-2 days)
 
@@ -160,9 +160,9 @@ def analyze_chunked(total_components):
 
 ### Short-term (Now)
 Keep current approach but with enterprise-scale tools already implemented:
-- ✅ `FactsStatisticsTool` for overview
-- ✅ Pagination (offset/limit) in queries
-- ✅ Hard cap increased to 500
+- [x] `FactsStatisticsTool` for overview
+- [x] Pagination (offset/limit) in queries
+- [x] Hard cap increased to 500
 
 ### Medium-term (Next Sprint)
 Implement **Option 1: Map-Reduce Pattern** because:

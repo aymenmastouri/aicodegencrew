@@ -34,7 +34,7 @@ The system is organized into 4 distinct layers, each with clear responsibilities
 | 1 | Architecture Facts | Knowledge | Pipeline | IMPLEMENTED |
 | 2 | Architecture Analysis | Reasoning | Crew | IMPLEMENTED |
 | 3 | Architecture Synthesis | Reasoning | Crew | IMPLEMENTED |
-| 4 | Task Understanding | Reasoning | Crew | PLANNED |
+| 4 | Development Planning | Reasoning | Hybrid | IMPLEMENTED |
 | 5 | Code Generation | Execution | Crew | PLANNED |
 | 6 | Test Generation | Execution | Crew | PLANNED |
 | 7 | Review + Deploy | Execution | Pipeline | PLANNED |
@@ -73,10 +73,10 @@ Establish a fully automated SDLC pipeline that covers:
 | Phase | Layer | Capability | Implementation |
 |-------|-------|------------|----------------|
 | Phase 0: Indexing | Knowledge | Repository analysis, vector storage | Pipeline (ChromaDB) |
-| Phase 1: Architecture Facts | Knowledge | Deterministic code analysis | Pipeline (7 Collectors) |
+| Phase 1: Architecture Facts | Knowledge | Deterministic code analysis | Pipeline (31 Collectors) |
 | Phase 2: Architecture Analysis | Reasoning | Multi-agent architecture analysis | Crew (MapReduce) |
-| Phase 3: Architecture Synthesis | Reasoning | C4 + arc42 documentation | Crew (Think First) |
-| Phase 4: Task Understanding | Reasoning | RAG-enhanced planning | Crew (Planned) |
+| Phase 3: Architecture Synthesis | Reasoning | C4 + arc42 documentation | Crew (Mini-Crews) |
+| Phase 4: Development Planning | Reasoning | Parse tasks + create implementation plans | Hybrid Pipeline (IMPLEMENTED) |
 | Phase 5: Code Generation | Execution | Feature implementation | Crew (Planned) |
 | Phase 6: Test Generation | Execution | Test creation | Crew (Planned) |
 | Phase 7: Review + Deploy | Execution | CI/CD integration | Pipeline (Planned) |
@@ -87,7 +87,7 @@ Establish a fully automated SDLC pipeline that covers:
 |-----------|-------------|
 | Evidence-First | Every statement must be backed by code/config evidence |
 | Deterministic Discovery | LLMs synthesize, they do not discover - facts come from code analysis |
-| Think First | Agents analyze before documenting (analyze_system task) |
+| Mini-Crews | Fresh crew per chapter/level, 1 task per crew |
 | Phase Isolation | Each phase has clear inputs/outputs, no cross-phase dependencies |
 | Incremental Adoption | Phases can be executed independently |
 | Clean Output | No evidence IDs in final documentation |
@@ -99,7 +99,7 @@ The initial implementation focuses on architecture facts extraction:
 | Area | Implementation | Status |
 |------|----------------|--------|
 | **Phase 0 Indexing** | ChromaDB vector storage | IMPLEMENTED |
-| **Phase 1 Facts** | 7 Collectors | IMPLEMENTED |
+| **Phase 1 Facts** | 31 Collectors | IMPLEMENTED |
 | **Phase 2 Analysis** | MapReduce multi-agent analysis | IMPLEMENTED |
 | **Phase 3 Synthesis** | C4 + arc42 Crews | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
@@ -108,7 +108,7 @@ The initial implementation focuses on architecture facts extraction:
 
 | Metric | Value |
 |--------|-------|
-| Components | 738 |
+| Components | 951+ |
 | Interfaces | 125 |
 | Relations | 169 (raw), target 85%+ resolved |
 | Evidence Items | 1005 |
@@ -120,13 +120,16 @@ The initial implementation focuses on architecture facts extraction:
 ## 3. Architecture Overview
 
 > **Reference Diagrams:**
-> - [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full 4-Layer SDLC Overview
-> - [layer-architecture.drawio](diagrams/layer-architecture.drawio) - Detailed Layer Architecture
+> - [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full SDLC Pipeline Overview
+> - [layer-architecture.drawio](diagrams/layer-architecture.drawio) - Detailed 4-Layer Architecture
 > - [phase-flow.drawio](diagrams/phase-flow.drawio) - Pipeline Flow (Phases 0-7)
 > - [evidence-flow.drawio](diagrams/evidence-flow.drawio) - Evidence Data Flow
 > - [knowledge-structure.drawio](diagrams/knowledge-structure.drawio) - Knowledge Base Structure
-> - [collectors.drawio](diagrams/collectors.drawio) - Phase 1 Collectors
-> - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - Phase 2 Synthesis Crew
+> - [collectors.drawio](diagrams/collectors.drawio) - Phase 1: 31 Collectors
+> - [analysis-crew.drawio](diagrams/analysis-crew.drawio) - Phase 2: Analysis Crew
+> - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - Phase 3: Synthesis Crew
+> - [phase4-pipeline.drawio](diagrams/phase4-pipeline.drawio) - Phase 4: Development Planning Pipeline
+> - [phase2-crew-architecture.drawio](diagrams/phase2-crew-architecture.drawio) - Phase 2: Crew Architecture
 
 ### 3.1 Core Principle: Evidence-First Architecture
 
@@ -237,6 +240,44 @@ class MiniCrewBase(ABC):
 | **Tool Guardrails** | Blocks identical (>3x) / runaway (>25) tool calls via CrewAI hooks |
 | **Retry with Backoff** | Retries on `ConnectionError/TimeoutError/OSError` |
 | **Output Recovery** | Generates stub docs from facts on crew failure |
+
+#### 3.6.1 LLM Optimization Features (Phase 0.5 + 1 + 1.5)
+
+> **Status**: Fully implemented across Phase 2 and Phase 3 crews.
+> See `docs/LLM_OPTIMIZATION_ROADMAP.md` for detailed rationale and metrics.
+
+**Phase 0.5: Guardrails & Stop Conditions**
+
+| Guardrail | Implementation | Impact |
+|-----------|----------------|--------|
+| **Tool-call budget** | Max 25 tool calls per task, then force finish | Prevents infinite loops |
+| **Identical-call limit** | Max 3 identical calls (same tool + args) | Stops MCP spam (e.g., 30x `get_statistics`) |
+| **Output-gate validation** | Raises `RuntimeError` if files missing after crew completes | Fails fast instead of silent success |
+| **Response sanitizer** | Extracts content from raw `ChatCompletionMessageToolCall` objects | Prevents cryptic errors on `max_iter` |
+
+**Phase 1: Few-Shot Prompting**
+
+| Feature | Location | Purpose |
+|---------|----------|---------|
+| **TOOL_INSTRUCTION** | `base_crew.py`, prepended to all task descriptions | 4 mandatory rules + concrete tool-use example (WRONG/RIGHT patterns) |
+| **EXECUTION EXAMPLE blocks** | Per-task descriptions in `c4/crew.py` and `arc42/crew.py` | Shows exact tool sequence for each chapter (e.g., Step 1: `get_statistics()`, Step 2: `doc_writer(...)`) |
+
+**Phase 1.5: Output Quality Maximization**
+
+| Optimization | Before | After | Impact |
+|--------------|--------|-------|--------|
+| **Input token limit** | 32K | 100K | Agents can process more facts/context |
+| **Output token limit** | 4K | 16K | Longer chapters (20-25 pages vs. 6-8) |
+| **Context window** | 32K | 120K | Handles full conversation history |
+| **Tool-call budget** | 10 | 25 | More data gathering before synthesis |
+| **Identical-call limit** | 2 | 3 | Allows necessary re-queries |
+| **Chapter splitting** | Ch05 only | Ch05 + Ch06 + Ch08 | 4 sub-crews each → merge in Python |
+
+**Expected improvements (combined):**
+- Tool-Use Compliance: ~60% → ~85%
+- Files written / expected: ~70% → ~90%
+- Tool loops per crew: 1-2 → 0
+- Average chapter length: 6-8 pages → 12-20 pages
 
 ---
 
@@ -657,12 +698,15 @@ See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
 LLM token limits are always present. Deep Analysis does NOT mean unlimited tokens.
 Instead, it uses strategies to analyze MORE data within the same context window:
 
-| Aspect | Standard Mode | Deep Analysis Mode |
-|--------|---------------|-------------------|
-| Tool calls per agent | 5-25 | 20-50 |
+| Aspect | Standard Mode | Deep Analysis Mode (Current) |
+|--------|---------------|------------------------------|
+| Tool calls per agent | 5-15 | 15-25 (max budget) |
 | Runtime | 2-5 minutes | 30-40 minutes |
-| max_iter (CrewAI) | 25 | 50 |
+| max_iter (CrewAI) | 15 | 30 |
 | Query limit | 50 items | 500 items |
+| **Input token limit** | 32K | **100K** (Phase 1.5) |
+| **Output token limit** | 4K | **16K** (Phase 1.5) |
+| **Context window** | 32K | **120K** (Phase 1.5) |
 
 **Token Management Strategies:**
 
@@ -878,20 +922,266 @@ knowledge/architecture/
 
 ---
 
-### 4.5 Phase 4: Task Understanding (PLANNED)
+### 4.5 Phase 4: Development Planning (HYBRID PIPELINE - IMPLEMENTED)
+
+> **Reference Diagram:** [phase4-pipeline.drawio](diagrams/phase4-pipeline.drawio) - Hybrid Pipeline Flow
 
 | Attribute | Specification |
 |-----------|---------------|
-| Type | Crew or Rules-based |
-| Purpose | Ensure consistency across outputs |
-| Status | Planned |
+| Type | Pipeline (Hybrid: Deterministic + 1 LLM Call) |
+| Module | `pipelines/development_planning/` |
+| LLM Requirement | Yes (Stage 4 only) |
+| Input | `inputs/tasks/` (`.txt`, `.log`, `.xml`, `.docx`, `.xlsx`) |
+| | `inputs/requirements/` (Specs, documentation) |
+| | `inputs/logs/` (Error logs, traces) |
+| | `inputs/reference/` (Examples, patterns) |
+| | `architecture_facts.json` (Phase 1, all 17 keys) |
+| | `analyzed_architecture.json` (Phase 2) |
+| | ChromaDB (Phase 0, semantic search) |
+| Output | `knowledge/development/{task_id}_plan.json` |
+| Dependency | Phase 0 (Indexing), Phase 1 (Facts), Phase 2 (Analysis) |
+| Status | **IMPLEMENTED** |
 
-#### Tasks
+#### Architecture: Hybrid Pipeline
 
-- Facts <-> C4 <-> arc42 consistency check
-- Missing evidence detection
-- Naming/term unification
-- Report generation
+**Why Hybrid?** Multi-agent workflows (CrewAI) are too slow (5-7 minutes) and unreliable (70-80% success) for this task. Pattern matching doesn't need LLM reasoning - algorithms are faster and deterministic.
+
+**5-Stage Pipeline:**
+
+```
+Stage 1: Input Parser (Deterministic, <1s) - IMPLEMENTED
+  └─ Parse XML/DOCX/Excel/Text → TaskInput JSON
+  └─ JIRA XML: Extracts ALL content (description, 15+ comments,
+                metadata, assignee, reporter, dates, fix version)
+
+Stage 2: Component Discovery (RAG + Scoring, 2-5s) - IMPLEMENTED
+  └─ ChromaDB semantic search + multi-signal scoring
+  └─ 4 signals: semantic (40%), name (30%), package (20%), stereotype (10%)
+
+Stage 3: Pattern Matcher (TF-IDF + Rules, 1-3s) - IMPLEMENTED
+  └─ Test patterns (TF-IDF on 925 tests)
+  └─ Security/Validation/Error (rule-based on 143+149+23 patterns)
+
+Stage 4: Plan Generator (LLM, 15-30s) - IMPLEMENTED ← ONLY LLM CALL
+  └─ Synthesize all previous stages → Implementation plan
+
+Stage 5: Validator (Pydantic, <1s) - IMPLEMENTED
+  └─ Schema validation, completeness checks, layer compliance
+
+Total: 18-40 seconds (vs 5-7 minutes with CrewAI)
+All Parsers: XML, DOCX, Excel, Text - FULLY IMPLEMENTED
+```
+
+#### Performance Metrics
+
+| Metric | CrewAI (Multi-Agent) | Hybrid Pipeline | Improvement |
+|--------|---------------------|-----------------|-------------|
+| Duration | 5-7 minutes | 18-40 seconds | **10-20x faster** |
+| LLM Calls | 5 | 1 | **5x fewer** |
+| Success Rate | 70-80% | 95%+ | **+15-25%** |
+| Data Utilization | 20% (components only) | 100% (all 17 keys) | **5x more** |
+| Debuggability | Hard (agent black box) | Easy (pipeline steps) | Much better |
+
+#### Stage 1: Input Parsers (IMPLEMENTED)
+
+All 4 parsers fully implemented in `pipelines/development_planning/parsers/`:
+
+**1. XML Parser** (`xml_parser.py`) - **Complete JIRA Extraction**
+- JIRA RSS format, generic XML, custom formats
+- Extracts from JIRA XML:
+  - Basic: Task ID, Summary, Description, Priority, Type, Status
+  - Metadata: Assignee, Reporter, Created/Updated dates, Fix Version, Resolution
+  - **All Comments**: Author, timestamp, full text (example: 15 comments = 7,066 chars)
+  - Labels, Components, Custom fields, Attachments, Links, Subtasks
+- Example: 133KB JIRA file → Complete task context with all discussions
+
+**2. DOCX Parser** (`docx_parser.py`)
+- Extracts: Title, sections (with headings), tables
+- Dependency: `python-docx`
+
+**3. Excel Parser** (`excel_parser.py`)
+- Parses all sheets, detects headers, extracts data rows
+- Dependency: `openpyxl`
+
+**4. Text Parser** (`text_parser.py`)
+- Plain text and log files
+- Extracts error patterns with context, parses log entries
+
+**Installation:** `pip install -e ".[parsers]"` for DOCX/Excel support
+
+#### Stage 2: Component Discovery (Multi-Signal Scoring)
+
+**Algorithm:** Combines 4 signals to find affected components:
+
+1. **Semantic Similarity** (40% weight) - ChromaDB vector distance
+   ```python
+   similarity = 1 - min(chromadb_distance, 1.0)
+   ```
+
+2. **Name Matching** (30% weight) - Fuzzy string match
+   ```python
+   score = fuzz.partial_ratio(task_description, component_name) / 100.0
+   ```
+
+3. **Package Matching** (20% weight) - Label-based filtering
+   ```python
+   if task_label in component.package: score += 0.5
+   ```
+
+4. **Stereotype Matching** (10% weight) - Keyword detection
+   ```python
+   if "service" in task and component.stereotype == "service": score = 1.0
+   ```
+
+**Output:** Top 10 components ranked by weighted score
+
+#### Stage 3: Pattern Matcher (TF-IDF + Rules)
+
+**Test Pattern Matching (TF-IDF):**
+```python
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Build corpus: task description + all test names/scenarios
+corpus = [task_description] + [test.name + " ".join(test.scenarios) for test in tests]
+
+# TF-IDF vectorization
+vectorizer = TfidfVectorizer(stop_words='english', max_features=100)
+tfidf_matrix = vectorizer.fit_transform(corpus)
+
+# Cosine similarity
+similarities = cosine_similarity(tfidf_matrix[0], tfidf_matrix[1:]).flatten()
+
+# Top 5 most similar tests
+top_tests = sorted(zip(tests, similarities), reverse=True)[:5]
+```
+
+**Security/Validation/Error Pattern Matching (Rule-Based):**
+- Security: File path prefix matching (143 configs)
+- Validation: Target class matching (149 patterns)
+- Error Handling: Keyword matching (23 patterns)
+
+#### Output Schema
+
+```json
+{
+  "task_id": "PROJ-123",
+  "source_files": ["inputs/tasks/PROJ-123.xml"],
+  "understanding": {
+    "summary": "Add email notification on user registration",
+    "requirements": ["Send welcome email", "Include activation link"],
+    "acceptance_criteria": ["Email sent within 1 minute"],
+    "technical_notes": "Use existing EmailService, async processing"
+  },
+  "development_plan": {
+    "affected_components": [
+      {
+        "id": "component.backend.service.user_service_impl",
+        "name": "UserServiceImpl",
+        "stereotype": "service",
+        "layer": "application",
+        "relevance_score": 0.95,
+        "change_type": "modify",
+        "source": "chromadb"
+      }
+    ],
+    "interfaces": [{"path": "/api/users/register", "method": "POST", ...}],
+    "dependencies": [{"from": "UserServiceImpl", "to": "EmailService", ...}],
+
+    "implementation_steps": [
+      "1. Add EmailService dependency to UserServiceImpl (constructor injection)",
+      "2. Create sendWelcomeEmail(User user) private method",
+      "3. Call sendWelcomeEmail() from registerUser() after user creation",
+      "4. Add @Async annotation for non-blocking email sending"
+    ],
+
+    "test_strategy": {
+      "unit_tests": ["UserServiceImplTest.testSendEmail()"],
+      "integration_tests": ["UserRegistrationIT.testEmailSent()"],
+      "similar_patterns": [
+        {
+          "name": "DeedEntryServiceImplTest",
+          "framework": "junit",
+          "relevance_score": 0.87,
+          "pattern_description": "Similar unit test with @MockBean injection"
+        }
+      ],
+      "recommended_framework": "junit"
+    },
+
+    "security_considerations": [
+      {
+        "security_type": "authentication",
+        "recommendation": "Verify user is authenticated before sending email"
+      }
+    ],
+
+    "validation_strategy": [
+      {
+        "field": "email",
+        "validation_type": "not_null",
+        "recommendation": "Use @NotNull @Email on User.email field"
+      }
+    ],
+
+    "error_handling": [
+      {
+        "exception_class": "EmailSendException",
+        "handling_type": "exception_handler",
+        "recommendation": "Add @ExceptionHandler in DefaultExceptionHandler"
+      }
+    ],
+
+    "architecture_context": {
+      "style": "Modular Monolith",
+      "layer_pattern": "Controller → Service → Repository",
+      "quality_grade": "C",
+      "layer_compliance": ["UserService -> EmailService (valid)"]
+    },
+
+    "estimated_complexity": "Low",
+    "complexity_reasoning": "Simple service call addition, existing infrastructure",
+    "estimated_files_changed": 3,
+    "risks": ["Email failure should not block registration"],
+
+    "evidence_sources": {
+      "components": "architecture_facts.json (951 components)",
+      "test_patterns": "architecture_facts.json (925 tests, TF-IDF similarity)",
+      "security": "architecture_facts.json (143 security details, rule-based)",
+      "validation": "architecture_facts.json (149 validation patterns, regex)",
+      "error_handling": "architecture_facts.json (23 error patterns, keyword)",
+      "architecture": "analyzed_architecture.json",
+      "semantic_search": "ChromaDB (Phase 0)"
+    }
+  }
+}
+```
+
+#### Data Utilization (100% of Phase 0-2)
+
+Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
+
+**From Phase 0:**
+- ChromaDB vector store (semantic search in Stage 2)
+
+**From Phase 1 (architecture_facts.json - ALL 17 keys):**
+- `components` [951] → Component discovery (Stage 2)
+- `interfaces` [226] → API endpoint lookup (Stage 2)
+- `relations` [190] → Dependency graph (Stage 2)
+- `endpoint_flows` [206] → Request flow analysis (Stage 2)
+- `tests` [925] → **TF-IDF test pattern matching** (Stage 3)
+- `security_details` [143] → **Rule-based security lookup** (Stage 3)
+- `validation` [149] → **Regex validation matching** (Stage 3)
+- `error_handling` [23] → **Keyword error matching** (Stage 3)
+- `workflows` [42] → Business context (Stage 3)
+- `dependencies` [170] → Dependency impact (Stage 2)
+- `tech_versions` [8] → Tech stack info (Stage 4)
+- `evidence` [2508] → Traceability (Stage 5)
+
+**From Phase 2:**
+- `analyzed_architecture.json` → Architecture style, patterns, quality (Stage 4+5)
+
+**Comparison with CrewAI approach:** The Hybrid Pipeline uses the same input data but processes it algorithmically (TF-IDF, fuzzy matching, rule-based lookup) instead of through LLM agents, resulting in 10-20x speedup and 95%+ success rate.
 
 ---
 
@@ -1214,7 +1504,7 @@ Agent step and task callbacks (`crew_callbacks.py`) route through `logger`:
 |-------|-----------|-------------|---------|
 | Agent thinking | `DEBUG` | File only | `[THINK] Architect: Analyzing macro...` |
 | Tool call | `INFO` | File + console | `[TOOL] get_statistics: {}` |
-| Tool result | `DEBUG` | File only | `[TOOL_RESULT] {"components": 738...}` |
+| Tool result | `DEBUG` | File only | `[TOOL_RESULT] {"components": 951...}` |
 | Task completion | `INFO` | File + console | `[TASK] Completed: Analyze macro arch...` |
 
 ### 9.7 Features
@@ -1241,13 +1531,15 @@ Agent step and task callbacks (`crew_callbacks.py`) route through `logger`:
 
 | Diagram | File | Description |
 |---------|------|-------------|
-| **SDLC Overview** | `sdlc-overview.drawio` | Full SDLC pipeline (UNDERSTAND → PLAN → BUILD → DEPLOY) |
-| Phase Flow | `phase-flow.drawio` | Main pipeline flow |
+| Phase Flow | `phase-flow.drawio` | Main pipeline flow (Phases 0-7) |
+| Layer Architecture | `layer-architecture.drawio` | Detailed 4-Layer Architecture |
 | Evidence Flow | `evidence-flow.drawio` | Evidence data flow |
 | Knowledge Structure | `knowledge-structure.drawio` | Knowledge base organization |
-| Collectors | `collectors.drawio` | Phase 1 collector details |
-| Analysis Crew | `analysis-crew.drawio` | Phase 2 analysis crew details |
-| Synthesis Crew | `synthesis-crew.drawio` | Phase 3 synthesis crew details |
+| Collectors | `collectors.drawio` | Phase 1: 31 collectors in 4 groups |
+| Analysis Crew | `analysis-crew.drawio` | Phase 2: 5 mini-crews analysis |
+| Synthesis Crew | `synthesis-crew.drawio` | Phase 3: C4 + Arc42 synthesis crews |
+| Dev Planning Pipeline | `phase4-pipeline.drawio` | Phase 4: Hybrid pipeline (5 stages) |
+| Analysis Crew Architecture | `phase2-crew-architecture.drawio` | Phase 2: Detailed crew architecture |
 
 ---
 

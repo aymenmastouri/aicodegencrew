@@ -151,7 +151,7 @@ Tool: get_architecture_summary
 Response:
 {
   "components": {
-    "total": 733,
+    "total": 951,
     "by_layer": {
       "presentation": 246,
       "application": 168,
@@ -218,9 +218,9 @@ Add to `claude_desktop_config.json`:
 │  Phase 1 Knowledge Base (JSON)                                  │
 │                                                                 │
 │  knowledge/architecture/                                        │
-│  ├── components.json    (733 components)                        │
-│  ├── relations.json     (169 relations)                         │
-│  ├── interfaces.json    (125 endpoints/routes)                  │
+│  ├── components.json    (951+ components)                       │
+│  ├── relations.json     (190 relations)                         │
+│  ├── interfaces.json    (226 endpoints/routes)                  │
 │  ├── evidence_map.json  (1005 code snippets)                    │
 │  └── ...                                                        │
 └─────────────────────────────────────────────────────────────────┘
