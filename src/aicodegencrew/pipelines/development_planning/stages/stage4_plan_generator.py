@@ -393,13 +393,25 @@ Generate the plan now:"""
         lines = []
         for i, step in enumerate(sequence, 1):
             severity = step.get("severity", "unknown")
+            affected_files = step.get('affected_files', [])
+            file_count = len(affected_files)
+
             lines.append(
                 f"  {i}. [{severity.upper()}] {step.get('title', '')}\n"
                 f"     Rule: {step.get('rule_id', '')}\n"
-                f"     Occurrences: {step.get('occurrences', 0)} in {len(step.get('affected_files', []))} files\n"
+                f"     Occurrences: {step.get('occurrences', 0)} in {file_count} files\n"
                 f"     Effort: {step.get('estimated_effort_minutes', 0)} min\n"
                 f"     Steps: {'; '.join(step.get('migration_steps', []))}"
             )
+
+            # Show affected files (first 10 for brevity)
+            if affected_files:
+                files_to_show = affected_files[:10]
+                files_str = ", ".join(files_to_show)
+                if file_count > 10:
+                    files_str += f", ... ({file_count - 10} more)"
+                lines.append(f"     Affected Files: {files_str}")
+
             schematic = step.get("schematic")
             if schematic:
                 lines.append(f"     Schematic: {schematic}")
