@@ -41,7 +41,7 @@
         <mxCell id="facts-title" value="&lt;b&gt;architecture_facts.json&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#1b5e20;" vertex="1" parent="1">
           <mxGeometry x="160" y="215" width="180" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="facts-desc" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;- &lt;b&gt;951+&lt;/b&gt; components extracted&lt;br&gt;- &lt;b&gt;190&lt;/b&gt; relations mapped&lt;br&gt;- &lt;b&gt;226&lt;/b&gt; interfaces&lt;br&gt;- &lt;b&gt;6&lt;/b&gt; containers identified&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
+        <mxCell id="facts-desc" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;- Components extracted&lt;br&gt;- Relations mapped&lt;br&gt;- Interfaces resolved&lt;br&gt;- Containers identified&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
           <mxGeometry x="130" y="245" width="220" height="60" as="geometry" />
         </mxCell>
         

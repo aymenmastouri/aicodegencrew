@@ -67,7 +67,7 @@
         <mxCell id="l1-output-title" value="Knowledge Base Output" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1;fontColor=#2E7D32;" parent="1" vertex="1">
           <mxGeometry x="780" y="155" width="360" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="l1-output-items" value="architecture_facts.json | evidence_map.json | ChromaDB Index&#xa;Components: 950+ | Interfaces: 125+ | Relations: 169+ | Evidence: 1000+" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#388E3C;" parent="1" vertex="1">
+        <mxCell id="l1-output-items" value="architecture_facts.json | evidence_map.json | ChromaDB Index&#xa;Components | Interfaces | Relations | Evidence" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#388E3C;" parent="1" vertex="1">
           <mxGeometry x="780" y="185" width="360" height="50" as="geometry"/>
         </mxCell>
 
@@ -242,19 +242,19 @@
         </mxCell>
 
         <!-- ======================= STATUS BADGES ======================= -->
-        <mxCell id="status-p0" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p0" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="280" y="155" width="50" height="20" as="geometry"/>
         </mxCell>
-        <mxCell id="status-p1" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p1" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="680" y="155" width="50" height="20" as="geometry"/>
         </mxCell>
-        <mxCell id="status-p2" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p2" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="320" y="355" width="50" height="20" as="geometry"/>
         </mxCell>
-        <mxCell id="status-p3" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p3" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="680" y="355" width="50" height="20" as="geometry"/>
         </mxCell>
-        <mxCell id="status-p4" value="DONE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p4" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="250" y="555" width="50" height="20" as="geometry"/>
         </mxCell>
         <mxCell id="status-p5" value="SKELETON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFA000;strokeColor=#E65100;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
