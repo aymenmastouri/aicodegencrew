@@ -174,6 +174,8 @@ class InputParserStage:
             technical_notes=task_data.get("technical_notes", ""),
             labels=task_data.get("labels", []) + task_data.get("components", []),
             priority=task_data.get("priority", "Medium"),
+            jira_type=task_data.get("jira_type", "Task"),
+            linked_tasks=task_data.get("linked_tasks", []),
         )
 
     def _parse_docx(self, file_path: Path) -> TaskInput:

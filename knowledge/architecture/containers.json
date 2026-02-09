@@ -1,0 +1,42 @@
+[
+  {
+    "id": "backend",
+    "name": "backend",
+    "type": "backend",
+    "technology": "Spring Boot",
+    "path": "backend",
+    "category": "application"
+  },
+  {
+    "id": "e2e-xnp",
+    "name": "e2e-xnp",
+    "type": "test",
+    "technology": "Playwright",
+    "path": "e2e-xnp",
+    "category": "test"
+  },
+  {
+    "id": "frontend",
+    "name": "frontend",
+    "type": "frontend",
+    "technology": "Angular",
+    "path": "frontend",
+    "category": "application"
+  },
+  {
+    "id": "jsApi",
+    "name": "jsApi",
+    "type": "frontend",
+    "technology": "Node.js",
+    "path": "frontend\\src\\jsApi",
+    "category": "application"
+  },
+  {
+    "id": "import-schema",
+    "name": "import-schema",
+    "type": "library",
+    "technology": "Java/Gradle",
+    "path": "import-schema",
+    "category": "library"
+  }
+]

@@ -123,6 +123,9 @@ desktop.ini
 # Knowledge backup folders (timestamped runs)
 knowledge-*/
 
+# Phase 3 architecture docs export (default DOCS_OUTPUT_DIR)
+architecture-docs/
+
 # -----------------------------------------------------------------------------
 # Build & Distribution
 # -----------------------------------------------------------------------------

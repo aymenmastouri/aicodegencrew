@@ -7,6 +7,16 @@ requires-python = ">=3.10,<3.13"
 readme = "README.md"
 license = { text = "Proprietary" }
 keywords = ["ai", "crewai", "ollama", "sdlc", "code-generation", "rag"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Documentation",
+]
 
 dependencies = [
     # Core AI/ML
@@ -23,6 +33,8 @@ dependencies = [
     "jinja2>=3.1.2",
     "requests>=2.31.0",
     "pyyaml>=6.0",
+    # Document format conversion (MD → Confluence/AsciiDoc/HTML)
+    "mistune>=3.0.0",
 ]
 
 [project.optional-dependencies]

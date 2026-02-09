@@ -529,7 +529,7 @@ Create arc42 Chapter 8 Part 1: Technical Crosscutting Concepts (8-10 pages).
 6. rag_query(query="logging slf4j logback") -> logging config
 7. rag_query(query="exception handling ControllerAdvice") -> error handling
 8. rag_query(query="transaction management Transactional") -> persistence
-9. doc_writer(file_path="arc42/08-part1-technical.md", content="# 08 - Cross-cutting Concepts\\n\\n## 8.1 Domain Model\\n...")
+9. doc_writer(file_path="arc42/08-part1-technical.md", content="# 08 - Crosscutting Concepts\\n\\n## 8.1 Domain Model\\n...")
 10. Respond: "File arc42/08-part1-technical.md written successfully."
 
 Summary data:

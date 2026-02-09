@@ -19,6 +19,7 @@ AICodeGenCrew is a fully local, on-premises AI-powered toolkit for end-to-end So
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Deployment](#deployment)
 - [Configuration](#configuration)
 - [CLI Reference](#cli-reference)
 - [Pipeline Phases](#pipeline-phases)
@@ -175,11 +176,137 @@ python -m aicodegencrew list
 #   GIT_REPO_URL=https://gitlab.example.com/team/project.git
 #   GIT_BRANCH=         # empty = auto-detect main/master
 
-# Run the complete architecture workflow (Phases 0-3)
-python -m aicodegencrew run --preset architecture_workflow
+# Development Planning (Phases 0+1+2+4) — most common
+aicodegencrew plan
+
+# With custom .env file (e.g. Docker, wheel distribution)
+aicodegencrew --env /path/to/project.env plan
+
+# Full architecture documentation (Phases 0-3)
+aicodegencrew run --preset architecture_workflow
 
 # Or specify the Git URL directly via CLI
-python -m aicodegencrew run --preset architecture_workflow --git-url https://gitlab.example.com/team/project.git
+aicodegencrew run --preset architecture_workflow --git-url https://gitlab.example.com/team/project.git
+```
+
+---
+
+## Deployment
+
+AICodeGenCrew is **Capgemini proprietary** software. Source code must not be distributed to end users. Three deployment modes are available:
+
+### Option 1: Wheel Distribution (No Source Code)
+
+```bash
+# Build wheel (dev team only)
+pip install build
+python -m build --wheel
+# -> dist/aicodegencrew-0.1.0-py3-none-any.whl
+
+# Distribute to developers — they install with:
+pip install aicodegencrew-0.1.0-py3-none-any.whl[parsers]
+
+# Developer runs with their own .env config:
+aicodegencrew --env /path/to/project.env plan
+```
+
+### Option 2: Docker (Recommended for Production)
+
+Multi-stage Dockerfile ensures **no source code** in the final image — only the compiled wheel.
+
+```bash
+# Build image (dev team only)
+docker build -t aicodegencrew:latest .
+
+# Run with docker-compose (developer)
+docker-compose run aicodegencrew plan
+
+# Or run directly
+docker run --network host \
+  -v /path/to/.env:/app/.env:ro \
+  -v /path/to/repo:/repo:ro \
+  -v /path/to/inputs:/app/inputs/tasks:ro \
+  -v ./knowledge:/app/knowledge \
+  -v ./architecture-docs:/app/architecture-docs \
+  -v ./.cache:/app/.cache \
+  -e PROJECT_PATH=/repo \
+  -e TASK_INPUT_DIR=/app/inputs/tasks \
+  -e DOCS_OUTPUT_DIR=/app/architecture-docs \
+  aicodegencrew:latest plan
+```
+
+### Volume Mounts (Docker)
+
+| Mount (from `.env`) | Container Path | Mode | Purpose |
+|---------------------|---------------|------|---------|
+| `.env` | `/app/.env` | read-only | Configuration |
+| `PROJECT_PATH` | `/repo` | read-only | Repository to analyze |
+| `TASK_INPUT_DIR` | `/app/inputs/tasks` | read-only | JIRA XML, DOCX, Excel files |
+| `knowledge/` | `/app/knowledge` | read-write | Internal output: facts, analysis, plans |
+| `DOCS_OUTPUT_DIR` | `/app/architecture-docs` | read-write | Phase 3 export: C4 + Arc42 docs for architect |
+| `.cache/` | `/app/.cache` | read-write | ChromaDB vector store |
+
+docker-compose reads `PROJECT_PATH` and `TASK_INPUT_DIR` from your `.env` file and mounts them automatically.
+
+### Option 3: Development Install (Internal Only)
+
+```bash
+pip install -e ".[dev,parsers]"
+```
+
+### Release Build (`scripts/build_release.py`)
+
+Automated release builder that creates a distribution-ready package.
+
+```bash
+# Build current version (no version change)
+python scripts/build_release.py
+
+# Bump version and build
+python scripts/build_release.py --bump patch          # 0.1.0 -> 0.1.1
+python scripts/build_release.py --bump minor          # 0.1.0 -> 0.2.0
+python scripts/build_release.py --bump major          # 0.1.0 -> 1.0.0
+
+# Bump + git tag (commit + annotated tag vX.Y.Z)
+python scripts/build_release.py --bump patch --tag
+
+# Full release: bump + tag + Docker image
+python scripts/build_release.py --bump patch --tag --docker
+
+# Push Docker image to registry
+python scripts/build_release.py --bump patch --tag --docker --push --registry registry.example.com
+```
+
+**What `--bump` does automatically:**
+
+| Step | File | Action |
+|------|------|--------|
+| 1 | `pyproject.toml` | Updates `version = "X.Y.Z"` |
+| 2 | `CHANGELOG.md` | Adds new version header with git commit messages since last tag |
+| 3 | `docs/DELIVERY_GUIDE.md` | Updates all version references |
+| 4 | `docs/USER_GUIDE.md` | Updates all version references |
+| 5 | `dist/release/` | Builds wheel + assembles 8 release files |
+
+**What `--tag` does additionally:**
+
+| Step | Action |
+|------|--------|
+| 1 | `git add` all version-related files |
+| 2 | `git commit -m "release: vX.Y.Z"` |
+| 3 | `git tag -a vX.Y.Z -m "Release X.Y.Z"` |
+
+**Release package output (`dist/release/`):**
+
+```
+dist/release/
+├── aicodegencrew-X.Y.Z-py3-none-any.whl   # Installable wheel (no source code)
+├── .env.example                             # Configuration template
+├── docker-compose.yml                       # Docker setup
+├── config/phases_config.yaml                # Phase configuration
+├── USER_GUIDE.md                            # End-user documentation
+├── CHANGELOG.md                             # Version history (auto-generated from git)
+├── install.bat                              # Windows installer script
+└── install.sh                               # Linux/macOS installer script
 ```
 
 ---
@@ -190,13 +317,16 @@ python -m aicodegencrew run --preset architecture_workflow --git-url https://git
 
 Copy `.env.example` to `.env` and configure:
 
-#### Repository
+#### Repository & Input
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `PROJECT_PATH` | Local path to the repository to analyze | `C:\repos\my-project` |
+| `TASK_INPUT_DIR` | Folder with JIRA XML / task files (outside repo!) | `C:\projects\inputs` |
 | `GIT_REPO_URL` | Git HTTPS URL (optional, overrides `PROJECT_PATH`) | `https://gitlab.example.com/team/project.git` |
 | `GIT_BRANCH` | Branch to checkout (empty = auto-detect main/master) | `develop` |
+
+**Important:** `TASK_INPUT_DIR` should point to a folder **outside** the code repository. This is where you place your JIRA XML exports, DOCX requirements, Excel files, etc.
 
 When `GIT_REPO_URL` is set, the repo is cloned into `.cache/repos/<name>/` and updated on each run.
 Credentials are prompted interactively on first clone and cached in-memory only (never written to disk or logs).
@@ -238,7 +368,9 @@ Credentials are prompted interactively on first clone and cached in-memory only 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OUTPUT_DIR` | `./knowledge/architecture` | Output directory for generated artifacts |
+| `OUTPUT_DIR` | `./knowledge/architecture` | Internal output directory (all phases) |
+| `DOCS_OUTPUT_DIR` | `./architecture-docs` | Export dir for Phase 3 docs. Auto-converts to Confluence/AsciiDoc/HTML. |
+| `ARC42_LANGUAGE` | `en` | Arc42 ToC language: `en` (English) or `de` (Deutsch) |
 | `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 
 ### Presets
@@ -250,6 +382,7 @@ Presets are predefined phase combinations defined in [`config/phases_config.yaml
 | `indexing_only` | 0 | Index repository only |
 | `facts_only` | 0 – 1 | Deterministic facts extraction (no LLM) |
 | `analysis_only` | 0 – 2 | Facts + AI analysis |
+| `planning_only` | 0 – 2, 4 | Development planning (skips Phase 3 synthesis) |
 | `architecture_workflow` | 0 – 3 | Full architecture documentation |
 | `architecture_full` | 0 – 4 | Architecture + development planning |
 | `full_pipeline` | 0 – 7 | All phases (end-to-end SDLC) |
@@ -259,14 +392,21 @@ Presets are predefined phase combinations defined in [`config/phases_config.yaml
 ## CLI Reference
 
 ```
-python -m aicodegencrew <command> [options]
+aicodegencrew [--env <path>] <command> [options]
 ```
+
+### Global Options
+
+| Option | Description |
+|--------|-------------|
+| `--env <path>` | Path to `.env` configuration file (default: `.env` in current directory) |
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
 | `run` | Execute pipeline phases (presets or explicit phase list) |
+| `plan` | Run development planning (shortcut for `run --preset planning_only`) |
 | `index` | Run indexing only (shortcut for Phase 0) |
 | `list` | List available phases and presets |
 
@@ -282,6 +422,14 @@ python -m aicodegencrew <command> [options]
 | `--branch <name>` | Git branch (overrides `GIT_BRANCH` in `.env`) |
 | `--clean` | Clean knowledge directories before running |
 | `--no-clean` | Skip auto-cleaning of knowledge directories |
+| `--config <path>` | Custom path to `phases_config.yaml` |
+
+### `plan` Options
+
+| Option | Description |
+|--------|-------------|
+| `--repo-path <path>` | Override `PROJECT_PATH` from `.env` |
+| `--index-mode <mode>` | Override `INDEX_MODE` (`off` / `auto` / `force` / `smart`) |
 | `--config <path>` | Custom path to `phases_config.yaml` |
 
 ### `index` Options
@@ -315,23 +463,30 @@ python -m aicodegencrew <command> [options]
 #### Presets (recommended)
 
 ```bash
-# Full architecture documentation (Phases 0-3) — most common
-python -m aicodegencrew run --preset architecture_workflow
+# Development planning (Phases 0+1+2+4) — most common
+aicodegencrew plan
+# equivalent to: aicodegencrew run --preset planning_only
+
+# With custom .env file
+aicodegencrew --env /path/to/project.env plan
+
+# Full architecture documentation (Phases 0-3)
+aicodegencrew run --preset architecture_workflow
 
 # Facts only — no LLM needed (Phases 0-1)
-python -m aicodegencrew run --preset facts_only
+aicodegencrew run --preset facts_only
 
 # Facts + AI analysis, no synthesis (Phases 0-2)
-python -m aicodegencrew run --preset analysis_only
+aicodegencrew run --preset analysis_only
 
 # Index repository only (Phase 0)
-python -m aicodegencrew run --preset indexing_only
+aicodegencrew run --preset indexing_only
 
-# Architecture + review/consistency (Phases 0-4)
-python -m aicodegencrew run --preset architecture_full
+# Architecture + development planning (Phases 0-4)
+aicodegencrew run --preset architecture_full
 
 # All phases end-to-end (Phases 0-7)
-python -m aicodegencrew run --preset full_pipeline
+aicodegencrew run --preset full_pipeline
 ```
 
 #### Running Individual Phases
@@ -457,33 +612,24 @@ Phase 0 ──► Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 
 
 ## Input Files for Development Planning (Phase 4)
 
-Phase 4 (Development Planning) requires task inputs to generate implementation plans. Organize your input files in the `inputs/` directory:
+Phase 4 (Development Planning) requires task inputs to generate implementation plans. Input files are stored **outside** the tool — configure the paths in your `.env`:
+
+```env
+TASK_INPUT_DIR=C:\projects\inputs          # JIRA XML, DOCX, Excel, text files
+REQUIREMENTS_DIR=C:\projects\requirements  # Specs and documentation (optional)
+LOGS_DIR=C:\projects\logs                  # Error logs for bugfix tasks (optional)
+REFERENCE_DIR=C:\projects\reference        # Reference code examples (optional)
+```
 
 ### Input Folder Structure
 
 ```
-inputs/
-├── tasks/              # Task definitions (REQUIRED)
-│   ├── task-001.txt       # Plain text task description
-│   ├── bug-fix.log        # Error log to analyze/fix
-│   ├── feature.xml        # XML task data
-│   ├── requirement.docx   # Word requirement doc
-│   └── backlog.xlsx       # Excel task spreadsheet
-│
-├── requirements/       # Specifications and documentation (OPTIONAL)
-│   ├── requirements.docx  # Functional requirements
-│   ├── specs.pdf          # Technical specifications
-│   └── user-stories.md    # Markdown user stories
-│
-├── logs/               # Error logs and traces (OPTIONAL)
-│   ├── error.log          # Application error logs
-│   ├── stack-trace.txt    # Stack traces for bug fixes
-│   └── debug.log          # Debug output
-│
-└── reference/          # Examples and patterns (OPTIONAL)
-    ├── similar-impl.java  # Reference implementation example
-    ├── pattern-example.ts # Code pattern to follow
-    └── best-practices.md  # Guidelines and conventions
+C:\projects\inputs\          # = TASK_INPUT_DIR
+├── PROJ-123.xml                # JIRA XML export
+├── task-001.txt                # Plain text task description
+├── bug-fix.log                 # Error log to analyze/fix
+├── requirement.docx            # Word requirement doc
+└── backlog.xlsx                # Excel task spreadsheet
 ```
 
 ### Supported File Formats
@@ -501,40 +647,22 @@ All formats are fully implemented and ready to use:
 
 ### How to Use
 
-1. **Create input folders** (if they don't exist):
-   ```bash
-   mkdir -p inputs/tasks inputs/requirements inputs/logs inputs/reference
+1. **Set `TASK_INPUT_DIR`** in your `.env` file:
+   ```env
+   TASK_INPUT_DIR=C:\projects\inputs
    ```
 
-2. **Add your task files** to `inputs/tasks/`:
+2. **Add your task files** to that folder:
+   - Export JIRA tickets as XML
+   - Or create plain text task descriptions
+
+3. **Run development planning**:
    ```bash
-   # Create a simple text file (IMPLEMENTED)
-   cat > inputs/tasks/task-001.txt <<EOF
-   Add email notification on user registration
+   # Shortcut (recommended)
+   aicodegencrew plan
 
-   Requirements:
-   - Send welcome email when user registers
-   - Include activation link
-   - Use async processing
-   EOF
-   ```
-
-3. **Optionally add supporting files**:
-   ```bash
-   # Requirements
-   cp ~/docs/requirements.docx inputs/requirements/
-
-   # Error logs for bug fixes
-   cp ~/logs/error.log inputs/logs/
-
-   # Reference implementations
-   cp ~/examples/email-service.java inputs/reference/
-   ```
-
-4. **Run Phase 4**:
-   ```bash
-   # Run development planning for a specific task file
-   python -m aicodegencrew run --phases phase4_development_planning --input-file inputs/tasks/task-001.txt
+   # Or explicitly
+   aicodegencrew run --preset planning_only
    ```
 
 ### Example Task Input (Plain Text)
@@ -579,6 +707,19 @@ Each plan includes:
 ## Output Artifacts
 
 All outputs are saved to `knowledge/architecture/` (configurable via `OUTPUT_DIR`).
+
+After Phase 3, the tool automatically **exports** the architect-relevant documents (C4 + Arc42 only, no JSON) to a separate folder. Default: `./architecture-docs` in your working directory. Override with `DOCS_OUTPUT_DIR` in `.env`.
+
+Each `.md` file is automatically converted to **3 additional formats**:
+
+| Format | Extension | Usage |
+|--------|-----------|-------|
+| **Markdown** | `.md` | Original, readable in any editor |
+| **Confluence** | `.confluence` | Paste into Confluence Wiki Markup editor |
+| **AsciiDoc** | `.adoc` | Compatible with docToolchain / asciidoc2confluence |
+| **HTML** | `.html` | Open in browser, standalone with embedded CSS |
+
+Arc42 chapters follow the **official arc42 template** structure. Set `ARC42_LANGUAGE=de` for German titles.
 
 ### Phase 1: Facts
 
@@ -719,6 +860,9 @@ aicodegencrew/
 ├── logs/                           # Runtime logs + metrics.jsonl
 ├── .env.example                    # Environment template
 ├── pyproject.toml                  # Project metadata and dependencies
+├── Dockerfile                      # Multi-stage build (no source in final image)
+├── docker-compose.yml              # Developer-friendly Docker setup
+├── .dockerignore                   # Excludes source from Docker context
 └── mcp_server.py                   # MCP server entry point
 ```
 

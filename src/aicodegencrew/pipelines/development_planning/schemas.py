@@ -31,6 +31,11 @@ class TaskInput(BaseModel):
     task_type: Literal["feature", "bugfix", "upgrade", "refactoring"] = Field(
         default="feature", description="Detected task type"
     )
+    jira_type: str = Field(default="Task", description="JIRA issue type (Task, Sub-Task, Epic, Story, Bug)")
+    linked_tasks: List[str] = Field(
+        default_factory=list,
+        description="Linked ticket IDs (from issuelinks, subtasks, description references)"
+    )
     upgrade_context: Optional[dict] = Field(
         default=None, description="Upgrade context (framework, versions)"
     )
