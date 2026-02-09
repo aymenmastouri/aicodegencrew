@@ -6,7 +6,7 @@ Creates a distribution-ready package with:
   - Python wheel (.whl) — no source code
   - Docker image (.tar.gz) — optional
   - Configuration template (.env.example)
-  - User documentation (USER_GUIDE.md)
+  - User documentation (USER_GUIDE.md + USER_GUIDE.pdf)
   - phases_config.yaml
   - docker-compose.yml
 
@@ -265,6 +265,51 @@ def push_docker(version: str, registry: str):
     print(f"  Pushed: {remote_tag}")
 
 
+def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
+    """
+    Convert Markdown to PDF using pandoc.
+
+    Returns True if successful, False if pandoc not available.
+    """
+    # Check if pandoc is available
+    result = subprocess.run(
+        ["pandoc", "--version"],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        print("  WARNING: pandoc not found. Skipping PDF generation.")
+        print("  To generate PDF: Install pandoc from https://pandoc.org/")
+        return False
+
+    # Generate PDF with pandoc
+    print(f"  Generating PDF: {pdf_path.name}...")
+    subprocess.run(
+        [
+            "pandoc",
+            str(md_path),
+            "-o", str(pdf_path),
+            "--pdf-engine=xelatex",  # Better Unicode support
+            "-V", "geometry:margin=1in",  # Page margins
+            "-V", "fontsize=11pt",
+            "-V", "colorlinks=true",
+            "--toc",  # Table of contents
+            "--toc-depth=2",
+        ],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+    )
+
+    if pdf_path.exists():
+        print(f"  PDF generated: {pdf_path.name} ({pdf_path.stat().st_size:,} bytes)")
+        return True
+    else:
+        print("  WARNING: PDF generation failed.")
+        return False
+
+
 def assemble_release(version: str, wheel: Path, docker_tar: Path | None):
     """Assemble release package."""
     print("\n[3/4] Assembling release package...")
@@ -291,6 +336,13 @@ def assemble_release(version: str, wheel: Path, docker_tar: Path | None):
 
     # Documentation
     shutil.copy2(ROOT / "docs" / "USER_GUIDE.md", RELEASE / "USER_GUIDE.md")
+
+    # Generate PDF from USER_GUIDE.md
+    generate_pdf_from_markdown(
+        ROOT / "docs" / "USER_GUIDE.md",
+        RELEASE / "USER_GUIDE.pdf"
+    )
+
     if CHANGELOG.exists():
         shutil.copy2(CHANGELOG, RELEASE / "CHANGELOG.md")
 
