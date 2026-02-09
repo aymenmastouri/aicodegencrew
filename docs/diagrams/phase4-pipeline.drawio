@@ -77,7 +77,7 @@
           <mxGeometry x="840" y="160" width="200" height="60" as="geometry" />
         </mxCell>
 
-        <mxCell id="stage3-desc" value="• Test patterns: TF-IDF (925 tests)&#xa;• Security: Rule-based (143 configs)&#xa;• Validation: Regex (149 patterns)&#xa;• Error handling: Keywords (23)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="stage3-desc" value="• Test patterns: TF-IDF similarity&#xa;• Security: Rule-based lookup&#xa;• Validation: Regex matching&#xa;• Error handling: Keyword matching" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="840" y="230" width="200" height="80" as="geometry" />
         </mxCell>
 
@@ -251,7 +251,7 @@
           <mxGeometry x="500" y="600" width="350" height="20" as="geometry" />
         </mxCell>
 
-        <mxCell id="data-stage3" value="Stage 3: tests (925), security (143), validation (149), errors (23)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="data-stage3" value="Stage 3: tests, security, validation, error_handling" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="500" y="625" width="400" height="20" as="geometry" />
         </mxCell>
 

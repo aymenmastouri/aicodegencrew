@@ -73,7 +73,7 @@
           <mxGeometry x="680" y="45" width="200" height="295" as="geometry" />
         </mxCell>
 
-        <mxCell id="mb-desc" value="Deduplication&#xa;ID Generation&#xa;Relation Resolution&#xa;━━━━━━━━━━━━━━━━&#xa;&#xa;FactAdapter&#xa;  (normalization)&#xa;&#xa;DimensionWriters&#xa;  (11 JSON files)&#xa;&#xa;CanonicalModel:&#xa;  951+ components&#xa;  125+ interfaces&#xa;  169+ relations" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="model-builder">
+        <mxCell id="mb-desc" value="Deduplication&#xa;ID Generation&#xa;Relation Resolution&#xa;━━━━━━━━━━━━━━━━&#xa;&#xa;FactAdapter&#xa;  (normalization)&#xa;&#xa;DimensionWriters&#xa;  (11 JSON files)&#xa;&#xa;CanonicalModel:&#xa;  components&#xa;  interfaces&#xa;  relations" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;fontSize=10" vertex="1" parent="model-builder">
           <mxGeometry x="10" y="30" width="180" height="250" as="geometry" />
         </mxCell>
 

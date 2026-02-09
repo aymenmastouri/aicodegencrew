@@ -65,7 +65,7 @@
         <mxCell id="phase1-tasks" value="31 Collectors in 4 groups:&lt;br&gt;spring/ (5) | angular/ (6)&lt;br&gt;database/ (5) | standalone/ (15)&lt;br&gt;Deterministic extraction" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#2E7D32;" vertex="1" parent="1">
           <mxGeometry x="260" y="190" width="180" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="phase1-output" value="951+ Components&lt;br&gt;125+ Interfaces&lt;br&gt;169+ Relations&lt;br&gt;1005+ Evidence" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontStyle=2;fontColor=#388E3C;" vertex="1" parent="1">
+        <mxCell id="phase1-output" value="Components&lt;br&gt;Interfaces&lt;br&gt;Relations&lt;br&gt;Evidence" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontStyle=2;fontColor=#388E3C;" vertex="1" parent="1">
           <mxGeometry x="260" y="295" width="180" height="50" as="geometry" />
         </mxCell>
         <mxCell id="phase1-llm" value="No LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2E7D32;fontSize=9;fontStyle=1;fontColor=#2E7D32;" vertex="1" parent="1">
