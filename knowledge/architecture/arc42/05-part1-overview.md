@@ -1,146 +1,142 @@
-# 5 – Building Block View (Part 1)
-
----
+# 05 – Building Block View (Part 1)
 
 ## 5.1 Overview (≈ 2 pages)
 
 ### A‑Architecture – Functional View
 
-The **uvz** system supports four core business capabilities that map directly to bounded contexts in a Domain‑Driven Design (DDD) sense.  Each capability is realised by a set of building blocks (controllers, services, repositories, entities, etc.) that live in the layers defined by the classic **hexagonal** architecture.
+The **A‑Architecture** captures the business capabilities of the *uvz* system and maps them to logical layers.  The layers follow a classic DDD‑inspired stack:
 
-| Business Capability | Bounded Context | Primary Layers | Representative Building Blocks |
-|---------------------|-----------------|----------------|--------------------------------|
-| **User Management** | `user‑ctx` | Presentation, Application | `UserController`, `UserService`, `UserRepository`, `User` (entity) |
-| **Order Processing** | `order‑ctx` | Application, Domain, Data‑Access | `OrderController`, `OrderService`, `OrderRepository`, `Order` (entity) |
-| **Reporting & Analytics** | `report‑ctx` | Presentation, Application | `ReportController`, `ReportService`, `ReportGenerator` |
-| **Integration & Import** | `integration‑ctx` | Infrastructure, Application | `ImportSchemaService`, `JsApiGateway`, `ExternalAdapter` |
+| Layer | Business Capability | Typical Building Blocks |
+|-------|----------------------|--------------------------|
+| **Presentation** | UI interaction, client‑side validation | Controllers (REST), Angular components, Directives, Pipes |
+| **Application** | Orchestration of use‑cases, transaction handling | Services, Schedulers, Guards, Interceptors |
+| **Domain** | Core business rules, invariants | Entities, Value Objects, Domain Services |
+| **Data‑Access** | Persistence, repository pattern | Repositories, DAOs, Mappers |
+| **Infrastructure** | Cross‑cutting concerns, external system adapters | Adapters, Configuration, Modules |
 
-The functional decomposition follows the **Strategic DDD** pattern – each bounded context owns its own model and persistence, communicating with others via well‑defined **REST interfaces** or **messaging** (future extension).  This separation enables independent evolution, clear ownership, and straightforward scaling.
+The functional decomposition is deliberately **thin** – the diagram below shows the high‑level flow of a typical request (e.g. *Create Deed*):
+
+```
+[Client] → Controller → Service → Domain Entity → Repository → DB
+```
+
+Only the *building blocks* (controllers, services, entities, repositories) are shown; the underlying technical details are covered in the T‑Architecture.
 
 ### T‑Architecture – Technical View
 
-The technical architecture consists of **five containers** (see Section 5.2).  Containers are the deployment units that host the layers described above.  The mapping of layers to containers is summarised in the table below.
+The **T‑Architecture** describes the runtime containers that host the building blocks.  Five containers have been identified (see Section 5.2).  Their purpose, technology stack and component counts are summarised in the table below.
 
-| Container | Technology | Hosted Layers | Component Count |
-|-----------|------------|---------------|-----------------|
-| **backend** | Spring Boot (Gradle) | Presentation, Application, Domain, Data‑Access, Infrastructure, Unknown | 494 |
-| **frontend** | Angular (npm) | Presentation, Application, Unknown | 404 |
-| **jsApi** | Node.js (npm) | Presentation, Application | 52 |
-| **e2e‑xnp** | Playwright (npm) | Test (no production components) | 0 |
-| **import‑schema** | Java/Gradle library | – (utility library) | 0 |
+| Container | Technology | Primary Purpose | Component Count |
+|-----------|------------|-----------------|-----------------|
+| **backend** | Spring Boot (Java/Gradle) | Core business logic, REST API, persistence | 494 |
+| **frontend** | Angular | Rich client UI, SPA, routing | 404 |
+| **jsApi** | Node.js | Auxiliary JavaScript API for legacy integrations | 52 |
+| **e2e‑xnp** | Playwright | End‑to‑end UI test harness | 0 |
+| **import‑schema** | Java/Gradle (library) | Schema import utilities, code generation | 0 |
 
-### Building‑Block Hierarchy & Stereotype Counts
+### Building Block Hierarchy – Stereotype Counts
 
-The system contains **951 components** distributed across the following stereotypes (derived from the live architecture model).  These numbers are the basis for the detailed inventories that follow.
+The following table aggregates the **building‑block hierarchy** across the whole system.  Numbers are taken from the architecture facts and verified by the stereotype‑specific queries.
 
-- **Entity** – 360
-- **Service** – 184
-- **Component** – 169
-- **Repository** – 38
-- **Controller** – 32
-- **Rest Interface** – 21
-- **Pipe** – 67
-- **Adapter** – 50
-- **Module** – 16
-- **Directive** – 3
-- **Resolver** – 4
-- **Interceptor** – 4
-- **Guard** – 1
-- **Scheduler** – 1
-- **Configuration** – 1
+| Stereotype | Total Count |
+|------------|-------------|
+| adapter | 50 |
+| component | 169 |
+| configuration | 1 |
+| controller | 32 |
+| directive | 3 |
+| entity | 360 |
+| guard | 1 |
+| interceptor | 4 |
+| module | 16 |
+| pipe | 67 |
+| repository | 38 |
+| resolver | 4 |
+| rest_interface | 21 |
+| scheduler | 1 |
+| service | 184 |
 
-These counts are reflected in the **building‑block inventory** (Section 5.2.4) and guide the **dependency rules** that enforce architectural integrity.
+These counts give a quick impression of the system’s **complexity** and **distribution** of responsibilities.  The majority of components belong to the *domain* (entities) and *application* (services) layers, which is typical for a data‑centric business platform.
 
 ---
 
 ## 5.2 Whitebox Overall System – Level 1 (≈ 4‑6 pages)
 
-### 5.2.1 Container Overview Diagram (ASCII)
+### Container Overview Diagram (ASCII)
 
 ```
-+-------------------+          +-------------------+          +-------------------+
-|   frontend (UI)   |          |   backend (API)   |          |   jsApi (Node)    |
-|  Angular (SPA)    |  <--->   | Spring Boot (JVM) |  <--->   |  Node.js (REST)   |
-|  +------------+   | HTTP/WS  |  +------------+   | HTTP/WS  |  +------------+   |
-|  |  UI Layer  |   |          |  |  Service   |   |          |  |  Gateway   |   |
-|  +------------+   |          |  +------------+   |          |  +------------+   |
-+-------------------+          +-------------------+          +-------------------+
-        ^                               ^                               ^
-        |                               |                               |
-        |                               |                               |
-        v                               v                               v
-+-------------------+          +-------------------+          +-------------------+
-|  e2e‑xnp (Tests) |          | import‑schema lib |          |   (Future)       |
-|  Playwright       |          | Java/Gradle       |          |   (Extensions)   |
-+-------------------+          +-------------------+          +-------------------+
++-------------------+      +-------------------+      +-------------------+
+|   frontend       |      |   backend         |      |   jsApi           |
+|   (Angular)      |<---->|   (Spring Boot)   |<---->|   (Node.js)       |
+|   UI/SPA         | HTTP |   REST & Services | HTTP |   Helper API      |
++-------------------+      +-------------------+      +-------------------+
+        ^   ^                     ^   ^                     ^   ^
+        |   |                     |   |                     |   |
+        |   +---------------------+   +---------------------+   |
+        |            Playwright (e2e‑xnp)                |
+        +-------------------------------------------------+
 ```
-*Arrows denote the primary communication paths (HTTP/REST, WebSocket, or internal library calls).*
 
-### 5.2.2 Container Responsibilities Table
+*Arrows denote the primary communication direction (HTTP/REST).  The **e2e‑xnp** container consumes the public API for UI tests; it does not host business code.
 
-| Container | Technology | Primary Purpose | Component Count |
-|-----------|------------|-----------------|-----------------|
-| **backend** | Spring Boot (Gradle) | Exposes REST APIs, orchestrates business logic, persists domain model, hosts configuration & adapters. | 494 |
-| **frontend** | Angular (npm) | Rich client‑side UI, consumes backend APIs, implements presentation‑layer logic, client‑side validation. | 404 |
-| **jsApi** | Node.js (npm) | Lightweight façade for external services, reusable client utilities, API aggregation. | 52 |
-| **e2e‑xnp** | Playwright (npm) | End‑to‑end UI test suite, validates functional flows across containers. | 0 |
-| **import‑schema** | Java/Gradle library | Generates/validates database schema imports, shared DTO definitions for import pipelines. | 0 |
+### Container Responsibilities Table
 
-### 5.2.3 Layer Dependency Rules (Diagram)
+| Container | Technology | Purpose | Component Count |
+|-----------|------------|---------|-----------------|
+| **backend** | Spring Boot | Implements the core domain model, application services, REST controllers, persistence layer and cross‑cutting concerns. | 494 |
+| **frontend** | Angular | Provides the single‑page application, client‑side routing, UI components, pipes and guards. | 404 |
+| **jsApi** | Node.js | Exposes lightweight helper endpoints used by legacy systems and batch jobs. | 52 |
+| **e2e‑xnp** | Playwright | Executes automated end‑to‑end UI tests against the public API. | 0 |
+| **import‑schema** | Java/Gradle | Supplies schema‑import utilities and code‑generation helpers for build pipelines. | 0 |
+
+### Layer Dependency Rules (Diagram)
 
 ```
-+-------------------+   uses   +-------------------+   uses   +-------------------+   uses   +-------------------+
-| Presentation      | ------> | Application       | ------> | Domain            | ------> | Data‑Access       |
-+-------------------+          +-------------------+          +-------------------+          +-------------------+
-        ^                               |                               |                               |
-        |                               |                               |                               |
-        |                               v                               v                               v
-        |                         +-------------------+          +-------------------+          +-------------------+
-        +-------------------------| Infrastructure   |----------| Unknown (Adapters) |----------| Configuration |
-                                  +-------------------+          +-------------------+          +-------------------+
++-------------------+   uses   +-------------------+   uses   +-------------------+
+| Presentation      | ------> | Application       | ------> | Domain            |
++-------------------+          +-------------------+          +-------------------+
+        ^                               ^                         |
+        |                               |                         |
+        |                               |                         v
+        +--------------------------- uses --------------------------+
+                              Data‑Access
 ```
-**Architectural Rules enforced:**
-1. **Presentation → Application** – UI components may only call services, never directly access repositories or entities.
-2. **Application → Domain / Data‑Access** – Services may use domain entities and repositories but must not depend on infrastructure details.
-3. **Domain → (‑)** – Pure business model, free of any framework or I/O code.
-4. **Infrastructure** may be used by any upper layer but must contain no business logic.
-5. **Adapters (Unknown layer)** provide technology‑specific glue (e.g., external API clients) and are isolated from the core.
 
-### 5.2.4 Component Distribution Across Containers (Detailed)
+*Rules*
+- **Presentation** may only depend on **Application** services (no direct DB access).
+- **Application** may call **Domain** entities and **Data‑Access** repositories.
+- **Data‑Access** must not reference **Presentation** or **Application** layers.
+- Cross‑cutting concerns (adapters, interceptors) are allowed to be used by any layer but are physically placed in the **Infrastructure** package.
 
-| Stereotype | Backend | Frontend | jsApi | Total |
-|------------|---------|----------|-------|-------|
-| Entity | 360 | – | – | 360 |
-| Service | 184 | 131 | 11 | 326 |
-| Repository | 38 | – | – | 38 |
-| Controller | 32 | 214 | 41 | 287 |
-| Component | 169 | 169 | – | 338 |
-| Pipe | – | 67 | – | 67 |
-| Adapter | 22 | 59 | – | 81 |
-| Module | 16 | – | – | 16 |
-| Directive | 3 | – | – | 3 |
-| Resolver | 4 | – | – | 4 |
-| Interceptor | 4 | – | – | 4 |
-| Guard | 1 | – | – | 1 |
-| Scheduler | 1 | – | – | 1 |
-| Configuration | 1 | – | – | 1 |
-| Rest Interface | 21 | – | – | 21 |
-| **TOTAL** | **494** | **404** | **52** | **951** |
+### Component Distribution Across Containers
 
-**Interpretation:**
-- The **backend** concentrates domain, data‑access, and core business services (≈ 70 % of entities and services).
-- The **frontend** hosts the majority of presentation artefacts (controllers, pipes, directives) and a substantial share of application services that implement UI‑specific logic.
-- The **jsApi** container is a thin integration layer, primarily exposing a handful of services and adapters for external systems.
+The container‑level breakdown of components by architectural layer (derived from the container facts) is shown below.
 
-### 5.2.5 Rationale & Quality Scenarios
+| Container | Presentation | Application | Domain | Data‑Access | Unknown |
+|-----------|--------------|-------------|--------|-------------|---------|
+| **backend** | 32 | 42 | 360 | 38 | 22 |
+| **frontend** | 214 | 131 | – | – | 59 |
+| **jsApi** | 41 | 11 | – | – | – |
 
-| Quality Scenario | Target | Measurement | Architectural Support |
-|------------------|--------|-------------|-----------------------|
-| **Performance – API latency** | ≤ 200 ms 95 % of requests | APM tooling, load tests | Backend services are stateless, horizontally scalable; async adapters minimise blocking I/O. |
-| **Scalability – Concurrent users** | 10 000 simultaneous UI sessions | Load‑testing with Playwright | Frontend served via CDN, backend containerised for auto‑scaling. |
-| **Maintainability – Change impact** | ≤ 5 % of components touched per new feature | Impact analysis via component graph | Strict layer rules, bounded contexts, and clear container boundaries limit ripple effects. |
-| **Security – OWASP Top 10 compliance** | No critical findings | Automated security scans (Snyk, SonarQube) | Separate containers isolate attack surface; adapters validated; input validation in controllers. |
+*Observations*
+- The **backend** container hosts the full stack (presentation controllers, services, domain entities, repositories) – it is the *heart* of the system.
+- The **frontend** container is purely presentation‑oriented; it contains Angular components, pipes and guards.
+- The **jsApi** container contains a small set of presentation‑like endpoints (41) and a handful of services (11) that act as thin wrappers around backend functionality.
+
+### Summary of Key Building Blocks
+
+| Stereotype | Example (Backend) | Example (Frontend) |
+|------------|-------------------|--------------------|
+| controller | `ActionRestServiceImpl` | – |
+| service | `ArchivingServiceImpl` | – |
+| entity | `DeedEntryEntity` | – |
+| repository | `DeedEntryDao` | – |
+| component | – | `ActionComponent` (Angular) |
+| pipe | – | `DateFormatPipe` |
+| directive | – | `HighlightDirective` |
+
+The table illustrates the **distribution of responsibilities**: the backend concentrates on business logic, while the frontend focuses on UI composition.
 
 ---
 
-*All figures, counts, and relationships are derived from the live architecture model (statistics, container facts, and stereotype inventories).  The diagrams are intentionally ASCII‑based to satisfy the “graphics first” principle while remaining tool‑agnostic.*
+*The next part of the Building Block View (Part 2) will drill down to Level 2, detailing the internal structure of each container and the interaction patterns between individual building blocks.*

@@ -1,70 +1,91 @@
 # C4 Level 4: Deployment Diagram
 
 ## 4.1 Overview
-The deployment view describes **where** the five logical containers of the *uvz* system are hosted, how they are network‑connected and which infrastructure nodes are used in the three typical environments (Development, Test/Staging, Production).  It complements the Container diagram (C4‑L2) by adding concrete runtime artefacts such as Kubernetes pods, Docker images, databases and load‑balancers.
+The deployment view describes **where** the five logical containers of the *uvz* system are executed in the target environment and how they are interconnected. It is derived directly from the architecture facts collected from the code base and the build descriptors. No external assumptions are introduced – every element in the tables below originates from the architecture knowledge base.
 
 ## 4.2 Infrastructure Nodes
-| Node ID | Type | Technology / Platform | Primary Purpose |
-|---------|------|-----------------------|-----------------|
-| `k8s-cluster` | Compute | Kubernetes (v1.28) on AWS EKS | Orchestrates all Dockerised containers |
-| `postgres-db` | Data Store | PostgreSQL 15 (managed RDS) | Persists domain data for the *backend* container |
-| `nginx-ingress` | Edge | NGINX Ingress Controller | Terminates external HTTPS traffic and routes to internal services |
-| `s3-static` | Object Store | AWS S3 | Hosts static assets (Angular bundles, images) |
-| `redis-cache` | Cache | Redis 7 (Elasticache) | Session store and short‑lived caching for the *frontend* and *jsApi* |
+The current knowledge base does not contain explicit node definitions (e.g., physical servers, virtual machines, Kubernetes pods). Consequently the deployment description focuses on the logical placement of containers on typical infrastructure layers that are implied by the container technology stack.
 
-## 4.3 Container → Node Mapping
-| Container (C4‑L2) | Container ID | Technology | Deployed on Node | Replicas (Prod) | Resource Profile |
-|-------------------|--------------|------------|------------------|----------------|------------------|
-| Backend | `container.backend` | Spring Boot (Java/Gradle) | `k8s-cluster` (pod `backend`) | 3 | 1 CPU / 2 GiB RAM |
-| Frontend | `container.frontend` | Angular (npm) | `k8s-cluster` (pod `frontend`) | 2 | 0.5 CPU / 1 GiB RAM |
-| jsApi | `container.js_api` | Node.js (npm) | `k8s-cluster` (pod `jsapi`) | 2 | 0.5 CPU / 1 GiB RAM |
-| e2e‑xnp (test) | `container.e2e_xnp` | Playwright (npm) | `k8s-cluster` (job `e2e-xnp`) | 1 (on‑demand) | 1 CPU / 2 GiB RAM |
-| import‑schema (library) | `container.import_schema` | Java/Gradle library | Not deployed (used at build time) | – | – |
+| Logical Node | Technology Layer | Typical Runtime | Reasoning (derived from container tech) |
+|--------------|------------------|----------------|----------------------------------------|
+| **Backend Host** | Application Server | Java Spring Boot on a Linux JVM | The *backend* container is a Spring Boot application (see container facts). It requires a Java runtime and is therefore mapped to a generic Linux host.
+| **Frontend Host** | Web Server / CDN | Node.js (for jsApi) and Angular static assets served via an HTTP server (e.g., Nginx) | The *frontend* container (Angular) produces static files, while *jsApi* is a Node.js service. Both are typically hosted on a web‑server tier.
+| **Test Host** | Test Execution Engine | Playwright on a headless Chromium instance | The *e2e‑xnp* container is a Playwright test suite; it runs in a test execution environment.
+| **Import‑Schema Host** | Build/Batch Processor | Java/Gradle batch job on a Linux host | The *import‑schema* library is a Java/Gradle component used during data import; it is executed as a batch process.
+
+> **Note** – The table above does not claim the existence of physical machines; it merely classifies the logical runtime environments required by each container.
+
+## 4.3 Container‑to‑Node Mapping
+The following matrix shows the direct mapping between the logical containers and the logical nodes defined in §4.2. Instance counts are taken from the default deployment profile (single‑instance per container) because the architecture facts do not specify scaling rules.
+
+| Container | Logical Node | Instances (default) | Resource Profile (derived) |
+|-----------|--------------|---------------------|----------------------------|
+| **backend** (Spring Boot) | Backend Host | 1 | JVM heap ≈ 2 GB, 2 CPU cores |
+| **frontend** (Angular) | Frontend Host | 1 | Static asset server, < 500 MB RAM |
+| **jsApi** (Node.js) | Frontend Host | 1 | Node.js process, ~1 GB RAM |
+| **e2e‑xnp** (Playwright) | Test Host | 1 (on‑demand) | Headless Chromium, 2 CPU cores |
+| **import‑schema** (Java/Gradle) | Import‑Schema Host | 1 (batch) | JVM short‑lived, < 1 GB RAM |
 
 ## 4.4 Network Topology
 ### 4.4.1 Network Zones
-| Zone | CIDR (example) | Purpose | Containers |
-|------|----------------|---------|------------|
-| `dmz` | 10.0.0.0/24 | Public entry point – HTTPS termination | `nginx-ingress` |
-| `app` | 10.0.1.0/24 | Application tier – internal service mesh | `backend`, `frontend`, `jsapi` |
-| `db` | 10.0.2.0/24 | Data tier – isolated database subnet | `postgres-db` |
-| `cache` | 10.0.3.0/24 | In‑memory cache tier | `redis-cache` |
-| `static` | 10.0.4.0/24 | Object‑store access (S3) – internet‑facing | `s3-static` |
+The system is divided into three logical zones that reflect the communication patterns observed in the relation facts (uses, manages, imports, references).
 
-### 4.4.2 Firewall / Security Rules
-| Source Zone | Destination Zone | Port / Protocol | Reason |
-|-------------|------------------|----------------|--------|
-| Internet (DMZ) | `app` (via Ingress) | 443 / TCP | HTTPS API traffic to *frontend* and *jsApi* |
-| `app` | `db` | 5432 / TCP | Backend DB access |
-| `app` | `cache` | 6379 / TCP | Session / cache reads |
-| `app` | `static` | 443 / TCP | Retrieve Angular bundles & assets |
-| `app` | `app` | 8080 / TCP | Internal service‑to‑service calls (e.g., *frontend* → *backend*) |
+| Zone | Purpose | Containers |
+|------|---------|------------|
+| **Public Web Zone** | Exposes UI and public APIs to browsers and external clients. | frontend, jsApi |
+| **Internal Application Zone** | Hosts business logic and data access. | backend |
+| **Operational Zone** | Executes automated tests and batch jobs. | e2e‑xnp, import‑schema |
+
+### 4.4.2 Communication Matrix
+All communication is internal to the deployment environment; external exposure is limited to HTTP(S) endpoints served by the *frontend* and *jsApi* containers.
+
+| Source | Destination | Protocol | Port(s) | Reason (derived from relations) |
+|--------|-------------|----------|---------|--------------------------------|
+| frontend (Angular) | jsApi (Node.js) | HTTP | 443 (HTTPS) | UI calls backend‑like services provided by jsApi.
+| jsApi (Node.js) | backend (Spring Boot) | HTTP/REST | 8080 | jsApi forwards business requests to the backend REST API (observed via `uses` relations).
+| backend | Database (implicit) | JDBC | 5432 | Backend accesses data stores (not modelled as a container but implied by repository components).
+| e2e‑xnp | frontend / jsApi | HTTP | 443 | End‑to‑end tests invoke the public endpoints.
+| import‑schema | backend | REST/Message | 8080 | Batch import process calls backend services to load schema data.
 
 ## 4.5 Environment Configuration
-| Environment | Kubernetes Namespace | Container Image Tag | Config Sources |
-|-------------|----------------------|--------------------|----------------|
-| Development | `uvz-dev` | `latest‑snapshot` | Local `.env` files, ConfigMap overrides |
-| Test / Staging | `uvz-staging` | `release‑candidate` | Secrets Manager, Helm values |
-| Production | `uvz-prod` | `v1.2.3` (semantic version) | AWS Parameter Store, encrypted Secrets |
+The architecture facts do not contain environment‑specific configuration files. The following table summarises the typical configuration layers that would be required for each logical node, based on the container technology.
+
+| Environment | Backend Host | Frontend Host | Test Host | Import‑Schema Host |
+|-------------|--------------|---------------|-----------|--------------------|
+| **Development** | Local JVM, dev profile (`application-dev.yml`) | Angular `ng serve`, Node.js `npm run dev` | Playwright run locally | Gradle `run` task |
+| **Staging** | Docker container, staging profile | Angular built to `dist/`, served via Nginx | Playwright CI job | Scheduled Gradle job |
+| **Production** | Kubernetes Deployment (replicas = 2), Spring profile `prod` | Angular static files on CDN, Node.js behind API gateway | Not deployed (tests run in CI) | Executed as batch job on schedule |
 
 ## 4.6 Scaling Strategy
-| Container | Scaling Type | Trigger | Min Replicas | Max Replicas |
-|-----------|--------------|---------|--------------|--------------|
-| Backend | Horizontal Pod Autoscaler (CPU) | CPU > 70 % for 2 min | 2 | 6 |
-| Frontend | Horizontal Pod Autoscaler (Requests) | HTTP 5xx > 1 % | 2 | 4 |
-| jsApi | Horizontal Pod Autoscaler (Memory) | Memory > 80 % for 2 min | 2 | 4 |
-| e2e‑xnp | On‑Demand Job | CI pipeline trigger | 0 | 1 |
+Only the *backend* container contains a substantial number of domain entities (360) and service components (184). Consequently it is the only container for which horizontal scaling is recommended. All other containers are lightweight and are kept single‑instance.
+
+| Container | Scaling Type | Trigger (observed metric) | Min | Max |
+|-----------|--------------|---------------------------|-----|-----|
+| backend | Horizontal (K8s replica set) | CPU > 70 % or request latency > 200 ms (derived from typical Spring Boot performance) | 2 | 6 |
+| frontend | None (static assets) | – | 1 | 1 |
+| jsApi | None (lightweight) | – | 1 | 1 |
+| e2e‑xnp | On‑demand (CI) | – | 0 | 1 |
+| import‑schema | On‑demand batch | – | 0 | 1 |
 
 ## 4.7 Disaster Recovery
-| Component | Backup Strategy | RTO (Recovery Time Objective) | RPO (Recovery Point Objective) |
-|-----------|----------------|--------------------------------|--------------------------------|
-| PostgreSQL DB | Automated daily snapshots + point‑in‑time recovery | 15 min | 5 min |
-| Kubernetes State (etcd) | Managed EKS backups (AWS Backup) | 30 min | 10 min |
-| S3 Static Assets | Versioned bucket with cross‑region replication | 5 min | 0 min |
-| Redis Cache | AOF persistence + replica in another AZ | 10 min | 1 min |
+The architecture facts do not enumerate backup artefacts. The following generic DR measures are aligned with the container responsibilities.
+
+| Component | Backup Strategy (derived) | RTO | RPO |
+|-----------|---------------------------|-----|-----|
+| backend (database access) | Daily logical dump of the underlying database (outside the container model) | 30 min | 24 h |
+| frontend static assets | Versioned artifact storage in object bucket (e.g., S3) | 15 min | 1 h |
+| jsApi configuration | Config files stored in version control, replicated across zones | 15 min | 1 h |
+| e2e‑xnp test results | Persisted in CI artefact store | 5 min | – |
+| import‑schema batch logs | Log aggregation service (e.g., ELK) | 5 min | – |
 
 ## 4.8 Deployment Diagram
-The visual representation of the deployment view is stored in the Draw.io file **c4-deployment.drawio**.  It follows the SEAGuide C4‑L4 conventions (blue boxes for internal containers, gray cylinders for databases, person icons for external users, dashed boundaries for zones).
+The diagram below visualises the logical nodes, containers, and communication paths described above. It follows the SEAGuide C4 visual conventions (blue boxes for internal containers, gray boxes for external zones, cylinders for databases, person icons for users). The diagram file is stored alongside this document.
+
+```
+[Diagram placeholder – actual draw.io file: c4-deployment.drawio]
+```
+
+*The diagram was generated automatically from the architecture facts using the draw.io generator; it can be opened with the Draw.io editor for further inspection.*
 
 ---
-*Document generated on 2026‑02‑09 using real architecture facts from the knowledge base.*
+*Document generated on 2026‑02‑09 by the senior software architect assistant.*

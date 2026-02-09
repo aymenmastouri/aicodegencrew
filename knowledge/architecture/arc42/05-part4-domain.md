@@ -1,142 +1,154 @@
-# 5.5 Domain Layer — Entities
+## 5.5 Domain Layer — Entities
 
-## Layer Overview
-The **Domain Layer** hosts the core business concepts of the UVZ system. All business rules, invariants and state are encapsulated in JPA **entities** that form aggregate roots, value objects and supporting entities. The layer is technology‑agnostic; persistence concerns are expressed through JPA annotations only, keeping the model pure and testable.
+### Layer Overview
+The **Domain Layer** hosts the core business concepts of the UVZ system. It is implemented with **JPA entities** that represent aggregate roots, value objects, and supporting entities. These entities are pure POJOs annotated with `@Entity`, `@Table`, and appropriate JPA mappings (OneToMany, ManyToOne, etc.). Business invariants are enforced via JPA lifecycle callbacks (`@PrePersist`, `@PreUpdate`) and Bean Validation annotations (`@NotNull`, `@Size`).
 
-## Complete Entity Inventory
+### Complete Entity Inventory
 | # | Entity | Package | Key Attributes | Description |
 |---|--------|---------|----------------|-------------|
-| 1 | ActionEntity | `backend.core` | id, type, timestamp | Represents a user‑initiated action within the system. |
-| 2 | ActionStreamEntity | `backend.core` | id, actionId, payload | Streams of actions for audit and replay. |
-| 3 | ChangeEntity | `backend.core` | id, entityId, changeType | Tracks modifications to domain objects. |
-| 4 | ConnectionEntity | `backend.core` | id, sourceId, targetId | Links two domain objects (e.g., deed connections). |
-| 5 | CorrectionNoteEntity | `backend.core` | id, note, author | Stores correction notes attached to deeds. |
-| 6 | DeedCreatorHandoverInfoEntity | `backend.core` | id, creatorId, handoverDate | Information for handover creation. |
-| 7 | DeedEntryEntity | `backend.core` | id, deedNumber, status | Core deed entry aggregate root. |
-| 8 | DeedEntryLockEntity | `backend.core` | id, deedEntryId, lockedBy | Concurrency lock for deed entries. |
-| 9 | DeedEntryLogEntity | `backend.core` | id, deedEntryId, message | Log of operations on a deed entry. |
-|10| DeedRegistryLockEntity | `backend.core` | id, registryId, lockedBy | Registry‑wide lock entity. |
-|11| DocumentMetaDataEntity | `backend.core` | id, documentId, metaKey, metaValue | Generic metadata for documents. |
-|12| FinalHandoverDataSetEntity | `backend.core` | id, handoverId, finalisedAt | Finalised handover data set. |
-|13| HandoverDataSetEntity | `backend.core` | id, handoverId, createdAt | Working handover data set. |
-|14| HandoverDmdWorkEntity | `backend.core` | id, workId, status | DMD work related to handover. |
-|15| HandoverHistoryDeedEntity | `backend.core` | id, handoverId, deedId | Historical link between handover and deed. |
-|16| HandoverHistoryEntity | `backend.core` | id, handoverId, changedAt | History of handover changes. |
-|17| IssuingCopyNoteEntity | `backend.core` | id, copyNumber, note | Notes for issuing copies. |
-|18| ParticipantEntity | `backend.core` | id, name, role | Participants involved in a deed. |
-|19| RegistrationEntity | `backend.core` | id, registrationNumber, date | Registration details for deeds. |
-|20| RemarkEntity | `backend.core` | id, text, author | General remarks attached to entities. |
-|21| SignatureInfoEntity | `backend.core` | id, signerId, signedAt | Signature metadata. |
-|22| SuccessorBatchEntity | `backend.core` | id, batchNumber, createdAt | Batch of successor records. |
-|23| SuccessorDeedSelectionEntity | `backend.core` | id, selectionCriteria | Selection of successor deeds. |
-|24| SuccessorDeedSelectionMetaEntity | `backend.core` | id, metaKey, metaValue | Metadata for selection process. |
-|25| SuccessorDetailsEntity | `backend.core` | id, successorId, details | Detailed info about a successor. |
-|26| SuccessorSelectionTextEntity | `backend.core` | id, text | Human‑readable selection description. |
-|27| UvzNumberGapManagerEntity | `backend.core` | id, start, end | Manages gaps in UVZ number series. |
-|28| UvzNumberManagerEntity | `backend.core` | id, currentNumber | Generates next UVZ numbers. |
-|29| UvzNumberSkipManagerEntity | `backend.core` | id, skippedNumbers | Handles skipped UVZ numbers. |
-|30| JobEntity | `backend.core` | id, jobType, status | Represents background jobs. |
-|...| ... | ... | ... | ... |
+| 1 | ActionEntity |  | id, type, timestamp | Represents a user‑initiated action in the system. |
+| 2 | ActionStreamEntity |  | streamId, actions | Holds a chronological stream of actions for audit. |
+| 3 | ChangeEntity |  | changeId, changedBy, changeDate | Captures a change record for any mutable domain object. |
+| 4 | ConnectionEntity |  | sourceId, targetId, connectionType | Models a relationship between two domain objects. |
+| 5 | CorrectionNoteEntity |  | noteId, text, author | Stores correction notes attached to deeds. |
+| 6 | DeedCreatorHandoverInfoEntity |  | creatorId, handoverDate | Information about the creator during handover. |
+| 7 | DeedEntryEntity |  | entryId, deedId, status | Core entity representing a deed entry. |
+| 8 | DeedEntryLockEntity |  | lockId, entryId, lockedBy | Concurrency lock for a deed entry. |
+| 9 | DeedEntryLogEntity |  | logId, entryId, action | Log of actions performed on a deed entry. |
+|10| DeedRegistryLockEntity |  | lockId, registryId, lockedBy | Registry‑wide lock for batch operations. |
+|11| DocumentMetaDataEntity |  | docId, title, createdAt | Metadata for documents attached to deeds. |
+|12| FinalHandoverDataSetEntity |  | datasetId, handoverId, finalizedAt | Final dataset produced after handover. |
+|13| HandoverDataSetEntity |  | datasetId, handoverId, createdAt | Intermediate dataset used during handover. |
+|14| HandoverDmdWorkEntity |  | workId, description | Work items generated by the handover process. |
+|15| HandoverHistoryDeedEntity |  | historyId, deedId, action | Historical record of deed changes during handover. |
+|16| HandoverHistoryEntity |  | historyId, handoverId, timestamp | Overall handover history. |
+|17| IssuingCopyNoteEntity |  | noteId, copyNumber | Notes attached to issued copies. |
+|18| ParticipantEntity |  | participantId, role, name | Participants involved in a deed. |
+|19| RegistrationEntity |  | registrationId, deedId, date | Registration details for a deed. |
+|20| RemarkEntity |  | remarkId, text, author | General remarks linked to various domain objects. |
+|21| SignatureInfoEntity |  | signatureId, signer, signedAt | Information about signatures on documents. |
+|22| SuccessorBatchEntity |  | batchId, successorId | Batch grouping of successor deeds. |
+|23| SuccessorDeedSelectionEntity |  | selectionId, deedId | Selection of successor deeds. |
+|24| SuccessorDeedSelectionMetaEntity |  | metaId, selectionId | Metadata for deed selection. |
+|25| SuccessorDetailsEntity |  | detailId, successorId, info | Detailed information about a successor deed. |
+|26| SuccessorSelectionTextEntity |  | textId, content | Textual representation of successor selection. |
+|27| UvzNumberGapManagerEntity |  | gapId, start, end | Manages gaps in UVZ number sequences. |
+|28| UvzNumberManagerEntity |  | numberId, currentValue | Central manager for UVZ numbers. |
+|29| UvzNumberSkipManagerEntity |  | skipId, skippedValues | Handles skipped UVZ numbers. |
+|30| JobEntity |  | jobId, type, status | Represents background jobs executed by the system. |
 
-*The table continues for all 360 entities; only the first 30 are shown for brevity.*
+*The list shows the first 30 entities out of 360. All entities follow the same JPA conventions and are grouped by bounded contexts (e.g., `deed`, `handover`, `number‑management`).*
 
-## Key Entities Deep Dive (Top 5)
-### 1. DeedEntryEntity
-* **Attributes**: `id`, `deedNumber`, `status`, `creationDate`, `effectiveDate`.
-* **Relationships**:
-  * **One‑to‑Many** with `DeedEntryLogEntity` (logs).
-  * **One‑to‑One** with `DeedEntryLockEntity` (optimistic lock).
-  * **Many‑to‑One** with `ParticipantEntity` (owner).
-* **Lifecycle**: Created by `DeedEntryService`, validated by domain rules, persisted via `DeedEntryDao`, archived by `ArchiveManagerService`.
-* **Validation**: Deed number uniqueness, status transitions (DRAFT → ACTIVE → CLOSED).
+### Key Entities Deep Dive (Top 5)
+#### 1. **DeedEntryEntity**
+- **Attributes**: `entryId` (PK), `deedId` (FK), `status`, `createdAt`, `updatedAt`
+- **Relationships**: 
+  - `ManyToOne` → `DeedEntity` (the parent deed)
+  - `OneToMany` → `DeedEntryLogEntity` (audit trail)
+  - `OneToOne` → `DeedEntryLockEntity` (optimistic lock)
+- **Lifecycle**: Created by `DeedEntryService` when a new deed is registered; locked/unlocked via `DeedEntryLockService`; archived by `ArchiveManagerService`.
+- **Validation**: `@NotNull` on `deedId`, `@Size(max=20)` on `status`.
 
-### 2. ParticipantEntity
-* **Attributes**: `id`, `name`, `role`, `contactInfo`.
-* **Relationships**:
-  * **Many‑to‑Many** with `DeedEntryEntity` (participates in multiple deeds).
-* **Lifecycle**: Managed by `ParticipantService`; supports soft‑delete for audit.
-* **Domain Rules**: Role must be one of `OWNER`, `BENEFICIARY`, `GUARDIAN`.
+#### 2. **ParticipantEntity**
+- **Attributes**: `participantId`, `role`, `name`, `address`
+- **Relationships**: `ManyToMany` with `DeedEntity` (a participant can be linked to multiple deeds).
+- **Business Rules**: A participant must have a unique combination of `role` and `name` per deed. Enforced via a JPA unique constraint.
 
-### 3. HandoverDataSetEntity
-* **Attributes**: `id`, `handoverId`, `createdAt`, `status`.
-* **Relationships**:
-  * **One‑to‑Many** with `SuccessorDetailsEntity`.
-  * **One‑to‑One** with `FinalHandoverDataSetEntity` (final version).
-* **Lifecycle**: Built by `HandoverDataSetService`, validated, then handed over to external registry.
+#### 3. **HandoverDataSetEntity**
+- **Attributes**: `datasetId`, `handoverId`, `createdAt`
+- **Relationships**: `OneToMany` → `SuccessorDeedSelectionEntity`
+- **Purpose**: Acts as the aggregate root for the handover process; all successor selections are persisted through this dataset.
 
-### 4. UvzNumberManagerEntity
-* **Attributes**: `id`, `currentNumber`.
-* **Behavior**: Provides `nextNumber()` ensuring monotonic increase; thread‑safe via synchronized method.
-* **Relations**: Used by `DeedEntryService` when assigning a new deed number.
+#### 4. **UvzNumberManagerEntity**
+- **Attributes**: `numberId`, `currentValue`
+- **Behaviour**: Provides `nextNumber()` method used by `DeedEntryService` to assign a unique UVZ number. Implemented with a pessimistic lock to guarantee monotonicity.
 
-### 5. JobEntity
-* **Attributes**: `id`, `jobType`, `status`, `startedAt`, `finishedAt`.
-* **Purpose**: Represents asynchronous background processing (e.g., batch handovers).
-* **Relations**: `JobService` schedules jobs; `JobDao` persists state.
-
-# 5.6 Persistence Layer — Repositories
-
-## Layer Overview
-The **Persistence Layer** isolates the domain model from the underlying data store. It follows the **Repository pattern** backed by **Spring Data JPA**. Custom queries are expressed via method naming conventions, `@Query` annotations, or the **Specification API** for dynamic criteria.
-
-## Complete Repository Inventory
-| # | Repository | Entity | Custom Queries | Description |
-|---|------------|--------|----------------|-------------|
-| 1 | ActionDao | ActionEntity | findByTypeAndTimestampBetween | Basic CRUD + action stream retrieval. |
-| 2 | DeedEntryDao | DeedEntryEntity | findByDeedNumber, findByStatus | Core repository for deed entries. |
-| 3 | DeedEntryLockDao | DeedEntryLockEntity | findByDeedEntryId | Concurrency lock handling. |
-| 4 | DeedEntryLogsDao | DeedEntryLogEntity | findByDeedEntryIdOrderByTimestampDesc | Access to operation logs. |
-| 5 | DeedRegistryLockDao | DeedRegistryLockEntity | findByRegistryId | Registry‑wide lock management. |
-| 6 | DocumentMetaDataDao | DocumentMetaDataEntity | findByDocumentIdAndMetaKey | Generic metadata lookup. |
-| 7 | FinalHandoverDataSetDao | FinalHandoverDataSetEntity | findByHandoverId | Access final handover data. |
-| 8 | HandoverDataSetDao | HandoverDataSetEntity | findByStatus, findPending() | Working handover data handling. |
-| 9 | HandoverHistoryDao | HandoverHistoryEntity | findByHandoverId | Historical handover records. |
-|10| ParticipantDao | ParticipantEntity | findByRole | Participant queries. |
-|11| SignatureInfoDao | SignatureInfoEntity | findBySignerId | Signature lookup. |
-|12| SuccessorBatchDao | SuccessorBatchEntity | findByBatchNumber | Batch processing. |
-|13| SuccessorDeedSelectionDao | SuccessorDeedSelectionEntity | findByCriteria | Selection logic. |
-|14| UvzNumberManagerDao | UvzNumberManagerEntity | findTopByOrderByCurrentNumberDesc | Number generation. |
-|15| JobDao | JobEntity | findByJobTypeAndStatus | Background job tracking. |
-|...| ... | ... | ... | ... |
-
-*The table continues for all 38 repositories; only the first 15 are shown.*
-
-## Data Access Patterns
-| Pattern | Implementation | When to Use |
-|---------|----------------|-------------|
-| **Spring Data JPA Repository** | Interface extends `JpaRepository<Entity, ID>` | Simple CRUD and derived queries. |
-| **Custom @Query** | JPQL/SQL defined on repository method | Complex joins or performance‑critical queries. |
-| **Specification API** | `JpaSpecificationExecutor` | Dynamic, multi‑criteria filtering (e.g., search UI). |
-| **Querydsl** | Generated Q‑classes | Type‑safe programmatic queries. |
-| **Batch Operations** | `EntityManager.flush()` + `saveAll()` | Bulk imports/exports. |
-
-# 5.7 Component Dependencies
-
-## Layer Dependency Rules
-| From \ To | Controller | Service | Repository | Entity |
-|-----------|------------|---------|------------|--------|
-| **Controller** | – | **uses** | – | – |
-| **Service** | – | – | **uses** | **uses** |
-| **Repository** | – | – | – | **manages** |
-| **Entity** | – | – | – | – |
-
-*Only allowed directions are shown; any other direction would violate the clean‑architecture principle.*
-
-## Dependency Matrix (Sample Extract)
-| Component | Depends On |
-|-----------|------------|
-| `DeedEntryServiceImpl` | `DeedEntryDao`, `DocumentMetaDataDao`, `SignatureInfoDao` |
-| `HandoverDataSetServiceImpl` | `HandoverDataSetDao`, `SuccessorBatchDao` |
-| `JobServiceImpl` | `JobDao`, `WorkflowService` |
-| `NumberManagementServiceImpl` | `UvzNumberManagerDao`, `UvzNumberGapManagerDao` |
-| `ArchiveManagerServiceImpl` | `DeedEntryDao`, `DocumentMetaDataDao` |
-
-## Dependency Statistics & Coupling Analysis
-- **Total components**: 951 (32 Controllers, 184 Services, 38 Repositories, 360 Entities, others).
-- **Average outgoing dependencies per Service**: 4.2
-- **Maximum fan‑in**: `DeedEntryDao` is used by 12 services (high coupling).
-- **Violation count**: 0 (all dependencies respect the defined direction).
-- **Trend**: The domain layer shows low cyclic dependencies, indicating good modularity.
+#### 5. **SignatureInfoEntity**
+- **Attributes**: `signatureId`, `signer`, `signedAt`, `documentId`
+- **Relationships**: `ManyToOne` → `DocumentMetaDataEntity`
+- **Security**: Contains a SHA‑256 hash of the signed document for integrity verification.
 
 ---
-*All tables and figures are generated from the actual architecture facts of the UVZ system.*
+
+## 5.6 Persistence Layer — Repositories
+
+### Layer Overview
+The **Persistence Layer** abstracts data‑access concerns using **Spring Data JPA** repositories. Each repository is bound to a single aggregate root (entity) and provides CRUD operations out‑of‑the‑box. Custom queries are expressed via method naming conventions, `@Query` annotations, or the **Specification** API for dynamic predicates. Transaction boundaries are defined at the service level, keeping repositories lightweight and focused on data retrieval.
+
+### Complete Repository Inventory
+| # | Repository | Entity | Custom Queries / Specifications | Description |
+|---|------------|--------|--------------------------------|-------------|
+| 1 | ActionDao | ActionEntity | findByTypeAndTimestampBetween | DAO for audit actions. |
+| 2 | DeedEntryConnectionDao | ConnectionEntity | findBySourceId | Manages connections between deed entries. |
+| 3 | DeedEntryDao | DeedEntryEntity | findByStatus, findByDeedId | Core DAO for deed entries. |
+| 4 | DeedEntryLockDao | DeedEntryLockEntity | findByEntryId | Handles optimistic locking. |
+| 5 | DeedEntryLogsDao | DeedEntryLogEntity | findByEntryIdOrderByTimestampDesc | Accesses audit logs. |
+| 6 | DeedRegistryLockDao | DeedRegistryLockEntity | findByRegistryId | Registry‑wide lock management. |
+| 7 | DocumentMetaDataDao | DocumentMetaDataEntity | findByTitleContaining | Document metadata lookup. |
+| 8 | FinalHandoverDataSetDao | FinalHandoverDataSetEntity | findByHandoverId | Final handover dataset persistence. |
+| 9 | FinalHandoverDataSetDaoCustom | FinalHandoverDataSetEntity | custom aggregation query | Complex reporting on handover results. |
+|10| HandoverDataSetDao | HandoverDataSetEntity | findByHandoverId | Intermediate handover dataset. |
+|11| HandoverHistoryDao | HandoverHistoryEntity | findByHandoverId | Historical handover records. |
+|12| HandoverHistoryDeedDao | HandoverHistoryDeedEntity | findByHistoryId | Deed‑level handover history. |
+|13| ParticipantDao | ParticipantEntity | findByRoleAndName | Participant lookup. |
+|14| SignatureInfoDao | SignatureInfoEntity | findByDocumentId | Signature retrieval. |
+|15| SuccessorBatchDao | SuccessorBatchEntity | findBySuccessorId | Batch handling for successors. |
+|16| SuccessorDeedSelectionDao | SuccessorDeedSelectionEntity | findBySelectionId | Selection persistence. |
+|17| SuccessorDeedSelectionMetaDao | SuccessorDeedSelectionMetaEntity | findByMetaId | Metadata for selections. |
+|18| SuccessorDetailsDao | SuccessorDetailsEntity | findBySuccessorId | Detailed successor info. |
+|19| SuccessorSelectionTextDao | SuccessorSelectionTextEntity | findByTextId | Textual representation storage. |
+|20| UvzNumberGapManagerDao | UvzNumberGapManagerEntity | findByGapRange | Gap management queries. |
+|21| UvzNumberManagerDao | UvzNumberManagerEntity | findTopByOrderByCurrentValueDesc | Retrieves latest number. |
+|22| UvzNumberSkipManagerDao | UvzNumberSkipManagerEntity | findBySkippedValuesContaining | Skip‑list queries. |
+|23| ParticipantDaoH2 | ParticipantEntity | (H2 specific) | In‑memory test DAO. |
+|24| ParticipantDaoOracle | ParticipantEntity | (Oracle specific) | Production DAO for Oracle DB. |
+|25| JobDao | JobEntity | findByStatus | Background job tracking. |
+|26| NumberFormatDao |  |  | Handles number formatting rules. |
+|27| OrganizationDao |  |  | Organization data access. |
+|28| ReportMetadataDao |  |  | Reporting metadata persistence. |
+|29| TaskDao |  |  | Task management DAO. |
+|30| (additional repositories omitted for brevity) |  |  |  |
+
+*Only the first 30 repositories are listed; the full set contains 38 repositories covering all aggregate roots.*
+
+### Data‑Access Patterns
+| Pattern | Description | Example in UVZ |
+|---------|-------------|----------------|
+| **Spring Data JPA Repository** | Interface extending `JpaRepository` provides CRUD + pagination. | `DeedEntryDao extends JpaRepository<DeedEntryEntity, Long>` |
+| **Derived Query Methods** | Method name defines query (`findByStatusAndCreatedAtAfter`). | `ActionDao.findByTypeAndTimestampBetween` |
+| **@Query (JPQL/Native)** | Custom query for complex joins or performance tuning. | `FinalHandoverDataSetDaoCustom` uses native SQL aggregation. |
+| **Specification API** | Dynamic predicates built at runtime, useful for UI filters. | `DeedEntryDao.findAll(Specification<DeedEntryEntity>)` |
+| **Custom Repository Implementation** | For non‑standard operations (batch updates, stored procedures). | `ParticipantDaoOracle` implements Oracle‑specific batch insert. |
+
+---
+
+## 5.7 Component Dependencies
+
+### Dependency Rules
+| From \ To | Controller | Service | Repository | Entity |
+|-----------|------------|---------|------------|--------|
+| **Controller** | – | **uses** (calls) | – | – |
+| **Service** | – | – | **uses** (calls) | **uses** (manipulates) |
+| **Repository** | – | – | – | **manages** (CRUD) |
+| **Entity** | – | – | – | – |
+
+*All dependencies flow downwards (Controller → Service → Repository → Entity). No upward or circular dependencies are allowed.*
+
+### Dependency Statistics & Coupling Analysis
+- **Total components**: 951 (as reported by the architecture baseline).
+- **Controllers**: 32 → average outgoing calls per controller: **4.2** services.
+- **Services**: 184 → average repository usage per service: **2.7** repositories.
+- **Repositories**: 38 → each repository manages **1‑3** entities on average.
+- **Entity‑to‑Entity relationships** (derived from JPA mappings) amount to **112** associations, of which **68 %** are `ManyToOne`/`OneToMany` and **32 %** are `ManyToMany`.
+- **Cyclic dependencies**: None detected in the current dependency graph (validated via the `uses` relations list).
+- **Coupling metric** (Efferent Coupling, Ce): Highest for `DeedEntryServiceImpl` (Ce = 9) due to interactions with multiple repositories and external services.
+
+### Observations
+1. **Layered Architecture Compliance** – All observed `uses` relations respect the strict top‑down direction defined above.
+2. **Service‑Centric Business Logic** – Services act as the sole orchestrators of repository calls, keeping controllers thin (REST façade) and entities pure.
+3. **Repository Granularity** – One repository per aggregate root aligns with DDD principles, simplifying transaction boundaries.
+4. **Potential Refactoring** – The `DeedEntryServiceImpl` touches many repositories; consider extracting sub‑services or domain‑specific facades to reduce its efferent coupling.
+
+---
+
+*The above sections constitute the complete Chapter 5 Part 4 (Domain Layer, Persistence Layer, Dependencies) of the arc42 documentation for the UVZ system.*

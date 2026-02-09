@@ -1,113 +1,96 @@
 # C4 Level 2: Container Diagram
 
 ## 2.1 Overview
-The **Container Diagram** shows the high‑level, deployable building blocks of the *uvz* system and how they communicate. A *container* is a separately runnable or deployable unit (application, database, test suite, library). This diagram follows the Capgemini SEAGuide C4 visual conventions (blue boxes for internal containers, gray for external, cylinders for data stores, person icons for users).
+The system **uvz** is composed of five deployable containers.  A *container* in C4 terminology is a separately runnable or deployable unit (application, test suite, library, etc.).  This document describes the containers, their responsibilities, technology choices and the way they interact.
 
 ## 2.2 Container Inventory
 
 ### 2.2.1 Application Containers
-| Container | Technology | Responsibility | Component Count |
-|-----------|------------|----------------|-----------------|
-| **backend** | Spring Boot (Gradle) | Core business logic, REST API, security, integration with data stores | 494 |
-| **frontend** | Angular (npm) | SPA UI, consumes backend REST services, client‑side routing | 404 |
-| **jsApi** | Node.js (npm) | Lightweight JavaScript API layer, used by external scripts and internal tooling | 52 |
+| Container ID | Name | Technology | Primary Responsibility |
+|--------------|------|------------|------------------------|
+| `container.backend` | Backend | Spring Boot (Java/Gradle) | Core business logic, REST API, data processing |
+| `container.frontend` | Frontend | Angular (npm) | User‑interface, SPA, consumes Backend REST services |
+| `container.js_api` | JS API | Node.js (npm) | Auxiliary HTTP API used by external scripts and internal services |
 
-### 2.2.2 Test & Library Containers
-| Container | Technology | Responsibility |
-|-----------|------------|----------------|
-| **e2e‑xnp** | Playwright (npm) | End‑to‑end UI test suite for the Angular frontend |
-| **import‑schema** | Java / Gradle | Library that imports and validates external data schemas |
+### 2.2.2 Test Containers
+| Container ID | Name | Technology | Purpose |
+|--------------|------|------------|---------|
+| `container.e2e_xnp` | E2E‑XNP | Playwright (npm) | End‑to‑end UI and API test automation |
 
-### 2.2.3 Data Containers (internal)
-| Container | Technology | Purpose |
-|-----------|------------|---------|
-| **PostgreSQL** *(external)* | PostgreSQL | Relational persistence for domain entities |
-| **MongoDB** *(external)* | MongoDB | Document store for unstructured data |
-| **Redis** *(external)* | Redis | Cache and session store |
-
-> **Note**: External data stores are shown in gray cylinders on the diagram.
+### 2.2.3 Library Containers
+| Container ID | Name | Technology | Purpose |
+|--------------|------|------------|---------|
+| `container.import_schema` | Import‑Schema | Java/Gradle | Shared schema import library used by Backend |
 
 ## 2.3 Container Details
 
-### 2.3.1 Backend (container.backend)
-- **Technology**: Spring Boot, Gradle build system, Java 17
-- **Root Path**: `backend/`
+### Backend (`container.backend`)
+- **Technology**: Spring Boot, built with Gradle
+- **Root Path**: `backend`
+- **Component Count**: 494 (presentation 32, application 42, dataaccess 38, domain 360, unknown 22)
 - **Key Responsibilities**:
-  - Expose **196 REST endpoints** (GET, POST, PUT, DELETE, PATCH) – see Interface statistics.
-  - Implement business services (184 Service components).
-  - Access domain entities (360) and repositories (38).
-  - Security, validation, and transaction management.
-- **Ports / Protocols**: HTTP/HTTPS (REST), gRPC (internal), JDBC (PostgreSQL), MongoDB driver, Redis client.
-- **Deployment**: Docker container, Kubernetes pod, replica set of 3.
+  - Expose a REST/HTTPS API for the Frontend and JS API
+  - Implement core domain services (action, deed entry, key‑manager, archiving, etc.)
+  - Access data via repositories and DAOs
+- **Ports / Endpoints**: See Section 2.4 for interaction summary
 
-### 2.3.2 Frontend (container.frontend)
-- **Technology**: Angular, npm, TypeScript
-- **Root Path**: `frontend/`
+### Frontend (`container.frontend`)
+- **Technology**: Angular, built with npm
+- **Root Path**: `frontend`
+- **Component Count**: 404 (presentation 214, application 131, unknown 59)
 - **Key Responsibilities**:
-  - SPA UI, client‑side routing, state management.
-  - Consumes backend REST API (JSON over HTTPS).
-  - Contains 214 presentation components, 131 application‑level services, 59 unknown utilities.
-- **Ports / Protocols**: HTTP/HTTPS (served by Nginx), WebSocket (optional).
-- **Deployment**: Static files served from an Nginx Docker container.
+  - Provide a rich SPA for end‑users
+  - Consume Backend REST services
+  - Generate client‑side services (e.g., `action_api‑generated_services`)
 
-### 2.3.3 jsApi (container.js_api)
-- **Technology**: Node.js, npm
-- **Root Path**: `frontend/src/jsApi/`
+### JS API (`container.js_api`)
+- **Technology**: Node.js, built with npm
+- **Root Path**: `frontend\src\jsApi`
+- **Component Count**: 52 (presentation 41, application 11)
 - **Key Responsibilities**:
-  - Provides a thin JavaScript wrapper around backend services for internal tooling.
-  - Contains 41 presentation‑type modules and 11 application‑type services.
-- **Ports / Protocols**: HTTP (calls backend), internal IPC.
-- **Deployment**: Node.js process inside the same pod as the frontend or as a side‑car.
+  - Offer lightweight HTTP endpoints for internal tooling
+  - Bridge between Frontend assets and Backend services
 
-### 2.3.4 e2e‑xnp (container.e2e_xnp)
-- **Technology**: Playwright, npm
-- **Root Path**: `e2e-xnp/`
-- **Key Responsibilities**:
-  - Automated end‑to‑end UI tests covering critical user journeys.
-- **Deployment**: Executed in CI pipeline; not part of production runtime.
+### E2E‑XNP (`container.e2e_xnp`)
+- **Technology**: Playwright, built with npm
+- **Root Path**: `e2e‑xnp`
+- **Purpose**: Automated UI and API regression testing; validates contracts between Frontend and Backend.
 
-### 2.3.5 import‑schema (container.import_schema)
-- **Technology**: Java / Gradle
-- **Root Path**: `import-schema/`
-- **Key Responsibilities**:
-  - Library that parses, validates, and imports external data schemas into the domain model.
-- **Deployment**: Packaged as a JAR and used by the backend at start‑up.
+### Import‑Schema (`container.import_schema`)
+- **Technology**: Java/Gradle library
+- **Root Path**: `import‑schema`
+- **Purpose**: Provides shared schema definitions used by Backend during data import processes.
 
 ## 2.4 Container Interactions
 
-### 2.4.1 Synchronous Communication
-| Source | Target | Protocol / Method | Data Format | Purpose |
-|--------|--------|-------------------|------------|---------|
-| Frontend (Angular) | Backend (Spring Boot) | HTTP/HTTPS (REST) | JSON | Retrieve and manipulate domain data (CRUD) |
-| jsApi (Node.js) | Backend (Spring Boot) | HTTP/HTTPS (REST) | JSON | Provide lightweight API for internal scripts |
-| Backend | PostgreSQL | JDBC | SQL | Persist domain entities |
-| Backend | MongoDB | MongoDB driver | BSON/JSON | Store unstructured documents |
-| Backend | Redis | Redis client | Binary / JSON | Cache frequently accessed data |
+### 2.4.1 Synchronous Communication (REST/HTTPS)
+| Source Container | Target Container | Protocol / Method | Data Format | Typical Use |
+|------------------|------------------|--------------------|------------|------------|
+| Frontend | Backend | HTTP GET/POST (REST) | JSON | UI actions, data retrieval, CRUD operations |
+| JS API | Backend | HTTP GET/POST (REST) | JSON | Internal tooling, batch jobs |
+| Backend | Import‑Schema | Library call (Java) | In‑process objects | Schema import during data processing |
 
-### 2.4.2 Asynchronous / Event‑Driven Communication
-| Source | Target | Mechanism | Payload | Purpose |
-|--------|--------|-----------|---------|---------|
-| Backend | Redis (Pub/Sub) | Pub/Sub | Event JSON | Notify UI of state changes (e.g., WebSocket bridge) |
-| Frontend | Backend | WebSocket (optional) | JSON messages | Real‑time updates |
+### 2.4.2 Asynchronous / Test Interactions
+| Source Container | Target Container | Interaction Type | Description |
+|------------------|------------------|------------------|-------------|
+| E2E‑XNP | Frontend | UI Automation | Playwright drives the Angular SPA to verify UI flows |
+| E2E‑XNP | Backend | API Tests | Direct REST calls to verify contract compliance |
 
 ## 2.5 Technology Stack Summary
-| Layer | Technology | Version |
-|-------|------------|---------|
-| Presentation (UI) | Angular | 15.x |
-| Presentation (Node) | Node.js | 18.x |
+| Layer | Technology | Version (example) |
+|-------|------------|-------------------|
+| Presentation | Angular | 15.x |
 | Application (Backend) | Spring Boot | 3.1.x |
-| Build System | Gradle | 8.x |
+| Application (JS API) | Node.js | 18.x |
 | Test Automation | Playwright | 1.35.x |
-| Data Stores | PostgreSQL | 15 |
-|  | MongoDB | 6 |
-|  | Redis | 7 |
+| Build / Dependency | Gradle / npm | – |
 
 ## 2.6 Container Diagram
-The diagram below visualises the containers, their responsibilities and communication paths. It follows the SEAGuide C4 conventions (blue boxes = internal containers, gray cylinders = external data stores, dashed lines = boundaries).
+The visual representation of the containers and their relationships is provided in the Draw.io file.
 
-![Container Diagram](c4-container.drawio)
+![Container Diagram](c4/c4-container.drawio)
 
-*The actual DrawIO file `c4-container.drawio` is stored alongside this markdown file.*
+*Figure: C4 Level‑2 Container Diagram showing the five containers and their primary communication paths.*
 
 ---
-*Document generated automatically from architecture facts on 2026‑02‑09.*
+*Document generated on 2026‑02‑09 by the Senior Software Architect – C4 Model Expert.*
