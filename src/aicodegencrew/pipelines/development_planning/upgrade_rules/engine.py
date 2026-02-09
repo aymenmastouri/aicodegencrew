@@ -150,8 +150,9 @@ class UpgradeRulesEngine:
                     "title": i.rule.title,
                     "severity": i.rule.severity.value,
                     "occurrences": i.occurrences,
-                    "effort_minutes": i.estimated_effort_minutes,
-                    "steps": i.rule.migration_steps,
+                    "affected_files": i.affected_files[:20],  # Limit to first 20 files
+                    "estimated_effort_minutes": i.estimated_effort_minutes,
+                    "migration_steps": i.rule.migration_steps,
                     "schematic": i.rule.schematic,
                 }
                 for idx, i in enumerate(active)
