@@ -272,14 +272,18 @@ def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
     Returns True if successful, False if pandoc not available.
     """
     # Check if pandoc is available
-    result = subprocess.run(
-        ["pandoc", "--version"],
-        capture_output=True,
-        text=True,
-    )
-
-    if result.returncode != 0:
-        print("  WARNING: pandoc not found. Skipping PDF generation.")
+    try:
+        result = subprocess.run(
+            ["pandoc", "--version"],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            print("  WARNING: pandoc not found. Skipping PDF generation.")
+            print("  To generate PDF: Install pandoc from https://pandoc.org/")
+            return False
+    except FileNotFoundError:
+        print("  WARNING: pandoc not installed. Skipping PDF generation.")
         print("  To generate PDF: Install pandoc from https://pandoc.org/")
         return False
 
