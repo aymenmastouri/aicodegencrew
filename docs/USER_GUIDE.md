@@ -6,18 +6,34 @@
 
 ## Table of Contents
 
+**Getting Started**
+
 1. [Overview](#1-overview)
-2. [Installation](#2-installation)
-3. [Configuration](#3-configuration)
-4. [Quick Start](#4-quick-start)
-5. [Commands](#5-commands)
-6. [Input Files](#6-input-files)
-7. [Output Files](#7-output-files)
-8. [Presets](#8-presets)
-9. [Environment Variables](#9-environment-variables)
-10. [Docker Usage](#10-docker-usage)
-11. [Troubleshooting](#11-troubleshooting)
-12. [FAQ](#12-faq)
+2. [What You Received](#2-what-you-received)
+3. [Prerequisites & System Requirements](#3-prerequisites--system-requirements)
+4. [Before You Begin: Setup Checklist](#4-before-you-begin-setup-checklist)
+5. [Choose Your Installation Method](#5-choose-your-installation-method)
+6. [Installation](#6-installation)
+7. [Configuration](#7-configuration)
+8. [Your Folder Structure](#8-your-folder-structure)
+
+**Using the Tool**
+
+9. [Common Use Cases: Which Preset Should I Use?](#9-common-use-cases-which-preset-should-i-use)
+10. [Quick Start](#10-quick-start)
+11. [Commands](#11-commands)
+12. [Understanding Indexing Modes](#12-understanding-indexing-modes)
+13. [Input Files](#13-input-files)
+14. [Output Files](#14-output-files)
+15. [Presets](#15-presets)
+16. [Environment Variables](#16-environment-variables)
+
+**Advanced & Troubleshooting**
+
+17. [Docker Usage](#17-docker-usage)
+18. [Network Connectivity Diagnostics](#18-network-connectivity-diagnostics)
+19. [Troubleshooting](#19-troubleshooting)
+20. [FAQ](#20-faq)
 
 ---
 
@@ -43,9 +59,162 @@ The tool runs **entirely on-premises** — no data leaves your network.
 
 ---
 
-## 2. Installation
+## 2. What You Received
 
-### Option A: Wheel Package (Recommended)
+When you unpack the delivery package, you'll find:
+
+```
+aicodegencrew-v0.1.0/
+├── aicodegencrew-0.1.0-py3-none-any.whl   ← The tool (install this)
+├── .env.example                            ← Configuration template
+├── install.bat / install.sh                ← Quick installer (Windows/Linux)
+├── docker-compose.yml                      ← Docker setup (alternative)
+├── config/
+│   └── phases_config.yaml                  ← Phase definitions (reference)
+├── USER_GUIDE.md                           ← You are here!
+└── CHANGELOG.md                            ← Version history
+```
+
+**What each file does:**
+- `.whl` file: The Python package you'll install via `pip`
+- `.env.example`: Copy this to `.env` and edit with YOUR project paths
+- `install.bat/.sh`: Run this for automated setup (easier than manual pip)
+- `docker-compose.yml`: For Docker users (isolated environment)
+- `phases_config.yaml`: Defines which phases run in each preset (read-only)
+
+**Your data stays separate!** This tool doesn't include your repository or inputs.
+You'll configure paths to YOUR files in the `.env` file (see Section 7).
+
+---
+
+## 3. Prerequisites & System Requirements
+
+Before installing, ensure you have:
+
+### Required Software
+
+| Requirement | Version | Check Command | Install |
+|-------------|---------|---------------|---------|
+| Python | 3.10, 3.11, or 3.12 | `python --version` | https://python.org |
+| Ollama | Latest | `ollama --version` | https://ollama.com |
+
+### System Resources
+
+- **RAM:** 4 GB minimum, 8 GB recommended
+- **Disk Space:** 50 GB free (for large repositories)
+- **Network:** Access to your on-prem LLM endpoint
+
+### Ports
+
+These ports must be available on your network:
+- `:11434` - Ollama embeddings service (localhost)
+- `:4000` - Your on-prem LLM endpoint (configurable)
+
+### Supported Operating Systems
+
+- Windows 10+
+- Linux (Ubuntu 20.04+, RHEL 8+)
+- macOS 10.15+
+
+### Network Requirements
+
+**On-premises only** - No data leaves your network
+- All AI calls: Your configured LLM server
+- All embeddings: Local Ollama instance
+- No internet connection required (after initial setup)
+
+---
+
+## 4. Before You Begin: Setup Checklist
+
+Complete this checklist BEFORE installation:
+
+**Software Installed:**
+- Python 3.10+ installed: `python --version` works
+- Ollama installed: `ollama --version` works
+- Ollama running: `ollama serve` (in separate terminal)
+- Embedding model pulled: `ollama pull nomic-embed-text:latest`
+
+**Access & Credentials:**
+- Your project repository path ready (e.g., `C:\repos\my-project`)
+- On-prem LLM endpoint URL (e.g., `http://server:4000/v1`)
+- API key for LLM endpoint
+
+**Optional (for Phase 4 only):**
+- JIRA export folder with XML files (if running development planning)
+- Input folder path ready (e.g., `C:\work\inputs\tasks`)
+
+**System Check:**
+- 4+ GB free RAM available
+- 50+ GB free disk space
+- Ports 11434 and 4000 are not blocked by firewall
+
+**All checked?** Proceed to Section 5 (Choose Installation Method)
+
+**Missing something?** See Prerequisites (Section 3)
+
+---
+
+## 5. Choose Your Installation Method
+
+**Which method should I use?**
+
+```
+START HERE
+│
+├─ Do you have Python 3.10+ installed?
+│  ├─ YES: Go to Option A (Wheel Package) - Simpler, 5 min
+│  └─ NO: Go to Option B (Docker) - No Python needed
+│
+├─ Does your team use Docker?
+│  ├─ YES: Go to Option B (Docker) - Team standard
+│  └─ NO: Go to Option A (Wheel Package)
+│
+└─ Want quickest setup?
+   Use install.bat/install.sh (Windows/Linux) - Automated
+```
+
+**Comparison:**
+
+| Method | Time | Prerequisites | Isolation | Team Use |
+|--------|------|---------------|-----------|----------|
+| **Wheel (pip)** | 5 min | Python 3.10+ | Medium | Individual |
+| **Quick Install** | 2 min | Python 3.10+ | Medium | Individual |
+| **Docker** | 10 min | Docker 20+ | High | Team |
+
+Continue to Section 6 (Installation) with your chosen method
+
+---
+
+## 6. Installation
+
+Choose your method from Section 5. Jump to:
+- **Quick Setup:** Section 6.1 (install.bat/install.sh)
+- **Wheel Package:** Section 6.2 (pip install)
+- **Docker:** Section 6.3 (docker-compose)
+
+### 6.1 Quick Setup (Recommended for First-Time)
+
+**Windows:**
+```bat
+install.bat
+```
+
+**Linux/macOS:**
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+**What it does:**
+1. Checks Python version
+2. Installs wheel with pip
+3. Pulls Ollama embedding model
+4. Verifies installation
+
+Skip to Section 7 (Configuration)
+
+### 6.2 Manual: Wheel Package
 
 You received a `.whl` file from the development team.
 
@@ -61,7 +230,7 @@ aicodegencrew --help
 - Python 3.10 - 3.12
 - Ollama (for embeddings): https://ollama.com/
 
-### Option B: Docker
+### 6.3 Manual: Docker
 
 You received a Docker image (`.tar.gz` file or access to a registry).
 
@@ -81,7 +250,7 @@ docker run aicodegencrew:latest --help
 
 ---
 
-## 3. Configuration
+## 7. Configuration
 
 ### Step 1: Create `.env` File
 
@@ -130,7 +299,90 @@ You should see all available phases and presets.
 
 ---
 
-## 4. Quick Start
+## 8. Your Folder Structure
+
+After first run, your working directory will look like this:
+
+### What Gets Created
+
+```
+your-workspace/              ← Your chosen directory
+├── .env                     ← Your configuration (YOU created this)
+├── knowledge/               ← Tool outputs (auto-created)
+│   ├── run_report.json      ← Status of last run
+│   ├── architecture/
+│   │   ├── architecture_facts.json    ← Phase 1 output
+│   │   ├── analyzed_architecture.json ← Phase 2 output
+│   │   ├── c4/              ← Phase 3 C4 diagrams
+│   │   └── arc42/           ← Phase 3 arc42 chapters
+│   └── development/
+│       └── PROJ-123_plan.json ← Phase 4 development plan
+├── architecture-docs/       ← Multi-format exports (if Phase 3 run)
+│   ├── c4/
+│   │   ├── c4-context.confluence
+│   │   ├── c4-context.adoc
+│   │   └── c4-context.html
+│   └── arc42/               ← (similar structure)
+├── logs/                    ← Execution logs (auto-created)
+│   ├── current.log          ← Latest run
+│   ├── errors.log           ← Error messages only
+│   └── metrics.jsonl        ← Metrics for analysis
+└── .cache/                  ← ChromaDB index (auto-created)
+    └── .chroma/             ← Vector database
+```
+
+### What Stays SEPARATE
+
+Your INPUT files are NOT in the tool's folder:
+```
+C:\repos\my-project\        ← Your repository (PROJECT_PATH in .env)
+C:\work\inputs\tasks\       ← Your JIRA XMLs (TASK_INPUT_DIR in .env)
+```
+
+**Why separate?**
+- Keeps tool outputs isolated
+- Prevents accidental deletion of your source code
+- Allows multiple projects with same tool installation
+
+---
+
+## 9. Common Use Cases: Which Preset Should I Use?
+
+**"What do I run for my goal?"**
+
+| Your Goal | Preset to Use | Time | LLM? |
+|-----------|---------------|------|------|
+| Generate development plan from JIRA ticket | `planning_only` | 30-40 sec | Hybrid |
+| Get quick architecture facts (no AI analysis) | `facts_only` | 3-5 min | No |
+| Full architecture documentation (C4 + arc42) | `architecture_workflow` | 45-60 min | Yes |
+| Architecture docs + development plan | `architecture_full` | 60-90 min | Yes |
+| Just update the vector index | Use `index` command | 5-10 min | No |
+
+### Examples
+
+**Use Case 1: "I have a JIRA ticket, need a development plan"**
+```bash
+aicodegencrew plan
+```
+Output: `knowledge/development/{TASK_ID}_plan.json`
+
+**Use Case 2: "I need C4 diagrams for architecture review"**
+```bash
+aicodegencrew run --preset architecture_workflow
+```
+Output: `knowledge/architecture/c4/*.md` + `*.drawio`
+
+**Use Case 3: "I want component list without waiting for LLM"**
+```bash
+aicodegencrew run --preset facts_only
+```
+Output: `knowledge/architecture/architecture_facts.json` (3 min, no LLM)
+
+See Section 11 (Quick Start) for detailed command examples
+
+---
+
+## 10. Quick Start
 
 ### Development Planning (Most Common)
 
@@ -160,7 +412,7 @@ aicodegencrew run --preset architecture_workflow
 
 ---
 
-## 5. Commands
+## 11. Commands
 
 ### General Syntax
 
@@ -218,7 +470,57 @@ aicodegencrew index --smart
 
 ---
 
-## 6. Input Files
+## 12. Understanding Indexing Modes
+
+Phase 0 (Indexing) takes 2-10 minutes on first run. Subsequent runs can be faster.
+
+### Modes Explained
+
+| Mode | When to Use | Duration | What It Does |
+|------|-------------|----------|--------------|
+| `auto` | **Default** (most common) | Smart | Checks fingerprint; skips if unchanged |
+| `off` | Ran yesterday, no code changes | <1 sec | Skips indexing (uses existing) |
+| `smart` | Committed code changes today | 1-3 min | Re-indexes only changed files |
+| `force` | Index seems corrupted/stale | Full time | Deletes cache, re-indexes everything |
+
+### Decision Tree
+
+```
+Did you already run the tool on this repository?
+├─ NO (first time)
+│  └─ Use default (auto mode) - will index fully
+│
+├─ YES, and code changed since last run
+│  └─ Use --index-mode smart
+│
+├─ YES, and code DIDN'T change
+│  └─ Use --index-mode off (or auto, will skip automatically)
+│
+└─ Something seems wrong (stale data, weird results)
+   └─ Use --index-mode force
+```
+
+### Examples
+
+```bash
+# First run (will index fully, 5-10 min)
+aicodegencrew plan
+
+# Second run same day, no code changes (will skip indexing, <1 sec)
+aicodegencrew plan --index-mode auto
+
+# After committing new code (will re-index changed files only, 1-3 min)
+aicodegencrew plan --index-mode smart
+
+# If results seem wrong (will wipe cache and re-index, 5-10 min)
+aicodegencrew plan --index-mode force
+```
+
+**Pro Tip:** Check `.cache/.indexing_state.json` to see last index date.
+
+---
+
+## 13. Input Files
 
 ### For Development Planning (Phase 4)
 
@@ -275,7 +577,7 @@ Place multiple XML files in your `TASK_INPUT_DIR` folder. The tool processes the
 
 ---
 
-## 7. Output Files
+## 14. Output Files
 
 ### Development Plans (Phase 4)
 
@@ -298,6 +600,48 @@ Each plan contains:
 - **architecture_context**: Relevant architecture information
 - **risks**: Identified risks and mitigation strategies
 - **complexity**: Estimated complexity and effort
+
+#### Understanding the JSON Structure
+
+After running `aicodegencrew plan`, you'll find development plans in `knowledge/development/`:
+
+```
+knowledge/development/
+├── PROJ-123_plan.json      ← Your development plan
+├── PROJ-456_plan.json      ← If multiple tasks processed
+└── ...
+```
+
+**Example JSON structure:**
+
+```json
+{
+  "task_id": "PROJ-123",
+  "title": "Implement user authentication",
+  "affected_components": [...]  ← Which code files/classes to modify
+  "implementation_steps": [...]  ← Step-by-step coding instructions
+  "test_strategy": {
+    "similar_patterns": [...]    ← Existing tests to follow as examples
+  },
+  "security_considerations": [...] ← Security patterns to apply
+  "validation_strategy": [...]   ← Input validation rules
+  "error_handling": [...]        ← Error handling patterns
+  "upgrade_plan": {              ← If upgrade task (e.g., Angular 18→19)
+    "framework": "Angular",
+    "from_version": "18",
+    "to_version": "19",
+    "migration_sequence": [...]  ← Step-by-step upgrade rules with affected_files
+  },
+  "risks": [...],
+  "complexity_estimate": "..."
+}
+```
+
+**Which section should I read first?**
+- For coding: `implementation_steps`
+- For testing: `test_strategy.similar_patterns`
+- For security review: `security_considerations`
+- For framework upgrades: `upgrade_plan.migration_sequence`
 
 ### Run Report
 
@@ -376,7 +720,7 @@ Arc42 chapters follow the **official arc42 template** structure (arc42.org). Set
 
 ---
 
-## 8. Presets
+## 15. Presets
 
 | Preset | Phases | Use Case |
 |--------|--------|----------|
@@ -393,7 +737,7 @@ aicodegencrew run --preset <preset_name>
 
 ---
 
-## 9. Environment Variables
+## 16. Environment Variables
 
 ### Required
 
@@ -430,7 +774,7 @@ aicodegencrew run --preset <preset_name>
 
 ---
 
-## 10. Docker Usage
+## 17. Docker Usage
 
 ### docker-compose (Recommended)
 
@@ -485,7 +829,60 @@ Use `--network host` to enable access to host services.
 
 ---
 
-## 11. Troubleshooting
+## 18. Network Connectivity Diagnostics
+
+Before running the tool, verify all connections work.
+
+### Test 1: Ollama is Reachable
+
+```bash
+curl http://127.0.0.1:11434/api/tags
+```
+
+**Expected:** JSON response with installed models
+```json
+{"models":[{"name":"nomic-embed-text:latest",...}]}
+```
+
+**If error:**
+- `Connection refused`: Ollama not running. Run: `ollama serve`
+- `Timeout`: Port 11434 blocked. Check firewall.
+
+### Test 2: LLM Endpoint is Reachable
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     http://your-llm-server:4000/v1/models
+```
+
+**Expected:** JSON list of available models
+
+**If error:**
+- `Timeout`: LLM server down or network blocked. Check VPN/proxy.
+- `Connection refused`: Wrong port. Verify API_BASE in .env.
+
+### Test 3: API Key is Valid
+
+```bash
+curl -X POST http://your-llm-server:4000/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gpt-oss-120b", "messages": [{"role": "user", "content": "test"}]}'
+```
+
+**Expected:** Response starts (even if incomplete)
+
+**If "invalid key":**
+- Update `OPENAI_API_KEY` in .env
+- Verify key with your IT admin
+
+**All tests passed?** Proceed to Quick Start (Section 11)
+
+**Tests failed?** See Troubleshooting (Section 19)
+
+---
+
+## 19. Troubleshooting
 
 ### "Input file not found"
 
@@ -539,7 +936,7 @@ mkdir -p knowledge .cache architecture-docs
 
 ---
 
-## 12. FAQ
+## 20. FAQ
 
 **Q: Does my data leave the network?**
 A: No. Everything runs on-premises. Embeddings use local Ollama, LLM calls go to your on-prem endpoint.
