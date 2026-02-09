@@ -1,0 +1,106 @@
+{
+  "task_id": "BNUVZ-12529",
+  "source_files": [
+    "inputs\\tasks\\BNUVZ-12529.xml"
+  ],
+  "understanding": {
+    "summary": "TASK-5824 Angular Upgrade auf Version 19",
+    "requirements": [],
+    "acceptance_criteria": [],
+    "technical_notes": "Assignee: Paweł Świdziński\nReporter: Christian Pflederer\nCreated: Mon, 12 Jan 2026 15:52:11 +0100\nUpdated: Fri, 6 Feb 2026 16:04:26 +0100\nFix Version: UVZ 1.70.0\nResolution: Unresolved\n\nComments (15):\n\n[Comment 1] JIRAUSER62230 (Fri, 6 Feb 2026 16:04:26 +0100):\n<p>All smoke tests have been completed except for the re-encryption tests - Cloudbeaver, which is needed for this, was not working all day today.</p>\n\n[Comment 2] JIRAUSER54834 (Thu, 5 Feb 2026 10:21:25 +0100):\n<p><a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=pswidzin\" class=\"user-hover\" rel=\"pswidzin\">Paweł Świdziński</a> and <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> to align on required testing approach today.</p>\n\n<p>Current plan: Focused smoke testing which will require ~1/2 days of efforts</p>\n\n[Comment 3] JIRAUSER62328 (Tue, 3 Feb 2026 11:33:19 +0100):\n<p>Assigned to <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=pswidzin\" class=\"user-hover\" rel=\"pswidzin\">Paweł Świdziński</a> for testing. Please see uvz-bnuvz-12529-a... env in XNP client</p>\n\n[Comment 4] JIRAUSER59240 (Mon, 2 Feb 2026 14:40:16 +0100):\n<p>Review approved : </p>\n<ul>\n\t<li>Code base</li>\n\t<li>Pipeline for phase1 and phase3 check</li>\n\t<li>Output logs -&gt; xnp client, rancher, elastic</li>\n\t<li>Application start with basic usage locally and on the environment</li>\n</ul>\n\n[Comment 5] JIRAUSER62328 (Fri, 30 Jan 2026 11:59:41 +0100):\n<p>Created <a href=\"https://bnotkca.pl.s2-eu.capgemini.com/gitlab/bnotk-devs/uvz/-/merge_requests/4672\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">MR-4672</a> , passing to <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=krkosciu\" class=\"user-hover\" rel=\"krkosciu\">Krystian Kościukiewicz</a> for code review</p>\n\n[Comment 6] JIRAUSER62328 (Thu, 29 Jan 2026 17:08:08 +0100):\n<p>Security audit of dependencies revealed several dependencies having vulnerabilities. In scope of mitigating them <b>was done:</b></p>\n\n<ul class=\"alternate\" type=\"square\">\n\t<li>lodash-es 4.17.22 -&gt; 4.17.23</li>\n\t<li>@pact-foundation/* - removed completely (see \"pact tests\" block below)</li>\n\t<li>@compodoc/compodoc 1.1.11 -&gt; 1.2.1</li>\n\t<li>@stoplight/spectral-cli 6.11.0 -&gt; 6.15.0</li>\n\t<li>chai-json - removed completely (no usages in project)</li>\n\t<li>@angular-eslint/* - updated to \n\n[Comment 7] JIRAUSER41751 (Wed, 28 Jan 2026 20:40:20 +0100):\n<h2><a name=\"%7B%7DOutcomeofTRM%2828.01.2026%29%3A%7B%7D%7B%7D%7B%7D\"></a><b>Outcome of TRM (28.01.2026):</b><b>{</b>}</h2>\n\n<p><b>Frontend Build Strategy - SASS Compiler</b></p>\n<ul>\n\t<li>Decision to use the SASS compiler as builder instead of Webpack.</li>\n\t<li>This decision is taken in preparation for the upcoming Angular upgrade.</li>\n</ul>\n\n\n<p><b>Next steps:</b></p>\n\n<p>Sören will create an Epic based on this task. A dedicated sub-task “SASS Compiler Update” will be created under the Epic.\n\n[Comment 8] JIRAUSER41751 (Tue, 27 Jan 2026 15:44:39 +0100):\n<p>Thank you <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> , for the content. The motivation is clear and plausible. As discussed in the Tech Lead sync, I will discuss these inputs with the customer in the TRM on 29 January 2026.</p>\n\n[Comment 9] JIRAUSER62328 (Tue, 27 Jan 2026 15:26:00 +0100):\n<h2><a name=\"SASScompiler\"></a>SASS compiler</h2>\n<p>Update to angular 19, brought sass@1.85.0 which marks usages of \"@import\" in scss files as deprecated. As we were using it extensively build- and browser consoles are spammed with warnings.</p>\n\n<p>Was able to migrate to new syntax in stylesheets of components, however not in global stylesheets, which are importing 3rd party stylesheets we have no control over (boostrap4, bnotk/ds-ng).</p>\n\n<p>According to <span class=\"error\">&#91;documentatio\n\n[Comment 10] JIRAUSER62328 (Tue, 27 Jan 2026 08:40:46 +0100):\n<p>On leads sync agreed that I'll prepare document describing options with new/old builder, potential consequences, pros/cons and that will be brought to customer to make an informed decision whether we invest time to migration or not.</p>\n\n[Comment 11] JIRAUSER62328 (Wed, 21 Jan 2026 17:17:29 +0100):\n<p>status update:</p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>reapplied patch for ng-boostrap;</li>\n\t<li>fixed build errors of test and jsapi project;</li>\n\t<li>went through angular.io update checklist;</li>\n\t<li>rollback default esbuild builder back to webpack; (looks like a separate US to switch to new build process, TBD if/when we need it);</li>\n</ul>\n\n\n<p>app state, todos: </p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>in phase1 app builds and loads, shallow testing didn't revealed major i\n\n[Comment 12] JIRAUSER62328 (Tue, 20 Jan 2026 17:25:19 +0100):\n<p>status update: </p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>applied migrations from ng update;</li>\n\t<li>updated version of DS to 12.6, with its dependencies;</li>\n\t<li>vulnerability audit (some points requires further consultation);</li>\n\t<li>fixed build errors;</li>\n</ul>\n\n\n<p>closest next steps:</p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>reapply patch for ng-boostrap (for new lib version);</li>\n\t<li>fix runtime errors (at this point app not loads at all);</li>\n\t<li>continue with upgra\n\n[Comment 13] cpfleder (Wed, 14 Jan 2026 14:53:01 +0100):\n<p>Hi everyone,</p>\n\n<p>ticket got renamed to Angular 19.</p>\n\n<p><a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=fimisior\" class=\"user-hover\" rel=\"fimisior\">Filip Misiorek</a> &amp; <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> your T&amp;M efforts for analysis please still book on this ticket. I'll update the description of above's ticket soon to fit to this task, once confirmed by\n\n[Comment 14] JIRAUSER62328 (Tue, 13 Jan 2026 14:21:58 +0100):\n<p>ag-grid has quite extensive list of breaking changes, accommodating them will take some effort: <br/>\n<a href=\"https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-32/#breaking-changes\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-32/#breaking-changes</a><br/>\n<a href=\"https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-33/#breaking-changes\" class=\"external-link\" target=\"_blank\" rel=\"\n\n[Comment 15] fimisior (Tue, 13 Jan 2026 11:27:55 +0100):\n<p>To upgrade Angular to version 21.x we have to also upgrade environment dependencies: Node.js, TypeScript.<br/>\n <br/>\nCurrent state on UVZ:<br/>\nnode.js v20.18.0<br/>\n\"typescript\": \"~5.4.5\",<br/>\n <br/>\nShould be on UVZ:<br/>\nnode.js v22.12.0<br/>\n\"typescript\": \"5.9.0\", (5.8.0 with Angular 19.2)<br/>\n <br/>\nFrom Angular documentation  RxJS should be set to ^6.5.3 or ^7.4.0, so we are fine with that because we are now using rxjs 7.4.0 version.<br/>\n <br/>\nThis part is basing on:<br/>\n<a href=\""
+  },
+  "development_plan": {
+    "affected_components": [
+      "ActionRestServiceImpl",
+      "CustomMethodSecurityExpressionHandler",
+      "JsonAuthorizationRestServiceImpl",
+      "ProxyRestTemplateConfiguration",
+      "DeedRegistryRestServiceImpl",
+      "TokenAuthenticationRestTemplateConfigurationSpringBoot",
+      "ArchivingRestServiceImpl",
+      "RestrictedDeedEntryDaoImpl",
+      "WorkflowRestServiceImpl",
+      "StaticContentController"
+    ],
+    "interfaces": [
+      "GET /logger",
+      "GET /info",
+      "GET /web/uvz/",
+      "POST /jsonauth/user/to/authorization/service",
+      "DELETE /jsonauth/user/from/authorization/service",
+      "GET /validation/exception",
+      "GET /assert/operation/signer/present",
+      "GET /is/present",
+      "GET /internal",
+      "GET /locks"
+    ],
+    "dependencies": [],
+    "implementation_steps": [
+      "1. Update Node.js version in the build environment to the version required by Angular 19 (e.g., Node 20.x).",
+      "2. Upgrade TypeScript to the minimum version compatible with Angular 19 (e.g., TS 5.3).",
+      "3. Modify package.json to set @angular/core and @angular/cli to version 19, and update the Pattern Library (bnotk/ds-ng) to 12.6.0.",
+      "4. Update third‑party dependencies to versions compatible with Angular 19: ng-bootstrap (including the custom patch from UVZUSLNVV-5824), ng-select, ng-option-highlight, ag-grid-angular, and ag-grid-community.",
+      "5. Run `ng update @angular/cli @angular/core` and resolve any migration warnings.",
+      "6. Refactor imports and APIs in each affected component (e.g., ActionRestServiceImpl, JsonAuthorizationRestServiceImpl, etc.) to use Angular 19 syntax and the new Pattern Library components.",
+      "7. Verify that the vertical action bar is still functional; if deprecated warnings appear, add the required compatibility module until PL 13.2.0.",
+      "8. Remove any code, modules, or styles that are exclusive to Angular 18 or PL 11.3.1 and not required by Angular 19 / PL 12.6.0.",
+      "9. Adjust CI/CD pipeline scripts to use the new Node.js, TypeScript, and Angular CLI versions.",
+      "10. Execute linting (`ng lint`) and apply automatic fixes where possible.",
+      "11. Run the full unit test suite; update failing tests to match Angular 19 APIs.",
+      "12. Run integration tests for all discovered interfaces (e.g., GET /logger, POST /jsonauth/…) and fix any contract breaks.",
+      "13. Update documentation and release notes to reflect the new Angular and Pattern Library versions.",
+      "14. Perform a security scan to ensure CORS and CSRF configurations remain correct after the upgrade."
+    ],
+    "test_strategy": {
+      "unit_tests": [
+        "Validate that each controller component compiles and instantiates with Angular 19.",
+        "Test that services injected into ActionRestServiceImpl and other controllers behave as expected after dependency upgrades."
+      ],
+      "integration_tests": [
+        "End‑to‑end verification of all REST endpoints (GET /logger, POST /jsonauth/…) against the upgraded stack.",
+        "Confirm that the vertical action bar renders correctly in UI tests up to PL 13.2.0."
+      ],
+      "similar_patterns": []
+    },
+    "security_considerations": [
+      "Ensure CORS configuration allows only trusted origins (as identified in the cors pattern for ActionRestService, JsonAuthorizationRestServiceImpl, and AbstractSecurityConfiguration).",
+      "Verify CSRF protection is enabled for all state‑changing operations (csrf pattern in AbstractSecurityConfiguration).",
+      "Maintain pre_authorize checks on KeyManagerRestService (pre_authorize security pattern)."
+    ],
+    "validation_strategy": [
+      "Add @NotNull annotations where missing (not_null on DeedEntry).",
+      "Apply @Valid to DTOs used in DeedEntryRestService (valid pattern).",
+      "Enforce @NotBlank, @Min, and @Max constraints on KmConfig fields (not_blank, min, max patterns)."
+    ],
+    "error_handling": [
+      "Create or reuse custom RuntimeException classes for domain errors (custom_exception pattern).",
+      "Add @ExceptionHandler methods for generic Exception, HttpClientErrorException, and HttpRequestMethodNotSupportedException in a global exception handler."
+    ],
+    "architecture_context": {
+      "style": "Modular Monolith",
+      "layer_pattern": "Controller → Service → Repository",
+      "quality_grade": "C",
+      "layer_compliance": [
+        "Check if changes follow layered architecture"
+      ]
+    },
+    "estimated_complexity": "Medium",
+    "complexity_reasoning": "The upgrade touches core framework versions and multiple third‑party libraries, requiring coordinated changes across many components, but does not introduce new architectural layers.",
+    "estimated_files_changed": 85,
+    "risks": [
+      "Breaking changes due to Angular 19 deprecations may cause runtime errors.",
+      "Third‑party libraries might not have stable releases for Angular 19, leading to compatibility issues.",
+      "CI/CD pipeline failures if environment versions are not aligned.",
+      "Potential regression in UI components that rely on deprecated vertical action bar behavior."
+    ],
+    "evidence_sources": {
+      "components": "architecture_facts.json",
+      "test_patterns": "architecture_facts.json",
+      "security": "architecture_facts.json",
+      "validation": "architecture_facts.json",
+      "error_handling": "architecture_facts.json",
+      "architecture": "analyzed_architecture.json",
+      "semantic_search": "ChromaDB"
+    }
+  }
+}
