@@ -92,28 +92,31 @@ Establish a fully automated SDLC pipeline that covers:
 | Incremental Adoption | Phases can be executed independently |
 | Clean Output | No evidence IDs in final documentation |
 
-### 2.3 Current Focus: Knowledge Layer (Phases 0-1)
+### 2.3 Current Focus: Knowledge + Reasoning Layers (Phases 0-4)
 
-The initial implementation focuses on architecture facts extraction:
+The implementation covers deterministic facts extraction through development planning:
 
 | Area | Implementation | Status |
 |------|----------------|--------|
 | **Phase 0 Indexing** | ChromaDB vector storage | IMPLEMENTED |
 | **Phase 1 Facts** | 31 Collectors | IMPLEMENTED |
 | **Phase 2 Analysis** | MapReduce multi-agent analysis | IMPLEMENTED |
-| **Phase 3 Synthesis** | C4 + arc42 Crews | IMPLEMENTED |
+| **Phase 3 Synthesis** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
+| **Phase 4 Planning** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
-### 2.4 Phase 1 Results (Current)
+### 2.4 Phase 1 Capabilities
 
-| Metric | Value |
-|--------|-------|
-| Components | 951+ |
-| Interfaces | 226 |
-| Relations | 190 |
-| Evidence Items | 1005 |
-| Relation Resolution | 7-tier resolver (see 4.2.1) |
-| Endpoint Flows | Controller-Service-Repository chains (see 4.2.2) |
+Phase 1 extracts comprehensive architecture facts from any codebase:
+
+| Capability | Description |
+|------------|-------------|
+| **Component Discovery** | Detects components (services, controllers, entities, modules, etc.) across all technology stacks |
+| **Interface Extraction** | REST endpoints, Angular routes, OpenAPI specs, database schemas |
+| **Relation Mapping** | 7-tier resolver resolves dependencies across layers (see 4.2.1) |
+| **Endpoint Flow Tracing** | Traces request flows through layers (e.g., Controller→Service→Repository) (see 4.2.2) |
+| **Evidence Collection** | Every fact is linked to source file + line number for traceability |
+| **Pattern Detection** | Security, validation, error handling, and test patterns |
 
 ---
 
