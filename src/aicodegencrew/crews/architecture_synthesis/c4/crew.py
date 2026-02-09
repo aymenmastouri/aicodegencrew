@@ -688,13 +688,16 @@ By type: {', '.join(f'{t}:{c}' for t, c in sorted(rel_by_type.items()))}"""
              ["c4/c4-deployment.md", "c4/c4-deployment.drawio"]),
         ]
 
+        # Get template data for filling {system_summary} placeholders
+        template_data = self._summarize_facts()
+
         for name, doc_desc, doc_output, diag_desc, diag_output, expected_files in mini_crews:
             if not self.should_skip(name, completed):
                 try:
                     agent = self._create_agent()
                     self._run_mini_crew(name, [
-                        Task(description=doc_desc, expected_output=doc_output, agent=agent),
-                        Task(description=diag_desc, expected_output=diag_output, agent=agent),
+                        Task(description=doc_desc.format(**template_data), expected_output=doc_output, agent=agent),
+                        Task(description=diag_desc.format(**template_data), expected_output=diag_output, agent=agent),
                     ], expected_files=expected_files)
                 except Exception as e:
                     logger.error(f"[C4] Mini-crew {name} failed, continuing: {e}")
