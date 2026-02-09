@@ -234,7 +234,7 @@
       "path": "/uvz/v1/businesspurposes",
       "method": "GET",
       "chain": [
-        "comp_485_BusinessPurposeRestService"
+        "comp_356_BusinessPurposeRestService"
       ],
       "evidence": [
         "ev_996"
@@ -282,7 +282,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1000"
@@ -294,7 +294,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1001"
@@ -306,7 +306,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1002"
@@ -318,7 +318,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1003"
@@ -330,7 +330,7 @@
       "path": "/uvz/v1/deedentries/{id}",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1004"
@@ -342,7 +342,7 @@
       "path": "/uvz/v1/deedentries/to-be-signed",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1005"
@@ -354,7 +354,7 @@
       "path": "/uvz/v1/deedentries/to-be-approved",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1006"
@@ -366,7 +366,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1007"
@@ -378,7 +378,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1008"
@@ -390,7 +390,7 @@
       "path": "/uvz/v1/deedentries/{id}",
       "method": "PUT",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1009"
@@ -402,7 +402,7 @@
       "path": "/uvz/v1/deedentries/{id}",
       "method": "PUT",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1010"
@@ -414,7 +414,7 @@
       "path": "/uvz/v1/deedentries/bulkcapture",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1011"
@@ -426,7 +426,7 @@
       "path": "/uvz/v1/deedentries/bulkcapture",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1012"
@@ -438,7 +438,7 @@
       "path": "/uvz/v1/deedentries/{id}/signature-folder",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1013"
@@ -450,7 +450,7 @@
       "path": "/uvz/v1/deedentries/document-handover",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1014"
@@ -462,7 +462,7 @@
       "path": "/uvz/v1/deedentries/handover",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1015"
@@ -474,7 +474,7 @@
       "path": "/uvz/v1/deedentries/handover",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1016"
@@ -486,7 +486,7 @@
       "path": "/uvz/v1/deedentries/handover",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1017"
@@ -498,7 +498,7 @@
       "path": "/uvz/v1/deedentries/successordeedselection",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1018"
@@ -510,7 +510,7 @@
       "path": "/uvz/v1/deedentries/successordeedselection/{processType}",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1019"
@@ -522,7 +522,7 @@
       "path": "/uvz/v1/deedentries/successordeedselection",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1020"
@@ -534,7 +534,7 @@
       "path": "/uvz/v1/deedentries/{id}/correctionnote",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1021"
@@ -546,7 +546,7 @@
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1022"
@@ -558,7 +558,7 @@
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "POST",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1023"
@@ -570,7 +570,7 @@
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "DELETE",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1024"
@@ -582,7 +582,7 @@
       "path": "/uvz/v1/deedentries/{id}/lock",
       "method": "PUT",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1025"
@@ -594,7 +594,7 @@
       "path": "/uvz/v1/deedentries/lock",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1026"
@@ -606,7 +606,7 @@
       "path": "/uvz/v1/participants",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1027"
@@ -618,7 +618,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1028"
@@ -630,7 +630,7 @@
       "path": "/uvz/v1/deedentries",
       "method": "DELETE",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1029"
@@ -642,7 +642,7 @@
       "path": "/uvz/v1/deedentries/check/submittedwithcf",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1030"
@@ -654,7 +654,7 @@
       "path": "/uvz/v1/deedentries/check/isvalidforsigning",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1031"
@@ -666,7 +666,7 @@
       "path": "/uvz/v1/mark/predecessor/lock/in/progress",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1032"
@@ -678,7 +678,7 @@
       "path": "/uvz/v1/process/handover/for/b/not/o",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1033"
@@ -690,7 +690,7 @@
       "path": "/uvz/v1/successor/deed/selection",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1034"
@@ -702,7 +702,7 @@
       "path": "/uvz/v1/cancel/handover/process",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1035"
@@ -714,7 +714,7 @@
       "path": "/uvz/v1/deed/entry/registry/lock",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1036"
@@ -726,7 +726,7 @@
       "path": "/uvz/v1/is/any/deed/with/submit/with/error/flag/status",
       "method": "GET",
       "chain": [
-        "comp_455_DeedEntryRestService"
+        "comp_355_DeedEntryRestService"
       ],
       "evidence": [
         "ev_1037"
@@ -774,7 +774,7 @@
       "path": "/uvz/v1/deedtypes",
       "method": "GET",
       "chain": [
-        "comp_512_DeedTypeRestService"
+        "comp_504_DeedTypeRestService"
       ],
       "evidence": [
         "ev_1041"
@@ -2046,7 +2046,7 @@
       "path": "/uvz/v1/numbermanagement",
       "method": "GET",
       "chain": [
-        "comp_398_NumberManagementRestService"
+        "comp_387_NumberManagementRestService"
       ],
       "evidence": [
         "ev_1147"
@@ -2058,7 +2058,7 @@
       "path": "/uvz/v1/numbermanagement/validate",
       "method": "GET",
       "chain": [
-        "comp_398_NumberManagementRestService"
+        "comp_387_NumberManagementRestService"
       ],
       "evidence": [
         "ev_1148"
@@ -2070,7 +2070,7 @@
       "path": "/uvz/v1/numbermanagement/numberformat",
       "method": "GET",
       "chain": [
-        "comp_398_NumberManagementRestService"
+        "comp_387_NumberManagementRestService"
       ],
       "evidence": [
         "ev_1149"
@@ -2082,7 +2082,7 @@
       "path": "/uvz/v1/numbermanagement/numberformat",
       "method": "PUT",
       "chain": [
-        "comp_398_NumberManagementRestService"
+        "comp_387_NumberManagementRestService"
       ],
       "evidence": [
         "ev_1150"
@@ -2094,7 +2094,7 @@
       "path": "/uvz/v1/numbermanagement/validate/bulkcapture",
       "method": "GET",
       "chain": [
-        "comp_398_NumberManagementRestService"
+        "comp_387_NumberManagementRestService"
       ],
       "evidence": [
         "ev_1151"
@@ -2166,7 +2166,7 @@
       "path": "/uvz/v1/report-metadata/",
       "method": "POST",
       "chain": [
-        "comp_420_ReportMetadataRestService"
+        "comp_501_ReportMetadataRestService"
       ],
       "evidence": [
         "ev_1157"
@@ -2178,7 +2178,7 @@
       "path": "/uvz/v1/report-metadata/to-be-signed",
       "method": "PUT",
       "chain": [
-        "comp_420_ReportMetadataRestService"
+        "comp_501_ReportMetadataRestService"
       ],
       "evidence": [
         "ev_1158"
@@ -2190,7 +2190,7 @@
       "path": "/uvz/v1/report-metadata/",
       "method": "GET",
       "chain": [
-        "comp_420_ReportMetadataRestService"
+        "comp_501_ReportMetadataRestService"
       ],
       "evidence": [
         "ev_1159"
@@ -2202,7 +2202,7 @@
       "path": "/uvz/v1/report-metadata/{id}",
       "method": "GET",
       "chain": [
-        "comp_420_ReportMetadataRestService"
+        "comp_501_ReportMetadataRestService"
       ],
       "evidence": [
         "ev_1160"
@@ -2214,7 +2214,7 @@
       "path": "/uvz/v1/report-metadata/{id}",
       "method": "DELETE",
       "chain": [
-        "comp_420_ReportMetadataRestService"
+        "comp_501_ReportMetadataRestService"
       ],
       "evidence": [
         "ev_1161"
