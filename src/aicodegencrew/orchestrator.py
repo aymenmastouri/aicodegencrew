@@ -387,27 +387,29 @@ class SDLCOrchestrator:
     
     def _outputs_exist(self, phase_id: str) -> bool:
         """Check if phase outputs exist from previous run."""
+        from .shared.utils.logger import OUTPUT_BASE_DIR
+        base = OUTPUT_BASE_DIR
         output_files = {
-            "phase0_indexing": [".cache/.chroma"],
+            "phase0_indexing": [base / ".cache" / ".chroma"],
             "phase1_architecture_facts": [
-                "knowledge/architecture/architecture_facts.json",
-                "knowledge/architecture/evidence_map.json",
+                base / "knowledge" / "architecture" / "architecture_facts.json",
+                base / "knowledge" / "architecture" / "evidence_map.json",
             ],
             "phase2_architecture_analysis": [
-                "knowledge/architecture/analyzed_architecture.json",
+                base / "knowledge" / "architecture" / "analyzed_architecture.json",
             ],
             "phase3_architecture_synthesis": [
-                "knowledge/architecture/c4/c4-context.md",
+                base / "knowledge" / "architecture" / "c4" / "c4-context.md",
             ],
             "phase4_development_planning": [
-                "knowledge/development",
+                base / "knowledge" / "development",
             ],
         }
-        
+
         expected = output_files.get(phase_id, [])
         if not expected:
             return False
-        return all(Path(f).exists() for f in expected)
+        return all(p.exists() for p in expected)
     
     def _build_result(self, status: str, message: str) -> PipelineResult:
         """Build final pipeline result."""

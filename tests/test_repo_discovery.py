@@ -2,7 +2,7 @@
 
 import pytest
 from pathlib import Path
-from aicodegencrew.pipelines.tools.repo_discovery_tool import RepoDiscoveryTool
+from aicodegencrew.pipelines.indexing.repo_discovery_tool import RepoDiscoveryTool
 
 
 @pytest.fixture

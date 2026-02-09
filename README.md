@@ -7,7 +7,15 @@
 [![Capgemini](https://img.shields.io/badge/license-Capgemini-green.svg)](LICENSE)
 [![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#why-on-premises)
 
-AICodeGenCrew is a fully local, on-premises AI-powered toolkit for end-to-end Software Development Lifecycle (SDLC) automation. Point it at any repository and it will extract architecture facts, analyze patterns, and generate complete **C4 model** and **arc42** documentation — all backed by real code evidence, running entirely on your infrastructure.
+AICodeGenCrew is a fully local, on-premises AI-powered toolkit for end-to-end Software Development Lifecycle (SDLC) automation. Point it at any repository and it will:
+
+1. **Extract architecture facts** — deterministic code analysis, no LLM needed (components, relations, interfaces, endpoints)
+2. **Analyze architecture patterns** — AI-powered domain, workflow, and quality analysis (Map-Reduce for scale)
+3. **Generate C4 model + arc42 documentation** — complete C4 diagrams + all 12 arc42 chapters with DrawIO diagrams
+4. **Create development plans** — hybrid pipeline (4 deterministic stages + 1 LLM call, 18-40s) for JIRA tasks, bugfixes, upgrades
+5. **Export to multiple formats** — Markdown, Confluence Wiki Markup, AsciiDoc, HTML — ready for your documentation toolchain
+
+All backed by real code evidence, running entirely on your infrastructure. No data leaves your network.
 
 ---
 
@@ -38,13 +46,17 @@ AICodeGenCrew is a fully local, on-premises AI-powered toolkit for end-to-end So
 |---------|-------------|
 | **Evidence-Based Documentation** | Every claim in generated docs is traceable to source code evidence. No hallucinations. |
 | **C4 Model + arc42** | Generates complete C4 diagrams (Context, Container, Component, Deployment) and all 12 arc42 chapters. |
+| **Development Planning** | Hybrid pipeline (4 deterministic + 1 LLM stage, 18-40s) generates implementation plans from JIRA/DOCX/Excel tasks. Finds affected components via RAG, matches test/security/validation patterns. |
+| **Multi-Format Export** | Automatic conversion to Confluence Wiki Markup, AsciiDoc, and HTML alongside Markdown. Arc42 ToC in EN/DE. |
 | **Deterministic Fact Extraction** | Phase 1 extracts architecture facts without any LLM — pure code analysis. |
 | **Multi-Agent AI Crews** | Specialized AI agents (architects, analysts) collaborate via CrewAI for analysis and synthesis. |
 | **Map-Reduce for Scale** | Large repositories (500+ components) are split by container and analyzed in parallel. |
 | **Mini-Crews Pattern** | Each documentation section gets a fresh LLM context window — no context overflow. |
 | **Checkpoint & Resume** | If a crew fails, re-running automatically skips completed work. |
+| **Run Reports** | Every pipeline run exports `knowledge/run_report.json` with phase status, durations, output files. |
 | **MCP Integration** | Model Context Protocol server provides live architecture queries to agents. |
 | **DrawIO Diagrams** | Generates machine-readable `.drawio` diagrams alongside Markdown documentation. |
+| **Configurable Output** | `OUTPUT_BASE_DIR` redirects all outputs (`knowledge/`, `logs/`, docs) to any directory. |
 | **Fully On-Premises** | Runs with local LLMs (Ollama) or on-prem endpoints. No data leaves your network. |
 
 ---
@@ -368,8 +380,8 @@ Credentials are prompted interactively on first clone and cached in-memory only 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OUTPUT_DIR` | `./knowledge/architecture` | Internal output directory (all phases) |
-| `DOCS_OUTPUT_DIR` | `./architecture-docs` | Export dir for Phase 3 docs. Auto-converts to Confluence/AsciiDoc/HTML. |
+| `OUTPUT_BASE_DIR` | `.` | Base directory for ALL outputs: `knowledge/`, `logs/`, `run_report.json`, `architecture-docs/` |
+| `DOCS_OUTPUT_DIR` | `<OUTPUT_BASE_DIR>/architecture-docs` | Export dir for Phase 3 docs. Auto-converts to Confluence/AsciiDoc/HTML. |
 | `ARC42_LANGUAGE` | `en` | Arc42 ToC language: `en` (English) or `de` (Deutsch) |
 | `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 
@@ -706,9 +718,22 @@ Each plan includes:
 
 ## Output Artifacts
 
-All outputs are saved to `knowledge/architecture/` (configurable via `OUTPUT_DIR`).
+All outputs are saved under `OUTPUT_BASE_DIR` (default: current working directory). Set `OUTPUT_BASE_DIR` in `.env` to redirect all outputs to a specific folder.
 
-After Phase 3, the tool automatically **exports** the architect-relevant documents (C4 + Arc42 only, no JSON) to a separate folder. Default: `./architecture-docs` in your working directory. Override with `DOCS_OUTPUT_DIR` in `.env`.
+```
+<OUTPUT_BASE_DIR>/
+├── knowledge/                  # All generated artifacts
+│   ├── architecture/           # Phase 1-3 outputs
+│   ├── development/            # Phase 4 plans
+│   └── run_report.json         # Pipeline run report (always generated)
+├── logs/                       # Runtime logs
+│   ├── current.log             # Session log (overwritten each run)
+│   ├── errors.log              # Persistent error log (rotating)
+│   └── metrics.jsonl           # Structured metrics (JSON lines)
+└── architecture-docs/          # Phase 3 export (C4 + Arc42 only)
+```
+
+After Phase 3, the tool automatically **exports** the architect-relevant documents (C4 + Arc42 only, no JSON) to an export folder. Default: `<OUTPUT_BASE_DIR>/architecture-docs`. Override with `DOCS_OUTPUT_DIR` in `.env`.
 
 Each `.md` file is automatically converted to **3 additional formats**:
 
@@ -870,33 +895,109 @@ aicodegencrew/
 
 ## Testing
 
-### Run Unit Tests
+The project has a comprehensive test suite with **600+ tests** covering unit, integration, scenario, and delivery validation.
 
-```bash
-pytest tests/ -v
-```
-
-### Run End-to-End Tests
-
-```bash
-# Requires PROJECT_PATH to be set and Ollama running
-pytest tests/e2e/ -v
-```
-
-### Run Specific Test Suites
-
-```bash
-pytest tests/test_file_filters.py -v      # File filter logic
-pytest tests/test_chunker.py -v            # Text chunking
-pytest tests/test_chroma_index.py -v       # ChromaDB indexing
-pytest tests/test_quality_gate.py -v       # Quality validation
-pytest tests/test_summarize_facts.py -v    # Facts summarization
-```
-
-### Install Dev Dependencies
+### Prerequisites
 
 ```bash
 pip install -e ".[dev]"
+```
+
+### Run All Tests
+
+```bash
+# Full suite (all 600+ tests, ~17s)
+pytest tests/ -v
+
+# With coverage report
+pytest tests/ --cov=aicodegencrew --cov-report=term-missing
+```
+
+### Test Categories
+
+#### Unit Tests
+
+| Test File | Module | Tests |
+|-----------|--------|:-----:|
+| `test_cli_orchestrator.py` | CLI argument parsing, Config, presets, orchestrator lifecycle | ~50 |
+| `test_logger_guardrails.py` | Logger, StepTracker, token budget, tool guardrails | ~30 |
+| `test_parsers_upgrade.py` | XML/text parsers, Angular/Spring/Java upgrade rules | ~40 |
+| `test_validation_model.py` | Phase validation, model builder, ID generation, layer classification | ~50 |
+| `test_confluence_converter.py` | Markdown to Confluence/AsciiDoc/HTML conversion | ~50 |
+| `test_development_planning.py` | Phase 4 pipeline stages, schemas, pattern matching | ~33 |
+| `test_chunker.py` | Text chunking for indexing | 6 |
+| `test_chroma_index.py` | ChromaDB upsert/query operations | 7 |
+| `test_repo_discovery.py` | Git repo detection, submodules | 6 |
+| `test_file_filters.py` | Include/exclude file filtering | 10 |
+| `test_quality_gate.py` | Quality gate checks | 6 |
+| `test_quality_validator.py` | Facts JSON schema validation | 8 |
+| `test_summarize_facts.py` | Facts summarization | 2 |
+
+```bash
+# Run all unit tests (excludes e2e/)
+pytest tests/ --ignore=tests/e2e -v
+
+# Run a single test file
+pytest tests/test_cli_orchestrator.py -v
+
+# Run a specific test class
+pytest tests/test_confluence_converter.py::TestConfluence -v
+
+# Run a specific test
+pytest tests/test_validation_model.py::TestLayerClassifier::test_controller_returns_presentation -v
+```
+
+#### Integration Tests
+
+| Test File | Coverage |
+|-----------|----------|
+| `test_integration.py` | Phase 0→1 data flow, indexing state, fingerprinting, facts schema, collector orchestration |
+
+```bash
+pytest tests/test_integration.py -v
+```
+
+#### Scenario / E2E Tests
+
+| Test File | Scenarios |
+|-----------|-----------|
+| `test_scenarios.py` | Fresh first run, preset resolution, error recovery, phase output validation, multi-format export, run report, orchestrator data flow, collector base classes |
+| `e2e/test_full_workflow.py` | Full pipeline workflow, idempotency, evidence chain |
+| `e2e/test_phase1_facts_extraction.py` | Phase 1 facts extraction against real repo |
+| `e2e/test_phase2_synthesis.py` | Phase 2 synthesis quality checks |
+
+```bash
+# Scenario tests (no LLM/network required)
+pytest tests/test_scenarios.py -v
+
+# E2E tests (requires PROJECT_PATH set + Ollama running)
+pytest tests/e2e/ -v
+```
+
+#### Delivery / Packaging Tests
+
+| Test File | Coverage |
+|-----------|----------|
+| `test_delivery.py` | pyproject.toml structure, version bumping, .env.example, Docker/Compose files, phases_config.yaml, documentation completeness, code quality (no print/secrets/syntax errors), .gitignore rules |
+
+```bash
+pytest tests/test_delivery.py -v
+```
+
+### Test Patterns
+
+Tests run **without LLM or network access** (except `tests/e2e/`). They use:
+
+- `tmp_path` fixtures for isolated file system operations
+- `monkeypatch` for environment variable mocking
+- `unittest.mock.patch` for dependency injection
+- Real `phases_config.yaml` for preset validation tests
+
+### Continuous Integration
+
+```bash
+# Quick check: syntax + all tests
+python -m py_compile src/aicodegencrew/cli.py && pytest tests/ -v --tb=short
 ```
 
 ---

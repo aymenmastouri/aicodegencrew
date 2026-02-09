@@ -4,7 +4,7 @@ import pytest
 import tempfile
 import shutil
 from pathlib import Path
-from aicodegencrew.pipelines.tools.chroma_index_tool import ChromaIndexTool
+from aicodegencrew.pipelines.indexing.chroma_index_tool import ChromaIndexTool
 
 
 @pytest.fixture

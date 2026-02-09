@@ -1,7 +1,7 @@
 """Tests for chunker tool."""
 
 import pytest
-from aicodegencrew.pipelines.tools.chunker_tool import ChunkerTool
+from aicodegencrew.pipelines.indexing.chunker_tool import ChunkerTool
 
 
 @pytest.fixture

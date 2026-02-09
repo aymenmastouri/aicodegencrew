@@ -39,6 +39,10 @@ RUN_ID = str(uuid.uuid4())[:8]
 # Configuration
 # =============================================================================
 
+# Output base directory — all relative paths resolve from here.
+# Set via configure_output_dir() before logger setup, or defaults to CWD.
+OUTPUT_BASE_DIR = Path(".")
+
 LOG_DIR = Path("logs")
 ARCHIVE_DIR = LOG_DIR / "archive"
 CURRENT_LOG = LOG_DIR / "current.log"
@@ -48,6 +52,21 @@ METRICS_LOG = LOG_DIR / "metrics.jsonl"
 MAX_ARCHIVE_FILES = 20  # Keep last 20 session logs
 MAX_ERROR_SIZE = 5 * 1024 * 1024  # 5MB
 MAX_ERROR_BACKUPS = 3
+
+
+def configure_output_dir(base: str | Path) -> None:
+    """Set the base directory for all output (logs, knowledge, reports).
+
+    Must be called BEFORE setup_logger() to take effect on log file paths.
+    """
+    global OUTPUT_BASE_DIR, LOG_DIR, ARCHIVE_DIR, CURRENT_LOG, ERRORS_LOG, METRICS_LOG
+
+    OUTPUT_BASE_DIR = Path(base).resolve()
+    LOG_DIR = OUTPUT_BASE_DIR / "logs"
+    ARCHIVE_DIR = LOG_DIR / "archive"
+    CURRENT_LOG = LOG_DIR / "current.log"
+    ERRORS_LOG = LOG_DIR / "errors.log"
+    METRICS_LOG = LOG_DIR / "metrics.jsonl"
 
 
 # =============================================================================
@@ -432,8 +451,17 @@ logger = setup_logger()
 # =============================================================================
 
 def _log_session_end() -> None:
-    """Log session end on program exit."""
+    """Log session end on program exit.
+
+    During Python shutdown, stderr/stdout and handler streams may already be
+    closed, causing ``ValueError: I/O operation on closed file``.
+    Check every handler's stream before attempting to write.
+    """
     try:
+        for handler in logger.handlers:
+            stream = getattr(handler, "stream", None)
+            if stream is not None and getattr(stream, "closed", False):
+                return
         logger.info("=" * 60)
         logger.info(f"SESSION END: {datetime.now().isoformat()}")
         logger.info("=" * 60)
