@@ -1,0 +1,402 @@
+{
+  "task_id": "BNUVZ-12568",
+  "source_files": [
+    "C:\\projects\\inputs\\tasks\\BNUVZ-12568.xml"
+  ],
+  "understanding": {
+    "summary": "SUPPORT-5890: Migration des SASS Compiler",
+    "requirements": [],
+    "acceptance_criteria": [],
+    "technical_notes": "Assignee: Oleksii Samusenko\nReporter: Elgin Ihloff\nCreated: Thu, 29 Jan 2026 13:06:28 +0100\nUpdated: Thu, 5 Feb 2026 16:51:15 +0100\nFix Version: UVZ future\nResolution: Unresolved\n\nComments (4):\n\n[Comment 1] JIRAUSER62328 (Thu, 5 Feb 2026 16:47:02 +0100):\n<p>took step back to look onto problems described by <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=krkosciu\" class=\"user-hover\" rel=\"krkosciu\">Krystian Kościukiewicz</a> from different angle, found couple of simpler solution for some of them, here is what was able to achieve (together with further planned steps):</p>\n<h3><a name=\"Migrationplan%3A\"></a>Migration plan:</h3>\n<ul class=\"alternate\" type=\"square\">\n\t<li>update <b>angular.json</b> to be compatible with new builder <img class=\"emoticon\" src=\"https://d3.ce.capgemini.com/jira/images/icons/emoticons/check.png\" height=\"16\" width=\"16\" align=\"absmiddle\" alt=\"\" border=\"0\"/></li>\n\t<li>come up with alternative approach to loading <b>xlf</b> file with translations via webpack.raw-loader (used to setup translations for ng-boostrap) <img class=\"emoticon\" src=\"https://d3.ce.capgemini.com/jira/images/icons/emoticons/check.png\" height=\"16\" width=\"16\" align=\"absmiddle\" alt=\"\" border=\"0\"/><br/>\nchanges:\n\t<ul>\n\t\t<li>switched to raw import (<a href=\"https://vite.dev/guide/assets#importing-asset-as-string\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://vite.dev/guide/assets#importing-asset-as-string</a>)</li>\n\t\t<li>configured loader for xlf files in angular.json</li>\n\t\t<li>added '.xlf?raw' module type definition to satisfy tscompiler</li>\n\t</ul>\n\t</li>\n\t<li>configure sass-compiler to silence deprecation warnings <img class=\"emoticon\" src=\"https://d3.ce.capgemini.com/jira/images/icons/emoticons/check.png\" height=\"16\" width=\"16\" align=\"absmiddle\" alt=\"\" border=\"0\"/></li>\n\t<li>convert custom webpack config to esbuild script for jsapi subproject <img class=\"emoticon\" src=\"https://d3.ce.capgemini.com/jira/images/icons/emoticons/warning.png\" height=\"16\" width=\"16\" align=\"absmiddle\" alt=\"\" border=\"0\"/> in progress</li>\n\t<li>verify if new setup is working in:\n\t<ul>\n\t\t<li>dev mode phase 1 <img class=\"emoticon\" src=\"https://d3.ce.capgemini.com/jira/images/icons/emoticons/check.png\" height=\"\n\n[Comment 2] JIRAUSER59240 (Thu, 5 Feb 2026 08:54:03 +0100):\n<ul>\n\t<li>Added proxy config to serve the jsApi to fix :\n\t<ul>\n\t\t<li>Angular (Vite) <b>forces itself</b> onto port <b>4200</b></li>\n\t\t<li>The esbuild on jsApi modulee servs <b>wants</b> to use port <b>4200</b> (because that’s what Webpack used) - its now on 4301</li>\n\t\t<li>Only <b>one server</b> could bind to a port what is not now the acse</li>\n\t\t<li>Vite was stealing the port, and esbuild have never seen the requests</li>\n\t\t<li><font color=\"#57d9a3\">New Angular Version (Vite for for development server - ng serve)</font>\n\t\t<ul>\n\t\t\t<li><font color=\"#172b4d\">ESM module graph server</font></li>\n\t\t\t<li><font color=\"#172b4d\">Very strict</font></li>\n\t\t\t<li><font color=\"#172b4d\">Injects HMR scripts that must not be reverse-proxied</font></li>\n\t\t\t<li><font color=\"#172b4d\">Requires exclusive control of 4200</font></li>\n\t\t\t<li><font color=\"#172b4d\">Cannot serve arbitrary JS without transforming them</font></li>\n\t\t\t<li><font color=\"#172b4d\">Cannot be customized</font></li>\n\t\t\t<li><font color=\"#172b4d\">Cannot run behind Nginx without breaking dev modules</font></li>\n\t\t\t<li><font color=\"#172b4d\">Must handle only Angular application code</font></li>\n\t\t</ul>\n\t\t</li>\n\t\t<li><font color=\"#de350b\">Old Angular Version (Webpack DevServer)</font>\n\t\t<ul>\n\t\t\t<li>Static server</li>\n\t\t\t<li>Flexible</li>\n\t\t\t<li>OK with arbitrary JS</li>\n\t\t\t<li>No special HMR ESM modules</li>\n\t\t\t<li>Didn’t require exclusive control of 4200</li>\n\t\t\t<li>Could serve jsApi bundles “for free”</li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>\n\t<li>jsapi module adjusments for esbuild</li>\n\t<li>jsApi configuration adapted for the compilerOptions</li>\n\t<li>memory increase for start/build/build:endpoint -&gt; xnp-local starters due to higher usage on esbuild</li>\n</ul>\n\n\n<p><b>Open Point :</b></p>\n<ul>\n\t<li>Xnp loads : <a href=\"https://localhost/uvz/v1/web/index.html\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://localhost/uvz/v1/web/index.html, </a>and nginx forwards this to <a href=\"http://127.0.0.1:4200/uvz\n\n[Comment 3] JIRAUSER59240 (Wed, 4 Feb 2026 08:50:28 +0100):\n<p>Angular and vite guide -&gt; <a href=\"https://d3.ce.capgemini.com/confluence/pages/viewpage.action?pageId=681443791\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">Angular 19 Builder + Vite Migration</a></p>\n\n[Comment 4] JIRAUSER59240 (Tue, 3 Feb 2026 09:15:26 +0100):\n<p>This feature is really about amigrating to the \"esbuilder\" after the angular migration</p>\n\n<p><b>Findings:</b> </p>\n<ul>\n\t<li>Remove webpack.config.js – esbuild does NOT use Webpack configs\n\t<ul>\n\t\t<li>The esbuild <b>does not read</b> any of these:\n\t\t<ul>\n\t\t\t<li><tt>webpack.config.js (todo)</tt></li>\n\t\t\t<li><tt>sass-loader (todo)</tt></li>\n\t\t\t<li><tt>module.rules (check) </tt></li>\n\t\t\t<li>loaders, plugins, etc. (check)</li>\n\t\t</ul>\n\t\t</li>\n\t\t<li>If your subproject’s Webpack config is <em>only</em> doing SCSS → CSS via sass-loader.  <br/>\nAngular 19 already handles SCSS automatically.  (todo) </li>\n\t\t<li>Move your SCSS configuration into <tt>angular.json (todo)</tt></li>\n\t\t<li>Angular’s new build system handles SCSS via the (todo) <b>stylePreprocessorOptions.sass</b> section, where you can configure include paths and Sass behavior. This is the same place where Angular 19 introduced options for controlling Sass deprecation warnings (e.g. silenceDeprecations).</li>\n\t</ul>\n\t</li>\n</ul>\n\n\n<p> </p>\n<ul>\n\t<li><b>Remove sass-loader entirely (Angular 19 uses Dart Sass internally)</b>\n\t<ul>\n\t\t<li>Old setup likely included:\n\t\t<ul>\n\t\t\t<li><tt>sass-loader (todo)</tt></li>\n\t\t\t<li><tt>node-sass</tt> (deprecated) or <tt>sass (todo)</tt></li>\n\t\t\t<li><tt>resolve-url-loader (check) </tt></li>\n\t\t\t<li> These are <b>not needed anymore</b>.<br/>\nAngular 19 uses Dart Sass 1.80.x internally</li>\n\t\t</ul>\n\t\t</li>\n\t</ul>\n\t</li>\n</ul>\n\n\n<p> </p>\n<ul>\n\t<li><tt> jsApi</tt> migration options (todo for the module)\n\t<ul>\n\t\t<li><tt>jsApi</tt> subproject is it with own build and dev server. </li>\n\t</ul>\n\t</li>\n</ul>\n\n\n<p> </p>\n<ul>\n\t<li>Option A (fastest / lowest risk): keep <tt>jsApi</tt> on its current toolchain\n\t<ul>\n\t\t<li>Recommended if <tt>jsApi</tt> is only loosely coupled to the Angular app.</li>\n\t\t<li>Keep existing Webpack/Vite/Rollup/etc. pipeline as-is</li>\n\t\t<li>Expose it via <tt>npm</tt> scripts (and possibly an <tt>ng</tt> target that just runs a command)</li>\n\t\t<li>Keep Angular migra"
+  },
+  "development_plan": {
+    "affected_components": [
+      "component.frontend.core.app_module",
+      "component.frontend.adapters.adapters_module",
+      "component.frontend.core.core_module",
+      "component.frontend.deed-entry.deed_entry_module",
+      "component.frontend.number-management.number_management_module",
+      "component.frontend.report-metadata.report_metadata_module",
+      "component.frontend.shared.online_help_module",
+      "component.frontend.shared.shared_module",
+      "component.frontend.workflow.workflow_module",
+      "component.frontend.services_action_api-generated.action_api_module"
+    ],
+    "interfaces": [],
+    "dependencies": [],
+    "upgrade_plan": {
+      "framework": "Angular",
+      "from_version": "unknown",
+      "to_version": "unknown",
+      "migration_sequence": [
+        {
+          "rule_id": "ng19-standalone-default",
+          "title": "Standalone components are now default",
+          "severity": "breaking",
+          "migration_steps": [
+            "Run: ng generate @angular/core:standalone-migration",
+            "Review generated changes per module",
+            "Remove empty NgModules after migration",
+            "Update test imports to use component directly"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\locked-deed-error-modal\\locked-deed-error-modal.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\resume-pending-transfer-modal-dialog\\resume-pending-transfer-modal-dialog.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-import\\deed-empty-directory\\deed-empty-directory.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+            "frontend\\src\\app\\adapters\\adapters.module.ts",
+            "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\report-configuration\\report-configuration.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-complete\\deed-successor-page.component.ts",
+            "frontend\\src\\app\\workflow\\components\\workflow-archive-control\\workflow-archive-control.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\remarks-data-tab\\remarks-data-tab.component.ts"
+          ],
+          "estimated_effort_minutes": 1420,
+          "schematic": "ng generate @angular/core:standalone-migration"
+        },
+        {
+          "rule_id": "ng19-sass-compiler",
+          "title": "node-sass -> Dart Sass (sass)",
+          "severity": "breaking",
+          "migration_steps": [
+            "Replace node-sass with sass: npm uninstall node-sass && npm install -D sass",
+            "Add @use 'sass:math' in SCSS files using division",
+            "Replace $var / 2 with math.div($var, 2)",
+            "Review ::ng-deep usage (deprecated, plan removal)",
+            "Test: ng build --watch to verify all SCSS compiles"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-deed-register-report-preview\\annual-deed-register-report-preview.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\correction-notes-tab-data\\correction-notes-tab-data.component.scss",
+            "frontend\\src\\app\\shared\\page\\action-bar\\action-bar.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-participants-report-preview\\annual-participants-report-preview.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\deed-overview.component.scss",
+            "frontend\\src\\app\\shared\\quick-search\\quick-search.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\deed-view-page.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\deposited-inheritance-contracts-preview\\deposited-inheritance-contracts-preview.component.scss"
+          ],
+          "estimated_effort_minutes": 75,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng19-builder-migration",
+          "title": "Browser builder -> Application builder",
+          "severity": "breaking",
+          "migration_steps": [
+            "Run: ng update @angular/cli",
+            "Accept builder migration prompt",
+            "Remove buildOptimizer and vendorChunk (not needed with esbuild)",
+            "Update output path configuration"
+          ],
+          "affected_files": [
+            "frontend\\angular.json"
+          ],
+          "estimated_effort_minutes": 30,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng19-typescript-56",
+          "title": "TypeScript 5.4 -> 5.6",
+          "severity": "breaking",
+          "migration_steps": [
+            "Run: npm install typescript@~5.6.0",
+            "Fix any new strict type errors from TS 5.5/5.6"
+          ],
+          "affected_files": [
+            "frontend\\package.json"
+          ],
+          "estimated_effort_minutes": 60,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng19-zonejs-015",
+          "title": "Zone.js 0.14 -> 0.15",
+          "severity": "breaking",
+          "migration_steps": [
+            "Run: npm install zone.js@~0.15.0"
+          ],
+          "affected_files": [
+            "frontend\\package.json"
+          ],
+          "estimated_effort_minutes": 10,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng20-control-flow",
+          "title": "ngIf/ngFor/ngSwitch -> @if/@for/@switch control flow",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Run: ng generate @angular/core:control-flow-migration",
+            "Review @if blocks (handle else/else-if manually)",
+            "Review @for blocks (track expression is required)",
+            "Review @switch blocks",
+            "Remove CommonModule imports where only used for ngIf/ngFor"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-partial\\deed-successor-partial.component.html",
+            "frontend\\src\\app\\shared\\saved-filter\\saved-filter.component.html",
+            "frontend\\src\\app\\shared\\official-activity-filter\\official-activity\\official-activity.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\participant-view\\participant-view.component.html",
+            "frontend\\src\\app\\shared\\page\\action-bar\\action-bar.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\registrations-view-container\\registrations-view-container.component.html",
+            "frontend\\src\\app\\shared\\tooltip-table\\tooltip-table.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-participants-report-preview\\annual-participants-report-preview.component.html",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\archiving-error-details-modal-dialog\\archiving-error-details-modal-dialog.component.html"
+          ],
+          "estimated_effort_minutes": 1464,
+          "schematic": "ng generate @angular/core:control-flow-migration"
+        },
+        {
+          "rule_id": "ng19-app-initializer",
+          "title": "APP_INITIALIZER -> provideAppInitializer",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Replace { provide: APP_INITIALIZER, ... } with provideAppInitializer()",
+            "Update imports: remove APP_INITIALIZER, add provideAppInitializer"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\app.module.ts"
+          ],
+          "estimated_effort_minutes": 30,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng20-karma-deprecated",
+          "title": "Karma test runner -> Vitest/Web Test Runner",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Install Vitest: npm install -D vitest @analogjs/vite-plugin-angular",
+            "Create vitest.config.ts with Angular plugin",
+            "Migrate TestBed imports (mostly compatible)",
+            "Remove karma.conf.js and karma dependencies",
+            "Update angular.json test architect"
+          ],
+          "affected_files": [
+            "frontend\\package.json"
+          ],
+          "estimated_effort_minutes": 120,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng-aggrid-compat",
+          "title": "AG Grid compatibility check",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Check AG Grid compatibility matrix for target Angular version",
+            "Upgrade to ag-grid-angular 32.x+ if needed",
+            "Review AG Grid changelog for breaking changes"
+          ],
+          "affected_files": [
+            "frontend\\package.json"
+          ],
+          "estimated_effort_minutes": 60,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng-ngbootstrap-compat",
+          "title": "ng-bootstrap compatibility check",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Upgrade to @ng-bootstrap/ng-bootstrap 18.x+",
+            "Review component API changes in changelog"
+          ],
+          "affected_files": [
+            "frontend\\package.json"
+          ],
+          "estimated_effort_minutes": 45,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng-ngxtranslate-compat",
+          "title": "ngx-translate compatibility check",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Check ngx-translate Angular 19/20 compatibility",
+            "Consider migration to @angular/localize if ngx-translate is unmaintained"
+          ],
+          "affected_files": [
+            "frontend\\package.json"
+          ],
+          "estimated_effort_minutes": 30,
+          "schematic": null
+        },
+        {
+          "rule_id": "ng-signal-inputs",
+          "title": "@Input() -> input() signal",
+          "severity": "recommended",
+          "migration_steps": [
+            "Run: ng generate @angular/core:signal-input-migration",
+            "Review required vs optional inputs",
+            "Update template access: myInput -> myInput()"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\locked-deed-error-modal\\locked-deed-error-modal.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\transient-and-non-transient-modal-dialog\\transient-and-non-transient-modal-dialog.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\deed-detail\\deed-detail-presentation\\deed-detail-presentation.component.ts",
+            "frontend\\src\\app\\shared\\forms\\add-aggregated-warnings\\add-aggregated-warnings.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\resume-pending-transfer-modal-dialog\\resume-pending-transfer-modal-dialog.component.ts",
+            "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+            "frontend\\src\\app\\shared\\ui\\modal\\modal.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\participant-view\\participant-view.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\basic-data\\basic-data-view.component.ts",
+            "frontend\\src\\app\\shared\\text-area\\text-area.component.ts"
+          ],
+          "estimated_effort_minutes": 905,
+          "schematic": "ng generate @angular/core:signal-input-migration"
+        },
+        {
+          "rule_id": "ng-signal-viewchild",
+          "title": "@ViewChild -> viewChild() signal query",
+          "severity": "recommended",
+          "migration_steps": [
+            "Run: ng generate @angular/core:signal-queries-migration",
+            "Replace @ViewChild with viewChild()",
+            "Replace @ViewChildren with viewChildren()",
+            "Update access patterns to use signal calls"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\deposited-inheritance-contracts-preview\\deposited-inheritance-contracts-preview.component.ts",
+            "frontend\\src\\app\\adapters\\json-import\\native\\modal\\json-import-modal\\json-import-modal.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-partial\\deed-successor-partial.component.ts",
+            "frontend\\src\\app\\shared\\logging\\business-logging.component.ts",
+            "frontend\\src\\app\\shared\\text-area\\text-area.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-complete\\deed-successor-page.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\correction-notes-tab-data\\correction-notes-tab-data.component.ts",
+            "frontend\\src\\app\\shared\\multiselect-dropdown\\multiselect-dropdown.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\column-display-panel\\column-display-panel.component.ts"
+          ],
+          "estimated_effort_minutes": 385,
+          "schematic": "ng generate @angular/core:signal-queries-migration"
+        },
+        {
+          "rule_id": "ng-signal-outputs",
+          "title": "@Output() -> output() signal",
+          "severity": "recommended",
+          "migration_steps": [
+            "Run: ng generate @angular/core:output-migration",
+            "Replace EventEmitter with OutputEmitterRef",
+            "Update emit() calls"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\deed-detail\\deed-detail-presentation\\deed-detail-presentation.component.ts",
+            "frontend\\src\\app\\shared\\text-area\\text-area.component.ts",
+            "frontend\\src\\app\\shared\\multiselect-dropdown\\multiselect-dropdown.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\column-display-panel\\column-display-panel.component.ts",
+            "frontend\\src\\app\\shared\\official-activity-filter\\official-activity\\official-activity.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\retrival-archiving-progress-indicator-modal-dialog\\retrival-archiving-progress-indicator-modal-dialog.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\issue-copy-document-modal-dialog\\issue-copy-document-modal-view\\issue-copy-document-modal-view.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\deed-search-criteria\\deed-search-criteria.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-edit-component\\document-edit-component.component.ts",
+            "frontend\\src\\app\\shared\\token-bar\\token-bar.component.ts"
+          ],
+          "estimated_effort_minutes": 225,
+          "schematic": "ng generate @angular/core:output-migration"
+        },
+        {
+          "rule_id": "ng-httpclient-module",
+          "title": "HttpClientModule -> provideHttpClient()",
+          "severity": "recommended",
+          "migration_steps": [
+            "Replace HttpClientModule with provideHttpClient() in providers",
+            "Add withInterceptorsFromDi() if using class-based interceptors",
+            "Remove HttpClientModule from module imports array"
+          ],
+          "affected_files": [
+            "frontend\\src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api.module.ts",
+            "frontend\\src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api.module.ts",
+            "frontend\\src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api.module.ts",
+            "frontend\\src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api.module.ts",
+            "frontend\\src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api.module.ts",
+            "frontend\\src\\app\\action\\services\\action\\api-generated\\action-api.module.ts",
+            "frontend\\src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api.module.ts"
+          ],
+          "estimated_effort_minutes": 105,
+          "schematic": null
+        }
+      ],
+      "verification_commands": [
+        "ng build",
+        "ng test"
+      ],
+      "total_estimated_effort_hours": 82.7,
+      "pre_migration_checks": [
+        "Run full test suite and capture baseline coverage",
+        "Verify current build succeeds with existing angular.json configuration"
+      ],
+      "post_migration_checks": [
+        "Run ng build in production mode and ensure no compilation warnings",
+        "Execute full regression test suite and compare against baseline"
+      ]
+    },
+    "implementation_steps": [
+      "1. Update angular.json builder to @angular-devkit/build-angular:application and adjust options (Upgrade Plan step ng19-builder-migration).",
+      "2. Replace node-sass with sass and update SCSS division syntax (Upgrade Plan step ng19-sass-compiler).",
+      "3. Migrate all modules to standalone components using the generated schematic (Upgrade Plan step ng19-standalone-default).",
+      "4. Adjust TypeScript version to 5.6 and fix any type errors (Upgrade Plan step ng19-typescript-56).",
+      "5. Update Zone.js to 0.15 and verify runtime behavior (Upgrade Plan step ng19-zonejs-015).",
+      "6. Convert legacy control flow directives to @if/@for/@switch (Upgrade Plan step ng20-control-flow).",
+      "7. Replace APP_INITIALIZER providers with provideAppInitializer (Upgrade Plan step ng19-app-initializer).",
+      "8. Migrate test runner from Karma to Vitest and update test configs (Upgrade Plan step ng20-karma-deprecated).",
+      "9. Update third‑party libraries (AG Grid, ng-bootstrap, ngx-translate) to versions compatible with Angular 19 (Upgrade Plan steps ng-aggrid-compat, ng-ngbootstrap-compat, ng-ngxtranslate-compat).",
+      "10. Refactor @Input, @ViewChild, @Output to signal based APIs using provided schematics (Upgrade Plan steps ng-signal-inputs, ng-signal-viewchild, ng-signal-outputs).",
+      "11. Replace HttpClientModule imports with provideHttpClient() (Upgrade Plan step ng-httpclient-module).",
+      "12. Run full build and test verification commands, address any failures."
+    ],
+    "test_strategy": {
+      "unit_tests": [
+        "Verify each migrated component renders correctly with the new standalone configuration.",
+        "Assert that SCSS files compile without deprecation warnings after sass migration."
+      ],
+      "integration_tests": [
+        "Run end‑to‑end flows that involve translation loading (xlf raw import) to ensure assets are served correctly.",
+        "Execute API interaction tests to confirm HttpClient provisioning works after migration."
+      ],
+      "similar_patterns": [
+        "XnpPdfAdapter (jasmine, unit) – use as reference for structuring new unit tests."
+      ]
+    },
+    "security_considerations": [
+      "Ensure CORS configuration allows only trusted origins (cors in ActionRestService).",
+      "Verify CSRF protection is enabled for state‑changing operations (csrf in AbstractSecurityConfiguration).",
+      "Apply pre_authorize checks on sensitive endpoints (pre_authorize in KeyManagerRestService)."
+    ],
+    "validation_strategy": [
+      "Add @NotNull annotations to DeedEntry fields (not_null on DeedEntry).",
+      "Add @Valid annotation to DeedEntryRestService methods (valid on DeedEntryRestService).",
+      "Add @NotBlank, @Min, @Max annotations to KmConfig properties (not_blank, min, max on KmConfig)."
+    ],
+    "error_handling": [
+      "Create or reuse custom RuntimeException classes for domain errors (custom_exception).",
+      "Implement global @ExceptionHandler for generic Exception, HttpClientErrorException, HttpRequestMethodNotSupportedException."
+    ],
+    "architecture_context": {
+      "style": "Modular Monolith",
+      "layer_pattern": "Controller → Service → Repository",
+      "quality_grade": "C",
+      "layer_compliance": [
+        "Check if changes follow layered architecture"
+      ]
+    },
+    "estimated_complexity": "Medium",
+    "complexity_reasoning": "The migration touches core build configuration, many UI components, and introduces new signal APIs, requiring coordinated changes across dozens of files but follows well‑defined schematics.",
+    "estimated_files_changed": 30,
+    "risks": [
+      "Potential runtime regressions due to migration to standalone components.",
+      "SCSS compilation failures if division syntax is not fully updated.",
+      "Third‑party library incompatibilities after version bumps."
+    ],
+    "evidence_sources": {
+      "components": "architecture_facts.json",
+      "test_patterns": "architecture_facts.json",
+      "security": "architecture_facts.json",
+      "validation": "architecture_facts.json",
+      "error_handling": "architecture_facts.json",
+      "architecture": "analyzed_architecture.json",
+      "semantic_search": "ChromaDB"
+    }
+  }
+}
