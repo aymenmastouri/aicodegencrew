@@ -39,120 +39,201 @@
 
 ## 1. Overview
 
-AICodeGenCrew is an AI-powered tool for Software Development Lifecycle automation. It analyzes your codebase and generates:
+AICodeGenCrew is an enterprise-grade AI-powered platform for Software Development Lifecycle (SDLC) automation. The system analyzes your codebase and produces:
 
-- **Architecture documentation** (C4 Model + arc42)
-- **Development plans** from JIRA tickets, requirements, and logs
-- **Code analysis** including components, relations, patterns, and quality metrics
+- **Architecture Documentation**: C4 Model diagrams and arc42 technical documentation
+- **Development Plans**: Actionable implementation plans derived from JIRA tickets, requirements documents, and application logs
+- **Code Intelligence**: Comprehensive analysis of software components, dependencies, design patterns, and quality metrics
 
-The tool runs **entirely on-premises** — no data leaves your network.
+**Data Security**: All processing occurs entirely on-premises. No source code or data is transmitted outside your corporate network.
 
-### What You Get
+### Platform Capabilities
 
-| Phase | What It Does | LLM Required | Duration |
-|:-----:|-------------|:------------:|----------|
-| 0 | Index repository into vector database | No | 2-10 min |
-| 1 | Extract architecture facts (components, relations) | No | 1-3 min |
-| 2 | AI analysis of architecture patterns | Yes | 5-15 min |
-| 3 | Generate C4 + arc42 documentation | Yes | 15-45 min |
-| 4 | Generate development plans from JIRA tickets | Hybrid | 18-40 sec |
+AICodeGenCrew operates through a five-phase pipeline, each optimized for specific deliverables:
+
+| Phase | Capability | AI Required | Est. Duration |
+|:-----:|-----------|:----------:|--------------|
+| 0 | Repository Indexing: Vector database construction for semantic search | No (embeddings only) | 2-10 min |
+| 1 | Facts Extraction: Deterministic extraction of components, interfaces, and dependencies | No | 1-3 min |
+| 2 | Architecture Analysis: AI-powered pattern recognition and quality assessment | Yes (on-prem LLM) | 5-15 min |
+| 3 | Documentation Synthesis: Automated generation of C4 diagrams and arc42 chapters | Yes (on-prem LLM) | 15-45 min |
+| 4 | Development Planning: Hybrid AI pipeline for task-specific implementation plans | Hybrid (1 LLM call) | 18-40 sec |
 
 ---
 
-## 2. What You Received
+## 2. Delivery Package Contents
 
-When you unpack the delivery package, you'll find:
+The distribution package (`aicodegencrew-v0.1.0.zip`) contains the following components:
 
 ```
 aicodegencrew-v0.1.0/
-├── aicodegencrew-0.1.0-py3-none-any.whl   ← The tool (install this)
-├── .env.example                            ← Configuration template
-├── install.bat / install.sh                ← Quick installer (Windows/Linux/Mac)
-├── docker-compose.yml                      ← Docker setup (alternative)
+├── aicodegencrew-0.1.0-py3-none-any.whl   ← Installable Python package (compiled wheel)
+├── .env.example                            ← Environment configuration template
+├── install.bat / install.sh                ← Platform-specific installation scripts
+├── docker-compose.yml                      ← Docker Compose orchestration file
 ├── config/
-│   └── phases_config.yaml                  ← Phase definitions (reference)
-├── USER_GUIDE.md                           ← Documentation (Markdown)
-├── USER_GUIDE.pdf                          ← Documentation (PDF)
-└── CHANGELOG.md                            ← Version history
+│   └── phases_config.yaml                  ← Pipeline phase definitions (reference)
+├── USER_GUIDE.md                           ← Technical documentation (Markdown source)
+├── USER_GUIDE.pdf                          ← Technical documentation (PDF format)
+└── CHANGELOG.md                            ← Release notes and version history
 ```
 
-**What each file does:**
-- `.whl` file: The Python package you'll install via `pip`
-- `.env.example`: Copy this to `.env` and edit with YOUR project paths
-- `install.bat/.sh`: Run this for automated setup (easier than manual pip)
-- `docker-compose.yml`: For Docker users (isolated environment)
-- `phases_config.yaml`: Defines which phases run in each preset (read-only)
-- `USER_GUIDE.md` / `.pdf`: This documentation in Markdown and PDF format
+### Component Descriptions
 
-**Your data stays separate!** This tool doesn't include your repository or inputs.
-You'll configure paths to YOUR files in the `.env` file (see Section 7).
+| File | Purpose | Installation Requirement |
+|------|---------|-------------------------|
+| `.whl` | Python wheel package containing the compiled application | Required (install via `pip`) |
+| `.env.example` | Configuration template with all environment variables | Required (copy to `.env` and customize) |
+| `install.bat` / `.sh` | Automated installation scripts for rapid deployment | Optional (alternative to manual `pip install`) |
+| `docker-compose.yml` | Container orchestration for Docker-based deployment | Optional (Docker environments only) |
+| `phases_config.yaml` | Phase execution definitions (read-only reference) | Informational (embedded in package) |
+| `USER_GUIDE.md` / `.pdf` | Complete technical and user documentation | Informational |
+
+**Important**: The package contains only the compiled tool. Your source code repository and input files remain separate and are referenced via configuration (see Section 7).
 
 ---
 
 ## 3. Prerequisites & System Requirements
 
-Before installing, ensure you have:
+Verify that your environment meets the following requirements before proceeding with installation.
 
-### Required Software
+### 3.1 Software Dependencies
 
-| Requirement | Version | Check Command | Install |
-|-------------|---------|---------------|---------|
-| Python | 3.10, 3.11, or 3.12 | `python --version` | https://python.org |
-| Ollama | Latest | `ollama --version` | https://ollama.com |
+| Component | Required Version | Verification Command | Installation Source |
+|-----------|-----------------|---------------------|---------------------|
+| Python Runtime | 3.10, 3.11, or 3.12 | `python --version` | https://python.org |
+| Ollama Embeddings Server | Latest stable | `ollama --version` | https://ollama.com |
 
-### System Resources
+**Note**: Python 3.13+ is not yet supported due to dependency compatibility constraints.
 
-- **RAM:** 4 GB minimum, 8 GB recommended
-- **Disk Space:** 50 GB free (for large repositories)
-- **Network:** Access to your on-prem LLM endpoint
+### 3.2 System Resources
 
-### Ports
+| Resource | Minimum | Recommended | Notes |
+|----------|---------|-------------|-------|
+| Memory (RAM) | 4 GB | 8 GB | Large repositories (>1000 files) require 8 GB |
+| Disk Space | 50 GB free | 100 GB free | Includes vector database cache and output artifacts |
+| CPU | 2 cores | 4+ cores | Impacts indexing and analysis performance |
 
-These ports must be available on your network:
-- `:11434` - Ollama embeddings service (localhost)
-- `:4000` - Your on-prem LLM endpoint (configurable)
+### 3.3 Network Connectivity
 
-### Supported Operating Systems
+**Required Endpoints:**
 
-- Windows 10+
-- Linux (Ubuntu 20.04+, RHEL 8+)
-- macOS 10.15+
+| Service | Port | Protocol | Access Scope | Purpose |
+|---------|------|----------|--------------|---------|
+| Ollama Embeddings | 11434 | HTTP | localhost | Semantic search vector generation |
+| On-Premises LLM | 4000 | HTTPS | Internal network | AI model inference (configurable) |
 
-### Network Requirements
+**Firewall Configuration**: Ensure outbound connections to the on-premises LLM endpoint are permitted. No internet access is required for operation.
 
-**On-premises only** - No data leaves your network
-- All AI calls: Your configured LLM server
-- All embeddings: Local Ollama instance
+### 3.4 Supported Platforms
+
+| Operating System | Minimum Version | Tested Versions |
+|-----------------|----------------|-----------------|
+| Windows | 10 (build 1809+) | 10, 11, Server 2019/2022 |
+| Linux | Ubuntu 20.04, RHEL 8 | Ubuntu 20.04/22.04, RHEL 8/9, Debian 11 |
+| macOS | 10.15 (Catalina) | 10.15+, 11.x+, 12.x+ |
+
+### 3.5 Security & Compliance
+
+**Data Residency**: All data processing occurs within your on-premises infrastructure. No source code, configuration data, or analysis artifacts are transmitted to external services.
+
+**Authentication**: API keys for the on-premises LLM endpoint are stored locally in `.env` configuration files and never logged or transmitted.
 
 ---
 
-## 4. Before You Begin: Setup Checklist
+## 4. Pre-Installation Verification
 
-Complete this checklist BEFORE installation:
+Complete the following verification steps to ensure a successful installation:
 
-**Software Installed:**
-- Python 3.10+ installed: `python --version` works
-- Ollama installed: `ollama --version` works
-- Ollama running: `ollama serve` (in separate terminal)
-- Embedding model pulled: `ollama pull nomic-embed-text:latest`
+### 4.1 Software Verification
 
-**Access & Credentials:**
-- Your project repository path ready (e.g., `C:\repos\my-project`)
-- On-prem LLM endpoint URL (e.g., `http://server:4000/v1`)
-- API key for LLM endpoint
+Verify that all required software components are installed and accessible:
 
-**Optional (for Phase 4 only):**
-- JIRA export folder with XML files (if running development planning)
-- Input folder path ready (e.g., `C:\work\inputs\tasks`)
+```bash
+# Verify Python installation
+python --version
+# Expected output: Python 3.10.x, 3.11.x, or 3.12.x
 
-**System Check:**
-- 4+ GB free RAM available
-- 50+ GB free disk space
-- Ports 11434 and 4000 are not blocked by firewall
+# Verify Ollama installation
+ollama --version
+# Expected output: ollama version x.x.x
 
-**All checked?** Proceed to Section 5 (Choose Installation Method)
+# Verify Ollama service is running
+curl http://127.0.0.1:11434/api/tags
+# Expected output: JSON response with model list
+```
 
-**Missing something?** See Prerequisites (Section 3)
+**If Ollama is not running:**
+```bash
+# Start Ollama service in a separate terminal
+ollama serve
+
+# Pull the required embedding model
+ollama pull nomic-embed-text:latest
+```
+
+### 4.2 Access & Credentials Checklist
+
+Prepare the following information before configuring the tool:
+
+| Item | Example Value | Required For |
+|------|---------------|-------------|
+| Source repository path | `C:\repos\my-project` or `/home/user/repos/project` | All phases |
+| On-premises LLM endpoint | `http://sov-ai-platform.local:4000/v1` | Phases 2, 3, 4 |
+| LLM API key | Contact your IT administrator | Phases 2, 3, 4 |
+
+### 4.3 Phase 4 Input Directories (Optional)
+
+If you intend to use Phase 4 (Development Planning), prepare input directories:
+
+| Directory Purpose | Supported Formats | Example Path |
+|------------------|-------------------|--------------|
+| Task definitions (JIRA exports, tickets) | `.xml`, `.docx`, `.txt` | `C:\work\project\tasks` |
+| Requirements documents | `.xlsx`, `.docx`, `.pdf` | `C:\work\project\requirements` |
+| Application logs | `.log`, `.txt`, `.xlsx` | `C:\work\project\logs` |
+| Reference materials | `.pdf`, `.drawio`, images | `C:\work\project\reference` |
+
+**Note**: Input directories must reside outside your source code repository.
+
+### 4.4 System Resource Verification
+
+Verify sufficient system resources are available:
+
+```bash
+# Windows: Check free disk space
+wmic logicaldisk get size,freespace,caption
+
+# Linux/Mac: Check free disk space
+df -h
+
+# Check available memory (all platforms)
+# Windows: Task Manager > Performance > Memory
+# Linux: free -h
+# Mac: Activity Monitor > Memory
+```
+
+**Minimum Requirements**: 4 GB RAM free, 50 GB disk space free
+
+### 4.5 Network Connectivity Test
+
+Verify connectivity to required services:
+
+```bash
+# Test Ollama embeddings service
+curl http://127.0.0.1:11434/api/tags
+
+# Test on-premises LLM endpoint (replace with your endpoint)
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+     http://your-llm-endpoint:4000/v1/models
+```
+
+**Expected Result**: Both endpoints should return JSON responses without timeouts or connection errors.
+
+---
+
+**Verification Complete?** Proceed to Section 5 (Installation Method Selection)
+
+**Verification Failed?** Refer to Section 3 (Prerequisites) or Section 19 (Troubleshooting)
 
 ---
 
