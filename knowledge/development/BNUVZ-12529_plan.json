@@ -1,79 +1,275 @@
 {
   "task_id": "BNUVZ-12529",
   "source_files": [
-    "inputs\\tasks\\BNUVZ-12529.xml"
+    "C:\\projects\\inputs\\tasks\\BNUVZ-12529.xml"
   ],
   "understanding": {
     "summary": "TASK-5824 Angular Upgrade auf Version 19",
     "requirements": [],
     "acceptance_criteria": [],
-    "technical_notes": "Assignee: Paweł Świdziński\nReporter: Christian Pflederer\nCreated: Mon, 12 Jan 2026 15:52:11 +0100\nUpdated: Fri, 6 Feb 2026 16:04:26 +0100\nFix Version: UVZ 1.70.0\nResolution: Unresolved\n\nComments (15):\n\n[Comment 1] JIRAUSER62230 (Fri, 6 Feb 2026 16:04:26 +0100):\n<p>All smoke tests have been completed except for the re-encryption tests - Cloudbeaver, which is needed for this, was not working all day today.</p>\n\n[Comment 2] JIRAUSER54834 (Thu, 5 Feb 2026 10:21:25 +0100):\n<p><a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=pswidzin\" class=\"user-hover\" rel=\"pswidzin\">Paweł Świdziński</a> and <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> to align on required testing approach today.</p>\n\n<p>Current plan: Focused smoke testing which will require ~1/2 days of efforts</p>\n\n[Comment 3] JIRAUSER62328 (Tue, 3 Feb 2026 11:33:19 +0100):\n<p>Assigned to <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=pswidzin\" class=\"user-hover\" rel=\"pswidzin\">Paweł Świdziński</a> for testing. Please see uvz-bnuvz-12529-a... env in XNP client</p>\n\n[Comment 4] JIRAUSER59240 (Mon, 2 Feb 2026 14:40:16 +0100):\n<p>Review approved : </p>\n<ul>\n\t<li>Code base</li>\n\t<li>Pipeline for phase1 and phase3 check</li>\n\t<li>Output logs -&gt; xnp client, rancher, elastic</li>\n\t<li>Application start with basic usage locally and on the environment</li>\n</ul>\n\n[Comment 5] JIRAUSER62328 (Fri, 30 Jan 2026 11:59:41 +0100):\n<p>Created <a href=\"https://bnotkca.pl.s2-eu.capgemini.com/gitlab/bnotk-devs/uvz/-/merge_requests/4672\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">MR-4672</a> , passing to <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=krkosciu\" class=\"user-hover\" rel=\"krkosciu\">Krystian Kościukiewicz</a> for code review</p>\n\n[Comment 6] JIRAUSER62328 (Thu, 29 Jan 2026 17:08:08 +0100):\n<p>Security audit of dependencies revealed several dependencies having vulnerabilities. In scope of mitigating them <b>was done:</b></p>\n\n<ul class=\"alternate\" type=\"square\">\n\t<li>lodash-es 4.17.22 -&gt; 4.17.23</li>\n\t<li>@pact-foundation/* - removed completely (see \"pact tests\" block below)</li>\n\t<li>@compodoc/compodoc 1.1.11 -&gt; 1.2.1</li>\n\t<li>@stoplight/spectral-cli 6.11.0 -&gt; 6.15.0</li>\n\t<li>chai-json - removed completely (no usages in project)</li>\n\t<li>@angular-eslint/* - updated to \n\n[Comment 7] JIRAUSER41751 (Wed, 28 Jan 2026 20:40:20 +0100):\n<h2><a name=\"%7B%7DOutcomeofTRM%2828.01.2026%29%3A%7B%7D%7B%7D%7B%7D\"></a><b>Outcome of TRM (28.01.2026):</b><b>{</b>}</h2>\n\n<p><b>Frontend Build Strategy - SASS Compiler</b></p>\n<ul>\n\t<li>Decision to use the SASS compiler as builder instead of Webpack.</li>\n\t<li>This decision is taken in preparation for the upcoming Angular upgrade.</li>\n</ul>\n\n\n<p><b>Next steps:</b></p>\n\n<p>Sören will create an Epic based on this task. A dedicated sub-task “SASS Compiler Update” will be created under the Epic.\n\n[Comment 8] JIRAUSER41751 (Tue, 27 Jan 2026 15:44:39 +0100):\n<p>Thank you <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> , for the content. The motivation is clear and plausible. As discussed in the Tech Lead sync, I will discuss these inputs with the customer in the TRM on 29 January 2026.</p>\n\n[Comment 9] JIRAUSER62328 (Tue, 27 Jan 2026 15:26:00 +0100):\n<h2><a name=\"SASScompiler\"></a>SASS compiler</h2>\n<p>Update to angular 19, brought sass@1.85.0 which marks usages of \"@import\" in scss files as deprecated. As we were using it extensively build- and browser consoles are spammed with warnings.</p>\n\n<p>Was able to migrate to new syntax in stylesheets of components, however not in global stylesheets, which are importing 3rd party stylesheets we have no control over (boostrap4, bnotk/ds-ng).</p>\n\n<p>According to <span class=\"error\">&#91;documentatio\n\n[Comment 10] JIRAUSER62328 (Tue, 27 Jan 2026 08:40:46 +0100):\n<p>On leads sync agreed that I'll prepare document describing options with new/old builder, potential consequences, pros/cons and that will be brought to customer to make an informed decision whether we invest time to migration or not.</p>\n\n[Comment 11] JIRAUSER62328 (Wed, 21 Jan 2026 17:17:29 +0100):\n<p>status update:</p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>reapplied patch for ng-boostrap;</li>\n\t<li>fixed build errors of test and jsapi project;</li>\n\t<li>went through angular.io update checklist;</li>\n\t<li>rollback default esbuild builder back to webpack; (looks like a separate US to switch to new build process, TBD if/when we need it);</li>\n</ul>\n\n\n<p>app state, todos: </p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>in phase1 app builds and loads, shallow testing didn't revealed major i\n\n[Comment 12] JIRAUSER62328 (Tue, 20 Jan 2026 17:25:19 +0100):\n<p>status update: </p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>applied migrations from ng update;</li>\n\t<li>updated version of DS to 12.6, with its dependencies;</li>\n\t<li>vulnerability audit (some points requires further consultation);</li>\n\t<li>fixed build errors;</li>\n</ul>\n\n\n<p>closest next steps:</p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>reapply patch for ng-boostrap (for new lib version);</li>\n\t<li>fix runtime errors (at this point app not loads at all);</li>\n\t<li>continue with upgra\n\n[Comment 13] cpfleder (Wed, 14 Jan 2026 14:53:01 +0100):\n<p>Hi everyone,</p>\n\n<p>ticket got renamed to Angular 19.</p>\n\n<p><a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=fimisior\" class=\"user-hover\" rel=\"fimisior\">Filip Misiorek</a> &amp; <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> your T&amp;M efforts for analysis please still book on this ticket. I'll update the description of above's ticket soon to fit to this task, once confirmed by\n\n[Comment 14] JIRAUSER62328 (Tue, 13 Jan 2026 14:21:58 +0100):\n<p>ag-grid has quite extensive list of breaking changes, accommodating them will take some effort: <br/>\n<a href=\"https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-32/#breaking-changes\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-32/#breaking-changes</a><br/>\n<a href=\"https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-33/#breaking-changes\" class=\"external-link\" target=\"_blank\" rel=\"\n\n[Comment 15] fimisior (Tue, 13 Jan 2026 11:27:55 +0100):\n<p>To upgrade Angular to version 21.x we have to also upgrade environment dependencies: Node.js, TypeScript.<br/>\n <br/>\nCurrent state on UVZ:<br/>\nnode.js v20.18.0<br/>\n\"typescript\": \"~5.4.5\",<br/>\n <br/>\nShould be on UVZ:<br/>\nnode.js v22.12.0<br/>\n\"typescript\": \"5.9.0\", (5.8.0 with Angular 19.2)<br/>\n <br/>\nFrom Angular documentation  RxJS should be set to ^6.5.3 or ^7.4.0, so we are fine with that because we are now using rxjs 7.4.0 version.<br/>\n <br/>\nThis part is basing on:<br/>\n<a href=\""
+    "technical_notes": "Assignee: Paweł Świdziński\nReporter: Christian Pflederer\nCreated: Mon, 12 Jan 2026 15:52:11 +0100\nUpdated: Fri, 6 Feb 2026 16:04:26 +0100\nFix Version: UVZ 1.70.0\nResolution: Unresolved\n\nComments (15):\n\n[Comment 1] JIRAUSER62230 (Fri, 6 Feb 2026 16:04:26 +0100):\n<p>All smoke tests have been completed except for the re-encryption tests - Cloudbeaver, which is needed for this, was not working all day today.</p>\n\n[Comment 2] JIRAUSER54834 (Thu, 5 Feb 2026 10:21:25 +0100):\n<p><a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=pswidzin\" class=\"user-hover\" rel=\"pswidzin\">Paweł Świdziński</a> and <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> to align on required testing approach today.</p>\n\n<p>Current plan: Focused smoke testing which will require ~1/2 days of efforts</p>\n\n[Comment 3] JIRAUSER62328 (Tue, 3 Feb 2026 11:33:19 +0100):\n<p>Assigned to <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=pswidzin\" class=\"user-hover\" rel=\"pswidzin\">Paweł Świdziński</a> for testing. Please see uvz-bnuvz-12529-a... env in XNP client</p>\n\n[Comment 4] JIRAUSER59240 (Mon, 2 Feb 2026 14:40:16 +0100):\n<p>Review approved : </p>\n<ul>\n\t<li>Code base</li>\n\t<li>Pipeline for phase1 and phase3 check</li>\n\t<li>Output logs -&gt; xnp client, rancher, elastic</li>\n\t<li>Application start with basic usage locally and on the environment</li>\n</ul>\n\n[Comment 5] JIRAUSER62328 (Fri, 30 Jan 2026 11:59:41 +0100):\n<p>Created <a href=\"https://bnotkca.pl.s2-eu.capgemini.com/gitlab/bnotk-devs/uvz/-/merge_requests/4672\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">MR-4672</a> , passing to <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=krkosciu\" class=\"user-hover\" rel=\"krkosciu\">Krystian Kościukiewicz</a> for code review</p>\n\n[Comment 6] JIRAUSER62328 (Thu, 29 Jan 2026 17:08:08 +0100):\n<p>Security audit of dependencies revealed several dependencies having vulnerabilities. In scope of mitigating them <b>was done:</b></p>\n\n<ul class=\"alternate\" type=\"square\">\n\t<li>lodash-es 4.17.22 -&gt; 4.17.23</li>\n\t<li>@pact-foundation/* - removed completely (see \"pact tests\" block below)</li>\n\t<li>@compodoc/compodoc 1.1.11 -&gt; 1.2.1</li>\n\t<li>@stoplight/spectral-cli 6.11.0 -&gt; 6.15.0</li>\n\t<li>chai-json - removed completely (no usages in project)</li>\n\t<li>@angular-eslint/* - updated to 19.8.1 to match angular version</li>\n\t<li>@typescript-eslint/* - updated to latest 8.54.0 to satisfy other dependencies</li>\n\t<li>eslint-plugin-jsdoc - 41.1.2 -&gt; 62.3.1</li>\n\t<li>webpack-dev-server 4.11.1 -&gt; 5.2.3</li>\n</ul>\n\n\n<ul class=\"alternate\" type=\"square\">\n\t<li>angular-cli &gt; pacote  Angular team not going to fix vulnerability in v19 as it will break compatibility with node 19, since we already using node 22 we can use newer version of pacote which doesn't have vulnerability. =&gt; overriden pacote version in package.json</li>\n</ul>\n\n\n<h4><a name=\"pacttests\"></a>pact tests</h4>\n<p>Were disabled in 2023 in scope of <a href=\"https://d3.ce.capgemini.com/jira/browse/BNUVZ-5702\" class=\"external-link\" rel=\"nofollow\">https://d3.ce.capgemini.com/jira/browse/BNUVZ-5702</a>, and not used since then. <br/>\nAgreed with <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=amastour\" class=\"user-hover\" rel=\"amastour\">Aymen Mastouri</a> that outdated dependencies needed for Pact tests could be removed, and all specs referencing them - excluded from builds (files remains in repo for now).</p>\n\n<h4><a name=\"eslint\"></a>eslint</h4>\n<p>Update of eslint brought new linter rules and current codebase is non-compliant to some of them. Those rules were <b>disabled</b> for now, separate <a href=\"https://d3.ce.capgemini.com/jira/browse/BNUVZ-12570\" class=\"external-link\" rel=\"nofollow\">task</a> was created for reenabling them and refactor code accordingly</p>\n\n[Comment 7] JIRAUSER41751 (Wed, 28 Jan 2026 20:40:20 +0100):\n<h2><a name=\"%7B%7DOutcomeofTRM%2828.01.2026%29%3A%7B%7D%7B%7D%7B%7D\"></a><b>Outcome of TRM (28.01.2026):</b><b>{</b>}</h2>\n\n<p><b>Frontend Build Strategy - SASS Compiler</b></p>\n<ul>\n\t<li>Decision to use the SASS compiler as builder instead of Webpack.</li>\n\t<li>This decision is taken in preparation for the upcoming Angular upgrade.</li>\n</ul>\n\n\n<p><b>Next steps:</b></p>\n\n<p>Sören will create an Epic based on this task. A dedicated sub-task “SASS Compiler Update” will be created under the Epic.</p>\n\n<p><a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=cpfleder\" class=\"user-hover\" rel=\"cpfleder\">Christian Pflederer</a> ,<a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> , <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=msolecki\" class=\"user-hover\" rel=\"msolecki\">Michał Solecki</a> </p>\n\n[Comment 8] JIRAUSER41751 (Tue, 27 Jan 2026 15:44:39 +0100):\n<p>Thank you <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> , for the content. The motivation is clear and plausible. As discussed in the Tech Lead sync, I will discuss these inputs with the customer in the TRM on 29 January 2026.</p>\n\n[Comment 9] JIRAUSER62328 (Tue, 27 Jan 2026 15:26:00 +0100):\n<h2><a name=\"SASScompiler\"></a>SASS compiler</h2>\n<p>Update to angular 19, brought sass@1.85.0 which marks usages of \"@import\" in scss files as deprecated. As we were using it extensively build- and browser consoles are spammed with warnings.</p>\n\n<p>Was able to migrate to new syntax in stylesheets of components, however not in global stylesheets, which are importing 3rd party stylesheets we have no control over (boostrap4, bnotk/ds-ng).</p>\n\n<p>According to <span class=\"error\">&#91;documentation&#93;</span>(<a href=\"https://sass-lang.com/documentation/breaking-changes/import/\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://sass-lang.com/documentation/breaking-changes/import/</a>) there is no plans to remove support of old syntax in nearest future, so we can just *<b>silent</b>* those warnings for now (checked with DS team - this approach was taken). But currently used builder(build-angular:browser) is not supporting configuration for sass. </p>\n\n\n<h2><a name=\"Builders\"></a>Builders </h2>\n<h3><a name=\"patha%29keepwebpackwith%40angulardevkit%2Fbuildangular%3Abrowserbuilder\"></a>path a) keep webpack with @angular-devkit/build-angular:browser builder</h3>\n<p>pros: </p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>less configuration changes needed, potentially less issues<br/>\ncons:</li>\n\t<li>to silence sass builder warnings - need to provide custom-webpack config, as build-angular:browser doen't support configuration of sass loader</li>\n\t<li>missing percs of modern builders (build speed, bundle size)</li>\n\t<li>potential deprecation pressure as angular defaults to new builder and promotes its usage</li>\n</ul>\n\n\n<h3><a name=\"pathb%29switchto%40angulardevkit%2Fbuildangular%3Aapplication\"></a>path b) switch to @angular-devkit/build-angular:application</h3>\n<p>pros:</p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>modern toolset - quicker builds, better dev experience</li>\n\t<li>supports configuring sass builder out of the box</li>\n</ul>\n\n\n<p>cons:</p>\n<ul c\n\n[Comment 10] JIRAUSER62328 (Tue, 27 Jan 2026 08:40:46 +0100):\n<p>On leads sync agreed that I'll prepare document describing options with new/old builder, potential consequences, pros/cons and that will be brought to customer to make an informed decision whether we invest time to migration or not.</p>\n\n[Comment 11] JIRAUSER62328 (Wed, 21 Jan 2026 17:17:29 +0100):\n<p>status update:</p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>reapplied patch for ng-boostrap;</li>\n\t<li>fixed build errors of test and jsapi project;</li>\n\t<li>went through angular.io update checklist;</li>\n\t<li>rollback default esbuild builder back to webpack; (looks like a separate US to switch to new build process, TBD if/when we need it);</li>\n</ul>\n\n\n<p>app state, todos: </p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>in phase1 app builds and loads, shallow testing didn't revealed major issues;</li>\n\t<li><del>app is not loads in xnp</del> -  fixed;</li>\n\t<li>lot of warnings related to sass - during the build, to be fixed;</li>\n\t<li>ag-grid - icons showing sort direction on columns not shows up, to be fixed;</li>\n\t<li>issues on report overview page:</li>\n</ul>\n<ul>\n\t<li>- column with checkboxes is missing;</li>\n\t<li>- when add columns from columns config menu - grid not renders them correctly;</li>\n</ul>\n<ul class=\"alternate\" type=\"square\">\n\t<li>4 failing unit tests;</li>\n\t<li>headless e2e / xnp-e2e - didn't run yet</li>\n</ul>\n\n[Comment 12] JIRAUSER62328 (Tue, 20 Jan 2026 17:25:19 +0100):\n<p>status update: </p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>applied migrations from ng update;</li>\n\t<li>updated version of DS to 12.6, with its dependencies;</li>\n\t<li>vulnerability audit (some points requires further consultation);</li>\n\t<li>fixed build errors;</li>\n</ul>\n\n\n<p>closest next steps:</p>\n<ul class=\"alternate\" type=\"square\">\n\t<li>reapply patch for ng-boostrap (for new lib version);</li>\n\t<li>fix runtime errors (at this point app not loads at all);</li>\n\t<li>continue with upgrade checklist from angular.io</li>\n</ul>\n\n[Comment 13] cpfleder (Wed, 14 Jan 2026 14:53:01 +0100):\n<p>Hi everyone,</p>\n\n<p>ticket got renamed to Angular 19.</p>\n\n<p><a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=fimisior\" class=\"user-hover\" rel=\"fimisior\">Filip Misiorek</a> &amp; <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=osamusen\" class=\"user-hover\" rel=\"osamusen\">Oleksii Samusenko</a> your T&amp;M efforts for analysis please still book on this ticket. I'll update the description of above's ticket soon to fit to this task, once confirmed by client and reviewed by <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=amastour\" class=\"user-hover\" rel=\"amastour\">Aymen Mastouri</a> in customer ticket.</p>\n\n<p>As discussed with <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=fimisior\" class=\"user-hover\" rel=\"fimisior\">Filip Misiorek</a> and <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=amastour\" class=\"user-hover\" rel=\"amastour\">Aymen Mastouri</a>, we have the following plan:</p>\n<ul>\n\t<li>This task here for Angular 19 Upgrade (18-&gt;19, including Pattern Library upgrade from 11.3.1 to 12.6.0 and node-js 22.12 and typescript 5.8.0). Tshirt-size: XL</li>\n\t<li>New task (not yet created by customer or in internal jira) for Angular 20 Upgrade (19-20, including Pattern library from 12.6.0 to 13.2.0 or later). Tshirt-size: L</li>\n\t<li>Once PL is available in new version for Angular 21, we will get a new task there.</li>\n</ul>\n\n\n<p>Angular 19 upgrade will be planned in for next sprint. Redesign will get lower priority as per customer alignment.</p>\n\n<p>cc <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=jnowaczy\" class=\"user-hover\" rel=\"jnowaczy\">Jacek Nowaczyk</a> <a href=\"https://d3.ce.capgemini.com/jira/secure/ViewProfile.jspa?name=msolecki\" class=\"user-hover\" rel=\"msolecki\">Michał Solecki</a> </p>\n\n[Comment 14] JIRAUSER62328 (Tue, 13 Jan 2026 14:21:58 +0100):\n<p>ag-grid has quite extensive list of breaking changes, accommodating them will take some effort: <br/>\n<a href=\"https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-32/#breaking-changes\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-32/#breaking-changes</a><br/>\n<a href=\"https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-33/#breaking-changes\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://www.ag-grid.com/javascript-data-grid/upgrading-to-ag-grid-33/#breaking-changes</a></p>\n\n[Comment 15] fimisior (Tue, 13 Jan 2026 11:27:55 +0100):\n<p>To upgrade Angular to version 21.x we have to also upgrade environment dependencies: Node.js, TypeScript.<br/>\n <br/>\nCurrent state on UVZ:<br/>\nnode.js v20.18.0<br/>\n\"typescript\": \"~5.4.5\",<br/>\n <br/>\nShould be on UVZ:<br/>\nnode.js v22.12.0<br/>\n\"typescript\": \"5.9.0\", (5.8.0 with Angular 19.2)<br/>\n <br/>\nFrom Angular documentation  RxJS should be set to ^6.5.3 or ^7.4.0, so we are fine with that because we are now using rxjs 7.4.0 version.<br/>\n <br/>\nThis part is basing on:<br/>\n<a href=\"https://angular.dev/reference/versions\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://angular.dev/reference/versions</a><br/>\n <br/>\nWe should remember to upgrade Angular step by step and verify if app works after each step (manual test on browser, also XNP smoke tests, unit tests and e2e tests should pass)<br/>\n <br/>\nStep 0: update node.js to  ^22.12.0, typescript to 5.8.0  </p>\n\n<p> Check if scripts are working fine locally and on Jenkins<br/>\nStep 1: Angular 18 to 19<br/>\n<a href=\"https://angular.dev/update-guide?v=18.0-19.0&amp;l=3\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://angular.dev/update-guide?v=18.0-19.0&amp;l=3</a><br/>\nStep 2: Angular 19 to 20<br/>\n<a href=\"https://angular.dev/update-guide?v=19.0-20.0&amp;l=3\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://angular.dev/update-guide?v=19.0-20.0&amp;l=3</a> <br/>\nStep 3: Angular 20 to 21<br/>\nHere we need to upgrade typescript to &gt;=5.9.0 &lt;6.0.0<br/>\n<a href=\"https://angular.dev/update-guide?v=20.0-21.0&amp;l=3\" class=\"external-link\" target=\"_blank\" rel=\"nofollow noopener\">https://angular.dev/update-guide?v=20.0-21.0&amp;l=3</a> <br/>\n <br/>\nAfter each step ensure that unit-test are passing and XNP works.<br/>\n <br/>\n<font color=\"#ff0000\">Another topic is that UVZ has DS dependency on master.</font><br/>\nDesign System (Pattern Library) relies on: Bootstrap, NG Bootstrap, AG Grid, NG Select, NG Select Highligh.<br/>\n <br/>\nDependencies fo"
   },
-  
   "development_plan": {
     "affected_components": [
-      "IndexHTMLResourceService",
-      "DeedEntryConnectionRestServiceImpl",
-      "DeedRegistryRestServiceImpl",
-      "DeedEntryRestServiceImpl",
-      "ProxyRestTemplateConfiguration",
-      "CustomMethodSecurityExpressionHandler",
-      "BusinessPurposeRestServiceImpl",
-      "OpenApiOperationAuthorizationRightCustomizer",
-      "OpenApiConfig",
-      "ArchivingRestServiceImpl"
+      "component.frontend.core.app_module",
+      "component.frontend.adapters.adapters_module",
+      "component.frontend.core.core_module",
+      "component.frontend.deed-entry.deed_entry_module",
+      "component.frontend.number-management.number_management_module",
+      "component.frontend.report-metadata.report_metadata_module",
+      "component.frontend.shared.online_help_module",
+      "component.frontend.shared.shared_module",
+      "component.frontend.workflow.workflow_module",
+      "component.frontend.services_action_api-generated.action_api_module"
     ],
-    "interfaces": [
-      "GET /validation/exception",
-      "GET /assert/operation/signer/present",
-      "GET /is/present",
-      "GET /uvz/v1/businesspurposes",
-      "GET /uvz/v1/deedentries",
-      "POST /uvz/v1/deedentries",
-      "GET /uvz/v1/deedentries/{id}",
-      "GET /uvz/v1/deedentries/to-be-signed",
-      "GET /uvz/v1/deedentries/to-be-approved",
-      "PUT /uvz/v1/deedentries/{id}"
-    ],
+    "interfaces": [],
     "dependencies": [],
+    "upgrade_plan": {
+      "migration_sequence": [
+        {
+          "rule_id": "ng19-standalone-default",
+          "title": "Standalone components are now default",
+          "severity": "breaking",
+          "migration_steps": [
+            "Run schematic ng generate @angular/core:standalone-migration",
+            "Refactor NgModules to standalone components where applicable"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": "ng generate @angular/core:standalone-migration"
+        },
+        {
+          "rule_id": "ng19-sass-compiler",
+          "title": "node-sass -> Dart Sass (sass)",
+          "severity": "breaking",
+          "migration_steps": [
+            "Remove node-sass dependency",
+            "Install sass package",
+            "Update angular.json style configurations if needed"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng19-builder-migration",
+          "title": "Browser builder -> Application builder",
+          "severity": "breaking",
+          "migration_steps": [
+            "Replace \"browser\" builder with \"application\" builder in angular.json",
+            "Adjust any custom builder options"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng19-typescript-56",
+          "title": "TypeScript 5.4 -> 5.6",
+          "severity": "breaking",
+          "migration_steps": [
+            "Update \"typescript\" version in package.json to ^5.6",
+            "Run tsc and fix any compilation errors"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng19-zonejs-015",
+          "title": "Zone.js 0.14 -> 0.15",
+          "severity": "breaking",
+          "migration_steps": [
+            "Update zone.js dependency to ^0.15",
+            "Verify that no deprecated zone APIs are used"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng20-control-flow",
+          "title": "ngIf/ngFor/ngSwitch -> @if/@for/@switch control flow",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Run schematic ng generate @angular/core:control-flow-migration",
+            "Manually adjust any complex template logic"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": "ng generate @angular/core:control-flow-migration"
+        },
+        {
+          "rule_id": "ng19-app-initializer",
+          "title": "APP_INITIALIZER -> provideAppInitializer",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Replace APP_INITIALIZER providers with provideAppInitializer",
+            "Update imports accordingly"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng20-karma-deprecated",
+          "title": "Karma test runner -> Vitest/Web Test Runner",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Remove karma dependencies",
+            "Add vitest and @angular-devkit/build-angular testing utilities",
+            "Migrate test configuration files"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng-aggrid-compat",
+          "title": "AG Grid compatibility check",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Verify current ag-grid-angular version supports Angular 19",
+            "Upgrade ag-grid-angular and ag-grid-community if needed"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng-ngbootstrap-compat",
+          "title": "ng-bootstrap compatibility check",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Check ng-bootstrap version compatibility with Angular 19",
+            "Apply required patches from UVZUSLNVV-5824"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng-ngxtranslate-compat",
+          "title": "ngx-translate compatibility check",
+          "severity": "deprecated",
+          "migration_steps": [
+            "Ensure ngx-translate version works with Angular 19",
+            "Update if newer version is required"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        },
+        {
+          "rule_id": "ng-signal-inputs",
+          "title": "@Input() -> input() signal",
+          "severity": "recommended",
+          "migration_steps": [
+            "Run schematic ng generate @angular/core:signal-input-migration",
+            "Review generated code for correctness"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": "ng generate @angular/core:signal-input-migration"
+        },
+        {
+          "rule_id": "ng-signal-viewchild",
+          "title": "@ViewChild -> viewChild() signal query",
+          "severity": "recommended",
+          "migration_steps": [
+            "Run schematic ng generate @angular/core:signal-queries-migration",
+            "Validate query behavior"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": "ng generate @angular/core:signal-queries-migration"
+        },
+        {
+          "rule_id": "ng-signal-outputs",
+          "title": "@Output() -> output() signal",
+          "severity": "recommended",
+          "migration_steps": [
+            "Run schematic ng generate @angular/core:output-migration",
+            "Test component event emission"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": "ng generate @angular/core:output-migration"
+        },
+        {
+          "rule_id": "ng-httpclient-module",
+          "title": "HttpClientModule -> provideHttpClient()",
+          "severity": "recommended",
+          "migration_steps": [
+            "Replace HttpClientModule imports with provideHttpClient() in providers",
+            "Adjust any custom HttpClient configurations"
+          ],
+          "affected_files": [],
+          "estimated_effort_minutes": 0,
+          "schematic": ""
+        }
+      ],
+      "verification_commands": [
+        "ng build",
+        "ng test"
+      ],
+      "total_estimated_effort_hours": 82.7,
+      "pre_migration_checks": [
+        "Backup current repository and CI pipelines",
+        "Run full existing test suite and record baseline results",
+        "Document current Node.js and TypeScript versions"
+      ],
+      "post_migration_checks": [
+        "Run ng build in CI and ensure no compilation errors",
+        "Execute full test suite (unit, integration, e2e) and verify pass rate",
+        "Validate that vertical action bar renders correctly in PL 12.6.0"
+      ]
+    },
     "implementation_steps": [
-      "1. Update Node.js version in .nvmrc / package.json to the version required by Angular 19 (e.g., >=20.x).",
-      "2. Upgrade TypeScript to the version compatible with Angular 19 (e.g., 5.4).",
-      "3. Modify package.json dependencies: replace \"@angular/core\": \"18.x\" with \"@angular/core\": \"19.x\" and update all Angular packages accordingly.",
-      "4. Update Pattern Library (PL) dependency to \"@bnotk/ds-ng\": \"12.6.0\" in package.json.",
-      "5. Align third‑party libraries to versions compatible with Angular 19: ng-bootstrap, ng-select, ng-option-highlight, ag-grid-angular, ag-grid-community (use the versions referenced in Filip Misiorek's analysis).",
-      "6. Apply the custom ng-bootstrap patch from UVZUSLNVV-5824 and run npm install to ensure the patched code is included.",
-      "7. Refactor any Angular 18 specific APIs (e.g., deprecated lifecycle hooks) in the front‑end source files; update imports in components that reference old PL 11.3.1 assets.",
-      "8. In IndexHTMLResourceService, adjust the served index.html to reference the new Angular bundle filenames and PL 12.6.0 CSS/JS assets.",
-      "9. Verify that the vertical action bar component still loads (it is deprecated but supported until PL 13.2.0); update its module imports if necessary.",
-      "10. Remove obsolete Angular 18 and PL 11.3.1 files from the repository (e.g., old polyfills, style sheets) after confirming they are not required by Angular 19/PL 12.6.0.",
-      "11. Run full build, fix compilation errors, and update CI pipeline to use the new Node.js and TypeScript versions.",
-      "12. Execute regression test suite and update failing tests to align with Angular 19 APIs."
+      "1. Update Node.js to the LTS version compatible with Angular 19 (e.g., Node 22).",
+      "2. Upgrade TypeScript to version 5.6 in package.json.",
+      "3. Update Angular core, CLI, and related packages to version 19.8.1.",
+      "4. Apply ng19-standalone-default schematic to migrate NgModules to standalone components.",
+      "5. Replace node-sass with sass and adjust style configurations.",
+      "6. Switch angular.json builder from \"browser\" to \"application\".",
+      "7. Update zone.js to 0.15 and verify runtime behavior.",
+      "8. Run control flow migration schematic and manually fix complex templates.",
+      "9. Replace APP_INITIALIZER providers with provideAppInitializer.",
+      "10. Migrate test runner from Karma to Vitest and update test configs.",
+      "11. Upgrade ag-grid-angular, ag-grid-community, ng-bootstrap, ng-select, and other listed libraries to versions compatible with Angular 19.",
+      "12. Apply signal migration schematics for inputs, outputs, and ViewChild queries.",
+      "13. Replace HttpClientModule imports with provideHttpClient().",
+      "14. Run full build and test verification commands.",
+      "15. Clean up any remaining Angular 18 or PL 11.3.1 artifacts."
     ],
     "test_strategy": {
       "unit_tests": [
-        "Run existing unit tests for all Angular components after upgrade; add tests for any newly introduced PL 12.6.0 components.",
-        "Create unit tests for the vertical action bar to ensure it renders correctly with PL 12.6.0."
+        "Run existing unit tests after each migration step to catch regressions early.",
+        "Add unit tests for newly created standalone components."
       ],
       "integration_tests": [
-        "Execute integration tests for all REST endpoints listed in interfaces to verify that front‑end calls succeed with the upgraded bundles.",
-        "Perform end‑to‑end tests for critical user flows (e.g., deed entry creation, business purpose retrieval) using the upgraded UI."
+        "Execute integration tests covering API interactions, especially after updating ag-grid and ng-select.",
+        "Perform end‑to‑end tests for critical user flows (e.g., number management, deed entry)."
       ],
-      "similar_patterns": []
+      "similar_patterns": [
+        "JsonAuthenticationAdapter (jasmine, unit, relevance: 0.117)"
+      ]
     },
     "security_considerations": [
-      "Ensure CORS configuration allows only trusted origins (security pattern: cors in ActionRestService).",
-      "Verify CSRF protection is enabled for all state‑changing operations (security pattern: csrf in AbstractSecurityConfiguration).",
-      "Confirm pre_authorize annotations are present on sensitive services (security pattern: pre_authorize in KeyManagerRestService)."
+      "Ensure CORS configuration allows only trusted origins (cors in ActionRestService).",
+      "Verify CSRF protection is enabled for state‑changing operations (csrf in AbstractSecurityConfiguration).",
+      "Apply pre_authorize checks on sensitive services (pre_authorize in KeyManagerRestService)."
     ],
     "validation_strategy": [
-      "Add @NotNull annotations to DeedEntry fields as recommended (validation pattern: not_null on DeedEntry).",
-      "Add @Valid annotations to DeedEntryRestService method parameters (validation pattern: valid on DeedEntryRestService).",
-      "Apply @NotBlank, @Min, and @Max annotations to KmConfig properties (validation patterns: not_blank, min, max on KmConfig)."
+      "Add @NotNull annotation to DeedEntry fields (not_null on DeedEntry).",
+      "Add @Valid annotation to DeedEntryRestService methods (valid on DeedEntryRestService).",
+      "Add @NotBlank, @Min, @Max annotations to KmConfig properties (not_blank, min, max on KmConfig)."
     ],
     "error_handling": [
-      "Create or reuse custom RuntimeException classes for domain errors (error pattern: RuntimeException custom_exception).",
-      "Add @ExceptionHandler methods for generic Exception, HttpClientErrorException, and HttpRequestMethodNotSupportedException in a global exception handler (error patterns: exception_handler)."
+      "Create or reuse custom RuntimeException for generic runtime errors.",
+      "Add @ExceptionHandler for Exception in global exception handler.",
+      "Add @ExceptionHandler for HttpClientErrorException in global exception handler.",
+      "Add @ExceptionHandler for HttpRequestMethodNotSupportedException in global exception handler."
     ],
     "architecture_context": {
       "style": "Modular Monolith",
@@ -84,12 +280,12 @@
       ]
     },
     "estimated_complexity": "Medium",
-    "complexity_reasoning": "The upgrade touches core front‑end framework, multiple third‑party libraries, and requires coordination with backend services for asset delivery, but the modular monolith structure limits impact to well‑defined components.",
-    "estimated_files_changed": 115,
+    "complexity_reasoning": "The upgrade touches core framework version, introduces breaking changes (standalone components, builder migration) and requires coordinated library updates, but the existing modular structure and documented patterns limit unexpected side effects.",
+    "estimated_files_changed": 250,
     "risks": [
-      "Incompatible third‑party library versions causing runtime errors.",
-      "Deprecated vertical action bar may be removed in future PL releases, leading to hidden breakage.",
-      "Potential mismatches between backend served assets (IndexHTMLResourceService) and new bundle filenames."
+      "Potential runtime incompatibilities with third‑party libraries (ag-grid, ng-bootstrap).",
+      "Regression of UI behavior due to migration to standalone components.",
+      "Incomplete test coverage leading to undetected bugs after migration."
     ],
     "evidence_sources": {
       "components": "architecture_facts.json",

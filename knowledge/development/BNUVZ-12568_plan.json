@@ -1,7 +1,7 @@
 {
   "task_id": "BNUVZ-12568",
   "source_files": [
-    "inputs\\tasks\\BNUVZ-12568.xml"
+    "C:\\projects\\inputs\\tasks\\BNUVZ-12568.xml"
   ],
   "understanding": {
     "summary": "SUPPORT-5890: Migration des SASS Compiler",
@@ -32,11 +32,11 @@
           "severity": "breaking",
           "migration_steps": [
             "Run schematic ng generate @angular/core:standalone-migration",
-            "Update component declarations to use standalone: true",
-            "Remove NgModule imports where applicable"
+            "Review generated standalone components for correctness",
+            "Update module imports to reflect standalone usage"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 400,
+          "estimated_effort_minutes": 120,
           "schematic": "ng generate @angular/core:standalone-migration"
         },
         {
@@ -45,12 +45,12 @@
           "severity": "breaking",
           "migration_steps": [
             "Remove node-sass from package.json",
-            "Install sass (Dart Sass)",
-            "Update angular.json style entries if needed",
+            "Install sass (Dart Sass) as devDependency",
+            "Update angular.json builder configuration to use @angular-devkit/build-angular:application",
             "Silence deprecation warnings via sass options"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 400,
+          "estimated_effort_minutes": 90,
           "schematic": ""
         },
         {
@@ -58,11 +58,12 @@
           "title": "Browser builder -> Application builder",
           "severity": "breaking",
           "migration_steps": [
-            "Replace builder reference in angular.json with @angular-devkit/build-angular:application",
-            "Adjust serve and build configurations accordingly"
+            "Replace \"builder\": \"@angular-devkit/build-angular:browser\" with \"@angular-devkit/build-angular:application\" in angular.json",
+            "Adjust serve options to match new builder schema",
+            "Validate that custom webpack configurations are migrated to esbuild where needed"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 400,
+          "estimated_effort_minutes": 60,
           "schematic": ""
         },
         {
@@ -70,12 +71,12 @@
           "title": "TypeScript 5.4 -> 5.6",
           "severity": "breaking",
           "migration_steps": [
-            "Update TypeScript version in package.json",
-            "Run ng update @angular-devkit/build-angular",
-            "Fix any compilation errors"
+            "Update typescript version in package.json to ^5.6",
+            "Run tsc to identify any type errors",
+            "Fix any incompatibilities introduced by TS 5.6"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 400,
+          "estimated_effort_minutes": 45,
           "schematic": ""
         },
         {
@@ -83,12 +84,11 @@
           "title": "Zone.js 0.14 -> 0.15",
           "severity": "breaking",
           "migration_steps": [
-            "Update zone.js version in package.json",
-            "Run npm install",
-            "Verify runtime behavior"
+            "Update zone.js version in package.json to ^0.15",
+            "Run application and verify change detection works as expected"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 400,
+          "estimated_effort_minutes": 30,
           "schematic": ""
         },
         {
@@ -97,10 +97,10 @@
           "severity": "deprecated",
           "migration_steps": [
             "Run schematic ng generate @angular/core:control-flow-migration",
-            "Manually adjust any remaining template syntax"
+            "Manually verify transformed templates for correctness"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 250,
+          "estimated_effort_minutes": 180,
           "schematic": "ng generate @angular/core:control-flow-migration"
         },
         {
@@ -108,11 +108,11 @@
           "title": "APP_INITIALIZER -> provideAppInitializer",
           "severity": "deprecated",
           "migration_steps": [
-            "Replace APP_INITIALIZER providers with provideAppInitializer",
-            "Update imports accordingly"
+            "Replace APP_INITIALIZER providers with provideAppInitializer calls",
+            "Adjust imports accordingly"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 250,
+          "estimated_effort_minutes": 30,
           "schematic": ""
         },
         {
@@ -120,12 +120,13 @@
           "title": "Karma test runner -> Vitest/Web Test Runner",
           "severity": "deprecated",
           "migration_steps": [
-            "Remove karma dependencies",
-            "Add vitest and @angular-devkit/build-angular testing config",
-            "Migrate test files if needed"
+            "Remove karma and related plugins",
+            "Install vitest and @angular-devkit/build-angular:dev-server",
+            "Migrate test configuration files to Vitest format",
+            "Update test scripts in package.json"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 250,
+          "estimated_effort_minutes": 120,
           "schematic": ""
         },
         {
@@ -133,11 +134,12 @@
           "title": "AG Grid compatibility check",
           "severity": "deprecated",
           "migration_steps": [
-            "Verify AG Grid version compatibility with Angular 19",
-            "Upgrade AG Grid if required"
+            "Verify current AG Grid version compatibility with Angular 19",
+            "Upgrade AG Grid if required",
+            "Run grid related unit/integration tests"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 250,
+          "estimated_effort_minutes": 60,
           "schematic": ""
         },
         {
@@ -145,11 +147,12 @@
           "title": "ng-bootstrap compatibility check",
           "severity": "deprecated",
           "migration_steps": [
-            "Check ng-bootstrap version compatibility",
-            "Upgrade or replace components as needed"
+            "Check ng-bootstrap version against Angular 19 support matrix",
+            "Upgrade ng-bootstrap if needed",
+            "Run UI component tests"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 250,
+          "estimated_effort_minutes": 45,
           "schematic": ""
         },
         {
@@ -157,11 +160,12 @@
           "title": "ngx-translate compatibility check",
           "severity": "deprecated",
           "migration_steps": [
-            "Validate ngx-translate version works with Angular 19",
-            "Update configuration for raw-loader changes"
+            "Validate ngx-translate version compatibility",
+            "Upgrade if necessary",
+            "Test translation loading (including raw-loader replacement)"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 250,
+          "estimated_effort_minutes": 45,
           "schematic": ""
         },
         {
@@ -170,7 +174,7 @@
           "severity": "recommended",
           "migration_steps": [
             "Run schematic ng generate @angular/core:signal-input-migration",
-            "Review and adjust any custom input handling"
+            "Review migrated inputs for correct signal usage"
           ],
           "affected_files": [],
           "estimated_effort_minutes": 150,
@@ -182,10 +186,10 @@
           "severity": "recommended",
           "migration_steps": [
             "Run schematic ng generate @angular/core:signal-queries-migration",
-            "Validate query behavior"
+            "Validate viewChild signal queries in components"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 150,
+          "estimated_effort_minutes": 120,
           "schematic": "ng generate @angular/core:signal-queries-migration"
         },
         {
@@ -194,10 +198,10 @@
           "severity": "recommended",
           "migration_steps": [
             "Run schematic ng generate @angular/core:output-migration",
-            "Adjust event emitters if necessary"
+            "Check event emission via output signals"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 150,
+          "estimated_effort_minutes": 90,
           "schematic": "ng generate @angular/core:output-migration"
         },
         {
@@ -205,11 +209,11 @@
           "title": "HttpClientModule -> provideHttpClient()",
           "severity": "recommended",
           "migration_steps": [
-            "Replace HttpClientModule imports with provideHttpClient() in providers",
-            "Update any custom HttpClient configurations"
+            "Replace HttpClientModule imports with provideHttpClient() in providers array",
+            "Verify HTTP services still function"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 150,
+          "estimated_effort_minutes": 60,
           "schematic": ""
         }
       ],
@@ -219,62 +223,60 @@
       ],
       "total_estimated_effort_hours": 82.7,
       "pre_migration_checks": [
-        "Run full test suite and record baseline results",
-        "Backup current repository and create a migration branch",
-        "Verify Node.js version meets Angular 19 requirements",
-        "Ensure all third‑party libraries have compatible versions"
+        "Run full test suite and record baseline coverage",
+        "Backup current branch and ensure CI pipeline is green",
+        "Confirm all third‑party library versions support Angular 19"
       ],
       "post_migration_checks": [
-        "Run ng build for production and ensure no compilation errors",
-        "Execute full unit and integration test suites",
-        "Check for remaining SASS deprecation warnings",
-        "Validate runtime functionality in a staging environment"
+        "Execute ng build for production and verify no compilation errors",
+        "Run full test suite (unit + integration) and compare against baseline",
+        "Perform manual smoke test of critical user flows"
       ]
     },
     "implementation_steps": [
       "1. Update angular.json builder to @angular-devkit/build-angular:application (AppModule)",
-      "2. Configure raw-loader replacement for .xlf files using Vite raw import syntax (SharedModule)",
-      "3. Install and configure Dart Sass, silence deprecation warnings (CoreModule)",
-      "4. Convert custom webpack configuration for jsApi subproject to an esbuild script (AdaptersModule)",
-      "5. Run ng generate @angular/core:standalone-migration to convert modules to standalone components (All modules)",
-      "6. Update TypeScript to 5.6 and fix compilation issues (CoreModule)",
-      "7. Upgrade zone.js to 0.15 and verify change detection (WorkflowModule)",
-      "8. Apply control‑flow migration schematic for ngIf/ngFor/ngSwitch (ReportMetadataModule)",
-      "9. Replace APP_INITIALIZER providers with provideAppInitializer (ActionApiModule)",
-      "10. Migrate test runner from Karma to Vitest/Web Test Runner (SharedModule)",
-      "11. Verify and upgrade AG Grid, ng-bootstrap, ngx-translate versions (OnlineHelpModule)",
-      "12. Run signal migration schematics for @Input, @ViewChild, @Output (NumberManagementModule)",
-      "13. Replace HttpClientModule imports with provideHttpClient() (DeedEntryModule)",
-      "14. Run full build (ng build) and address any remaining warnings (AppModule)",
-      "15. Execute unit and integration tests, fix regressions, and merge migration branch (All components)"
+      "2. Replace node-sass with sass and configure deprecation silencing (SharedModule)",
+      "3. Migrate raw-loader usage for .xlf files to ES module raw imports (CoreModule)",
+      "4. Convert custom webpack config for jsApi subproject to esbuild script (AdaptersModule)",
+      "5. Apply standalone migration schematic and adjust module imports (All modules)",
+      "6. Upgrade TypeScript to 5.6 and resolve type errors (CoreModule)",
+      "7. Update zone.js to 0.15 and verify change detection (WorkflowModule)",
+      "8. Replace APP_INITIALIZER providers with provideAppInitializer (AppModule)",
+      "9. Migrate tests from Karma to Vitest and adjust test scripts (All test suites)",
+      "10. Run control‑flow migration for ngIf/ngFor/ngSwitch (All components)",
+      "11. Upgrade AG Grid, ng-bootstrap, ngx-translate to versions compatible with Angular 19 (SharedModule, OnlineHelpModule)",
+      "12. Migrate @Input, @ViewChild, @Output to signal APIs using schematics (All UI components)",
+      "13. Replace HttpClientModule imports with provideHttpClient() (ActionApiModule)",
+      "14. Execute full build and run integration tests in dev mode (Dev environment)",
+      "15. Document migration changes and update ADR if necessary"
     ],
     "test_strategy": {
       "unit_tests": [
-        "Run existing Jasmine/Karma unit tests after migration",
-        "Add/adjust tests for components converted to standalone",
-        "Update tests that rely on raw-loader imports for .xlf files"
+        "Run existing Jasmine unit tests after migration to ensure component logic remains unchanged",
+        "Add unit tests for any newly introduced signal APIs"
       ],
       "integration_tests": [
-        "Execute end‑to‑end tests covering translation loading, API communication, and UI flows",
-        "Validate that jsApi proxy works with the new esbuild setup"
+        "Execute end‑to‑end tests covering translation loading, API communication, and UI interactions",
+        "Validate that jsApi proxy works with the new esbuild server"
       ],
       "similar_patterns": [
-        "XnpPdfAdapter (jasmine, unit)"
+        "XnpPdfAdapter (jasmine, unit, relevance: 0.116) – use as reference for structuring unit tests after migration"
       ]
     },
     "security_considerations": [
-      "Ensure CORS configuration allows only trusted origins (ActionRestService, JsonAuthorizationRestServiceImpl, AbstractSecurityConfiguration)",
-      "Verify CSRF protection is enabled for state‑changing operations (AbstractSecurityConfiguration)",
-      "Apply pre_authorize checks where needed (KeyManagerRestService)"
+      "Ensure CORS configuration allows only trusted origins (cors in ActionRestService, AbstractSecurityConfiguration, JsonAuthorizationRestServiceImpl)",
+      "Verify CSRF protection is enabled for state‑changing operations (csrf in AbstractSecurityConfiguration)",
+      "Apply pre_authorize checks where needed (pre_authorize in KeyManagerRestService)"
     ],
     "validation_strategy": [
-      "Add @NotNull annotations to DeedEntry fields",
-      "Add @Valid annotations to DeedEntryRestService parameters",
-      "Add @NotBlank, @Min, @Max annotations to KmConfig properties"
+      "Add @NotNull annotations to DeedEntry fields (not_null on DeedEntry)",
+      "Add @Valid annotation to DeedEntryRestService methods (valid on DeedEntryRestService)",
+      "Add @NotBlank, @Min, @Max annotations to KmConfig properties (not_blank, min, max on KmConfig)"
     ],
     "error_handling": [
-      "Create or reuse custom RuntimeException classes for domain errors",
-      "Add @ExceptionHandler methods for generic Exception, HttpClientErrorException, HttpRequestMethodNotSupportedException in global exception handler"
+      "Create or reuse custom RuntimeException types for domain errors (RuntimeException custom_exception)",
+      "Add global @ExceptionHandler for generic Exception (exception_handler)",
+      "Add specific @ExceptionHandler for HttpClientErrorException and HttpRequestMethodNotSupportedException"
     ],
     "architecture_context": {
       "style": "Modular Monolith",
@@ -285,13 +287,13 @@
       ]
     },
     "estimated_complexity": "Medium",
-    "complexity_reasoning": "The migration touches core build configuration, multiple Angular modules, and introduces new tooling (esbuild, Vite raw imports). While most steps are automated via schematics, manual adjustments for custom webpack config and third‑party library compatibility increase effort.",
+    "complexity_reasoning": "The migration touches core build configuration, multiple Angular modules, and introduces new tooling (esbuild, Vitest). While individual steps are straightforward, the breadth of affected components and need for extensive testing raise overall complexity.",
     "estimated_files_changed": 246,
     "risks": [
-      "Potential regression in styling due to SASS compiler switch",
-      "Breakage of translation loading if raw-loader replacement is incomplete",
-      "Incompatible third‑party library versions causing runtime errors",
-      "Missing test coverage for newly converted standalone components"
+      "Potential regressions in UI due to SASS import deprecation",
+      "Build failures caused by mismatched builder configuration",
+      "Third‑party library incompatibility with Angular 19",
+      "Test runner migration breaking existing test suites"
     ],
     "evidence_sources": {
       "components": "architecture_facts.json",
