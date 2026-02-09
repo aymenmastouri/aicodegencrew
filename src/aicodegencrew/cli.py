@@ -25,11 +25,12 @@ import shutil
 import sys
 import warnings
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .orchestrator import SDLCOrchestrator
+    from .orchestrator import PipelineResult, SDLCOrchestrator
 
 # Suppress noisy warnings from dependencies
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
@@ -58,6 +59,7 @@ class Config:
     no_clean: bool
     git_repo_url: str
     git_branch: str
+    output_base: Path = Path(".")
 
     @classmethod
     def from_env(cls, **overrides) -> "Config":
@@ -76,6 +78,9 @@ class Config:
         git_url = overrides.get("git_repo_url") or os.getenv("GIT_REPO_URL", "")
         git_branch = overrides.get("git_branch") or os.getenv("GIT_BRANCH", "")
 
+        # Output base directory: where knowledge/, logs/, run_report.json go
+        output_base = overrides.get("output_base") or os.getenv("OUTPUT_BASE_DIR", ".")
+
         return cls(
             repo_path=Path(repo),
             index_mode=mode,
@@ -84,6 +89,7 @@ class Config:
             no_clean=overrides.get("no_clean", False),
             git_repo_url=git_url.strip(),
             git_branch=git_branch.strip(),
+            output_base=Path(output_base),
         )
 
 
@@ -116,7 +122,8 @@ def setup_logging() -> None:
 
 def clean_knowledge(phase: str = "all") -> None:
     """Clean knowledge directory before running a phase."""
-    knowledge_dir = Path("knowledge")
+    from .shared.utils.logger import OUTPUT_BASE_DIR
+    knowledge_dir = OUTPUT_BASE_DIR / "knowledge"
     if not knowledge_dir.exists():
         return
     
@@ -296,15 +303,92 @@ def _resolve_phases_to_run(
     return set(orchestrator.get_enabled_phases())
 
 
+def _export_run_report(
+    result: "PipelineResult",
+    config: Config,
+    planned_phases: set[str],
+) -> Path | None:
+    """Export run_report.json to knowledge/ directory.
+
+    Provides the end user with a persistent record of what happened
+    during the pipeline run — visible alongside the generated artifacts.
+    """
+    import json
+    from .shared.utils.logger import RUN_ID, METRICS_LOG, CURRENT_LOG, OUTPUT_BASE_DIR
+
+    base = config.output_base.resolve()
+    report_dir = base / "knowledge"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    report_path = report_dir / "run_report.json"
+
+    # Collect output files per phase (relative to output_base)
+    phase_outputs = {
+        "phase0_indexing": [str(base / ".cache" / ".chroma")],
+        "phase1_architecture_facts": [
+            str(base / "knowledge" / "architecture" / "architecture_facts.json"),
+            str(base / "knowledge" / "architecture" / "evidence_map.json"),
+        ],
+        "phase2_architecture_analysis": [
+            str(base / "knowledge" / "architecture" / "analyzed_architecture.json"),
+        ],
+        "phase3_architecture_synthesis": [
+            str(base / "knowledge" / "architecture" / "c4"),
+            str(base / "knowledge" / "architecture" / "arc42"),
+        ],
+        "phase4_development_planning": [
+            str(base / "knowledge" / "development"),
+        ],
+    }
+
+    phases_detail = []
+    for pr in result.phases:
+        detail = pr.to_dict()
+        detail["duration_seconds"] = round(pr.duration_seconds, 2)
+        # List actual output files that exist
+        expected = phase_outputs.get(pr.phase_id, [])
+        detail["output_files"] = [f for f in expected if Path(f).exists()]
+        phases_detail.append(detail)
+
+    report = {
+        "run_id": RUN_ID,
+        "timestamp": datetime.now().isoformat(),
+        "status": result.status,
+        "message": result.message,
+        "total_duration": result.total_duration,
+        "planned_phases": sorted(planned_phases),
+        "environment": {
+            "repo_path": str(config.repo_path),
+            "index_mode": config.index_mode,
+            "output_base_dir": str(base),
+            "git_repo_url": config.git_repo_url or None,
+        },
+        "phases": phases_detail,
+        "output_summary": {
+            "knowledge_dir": str(report_dir),
+            "log_file": str(CURRENT_LOG),
+            "metrics_file": str(METRICS_LOG),
+        },
+    }
+
+    try:
+        report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+        logger.info(f"[REPORT] Run report exported: {report_path}")
+        return report_path
+    except Exception as e:
+        logger.warning(f"[REPORT] Failed to write run report: {e}")
+        return None
+
+
 def _export_architecture_docs():
     """Copy Phase 3 architecture docs (C4 + Arc42) to export dir.
 
-    Default: ./architecture-docs in CWD. Override with DOCS_OUTPUT_DIR in .env.
+    Default: <output_base>/architecture-docs. Override with DOCS_OUTPUT_DIR in .env.
     """
     import shutil
+    from .shared.utils.logger import OUTPUT_BASE_DIR
 
-    docs_dir = os.getenv("DOCS_OUTPUT_DIR", "./architecture-docs")
-    source = Path("knowledge/architecture")
+    docs_dir = os.getenv("DOCS_OUTPUT_DIR", str(OUTPUT_BASE_DIR / "architecture-docs"))
+    source = OUTPUT_BASE_DIR / "knowledge" / "architecture"
     target = Path(docs_dir)
 
     # Only copy the deliverable subdirectories (c4, arc42)
@@ -340,9 +424,20 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     from .orchestrator import SDLCOrchestrator
     from .pipelines import IndexingPipeline, ArchitectureFactsPipeline
     from .crews import ArchitectureAnalysisCrew, ArchitectureSynthesisCrew
+    from .shared.utils.logger import configure_output_dir
+
+    # Set output base directory BEFORE any file I/O
+    base = config.output_base.resolve()
+    configure_output_dir(base)
+    logger.info(f"[CONFIG] OUTPUT_BASE_DIR = {base}")
 
     # Resolve repo path (clone from Git URL if configured)
     repo_path = _resolve_repo_path(config)
+
+    # Convenience: all output paths relative to output_base
+    knowledge_dir = base / "knowledge"
+    arch_dir = knowledge_dir / "architecture"
+    dev_dir = knowledge_dir / "development"
 
     # Clean if requested
     if config.clean:
@@ -377,7 +472,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             clean_knowledge("phase1")
         facts_pipeline = ArchitectureFactsPipeline(
             repo_path=str(repo_path),
-            output_dir="./knowledge/architecture",
+            output_dir=str(arch_dir),
         )
         orchestrator.register_phase("phase1_architecture_facts", facts_pipeline)
 
@@ -385,7 +480,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     if "phase2_architecture_analysis" in planned_phases:
         from .crews.architecture_analysis import MapReduceAnalysisCrew
         analysis_crew = MapReduceAnalysisCrew(
-            facts_path="./knowledge/architecture/architecture_facts.json"
+            facts_path=str(arch_dir / "architecture_facts.json")
         )
         orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
 
@@ -395,7 +490,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         orchestrator.config["phases"]["phase3_architecture_synthesis"]["enabled"] = False
     elif "phase3_architecture_synthesis" in planned_phases:
         synthesis_crew = ArchitectureSynthesisCrew(
-            facts_path="./knowledge/architecture/architecture_facts.json"
+            facts_path=str(arch_dir / "architecture_facts.json")
         )
         orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
 
@@ -418,9 +513,8 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         # Filter out directories and hidden files
         input_files = [f for f in input_files if f.is_file() and not f.name.startswith(".")]
 
-        output_dir = os.getenv("OUTPUT_DIR", "./knowledge/architecture")
-        facts_path = str(Path(output_dir) / "architecture_facts.json")
-        analyzed_path = str(Path(output_dir) / "analyzed_architecture.json")
+        facts_path = str(arch_dir / "architecture_facts.json")
+        analyzed_path = str(arch_dir / "analyzed_architecture.json")
 
         if input_files:
             logger.info(f"[Phase4] Found {len(input_files)} input file(s) in {input_dir}")
@@ -428,7 +522,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
                 input_files=[str(f) for f in input_files],
                 facts_path=facts_path,
                 analyzed_path=analyzed_path,
-                output_dir="./knowledge/development",
+                output_dir=str(dev_dir),
                 repo_path=os.getenv("PROJECT_PATH"),
             )
             orchestrator.register_phase("phase4_development_planning", planning_pipeline)
@@ -438,6 +532,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # Execute
     try:
         result = orchestrator.run(preset=preset, phases=phases)
+
+        # Always export run report (success or failure)
+        _export_run_report(result, config, planned_phases)
 
         if result.status == "success":
             logger.info(f"\n[OK] Pipeline successful!")

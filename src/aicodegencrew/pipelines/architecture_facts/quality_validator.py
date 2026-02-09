@@ -400,6 +400,6 @@ if __name__ == "__main__":
     if result.warnings:
         print(f"\n[WARN] Warnings ({len(result.warnings)}):")
         for warn in result.warnings[:10]:
-            print(f"  - [{warn.category}] {warn.message}"))
+            print(f"  - [{warn.category}] {warn.message}")
     
     sys.exit(0 if result.is_valid else 1)

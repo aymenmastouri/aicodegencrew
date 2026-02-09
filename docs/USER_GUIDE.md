@@ -292,6 +292,17 @@ Each plan contains:
 - **risks**: Identified risks and mitigation strategies
 - **complexity**: Estimated complexity and effort
 
+### Run Report
+
+After every pipeline run, `knowledge/run_report.json` is generated with:
+- **run_id**: Unique identifier for this run
+- **status**: `success` or `failed`
+- **phases**: Per-phase status, duration, and output files
+- **environment**: Repo path, index mode, output base directory
+- **output_summary**: Paths to log file and metrics file
+
+This file is always written — even on failure — so you have a persistent record of what happened.
+
 ### Architecture Documentation (Phase 3)
 
 Internal output (always): `knowledge/architecture/`
@@ -397,8 +408,8 @@ aicodegencrew run --preset <preset_name>
 | `INDEX_MODE` | `auto` | Indexing mode (`off`/`auto`/`force`/`smart`) |
 | `SKIP_SYNTHESIS` | `false` | Skip Phase 3 (C4/arc42 generation) |
 | `LOG_LEVEL` | `INFO` | Logging level |
-| `OUTPUT_DIR` | `./knowledge/architecture` | Internal output directory (all phases) |
-| `DOCS_OUTPUT_DIR` | `./architecture-docs` | Export folder for Phase 3 docs (C4 + Arc42 only) |
+| `OUTPUT_BASE_DIR` | `.` | Base directory for ALL outputs (`knowledge/`, `logs/`, `run_report.json`) |
+| `DOCS_OUTPUT_DIR` | `<OUTPUT_BASE_DIR>/architecture-docs` | Export folder for Phase 3 docs (C4 + Arc42 only) |
 | `ARC42_LANGUAGE` | `en` | Arc42 ToC language (`en` or `de`) |
 | `MAX_LLM_INPUT_TOKENS` | `100000` | Max input tokens per LLM call |
 | `MAX_LLM_OUTPUT_TOKENS` | `16000` | Max output tokens per LLM call |
