@@ -23,7 +23,16 @@
       "ActionApiModule"
     ],
     "interfaces": [],
-    "dependencies": [],
+    "dependencies": [
+      "node.js",
+      "typescript",
+      "bnotk/ds-ng",
+      "ng-bootstrap",
+      "ng-select/ng-option-highlight",
+      "ng-select/ng-select",
+      "ag-grid-angular",
+      "ag-grid-community"
+    ],
     "upgrade_plan": {
       "framework": "Angular",
       "from_version": "18",
@@ -34,10 +43,13 @@
           "title": "Standalone components are now default",
           "severity": "breaking",
           "migration_steps": [
-            "Run schematic ng generate @angular/core:standalone-migration"
+            "Run: ng generate @angular/core:standalone-migration",
+            "Review generated changes per module",
+            "Remove empty NgModules after migration",
+            "Update test imports to use component directly"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 120,
+          "estimated_effort_minutes": 1420,
           "schematic": "ng generate @angular/core:standalone-migration"
         },
         {
@@ -45,10 +57,14 @@
           "title": "node-sass -> Dart Sass (sass)",
           "severity": "breaking",
           "migration_steps": [
-            "Replace node-sass with sass in package.json and update build configuration"
+            "Replace node-sass with sass: npm uninstall node-sass && npm install -D sass",
+            "Add @use 'sass:math' in SCSS files using division",
+            "Replace $var / 2 with math.div($var, 2)",
+            "Review ::ng-deep usage (deprecated, plan removal)",
+            "Test: ng build --watch to verify all SCSS compiles"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 60,
+          "estimated_effort_minutes": 75,
           "schematic": ""
         },
         {
@@ -56,10 +72,13 @@
           "title": "Browser builder -> Application builder",
           "severity": "breaking",
           "migration_steps": [
-            "Update angular.json to use the new application builder schema"
+            "Run: ng update @angular/cli",
+            "Accept builder migration prompt",
+            "Remove buildOptimizer and vendorChunk (not needed with esbuild)",
+            "Update output path configuration"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 60,
+          "estimated_effort_minutes": 30,
           "schematic": ""
         },
         {
@@ -67,10 +86,11 @@
           "title": "TypeScript 5.4 -> 5.6",
           "severity": "breaking",
           "migration_steps": [
-            "Upgrade TypeScript version in package.json to ^5.6"
+            "Run: npm install typescript@~5.6.0",
+            "Fix any new strict type errors from TS 5.5/5.6"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 30,
+          "estimated_effort_minutes": 60,
           "schematic": ""
         },
         {
@@ -78,10 +98,10 @@
           "title": "Zone.js 0.14 -> 0.15",
           "severity": "breaking",
           "migration_steps": [
-            "Upgrade zone.js to version 0.15"
+            "Run: npm install zone.js@~0.15.0"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 30,
+          "estimated_effort_minutes": 10,
           "schematic": ""
         },
         {
@@ -89,10 +109,14 @@
           "title": "ngIf/ngFor/ngSwitch -> @if/@for/@switch control flow",
           "severity": "deprecated",
           "migration_steps": [
-            "Refactor templates to use the new @if, @for, @switch syntax"
+            "Run: ng generate @angular/core:control-flow-migration",
+            "Review @if blocks (handle else/else-if manually)",
+            "Review @for blocks (track expression is required)",
+            "Review @switch blocks",
+            "Remove CommonModule imports where only used for ngIf/ngFor"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 180,
+          "estimated_effort_minutes": 1464,
           "schematic": "ng generate @angular/core:control-flow-migration"
         },
         {
@@ -100,10 +124,11 @@
           "title": "APP_INITIALIZER -> provideAppInitializer",
           "severity": "deprecated",
           "migration_steps": [
-            "Replace APP_INITIALIZER providers with provideAppInitializer calls"
+            "Replace { provide: APP_INITIALIZER, ... } with provideAppInitializer()",
+            "Update imports: remove APP_INITIALIZER, add provideAppInitializer"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 60,
+          "estimated_effort_minutes": 30,
           "schematic": ""
         },
         {
@@ -111,7 +136,11 @@
           "title": "Karma test runner -> Vitest/Web Test Runner",
           "severity": "deprecated",
           "migration_steps": [
-            "Migrate test configuration from Karma to Vitest"
+            "Install Vitest: npm install -D vitest @analogjs/vite-plugin-angular",
+            "Create vitest.config.ts with Angular plugin",
+            "Migrate TestBed imports (mostly compatible)",
+            "Remove karma.conf.js and karma dependencies",
+            "Update angular.json test architect"
           ],
           "affected_files": [],
           "estimated_effort_minutes": 120,
@@ -122,10 +151,12 @@
           "title": "AG Grid compatibility check",
           "severity": "deprecated",
           "migration_steps": [
-            "Upgrade ag-grid-angular and ag-grid-community to versions compatible with Angular 19"
+            "Check AG Grid compatibility matrix for target Angular version",
+            "Upgrade to ag-grid-angular 32.x+ if needed",
+            "Review AG Grid changelog for breaking changes"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 90,
+          "estimated_effort_minutes": 60,
           "schematic": ""
         },
         {
@@ -133,10 +164,11 @@
           "title": "ng-bootstrap compatibility check",
           "severity": "deprecated",
           "migration_steps": [
-            "Upgrade ng-bootstrap to the latest version and apply the patch referenced in UVZUSLNVV-5824"
+            "Upgrade to @ng-bootstrap/ng-bootstrap 18.x+",
+            "Review component API changes in changelog"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 90,
+          "estimated_effort_minutes": 45,
           "schematic": ""
         },
         {
@@ -144,10 +176,11 @@
           "title": "ngx-translate compatibility check",
           "severity": "deprecated",
           "migration_steps": [
-            "Verify and update ngx-translate to work with Angular 19"
+            "Check ngx-translate Angular 19/20 compatibility",
+            "Consider migration to @angular/localize if ngx-translate is unmaintained"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 60,
+          "estimated_effort_minutes": 30,
           "schematic": ""
         },
         {
@@ -155,10 +188,12 @@
           "title": "@Input() -> input() signal",
           "severity": "recommended",
           "migration_steps": [
-            "Migrate @Input properties to use the new input() signal API"
+            "Run: ng generate @angular/core:signal-input-migration",
+            "Review required vs optional inputs",
+            "Update template access: myInput -> myInput()"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 120,
+          "estimated_effort_minutes": 905,
           "schematic": "ng generate @angular/core:signal-input-migration"
         },
         {
@@ -166,21 +201,26 @@
           "title": "@ViewChild -> viewChild() signal query",
           "severity": "recommended",
           "migration_steps": [
-            "Migrate @ViewChild usages to viewChild() signal queries"
+            "Run: ng generate @angular/core:signal-queries-migration",
+            "Replace @ViewChild with viewChild()",
+            "Replace @ViewChildren with viewChildren()",
+            "Update access patterns to use signal calls"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 120,
-          "schematic": "ng generate @angular/core:signal-viewchild-migration"
+          "estimated_effort_minutes": 385,
+          "schematic": "ng generate @angular/core:signal-queries-migration"
         },
         {
           "rule_id": "ng-signal-outputs",
           "title": "@Output() -> output() signal",
           "severity": "recommended",
           "migration_steps": [
-            "Migrate @Output events to use output() signals"
+            "Run: ng generate @angular/core:output-migration",
+            "Replace EventEmitter with OutputEmitterRef",
+            "Update emit() calls"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 120,
+          "estimated_effort_minutes": 225,
           "schematic": "ng generate @angular/core:output-migration"
         },
         {
@@ -188,10 +228,12 @@
           "title": "HttpClientModule -> provideHttpClient()",
           "severity": "recommended",
           "migration_steps": [
-            "Replace HttpClientModule imports with provideHttpClient() in providers"
+            "Replace HttpClientModule with provideHttpClient() in providers",
+            "Add withInterceptorsFromDi() if using class-based interceptors",
+            "Remove HttpClientModule from module imports array"
           ],
           "affected_files": [],
-          "estimated_effort_minutes": 60,
+          "estimated_effort_minutes": 105,
           "schematic": ""
         }
       ],
@@ -201,70 +243,55 @@
       ],
       "total_estimated_effort_hours": 82.7,
       "pre_migration_checks": [
-        "Ensure CI pipeline supports Node.js 22 and TypeScript 5.6",
-        "Backup current repository and create a migration branch",
-        "Run full test suite on Angular 18 baseline"
+        "Run full npm audit and address existing vulnerabilities",
+        "Ensure CI pipeline passes on current Angular 18 baseline",
+        "Create backup branch and tag current release"
       ],
       "post_migration_checks": [
-        "Run ng build in production mode without errors",
-        "Execute full unit and integration test suite",
-        "Perform smoke tests on staging environment"
+        "Execute full unit and integration test suites",
+        "Perform smoke tests on staging environment",
+        "Run security scan on updated dependencies"
       ]
     },
     "implementation_steps": [
-      "1. Update Node.js to version 22 and TypeScript to 5.6 in the CI/CD pipeline.",
-      "2. Upgrade package.json dependencies: Angular core to 19, Pattern Library to 12.6.0, ng-bootstrap, ng-select, ag-grid-angular, ag-grid-community, and bnotk/ds-ng.",
-      "3. Run the standalone migration schematic (ng generate @angular/core:standalone-migration) across all modules.",
-      "4. Apply the Sass compiler migration by replacing node-sass with sass.",
-      "5. Update angular.json to use the new application builder schema.",
-      "6. Refactor all component templates to the new @if/@for/@switch control flow syntax.",
-      "7. Replace APP_INITIALIZER providers with provideAppInitializer calls.",
-      "8. Migrate test configuration from Karma to Vitest and update related scripts.",
-      "9. Update ag-grid and ng-bootstrap versions, applying the UVZUSLNVV-5824 patch to ng-bootstrap.",
-      "10. Verify ngx-translate compatibility and adjust if necessary.",
-      "11. Migrate @Input, @ViewChild, and @Output usages to signal APIs using the provided schematics.",
-      "12. Replace HttpClientModule imports with provideHttpClient() in all modules.",
-      "13. Remove any remaining Angular 18 or Pattern Library 11.3.1 artifacts that are not required by Angular 19 / PL 12.6.0.",
-      "14. Execute the full build, run unit/integration tests, and perform smoke testing on the staging environment.",
-      "15. Document migration outcomes and update the release notes."
+      "Migrate each NgModule to a standalone component using the ng19-standalone-default schematic.",
+      "Replace node-sass with sass and adjust all SCSS division operations.",
+      "Update angular.json to use the new application builder configuration.",
+      "Upgrade TypeScript to 5.6 and fix any type errors across the codebase.",
+      "Upgrade zone.js to 0.15 and verify runtime behavior.",
+      "Run control-flow migration to replace ngIf/ngFor/ngSwitch with @if/@for/@switch.",
+      "Replace APP_INITIALIZER providers with provideAppInitializer calls.",
+      "Switch test runner from Karma to Vitest and adjust test configuration.",
+      "Upgrade ag-grid-angular and ag-grid-community to versions compatible with Angular 19.",
+      "Upgrade @ng-bootstrap/ng-bootstrap to the latest 18.x version.",
+      "Migrate @Input, @ViewChild, and @Output usages to signal-based APIs.",
+      "Replace HttpClientModule imports with provideHttpClient() in providers."
     ],
     "test_strategy": {
       "unit_tests": [
-        "Verify each component renders correctly after migration to standalone mode.",
-        "Validate that signal-based inputs, outputs, and viewChild queries behave as expected.",
-        "Ensure ng-select and ag-grid components function with updated versions."
+        "Verify JsonAuthenticationAdapter behavior using existing Jasmine spec as reference."
       ],
       "integration_tests": [
-        "End‑to‑end flow through the vertical action bar remains functional.",
-        "Data services communicate correctly with backend after HttpClient migration.",
-        "Pattern Library components display with PL 12.6.0 styling."
+        "Run smoke tests covering re‑encryption flow and critical user journeys."
       ],
       "similar_patterns": [
-        {
-          "pattern": "JsonAuthenticationAdapter",
-          "framework": "jasmine",
-          "type": "unit",
-          "relevance": 0.117,
-          "file": "frontend\\src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.spec.ts"
-        }
+        "JsonAuthenticationAdapter (jasmine, unit, relevance: 0.117)"
       ]
     },
     "security_considerations": [
-      "Ensure CORS configuration in ActionRestService allows only trusted origins.",
-      "Verify CSRF protection is enabled in AbstractSecurityConfiguration for state‑changing operations.",
-      "Confirm CORS settings in JsonAuthorizationRestServiceImpl are restrictive.",
-      "Apply pre_authorize checks in KeyManagerRestService where required."
+      "Ensure CORS configuration allows only trusted origins (cors in ActionRestService).",
+      "Verify CSRF protection is enabled for state‑changing operations (csrf in AbstractSecurityConfiguration).",
+      "Apply pre_authorize checks on sensitive services (pre_authorize in KeyManagerRestService)."
     ],
     "validation_strategy": [
-      "Add @NotNull annotations to DeedEntry fields.",
-      "Add @Valid annotation to DeedEntryRestService methods.",
-      "Add @NotBlank, @Min, and @Max annotations to KmConfig properties."
+      "Add @NotNull annotations to DeedEntry fields (not_null on DeedEntry).",
+      "Add @Valid annotation to DeedEntryRestService methods (valid on DeedEntryRestService).",
+      "Add @NotBlank, @Min, @Max annotations to KmConfig properties (not_blank, min, max on KmConfig)."
     ],
     "error_handling": [
-      "Create or reuse custom RuntimeException classes for domain errors.",
-      "Add @ExceptionHandler for generic Exception in the global exception handler.",
-      "Add @ExceptionHandler for HttpClientErrorException.",
-      "Add @ExceptionHandler for HttpRequestMethodNotSupportedException."
+      "Create or reuse custom RuntimeException classes for domain errors (custom_exception).",
+      "Add @ExceptionHandler for generic Exception in global exception handler.",
+      "Add @ExceptionHandler for HttpClientErrorException and HttpRequestMethodNotSupportedException."
     ],
     "architecture_context": {
       "style": "Modular Monolith",
@@ -275,13 +302,12 @@
       ]
     },
     "estimated_complexity": "Medium",
-    "complexity_reasoning": "The migration involves multiple breaking changes (standalone components, Sass compiler, builder schema, TypeScript upgrade) and a large number of deprecated APIs that must be refactored. However, most changes are supported by Angular schematics and the codebase size (≈246 affected files) is moderate, allowing systematic automation.",
-    "estimated_files_changed": 246,
+    "complexity_reasoning": "The upgrade involves many breaking changes (standalone migration, Sass compiler switch, builder migration) and extensive refactoring to adopt signal APIs, but the codebase is modular and tests exist, reducing overall risk.",
+    "estimated_files_changed": 250,
     "risks": [
-      "Potential runtime errors due to incomplete migration of legacy APIs.",
-      "Third‑party libraries may not yet be fully compatible with Angular 19, causing build failures.",
-      "Regression of UI behavior after template control‑flow refactoring.",
-      "Extended build times on CI due to larger dependency updates."
+      "Potential regression due to extensive migration to standalone components.",
+      "Third‑party library incompatibilities (ag‑grid, ng‑bootstrap, ng‑select).",
+      "Signal API migration may introduce subtle runtime bugs if not fully covered by tests."
     ],
     "evidence_sources": {
       "components": "architecture_facts.json",
