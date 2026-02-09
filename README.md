@@ -1049,7 +1049,14 @@ python -m py_compile src/aicodegencrew/cli.py && pytest tests/ -v --tb=short
 
 ## License
 
-Proprietary — Capgemini. See [LICENSE](LICENSE) for details.
+**Copyright © 2024-2026 Capgemini**
+
+This software is proprietary and confidential to Capgemini.
+
+**Developed by:** Aymen Mastouri
+**For:** Capgemini Internal Use
+
+See [LICENSE](LICENSE) for full terms and restrictions.
 
 ---
 
