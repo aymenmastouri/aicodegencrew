@@ -93,6 +93,16 @@ class InputParserStage:
         labels_text = " ".join(task.labels).lower()
         combined = f"{text} {labels_text}"
 
+        # Exclusion patterns: NOT version upgrades, but build/tool migrations
+        # Check ONLY summary/title to avoid false positives from comments
+        summary_lower = task.summary.lower()
+        exclusion_patterns = [
+            "sass compiler", "sass migration", "scss migration",
+            "builder migration", "build tool migration", "webpack migration",
+            "migration des sass", "sass import deprecation",
+        ]
+        is_build_tool_migration = any(pat in summary_lower for pat in exclusion_patterns)
+
         # Score-based upgrade detection:
         # Strong signals (framework + upgrade intent) vs weak signals
         upgrade_score = 0
@@ -140,9 +150,13 @@ class InputParserStage:
             upgrade_score += 1
 
         # Threshold: need score >= 3 to be classified as upgrade
-        if upgrade_score >= 3:
+        # BUT: exclude build-tool migrations (webpack→esbuild, SASS compiler, etc.)
+        if upgrade_score >= 3 and not is_build_tool_migration:
             task.task_type = "upgrade"
             logger.info(f"[Stage1] Upgrade detected (score={upgrade_score})")
+        elif is_build_tool_migration:
+            task.task_type = "refactoring"
+            logger.info(f"[Stage1] Build-tool migration detected (not version upgrade)")
         elif any(kw in text for kw in ["fix", "bug", "error", "crash", "regression", "defect"]):
             task.task_type = "bugfix"
         elif any(kw in text for kw in ["refactor", "clean up", "technical debt", "restructure"]):
