@@ -19,7 +19,7 @@
 # LLM PROVIDER:
 #   LLM for AI agents is controlled via LLM_PROVIDER in .env:
 #     local  = Ollama (qwen2.5-coder:7b at localhost:11434)
-#     onprem = Capgemini (Llama-3.3-70B at bmf-ai.apps.ce.capgemini.com)
+#     onprem = On-premises (gpt-oss-120b at sov-ai-platform.nue.local.vm)
 #
 #   Embeddings always use local Ollama (all-minilm)
 # =============================================================================
@@ -66,25 +66,7 @@ phases:
       output_dir: "./knowledge/architecture"
 
   # =========================================================================
-  # CREW: Phase 2 - Architecture Synthesis (LLM, evidence-first)
-  # =========================================================================
-  # Type:      Crew (AI Agents)
-  # Location:  crews/architecture_synthesis/
-  # Input:     architecture_facts.json + evidence_map.json
-  # Output:    knowledge/architecture/c4/
-  #            knowledge/architecture/arc42/
-  #            knowledge/architecture/runtime/
-  #            knowledge/architecture/evidence/
-  # 
-  # RULES:
-  # - Only synthesize what is in architecture_facts.json
-  # - Every statement must reference evidence
-  # - If no evidence, mark as UNKNOWN
-  # - No invented containers/components
-  # =========================================================================
-  
-  # =========================================================================
-  # CREW: Phase 2 - Architecture Analysis (NEW!)
+  # CREW: Phase 2 - Architecture Analysis
   # =========================================================================
   # Type:      Crew (AI Agents - 4 specialized analysts)
   # Location:  crews/architecture_analysis/
@@ -208,7 +190,7 @@ phases:
     type: crew
     required: false
     order: 5
-    dependencies: [phase4_task_understanding]
+    dependencies: [phase4_development_planning]
     config:
       output_dir: "./knowledge/codegen"
 

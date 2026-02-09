@@ -109,8 +109,8 @@ The initial implementation focuses on architecture facts extraction:
 | Metric | Value |
 |--------|-------|
 | Components | 951+ |
-| Interfaces | 125 |
-| Relations | 169 (raw), target 85%+ resolved |
+| Interfaces | 226 |
+| Relations | 190 |
 | Evidence Items | 1005 |
 | Relation Resolution | 7-tier resolver (see 4.2.1) |
 | Endpoint Flows | Controller-Service-Repository chains (see 4.2.2) |
