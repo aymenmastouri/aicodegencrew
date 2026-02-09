@@ -370,6 +370,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
                 facts_path="./knowledge/architecture/architecture_facts.json",
                 analyzed_path="./knowledge/architecture/analyzed_architecture.json",
                 output_dir="./knowledge/development",
+                repo_path=os.getenv("PROJECT_PATH"),
             )
             orchestrator.register_phase("phase4_development_planning", planning_pipeline)
         else:
