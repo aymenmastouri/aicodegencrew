@@ -88,7 +88,7 @@ class SDLCOrchestrator:
         orchestrator = SDLCOrchestrator()
         orchestrator.register("phase0_indexing", IndexingPipeline(...))
         orchestrator.register("phase1_architecture_facts", ArchFactsPipeline(...))
-        orchestrator.register("phase2_architecture_synthesis", SynthesisCrew(...))
+        orchestrator.register("phase2_architecture_analysis", AnalysisCrew(...))
         
         result = orchestrator.run(preset="architecture_workflow")
     """

@@ -62,14 +62,13 @@ AICodeGenCrew is designed to run **entirely on your infrastructure** with your o
 
 ## Architecture Overview
 
-The system follows a **4-Layer Architecture** with 9 pipeline phases:
+The system follows a **4-Layer Architecture** with 8 pipeline phases (0-7):
 
 | Layer | Phases | Purpose | LLM Required |
 |-------|--------|---------|:------------:|
 | **Knowledge** | 0 – 1 | Deterministic facts extraction | No |
-| **Reasoning** | 2 – 4 | AI-powered analysis and synthesis | Hybrid |
-| **Execution** | 5 – 7 | Code generation and deployment | Yes |
-| **Feedback** | 8 | Continuous learning and quality | Yes |
+| **Reasoning** | 2 – 3 | AI-powered analysis and synthesis | Yes |
+| **Execution** | 4 – 7 | Development planning, code generation, deployment | Hybrid |
 
 > For the full architecture specification, see [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md).
 > DrawIO diagrams are in [docs/diagrams/](docs/diagrams/).
@@ -253,7 +252,7 @@ Presets are predefined phase combinations defined in [`config/phases_config.yaml
 | `analysis_only` | 0 – 2 | Facts + AI analysis |
 | `architecture_workflow` | 0 – 3 | Full architecture documentation |
 | `architecture_full` | 0 – 4 | Architecture + development planning |
-| `full_pipeline` | 0 – 8 | All phases (end-to-end SDLC) |
+| `full_pipeline` | 0 – 7 | All phases (end-to-end SDLC) |
 
 ---
 
@@ -331,7 +330,7 @@ python -m aicodegencrew run --preset indexing_only
 # Architecture + review/consistency (Phases 0-4)
 python -m aicodegencrew run --preset architecture_full
 
-# All phases end-to-end (Phases 0-8)
+# All phases end-to-end (Phases 0-7)
 python -m aicodegencrew run --preset full_pipeline
 ```
 
@@ -652,7 +651,8 @@ aicodegencrew/
 │       ├── knowledge-structure.drawio
 │       ├── analysis-crew.drawio
 │       ├── synthesis-crew.drawio
-│       └── phase2-crew-architecture.drawio
+│       ├── phase2-crew-architecture.drawio
+│       └── phase4-pipeline.drawio
 ├── src/aicodegencrew/
 │   ├── cli.py                      # CLI entry point (argparse)
 │   ├── orchestrator.py             # Phase orchestration and dependency resolution
