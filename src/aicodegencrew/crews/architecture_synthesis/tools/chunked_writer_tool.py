@@ -95,7 +95,13 @@ class ChunkedWriterTool(BaseTool):
             Status message
         """
         try:
-            path = Path(file_path)
+            # Base directory for architecture docs (same as doc_writer)
+            base_dir = Path("knowledge/architecture")
+
+            # Strip base_dir prefix if agent already included it (prevents double-nesting)
+            clean_path = file_path.replace("knowledge/architecture/", "").replace("knowledge\\architecture\\", "")
+            path = base_dir / clean_path
+
             path.parent.mkdir(parents=True, exist_ok=True)
             
             if mode == "create":

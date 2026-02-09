@@ -17,7 +17,7 @@ class TaskInput(BaseModel):
 
     task_id: str = Field(..., description="Unique task identifier (e.g., PROJ-123)")
     source_file: str = Field(..., description="Source file path")
-    source_format: Literal["jira_xml", "docx", "excel", "text"] = Field(
+    source_format: Literal["xml", "docx", "excel", "text"] = Field(
         ..., description="Detected format"
     )
     summary: str = Field(..., description="Task summary/title")

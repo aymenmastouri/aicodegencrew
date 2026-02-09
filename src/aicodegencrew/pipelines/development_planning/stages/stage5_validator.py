@@ -10,7 +10,7 @@ NO LLM REQUIRED
 from typing import Dict, Any, List
 
 from ..schemas import ImplementationPlan, ValidationResult
-from ...shared.utils.logger import setup_logger
+from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

@@ -32,6 +32,10 @@ dev = [
     "black>=23.0.0",
     "ruff>=0.1.0",
 ]
+parsers = [
+    "python-docx>=1.0.0",  # DOCX parsing
+    "openpyxl>=3.1.0",      # Excel parsing
+]
 
 [project.scripts]
 aicodegencrew = "aicodegencrew.main:run"

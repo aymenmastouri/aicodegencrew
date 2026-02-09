@@ -13,7 +13,7 @@ import json
 from typing import Dict, Any
 
 from ..schemas import TaskInput, ImplementationPlan
-from ...shared.utils.logger import setup_logger
+from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
