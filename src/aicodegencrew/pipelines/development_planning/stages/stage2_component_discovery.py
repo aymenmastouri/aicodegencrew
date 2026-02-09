@@ -142,8 +142,14 @@ class ComponentDiscoveryStage:
                 logger.warning("[Stage2] ChromaDB not available, skipping semantic search")
                 return scores
 
+            # Embed query using same Ollama client as indexing pipeline
+            query_embedding = self._embed_query(query)
+            if not query_embedding:
+                logger.warning("[Stage2] Query embedding failed, skipping semantic search")
+                return scores
+
             results = collection.query(
-                query_texts=[query],
+                query_embeddings=[query_embedding],
                 n_results=n,
                 include=["metadatas", "distances"]
             )
@@ -167,22 +173,24 @@ class ComponentDiscoveryStage:
         return scores
 
     def _name_matching(self, query: str) -> Dict[str, float]:
-        """Fuzzy name matching."""
-        try:
-            from fuzzywuzzy import fuzz
-        except ImportError:
-            logger.warning("[Stage2] fuzzywuzzy not installed, skipping name matching")
-            return {}
+        """Fuzzy name matching using difflib (stdlib)."""
+        from difflib import SequenceMatcher
 
         scores = {}
         query_lower = query.lower()
+        query_words = set(query_lower.split())
 
         for comp in self.components:
             comp_id = comp["id"]
             comp_name = comp["name"].lower()
 
-            # Partial ratio (substring matching)
-            score = fuzz.partial_ratio(query_lower, comp_name) / 100.0
+            # Sequence similarity
+            ratio = SequenceMatcher(None, query_lower, comp_name).ratio()
+
+            # Boost if any query word appears as substring in component name
+            word_bonus = 0.2 if any(w in comp_name for w in query_words if len(w) > 3) else 0.0
+
+            score = min(ratio + word_bonus, 1.0)
 
             if score > 0.3:  # Threshold
                 scores[comp_id] = score
@@ -275,7 +283,7 @@ class ComponentDiscoveryStage:
         interfaces = []
 
         for interface in self.interfaces:
-            implemented_by = interface.get("implemented_by", "")
+            implemented_by = interface.get("implemented_by") or ""
 
             # Check if any component ID matches
             if any(comp_id in implemented_by for comp_id in component_ids):
@@ -296,8 +304,8 @@ class ComponentDiscoveryStage:
         dependencies = []
 
         for relation in self.relations:
-            from_id = relation.get("from", "")
-            to_id = relation.get("to", "")
+            from_id = relation.get("from") or ""
+            to_id = relation.get("to") or ""
 
             # Check if either end is in our component list
             if from_id in component_ids or to_id in component_ids:
@@ -362,7 +370,6 @@ class ComponentDiscoveryStage:
         try:
             import chromadb
             from chromadb.config import Settings
-            from chromadb.utils import embedding_functions
 
             chroma_path = Path(self.chroma_dir)
 
@@ -375,22 +382,23 @@ class ComponentDiscoveryStage:
                 settings=Settings(anonymized_telemetry=False),
             )
 
-            embed_model = os.getenv("EMBED_MODEL", "nomic-embed-text:latest")
-            ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
-
-            embedding_fn = embedding_functions.OllamaEmbeddingFunction(
-                model_name=embed_model,
-                url=f"{ollama_base_url}/api/embeddings"
-            )
-
-            self.collection = client.get_collection(
-                name="repo_docs",
-                embedding_function=embedding_fn
-            )
+            # No embedding function - embeddings were stored externally by indexing pipeline.
+            # We embed queries manually via _embed_query() and use query_embeddings.
+            self.collection = client.get_collection(name="repo_docs")
 
             logger.info(f"[Stage2] Connected to ChromaDB at {chroma_path}")
             return self.collection
 
         except Exception as e:
             logger.error(f"[Stage2] ChromaDB initialization error: {e}")
+            return None
+
+    def _embed_query(self, text: str) -> Optional[List[float]]:
+        """Embed query text using the same Ollama client as the indexing pipeline."""
+        try:
+            from ....shared.utils.ollama_client import OllamaClient
+            client = OllamaClient()
+            return client.embed_text(text)
+        except Exception as e:
+            logger.warning(f"[Stage2] Failed to embed query: {e}")
             return None

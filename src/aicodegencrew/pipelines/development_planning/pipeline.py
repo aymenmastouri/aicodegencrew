@@ -114,28 +114,28 @@ class DevelopmentPlanningPipeline:
             stage1_start = time.time()
             task = self.stage1.run(self.input_file)
             stage1_duration = time.time() - stage1_start
-            step_done("Stage 1: Input Parser", duration=stage1_duration)
+            step_done("Stage 1: Input Parser")
 
-            log_metric("stage_complete", {
-                "phase": "phase4_development_planning",
-                "stage": "stage1_input_parser",
-                "duration_seconds": stage1_duration,
-                "task_id": task.task_id,
-            })
+            log_metric("stage_complete",
+                phase="phase4_development_planning",
+                stage="stage1_input_parser",
+                duration_seconds=stage1_duration,
+                task_id=task.task_id,
+            )
 
             # Stage 2: Component Discovery
             step_start("Stage 2: Component Discovery (RAG + Scoring)")
             stage2_start = time.time()
             discovery_result = self.stage2.run(task, top_k=10)
             stage2_duration = time.time() - stage2_start
-            step_done("Stage 2: Component Discovery", duration=stage2_duration)
+            step_done("Stage 2: Component Discovery")
 
-            log_metric("stage_complete", {
-                "phase": "phase4_development_planning",
-                "stage": "stage2_component_discovery",
-                "duration_seconds": stage2_duration,
-                "components_found": len(discovery_result["affected_components"]),
-            })
+            log_metric("stage_complete",
+                phase="phase4_development_planning",
+                stage="stage2_component_discovery",
+                duration_seconds=stage2_duration,
+                components_found=len(discovery_result["affected_components"]),
+            )
 
             # Stage 3: Pattern Matching
             step_start("Stage 3: Pattern Matching (TF-IDF + Rules)")
@@ -146,31 +146,31 @@ class DevelopmentPlanningPipeline:
                 top_k=5,
             )
             stage3_duration = time.time() - stage3_start
-            step_done("Stage 3: Pattern Matching", duration=stage3_duration)
+            step_done("Stage 3: Pattern Matching")
 
-            log_metric("stage_complete", {
-                "phase": "phase4_development_planning",
-                "stage": "stage3_pattern_matcher",
-                "duration_seconds": stage3_duration,
-                "test_patterns": len(pattern_result["test_patterns"]),
-                "security_patterns": len(pattern_result["security_patterns"]),
-                "validation_patterns": len(pattern_result["validation_patterns"]),
-                "error_patterns": len(pattern_result["error_patterns"]),
-            })
+            log_metric("stage_complete",
+                phase="phase4_development_planning",
+                stage="stage3_pattern_matcher",
+                duration_seconds=stage3_duration,
+                test_patterns=len(pattern_result["test_patterns"]),
+                security_patterns=len(pattern_result["security_patterns"]),
+                validation_patterns=len(pattern_result["validation_patterns"]),
+                error_patterns=len(pattern_result["error_patterns"]),
+            )
 
             # Stage 4: Plan Generation (LLM)
             step_start("Stage 4: Plan Generation (LLM Call)")
             stage4_start = time.time()
             plan = self.stage4.run(task, discovery_result, pattern_result)
             stage4_duration = time.time() - stage4_start
-            step_done("Stage 4: Plan Generation", duration=stage4_duration)
+            step_done("Stage 4: Plan Generation")
 
-            log_metric("stage_complete", {
-                "phase": "phase4_development_planning",
-                "stage": "stage4_plan_generator",
-                "duration_seconds": stage4_duration,
-                "llm_call": True,
-            })
+            log_metric("stage_complete",
+                phase="phase4_development_planning",
+                stage="stage4_plan_generator",
+                duration_seconds=stage4_duration,
+                llm_call=True,
+            )
 
             # Stage 5: Validation
             step_start("Stage 5: Validation")
@@ -192,15 +192,15 @@ class DevelopmentPlanningPipeline:
                 for warning in validation.warnings:
                     logger.warning(f"  - {warning}")
 
-            step_done("Stage 5: Validation", duration=stage5_duration)
+            step_done("Stage 5: Validation")
 
-            log_metric("stage_complete", {
-                "phase": "phase4_development_planning",
-                "stage": "stage5_validator",
-                "duration_seconds": stage5_duration,
-                "is_valid": validation.is_valid,
-                "warnings": len(validation.warnings),
-            })
+            log_metric("stage_complete",
+                phase="phase4_development_planning",
+                stage="stage5_validator",
+                duration_seconds=stage5_duration,
+                is_valid=validation.is_valid,
+                warnings=len(validation.warnings),
+            )
 
             # Write plan to file
             output_file = self.output_dir / f"{task.task_id}_plan.json"
@@ -220,15 +220,15 @@ class DevelopmentPlanningPipeline:
             logger.info(f"[Phase4]   Stage 5 (Validation): {stage5_duration:.2f}s")
             logger.info("=" * 80)
 
-            log_metric("phase_complete", {
-                "phase": "phase4_development_planning",
-                "status": "success",
-                "duration_seconds": total_duration,
-                "task_id": task.task_id,
-                "output_file": str(output_file),
-                "components_found": len(discovery_result["affected_components"]),
-                "test_patterns_found": len(pattern_result["test_patterns"]),
-            })
+            log_metric("phase_complete",
+                phase="phase4_development_planning",
+                status="success",
+                duration_seconds=total_duration,
+                task_id=task.task_id,
+                output_file=str(output_file),
+                components_found=len(discovery_result["affected_components"]),
+                test_patterns_found=len(pattern_result["test_patterns"]),
+            )
 
             return {
                 "status": "completed",
@@ -252,11 +252,11 @@ class DevelopmentPlanningPipeline:
             total_duration = time.time() - start_time
             logger.error(f"[Phase4] Pipeline failed: {e}", exc_info=True)
 
-            log_metric("phase_failed", {
-                "phase": "phase4_development_planning",
-                "error": str(e),
-                "duration_seconds": total_duration,
-            })
+            log_metric("phase_failed",
+                phase="phase4_development_planning",
+                error=str(e),
+                duration_seconds=total_duration,
+            )
 
             raise
 
