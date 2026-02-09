@@ -327,6 +327,24 @@ src/aicodegencrew/
                 facts_query_tool.py    # Query architecture facts
                 chunked_writer_tool.py # ChunkedWriterTool + StereotypeListTool
 
+        codegen/                       # Phase 5: Code Generation (PLANNED)
+            __init__.py
+            agents.py                  # Code generation agents
+            crew.py                    # CodeGenerationCrew
+            tasks.py                   # Code generation tasks
+
+        testing/                       # Phase 6: Test Generation (PLANNED)
+            __init__.py
+            agents.py                  # Test generation agents
+            crew.py                    # TestGenerationCrew
+            tasks.py                   # Test generation tasks
+
+        review/                        # Phase 7: Review + Deploy (PLANNED)
+            __init__.py
+            agents.py                  # Review agents
+            crew.py                    # ReviewCrew
+            tasks.py                   # Review tasks
+
     pipelines/
         __init__.py
         indexing.py                    # Backward compat
@@ -350,9 +368,48 @@ src/aicodegencrew/
             collectors/
                 fact_adapter.py        # RawFact→CollectedComponent/Interface/Relation
 
+        development_planning/          # Phase 4: Development Planning (HYBRID)
+            __init__.py
+            pipeline.py                # DevelopmentPlanningPipeline (5 stages)
+            schemas.py                 # Pydantic schemas for plans
+
+            stages/                    # 5-stage hybrid architecture
+                __init__.py
+                input_parser.py        # Stage 1: Parse JIRA/DOCX/Excel (deterministic)
+                component_discovery.py # Stage 2: RAG + scoring (2-5s)
+                pattern_matcher.py     # Stage 3: TF-IDF + rules (1-3s)
+                plan_generator.py      # Stage 4: LLM call (15-30s) <- ONLY LLM
+                validator.py           # Stage 5: Pydantic validation (<1s)
+
+            parsers/                   # Input file parsers
+                __init__.py
+                jira_parser.py         # Parse JIRA XML exports
+                docx_parser.py         # Parse Word documents
+                excel_parser.py        # Parse Excel sheets
+                log_parser.py          # Parse application logs
+
+            upgrade_rules/             # Framework upgrade rules
+                __init__.py
+                angular_upgrades.py    # Angular version upgrades
+                spring_upgrades.py     # Spring Boot upgrades
+                java_upgrades.py       # Java version upgrades
+                node_upgrades.py       # Node.js upgrades
+                dependency_upgrades.py # Dependency updates
+                breaking_changes.py    # Breaking change detection
+                migration_steps.py     # Migration step generation
+
+        merge/                         # Pipeline merge utilities
+            __init__.py
+            ...
+
+        tools/                         # Pipeline tools
+            __init__.py
+            ...
+
     shared/
         __init__.py
         validation.py                  # PhaseOutputValidator (inter-phase contracts)
+
         utils/
             logger.py                  # Logger + RUN_ID + JsonFormatter + log_metric()
             tool_guardrails.py         # ToolCallTracker + install/uninstall hooks
@@ -361,10 +418,17 @@ src/aicodegencrew/
             token_budget.py            # Token budget configuration
             file_filters.py
             ollama_client.py
+
         models/
             __init__.py
             architecture_facts_schema.py  # Pydantic schema for Phase 1
             analysis_schema.py            # Pydantic schema for Phase 2
+            development_plan_schema.py    # Pydantic schema for Phase 4
+
+        tools/                         # Shared tool base classes
+            __init__.py
+            base_tool.py               # BaseTool abstract class
+            quality_gate_tool.py       # Quality gate validation
 
     mcp/
         server.py                      # MCP knowledge server (STDIO)
