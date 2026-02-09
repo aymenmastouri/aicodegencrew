@@ -25,6 +25,7 @@ import re
 import shutil
 import subprocess
 import sys
+import zipfile
 from datetime import date
 from pathlib import Path
 
@@ -428,12 +429,45 @@ def assemble_release(version: str, wheel: Path, docker_tar: Path | None):
     print(f"  Release directory: {RELEASE}")
 
 
-def print_summary(version: str, docker: bool):
+def create_release_zip(version: str) -> Path:
+    """Create properly structured ZIP file for distribution."""
+    print("\n[3.5/4] Creating distribution ZIP...")
+
+    # ZIP file in dist/ (not inside release/)
+    zip_name = f"aicodegencrew-v{version}.zip"
+    zip_path = DIST / zip_name
+
+    # Remove old ZIP if exists
+    if zip_path.exists():
+        zip_path.unlink()
+
+    # Create ZIP with correct structure: aicodegencrew-v0.1.0/ at root
+    root_folder = f"aicodegencrew-v{version}"
+
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Add all files from dist/release/ into aicodegencrew-vX.Y.Z/
+        for file in RELEASE.rglob('*'):
+            if file.is_file():
+                # Path relative to RELEASE
+                rel_path = file.relative_to(RELEASE)
+                # Store in ZIP under root_folder/
+                arcname = f"{root_folder}/{rel_path}"
+                zipf.write(file, arcname)
+
+    size_kb = zip_path.stat().st_size / 1024
+    print(f"  ZIP created: {zip_name} ({size_kb:.1f} KB)")
+    print(f"  Extracts to: {root_folder}/")
+
+    return zip_path
+
+
+def print_summary(version: str, docker: bool, zip_path: Path):
     """Print release summary."""
     print("\n[4/4] Release summary")
     print("=" * 60)
     print(f"  Version:    {version}")
     print(f"  Directory:  {RELEASE}")
+    print(f"  ZIP file:   {zip_path.name}")
     print()
 
     files = sorted(RELEASE.rglob("*"))
@@ -446,15 +480,21 @@ def print_summary(version: str, docker: bool):
             print(f"  {rel:<45} {size:>10,} bytes")
 
     print(f"  {'TOTAL':<45} {total_size:>10,} bytes")
+
+    # Show ZIP size
+    zip_size = zip_path.stat().st_size
+    print(f"  {'ZIP archive':<45} {zip_size:>10,} bytes")
+
     print("=" * 60)
     print()
     print("Delivery instructions:")
-    print(f"  1. Send the '{RELEASE.name}/' folder to the end user")
-    print(f"  2. User runs: install.bat (Windows) or install.sh (Linux)")
-    print(f"  3. User configures .env with their settings")
-    print(f"  4. User runs: aicodegencrew --env .env plan")
+    print(f"  1. Send '{zip_path.name}' to the end user")
+    print(f"  2. User extracts ZIP -> 'aicodegencrew-v{version}/' folder")
+    print(f"  3. User runs: install.bat (Windows) or install.sh (Linux)")
+    print(f"  4. User configures .env with their settings")
+    print(f"  5. User runs: aicodegencrew --env .env plan")
     if docker:
-        print(f"  5. Docker: docker load -i aicodegencrew-{version}.tar.gz")
+        print(f"  6. Docker: docker load -i aicodegencrew-{version}.tar.gz")
     print()
 
 
@@ -514,12 +554,15 @@ Examples:
     # Step 3: Assemble release
     assemble_release(version, wheel, docker_tar)
 
+    # Step 3.5: Create ZIP file
+    zip_path = create_release_zip(version)
+
     # Step 4: Git tag (optional)
     if args.tag:
         git_tag(version)
 
     # Summary
-    print_summary(version, args.docker)
+    print_summary(version, args.docker, zip_path)
 
 
 if __name__ == "__main__":
