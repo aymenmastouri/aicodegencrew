@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from ..schemas import TaskInput
-from ...shared.utils.logger import setup_logger
+from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -34,8 +34,8 @@ class InputParserStage:
     def _check_parsers(self) -> bool:
         """Check if parser modules are available."""
         try:
-            from ....crews.development_planning.parsers import (
-                parse_jira_xml,
+            from ..parsers import (
+                parse_xml,
                 parse_docx,
                 parse_excel,
                 parse_text,
@@ -69,7 +69,7 @@ class InputParserStage:
         extension = file_path.suffix.lower()
 
         if extension == '.xml':
-            task = self._parse_jira_xml(file_path)
+            task = self._parse_xml(file_path)
         elif extension == '.docx':
             task = self._parse_docx(file_path)
         elif extension in ['.xlsx', '.xls']:
@@ -86,11 +86,11 @@ class InputParserStage:
 
         return task
 
-    def _parse_jira_xml(self, file_path: Path) -> TaskInput:
-        """Parse JIRA XML export."""
-        from ....crews.development_planning.parsers.jira_parser import parse_jira_xml
+    def _parse_xml(self, file_path: Path) -> TaskInput:
+        """Parse XML file (any format)."""
+        from ..parsers.xml_parser import parse_xml
 
-        tasks = parse_jira_xml(file_path)
+        tasks = parse_xml(file_path)
 
         if not tasks:
             raise ValueError("No tasks found in JIRA XML")
@@ -101,7 +101,7 @@ class InputParserStage:
         return TaskInput(
             task_id=task_data.get("task_id", "UNKNOWN"),
             source_file=str(file_path),
-            source_format="jira_xml",
+            source_format="xml",
             summary=task_data.get("summary", ""),
             description=task_data.get("description", ""),
             acceptance_criteria=task_data.get("acceptance_criteria", []),
@@ -111,8 +111,8 @@ class InputParserStage:
         )
 
     def _parse_docx(self, file_path: Path) -> TaskInput:
-        """Parse Confluence DOCX."""
-        from ....crews.development_planning.parsers.docx_parser import parse_docx
+        """Parse DOCX file."""
+        from ..parsers.docx_parser import parse_docx
 
         result = parse_docx(file_path)
 
@@ -140,8 +140,8 @@ class InputParserStage:
         )
 
     def _parse_excel(self, file_path: Path) -> TaskInput:
-        """Parse Excel requirements table."""
-        from ....crews.development_planning.parsers.excel_parser import parse_excel
+        """Parse Excel file."""
+        from ..parsers.excel_parser import parse_excel
 
         result = parse_excel(file_path)
 
@@ -184,7 +184,7 @@ class InputParserStage:
 
     def _parse_text(self, file_path: Path) -> TaskInput:
         """Parse text/log file."""
-        from ....crews.development_planning.parsers.text_parser import parse_text
+        from ..parsers.text_parser import parse_text
 
         result = parse_text(file_path)
 

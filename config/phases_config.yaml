@@ -144,7 +144,7 @@ phases:
 
   # =========================================================================
   # =========================================================================
-  # PIPELINE: Phase 4 - Development Planning (HYBRID ARCHITECTURE) ⚡
+  # PIPELINE: Phase 4 - Development Planning (HYBRID ARCHITECTURE)
   # =========================================================================
   # Type:      Pipeline (Hybrid: Deterministic + 1 LLM Call)
   # Location:  pipelines/development_planning/

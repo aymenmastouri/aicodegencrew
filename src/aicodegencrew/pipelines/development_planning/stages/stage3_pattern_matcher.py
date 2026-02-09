@@ -21,7 +21,7 @@ from ..schemas import (
     ErrorHandlingPattern,
     WorkflowContext,
 )
-from ...shared.utils.logger import setup_logger
+from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

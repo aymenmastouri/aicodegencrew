@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import getpass
 import logging
+import os
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -115,10 +117,69 @@ class GitRepoManager:
     # ------------------------------------------------------------------
 
     def _prompt_credentials(self) -> None:
-        """Prompt for Git username and password via getpass."""
+        """Prompt for Git username and password via GUI or terminal."""
         logger.info("[GIT] Authentication required for repository access")
-        self._username = input("Git username: ").strip()
-        self._password = getpass.getpass("Git password/token: ")
+
+        # Try terminal input first, fall back to GUI if not available
+        try:
+            self._username = input("Git username: ").strip()
+            self._password = getpass.getpass("Git password/token: ")
+        except (EOFError, OSError):
+            # No terminal available (background mode) - use GUI popup
+            logger.info("[GIT] No terminal available, showing GUI credential prompt...")
+            self._username, self._password = self._show_credential_dialog()
+
+            if not self._username or not self._password:
+                raise RuntimeError(
+                    "Git credentials required but not provided. "
+                    "Cannot proceed with repository clone/update."
+                )
+
+    def _show_credential_dialog(self) -> tuple[str, str]:
+        """Show a GUI dialog for Git credentials using tkinter.
+
+        Returns:
+            tuple: (username, password)
+        """
+        try:
+            import tkinter as tk
+            from tkinter import simpledialog
+        except ImportError:
+            raise RuntimeError(
+                "tkinter not available. Cannot show credential dialog in background mode. "
+                "Please run in interactive mode or set GIT_REPO_URL to empty in .env"
+            )
+
+        # Create hidden root window
+        root = tk.Tk()
+        root.withdraw()  # Hide main window
+        root.attributes("-topmost", True)
+
+        # Prompt for username
+        username = simpledialog.askstring(
+            "Git Credentials",
+            f"Repository: {self.repo_name}\n\nEnter Git username:",
+            parent=root
+        )
+
+        if not username:
+            root.destroy()
+            return "", ""
+
+        # Prompt for password
+        password = simpledialog.askstring(
+            "Git Credentials",
+            f"Repository: {self.repo_name}\n\nEnter Git password/token:",
+            parent=root,
+            show="*"
+        )
+
+        root.destroy()
+
+        if not password:
+            return "", ""
+
+        return username.strip(), password
 
     def _build_authenticated_url(self) -> str:
         """Insert credentials into the HTTPS URL (in-memory only).

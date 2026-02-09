@@ -269,7 +269,7 @@ class SDLCOrchestrator:
             )
         
         # Archive knowledge before starting (for rollback capability)
-        if phase_id.startswith("phase1") or phase_id.startswith("phase2") or phase_id.startswith("phase3"):
+        if phase_id.startswith("phase1") or phase_id.startswith("phase2") or phase_id.startswith("phase3") or phase_id.startswith("phase4"):
             self.archive_knowledge(label=f"before_{phase_id}")
         
         # Execute
@@ -398,6 +398,9 @@ class SDLCOrchestrator:
             ],
             "phase3_architecture_synthesis": [
                 "knowledge/architecture/c4/c4-context.md",
+            ],
+            "phase4_development_planning": [
+                "knowledge/development",
             ],
         }
         

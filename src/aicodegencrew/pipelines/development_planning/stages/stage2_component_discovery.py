@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 from ..schemas import TaskInput, ComponentMatch, InterfaceMatch, DependencyRelation
-from ...shared.utils.logger import setup_logger
+from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

@@ -108,34 +108,48 @@ class RAGQueryTool(BaseTool):
         """Get ChromaDB collection with lazy initialization."""
         if self._collection is not None:
             return self._collection
-        
+
         try:
             import chromadb
             from chromadb.config import Settings
-            
+            from chromadb.utils import embedding_functions
+
             chroma_path = self._find_chroma_path()
-            
+
             if not chroma_path or not Path(chroma_path).exists():
                 logger.warning(f"ChromaDB not found. Searched paths: {self.CHROMA_PATHS}")
                 return None
-            
+
             self._client = chromadb.PersistentClient(
                 path=chroma_path,
                 settings=Settings(
                     anonymized_telemetry=False,
                 )
             )
-            
+
+            # Create Ollama embedding function matching Phase 0 indexing
+            # IMPORTANT: Must match EMBED_MODEL used during indexing (nomic-embed-text = 768-dim)
+            embed_model = os.getenv("EMBED_MODEL", "nomic-embed-text:latest")
+            ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+
+            embedding_fn = embedding_functions.OllamaEmbeddingFunction(
+                model_name=embed_model,
+                url=f"{ollama_base_url}/api/embeddings"
+            )
+
             # Get collection (don't create if not exists)
             try:
-                self._collection = self._client.get_collection(self.collection_name)
-                logger.info(f"Connected to ChromaDB collection: {self.collection_name}")
-            except Exception:
-                logger.warning(f"Collection '{self.collection_name}' not found")
+                self._collection = self._client.get_collection(
+                    name=self.collection_name,
+                    embedding_function=embedding_fn  # FIX: Use same embedding as indexing!
+                )
+                logger.info(f"Connected to ChromaDB collection: {self.collection_name} (embed_model={embed_model})")
+            except Exception as e:
+                logger.warning(f"Collection '{self.collection_name}' not found: {e}")
                 return None
-            
+
             return self._collection
-            
+
         except ImportError:
             logger.error("chromadb not installed. Run: pip install chromadb")
             return None
