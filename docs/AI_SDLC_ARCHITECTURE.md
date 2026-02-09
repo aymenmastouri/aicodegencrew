@@ -22,8 +22,8 @@ The system is organized into 4 distinct layers, each with clear responsibilities
 | Layer | Phases | Purpose | LLM Required |
 |-------|--------|---------|--------------|
 | **KNOWLEDGE** | 0-1 | Deterministic facts extraction | No |
-| **REASONING** | 2-3 | LLM-powered analysis and synthesis | Yes |
-| **EXECUTION** | 4-7 | Code generation and deployment | Yes |
+| **REASONING** | 2-4 | AI-powered analysis, synthesis, and planning | Hybrid |
+| **EXECUTION** | 5-7 | Code generation and deployment | Yes |
 | **FEEDBACK** | - | Continuous learning and quality | Yes |
 
 ### 1.3 Implementation Status
@@ -105,7 +105,7 @@ The implementation covers deterministic facts extraction through development pla
 | **Phase 4 Planning** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
-### 2.4 Phase 1 Capabilities
+### 2.4 Knowledge Layer Capabilities
 
 Phase 1 extracts comprehensive architecture facts from any codebase:
 
@@ -174,8 +174,9 @@ orchestrator.register("phase0_indexing", IndexingPipeline(...))
 orchestrator.register("phase1_architecture_facts", ArchFactsPipeline(...))
 orchestrator.register("phase2_architecture_analysis", AnalysisCrew(...))
 orchestrator.register("phase3_architecture_synthesis", SynthesisCrew(...))
+orchestrator.register("phase4_development_planning", PlanningPipeline(...))
 
-result = orchestrator.run(preset="architecture_workflow")
+result = orchestrator.run(preset="architecture_full")
 ```
 
 | Principle | Implementation |
@@ -1358,13 +1359,13 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 | Source Phase | Output Artifact | Consumer Phase |
 |--------------|-----------------|----------------|
-| Phase 0 | ChromaDB Vector Index | Phase 1, Phase 2, Phase 3 (optional) |
-| Phase 1 | `architecture_facts.json` | Phase 2, Phase 3 |
-| Phase 1 | `evidence_map.json` | Phase 2, Phase 3 |
-| Phase 2 | `analyzed_architecture.json` | Phase 3 |
+| Phase 0 | ChromaDB Vector Index | Phase 1, Phase 2, Phase 3 (optional), Phase 4 |
+| Phase 1 | `architecture_facts.json` | Phase 2, Phase 3, Phase 4 |
+| Phase 1 | `evidence_map.json` | Phase 2, Phase 3, Phase 4 |
+| Phase 2 | `analyzed_architecture.json` | Phase 3, Phase 4 |
 | Phase 3 | `c4/*.md`, `c4/*.drawio` | Phase 4 |
 | Phase 3 | `arc42/*.md` | Phase 4 |
-| Phase 4 | Quality Reports | Phase 5 |
+| Phase 4 | Development Plans | Phase 5 |
 
 ### 5.2 Knowledge Directory Structure
 
@@ -1508,8 +1509,8 @@ Unknown presets raise an error instead of silently falling back.
 | `indexing_only` | 0 | Repository indexing only |
 | `facts_only` | 0, 1 | Indexing + Architecture Facts (no LLM) |
 | `analysis_only` | 0, 1, 2 | Indexing + Facts + Analysis |
-| `architecture_workflow` | 0, 1, 2, 3 | Full architecture documentation |
-| `architecture_full` | 0, 1, 2, 3, 4 | Architecture + Review (with consistency checks) |
+| `architecture_workflow` | 0, 1, 2, 3 | C4 Model + arc42 documentation (excludes Phase 4) |
+| `architecture_full` | 0, 1, 2, 3, 4 | Architecture documentation + Development Planning |
 | `full_pipeline` | 0-8 | Complete automated SDLC pipeline (future) |
 
 ---

@@ -80,8 +80,8 @@ The system follows a **4-Layer Architecture** with 8 pipeline phases (0-7):
 | Layer | Phases | Purpose | LLM Required |
 |-------|--------|---------|:------------:|
 | **Knowledge** | 0 – 1 | Deterministic facts extraction | No |
-| **Reasoning** | 2 – 3 | AI-powered analysis and synthesis | Yes |
-| **Execution** | 4 – 7 | Development planning, code generation, deployment | Hybrid |
+| **Reasoning** | 2 – 4 | AI-powered analysis, synthesis, and planning | Hybrid |
+| **Execution** | 5 – 7 | Code generation, testing, and deployment | Yes |
 
 > For the full architecture specification, see [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md).
 > DrawIO diagrams are in [docs/diagrams/](docs/diagrams/).
@@ -194,8 +194,11 @@ aicodegencrew plan
 # With custom .env file (e.g. Docker, wheel distribution)
 aicodegencrew --env /path/to/project.env plan
 
-# Full architecture documentation (Phases 0-3)
+# Full architecture documentation - C4 + arc42 (Phases 0-3, excludes planning)
 aicodegencrew run --preset architecture_workflow
+
+# Architecture + development planning (Phases 0-4, includes planning)
+aicodegencrew run --preset architecture_full
 
 # Or specify the Git URL directly via CLI
 aicodegencrew run --preset architecture_workflow --git-url https://gitlab.example.com/team/project.git
@@ -395,8 +398,8 @@ Presets are predefined phase combinations defined in [`config/phases_config.yaml
 | `facts_only` | 0 – 1 | Deterministic facts extraction (no LLM) |
 | `analysis_only` | 0 – 2 | Facts + AI analysis |
 | `planning_only` | 0 – 2, 4 | Development planning (skips Phase 3 synthesis) |
-| `architecture_workflow` | 0 – 3 | Full architecture documentation |
-| `architecture_full` | 0 – 4 | Architecture + development planning |
+| `architecture_workflow` | 0 – 3 | C4 Model + arc42 documentation |
+| `architecture_full` | 0 – 4 | Architecture documentation + Development Planning |
 | `full_pipeline` | 0 – 7 | All phases (end-to-end SDLC) |
 
 ---
@@ -482,8 +485,11 @@ aicodegencrew plan
 # With custom .env file
 aicodegencrew --env /path/to/project.env plan
 
-# Full architecture documentation (Phases 0-3)
+# Full architecture documentation - C4 + arc42 (Phases 0-3, excludes planning)
 aicodegencrew run --preset architecture_workflow
+
+# Architecture + development planning (Phases 0-4, includes planning)
+aicodegencrew run --preset architecture_full
 
 # Facts only — no LLM needed (Phases 0-1)
 aicodegencrew run --preset facts_only
