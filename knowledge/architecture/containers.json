@@ -58,8 +58,8 @@
       "component_count": 404,
       "layer_distribution": {
         "presentation": 214,
-        "application": 131,
-        "unknown": 59
+        "unknown": 59,
+        "application": 131
       }
     },
     {
