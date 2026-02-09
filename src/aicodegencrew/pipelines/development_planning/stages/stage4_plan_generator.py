@@ -270,7 +270,7 @@ IMPORTANT:
 - Use ONLY the components, patterns, and context provided above
 - DO NOT invent new components or patterns
 - ALL recommendations must reference the patterns above
-- Implementation steps must be concrete and actionable{"" if not is_upgrade else chr(10) + "- For upgrade tasks: include ALL migration steps from MIGRATION SEQUENCE above" + chr(10) + "- Order migration_sequence by severity (breaking first, then deprecated, then recommended)"}
+- Implementation steps must be concrete and actionable{"" if not is_upgrade else chr(10) + "- For upgrade tasks: include ALL data from MIGRATION SEQUENCE above (rule_id, title, severity, migration_steps, affected_files, estimated_effort_minutes, schematic)" + chr(10) + "- Copy affected_files arrays from MIGRATION SEQUENCE - do NOT leave them empty" + chr(10) + "- Order migration_sequence by severity (breaking first, then deprecated, then recommended)"}
 
 Generate the plan now:"""
 
