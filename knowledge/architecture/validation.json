@@ -1,0 +1,2103 @@
+[
+  {
+    "name": "DeedEntry.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+    "validation_type": "not_null",
+    "target_class": "DeedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+        "lines": "77-79",
+        "reason": "@NotNull on DeedEntry."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntry.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+    "validation_type": "not_null",
+    "target_class": "DeedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+        "lines": "119-121",
+        "reason": "@NotNull on DeedEntry."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntry.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+    "validation_type": "not_null",
+    "target_class": "DeedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+        "lines": "189-191",
+        "reason": "@NotNull on DeedEntry."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntry.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+    "validation_type": "not_null",
+    "target_class": "DeedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+        "lines": "204-206",
+        "reason": "@NotNull on DeedEntry."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntry.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+    "validation_type": "not_null",
+    "target_class": "DeedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+        "lines": "212-214",
+        "reason": "@NotNull on DeedEntry."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntry.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+    "validation_type": "not_null",
+    "target_class": "DeedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+        "lines": "216-218",
+        "reason": "@NotNull on DeedEntry."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntry.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+    "validation_type": "not_null",
+    "target_class": "DeedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\common\\api\\DeedEntry.java",
+        "lines": "220-222",
+        "reason": "@NotNull on DeedEntry."
+      }
+    ]
+  },
+  {
+    "name": "public.uvzNr",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "target_field": "uvzNr",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "123-125",
+        "reason": "@NotNull on public.uvzNr"
+      }
+    ]
+  },
+  {
+    "name": "public.uvzCounter",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "target_field": "uvzCounter",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "130-132",
+        "reason": "@NotNull on public.uvzCounter"
+      }
+    ]
+  },
+  {
+    "name": "public.uvzYear",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "target_field": "uvzYear",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "137-139",
+        "reason": "@NotNull on public.uvzYear"
+      }
+    ]
+  },
+  {
+    "name": "public.originOfficialActivityId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "target_field": "originOfficialActivityId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "235-237",
+        "reason": "@NotNull on public.originOfficialActivityId"
+      }
+    ]
+  },
+  {
+    "name": "public.originOfficialActivityName",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "target_field": "originOfficialActivityName",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "242-244",
+        "reason": "@NotNull on public.originOfficialActivityName"
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "385-387",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "422-424",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "520-522",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "593-595",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "603-605",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "613-615",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "623-625",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "634-636",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "644-646",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "655-657",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "public.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "public",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\AbstractDeedEntryEntity.java",
+        "lines": "705-707",
+        "reason": "@NotNull on public."
+      }
+    ]
+  },
+  {
+    "name": "ConnectionEntity.isOwner",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionEntity.java",
+    "validation_type": "not_null",
+    "target_class": "ConnectionEntity",
+    "target_field": "isOwner",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionEntity.java",
+        "lines": "27-29",
+        "reason": "@NotNull on ConnectionEntity.isOwner"
+      }
+    ]
+  },
+  {
+    "name": "ConnectionEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionEntity.java",
+    "validation_type": "not_null",
+    "target_class": "ConnectionEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionEntity.java",
+        "lines": "83-85",
+        "reason": "@NotNull on ConnectionEntity."
+      }
+    ]
+  },
+  {
+    "name": "ConnectionKey.owningDeedEntryId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionKey.java",
+    "validation_type": "not_null",
+    "target_class": "ConnectionKey",
+    "target_field": "owningDeedEntryId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionKey.java",
+        "lines": "20-22",
+        "reason": "@NotNull on ConnectionKey.owningDeedEntryId"
+      }
+    ]
+  },
+  {
+    "name": "ConnectionKey.linkedDeedEntryId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionKey.java",
+    "validation_type": "not_null",
+    "target_class": "ConnectionKey",
+    "target_field": "linkedDeedEntryId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\ConnectionKey.java",
+        "lines": "24-26",
+        "reason": "@NotNull on ConnectionKey.linkedDeedEntryId"
+      }
+    ]
+  },
+  {
+    "name": "DeedCreatorHandoverInfoEntity.numberOfDeedsPerCreator",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedCreatorHandoverInfoEntity.java",
+    "validation_type": "not_null",
+    "target_class": "DeedCreatorHandoverInfoEntity",
+    "target_field": "numberOfDeedsPerCreator",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedCreatorHandoverInfoEntity.java",
+        "lines": "36-38",
+        "reason": "@NotNull on DeedCreatorHandoverInfoEntity.numberOfDeedsPerCreator"
+      }
+    ]
+  },
+  {
+    "name": "DeedCreatorHandoverInfoEntity.creatorInformation",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedCreatorHandoverInfoEntity.java",
+    "validation_type": "not_null",
+    "target_class": "DeedCreatorHandoverInfoEntity",
+    "target_field": "creatorInformation",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DeedCreatorHandoverInfoEntity.java",
+        "lines": "40-42",
+        "reason": "@NotNull on DeedCreatorHandoverInfoEntity.creatorInformation"
+      }
+    ]
+  },
+  {
+    "name": "DocumentMetaDataEntity.aoId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java",
+    "validation_type": "not_null",
+    "target_class": "DocumentMetaDataEntity",
+    "target_field": "aoId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java",
+        "lines": "38-40",
+        "reason": "@NotNull on DocumentMetaDataEntity.aoId"
+      }
+    ]
+  },
+  {
+    "name": "DocumentMetaDataEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java",
+    "validation_type": "not_null",
+    "target_class": "DocumentMetaDataEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java",
+        "lines": "240-242",
+        "reason": "@NotNull on DocumentMetaDataEntity."
+      }
+    ]
+  },
+  {
+    "name": "DocumentMetaDataEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java",
+    "validation_type": "not_null",
+    "target_class": "DocumentMetaDataEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\DocumentMetaDataEntity.java",
+        "lines": "280-282",
+        "reason": "@NotNull on DocumentMetaDataEntity."
+      }
+    ]
+  },
+  {
+    "name": "FinalHandoverDataSetEntity.predecessorOrganizationId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "FinalHandoverDataSetEntity",
+    "target_field": "predecessorOrganizationId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+        "lines": "20-22",
+        "reason": "@NotNull on FinalHandoverDataSetEntity.predecessorOrganizationId"
+      }
+    ]
+  },
+  {
+    "name": "FinalHandoverDataSetEntity.aoId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "FinalHandoverDataSetEntity",
+    "target_field": "aoId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+        "lines": "24-26",
+        "reason": "@NotNull on FinalHandoverDataSetEntity.aoId"
+      }
+    ]
+  },
+  {
+    "name": "FinalHandoverDataSetEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "FinalHandoverDataSetEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+        "lines": "33-35",
+        "reason": "@NotNull on FinalHandoverDataSetEntity."
+      }
+    ]
+  },
+  {
+    "name": "FinalHandoverDataSetEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "FinalHandoverDataSetEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+        "lines": "33-35",
+        "reason": "@NotNull on FinalHandoverDataSetEntity."
+      }
+    ]
+  },
+  {
+    "name": "FinalHandoverDataSetEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "FinalHandoverDataSetEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\FinalHandoverDataSetEntity.java",
+        "lines": "33-35",
+        "reason": "@NotNull on FinalHandoverDataSetEntity."
+      }
+    ]
+  },
+  {
+    "name": "HandoverDataSetEntity.totalDeedsToHandover",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverDataSetEntity",
+    "target_field": "totalDeedsToHandover",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+        "lines": "43-45",
+        "reason": "@NotNull on HandoverDataSetEntity.totalDeedsToHandover"
+      }
+    ]
+  },
+  {
+    "name": "HandoverDataSetEntity.predecessorOrganizationId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverDataSetEntity",
+    "target_field": "predecessorOrganizationId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+        "lines": "47-49",
+        "reason": "@NotNull on HandoverDataSetEntity.predecessorOrganizationId"
+      }
+    ]
+  },
+  {
+    "name": "HandoverDataSetEntity.predecessorInformation",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverDataSetEntity",
+    "target_field": "predecessorInformation",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+        "lines": "51-53",
+        "reason": "@NotNull on HandoverDataSetEntity.predecessorInformation"
+      }
+    ]
+  },
+  {
+    "name": "HandoverDataSetEntity.unfinishedTransfer",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverDataSetEntity",
+    "target_field": "unfinishedTransfer",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+        "lines": "55-57",
+        "reason": "@NotNull on HandoverDataSetEntity.unfinishedTransfer"
+      }
+    ]
+  },
+  {
+    "name": "HandoverDataSetEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverDataSetEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverDataSetEntity.java",
+        "lines": "106-108",
+        "reason": "@NotNull on HandoverDataSetEntity."
+      }
+    ]
+  },
+  {
+    "name": "HandoverHistoryDeedKey.deedEntryId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryDeedKey.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverHistoryDeedKey",
+    "target_field": "deedEntryId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryDeedKey.java",
+        "lines": "17-19",
+        "reason": "@NotNull on HandoverHistoryDeedKey.deedEntryId"
+      }
+    ]
+  },
+  {
+    "name": "HandoverHistoryDeedKey.handoverHistoryId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryDeedKey.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverHistoryDeedKey",
+    "target_field": "handoverHistoryId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryDeedKey.java",
+        "lines": "21-23",
+        "reason": "@NotNull on HandoverHistoryDeedKey.handoverHistoryId"
+      }
+    ]
+  },
+  {
+    "name": "HandoverHistoryEntity.type",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverHistoryEntity",
+    "target_field": "type",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+        "lines": "38-40",
+        "reason": "@NotNull on HandoverHistoryEntity.type"
+      }
+    ]
+  },
+  {
+    "name": "HandoverHistoryEntity.predecessorOrganizationId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverHistoryEntity",
+    "target_field": "predecessorOrganizationId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+        "lines": "43-45",
+        "reason": "@NotNull on HandoverHistoryEntity.predecessorOrganizationId"
+      }
+    ]
+  },
+  {
+    "name": "HandoverHistoryEntity.predecessorOrganizationName",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverHistoryEntity",
+    "target_field": "predecessorOrganizationName",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+        "lines": "47-49",
+        "reason": "@NotNull on HandoverHistoryEntity.predecessorOrganizationName"
+      }
+    ]
+  },
+  {
+    "name": "HandoverHistoryEntity.successorOrganizationId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverHistoryEntity",
+    "target_field": "successorOrganizationId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+        "lines": "51-53",
+        "reason": "@NotNull on HandoverHistoryEntity.successorOrganizationId"
+      }
+    ]
+  },
+  {
+    "name": "HandoverHistoryEntity.successorOrganizationName",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+    "validation_type": "not_null",
+    "target_class": "HandoverHistoryEntity",
+    "target_field": "successorOrganizationName",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\HandoverHistoryEntity.java",
+        "lines": "55-57",
+        "reason": "@NotNull on HandoverHistoryEntity.successorOrganizationName"
+      }
+    ]
+  },
+  {
+    "name": "IssuingCopyNoteEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java",
+    "validation_type": "not_null",
+    "target_class": "IssuingCopyNoteEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java",
+        "lines": "131-133",
+        "reason": "@NotNull on IssuingCopyNoteEntity."
+      }
+    ]
+  },
+  {
+    "name": "IssuingCopyNoteEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java",
+    "validation_type": "not_null",
+    "target_class": "IssuingCopyNoteEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java",
+        "lines": "141-143",
+        "reason": "@NotNull on IssuingCopyNoteEntity."
+      }
+    ]
+  },
+  {
+    "name": "IssuingCopyNoteEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java",
+    "validation_type": "not_null",
+    "target_class": "IssuingCopyNoteEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\IssuingCopyNoteEntity.java",
+        "lines": "151-153",
+        "reason": "@NotNull on IssuingCopyNoteEntity."
+      }
+    ]
+  },
+  {
+    "name": "RemarkEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RemarkEntity.java",
+    "validation_type": "not_null",
+    "target_class": "RemarkEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\dataaccess\\api\\RemarkEntity.java",
+        "lines": "92-94",
+        "reason": "@NotNull on RemarkEntity."
+      }
+    ]
+  },
+  {
+    "name": "BulkCaptureTo.capturePackNumber",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\BulkCaptureTo.java",
+    "validation_type": "not_null",
+    "constraint": "message = \"CapturePackNumber must not be null\"",
+    "target_class": "BulkCaptureTo",
+    "target_field": "capturePackNumber",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\BulkCaptureTo.java",
+        "lines": "21-23",
+        "reason": "@NotNull on BulkCaptureTo.capturePackNumber"
+      }
+    ]
+  },
+  {
+    "name": "BulkCaptureTo.deedEntry",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\BulkCaptureTo.java",
+    "validation_type": "not_null",
+    "constraint": "message = \"DeedEntry object must not be null\"",
+    "target_class": "BulkCaptureTo",
+    "target_field": "deedEntry",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\BulkCaptureTo.java",
+        "lines": "25-27",
+        "reason": "@NotNull on BulkCaptureTo.deedEntry"
+      }
+    ]
+  },
+  {
+    "name": "SignatureFolderTo.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\SignatureFolderTo.java",
+    "validation_type": "not_null",
+    "target_class": "SignatureFolderTo",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\SignatureFolderTo.java",
+        "lines": "34-36",
+        "reason": "@NotNull on SignatureFolderTo."
+      }
+    ]
+  },
+  {
+    "name": "SignatureFolderTo.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\SignatureFolderTo.java",
+    "validation_type": "not_null",
+    "target_class": "SignatureFolderTo",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\SignatureFolderTo.java",
+        "lines": "48-50",
+        "reason": "@NotNull on SignatureFolderTo."
+      }
+    ]
+  },
+  {
+    "name": "SignatureFolderTo.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\SignatureFolderTo.java",
+    "validation_type": "not_null",
+    "target_class": "SignatureFolderTo",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\logic\\api\\to\\SignatureFolderTo.java",
+        "lines": "62-64",
+        "reason": "@NotNull on SignatureFolderTo."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntryRestService.valid",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+    "validation_type": "valid",
+    "target_class": "DeedEntryRestService",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "220-222",
+        "reason": "@Valid on DeedEntryRestService."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntryRestService.valid",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+    "validation_type": "valid",
+    "target_class": "DeedEntryRestService",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "236-238",
+        "reason": "@Valid on DeedEntryRestService."
+      }
+    ]
+  },
+  {
+    "name": "DeedEntryRestService.@Valid_bulkCaptureTo",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+    "validation_type": "valid",
+    "target_class": "DeedEntryRestService",
+    "target_field": "bulkCaptureTo",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "220-223",
+        "reason": "@Valid on parameter bulkCaptureTo (BulkCaptureTo)"
+      }
+    ]
+  },
+  {
+    "name": "DeedEntryRestService.@Valid_bulkCaptureTo",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+    "validation_type": "valid",
+    "target_class": "DeedEntryRestService",
+    "target_field": "bulkCaptureTo",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
+        "lines": "236-239",
+        "reason": "@Valid on parameter bulkCaptureTo (BulkCaptureTo)"
+      }
+    ]
+  },
+  {
+    "name": "KmConfig.baseUrl",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+    "validation_type": "not_blank",
+    "target_class": "KmConfig",
+    "target_field": "baseUrl",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+        "lines": "15-17",
+        "reason": "@NotBlank on KmConfig.baseUrl"
+      }
+    ]
+  },
+  {
+    "name": "KmConfig.host",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+    "validation_type": "not_blank",
+    "target_class": "KmConfig",
+    "target_field": "host",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+        "lines": "55-57",
+        "reason": "@NotBlank on KmConfig.host"
+      }
+    ]
+  },
+  {
+    "name": "KmConfig.port",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+    "validation_type": "min",
+    "constraint": "0",
+    "target_class": "KmConfig",
+    "target_field": "port",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+        "lines": "58-60",
+        "reason": "@Min on KmConfig.port"
+      }
+    ]
+  },
+  {
+    "name": "KmConfig.port",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+    "validation_type": "max",
+    "constraint": "65535",
+    "target_class": "KmConfig",
+    "target_field": "port",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\KmConfig.java",
+        "lines": "59-61",
+        "reason": "@Max on KmConfig.port"
+      }
+    ]
+  },
+  {
+    "name": "NvzConfig.baseUrl",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+    "validation_type": "not_blank",
+    "target_class": "NvzConfig",
+    "target_field": "baseUrl",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+        "lines": "14-16",
+        "reason": "@NotBlank on NvzConfig.baseUrl"
+      }
+    ]
+  },
+  {
+    "name": "NvzConfig.host",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+    "validation_type": "not_blank",
+    "target_class": "NvzConfig",
+    "target_field": "host",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+        "lines": "41-43",
+        "reason": "@NotBlank on NvzConfig.host"
+      }
+    ]
+  },
+  {
+    "name": "NvzConfig.port",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+    "validation_type": "min",
+    "constraint": "0",
+    "target_class": "NvzConfig",
+    "target_field": "port",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+        "lines": "44-46",
+        "reason": "@Min on NvzConfig.port"
+      }
+    ]
+  },
+  {
+    "name": "NvzConfig.port",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+    "validation_type": "max",
+    "constraint": "65535",
+    "target_class": "NvzConfig",
+    "target_field": "port",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\configuration\\NvzConfig.java",
+        "lines": "45-47",
+        "reason": "@Max on NvzConfig.port"
+      }
+    ]
+  },
+  {
+    "name": "JobEntity.not_null",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\job\\dataaccess\\api\\JobEntity.java",
+    "validation_type": "not_null",
+    "target_class": "JobEntity",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\job\\dataaccess\\api\\JobEntity.java",
+        "lines": "79-81",
+        "reason": "@NotNull on JobEntity."
+      }
+    ]
+  },
+  {
+    "name": "NumberFormatEntity.numberFormat",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\dataaccess\\api\\NumberFormatEntity.java",
+    "validation_type": "not_null",
+    "target_class": "NumberFormatEntity",
+    "target_field": "numberFormat",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\dataaccess\\api\\NumberFormatEntity.java",
+        "lines": "24-26",
+        "reason": "@NotNull on NumberFormatEntity.numberFormat"
+      }
+    ]
+  },
+  {
+    "name": "NumberFormatEntity.delimiter1",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\dataaccess\\api\\NumberFormatEntity.java",
+    "validation_type": "not_null",
+    "target_class": "NumberFormatEntity",
+    "target_field": "delimiter1",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\dataaccess\\api\\NumberFormatEntity.java",
+        "lines": "28-30",
+        "reason": "@NotNull on NumberFormatEntity.delimiter1"
+      }
+    ]
+  },
+  {
+    "name": "OrganizationEntity.cryptoStateCheckedAt",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\dataaccess\\api\\OrganizationEntity.java",
+    "validation_type": "not_null",
+    "target_class": "OrganizationEntity",
+    "target_field": "cryptoStateCheckedAt",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\dataaccess\\api\\OrganizationEntity.java",
+        "lines": "40-42",
+        "reason": "@NotNull on OrganizationEntity.cryptoStateCheckedAt"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.reportType",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_null",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "reportType",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "39-41",
+        "reason": "@NotNull on ReportMetadataCreationTo.reportType"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.reportingYear",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_null",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "reportingYear",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "42-44",
+        "reason": "@NotNull on ReportMetadataCreationTo.reportingYear"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.startOfReportingPeriod",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_null",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "startOfReportingPeriod",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "47-49",
+        "reason": "@NotNull on ReportMetadataCreationTo.startOfReportingPeriod"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.endOfReportingPeriod",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_null",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "endOfReportingPeriod",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "52-54",
+        "reason": "@NotNull on ReportMetadataCreationTo.endOfReportingPeriod"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.reportTitle",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_blank",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "reportTitle",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "55-57",
+        "reason": "@NotBlank on ReportMetadataCreationTo.reportTitle"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.atName",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_blank",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "atName",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "58-60",
+        "reason": "@NotBlank on ReportMetadataCreationTo.atName"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.atId",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_blank",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "atId",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "61-63",
+        "reason": "@NotBlank on ReportMetadataCreationTo.atId"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataCreationTo.headquarters",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+    "validation_type": "not_blank",
+    "target_class": "ReportMetadataCreationTo",
+    "target_field": "headquarters",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\logic\\api\\to\\ReportMetadataCreationTo.java",
+        "lines": "64-66",
+        "reason": "@NotBlank on ReportMetadataCreationTo.headquarters"
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataRestService.valid",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+    "validation_type": "valid",
+    "target_class": "ReportMetadataRestService",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+        "lines": "45-47",
+        "reason": "@Valid on ReportMetadataRestService."
+      }
+    ]
+  },
+  {
+    "name": "ReportMetadataRestService.@Valid_reportMetadataCreationTo",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+    "validation_type": "valid",
+    "target_class": "ReportMetadataRestService",
+    "target_field": "reportMetadataCreationTo",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
+        "lines": "45-48",
+        "reason": "@Valid on parameter reportMetadataCreationTo (ReportMetadataCreationTo)"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowEntity.stateTimestamp",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\dataaccess\\api\\WorkflowEntity.java",
+    "validation_type": "not_null",
+    "target_class": "WorkflowEntity",
+    "target_field": "stateTimestamp",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\dataaccess\\api\\WorkflowEntity.java",
+        "lines": "60-62",
+        "reason": "@NotNull on WorkflowEntity.stateTimestamp"
+      }
+    ]
+  },
+  {
+    "name": "WorkflowEntity.jobs",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\dataaccess\\api\\WorkflowEntity.java",
+    "validation_type": "not_null",
+    "target_class": "WorkflowEntity",
+    "target_field": "jobs",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\dataaccess\\api\\WorkflowEntity.java",
+        "lines": "74-76",
+        "reason": "@NotNull on WorkflowEntity.jobs"
+      }
+    ]
+  },
+  {
+    "name": "DeedFormPageComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\deed-form-page.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "DeedFormPageComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\deed-form-page.component.ts",
+        "lines": "1694-1697",
+        "reason": "Angular Validators.required in DeedFormPageComponent"
+      }
+    ]
+  },
+  {
+    "name": "DeedFormPageComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\deed-form-page.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "2000",
+    "target_class": "DeedFormPageComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\deed-form-page.component.ts",
+        "lines": "1695-1698",
+        "reason": "Angular Validators.maxLength in DeedFormPageComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "258-261",
+        "reason": "Angular Validators.required in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "267-270",
+        "reason": "Angular Validators.maxLength in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "280-283",
+        "reason": "Angular Validators.maxLength in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "291-294",
+        "reason": "Angular Validators.maxLength in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "1361-1364",
+        "reason": "Angular Validators.maxLength in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "1364-1367",
+        "reason": "Angular Validators.maxLength in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "1385-1388",
+        "reason": "Angular Validators.maxLength in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "BasicDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "BasicDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+        "lines": "1389-1392",
+        "reason": "Angular Validators.maxLength in BasicDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "CorrectionNotesTabDataComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\correction-notes-tab-data\\correction-notes-tab-data.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "2000",
+    "target_class": "CorrectionNotesTabDataComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\correction-notes-tab-data\\correction-notes-tab-data.component.ts",
+        "lines": "201-204",
+        "reason": "Angular Validators.maxLength in CorrectionNotesTabDataComponent"
+      }
+    ]
+  },
+  {
+    "name": "CorrectionNotesTabDataComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\correction-notes-tab-data\\correction-notes-tab-data.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "CorrectionNotesTabDataComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\correction-notes-tab-data\\correction-notes-tab-data.component.ts",
+        "lines": "205-208",
+        "reason": "Angular Validators.required in CorrectionNotesTabDataComponent"
+      }
+    ]
+  },
+  {
+    "name": "IssuingCopyNotesDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "19",
+    "target_class": "IssuingCopyNotesDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+        "lines": "455-458",
+        "reason": "Angular Validators.maxLength in IssuingCopyNotesDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "IssuingCopyNotesDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "1096",
+    "target_class": "IssuingCopyNotesDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+        "lines": "749-752",
+        "reason": "Angular Validators.maxLength in IssuingCopyNotesDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "IssuingCopyNotesDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "1096",
+    "target_class": "IssuingCopyNotesDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+        "lines": "753-756",
+        "reason": "Angular Validators.maxLength in IssuingCopyNotesDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "IssuingCopyNotesDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "IssuingCopyNotesDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\issuing-copy-notes-data-tab\\issuing-copy-notes-data-tab.component.ts",
+        "lines": "797-800",
+        "reason": "Angular Validators.required in IssuingCopyNotesDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "383-386",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "10",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "384-387",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "10",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "385-388",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "389-392",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "50",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "397-400",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "451-454",
+        "reason": "Angular Validators.required in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "451-454",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "455-458",
+        "reason": "Angular Validators.required in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "455-458",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "459-462",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "461-464",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "462-465",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "463-466",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "470-473",
+        "reason": "Angular Validators.required in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "517-520",
+        "reason": "Angular Validators.required in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "517-520",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "521-524",
+        "reason": "Angular Validators.required in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "521-524",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "527-530",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "25",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "539-542",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "ParticipantsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "ParticipantsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\participants-data-tab\\participants-data-tab.component.ts",
+        "lines": "580-583",
+        "reason": "Angular Validators.maxLength in ParticipantsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "RegistrationsDataTabComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "RegistrationsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+        "lines": "330-333",
+        "reason": "Angular Validators.required in RegistrationsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "RegistrationsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "RegistrationsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+        "lines": "339-342",
+        "reason": "Angular Validators.maxLength in RegistrationsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "RegistrationsDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "registerNumberMaxLength",
+    "target_class": "RegistrationsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+        "lines": "417-420",
+        "reason": "Angular Validators.maxLength in RegistrationsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "RegistrationsDataTabComponent.pattern",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+    "validation_type": "angular_pattern",
+    "constraint": "'[0-9]*'",
+    "target_class": "RegistrationsDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+        "lines": "418-421",
+        "reason": "Angular Validators.pattern in RegistrationsDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "RemarksDataTabComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\remarks-data-tab\\remarks-data-tab.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "1096",
+    "target_class": "RemarksDataTabComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\remarks-data-tab\\remarks-data-tab.component.ts",
+        "lines": "267-270",
+        "reason": "Angular Validators.maxLength in RemarksDataTabComponent"
+      }
+    ]
+  },
+  {
+    "name": "DocumentEditComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-edit-component\\document-edit-component.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "DocumentEditComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-edit-component\\document-edit-component.component.ts",
+        "lines": "157-160",
+        "reason": "Angular Validators.required in DocumentEditComponent"
+      }
+    ]
+  },
+  {
+    "name": "DocumentRefuseModalDialogComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-refuse-modal-dialog\\document-refuse-modal-dialog.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "DocumentRefuseModalDialogComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-refuse-modal-dialog\\document-refuse-modal-dialog.component.ts",
+        "lines": "51-54",
+        "reason": "Angular Validators.required in DocumentRefuseModalDialogComponent"
+      }
+    ]
+  },
+  {
+    "name": "DocumentRefuseModalDialogComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-refuse-modal-dialog\\document-refuse-modal-dialog.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "DocumentRefuseModalDialogComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-refuse-modal-dialog\\document-refuse-modal-dialog.component.ts",
+        "lines": "52-55",
+        "reason": "Angular Validators.maxLength in DocumentRefuseModalDialogComponent"
+      }
+    ]
+  },
+  {
+    "name": "DocumentRefuseModalDialogComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-refuse-modal-dialog\\document-refuse-modal-dialog.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "DocumentRefuseModalDialogComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-refuse-modal-dialog\\document-refuse-modal-dialog.component.ts",
+        "lines": "56-59",
+        "reason": "Angular Validators.required in DocumentRefuseModalDialogComponent"
+      }
+    ]
+  },
+  {
+    "name": "AnnualReportPreviewComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "AnnualReportPreviewComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+        "lines": "222-225",
+        "reason": "Angular Validators.maxLength in AnnualReportPreviewComponent"
+      }
+    ]
+  },
+  {
+    "name": "AnnualReportPreviewComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "AnnualReportPreviewComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+        "lines": "226-229",
+        "reason": "Angular Validators.maxLength in AnnualReportPreviewComponent"
+      }
+    ]
+  },
+  {
+    "name": "AnnualReportPreviewComponent.pattern",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+    "validation_type": "angular_pattern",
+    "constraint": "'[0-9]*'",
+    "target_class": "AnnualReportPreviewComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+        "lines": "239-242",
+        "reason": "Angular Validators.pattern in AnnualReportPreviewComponent"
+      }
+    ]
+  },
+  {
+    "name": "AnnualReportPreviewComponent.max",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+    "validation_type": "angular_max",
+    "constraint": "1000",
+    "target_class": "AnnualReportPreviewComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-report-preview\\annual-report-preview.component.ts",
+        "lines": "240-243",
+        "reason": "Angular Validators.max in AnnualReportPreviewComponent"
+      }
+    ]
+  },
+  {
+    "name": "PdfProcessingModalDialogComponent.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-processing-modal-dialog\\pdf-processing-modal-dialog.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "PdfProcessingModalDialogComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\pdf-export\\pdf-export-service\\pdf-processing-modal-dialog\\pdf-processing-modal-dialog.component.ts",
+        "lines": "105-108",
+        "reason": "Angular Validators.required in PdfProcessingModalDialogComponent"
+      }
+    ]
+  },
+  {
+    "name": "defaultUvzNumberFormat.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "defaultUvzNumberFormat",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+        "lines": "87-90",
+        "reason": "Angular Validators.required in defaultUvzNumberFormat"
+      }
+    ]
+  },
+  {
+    "name": "defaultUvzNumberFormat.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "3",
+    "target_class": "defaultUvzNumberFormat",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+        "lines": "88-91",
+        "reason": "Angular Validators.maxLength in defaultUvzNumberFormat"
+      }
+    ]
+  },
+  {
+    "name": "defaultUvzNumberFormat.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "defaultUvzNumberFormat",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+        "lines": "89-92",
+        "reason": "Angular Validators.required in defaultUvzNumberFormat"
+      }
+    ]
+  },
+  {
+    "name": "defaultUvzNumberFormat.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "defaultUvzNumberFormat",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+        "lines": "123-126",
+        "reason": "Angular Validators.required in defaultUvzNumberFormat"
+      }
+    ]
+  },
+  {
+    "name": "defaultUvzNumberFormat.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "3",
+    "target_class": "defaultUvzNumberFormat",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+        "lines": "123-126",
+        "reason": "Angular Validators.maxLength in defaultUvzNumberFormat"
+      }
+    ]
+  },
+  {
+    "name": "defaultUvzNumberFormat.required",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+    "validation_type": "angular_required",
+    "target_class": "defaultUvzNumberFormat",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\number-management\\components\\number-format-configuration-dialog\\number-format-configuration-dialog.component.ts",
+        "lines": "128-131",
+        "reason": "Angular Validators.required in defaultUvzNumberFormat"
+      }
+    ]
+  },
+  {
+    "name": "EnhancedSearchComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "50",
+    "target_class": "EnhancedSearchComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+        "lines": "119-122",
+        "reason": "Angular Validators.maxLength in EnhancedSearchComponent"
+      }
+    ]
+  },
+  {
+    "name": "EnhancedSearchComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "EnhancedSearchComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+        "lines": "201-204",
+        "reason": "Angular Validators.maxLength in EnhancedSearchComponent"
+      }
+    ]
+  },
+  {
+    "name": "EnhancedSearchComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "EnhancedSearchComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+        "lines": "217-220",
+        "reason": "Angular Validators.maxLength in EnhancedSearchComponent"
+      }
+    ]
+  },
+  {
+    "name": "EnhancedSearchComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "EnhancedSearchComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+        "lines": "221-224",
+        "reason": "Angular Validators.maxLength in EnhancedSearchComponent"
+      }
+    ]
+  },
+  {
+    "name": "EnhancedSearchComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "EnhancedSearchComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+        "lines": "227-230",
+        "reason": "Angular Validators.maxLength in EnhancedSearchComponent"
+      }
+    ]
+  },
+  {
+    "name": "EnhancedSearchComponent.maxLength",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+    "validation_type": "angular_maxLength",
+    "constraint": "255",
+    "target_class": "EnhancedSearchComponent",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+        "lines": "239-242",
+        "reason": "Angular Validators.maxLength in EnhancedSearchComponent"
+      }
+    ]
+  }
+]
