@@ -1,98 +1,91 @@
 # C4 Level 1 – System Context
 
----
-
 ## 1.1 Overview
-The **uvz** system is a comprehensive deed‑entry management platform that orchestrates the lifecycle of deed entries, document handling, archiving, re‑encryption, and reporting.  It is built as a set of Spring‑Boot micro‑services (backend), an Angular SPA (frontend), a Node.js API (jsApi) and a Playwright based end‑to‑end test suite (e2e‑xnp).  From a C4 **System Context** perspective the system is a black‑box that interacts with human users, external authentication services, document storage, and downstream reporting tools.
+The **UVZ** system is a back‑office platform that manages deed entries, document archiving, key‑management, and reporting for a notary‑related domain. It is exposed as a set of RESTful HTTP APIs and is consumed by internal front‑ends, external client applications and automated test suites.
 
----
-
-## 1.2 The System
+## 1.2 System Attributes
 | Attribute | Value |
 |-----------|-------|
-| **Name** | uvz |
-| **Type** | Business Application (Deed‑Entry Management) |
-| **Purpose** | Manage creation, modification, signing, hand‑over and archival of deed entries and associated documents. |
-| **Domain** | Not explicitly defined – core domain is *Deed Entry & Document Lifecycle*. |
-| **Technology Stack** | Angular, Spring Boot, Node.js, Playwright, Gradle, npm |
-| **Containers** | backend (Spring Boot), frontend (Angular), jsApi (Node.js), e2e‑xnp (Playwright), import‑schema (Java library) |
-| **Components** | 951 total (≈494 backend, 404 frontend, 52 jsApi) |
-| **Interfaces** | 196 REST endpoints |
-| **Relations** | 190 uses / manages / imports / references |
-
----
+| **Name** | UVZ |
+| **Domain** | Notary / Deed Management (derived from endpoint semantics) |
+| **Purpose** | Provide CRUD operations for deed entries, handle cryptographic key management, generate reports, and coordinate hand‑over data sets. |
+| **Technology Stack** | Spring Boot (backend), Angular (frontend), Node.js (jsApi), Playwright (e2e tests), Java/Gradle (import‑schema library) |
+| **Deployment Model** | Multi‑container application (5 containers) |
+| **Primary Consumers** | Human operators (e.g., notary clerks), external client systems, automated test harnesses |
 
 ## 1.3 Actors and Users
 ### 1.3.1 Human Actors
-| Actor | Role | Primary Interactions | Priority |
-|-------|------|----------------------|----------|
-| **Business User** | Creates, reviews and signs deed entries via the web UI. | Calls REST endpoints under `/uvz/v1/deedentries/**` (GET, POST, PUT, DELETE). | High |
-| **Administrator** | Configures archiving, re‑encryption, and system health monitoring. | Calls `/uvz/v1/archiving/**`, `/uvz/v1/keymanager/**`, `/uvz/v1/job/**`. | High |
-| **Auditor** | Reads logs and reports for compliance. | Calls `/uvz/v1/reports/**` and `/uvz/v1/deedentries/{id}/logs`. | Medium |
-| **External Signer Service** (system) | Provides digital signatures for documents. | Invoked via `/uvz/v1/documents/signing-info` (PUT). | High |
-| **External Document Store** (system) | Persists document copies and archival blobs. | Accessed through `/uvz/v1/documents/**` (GET/PUT/POST). | High |
+| Actor | Role | Primary Interactions |
+|-------|------|----------------------|
+| **Notary Clerk** | Operates the UI to create, edit, and approve deed entries | Uses the Angular frontend, triggers REST calls via the UI |
+| **System Administrator** | Manages deployment, monitors jobs, configures key‑management | Calls admin endpoints (`/uvz/v1/job/*`, `/uvz/v1/keymanager/*`) |
+| **Auditor** | Reviews logs and reports | Consumes reporting endpoints (`/uvz/v1/reports/*`) |
 
-### 1.3.2 System Actors
-| System | Role | Protocol | Data Flow |
-|--------|------|----------|----------|
-| **Authentication Provider** (e.g., Keycloak) | Issues JWT tokens for UI and API calls. | HTTP / HTTPS (Bearer token) | Token → UI / API |
-| **Reporting Engine** | Consumes report‑metadata and generates PDF/CSV. | HTTP / HTTPS (REST) | Report metadata → `/uvz/v1/report-metadata/**` |
-| **Legacy Notary Service** | Supplies notary representation data. | HTTP / HTTPS (REST) | `/uvz/v1/notaryrepresentations` |
-| **External Email Service** | Sends notifications for hand‑over and archiving events. | SMTP / HTTP API | Notification payloads from backend |
+### 1.3.2 System Actors (External Systems)
+| System | Role | Protocol |
+|--------|------|----------|
+| **Playwright e2e‑xnp** | Automated end‑to‑end test suite | HTTP/HTTPS (REST) |
+| **External Client Application** | Integrates UVZ services into other business processes | HTTP/HTTPS (REST) |
+| **Legacy Notary System** (hypothetical) | May call key‑management and archiving services | HTTP/HTTPS (REST) |
 
----
-
-## 1.4 External Systems
-### 1.4.1 Databases
-| Database | Type | Purpose | Criticality |
-|----------|------|---------|------------|
-| **uvz‑postgres** | Relational (PostgreSQL) | Stores deed entries, logs, business purposes, document metadata, hand‑over datasets. | Critical |
-| **uvz‑archive‑store** | Object storage (S3‑compatible) | Holds archived document copies and signed PDFs. | High |
-| **uvz‑audit‑log** | Relational (PostgreSQL) | Immutable audit trail for compliance. | High |
+## 1.4 External Systems & Resources
+### 1.4.1 Databases (internal to UVZ)
+| Database | Type | Purpose |
+|----------|------|---------|
+| **PostgreSQL** (inferred) | Relational | Persist deed entries, documents, audit logs |
+| **Key‑Store** (inferred) | Secure storage | Store cryptographic keys and re‑encryption state |
 
 ### 1.4.2 External Services
-| Service | Purpose | Protocol | SLA |
-|---------|---------|----------|-----|
-| **Key Management Service (KMS)** | Provides encryption keys and re‑encryption capabilities. | HTTPS (REST) | 99.9 % |
-| **Document Signature Service** | Generates digital signatures for deed documents. | HTTPS (REST) | 99.5 % |
-| **Reporting Service** | Generates annual and custom reports. | HTTPS (REST) | 99 % |
-| **Email / Notification Service** | Sends status e‑mails to users. | SMTP / HTTP API | 99 % |
-
----
+| Service | Purpose | Protocol |
+|---------|---------|----------|
+| **Playwright Test Harness** (`container.e2e_xnp`) | Executes UI‑level integration tests | HTTP/HTTPS |
+| **Node.js jsApi** (`container.js_api`) | Provides lightweight API façade for legacy callers | HTTP/HTTPS |
 
 ## 1.5 Communication Protocols
 | From | To | Protocol | Data Format |
-|------|----|----------|-------------|
-| **Browser (User)** | Frontend (Angular) | HTTPS (TLS) | JSON / HTML |
-| Frontend | Backend (Spring Boot) | HTTPS (TLS) | JSON (REST) |
-| Frontend | jsApi (Node.js) | HTTP (REST) | JSON |
-| Backend | Database (PostgreSQL) | JDBC (TLS) | SQL |
-| Backend | KMS / Signature Service | HTTPS (TLS) | JSON |
-| Backend | Object Store (S3) | HTTPS (REST) | Binary (PDF, ZIP) |
-| Backend | Reporting Engine | HTTPS (REST) | JSON |
-| Backend | Email Service | SMTP / HTTP API | MIME / JSON |
+|------|----|----------|------------|
+| Human Actor → Frontend (Angular) | Browser | HTTPS | HTML/JSON |
+| Frontend → Backend (`container.backend`) | HTTP | HTTPS/REST | JSON |
+| Backend → Database | JDBC | TCP | SQL |
+| Backend → Key‑Store | Internal API | HTTPS/REST | JSON |
+| Backend → External Client | HTTP | HTTPS/REST | JSON |
+| Backend ↔ Playwright Test Harness | HTTP | HTTPS/REST | JSON |
+
+## 1.6 Container Landscape (for context awareness)
+| Container ID | Name | Type | Technology | Component Count |
+|--------------|------|------|------------|-----------------|
+| `container.backend` | backend | Application | Spring Boot | 494 |
+| `container.frontend` | frontend | Application | Angular | 404 |
+| `container.js_api` | jsApi | Application | Node.js | 52 |
+| `container.e2e_xnp` | e2e‑xnp | Test | Playwright | 0 |
+| `container.import_schema` | import‑schema | Library | Java/Gradle | 0 |
+
+## 1.7 Representative REST Endpoints (excerpt)
+| HTTP Method | Path | Description |
+|-------------|------|-------------|
+| **POST** | `/uvz/v1/action/{type}` | Execute an action of the given type (e.g., create, approve) |
+| **GET** | `/uvz/v1/deedentries` | Retrieve list of deed entries |
+| **POST** | `/uvz/v1/deedentries` | Create a new deed entry |
+| **GET** | `/uvz/v1/keymanager/cryptostate` | Query current cryptographic state |
+| **GET** | `/uvz/v1/reports/annual` | Generate annual report |
+| **GET** | `/uvz/v1/job/metrics` | Retrieve job execution metrics |
+| **POST** | `/uvz/v1/archiving/sign-submission-token` | Obtain token for document archiving |
+| **GET** | `/uvz/v1/participants` | List participants involved in a deed |
+| **GET** | `/uvz/v1/numbermanagement` | Retrieve number‑management configuration |
+| **GET** | `/info` | System health/info endpoint |
+
+> **Note** – The full list contains 196 endpoints; the table above highlights the most frequently used operations.
+
+## 1.8 System Context Diagram
+The visual System Context diagram is stored as a Draw.io file:
+- **File:** `c4/c4-context.drawio`
+- **Diagram Name:** *UVZ System Context*
+
+The diagram follows the SEAGuide C4 conventions:
+- Blue boxes – internal containers (`backend`, `frontend`, `jsApi`)
+- Gray boxes – external systems (Playwright test harness, external client)
+- Person icons – human actors (Notary Clerk, System Administrator, Auditor)
+- Dashed lines – trust boundaries (e.g., between UI and backend)
 
 ---
-
-## 1.6 Context Diagram
-The diagram below visualises the **uvz** system (blue box) together with its external actors (people icons) and external systems (gray boxes).  The diagram is stored as a Draw.io file `c4-context.drawio`.
-
-```
-[Diagram placeholder – see c4-context.drawio]
-```
-
----
-
-## 1.7 Interaction Summary (selected use‑cases)
-| Use‑Case | Primary Actor | Backend Services Involved | Key Endpoints |
-|----------|--------------|--------------------------|--------------|
-| **Create Deed Entry** | Business User | DeedEntryRestServiceImpl, DocumentMetaDataServiceImpl | `POST /uvz/v1/deedentries` |
-| **Sign Document** | External Signer Service | SignatureFolderServiceImpl | `POST /uvz/v1/deedentries/{id}/signature-folder` |
-| **Archive Document** | Administrator | ArchivingServiceImpl, DocumentMetaDataServiceImpl | `POST /uvz/v1/archiving/sign-submission-token` |
-| **Generate Report** | Auditor | ReportServiceImpl, ReportMetadataServiceImpl | `GET /uvz/v1/reports/annual` |
-| **Re‑encrypt Keys** | Administrator | KeyManagerServiceImpl | `GET /uvz/v1/keymanager/{groupId}/reencryptable` |
-| **Run End‑to‑End Tests** | CI/CD Pipeline | Playwright test suite (e2e‑xnp) | – |
-
----
-
-*All tables and lists are derived from the live architecture facts (951 components, 196 REST endpoints, 5 containers) and reflect the current state of the uvz platform.*
+*Document generated automatically from architecture facts (951 components, 190 relations, 5 containers) on 2026‑02‑08.*

@@ -1,86 +1,84 @@
 # C4 Level 2: Container Diagram
 
 ## 2.1 Overview
-The **uvz** system is realised as a set of five deployable containers.  Each container groups a coherent set of Spring‑Boot services, Angular UI, Node.js API or test artefacts and runs on its own runtime.  The container diagram shows the high‑level building blocks, the technology choices and the communication paths between them.
+The system **uvz** is composed of five deployable containers. Each container represents a logical runtime unit that can be independently built, deployed and scaled. The diagram follows the SEAGuide C4 conventions (blue boxes for internal containers, gray for external, cylinders for databases, person icons for users, dashed lines for boundaries).
 
 ## 2.2 Container Inventory
+
 | Container ID | Name | Type | Technology | Primary Responsibility |
-|--------------|------|------|------------|------------------------|
-| `container.backend` | Backend | application | Spring Boot (Java/Gradle) | Core business logic, REST API, security, data access |
-| `container.frontend` | Frontend | application | Angular (npm) | User‑facing web UI |
-| `container.js_api` | jsApi | application | Node.js (npm) | Lightweight helper API for static assets and client‑side utilities |
-| `container.e2e_xnp` | e2e‑xnp | test | Playwright (npm) | End‑to‑end UI test suite |
-| `container.import_schema` | import‑schema | library | Java/Gradle | Schema import library used at build time |
+|--------------|------|------|------------|--------------------------|
+| `container.backend` | Backend | Application | Spring Boot (Java/Gradle) | Exposes REST APIs, business logic, data access and security. |
+| `container.frontend` | Frontend | Application | Angular (npm) | SPA UI for end‑users, consumes Backend APIs. |
+| `container.js_api` | jsApi | Application | Node.js (npm) | Server‑side JavaScript façade, provides auxiliary HTTP endpoints for legacy integrations. |
+| `container.import_schema` | Import‑Schema | Library | Java/Gradle | Shared domain model and schema import utilities used by Backend. |
+| `container.e2e_xnp` | e2e‑xnp | Test | Playwright (npm) | End‑to‑end UI test suite exercising Frontend and Backend. |
 
-## 2.3 Component Inventory (selected key components)
-### 2.3.1 Controllers (backend)
-| Component | Package | Description |
-|-----------|---------|-------------|
-| ActionRestServiceImpl |  | Exposes `/uvz/v1/action/**` endpoints |
-| IndexHTMLResourceService |  | Serves the SPA entry point |
-| StaticContentController |  | Delivers static resources |
-| JsonAuthorizationRestServiceImpl |  | Handles JSON‑based auth token exchange |
-| DeedEntryRestServiceImpl |  | CRUD operations for deed entries |
-| ReportRestServiceImpl |  | Generates and streams reports |
-| JobRestServiceImpl |  | Job management and monitoring |
-| ... (total 32 controllers) |
+## 2.3 Container Details
 
-### 2.3.2 Services (backend)
-| Component | Package | Description |
-|-----------|---------|-------------|
-| ActionServiceImpl |  | Business logic for actions |
-| KeyManagerServiceImpl |  | Encryption key lifecycle |
-| WaWiServiceImpl |  | Integration with external WaWi system |
-| ArchiveManagerServiceImpl |  | Archiving workflow orchestration |
-| DeedEntryServiceImpl |  | Core deed entry processing |
-| DocumentMetaDataServiceImpl |  | Document metadata handling |
-| NumberManagementServiceImpl |  | Number generation & validation |
-| ReportServiceImpl |  | Report data aggregation |
-| JobServiceImpl |  | Background job execution |
-| ... (total 184 services) |
+### 2.3.1 Backend (`container.backend`)
+- **Technology**: Spring Boot, Gradle build system.
+- **Key Packages**: Controllers, Services, Repositories, Security, Configuration.
+- **Main Components** (excerpt):
+  - Controllers (REST entry points): `ActionRestServiceImpl`, `StaticContentController`, `JsonAuthorizationRestServiceImpl`, `ReportRestServiceImpl`, `OpenApiConfig` … (total 32 listed).
+  - Services (business logic): `ActionServiceImpl`, `ArchiveManagerServiceImpl`, `KeyManagerServiceImpl`, `DeedEntryServiceImpl`, `ReportServiceImpl` … (total 30 listed).
+  - Repositories / DAOs: `RestrictedDeedEntryDaoImpl`, `DeedEntryConnectionDaoImpl`, `DocumentMetaDataCustomDaoImpl`.
+- **Ports / Protocols**: HTTP/HTTPS (REST/JSON), optional gRPC (future). 
+- **External Interfaces**: Consumes `jsApi` (internal HTTP), accesses database (not modelled as separate container – embedded via JPA).
 
-## 2.4 REST Endpoint Summary (backend)
-The backend container exposes **196** HTTP endpoints (GET, POST, PUT, DELETE, PATCH).  A representative subset is shown below:
-| HTTP Method | Path | Primary Controller |
-|-------------|------|--------------------|
-| POST | `/uvz/v1/action/{type}` | ActionRestServiceImpl |
-| GET  | `/uvz/v1/action/{id}` | ActionRestServiceImpl |
-| GET  | `/uvz/v1/deedentries` | DeedEntryRestServiceImpl |
-| POST | `/uvz/v1/deedentries` | DeedEntryRestServiceImpl |
-| GET  | `/uvz/v1/deedentries/{id}` | DeedEntryRestServiceImpl |
-| PUT  | `/uvz/v1/deedentries/{id}` | DeedEntryRestServiceImpl |
-| DELETE| `/uvz/v1/deedentries/{id}` | DeedEntryRestServiceImpl |
-| GET  | `/uvz/v1/reports/annual` | ReportRestServiceImpl |
-| PATCH| `/uvz/v1/job/retry` | JobRestServiceImpl |
-| GET  | `/uvz/v1/participants` | ParticipantController |
-| ... |
+### 2.3.2 Frontend (`container.frontend`)
+- **Technology**: Angular, TypeScript, npm.
+- **Responsibility**: Provides the user‑facing single‑page application, handles routing, state management and UI rendering.
+- **Key Modules**: Authentication, Dashboard, Deed Management, Reporting.
+- **Communication**: Calls Backend REST endpoints over HTTPS; loads static assets from Backend (`StaticContentController`).
 
-## 2.5 Container Interactions
-| Source Container | Target Container | Protocol | Description |
-|------------------|------------------|----------|-------------|
-| Frontend (Angular) | Backend (Spring Boot) | HTTPS/REST | UI calls the public `/uvz/v1/**` API |
-| jsApi (Node.js) | Backend (Spring Boot) | HTTP | Helper API for static asset versioning |
-| Backend | Import‑schema (library) | Java classpath | Uses schema import utilities at start‑up |
-| e2e‑xnp (Playwright) | Frontend | HTTP (browser) | Executes end‑to‑end UI tests against the deployed UI |
-| Backend | Database (external, not modelled) | JDBC | Persists entities (not shown as a container) |
+### 2.3.3 jsApi (`container.js_api`)
+- **Technology**: Node.js, npm.
+- **Responsibility**: Lightweight HTTP façade exposing legacy‑compatible endpoints and utility scripts used by external partners.
+- **Interaction**: Calls Backend services via internal HTTP; may be called directly by Frontend for specific features.
 
-## 2.6 Technology Stack Summary
+### 2.3.4 Import‑Schema (`container.import_schema`)
+- **Technology**: Java library built with Gradle.
+- **Responsibility**: Supplies shared domain model classes and schema import logic used by Backend at compile‑time.
+- **Deployment**: Packaged as a JAR and included in Backend classpath.
+
+### 2.3.5 e2e‑xnp (`container.e2e_xnp`)
+- **Technology**: Playwright test framework.
+- **Responsibility**: Executes automated end‑to‑end UI tests against the deployed Frontend and Backend.
+- **Scope**: Not part of production runtime; runs in CI/CD pipeline.
+
+## 2.4 Container Interactions
+
+### 2.4.1 Synchronous Communication (HTTP/REST)
+| Source | Target | Protocol | Data Format | Typical Use |
+|--------|--------|----------|-------------|-------------|
+| Frontend | Backend | HTTPS/REST | JSON | UI actions → business operations |
+| Frontend | jsApi | HTTPS/REST | JSON | Legacy integration calls |
+| jsApi | Backend | HTTP/REST | JSON | Service façade forwarding |
+| Backend | Import‑Schema (library) | Compile‑time JAR | Java classes | Shared domain model |
+
+### 2.4.2 Asynchronous / Event‑Driven (Future)
+| Source | Target | Mechanism | Purpose |
+|--------|--------|-----------|---------|
+| Backend | (External) Message Broker | Kafka / JMS (planned) | Publish domain events (e.g., DeedCreated) |
+| Frontend | – | – | – |
+
+## 2.5 Technology Stack Summary
 | Layer | Technology | Version (example) |
 |-------|------------|-------------------|
-| Presentation | Angular | 15.x |
-| Presentation (helper) | Node.js | 18.x |
-| Application | Spring Boot | 3.1.x |
-| Build / Package | Gradle | 8.x |
-| Test | Playwright | 1.40.x |
-| Data Access | JPA / Hibernate | 6.x |
+| Presentation (UI) | Angular | 15.x |
+| Presentation (JS façade) | Node.js | 18.x |
+| Application (Backend) | Spring Boot | 3.1.x |
+| Build System | Gradle / npm | 8.x / 9.x |
+| Testing | Playwright | 1.35 |
+| Shared Library | Java (JDK 17) | 17 |
 
-## 2.7 Container Diagram
-The visual diagram is stored as a Draw.io file:
+## 2.6 Diagram Reference
+The visual container diagram is stored as a Draw.io file:
 
 ```
 📁 c4/c4-container.drawio
 ```
-It follows the SEAGuide C4 visual conventions (blue boxes for internal containers, gray for external systems, cylinders for databases, person icons for users, dashed lines for boundaries).
+It depicts the five containers, their technology icons, and the communication arrows described above. The diagram follows the SEAGuide colour palette (blue for internal containers, gray for test container, dashed boundary for the system).
 
 ---
-*Document generated automatically from architecture facts.*
+*Document generated on 2026‑02‑08 using real architecture facts.*
