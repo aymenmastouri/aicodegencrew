@@ -1,9 +1,9 @@
 {
-  "run_id": "d41c2656",
-  "timestamp": "2026-02-09T18:57:31.629801",
-  "status": "success",
-  "message": "Pipeline completed successfully",
-  "total_duration": "0:02:37",
+  "run_id": "857cfbd3",
+  "timestamp": "2026-02-09T22:59:27.936448",
+  "status": "failed",
+  "message": "Phase phase4_development_planning failed: Dependencies not met",
+  "total_duration": "0:00:00",
   "planned_phases": [
     "phase4_development_planning"
   ],
@@ -16,10 +16,10 @@
   "phases": [
     {
       "phase": "phase4_development_planning",
-      "status": "success",
-      "message": "Completed",
-      "duration": "157.15s",
-      "duration_seconds": 157.15,
+      "status": "failed",
+      "message": "Dependencies not met",
+      "duration": "0.00s",
+      "duration_seconds": 0.0,
       "output_files": [
         "C:\\projects\\aicodegencrew\\knowledge\\development"
       ]
