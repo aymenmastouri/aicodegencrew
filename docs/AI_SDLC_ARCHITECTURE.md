@@ -15,7 +15,7 @@
 > **Reference Diagrams:**
 > - [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full SDLC Pipeline Overview
 > - [layer-architecture.drawio](diagrams/layer-architecture.drawio) - Detailed 4-Layer Architecture
-> - [phase-flow.drawio](diagrams/phase-flow.drawio) - Phase Flow with Layer Context
+> - [pipeline-flow.drawio](diagrams/pipeline-flow.drawio) - Phase Flow with Layer Context
 
 The system is organized into 4 distinct layers, each with clear responsibilities:
 
@@ -122,18 +122,18 @@ The initial implementation focuses on architecture facts extraction:
 > **Reference Diagrams:**
 > - [sdlc-overview.drawio](diagrams/sdlc-overview.drawio) - Full SDLC Pipeline Overview
 > - [layer-architecture.drawio](diagrams/layer-architecture.drawio) - Detailed 4-Layer Architecture
-> - [phase-flow.drawio](diagrams/phase-flow.drawio) - Pipeline Flow (Phases 0-7)
+> - [pipeline-flow.drawio](diagrams/pipeline-flow.drawio) - Pipeline Flow (Phases 0-7)
 > - [evidence-flow.drawio](diagrams/evidence-flow.drawio) - Evidence Data Flow
 > - [knowledge-structure.drawio](diagrams/knowledge-structure.drawio) - Knowledge Base Structure
-> - [collectors.drawio](diagrams/collectors.drawio) - Phase 1: 31 Collectors
-> - [analysis-crew.drawio](diagrams/analysis-crew.drawio) - Phase 2: Analysis Crew
-> - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - Phase 3: Synthesis Crew
-> - [phase4-pipeline.drawio](diagrams/phase4-pipeline.drawio) - Phase 4: Development Planning Pipeline
-> - [phase2-crew-architecture.drawio](diagrams/phase2-crew-architecture.drawio) - Phase 2: Crew Architecture
+> - [facts-collectors.drawio](diagrams/facts-collectors.drawio) - Deterministic Collectors
+> - [analysis-crew.drawio](diagrams/analysis-crew.drawio) - Multi-Agent Analysis Crew
+> - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - C4 + Arc42 Synthesis Crews
+> - [development-planning-pipeline.drawio](diagrams/development-planning-pipeline.drawio) - Hybrid Development Planning Pipeline
+> - [analysis-crew-schema.drawio](diagrams/analysis-crew-schema.drawio) - Analysis Schema Validation
 
 ### 3.1 Core Principle: Evidence-First Architecture
 
-> See [phase-flow.drawio](diagrams/phase-flow.drawio) for the full 4-layer pipeline diagram.
+> See [pipeline-flow.drawio](diagrams/pipeline-flow.drawio) for the full 4-layer pipeline diagram.
 
 **Key Rules:**
 - Phase 1 produces facts and evidence (deterministic, no LLM)
@@ -427,7 +427,7 @@ src/aicodegencrew/
 
 #### Collector Architecture (Modular)
 
-> **Reference Diagram:** [collectors.drawio](diagrams/collectors.drawio)
+> **Reference Diagram:** [facts-collectors.drawio](diagrams/facts-collectors.drawio)
 
 The collector system uses a modular architecture with an **Orchestrator** that coordinates **Dimension Collectors** and **Specialist Collectors**.
 
@@ -924,7 +924,7 @@ knowledge/architecture/
 
 ### 4.5 Phase 4: Development Planning (HYBRID PIPELINE - IMPLEMENTED)
 
-> **Reference Diagram:** [phase4-pipeline.drawio](diagrams/phase4-pipeline.drawio) - Hybrid Pipeline Flow
+> **Reference Diagram:** [development-planning-pipeline.drawio](diagrams/development-planning-pipeline.drawio) - Hybrid Pipeline Flow
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -1531,15 +1531,15 @@ Agent step and task callbacks (`crew_callbacks.py`) route through `logger`:
 
 | Diagram | File | Description |
 |---------|------|-------------|
-| Phase Flow | `phase-flow.drawio` | Main pipeline flow (Phases 0-7) |
+| Pipeline Flow | `pipeline-flow.drawio` | Full pipeline flow across all layers |
 | Layer Architecture | `layer-architecture.drawio` | Detailed 4-Layer Architecture |
 | Evidence Flow | `evidence-flow.drawio` | Evidence data flow |
 | Knowledge Structure | `knowledge-structure.drawio` | Knowledge base organization |
-| Collectors | `collectors.drawio` | Phase 1: 31 collectors in 4 groups |
-| Analysis Crew | `analysis-crew.drawio` | Phase 2: 5 mini-crews analysis |
-| Synthesis Crew | `synthesis-crew.drawio` | Phase 3: C4 + Arc42 synthesis crews |
-| Dev Planning Pipeline | `phase4-pipeline.drawio` | Phase 4: Hybrid pipeline (5 stages) |
-| Analysis Crew Architecture | `phase2-crew-architecture.drawio` | Phase 2: Detailed crew architecture |
+| Facts Collectors | `facts-collectors.drawio` | Deterministic collectors in 4 groups |
+| Analysis Crew | `analysis-crew.drawio` | Multi-agent analysis crew |
+| Synthesis Crew | `synthesis-crew.drawio` | C4 + Arc42 synthesis crews |
+| Dev Planning Pipeline | `development-planning-pipeline.drawio` | Hybrid pipeline (5 stages) |
+| Analysis Crew Schema | `analysis-crew-schema.drawio` | Schema validation flow |
 
 ---
 
