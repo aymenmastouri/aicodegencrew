@@ -100,6 +100,12 @@ class ValidatorStage:
         component_errors = self._validate_component_references(dev_plan)
         errors.extend(component_errors)
 
+        # Validate upgrade plan (if upgrade task)
+        if "upgrade_plan" in dev_plan:
+            upgrade_errors, upgrade_warnings = self._validate_upgrade_plan(dev_plan)
+            errors.extend(upgrade_errors)
+            warnings.extend(upgrade_warnings)
+
         # Determine if valid
         is_valid = len(errors) == 0 and len(missing_fields) == 0
 
@@ -167,3 +173,27 @@ class ValidatorStage:
             )
 
         return errors
+
+    @staticmethod
+    def _validate_upgrade_plan(dev_plan: dict) -> tuple:
+        """Validate upgrade-specific plan fields."""
+        errors = []
+        warnings = []
+
+        upgrade_plan = dev_plan.get("upgrade_plan", {})
+
+        migration_seq = upgrade_plan.get("migration_sequence", [])
+        if not migration_seq:
+            errors.append("Upgrade plan has no migration_sequence")
+        else:
+            for i, step in enumerate(migration_seq):
+                if not step.get("migration_steps"):
+                    warnings.append(f"Migration step {i+1} ({step.get('title', '?')}) has no migration_steps")
+
+        if not upgrade_plan.get("verification_commands"):
+            warnings.append("Upgrade plan has no verification_commands")
+
+        if not upgrade_plan.get("total_estimated_effort_hours"):
+            warnings.append("Upgrade plan has no effort estimate")
+
+        return errors, warnings

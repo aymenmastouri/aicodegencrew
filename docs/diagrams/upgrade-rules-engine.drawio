@@ -1,0 +1,327 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="upgrade-rules-engine" name="Upgrade Rules Engine">
+    <mxGraphModel dx="1622" dy="1094" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================================================================ -->
+        <!-- TITLE -->
+        <!-- ================================================================ -->
+        <mxCell id="title" value="Upgrade Rules Engine - Framework-Agnostic Upgrade Detection &amp; Assessment" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Deterministic | 3-8 seconds | 40 rules | 4 frameworks | No LLM required" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="350" y="55" width="600" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- SECTION 1: DETECTION (top-left) -->
+        <!-- ================================================================ -->
+        <mxCell id="detect-group-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#d6b656;strokeWidth=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="520" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="detect-group-label" value="1. Task Type Detection (Stage 1 - Input Parser)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="55" y="105" width="400" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- JIRA Ticket input -->
+        <mxCell id="input-jira" value="JIRA Ticket&#xa;(summary, description,&#xa;comments, labels)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="145" width="150" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Score-based detector -->
+        <mxCell id="score-detector" value="Score-based Detector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="270" y="145" width="160" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="score-strong" value="Strong (weight=3):&#xa;&quot;angular upgrade&quot;, &quot;spring boot upgrade&quot;,&#xa;&quot;java upgrade&quot;, &quot;playwright update&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="270" y="190" width="270" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="score-medium" value="Medium (weight=2):&#xa;&quot;version bump&quot;, &quot;breaking changes&quot;, &quot;migration guide&quot;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="270" y="225" width="270" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="score-weak" value="Weak (weight=1-2):&#xa;Generic &quot;upgrade&quot;/&quot;migrate&quot; + framework name" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="270" y="255" width="270" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Decision diamond -->
+        <mxCell id="decision" value="score &gt;= 3?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="140" y="285" width="100" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: JIRA -> Detector -->
+        <mxCell id="arrow-jira-detect" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="input-jira" target="score-detector">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Detector -> Decision -->
+        <mxCell id="arrow-detect-decision" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="score-detector" target="decision">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decision: No -> Normal pipeline -->
+        <mxCell id="normal-path" value="Normal Pipeline&#xa;(feature/bugfix)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;fontColor=#333333" vertex="1" parent="1">
+          <mxGeometry x="60" y="355" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-no" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="decision" target="normal-path">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="label-no" value="No" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="90" y="295" width="30" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Decision: Yes -> Engine -->
+        <mxCell id="label-yes" value="Yes" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="245" y="295" width="30" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- SECTION 2: ENGINE PIPELINE (center) -->
+        <!-- ================================================================ -->
+        <mxCell id="engine-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#d79b00;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="410" width="520" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="engine-label" value="2. UpgradeRulesEngine (engine.py)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#d79b00" vertex="1" parent="1">
+          <mxGeometry x="55" y="415" width="350" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Step 1: Detect Framework -->
+        <mxCell id="step1" value="1. Detect Framework" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="60" y="450" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="step1-desc" value="Task text keywords + architecture_facts containers&#xa;→ angular | spring | java | playwright | react | vue" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="290" y="450" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Step 2: Detect Versions -->
+        <mxCell id="step2" value="2. Detect Versions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="60" y="505" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="step2-desc" value="Current: from architecture_facts.containers[].version&#xa;Target: regex from task text (&quot;upgrade to v20&quot;)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="290" y="505" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Step 3: Select Rules -->
+        <mxCell id="step3" value="3. Select Applicable Rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="60" y="560" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="step3-desc" value="Filter by: framework + version range&#xa;rule.from_version &gt;= current AND &lt;= target" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="290" y="560" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Step 4: Scan & Assess -->
+        <mxCell id="step4" value="4. Scan &amp; Assess" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="60" y="615" width="220" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="step4-desc" value="UpgradeCodeScanner: regex on source files&#xa;→ occurrences + affected_files + effort estimate" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="290" y="615" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Decision Yes -> Engine -->
+        <mxCell id="arrow-yes-engine" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#d79b00" edge="1" parent="1" source="decision" target="step1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="310" />
+              <mxPoint x="280" y="400" />
+              <mxPoint x="170" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrows between steps -->
+        <mxCell id="arrow-s1-s2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="step1" target="step2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-s2-s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="step2" target="step3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-s3-s4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="step3" target="step4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- SECTION 3: FRAMEWORK RULES (right side) -->
+        <!-- ================================================================ -->
+        <mxCell id="rules-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;strokeWidth=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="600" y="100" width="560" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="rules-label" value="3. Framework Upgrade Rules (Declarative)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="615" y="105" width="350" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Angular -->
+        <mxCell id="rule-angular" value="Angular" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="620" y="145" width="250" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="rule-angular-desc" value="4 rule sets | 17 rules&#xa;18→19: Standalone, Builder, Sass, TS 5.6, Zone.js (6 rules)&#xa;19→20: Control flow, Karma, InjectFlags, HammerJS (4 rules)&#xa;Signals: @Input→input(), @Output→output(), @ViewChild (4 rules)&#xa;Third-party: AG Grid, ng-bootstrap, ngx-translate (3 rules)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="620" y="180" width="260" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Spring -->
+        <mxCell id="rule-spring" value="Spring Boot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="900" y="145" width="250" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="rule-spring-desc" value="4 rule sets | 12 rules&#xa;2→3: Jakarta (javax→jakarta), Java 17, SecurityFilterChain (4 rules)&#xa;3.1→3.2: RestClient, Virtual Threads, Observability (3 rules)&#xa;3.2→3.3: CDS, Property migration (2 rules)&#xa;3.3→3.4: Structured logging, MockMvc, Flyway 10 (3 rules)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="900" y="180" width="250" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Java -->
+        <mxCell id="rule-java" value="Java" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="620" y="265" width="250" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="rule-java-desc" value="1 rule set | 5 rules&#xa;17→21: SecurityManager removed, finalize() deprecated,&#xa;Record patterns, Gradle 8.4+, Maven compiler plugin" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="620" y="300" width="260" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Playwright -->
+        <mxCell id="rule-playwright" value="Playwright" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="900" y="265" width="250" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="rule-playwright-desc" value="1 rule set | 6 rules&#xa;1→2: waitForNavigation→waitForURL, waitForSelector→locator,&#xa;page.$→page.locator, ElementHandle, Config, Cucumber compat" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="900" y="300" width="260" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Extensibility note -->
+        <mxCell id="extensibility" value="+ Add new framework: create {framework}.py → register in engine.py:_auto_register_rules()" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=2;fontColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="620" y="355" width="520" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Total rules box -->
+        <mxCell id="total-rules" value="TOTAL: 10 Rule Sets | 40 Rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="620" y="395" width="530" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Step 3 -> Rules -->
+        <mxCell id="arrow-step3-rules" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;strokeColor=#d79b00" edge="1" parent="1" source="step3" target="total-rules">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- SECTION 4: SCANNER (right-center) -->
+        <!-- ================================================================ -->
+        <mxCell id="scanner-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;strokeWidth=2;dashed=1" vertex="1" parent="1">
+          <mxGeometry x="600" y="460" width="560" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="scanner-label" value="4. UpgradeCodeScanner (scanner.py)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="615" y="465" width="350" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Target Repository -->
+        <mxCell id="scan-repo" value="Target Repository&#xa;(any project)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="620" y="500" width="150" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Scanner process -->
+        <mxCell id="scan-process" value="Scanner Process" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="830" y="500" width="160" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scan-steps" value="1. Match files by CodePattern.file_glob&#xa;   (*.module.ts, *.java, package.json, ...)&#xa;2. Regex search: CodePattern.regex&#xa;3. Count occurrences per file&#xa;4. Collect affected file paths" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="620" y="555" width="300" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scan-exclusions" value="Exclusions: node_modules/ | .git/ | dist/ | build/ | *.spec.ts" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontStyle=2;fontColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="620" y="620" width="350" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scan-duration" value="Duration: 2-5 seconds (no LLM)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=1;fontColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="620" y="645" width="250" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Repo -> Scanner -->
+        <mxCell id="arrow-repo-scan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="scan-repo" target="scan-process">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Step 4 -> Scanner -->
+        <mxCell id="arrow-step4-scanner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#d79b00" edge="1" parent="1" source="step4" target="scan-repo">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="635" />
+              <mxPoint x="570" y="522" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- SECTION 5: OUTPUT (bottom) -->
+        <!-- ================================================================ -->
+        <mxCell id="output-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="720" width="520" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="output-label" value="5. Impact Assessment Output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#9673a6" vertex="1" parent="1">
+          <mxGeometry x="55" y="725" width="300" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-impacts" value="impacts[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="60" y="760" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="output-impacts-desc" value="rule_id, title, severity, category, occurrences,&#xa;affected_files[], effort_minutes, migration_steps[]" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="60" y="790" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-sequence" value="migration_sequence[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="310" y="760" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="output-sequence-desc" value="Ordered steps: step#, rule_id, title, severity,&#xa;occurrences, effort, migration_steps[], schematic" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="310" y="790" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-summary" value="summary{}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="60" y="825" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="output-summary-desc" value="total_rules_triggered, total_occurrences,&#xa;total_affected_files, estimated_effort_hours,&#xa;breaking_changes, deprecated_apis" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="60" y="855" width="240" height="35" as="geometry" />
+        </mxCell>
+
+        <mxCell id="output-verify" value="verification_commands[]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="310" y="825" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="output-verify-desc" value="ng build, ng test, ./gradlew build,&#xa;mvn verify, npx playwright test, ..." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="310" y="855" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Flows to Stage 4 note -->
+        <mxCell id="output-dest" value="→ Injected into Stage 4 (LLM) prompt for upgrade plan generation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=3;fontColor=#9673a6" vertex="1" parent="1">
+          <mxGeometry x="60" y="900" width="450" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Engine Step 4 -> Output -->
+        <mxCell id="arrow-engine-output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#9673a6;strokeWidth=2" edge="1" parent="1" source="step4" target="output-bg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- SECTION 6: RULE ANATOMY (bottom-right) -->
+        <!-- ================================================================ -->
+        <mxCell id="anatomy-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="720" width="560" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="anatomy-label" value="6. UpgradeRule Anatomy (base.py)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="615" y="725" width="300" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Severity badges -->
+        <mxCell id="sev-breaking" value="BREAKING" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="620" y="760" width="85" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="sev-deprecated" value="DEPRECATED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="715" y="760" width="95" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="sev-recommended" value="RECOMMENDED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="820" y="760" width="110" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="sev-optional" value="OPTIONAL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="940" y="760" width="80" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Rule fields -->
+        <mxCell id="anatomy-fields" value="UpgradeRule {&#xa;  id: &quot;ng19-standalone-default&quot;&#xa;  title: &quot;Standalone components are now default&quot;&#xa;  severity: BREAKING&#xa;  category: MIGRATION | API_CHANGE | DEPENDENCY | BUILD_CONFIG | TEST_RUNNER | SYNTAX&#xa;  from_version: &quot;18&quot;, to_version: &quot;19&quot;&#xa;&#xa;  detection_patterns: [&#xa;    CodePattern(file_glob=&quot;*.module.ts&quot;, regex=r&quot;declarations\s*:\s*\[&quot;)&#xa;  ]&#xa;&#xa;  migration_steps: [&quot;1. Run: ng generate @angular/core:standalone-migration&quot;, ...]&#xa;  schematic: &quot;ng generate @angular/core:standalone-migration&quot; (optional)&#xa;  effort_per_occurrence: 10 (minutes)&#xa;}" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="620" y="795" width="520" height="135" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

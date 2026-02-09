@@ -48,6 +48,7 @@ class DevelopmentPlanningPipeline:
         analyzed_path: str = "knowledge/architecture/analyzed_architecture.json",
         output_dir: str = "knowledge/development",
         chroma_dir: str = None,
+        repo_path: str = None,
     ):
         """
         Initialize development planning pipeline.
@@ -58,12 +59,14 @@ class DevelopmentPlanningPipeline:
             analyzed_path: Path to analyzed_architecture.json (Phase 2)
             output_dir: Output directory for plans
             chroma_dir: ChromaDB directory (Phase 0)
+            repo_path: Target repository path (for upgrade code scanning)
         """
         self.input_file = input_file
         self.facts_path = Path(facts_path)
         self.analyzed_path = Path(analyzed_path)
         self.output_dir = Path(output_dir)
         self.chroma_dir = chroma_dir
+        self.repo_path = repo_path
 
         # Ensure output dir exists
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -78,7 +81,7 @@ class DevelopmentPlanningPipeline:
             facts=self.facts,
             chroma_dir=self.chroma_dir,
         )
-        self.stage3 = PatternMatcherStage(facts=self.facts)
+        self.stage3 = PatternMatcherStage(facts=self.facts, repo_path=self.repo_path)
         self.stage4 = PlanGeneratorStage(analyzed_architecture=self.analyzed_architecture)
         self.stage5 = ValidatorStage(analyzed_architecture=self.analyzed_architecture)
 

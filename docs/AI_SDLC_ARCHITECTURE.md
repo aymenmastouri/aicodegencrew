@@ -1061,6 +1061,51 @@ top_tests = sorted(zip(tests, similarities), reverse=True)[:5]
 - Validation: Target class matching (149 patterns)
 - Error Handling: Keyword matching (23 patterns)
 
+#### Upgrade Rules Engine (IMPLEMENTED)
+
+> **Reference Diagram:** [upgrade-rules-engine.drawio](diagrams/upgrade-rules-engine.drawio) - Upgrade Detection & Assessment Flow
+
+A generic, framework-agnostic rules engine for upgrade task planning. All upgrade logic is gated behind `task_type == "upgrade"` — feature and bugfix tasks are completely unchanged.
+
+**Task Type Detection (Stage 1):** Score-based classification with threshold >= 3:
+
+| Signal Strength | Weight | Examples |
+|-----------------|--------|----------|
+| Strong | 3 | "angular upgrade", "spring boot upgrade", "java upgrade", "playwright update" |
+| Medium | 2 | "version bump", "breaking changes", "migration guide", "ng update" |
+| Weak | 1-2 | Generic "upgrade"/"migrate" combined with framework name |
+
+**Architecture:** 4 components in `pipelines/development_planning/upgrade_rules/`:
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| Rule Types | `base.py` | Pure dataclasses: `UpgradeRule`, `UpgradeRuleSet`, `CodePattern`, `UpgradeImpact` |
+| Scanner | `scanner.py` | Regex-based file scanning (2-5s, skips node_modules/.git/dist) |
+| Engine | `engine.py` | Orchestrator: detect framework → select rules → scan → assess |
+| Rules | `angular.py`, `spring.py`, `java.py`, `playwright.py` | Declarative rule definitions per framework |
+
+**Framework Rules (40 total):**
+
+| Framework | Rule Sets | Rules | Version Range | Key Changes |
+|-----------|-----------|-------|---------------|-------------|
+| Angular | 4 | 17 | 18→19, 19→20, Signals, Third-party | Standalone default, control flow, Karma→Vitest, Sass compiler |
+| Spring | 4 | 12 | 2→3, 3.1→3.2, 3.2→3.3, 3.3→3.4 | Jakarta migration, SecurityFilterChain, RestClient, virtual threads |
+| Java | 1 | 5 | 17→21 | SecurityManager removed, finalize deprecated, Gradle/Maven compat |
+| Playwright | 1 | 6 | 1→2 | Locator API, waitForURL, ElementHandle, Cucumber compat |
+
+**Severity Levels:** `BREAKING` | `DEPRECATED` | `RECOMMENDED` | `OPTIONAL`
+
+**Categories:** `API_CHANGE` | `MIGRATION` | `DEPENDENCY` | `BUILD_CONFIG` | `TEST_RUNNER` | `SYNTAX`
+
+**Pipeline Integration:**
+1. Stage 1 detects `task_type="upgrade"` via score-based analysis
+2. Stage 2 returns ALL components in the affected container (not top-K scoring)
+3. Stage 3 invokes `UpgradeRulesEngine`: detect framework → select applicable rules → scan target repo → produce impact assessment
+4. Stage 4 receives upgrade assessment with migration_sequence, effort estimates, and schematics alongside normal context
+5. Stage 5 validates upgrade plan completeness (migration_sequence, verification_commands, effort)
+
+**Extensibility:** To add a new framework, create `{framework}.py` with `UpgradeRuleSet` list and register it in `engine.py:_auto_register_rules()`.
+
 #### Output Schema
 
 ```json
@@ -1157,6 +1202,50 @@ top_tests = sorted(zip(tests, similarities), reverse=True)[:5]
 }
 ```
 
+**Upgrade Plan Output (when `task_type == "upgrade"`):**
+
+The plan JSON includes an additional `upgrade_plan` section:
+
+```json
+{
+  "development_plan": {
+    "...": "normal plan fields...",
+
+    "upgrade_plan": {
+      "framework": "Angular",
+      "current_version": "18",
+      "target_version": "20",
+      "migration_sequence": [
+        {
+          "step": 1,
+          "rule_id": "ng19-standalone-default",
+          "title": "Standalone components are now default",
+          "severity": "breaking",
+          "occurrences": 16,
+          "effort_minutes": 160,
+          "migration_steps": [
+            "1. Run: ng generate @angular/core:standalone-migration",
+            "2. Review generated changes per module",
+            "3. Remove empty NgModules after migration"
+          ],
+          "schematic": "ng generate @angular/core:standalone-migration"
+        }
+      ],
+      "summary": {
+        "total_rules_triggered": 12,
+        "total_occurrences": 489,
+        "total_affected_files": 89,
+        "estimated_effort_minutes": 852,
+        "estimated_effort_hours": 14.2,
+        "breaking_changes": 4,
+        "deprecated_apis": 5
+      },
+      "verification_commands": ["ng build", "ng test"]
+    }
+  }
+}
+```
+
 #### Data Utilization (100% of Phase 0-2)
 
 Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
@@ -1180,6 +1269,11 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 **From Phase 2:**
 - `analyzed_architecture.json` → Architecture style, patterns, quality (Stage 4+5)
+
+**From Upgrade Rules Engine (when task_type="upgrade"):**
+- Target repository → Live code scanning for deprecated APIs, breaking changes (Stage 3)
+- `containers` from `architecture_facts.json` → Framework and version detection (Stage 3)
+- Declarative rules (40 rules across 4 frameworks) → Pattern matching + migration steps (Stage 3)
 
 **Comparison with CrewAI approach:** The Hybrid Pipeline uses the same input data but processes it algorithmically (TF-IDF, fuzzy matching, rule-based lookup) instead of through LLM agents, resulting in 10-20x speedup and 95%+ success rate.
 

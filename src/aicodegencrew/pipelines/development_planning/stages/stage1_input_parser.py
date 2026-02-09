@@ -82,7 +82,73 @@ class InputParserStage:
                 f"Supported: .xml, .docx, .xlsx, .xls, .txt, .log"
             )
 
-        logger.info(f"[Stage1] Parsed task: {task.task_id} - {task.summary}")
+        task = self._detect_task_type(task)
+        logger.info(f"[Stage1] Parsed task: {task.task_id} - {task.summary} (type={task.task_type})")
+
+        return task
+
+    def _detect_task_type(self, task: TaskInput) -> TaskInput:
+        """Detect task type from semantic content analysis (score-based)."""
+        text = f"{task.summary} {task.description} {task.technical_notes}".lower()
+        labels_text = " ".join(task.labels).lower()
+        combined = f"{text} {labels_text}"
+
+        # Score-based upgrade detection:
+        # Strong signals (framework + upgrade intent) vs weak signals
+        upgrade_score = 0
+
+        # Strong: framework-specific upgrade patterns (weight=3)
+        framework_upgrade_patterns = [
+            # Angular
+            "angular upgrade", "upgrade angular", "angular update", "update angular",
+            "ng update", "angular migration", "migrate angular",
+            # Spring
+            "spring boot upgrade", "upgrade spring", "spring migration",
+            "spring boot update", "spring security upgrade",
+            # Java
+            "java upgrade", "upgrade java", "jdk upgrade", "upgrade jdk",
+            "java 17", "java 21", "java 25", "openjdk upgrade",
+            # Playwright
+            "playwright upgrade", "upgrade playwright", "playwright update",
+            # React / Vue
+            "react upgrade", "upgrade react", "vue upgrade", "upgrade vue",
+        ]
+        for pat in framework_upgrade_patterns:
+            if pat in combined:
+                upgrade_score += 3
+
+        # Medium: version upgrade intent (weight=2)
+        version_intent_patterns = [
+            "version bump", "breaking changes", "upgrade to v",
+            "upgrade von", "upgrade auf", "migration guide",
+            "ng update", "update guide",
+        ]
+        for pat in version_intent_patterns:
+            if pat in combined:
+                upgrade_score += 2
+
+        # Weak: generic upgrade words - only count if combined (weight=1)
+        has_upgrade_verb = any(w in combined for w in ["upgrade", "migrate", "migration"])
+        has_framework = any(w in combined for w in [
+            "angular", "spring", "react", "vue", "typescript",
+            "@angular", "spring-boot", "spring boot",
+            "playwright", "java ", "jdk", "openjdk",
+        ])
+        if has_upgrade_verb and has_framework:
+            upgrade_score += 2
+        elif has_upgrade_verb:
+            upgrade_score += 1
+
+        # Threshold: need score >= 3 to be classified as upgrade
+        if upgrade_score >= 3:
+            task.task_type = "upgrade"
+            logger.info(f"[Stage1] Upgrade detected (score={upgrade_score})")
+        elif any(kw in text for kw in ["fix", "bug", "error", "crash", "regression", "defect"]):
+            task.task_type = "bugfix"
+        elif any(kw in text for kw in ["refactor", "clean up", "technical debt", "restructure"]):
+            task.task_type = "refactoring"
+        else:
+            task.task_type = "feature"
 
         return task
 
