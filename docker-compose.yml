@@ -1,0 +1,46 @@
+# ============================================================
+# AICodeGenCrew - Docker Compose
+# ============================================================
+# Usage:
+#   docker-compose run aicodegencrew plan
+#   docker-compose run aicodegencrew run --preset architecture_workflow
+#   docker-compose run aicodegencrew index --force
+#   docker-compose run aicodegencrew list
+#
+# Prerequisites:
+#   1. Copy .env.example to .env and configure
+#   2. Set PROJECT_PATH in .env to target repository path
+#   3. Set TASK_INPUT_DIR in .env to your JIRA/task files folder
+#   4. (Optional) Set DOCS_OUTPUT_DIR in .env for architecture docs export
+# ============================================================
+
+services:
+  aicodegencrew:
+    build: .
+    image: aicodegencrew:latest
+    # Host networking for access to:
+    #   - Ollama (localhost:11434) for embeddings
+    #   - On-prem LLM (sov-ai-platform.nue.local.vm:4000)
+    network_mode: "host"
+    env_file: .env
+    volumes:
+      # User configuration (read-only)
+      - ./.env:/app/.env:ro
+      # Task input files from TASK_INPUT_DIR (read-only)
+      - ${TASK_INPUT_DIR}:/app/inputs/tasks:ro
+      # Internal output: all phases (architecture facts, analysis, synthesis)
+      - ./knowledge/architecture:/app/knowledge/architecture
+      # Internal output: development plans
+      - ./knowledge/development:/app/knowledge/development
+      # Export: Phase 3 architecture docs (C4 + Arc42) for the architect
+      - ${DOCS_OUTPUT_DIR:-./architecture-docs}:/app/architecture-docs
+      # ChromaDB vector store cache
+      - ./.cache:/app/.cache
+      # Target repository to analyze (read-only)
+      - ${PROJECT_PATH:-.}:/repo:ro
+    environment:
+      # Inside container, paths are remapped
+      - PROJECT_PATH=/repo
+      - TASK_INPUT_DIR=/app/inputs/tasks
+      - DOCS_OUTPUT_DIR=/app/architecture-docs
+    command: ["plan"]

@@ -928,9 +928,10 @@ knowledge/architecture/
 
 | Attribute | Specification |
 |-----------|---------------|
-| Type | Pipeline (Hybrid: Deterministic + 1 LLM Call) |
+| Type | Pipeline (Hybrid: Deterministic + 1 LLM Call per task) |
 | Module | `pipelines/development_planning/` |
-| LLM Requirement | Yes (Stage 4 only) |
+| LLM Requirement | Yes (Stage 4 only, 1 call per task) |
+| Multi-File | 1 file = single run; N files (same epic) = parse all, sort, process each |
 | Input | `inputs/tasks/` (`.txt`, `.log`, `.xml`, `.docx`, `.xlsx`) |
 | | `inputs/requirements/` (Specs, documentation) |
 | | `inputs/logs/` (Error logs, traces) |
@@ -938,7 +939,7 @@ knowledge/architecture/
 | | `architecture_facts.json` (Phase 1, all 17 keys) |
 | | `analyzed_architecture.json` (Phase 2) |
 | | ChromaDB (Phase 0, semantic search) |
-| Output | `knowledge/development/{task_id}_plan.json` |
+| Output | `knowledge/development/{task_id}_plan.json` (1 per task) |
 | Dependency | Phase 0 (Indexing), Phase 1 (Facts), Phase 2 (Analysis) |
 | Status | **IMPLEMENTED** |
 
@@ -982,6 +983,49 @@ All Parsers: XML, DOCX, Excel, Text - FULLY IMPLEMENTED
 | Data Utilization | 20% (components only) | 100% (all 17 keys) | **5x more** |
 | Debuggability | Hard (agent black box) | Easy (pipeline steps) | Much better |
 
+#### Multi-File Processing (IMPLEMENTED)
+
+The pipeline supports processing multiple task files from the same epic in a single run.
+
+**Modes:**
+
+| Mode | Input | Behavior |
+|------|-------|----------|
+| Single file | 1 file in `inputs/tasks/` | Stages 1→5 sequentially (default) |
+| Multi-file | N files in `inputs/tasks/` | Parse all → Sort → Process each (Stages 2-5) |
+
+**Content-Based Sorting Algorithm** (`_sort_tasks()`):
+
+Tasks are sorted by a composite key `(is_child, priority, task_type, task_id)`:
+
+| Sort Key | Order | Purpose |
+|----------|-------|---------|
+| `is_child` | 0 (parent) → 1 (child) | Parent tickets before subtasks |
+| JIRA Priority | Blocker(1) → Critical(2) → Major(3) → Minor(4) → Trivial(5) | Higher priority first |
+| Task Type | upgrade(1) → bugfix(2) → feature(3) → refactoring(4) | Upgrades before features |
+| Task ID | Alphabetical | Deterministic tiebreaker |
+
+**Child Detection:** A task is a "child" if any of its `linked_tasks` IDs match another task in the current batch. This handles:
+- Explicit JIRA links (`<issuelinks>`, `<subtasks>`, `<parent>`)
+- Cross-references in description text (e.g., "als Teil von PROJ-123")
+
+**Error Isolation:** Failed tasks do not block processing of remaining tasks. The pipeline returns `status: "partial"` when some tasks fail.
+
+**Example** (2 files in `inputs/tasks/`):
+```
+Input:
+  BNUVZ-12568.xml  (SASS Migration, Major, links to BNUVZ-12529)
+  BNUVZ-12529.xml  (Angular Upgrade, Major, no links in batch)
+
+Sorted:
+  1. BNUVZ-12529 [Major] type=upgrade is_child=0  ← parent first
+  2. BNUVZ-12568 [Major] type=upgrade is_child=1  ← child second
+
+Output:
+  knowledge/development/BNUVZ-12529_plan.json
+  knowledge/development/BNUVZ-12568_plan.json
+```
+
 #### Stage 1: Input Parsers (IMPLEMENTED)
 
 All 4 parsers fully implemented in `pipelines/development_planning/parsers/`:
@@ -993,6 +1037,12 @@ All 4 parsers fully implemented in `pipelines/development_planning/parsers/`:
   - Metadata: Assignee, Reporter, Created/Updated dates, Fix Version, Resolution
   - **All Comments**: Author, timestamp, full text (example: 15 comments = 7,066 chars)
   - Labels, Components, Custom fields, Attachments, Links, Subtasks
+  - **Linked Tasks** (`linked_tasks`): Extracted from 4 sources:
+    1. `<issuelinks>` — JIRA issue links (Causes, Blocks, etc.)
+    2. `<subtasks>` — Sub-task references
+    3. `<parent>` — Parent ticket reference
+    4. Description text — Regex `[A-Z][A-Z0-9]+-\d+` (cross-references)
+  - **JIRA Type** (`jira_type`): Task, Sub-Task, Epic, Story, Bug
 - Example: 133KB JIRA file → Complete task context with all discussions
 
 **2. DOCX Parser** (`docx_parser.py`)
@@ -1469,7 +1519,20 @@ Unknown presets raise an error instead of silently falling back.
 python -m aicodegencrew list
 ```
 
-### 8.2 Preset Execution
+### 8.2 Development Planning (Shortcut)
+
+```bash
+# Quick: Development planning (Phase 0+1+2+4)
+aicodegencrew plan
+
+# With custom .env file
+aicodegencrew --env /path/to/project.env plan
+
+# Override index mode
+aicodegencrew plan --index-mode off
+```
+
+### 8.3 Preset Execution
 
 ```bash
 # Only extract facts (no LLM)
@@ -1482,7 +1545,7 @@ python -m aicodegencrew run --preset architecture_workflow
 python -m aicodegencrew run --preset analysis_only
 ```
 
-### 8.3 Single Phase Execution
+### 8.4 Single Phase Execution
 
 ```bash
 # Phase 1: Architecture Facts
@@ -1495,19 +1558,20 @@ python -m aicodegencrew run --phases phase2_architecture_analysis
 python -m aicodegencrew run --phases phase3_architecture_synthesis
 ```
 
-### 8.4 Options
+### 8.5 Options
 
-| Option | Description |
-|--------|-------------|
-| `--preset NAME` | Run a named preset (validated against config) |
-| `--phases P1 P2` | Run specific phases by ID |
-| `--repo-path PATH` | Target repository path |
-| `--index-mode MODE` | Override INDEX_MODE (`off`, `auto`, `force`, `smart`) |
-| `--git-url URL` | Git HTTPS URL (overrides `GIT_REPO_URL` in .env) |
-| `--branch NAME` | Git branch (overrides `GIT_BRANCH` in .env) |
-| `--clean` | Clean knowledge directories before running |
-| `--no-clean` | Skip auto-cleaning |
-| `--config PATH` | Custom phases_config.yaml path |
+| Option | Scope | Description |
+|--------|-------|-------------|
+| `--env PATH` | Global | Path to `.env` configuration file (default: `.env` in CWD) |
+| `--preset NAME` | `run` | Run a named preset (validated against config) |
+| `--phases P1 P2` | `run` | Run specific phases by ID |
+| `--repo-path PATH` | `run`, `plan` | Target repository path |
+| `--index-mode MODE` | `run`, `plan`, `index` | Override INDEX_MODE (`off`, `auto`, `force`, `smart`) |
+| `--git-url URL` | `run`, `index` | Git HTTPS URL (overrides `GIT_REPO_URL` in .env) |
+| `--branch NAME` | `run`, `index` | Git branch (overrides `GIT_BRANCH` in .env) |
+| `--clean` | `run` | Clean knowledge directories before running |
+| `--no-clean` | `run` | Skip auto-cleaning |
+| `--config PATH` | `run`, `plan`, `list` | Custom phases_config.yaml path |
 
 ---
 
@@ -1695,15 +1759,133 @@ Both can be set simultaneously. `GIT_REPO_URL` takes priority when set.
 
 ---
 
-## 13. Testing
+## 13. Deployment
 
-### 13.1 Full Test Suite
+### 13.1 Deployment Modes
+
+| Mode | Source Visible | Use Case |
+|------|---------------|----------|
+| **Development** (`pip install -e .`) | Yes | Capgemini dev team only |
+| **Wheel Distribution** (`pip install *.whl`) | No (`.pyc` only) | Internal distribution |
+| **Docker** (`docker run`) | No (compiled in image) | Production deployment |
+
+### 13.2 Wheel Distribution (No Source Code)
+
+Build a wheel package that contains only compiled Python bytecode:
+
+```bash
+pip install build
+python -m build --wheel
+# Output: dist/aicodegencrew-0.1.0-py3-none-any.whl
+```
+
+Distribute the `.whl` file to developers. They install it with:
+
+```bash
+pip install aicodegencrew-0.1.0-py3-none-any.whl[parsers]
+aicodegencrew --env /path/to/my.env plan
+```
+
+### 13.3 Docker Deployment (Recommended)
+
+Multi-stage Dockerfile ensures source code is only present in the build stage.
+The final image contains only the installed wheel and config files.
+
+```bash
+# Build image
+docker build -t aicodegencrew:latest .
+
+# Run with docker-compose (preferred)
+docker-compose run aicodegencrew plan
+
+# Run directly
+docker run --network host \
+  -v /path/to/.env:/app/.env:ro \
+  -v /path/to/repo:/repo:ro \
+  -v ./inputs:/app/inputs:ro \
+  -v ./knowledge:/app/knowledge \
+  -v ./.cache:/app/.cache \
+  -e PROJECT_PATH=/repo \
+  aicodegencrew:latest plan
+```
+
+### 13.4 Volume Mounts
+
+| Mount | Container Path | Mode | Purpose |
+|-------|---------------|------|---------|
+| `.env` | `/app/.env` | ro | Configuration |
+| Target repo | `/repo` | ro | Repository to analyze |
+| `inputs/` | `/app/inputs` | ro | JIRA XML, DOCX, Excel files |
+| `knowledge/` | `/app/knowledge` | rw | Output: plans, architecture docs |
+| `.cache/` | `/app/.cache` | rw | ChromaDB vector store |
+
+### 13.5 Network Requirements
+
+The container needs access to:
+- **Ollama** (`localhost:11434`): Embedding generation
+- **On-prem LLM** (e.g. `sov-ai-platform.nue.local.vm:4000`): Plan generation
+
+Use `network_mode: host` in docker-compose or `--network host` with docker run.
+
+### 13.6 Release Process
+
+Build and assemble a release package using the release script:
+
+```bash
+# Wheel only (no Docker)
+python scripts/build_release.py
+
+# Wheel + Docker image
+python scripts/build_release.py --docker
+
+# Wheel + Docker + push to registry
+python scripts/build_release.py --docker --push --registry registry.capgemini.com
+```
+
+Output: `dist/release/` containing:
+
+| File | Purpose |
+|------|---------|
+| `aicodegencrew-{version}-py3-none-any.whl` | Installable package (no source code) |
+| `aicodegencrew-{version}.tar.gz` | Docker image (optional, with `--docker`) |
+| `.env.example` | Configuration template |
+| `docker-compose.yml` | Docker Compose file |
+| `config/phases_config.yaml` | Phase configuration |
+| `USER_GUIDE.md` | End-user documentation |
+| `install.bat` / `install.sh` | Installation scripts |
+
+### 13.7 Delivery to End Users
+
+The `dist/release/` folder is the complete delivery package. Send it via:
+- **Fileshare** (simplest): ZIP and share via Teams/SharePoint
+- **Nexus/Artifactory**: Upload `.whl` as Python package
+- **Docker Registry**: Push image with `--push --registry` flag
+
+End user workflow:
+1. Unzip release package
+2. Run `install.bat` (Windows) or `install.sh` (Linux)
+3. Copy `.env.example` to `.env`, configure settings
+4. Start Ollama: `ollama serve`
+5. Run: `aicodegencrew --env .env plan`
+
+### 13.8 Version Management
+
+- Version is defined in `pyproject.toml` (`version = "X.Y.Z"`)
+- Changes documented in `CHANGELOG.md`
+- Release script reads version automatically from `pyproject.toml`
+- Docker images tagged with version + `latest`
+
+---
+
+## 14. Testing
+
+### 14.1 Full Test Suite
 
 ```
 pytest tests/
 ```
 
-### 13.2 Component Tests
+### 14.2 Component Tests
 
 ```
 pytest tests/test_indexing.py -v
@@ -1712,6 +1894,6 @@ pytest tests/test_quality_gate.py -v
 
 ---
 
-## 14. License
+## 15. License
 
 Proprietary — Capgemini. See [LICENSE](../LICENSE) for details.

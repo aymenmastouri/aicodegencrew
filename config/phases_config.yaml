@@ -270,7 +270,14 @@ presets:
     - phase2_architecture_analysis
     - phase3_architecture_synthesis
 
-  # Architecture + Development Planning
+  # Development Planning only (Phase 0+1+2+4, skips Phase 3 synthesis)
+  planning_only:
+    - phase0_indexing
+    - phase1_architecture_facts
+    - phase2_architecture_analysis
+    - phase4_development_planning
+
+  # Architecture + Development Planning (all)
   architecture_full:
     - phase0_indexing
     - phase1_architecture_facts

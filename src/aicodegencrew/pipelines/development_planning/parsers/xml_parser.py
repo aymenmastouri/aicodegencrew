@@ -7,6 +7,7 @@ Supports:
 - Generic structured XML
 """
 
+import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import List, Dict, Any
@@ -117,6 +118,11 @@ def _parse_jira_rss(root: ET.Element) -> List[Dict[str, Any]]:
 
         task['technical_notes'] = '\n'.join(notes)
 
+        # Extract linked tasks (issuelinks, subtasks, description references)
+        linked = _extract_linked_tasks(item, task['task_id'], task['description'])
+        task['linked_tasks'] = linked
+        task['jira_type'] = task['type']
+
         tasks.append(task)
 
     return tasks
@@ -190,3 +196,32 @@ def _get_list(elem: ET.Element, tag: str) -> List[str]:
         if child.text:
             items.append(child.text.strip())
     return items
+
+
+def _extract_linked_tasks(item: ET.Element, own_id: str, description: str) -> List[str]:
+    """Extract linked ticket IDs from issuelinks, subtasks, and description references."""
+    linked = set()
+
+    # 1. Issuelinks (e.g., <issuelink><issuekey>BNUVZ-12570</issuekey></issuelink>)
+    for issuekey in item.findall('.//issuelinks//issuekey'):
+        if issuekey.text:
+            linked.add(issuekey.text.strip())
+
+    # 2. Subtasks
+    for subtask in item.findall('.//subtasks//key'):
+        if subtask.text:
+            linked.add(subtask.text.strip())
+
+    # 3. Parent reference
+    parent = item.find('parent')
+    if parent is not None and parent.text:
+        linked.add(parent.text.strip())
+
+    # 4. Ticket references in description (e.g., BNUVZ-12529, PROJ-123)
+    if description:
+        refs = re.findall(r'[A-Z][A-Z0-9]+-\d+', description)
+        for ref in refs:
+            if ref != own_id:
+                linked.add(ref)
+
+    return sorted(linked)

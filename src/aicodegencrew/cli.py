@@ -4,12 +4,14 @@ AI Code Generation Crew - Unified CLI
 
 Modern CLI with subcommands:
     aicodegencrew run              Run SDLC pipeline
+    aicodegencrew plan             Run development planning (Phase 0+1+2+4)
     aicodegencrew index            Index repository
     aicodegencrew list             List available phases
 
 Usage:
     python -m aicodegencrew run --preset architecture_workflow
     python -m aicodegencrew run --phases phase1_architecture_facts
+    python -m aicodegencrew --env /path/to/.env plan
     python -m aicodegencrew index --force
     python -m aicodegencrew list
 """
@@ -37,7 +39,7 @@ warnings.filterwarnings("ignore", message=".*Pydantic.*")
 warnings.filterwarnings("ignore", message=".*LangChain.*")
 
 from dotenv import load_dotenv
-load_dotenv(override=True)
+# load_dotenv moved into main() to support --env flag
 
 from .shared.utils.logger import logger
 
@@ -294,6 +296,45 @@ def _resolve_phases_to_run(
     return set(orchestrator.get_enabled_phases())
 
 
+def _export_architecture_docs():
+    """Copy Phase 3 architecture docs (C4 + Arc42) to export dir.
+
+    Default: ./architecture-docs in CWD. Override with DOCS_OUTPUT_DIR in .env.
+    """
+    import shutil
+
+    docs_dir = os.getenv("DOCS_OUTPUT_DIR", "./architecture-docs")
+    source = Path("knowledge/architecture")
+    target = Path(docs_dir)
+
+    # Only copy the deliverable subdirectories (c4, arc42)
+    copied = 0
+    for subdir in ["c4", "arc42"]:
+        src = source / subdir
+        if not src.exists():
+            continue
+        dst = target / subdir
+        if dst.exists():
+            shutil.rmtree(dst)
+        shutil.copytree(src, dst)
+        file_count = len(list(dst.rglob("*")))
+        copied += file_count
+        logger.info(f"[EXPORT] {subdir}/ -> {dst} ({file_count} files)")
+
+    if copied:
+        logger.info(f"[EXPORT] Architecture docs exported to: {target} ({copied} files total)")
+
+        # Convert to additional formats (Confluence, AsciiDoc, HTML)
+        from .shared.utils.confluence_converter import DocumentConverter
+        converter = DocumentConverter()
+        formats = ["confluence", "adoc", "html"]
+        lang = os.getenv("ARC42_LANGUAGE", "en")
+        count = converter.convert_directory(target, formats, lang=lang)
+        logger.info(f"[EXPORT] Multi-format conversion: {count} files ({', '.join(formats)})")
+    else:
+        logger.warning("[EXPORT] No Phase 3 output found to export")
+
+
 def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None = None) -> int:
     """Run SDLC pipeline."""
     from .orchestrator import SDLCOrchestrator
@@ -349,7 +390,10 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
 
     # --- Phase 3: Architecture Synthesis ---
-    if "phase3_architecture_synthesis" in planned_phases:
+    if os.getenv("SKIP_SYNTHESIS", "").lower() in ("true", "1", "yes"):
+        logger.info("[CONFIG] SKIP_SYNTHESIS=true -> Skipping Phase 3")
+        orchestrator.config["phases"]["phase3_architecture_synthesis"]["enabled"] = False
+    elif "phase3_architecture_synthesis" in planned_phases:
         synthesis_crew = ArchitectureSynthesisCrew(
             facts_path="./knowledge/architecture/architecture_facts.json"
         )
@@ -359,16 +403,31 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     if "phase4_development_planning" in planned_phases:
         from .pipelines.development_planning import DevelopmentPlanningPipeline
 
-        # Get input file from config or environment
-        input_dir = os.getenv("TASK_INPUT_DIR", "./inputs/tasks")
-        input_files = list(Path(input_dir).glob("*")) if Path(input_dir).exists() else []
+        # Get input directory from .env (REQUIRED - no hardcoded default)
+        input_dir = os.getenv("TASK_INPUT_DIR", "")
+        if not input_dir:
+            logger.error("[Phase4] TASK_INPUT_DIR not set in .env! Set it to the folder containing your JIRA XML files.")
+            raise ValueError("TASK_INPUT_DIR not configured. Set it in your .env file (e.g. TASK_INPUT_DIR=C:\\projects\\inputs)")
+
+        input_path = Path(input_dir)
+        if not input_path.exists():
+            logger.error(f"[Phase4] TASK_INPUT_DIR does not exist: {input_dir}")
+            raise ValueError(f"TASK_INPUT_DIR folder not found: {input_dir}")
+
+        input_files = sorted(input_path.glob("*"))
+        # Filter out directories and hidden files
+        input_files = [f for f in input_files if f.is_file() and not f.name.startswith(".")]
+
+        output_dir = os.getenv("OUTPUT_DIR", "./knowledge/architecture")
+        facts_path = str(Path(output_dir) / "architecture_facts.json")
+        analyzed_path = str(Path(output_dir) / "analyzed_architecture.json")
 
         if input_files:
-            # Process first input file (can be extended to process all)
+            logger.info(f"[Phase4] Found {len(input_files)} input file(s) in {input_dir}")
             planning_pipeline = DevelopmentPlanningPipeline(
-                input_file=str(input_files[0]),
-                facts_path="./knowledge/architecture/architecture_facts.json",
-                analyzed_path="./knowledge/architecture/analyzed_architecture.json",
+                input_files=[str(f) for f in input_files],
+                facts_path=facts_path,
+                analyzed_path=analyzed_path,
                 output_dir="./knowledge/development",
                 repo_path=os.getenv("PROJECT_PATH"),
             )
@@ -383,6 +442,11 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         if result.status == "success":
             logger.info(f"\n[OK] Pipeline successful!")
             logger.info(f"Time: {result.total_duration}")
+
+            # Export Phase 3 docs to external dir if configured
+            if "phase3_architecture_synthesis" in planned_phases:
+                _export_architecture_docs()
+
             return 0
         else:
             logger.error(f"\n[ERROR] Pipeline failed: {result.message}")
@@ -408,6 +472,11 @@ def create_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     
+    parser.add_argument(
+        "--env", dest="env_file",
+        help="Path to .env configuration file (default: .env in current directory)",
+    )
+
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
     
     # --- run command ---
@@ -484,7 +553,25 @@ def create_parser() -> argparse.ArgumentParser:
         "--config",
         help="Path to phases_config.yaml",
     )
-    
+
+    # --- plan command (shortcut for run --preset planning_only) ---
+    plan_parser = subparsers.add_parser(
+        "plan", help="Run development planning (shortcut for: run --preset planning_only)",
+    )
+    plan_parser.add_argument(
+        "--repo-path",
+        help="Path to repository (default: PROJECT_PATH from .env)",
+    )
+    plan_parser.add_argument(
+        "--index-mode",
+        choices=["off", "auto", "force", "smart"],
+        help="Override INDEX_MODE from .env",
+    )
+    plan_parser.add_argument(
+        "--config",
+        help="Path to phases_config.yaml",
+    )
+
     return parser
 
 
@@ -496,9 +583,21 @@ def main(argv: list[str] | None = None) -> int:
     """Main CLI entry point."""
     parser = create_parser()
     args = parser.parse_args(argv)
-    
+
+    # Load .env from --env flag or default location
+    env_file = getattr(args, "env_file", None)
+    if env_file:
+        env_path = Path(env_file)
+        if not env_path.exists():
+            print(f"ERROR: .env file not found: {env_file}")
+            return 1
+        load_dotenv(env_path, override=True)
+        logger.info(f"[CONFIG] Loaded .env from: {env_path}")
+    else:
+        load_dotenv(override=True)
+
     setup_logging()
-    
+
     # No command -> show help
     if not args.command:
         parser.print_help()
@@ -541,7 +640,17 @@ def main(argv: list[str] | None = None) -> int:
         )
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
         return cmd_run(config, preset=args.preset, phases=args.phases)
-    
+
+    # --- plan (shortcut for run --preset planning_only) ---
+    if args.command == "plan":
+        config = Config.from_env(
+            repo_path=args.repo_path,
+            index_mode=args.index_mode,
+            config_path=args.config,
+        )
+        logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
+        return cmd_run(config, preset="planning_only")
+
     parser.print_help()
     return 1
 

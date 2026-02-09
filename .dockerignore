@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# Python
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+dist/
+build/
+
+# Runtime data (user-specific)
+.cache
+.env
+knowledge/
+inputs/
+logs/
+
+# Documentation (not needed in image)
+docs/
+*.md
+
+# IDE / Tools
+.vscode/
+.idea/
+.claude/
+nul
+
+# Tests
+tests/
