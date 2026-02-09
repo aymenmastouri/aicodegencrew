@@ -196,6 +196,9 @@ VERIFICATION COMMANDS:
         if is_upgrade:
             upgrade_plan_schema = """
     "upgrade_plan": {{
+      "framework": "{upgrade.get('upgrade_context', {{}}).get('framework', 'Angular')}",
+      "from_version": "{upgrade.get('upgrade_context', {{}}).get('current_version', 'unknown')}",
+      "to_version": "{upgrade.get('upgrade_context', {{}}).get('target_version', 'unknown')}",
       "migration_sequence": [
         {{
           "rule_id": "rule ID from MIGRATION SEQUENCE above",
