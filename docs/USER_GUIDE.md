@@ -71,7 +71,8 @@ aicodegencrew-v0.1.0/
 ├── docker-compose.yml                      ← Docker setup (alternative)
 ├── config/
 │   └── phases_config.yaml                  ← Phase definitions (reference)
-├── USER_GUIDE.md                           ← You are here!
+├── USER_GUIDE.md                           ← Documentation (Markdown)
+├── USER_GUIDE.pdf                          ← Documentation (PDF)
 └── CHANGELOG.md                            ← Version history
 ```
 
@@ -81,6 +82,7 @@ aicodegencrew-v0.1.0/
 - `install.bat/.sh`: Run this for automated setup (easier than manual pip)
 - `docker-compose.yml`: For Docker users (isolated environment)
 - `phases_config.yaml`: Defines which phases run in each preset (read-only)
+- `USER_GUIDE.md` / `.pdf`: This documentation in Markdown and PDF format
 
 **Your data stays separate!** This tool doesn't include your repository or inputs.
 You'll configure paths to YOUR files in the `.env` file (see Section 7).
@@ -121,7 +123,6 @@ These ports must be available on your network:
 **On-premises only** - No data leaves your network
 - All AI calls: Your configured LLM server
 - All embeddings: Local Ollama instance
-- No internet connection required (after initial setup)
 
 ---
 
