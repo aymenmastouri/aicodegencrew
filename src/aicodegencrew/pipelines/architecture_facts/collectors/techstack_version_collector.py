@@ -327,8 +327,12 @@ class TechStackVersionCollector(DimensionCollector):
             for dep_name, (tech_name, category) in version_map.items():
                 if dep_name in all_deps:
                     version = all_deps[dep_name]
-                    # Clean version (remove ^, ~, etc.)
-                    clean_version = re.sub(r'^[\^~>=<]+', '', str(version))
+                    # Clean version (remove ^, ~, v prefix, extract major version)
+                    clean_version = re.sub(r'^[\^~>=<v]+', '', str(version))
+                    # Extract major version: "18.2.13" -> "18", "18-lts" -> "18"
+                    match = re.match(r'^(\d+)', clean_version)
+                    if match:
+                        clean_version = match.group(1)
                     self._add_version(tech_name, clean_version, rel_path, category)
 
             # Node.js engine

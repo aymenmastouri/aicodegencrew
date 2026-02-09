@@ -220,12 +220,22 @@ class UpgradeRulesEngine:
         return None
 
     def _detect_current_version(self, framework: str) -> str:
+        # Strategy 1: Check container.version (primary)
         for container in self.facts.get("containers", []):
             tech = (container.get("technology") or "").lower()
             if framework.lower() in tech:
                 version = container.get("version", "")
                 if version:
                     return version.split(".")[0]
+
+        # Strategy 2: Fallback to tech_versions
+        for tech_ver in self.facts.get("tech_versions", []):
+            tech_name = (tech_ver.get("technology") or "").lower()
+            if framework.lower() == tech_name:
+                version = tech_ver.get("version", "")
+                if version:
+                    return version.split(".")[0]  # Return major version
+
         return "unknown"
 
     def _detect_target_version(self, text: str) -> str:

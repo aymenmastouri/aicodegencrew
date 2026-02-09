@@ -177,7 +177,8 @@ class CollectorOrchestrator:
                      'security_type', 'roles', 'class_name',
                      'validation_type', 'constraint', 'target_class', 'target_field',
                      'test_type', 'framework', 'scenarios', 'tested_component_hint',
-                     'handling_type', 'exception_class', 'http_status', 'handler_method']:
+                     'handling_type', 'exception_class', 'http_status', 'handler_method',
+                     'technology', 'source_file', 'category']:
             if hasattr(fact, attr):
                 val = getattr(fact, attr)
                 if val is not None and val != "" and val != []:

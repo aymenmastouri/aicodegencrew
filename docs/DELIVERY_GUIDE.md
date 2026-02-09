@@ -1,122 +1,153 @@
 # AICodeGenCrew - Delivery Guide
 
-**Schritt-fur-Schritt Anleitung: Wie bereite ich das Lieferpaket vor?**
+**Step-by-step instructions for preparing the delivery package.**
 
 ---
 
-## Was lieferst du?
+## What Do You Deliver?
 
-Eine ZIP-Datei mit allem was der Endbenutzer braucht. **Kein Source Code!**
+A ZIP file containing everything the end user needs. **No source code included.**
 
-**Datei:** `aicodegencrew-v0.1.0.zip` (486 KB)
+**File:** `aicodegencrew-v0.1.0.zip`
 
-**Inhalt:**
+**Two Variants:**
+
+| Variant | Contents | Code Protection | Size |
+|---------|----------|-----------------|------|
+| **Nuitka (Default)** | Binary (.exe/.bin) | Cannot be decompiled | ~50-100 MB |
+| Wheel | Wheel (.whl) | Source code readable | ~500 KB |
+
+**Default Contents (Nuitka - recommended):**
 ```
 aicodegencrew-v0.1.0/
-├── aicodegencrew-0.1.0-py3-none-any.whl   # Das Tool (installierbar)
-├── .env.example                             # Konfig-Vorlage
-├── docker-compose.yml                       # Docker Setup
+├── aicodegencrew.exe (Win) / aicodegencrew (Linux/Mac)  # Protected binary
+├── .env.example                             # Configuration template
+├── docker-compose.yml                       # Docker setup
 ├── config/
-│   └── phases_config.yaml                   # Phase-Konfiguration
-├── USER_GUIDE.md                            # Bedienungsanleitung (Markdown)
-├── USER_GUIDE.pdf                           # Bedienungsanleitung (PDF)
-├── CHANGELOG.md                             # Was ist neu (automatisch aus Git)
-├── install.bat                              # Windows-Installer
-└── install.sh                               # Linux-Installer
+│   └── phases_config.yaml                   # Phase configuration
+├── USER_GUIDE.md                            # User manual (Markdown)
+├── USER_GUIDE.pdf                           # User manual (PDF)
+├── CHANGELOG.md                             # Release notes (auto-generated from Git)
+├── install.bat                              # Windows installer
+├── install.sh                               # Linux installer
+├── uninstall.bat                            # Windows uninstaller
+└── uninstall.sh                             # Linux uninstaller
+```
+
+**Alternative Contents (Wheel - internal use only):**
+```
+aicodegencrew-v0.1.0/
+├── aicodegencrew-0.1.0-py3-none-any.whl   # The tool (source code readable)
+├── .env.example
+├── docker-compose.yml
+├── config/
+│   └── phases_config.yaml
+├── USER_GUIDE.md
+├── USER_GUIDE.pdf
+├── CHANGELOG.md
+├── install.bat
+├── install.sh
+├── uninstall.bat
+└── uninstall.sh
 ```
 
 ---
 
-## Variante A: Automatisch (Empfohlen)
+## Option A: Automated (Recommended)
 
-### Schritt 1: Terminal offnen
+### Step 1: Open Terminal
 
 ```
 cd c:\projects\aicodegencrew
 ```
 
-### Schritt 2: Release-Script ausfuhren
+### Step 2: Run Release Script
 
-**Nur bauen (keine Versionsanderung):**
+**Build protected binary (default, recommended):**
 ```
 python scripts/build_release.py
 ```
 
-**Version erhohen + bauen (empfohlen):**
+**Bump version + build (recommended):**
 ```
 python scripts/build_release.py --bump patch
 ```
 
-**Version erhohen + Git-Tag + bauen:**
+**Bump version + Git tag + build:**
 ```
 python scripts/build_release.py --bump patch --tag
 ```
 
-**Version erhohen + Git-Tag + Docker-Image + bauen:**
+**Bump version + Git tag + Docker image + build:**
 ```
 python scripts/build_release.py --bump patch --tag --docker
 ```
 
-### Was passiert bei `--bump`?
+**Wheel package (internal use only, source code readable):**
+```
+python scripts/build_release.py --bump patch --wheel
+```
 
-Das Script macht **alles automatisch**:
+### What Happens with `--bump`?
 
-| Schritt | Datei | Was passiert |
-|---------|-------|-------------|
-| 1 | `pyproject.toml` | Version wird erhoht (z.B. `0.1.0` → `0.1.1`) |
-| 2 | `CHANGELOG.md` | Neuer Eintrag mit Git-Commit-Messages seit letztem Tag |
-| 3 | `docs/DELIVERY_GUIDE.md` | Alle Versionsreferenzen aktualisiert |
-| 4 | `docs/USER_GUIDE.md` | Alle Versionsreferenzen aktualisiert |
-| 5 | `dist/release/` | Wheel + alle 8 Release-Dateien erstellt |
+The script automates everything:
 
-### Was passiert bei `--tag`?
+| Step | File | Action |
+|------|------|--------|
+| 1 | `pyproject.toml` | Version incremented (e.g., `0.1.0` to `0.1.1`) |
+| 2 | `CHANGELOG.md` | New entry with Git commit messages since last tag |
+| 3 | `docs/DELIVERY_GUIDE.md` | All version references updated |
+| 4 | `docs/USER_GUIDE.md` | All version references updated |
+| 5 | `dist/release/` | Binary + all release files created |
 
-| Schritt | Was passiert |
-|---------|-------------|
-| 1 | `git add` aller geanderten Dateien |
+### What Happens with `--tag`?
+
+| Step | Action |
+|------|--------|
+| 1 | `git add` of all changed files |
 | 2 | `git commit -m "release: v0.1.1"` |
 | 3 | `git tag -a v0.1.1 -m "Release 0.1.1"` |
 
-**Danach zum Server pushen:**
+**Then push to server:**
 ```
 git push origin v0.1.1
 git push
 ```
 
-### Versionsarten (`--bump`)
+### Version Types (`--bump`)
 
-| Befehl | Vorher | Nachher | Wann verwenden? |
-|--------|--------|---------|-----------------|
-| `--bump patch` | 0.1.0 | 0.1.1 | Bugfixes, kleine Anderungen |
-| `--bump minor` | 0.1.0 | 0.2.0 | Neue Features |
-| `--bump major` | 0.1.0 | 1.0.0 | Breaking Changes |
+| Command | Before | After | When to Use |
+|---------|--------|-------|-------------|
+| `--bump patch` | 0.1.0 | 0.1.1 | Bug fixes, minor changes |
+| `--bump minor` | 0.1.0 | 0.2.0 | New features |
+| `--bump major` | 0.1.0 | 1.0.0 | Breaking changes |
 
-### Schritt 3: Ergebnis
+### Step 3: Result
 
-Das Script erstellt automatisch:
+The script automatically creates:
 
-1. **Release-Ordner** `dist/release/` mit allen Dateien
-2. **ZIP-Datei** `dist/aicodegencrew-v0.1.0.zip` (fertig zum Versenden!)
+1. **Release folder** `dist/release/` with all files
+2. **ZIP file** `dist/aicodegencrew-v0.1.0.zip` (ready to send)
 
 ```
 dist/
-├── aicodegencrew-v0.1.0.zip         ← FERTIGE LIEFERUNG (486 KB)
+├── aicodegencrew-v0.1.0.zip         <- FINAL DELIVERY
 └── release/
-    ├── aicodegencrew-0.1.0-py3-none-any.whl
+    ├── aicodegencrew.exe / aicodegencrew  <- Protected binary (platform-specific)
     ├── .env.example
     ├── docker-compose.yml
     ├── config/phases_config.yaml
     ├── USER_GUIDE.md
-    ├── USER_GUIDE.pdf               ← NEU! PDF-Version
+    ├── USER_GUIDE.pdf
     ├── CHANGELOG.md
     ├── install.bat
     └── install.sh
 ```
 
-**ZIP-Struktur (entpackt):**
+**ZIP structure (extracted):**
 ```
-aicodegencrew-v0.1.0/                ← Korrekter Root-Ordner
-├── aicodegencrew-0.1.0-py3-none-any.whl
+aicodegencrew-v0.1.0/                <- Correct root folder
+├── aicodegencrew.exe / aicodegencrew  <- Platform-specific binary
 ├── .env.example
 ├── docker-compose.yml
 ├── config/phases_config.yaml
@@ -127,52 +158,88 @@ aicodegencrew-v0.1.0/                ← Korrekter Root-Ordner
 └── install.sh
 ```
 
-### Schritt 4: ZIP versenden
+### Step 4: Send ZIP
 
-Das ZIP ist fertig! Einfach versenden:
+The ZIP is ready. Send it via:
 
 ```bash
-# Option 1: Per Teams/SharePoint hochladen
-# Option 2: Per E-Mail (486 KB, passt immer)
-# Option 3: Auf Netzlaufwerk kopieren
+# Option 1: Upload to Teams/SharePoint
+# Option 2: Email
+# Option 3: Copy to network drive
 ```
 
-Die Datei `dist/aicodegencrew-v0.1.0.zip` an den Entwickler schicken
+Send `dist/aicodegencrew-v0.1.0.zip` to the developer.
 
 ---
 
-## Variante B: Manuell (falls Script nicht funktioniert)
+## Code Protection: Nuitka vs Wheel
 
-### Schritt 1: Wheel bauen
+**Why Nuitka is the default:**
+- The `.whl` (Wheel) contains readable Python source code
+- Anyone can extract and read/copy the code
+- **Nuitka compiles Python to native machine code** - cannot be decompiled
+
+### Comparison
+
+| Method | Source Code Visible | Reverse Engineering | Recommendation |
+|--------|---------------------|---------------------|----------------|
+| **Nuitka (.exe)** | No | Extremely difficult | Default for all deliveries |
+| Wheel (.whl) | Yes, easily | Trivial (unzip) | Internal development only |
+
+### Nuitka Protection Features
+
+- **Native Machine Code** - No Python bytecode, no `.pyc` files
+- **Standalone** - No Python installation required on user machine
+- **Obfuscated** - Variable names and structure not recognizable
+- **Anti-Decompile** - Standard tools like `uncompyle6` do not work
+
+### Differences
+
+| Aspect | Nuitka (Default) | Wheel |
+|--------|------------------|-------|
+| File | `.exe` (~50-100 MB) | `.whl` (486 KB) |
+| Python required | No (standalone) | Yes |
+| Source code | Not extractable | Readable |
+| Installation | Directly executable | `pip install ...` |
+| Reverse engineering | Extremely difficult | Easy |
+| Build time | 5-15 minutes | 30 seconds |
+
+**Note:** First Nuitka build takes 5-15 minutes (compiles to C, then to machine code). Subsequent builds are faster due to caching.
+
+---
+
+## Option B: Manual (if script fails)
+
+### Step 1: Build with Nuitka
 
 ```
 cd c:\projects\aicodegencrew
-pip install build
-python -m build --wheel
+pip install nuitka ordered-set zstandard
+python -m nuitka --standalone --onefile src/aicodegencrew/main.py
 ```
 
-Ergebnis: `dist/aicodegencrew-0.1.0-py3-none-any.whl`
+Result: `aicodegencrew.exe` (Windows) or `aicodegencrew` (Linux/Mac) in `dist/nuitka/`
 
-### Schritt 2: Lieferordner zusammenstellen
+### Step 2: Assemble Delivery Folder
 
-Erstelle einen neuen Ordner `aicodegencrew-v0.1.0/` und kopiere diese Dateien hinein:
+Create a new folder `aicodegencrew-v0.1.0/` and copy these files:
 
-| Von (Quelle) | Nach (Lieferordner) |
-|---------------|---------------------|
-| `dist/aicodegencrew-0.1.0-py3-none-any.whl` | `aicodegencrew-v0.1.0/` |
+| From (Source) | To (Delivery Folder) |
+|---------------|----------------------|
+| `dist/nuitka/aicodegencrew[.exe]` | `aicodegencrew-v0.1.0/` |
 | `.env.example` | `aicodegencrew-v0.1.0/` |
 | `docker-compose.yml` | `aicodegencrew-v0.1.0/` |
 | `config/phases_config.yaml` | `aicodegencrew-v0.1.0/config/` |
 | `docs/USER_GUIDE.md` | `aicodegencrew-v0.1.0/USER_GUIDE.md` |
 | `CHANGELOG.md` | `aicodegencrew-v0.1.0/` |
 
-**WICHTIG:** Der Root-Ordner im ZIP muss `aicodegencrew-v0.1.0/` heißen!
+**IMPORTANT:** The root folder in ZIP must be named `aicodegencrew-v0.1.0/`
 
-### Schritt 3: ZIP erstellen und versenden
+### Step 3: Create ZIP and Send
 
 **PowerShell (Windows):**
 ```powershell
-# Von AUSSEN zippen (nicht im Ordner drin!)
+# Zip from OUTSIDE (not inside the folder)
 Compress-Archive -Path aicodegencrew-v0.1.0 -DestinationPath aicodegencrew-v0.1.0.zip
 ```
 
@@ -181,152 +248,242 @@ Compress-Archive -Path aicodegencrew-v0.1.0 -DestinationPath aicodegencrew-v0.1.
 zip -r aicodegencrew-v0.1.0.zip aicodegencrew-v0.1.0/
 ```
 
-ZIP verschicken.
+Send the ZIP.
 
 ---
 
-## Variante C: Docker Image (fur Kunden ohne Python)
+## Option C: Docker Image (for customers without Python)
 
-### Schritt 1: Docker Image bauen
+### Step 1: Build Docker Image
 
 ```
 cd c:\projects\aicodegencrew
 docker build -t aicodegencrew:0.1.0 -t aicodegencrew:latest .
 ```
 
-### Schritt 2: Image als Datei exportieren
+### Step 2: Export Image as File
 
 ```
 docker save -o dist/aicodegencrew-0.1.0.tar.gz aicodegencrew:0.1.0
 ```
 
-### Schritt 3: Lieferordner (mit Docker)
+### Step 3: Delivery Folder (with Docker)
 
-Gleich wie Variante B, plus die `.tar.gz` Datei dazu.
+Same as Option B, plus the `.tar.gz` file.
 
-### Schritt 4: Oder automatisch
+### Step 4: Or Automated
 
 ```
 python scripts/build_release.py --docker
 ```
 
-Oder alles zusammen:
+Or all together:
 ```
 python scripts/build_release.py --bump patch --tag --docker
 ```
 
 ---
 
-## Was schicke ich dem Entwickler?
+## Option D: Wheel Package (Internal Use Only)
 
-### Minimal (Wheel):
-1. `aicodegencrew-v0.1.0.zip` (enthalt alles aus Variante A/B)
+Use this only for internal development or when the recipient needs to inspect/modify the source code.
 
-### Mit Docker:
-1. `aicodegencrew-v0.1.0.zip` (enthalt alles + Docker Image)
+### When to Use Wheel
 
-### Begleittext (Vorlage fur E-Mail/Teams):
+- Internal team members who need source access
+- Development and debugging purposes
+- Quick iteration during development
 
-```
-Hallo [Name],
-
-im Anhang das AICodeGenCrew Tool v0.1.0 zur Entwicklungsplanung.
-
-Installation (5 Minuten):
-1. ZIP entpacken
-2. install.bat ausfuhren (oder: pip install aicodegencrew-0.1.0-py3-none-any.whl[parsers])
-3. .env.example nach .env kopieren und anpassen:
-   - PROJECT_PATH = Pfad zu deinem Repository
-   - TASK_INPUT_DIR = Pfad zu deinem JIRA-Export-Ordner
-4. Ollama starten: ollama serve
-
-Benutzung:
-   aicodegencrew --env .env plan
-
-Ausfuhrliche Anleitung: siehe USER_GUIDE.md im ZIP.
-
-Bei Fragen: [dein Kontakt]
-```
-
----
-
-## Checkliste vor Lieferung
-
-- [ ] `python scripts/build_release.py` lauft ohne Fehler
-- [ ] `dist/release/` enthalt alle Dateien (8 Stuck)
-- [ ] `.whl` Datei ist vorhanden und > 100 KB
-- [ ] `.env.example` enthalt KEINE echten API-Keys oder Passworter
-- [ ] `USER_GUIDE.md` ist aktuell
-- [ ] `CHANGELOG.md` enthalt die aktuellen Anderungen (automatisch aus Git)
-- [ ] Kein Source Code im Lieferordner (keine `.py` Dateien!)
-- [ ] Version in `pyproject.toml` ist korrekt
-
----
-
-## Kompletter Release-Workflow (Schritt fur Schritt)
-
-### Fur eine neue Version (z.B. 0.1.0 → 0.1.1):
+### Build Wheel
 
 ```bash
-# 1. Terminal offnen
+python scripts/build_release.py --wheel
+```
+
+Or with versioning:
+```bash
+python scripts/build_release.py --bump patch --wheel
+```
+
+### Result
+
+```
+dist/
+├── aicodegencrew-v0.1.0.zip         <- DELIVERY (contains .whl)
+└── release/
+    ├── aicodegencrew-0.1.0-py3-none-any.whl  <- Source code readable
+    ├── .env.example
+    ├── docker-compose.yml
+    ├── config/phases_config.yaml
+    ├── USER_GUIDE.md
+    ├── USER_GUIDE.pdf
+    ├── CHANGELOG.md
+    ├── install.bat
+    └── install.sh
+```
+
+---
+
+## What to Send to the Developer?
+
+### Default (Nuitka) - for all external deliveries:
+1. `aicodegencrew-v0.1.0.zip` (contains protected .exe, code not readable)
+
+### Wheel - internal use only:
+1. `aicodegencrew-v0.1.0.zip` (contains .whl, source code readable)
+
+### With Docker:
+1. `aicodegencrew-v0.1.0.zip` (contains everything + Docker image)
+
+### Cover Letter Template (for Email/Teams):
+
+**For Nuitka Delivery (default):**
+```
+Hello [Name],
+
+Please find attached the AICodeGenCrew tool v0.1.0 for development planning.
+
+Installation (2 minutes):
+1. Extract ZIP
+2. Windows: Run install.bat (copies binary to Program Files)
+   Linux/Mac: Run install.sh (copies binary to /usr/local/bin)
+   Alternative: Run binary directly from the folder
+3. Copy .env.example to .env and configure:
+   - PROJECT_PATH = Path to your repository
+   - TASK_INPUT_DIR = Path to your JIRA export folder
+4. Start Ollama: ollama serve
+
+Usage:
+   aicodegencrew --env .env plan
+
+Note: No Python installation required.
+
+Detailed instructions: see USER_GUIDE.md in ZIP.
+
+Questions: [your contact]
+```
+
+**For Wheel Delivery (internal only):**
+```
+Hello [Name],
+
+Please find attached the AICodeGenCrew tool v0.1.0 for development planning.
+
+Installation (5 minutes):
+1. Extract ZIP
+2. Run install.bat (or: pip install aicodegencrew-0.1.0-py3-none-any.whl[parsers])
+3. Copy .env.example to .env and configure:
+   - PROJECT_PATH = Path to your repository
+   - TASK_INPUT_DIR = Path to your JIRA export folder
+4. Start Ollama: ollama serve
+
+Usage:
+   aicodegencrew --env .env plan
+
+Detailed instructions: see USER_GUIDE.md in ZIP.
+
+Questions: [your contact]
+```
+
+---
+
+## Pre-Delivery Checklist
+
+### Default (Nuitka):
+- [ ] `python scripts/build_release.py` runs without errors
+- [ ] `dist/release/` contains binary (`.exe` on Windows, no extension on Linux/Mac)
+- [ ] Binary file exists and is larger than 10 MB
+- [ ] `.env.example` contains NO real API keys or passwords
+- [ ] `USER_GUIDE.md` is current
+- [ ] No source code in delivery folder (no `.py`, `.whl` files)
+- [ ] Version in `pyproject.toml` is correct
+
+### Wheel (internal only):
+- [ ] `python scripts/build_release.py --wheel` runs without errors
+- [ ] `dist/release/` contains all files (8 items)
+- [ ] `.whl` file exists and is larger than 100 KB
+- [ ] `.env.example` contains NO real API keys or passwords
+- [ ] `USER_GUIDE.md` is current
+- [ ] `CHANGELOG.md` contains current changes (auto-generated from Git)
+- [ ] No source code in delivery folder (no `.py` files)
+- [ ] Version in `pyproject.toml` is correct
+
+---
+
+## Complete Release Workflow (Step by Step)
+
+### For a New Version (e.g., 0.1.0 to 0.1.1):
+
+```bash
+# 1. Open terminal
 cd c:\projects\aicodegencrew
 
-# 2. Version erhohen + bauen + Git-Tag erstellen
+# 2. Bump version + build + create Git tag
 python scripts/build_release.py --bump patch --tag
 
-# 3. Was ist passiert?
+# 3. What happened?
 #    - pyproject.toml:        version = "0.1.1"
-#    - CHANGELOG.md:          ## [0.1.1] - 2026-02-09 (mit Git-Commits)
-#    - DELIVERY_GUIDE.md:     Alle "0.1.0" durch "0.1.1" ersetzt
-#    - USER_GUIDE.md:         Alle "0.1.0" durch "0.1.1" ersetzt
-#    - dist/release/:         8 Dateien mit neuer Version
+#    - CHANGELOG.md:          ## [0.1.1] - 2026-02-09 (with Git commits)
+#    - DELIVERY_GUIDE.md:     All "0.1.0" replaced with "0.1.1"
+#    - USER_GUIDE.md:         All "0.1.0" replaced with "0.1.1"
+#    - dist/release/:         Protected binary with new version
 #    - Git:                   Commit "release: v0.1.1" + Tag v0.1.1
 
-# 4. (Optional) Zum Git-Server pushen
+# 4. (Optional) Push to Git server
 git push origin v0.1.1
 git push
 
-# 5. ZIP erstellen und versenden
-#    Rechtsklick auf dist/release/ -> ZIP -> aicodegencrew-v0.1.1.zip
+# 5. Send ZIP
+#    -> dist/aicodegencrew-v0.1.1.zip (auto-created)
 ```
 
-### Fur eine neue Version MIT Docker:
+### For Wheel Delivery (internal only):
+
+```bash
+# With source code visible (internal use)
+python scripts/build_release.py --bump patch --wheel
+
+# Or with Git tag:
+python scripts/build_release.py --bump patch --tag --wheel
+```
+
+### For a New Version WITH Docker:
 
 ```bash
 python scripts/build_release.py --bump patch --tag --docker
-# -> Macht alles oben + baut Docker Image + exportiert als .tar.gz
+# -> Does everything above + builds Docker image + exports as .tar.gz
 ```
 
 ---
 
-## Wo sitzt die Version?
+## Where Is the Version?
 
-Die Version steht an EINER Stelle: **`pyproject.toml` Zeile 3**
+The version is in ONE place: **`pyproject.toml` line 3**
 
 ```toml
 version = "0.1.0"
 ```
 
-Das `--bump` Flag andert diese Stelle und propagiert die Anderung automatisch in:
-- `CHANGELOG.md` (neuer Eintrag mit Git-Commit-Messages)
-- `docs/DELIVERY_GUIDE.md` (alle Versionsreferenzen)
-- `docs/USER_GUIDE.md` (alle Versionsreferenzen)
+The `--bump` flag changes this location and automatically propagates the change to:
+- `CHANGELOG.md` (new entry with Git commit messages)
+- `docs/DELIVERY_GUIDE.md` (all version references)
+- `docs/USER_GUIDE.md` (all version references)
 
-**Du musst NIE manuell die Version andern!** Immer das Script benutzen:
+**Never manually change the version.** Always use the script:
 
 ```bash
-python scripts/build_release.py --bump patch          # Bugfix
-python scripts/build_release.py --bump minor          # Neues Feature
-python scripts/build_release.py --bump major          # Breaking Change
+python scripts/build_release.py --bump patch          # Bug fix
+python scripts/build_release.py --bump minor          # New feature
+python scripts/build_release.py --bump major          # Breaking change
 ```
 
 ---
 
-## CHANGELOG: Automatisch aus Git
+## CHANGELOG: Auto-Generated from Git
 
-Das `CHANGELOG.md` wird automatisch mit Git-Commit-Messages gefullt.
+The `CHANGELOG.md` is automatically filled with Git commit messages.
 
-**Vorher:**
+**Before:**
 ```markdown
 ## [0.1.0] - 2026-02-09
 ### Changed
@@ -335,115 +492,124 @@ Das `CHANGELOG.md` wird automatisch mit Git-Commit-Messages gefullt.
 - ...
 ```
 
-**Nach `--bump patch`:**
+**After `--bump patch`:**
 ```markdown
 ## [0.1.1] - 2026-02-09
 ### Changed
-- Alle neuen Commits seit v0.1.0 werden automatisch eingefugt
+- All new commits since v0.1.0 are automatically inserted
 - ...
 
 ## [0.1.0] - 2026-02-09
 ### Changed
-- (alter Eintrag bleibt erhalten)
+- (old entry preserved)
 ```
 
-**Gefiltert werden:**
-- Merge-Commits (`Merge ...`)
-- Release-Commits (`release: ...`)
-- Auto-generierte Phase-Commits (`[aicodegencrew] phase0_indexing completed ...`)
+**Filtered out:**
+- Merge commits (`Merge ...`)
+- Release commits (`release: ...`)
+- Auto-generated phase commits (`[aicodegencrew] phase0_indexing completed ...`)
 
 ---
 
-## Architektur-Dokumente fur den Architekten exportieren
+## Exporting Architecture Documents for the Architect
 
-Phase 3 erzeugt C4-Diagramme und Arc42-Kapitel. Diese sind fur den Architekten/Entwickler relevant.
+Phase 3 creates C4 diagrams and Arc42 chapters. These are relevant for the architect/developer.
 
-Nach Phase 3 werden die Dokumente automatisch in einen Export-Ordner kopiert.
-**Default:** `./architecture-docs` im aktuellen Arbeitsverzeichnis.
+After Phase 3, documents are automatically copied to an export folder.
+**Default:** `./architecture-docs` in the current working directory.
 
-Um den Export-Pfad zu andern, `DOCS_OUTPUT_DIR` in der `.env` setzen:
+To change the export path, set `DOCS_OUTPUT_DIR` in `.env`:
 
 ```env
-# Default: ./architecture-docs (im gleichen Ordner wo du das Tool ausfuhrst)
-# Oder: externer Pfad fur Shared Drive / Architekt
+# Default: ./architecture-docs (in the same folder where you run the tool)
+# Or: external path for shared drive / architect
 DOCS_OUTPUT_DIR=C:\work\my-project\architecture-docs
 ```
 
-**Was wird exportiert (4 Formate pro Datei):**
+**What is exported (4 formats per file):**
 
 ```
 C:\work\my-project\architecture-docs\
-├── c4/                                    # C4 Diagramme
+├── c4/                                    # C4 Diagrams
 │   ├── c4-context.md                        # Markdown (Original)
 │   ├── c4-context.confluence                # Confluence Wiki Markup
-│   ├── c4-context.adoc                      # AsciiDoc (fur docToolchain)
-│   ├── c4-context.html                      # HTML (im Browser offnen)
-│   ├── c4-context.drawio                    # DrawIO Diagramm
-│   └── ... (4 C4-Level x 4 Formate + DrawIO)
-└── arc42/                                 # Arc42 Kapitel
-    ├── 00-arc42-toc.confluence              # Inhaltsverzeichnis (arc42 Template)
+│   ├── c4-context.adoc                      # AsciiDoc (for docToolchain)
+│   ├── c4-context.html                      # HTML (open in browser)
+│   ├── c4-context.drawio                    # DrawIO Diagram
+│   └── ... (4 C4 levels x 4 formats + DrawIO)
+└── arc42/                                 # Arc42 Chapters
+    ├── 00-arc42-toc.confluence              # Table of Contents (arc42 template)
     ├── 00-arc42-toc.adoc
     ├── 00-arc42-toc.html
     ├── 01-introduction.md + .confluence + .adoc + .html
-    ├── ... (12 Kapitel x 4 Formate)
+    ├── ... (12 chapters x 4 formats)
     └── 12-glossary.md + .confluence + .adoc + .html
 ```
 
-**Confluence-Format:** `.confluence` Dateien direkt in den Confluence Wiki-Markup-Editor einfugen.
+**Confluence format:** Paste `.confluence` files directly into Confluence Wiki Markup editor.
 
-**AsciiDoc-Format:** `.adoc` Dateien mit docToolchain (`asciidoc2confluence.groovy`) nach Confluence hochladen.
+**AsciiDoc format:** Upload `.adoc` files with docToolchain (`asciidoc2confluence.groovy`) to Confluence.
 
-**HTML-Format:** `.html` Dateien direkt im Browser offnen — standalone mit eingebettetem CSS.
+**HTML format:** Open `.html` files directly in browser - standalone with embedded CSS.
 
-**Sprache fur arc42 Inhaltsverzeichnis:**
+**Language for arc42 table of contents:**
 ```env
-ARC42_LANGUAGE=de    # Deutsch (Default: en = Englisch)
+ARC42_LANGUAGE=de    # German (Default: en = English)
 ```
 
-**Was wird NICHT exportiert:**
-- `architecture_facts.json` (intern, Phase 1)
-- `analyzed_architecture.json` (intern, Phase 2)
-- `analysis/` Ordner (intern, Phase 2)
-- Checkpoint-Dateien (`.checkpoint_*.json`)
+**What is NOT exported:**
+- `architecture_facts.json` (internal, Phase 1)
+- `analyzed_architecture.json` (internal, Phase 2)
+- `analysis/` folder (internal, Phase 2)
+- Checkpoint files (`.checkpoint_*.json`)
 
-**Wo bleibt alles fur Testen?**
-Im Projekt selbst unter `knowledge/architecture/` — da liegt alles (inklusive JSON).
-`DOCS_OUTPUT_DIR` ist eine **Kopie** der Architekturdokumente, nicht ein Verschieben.
+**Where does everything stay for testing?**
+In the project under `knowledge/architecture/` - everything is there (including JSON).
+`DOCS_OUTPUT_DIR` is a **copy** of the architecture documents, not a move.
 
 ---
 
-## Haufige Probleme
+## Common Problems
 
-### "pip install build" schlagt fehl
+### "pip install build" fails
 ```
 python -m pip install --upgrade pip
 pip install build
 ```
 
-### "python -m build" schlagt fehl
+### "python -m build" fails
 ```
-# Virtuelle Umgebung aktivieren
+# Activate virtual environment
 .venv\Scripts\activate
 pip install build
 python -m build --wheel
 ```
 
-### "docker build" schlagt fehl
-- Docker Desktop muss laufen
-- Internetverbindung fur pip install im Container nötig
+### "docker build" fails
+- Docker Desktop must be running
+- Internet connection required for pip install in container
 
-### Entwickler meldet "TASK_INPUT_DIR not configured"
-Er muss `TASK_INPUT_DIR` in seiner `.env` setzen:
+### Developer reports "TASK_INPUT_DIR not configured"
+They must set `TASK_INPUT_DIR` in their `.env`:
 ```
-TASK_INPUT_DIR=C:\sein\pfad\zu\jira\exports
+TASK_INPUT_DIR=C:\their\path\to\jira\exports
 ```
 
-### Version ist falsch nach manuellem Edit
-Niemals `pyproject.toml` manuell andern! Immer das Script benutzen:
+### Version is wrong after manual edit
+Never manually edit `pyproject.toml`. Always use the script:
 ```
 python scripts/build_release.py --bump patch
 ```
 
+### Nuitka build fails
+```bash
+# Install Nuitka dependencies
+pip install nuitka ordered-set zstandard
+
+# On Windows, you may need Visual Studio Build Tools
+# Download from: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+```
+
 ---
 
-*Erstellt: 2026-02-09 | Version: 0.1.0*
+*Created: 2026-02-09 | Version: 0.1.0*
