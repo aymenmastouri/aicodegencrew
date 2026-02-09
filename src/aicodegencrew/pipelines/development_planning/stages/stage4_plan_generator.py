@@ -34,28 +34,18 @@ class PlanGeneratorStage:
         self.llm = self._create_llm()
 
     def _create_llm(self):
-        """Create LLM instance."""
-        from langchain_openai import ChatOpenAI
+        """Create OpenAI-compatible LLM client."""
+        from openai import OpenAI
 
         provider = os.getenv("LLM_PROVIDER", "onprem")
-        model = os.getenv("MODEL", "gpt-oss-120b")
+        self._model = os.getenv("MODEL", "gpt-oss-120b")
         api_base = os.getenv("API_BASE", "http://sov-ai-platform.nue.local.vm:4000/v1")
         api_key = os.getenv("OPENAI_API_KEY", "dummy-key")
 
-        llm = ChatOpenAI(
-            model=model,
-            base_url=api_base,
-            api_key=api_key,
-            temperature=0.2,
-            max_tokens=8000,  # Allow long plans
-        )
+        client = OpenAI(base_url=api_base, api_key=api_key)
 
-        # Set context window AFTER construction
-        context_window = int(os.getenv("MAX_LLM_INPUT_TOKENS", "100000"))
-        llm.context_window_size = context_window
-
-        logger.info(f"[Stage4] Created LLM: {provider}/{model}")
-        return llm
+        logger.info(f"[Stage4] Created LLM: {provider}/{self._model}")
+        return client
 
     def run(
         self,
@@ -81,8 +71,13 @@ class PlanGeneratorStage:
 
         # LLM call
         try:
-            response = self.llm.invoke(prompt)
-            plan_json = self._extract_json(response.content)
+            response = self.llm.chat.completions.create(
+                model=self._model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=8000,
+            )
+            plan_json = self._extract_json(response.choices[0].message.content)
 
             # Validate structure
             if not isinstance(plan_json, dict):
@@ -152,16 +147,16 @@ DISCOVERED INTERFACES:
 DISCOVERED DEPENDENCIES:
 {self._format_dependencies(discovery.get("dependencies", []))}
 
-SIMILAR TEST PATTERNS (from 925 existing tests):
+SIMILAR TEST PATTERNS:
 {self._format_test_patterns(patterns.get("test_patterns", []))}
 
-SECURITY PATTERNS (from 143 security configs):
+SECURITY PATTERNS:
 {self._format_security_patterns(patterns.get("security_patterns", []))}
 
-VALIDATION PATTERNS (from 149 validation rules):
+VALIDATION PATTERNS:
 {self._format_validation_patterns(patterns.get("validation_patterns", []))}
 
-ERROR HANDLING PATTERNS (from 23 error handlers):
+ERROR HANDLING PATTERNS:
 {self._format_error_patterns(patterns.get("error_patterns", []))}
 
 ARCHITECTURE CONTEXT:
@@ -206,10 +201,10 @@ Create a COMPLETE implementation plan as JSON following this structure:
 
     "evidence_sources": {{
       "components": "architecture_facts.json",
-      "test_patterns": "925 tests from architecture_facts.json",
-      "security": "143 security details from architecture_facts.json",
-      "validation": "149 validation patterns from architecture_facts.json",
-      "error_handling": "23 error patterns from architecture_facts.json",
+      "test_patterns": "architecture_facts.json",
+      "security": "architecture_facts.json",
+      "validation": "architecture_facts.json",
+      "error_handling": "architecture_facts.json",
       "architecture": "analyzed_architecture.json",
       "semantic_search": "ChromaDB"
     }}
