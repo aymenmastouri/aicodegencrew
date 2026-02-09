@@ -1,0 +1,318 @@
+[
+  {
+    "name": "InvalidAuthenticationTokenException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\authentication\\exception\\InvalidAuthenticationTokenException.java",
+    "handling_type": "custom_exception",
+    "exception_class": "RuntimeException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\authentication\\exception\\InvalidAuthenticationTokenException.java",
+        "lines": "10-30",
+        "reason": "Custom exception: InvalidAuthenticationTokenException extends RuntimeException"
+      }
+    ]
+  },
+  {
+    "name": "PkiCardRequiredException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\authorization\\api\\PkiCardRequiredException.java",
+    "handling_type": "custom_exception",
+    "exception_class": "RuntimeException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\authorization\\api\\PkiCardRequiredException.java",
+        "lines": "6-26",
+        "reason": "Custom exception: PkiCardRequiredException extends RuntimeException"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.handleException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "Exception",
+    "handler_method": "handleException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "205-220",
+        "reason": "@ExceptionHandler(Exception) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.httpClientErrorExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "HttpClientErrorException",
+    "handler_method": "httpClientErrorExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "212-227",
+        "reason": "@ExceptionHandler(HttpClientErrorException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.httpRequestMethodNotSupportedExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "HttpRequestMethodNotSupportedException",
+    "handler_method": "httpRequestMethodNotSupportedExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "224-239",
+        "reason": "@ExceptionHandler(HttpRequestMethodNotSupportedException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.missingServletRequestParameterExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "MissingServletRequestParameterException",
+    "handler_method": "missingServletRequestParameterExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "233-248",
+        "reason": "@ExceptionHandler(MissingServletRequestParameterException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.accessDeniedExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "AccessDeniedException",
+    "handler_method": "accessDeniedExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "242-257",
+        "reason": "@ExceptionHandler(AccessDeniedException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.noResourceFoundExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "NoResourceFoundException",
+    "handler_method": "noResourceFoundExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "253-268",
+        "reason": "@ExceptionHandler(NoResourceFoundException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.methodArgumentTypeMismatchExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "MethodArgumentTypeMismatchException",
+    "handler_method": "methodArgumentTypeMismatchExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "260-275",
+        "reason": "@ExceptionHandler(MethodArgumentTypeMismatchException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.emptyResultDataAccessExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "EmptyResultDataAccessException",
+    "handler_method": "emptyResultDataAccessExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "294-309",
+        "reason": "@ExceptionHandler(EmptyResultDataAccessException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.incorrectResultSizeDataAccessExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "IncorrectResultSizeDataAccessException",
+    "handler_method": "incorrectResultSizeDataAccessExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "310-325",
+        "reason": "@ExceptionHandler(IncorrectResultSizeDataAccessException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.validationExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "ValidationException",
+    "handler_method": "validationExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "326-341",
+        "reason": "@ExceptionHandler(ValidationException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.propertyReferenceExceptionExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "PropertyReferenceException",
+    "handler_method": "propertyReferenceExceptionExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "332-347",
+        "reason": "@ExceptionHandler(PropertyReferenceException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.invalidDataAccessExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "InvalidDataAccessApiUsageException",
+    "handler_method": "invalidDataAccessExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "339-354",
+        "reason": "@ExceptionHandler(InvalidDataAccessApiUsageException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.httpMessageNotReadableExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "HttpMessageNotReadableException",
+    "handler_method": "httpMessageNotReadableExceptionHandler",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "347-362",
+        "reason": "@ExceptionHandler(HttpMessageNotReadableException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.duplicateIdException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "DataIntegrityViolationException",
+    "handler_method": "duplicateIdException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "354-369",
+        "reason": "@ExceptionHandler(DataIntegrityViolationException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler.handleMethodArgumentNotValidException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "exception_handler",
+    "exception_class": "MethodArgumentNotValidException",
+    "handler_method": "handleMethodArgumentNotValidException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "381-396",
+        "reason": "@ExceptionHandler(MethodArgumentNotValidException) in DefaultExceptionHandler"
+      }
+    ]
+  },
+  {
+    "name": "DefaultExceptionHandler",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+    "handling_type": "controller_advice",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\DefaultExceptionHandler.java",
+        "lines": "45-55",
+        "reason": "@ControllerAdvice: DefaultExceptionHandler (15 handlers)"
+      }
+    ]
+  },
+  {
+    "name": "RequestValidationException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\RequestValidationException.java",
+    "handling_type": "custom_exception",
+    "exception_class": "RuntimeException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\RequestValidationException.java",
+        "lines": "8-28",
+        "reason": "Custom exception: RequestValidationException extends RuntimeException"
+      }
+    ]
+  },
+  {
+    "name": "ValidationException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\ValidationException.java",
+    "handling_type": "custom_exception",
+    "exception_class": "RuntimeException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\ValidationException.java",
+        "lines": "16-36",
+        "reason": "Custom exception: ValidationException extends RuntimeException"
+      }
+    ]
+  },
+  {
+    "name": "WawiFailureException",
+    "file_path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\WawiFailureException.java",
+    "handling_type": "custom_exception",
+    "exception_class": "RuntimeException",
+    "evidence": [
+      {
+        "path": "backend\\src\\main\\java\\de\\bnotk\\uvz\\module\\general\\common\\api\\exception\\WawiFailureException.java",
+        "lines": "8-28",
+        "reason": "Custom exception: WawiFailureException extends RuntimeException"
+      }
+    ]
+  },
+  {
+    "name": "UNEXPECTED_ERROR_LABEL",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\error-handling\\global-error-handler.service.ts",
+    "handling_type": "angular_error_handler",
+    "handler_method": "handleError",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\error-handling\\global-error-handler.service.ts",
+        "lines": "23-53",
+        "reason": "Angular ErrorHandler: UNEXPECTED_ERROR_LABEL"
+      }
+    ]
+  },
+  {
+    "name": "HttpErrorInterceptor",
+    "container_hint": "frontend",
+    "file_path": "frontend\\src\\app\\shared\\forms\\http-error-interceptor.service.ts",
+    "handling_type": "http_interceptor",
+    "exception_class": "HttpErrorResponse",
+    "handler_method": "intercept",
+    "evidence": [
+      {
+        "path": "frontend\\src\\app\\shared\\forms\\http-error-interceptor.service.ts",
+        "lines": "9-39",
+        "reason": "HTTP error interceptor: HttpErrorInterceptor"
+      }
+    ]
+  }
+]

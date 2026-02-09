@@ -1,9 +1,9 @@
 {
-  "run_id": "fe2a3acc",
-  "timestamp": "2026-02-09T23:02:08.245090",
+  "run_id": "99cc9de1",
+  "timestamp": "2026-02-09T23:06:45.103617",
   "status": "success",
   "message": "Pipeline completed successfully",
-  "total_duration": "0:01:38",
+  "total_duration": "0:03:29",
   "planned_phases": [
     "phase4_development_planning"
   ],
@@ -18,8 +18,8 @@
       "phase": "phase4_development_planning",
       "status": "success",
       "message": "Completed",
-      "duration": "98.33s",
-      "duration_seconds": 98.33,
+      "duration": "209.23s",
+      "duration_seconds": 209.23,
       "output_files": [
         "C:\\projects\\aicodegencrew\\knowledge\\development"
       ]
