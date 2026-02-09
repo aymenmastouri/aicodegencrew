@@ -137,6 +137,8 @@ Acceptance Criteria:
 {self._format_list(task.acceptance_criteria)}
 
 Labels: {", ".join(task.labels)}
+Technical Notes (including JIRA comments):
+{task.technical_notes[:3000] if task.technical_notes else "(none)"}
 
 DISCOVERED COMPONENTS:
 {self._format_components(discovery.get("affected_components", []))}
@@ -162,7 +164,56 @@ ERROR HANDLING PATTERNS:
 ARCHITECTURE CONTEXT:
 - Style: {arch_style}
 - Quality Grade: {arch_quality}
+"""
 
+        # Inject upgrade assessment if available
+        upgrade = patterns.get("upgrade_assessment", {})
+        if upgrade.get("is_upgrade"):
+            summary = upgrade.get("summary", {})
+            context = upgrade.get("upgrade_context", {})
+            prompt += f"""
+UPGRADE ASSESSMENT (from automated code scan):
+Framework: {context.get("framework", "Unknown")}
+Current Version: {context.get("current_version", "Unknown")}
+Target Version: {context.get("target_version", "Unknown")}
+Breaking Changes: {summary.get("breaking_changes", 0)}
+Deprecated APIs: {summary.get("deprecated_apis", 0)}
+Total Affected Files: {summary.get("total_affected_files", 0)}
+Estimated Effort: {summary.get("estimated_effort_hours", 0)} hours
+
+MIGRATION SEQUENCE (ordered by severity):
+{self._format_migration_sequence(upgrade.get("migration_sequence", []))}
+
+VERIFICATION COMMANDS:
+{self._format_verification_commands(upgrade.get("verification_commands", []))}
+"""
+
+        # Build JSON schema section based on task type
+        upgrade = patterns.get("upgrade_assessment", {})
+        is_upgrade = upgrade.get("is_upgrade", False)
+
+        upgrade_plan_schema = ""
+        if is_upgrade:
+            upgrade_plan_schema = """
+    "upgrade_plan": {{
+      "migration_sequence": [
+        {{
+          "rule_id": "rule ID from MIGRATION SEQUENCE above",
+          "title": "Title",
+          "severity": "breaking|deprecated|recommended",
+          "migration_steps": ["Step 1", "Step 2"],
+          "affected_files": ["file1.ts", "file2.ts"],
+          "estimated_effort_minutes": <number>,
+          "schematic": "ng generate command (if applicable)"
+        }}
+      ],
+      "verification_commands": ["command 1", "command 2"],
+      "total_estimated_effort_hours": <number>,
+      "pre_migration_checks": ["Check 1", "Check 2"],
+      "post_migration_checks": ["Check 1", "Check 2"]
+    }},"""
+
+        prompt += f"""
 TASK:
 Create a COMPLETE implementation plan as JSON following this structure:
 
@@ -171,7 +222,7 @@ Create a COMPLETE implementation plan as JSON following this structure:
     "affected_components": [...],  // Use discovered components above
     "interfaces": [...],  // Use discovered interfaces above
     "dependencies": [...],  // Use discovered dependencies above
-
+{upgrade_plan_schema}
     "implementation_steps": [
       "1. Concrete step (in ComponentName)",
       "2. Concrete step (in ComponentName)"
@@ -216,7 +267,7 @@ IMPORTANT:
 - Use ONLY the components, patterns, and context provided above
 - DO NOT invent new components or patterns
 - ALL recommendations must reference the patterns above
-- Implementation steps must be concrete and actionable
+- Implementation steps must be concrete and actionable{"" if not is_upgrade else chr(10) + "- For upgrade tasks: include ALL migration steps from MIGRATION SEQUENCE above" + chr(10) + "- Order migration_sequence by severity (breaking first, then deprecated, then recommended)"}
 
 Generate the plan now:"""
 
@@ -329,6 +380,34 @@ Generate the plan now:"""
                 f"    Recommendation: {p['recommendation']}"
             )
         return "\n".join(lines)
+
+    @staticmethod
+    def _format_migration_sequence(sequence: list) -> str:
+        """Format migration sequence for LLM prompt."""
+        if not sequence:
+            return "  (none)"
+
+        lines = []
+        for i, step in enumerate(sequence, 1):
+            severity = step.get("severity", "unknown")
+            lines.append(
+                f"  {i}. [{severity.upper()}] {step.get('title', '')}\n"
+                f"     Rule: {step.get('rule_id', '')}\n"
+                f"     Occurrences: {step.get('occurrences', 0)} in {len(step.get('affected_files', []))} files\n"
+                f"     Effort: {step.get('estimated_effort_minutes', 0)} min\n"
+                f"     Steps: {'; '.join(step.get('migration_steps', []))}"
+            )
+            schematic = step.get("schematic")
+            if schematic:
+                lines.append(f"     Schematic: {schematic}")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_verification_commands(commands: list) -> str:
+        """Format verification commands for LLM prompt."""
+        if not commands:
+            return "  (none)"
+        return "\n".join(f"  - {cmd}" for cmd in commands)
 
     @staticmethod
     def _extract_json(content: str) -> dict:

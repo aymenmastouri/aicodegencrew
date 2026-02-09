@@ -31,14 +31,16 @@ class PatternMatcherStage:
     Match patterns from architecture_facts.json using algorithms.
     """
 
-    def __init__(self, facts: dict):
+    def __init__(self, facts: dict, repo_path: str = None):
         """
         Initialize pattern matcher.
 
         Args:
             facts: architecture_facts.json (from Phase 1)
+            repo_path: Target repository path (for upgrade code scanning)
         """
         self.facts = facts
+        self.repo_path = repo_path
 
         self.tests = facts.get("tests", [])
         self.security_details = facts.get("security_details", [])
@@ -100,12 +102,19 @@ class PatternMatcherStage:
             top_k=top_k
         )
 
+        # Match upgrade patterns (if upgrade task)
+        upgrade_assessment = {}
+        if task.task_type == "upgrade":
+            upgrade_assessment = self._match_upgrade_patterns(task, components)
+
         logger.info(
             f"[Stage3] Found {len(test_patterns)} test patterns, "
             f"{len(security_patterns)} security patterns, "
             f"{len(validation_patterns)} validation patterns, "
             f"{len(error_patterns)} error patterns, "
             f"{len(workflow_context)} workflows"
+            + (f", upgrade: {upgrade_assessment.get('summary', {}).get('total_rules_triggered', 0)} rules"
+               if upgrade_assessment else "")
         )
 
         return {
@@ -114,6 +123,7 @@ class PatternMatcherStage:
             "validation_patterns": [p.dict() for p in validation_patterns],
             "error_patterns": [p.dict() for p in error_patterns],
             "workflow_context": [w.dict() for w in workflow_context],
+            "upgrade_assessment": upgrade_assessment,
         }
 
     def _match_test_patterns(
@@ -464,3 +474,41 @@ class PatternMatcherStage:
         if "." in pattern_name:
             return pattern_name.split(".")[-1]
         return ""
+
+    def _match_upgrade_patterns(
+        self,
+        task: TaskInput,
+        components: list,
+    ) -> dict:
+        """Run upgrade rules engine for framework upgrade tasks."""
+        try:
+            from ..upgrade_rules import UpgradeRulesEngine
+
+            engine = UpgradeRulesEngine(
+                facts=self.facts,
+                repo_path=self.repo_path,
+            )
+
+            context = engine.detect_upgrade_context(
+                task.description, task.labels,
+            )
+            if not context:
+                logger.warning("[Stage3] Could not detect upgrade context")
+                return {}
+
+            rule_sets = engine.get_applicable_rules(
+                framework=context["framework"],
+                current_version=context["current_version"],
+                target_version=context["target_version"],
+            )
+            if not rule_sets:
+                logger.warning("[Stage3] No upgrade rules found for version range")
+                return {}
+
+            assessment = engine.scan_and_assess(rule_sets)
+            assessment["upgrade_context"] = context
+            return assessment
+
+        except Exception as e:
+            logger.error(f"[Stage3] Upgrade pattern matching failed: {e}")
+            return {}

@@ -65,6 +65,10 @@ class ComponentDiscoveryStage:
         """
         logger.info(f"[Stage2] Discovering components for task: {task.task_id}")
 
+        # Upgrade tasks: return ALL components in affected container
+        if task.task_type == "upgrade":
+            return self._upgrade_discovery(task)
+
         # Build query from task
         query = f"{task.summary} {task.description}"
         labels = task.labels
@@ -130,6 +134,45 @@ class ComponentDiscoveryStage:
             "affected_components": [c.dict() for c in affected_components],
             "interfaces": [i.dict() for i in related_interfaces],
             "dependencies": [d.dict() for d in dependencies],
+        }
+
+    def _upgrade_discovery(self, task: TaskInput) -> Dict[str, Any]:
+        """Discover ALL components for upgrade tasks (not top-K scoring)."""
+        # Detect which container is being upgraded
+        text = f"{task.summary} {task.description}".lower()
+        target_container = None
+
+        if "angular" in text or "frontend" in text:
+            target_container = "container.frontend"
+        elif "spring" in text or "backend" in text:
+            target_container = "container.backend"
+
+        affected = []
+        for comp in self.components:
+            container = comp.get("container", "")
+            if target_container and target_container not in container:
+                continue
+            file_paths = comp.get("file_paths", [])
+            affected.append(
+                ComponentMatch(
+                    id=comp.get("id", ""),
+                    name=comp.get("name", ""),
+                    stereotype=comp.get("stereotype", "unknown"),
+                    layer=comp.get("layer", "unknown"),
+                    package=comp.get("module", ""),
+                    file_path=file_paths[0] if file_paths else "",
+                    relevance_score=1.0,
+                    change_type="modify",
+                    source="upgrade_scan",
+                )
+            )
+
+        logger.info(f"[Stage2] Upgrade discovery: {len(affected)} components in {target_container or 'all containers'}")
+
+        return {
+            "affected_components": [c.dict() for c in affected],
+            "interfaces": [],
+            "dependencies": [],
         }
 
     def _semantic_search(self, query: str, n: int) -> Dict[str, float]:

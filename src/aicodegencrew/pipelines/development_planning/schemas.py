@@ -28,6 +28,12 @@ class TaskInput(BaseModel):
     technical_notes: str = Field(default="", description="Technical implementation notes")
     labels: List[str] = Field(default_factory=list, description="Labels/tags")
     priority: str = Field(default="Medium", description="Priority level")
+    task_type: Literal["feature", "bugfix", "upgrade", "refactoring"] = Field(
+        default="feature", description="Detected task type"
+    )
+    upgrade_context: Optional[dict] = Field(
+        default=None, description="Upgrade context (framework, versions)"
+    )
 
 
 # =============================================================================

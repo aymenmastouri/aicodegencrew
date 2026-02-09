@@ -113,7 +113,7 @@ def _parse_jira_rss(root: ET.Element) -> List[Dict[str, Any]]:
             notes.append(f"\nComments ({len(comments)}):")
             for i, comment in enumerate(comments, 1):
                 notes.append(f"\n[Comment {i}] {comment['author']} ({comment['created']}):")
-                notes.append(comment['text'][:500])  # Limit comment length
+                notes.append(comment['text'][:2000])  # Allow long technical comments
 
         task['technical_notes'] = '\n'.join(notes)
 
