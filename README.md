@@ -67,8 +67,8 @@ The system follows a **4-Layer Architecture** with 9 pipeline phases:
 | Layer | Phases | Purpose | LLM Required |
 |-------|--------|---------|:------------:|
 | **Knowledge** | 0 – 1 | Deterministic facts extraction | No |
-| **Reasoning** | 2 – 3 | AI-powered analysis and synthesis | Yes |
-| **Execution** | 4 – 7 | Code generation and deployment | Yes |
+| **Reasoning** | 2 – 4 | AI-powered analysis and synthesis | Hybrid |
+| **Execution** | 5 – 7 | Code generation and deployment | Yes |
 | **Feedback** | 8 | Continuous learning and quality | Yes |
 
 > For the full architecture specification, see [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md).
@@ -85,7 +85,9 @@ Repository
   │
   ├─ Phase 2: Analysis (AI) ────────► analyzed_architecture.json
   │
-  └─ Phase 3: Synthesis (AI) ───────► C4 docs + arc42 chapters + DrawIO diagrams
+  ├─ Phase 3: Synthesis (AI) ───────► C4 docs + arc42 chapters + DrawIO diagrams
+  │
+  └─ Phase 4: Planning (Hybrid) ────► task_plan.json (18-40s, 100% data usage)
 ```
 
 ---
@@ -128,7 +130,17 @@ source .venv/bin/activate
 ### 3. Install Dependencies
 
 ```bash
+# Core dependencies
+pip install -e .
+
+# With development tools
 pip install -e ".[dev]"
+
+# With parser support (DOCX, Excel)
+pip install -e ".[parsers]"
+
+# Or install everything
+pip install -e ".[dev,parsers]"
 ```
 
 ### 4. Configure Environment
@@ -240,7 +252,7 @@ Presets are predefined phase combinations defined in [`config/phases_config.yaml
 | `facts_only` | 0 – 1 | Deterministic facts extraction (no LLM) |
 | `analysis_only` | 0 – 2 | Facts + AI analysis |
 | `architecture_workflow` | 0 – 3 | Full architecture documentation |
-| `architecture_full` | 0 – 4 | Architecture + review/consistency |
+| `architecture_full` | 0 – 4 | Architecture + development planning |
 | `full_pipeline` | 0 – 8 | All phases (end-to-end SDLC) |
 
 ---
@@ -428,11 +440,10 @@ python -m aicodegencrew list
 | 1 | **Architecture Facts** | Pipeline | No | Implemented | Deterministic extraction of components, relations, interfaces, endpoint flows |
 | 2 | **Architecture Analysis** | Crew | Yes | Implemented | Multi-agent analysis (4 analysts + Map-Reduce) |
 | 3 | **Architecture Synthesis** | Crew | Yes | Implemented | C4 + arc42 document generation (Mini-Crews pattern) |
-| 4 | **Review** | Crew | Yes | Planned | Cross-document consistency validation |
-| 5 | **Development Planning** | Crew | Yes | Planned | Backlog generation from architecture insights |
-| 6 | **Code Generation** | Crew | Yes | Planned | Feature implementation and refactoring |
-| 7 | **Test Generation** | Crew | Yes | Planned | Unit and integration test generation |
-| 8 | **Deployment** | Pipeline | No | Planned | CI/CD configuration and release management |
+| 4 | **Development Planning** | Pipeline | Hybrid | Implemented | Hybrid pipeline (5 stages: 4 deterministic + 1 LLM). Parses tasks, discovers components (RAG), matches patterns (TF-IDF), generates plans (LLM), validates. 18-40s, 100% data usage. |
+| 5 | **Code Generation** | Crew | Yes | Planned | Feature implementation and refactoring |
+| 6 | **Test Generation** | Crew | Yes | Planned | Unit and integration test generation |
+| 7 | **Review + Deploy** | Pipeline | No | Planned | CI/CD configuration and release management |
 
 ### Phase Dependencies
 
@@ -440,8 +451,129 @@ Each phase declares its dependencies. The orchestrator validates that all requir
 
 ```
 Phase 0 ──► Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 ──► ...
-(Index)     (Facts)     (Analysis)  (Synthesis)  (Review)
+(Index)     (Facts)     (Analysis)  (Synthesis)  (Planning)
 ```
+
+---
+
+## Input Files for Development Planning (Phase 4)
+
+Phase 4 (Development Planning) requires task inputs to generate implementation plans. Organize your input files in the `inputs/` directory:
+
+### Input Folder Structure
+
+```
+inputs/
+├── tasks/              # Task definitions (REQUIRED)
+│   ├── task-001.txt       # Plain text task description
+│   ├── bug-fix.log        # Error log to analyze/fix
+│   ├── feature.xml        # XML task data
+│   ├── requirement.docx   # Word requirement doc
+│   └── backlog.xlsx       # Excel task spreadsheet
+│
+├── requirements/       # Specifications and documentation (OPTIONAL)
+│   ├── requirements.docx  # Functional requirements
+│   ├── specs.pdf          # Technical specifications
+│   └── user-stories.md    # Markdown user stories
+│
+├── logs/               # Error logs and traces (OPTIONAL)
+│   ├── error.log          # Application error logs
+│   ├── stack-trace.txt    # Stack traces for bug fixes
+│   └── debug.log          # Debug output
+│
+└── reference/          # Examples and patterns (OPTIONAL)
+    ├── similar-impl.java  # Reference implementation example
+    ├── pattern-example.ts # Code pattern to follow
+    └── best-practices.md  # Guidelines and conventions
+```
+
+### Supported File Formats
+
+All formats are fully implemented and ready to use:
+
+| Format | Extension | Description | What Gets Extracted | Dependencies |
+|--------|-----------|-------------|---------------------|--------------|
+| **Plain Text** | `.txt`, `.log` | Task descriptions, error logs | Full text content, error patterns | None (built-in) |
+| **XML** | `.xml` | JIRA exports, structured data | **Complete extraction:** task details, description, comments (all with authors/dates), assignee, reporter, fix version, labels, metadata | None (built-in) |
+| **Word** | `.docx` | Requirements, specifications | Title, sections (headings), tables | `pip install python-docx` |
+| **Excel** | `.xlsx`, `.xls` | Task lists, backlogs | All sheets, data rows with headers | `pip install openpyxl` |
+
+**Note:** Install optional parsers with `pip install -e ".[parsers]"` to enable DOCX and Excel support.
+
+### How to Use
+
+1. **Create input folders** (if they don't exist):
+   ```bash
+   mkdir -p inputs/tasks inputs/requirements inputs/logs inputs/reference
+   ```
+
+2. **Add your task files** to `inputs/tasks/`:
+   ```bash
+   # Create a simple text file (IMPLEMENTED)
+   cat > inputs/tasks/task-001.txt <<EOF
+   Add email notification on user registration
+
+   Requirements:
+   - Send welcome email when user registers
+   - Include activation link
+   - Use async processing
+   EOF
+   ```
+
+3. **Optionally add supporting files**:
+   ```bash
+   # Requirements
+   cp ~/docs/requirements.docx inputs/requirements/
+
+   # Error logs for bug fixes
+   cp ~/logs/error.log inputs/logs/
+
+   # Reference implementations
+   cp ~/examples/email-service.java inputs/reference/
+   ```
+
+4. **Run Phase 4**:
+   ```bash
+   # Run development planning for a specific task file
+   python -m aicodegencrew run --phases phase4_development_planning --input-file inputs/tasks/task-001.txt
+   ```
+
+### Example Task Input (Plain Text)
+
+```text
+Task: Add pagination to user list endpoint
+
+Requirements:
+- GET /api/users should support page and size parameters
+- Default page size: 20 items
+- Return total count in response headers
+- Use Spring Data JPA Pageable
+
+Acceptance Criteria:
+- Existing tests still pass
+- New endpoint supports ?page=0&size=10
+- Response includes X-Total-Count header
+```
+
+### Output
+
+Phase 4 generates implementation plans in `knowledge/development/`:
+
+```
+knowledge/development/
+├── PROJ-123_plan.json     # Full implementation plan
+├── TASK-456_plan.json     # Another task plan
+└── ...
+```
+
+Each plan includes:
+- Affected components (from RAG + semantic search)
+- Implementation steps
+- Test strategy (matched from 925 existing test patterns)
+- Security considerations (from 143 security configs)
+- Validation strategy (from 149 validation patterns)
+- Error handling patterns (from 23 error handlers)
+- Complete task context (all JIRA comments, metadata, history)
 
 ---
 
@@ -547,16 +679,26 @@ aicodegencrew/
 │   │   │   ├── chunker_tool.py
 │   │   │   └── embeddings_tool.py
 │   │   │
-│   │   └── architecture_facts/     # Phase 1: Facts extraction
-│   │       ├── pipeline.py
-│   │       ├── model_builder.py    #   Canonical model + 7-tier relation resolver
-│   │       ├── endpoint_flow_builder.py  # Controller→Service→Repository chains
-│   │       ├── dimension_writers.py
-│   │       └── collectors/         #   20+ specialized collectors
-│   │           ├── fact_adapter.py  #   RawFact→Collected* adapter
-│   │           ├── spring/         #     Spring Boot (REST, services, repos, config)
-│   │           ├── angular/        #     Angular (components, modules, routing, services)
-│   │           └── database/       #     Database (migrations, tables, procedures)
+│   │   ├── architecture_facts/     # Phase 1: Facts extraction
+│   │   │   ├── pipeline.py
+│   │   │   ├── model_builder.py    #   Canonical model + 7-tier relation resolver
+│   │   │   ├── endpoint_flow_builder.py  # Controller→Service→Repository chains
+│   │   │   ├── dimension_writers.py
+│   │   │   └── collectors/         #   20+ specialized collectors
+│   │   │       ├── fact_adapter.py  #   RawFact→Collected* adapter
+│   │   │       ├── spring/         #     Spring Boot (REST, services, repos, config)
+│   │   │       ├── angular/        #     Angular (components, modules, routing, services)
+│   │   │       └── database/       #     Database (migrations, tables, procedures)
+│   │   │
+│   │   └── development_planning/   # Phase 4: Hybrid development planning
+│   │       ├── pipeline.py         #   DevelopmentPlanningPipeline (orchestrator)
+│   │       ├── schemas.py          #   Pydantic models for all stages
+│   │       └── stages/             #   5-stage hybrid architecture
+│   │           ├── stage1_input_parser.py     # JIRA XML, DOCX, Excel, logs
+│   │           ├── stage2_component_discovery.py  # RAG + multi-signal scoring
+│   │           ├── stage3_pattern_matcher.py      # TF-IDF + rule-based matching
+│   │           ├── stage4_plan_generator.py       # LLM synthesis (only LLM stage)
+│   │           └── stage5_validator.py            # Pydantic + completeness checks
 │   │
 │   ├── shared/                     # Shared utilities
 │   │   ├── validation.py           # Phase output validation

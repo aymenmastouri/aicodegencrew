@@ -34,11 +34,11 @@
         </mxCell>
         
         <!-- Phase 2 outputs -->
-        <mxCell id="phase2-section" value="From Phase 2 (Synthesis)" style="swimlane;horizontal=1;startSize=25;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="arch">
+        <mxCell id="phase2-section" value="From Phase 2 (Analysis) + Phase 3 (Synthesis)" style="swimlane;horizontal=1;startSize=25;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="arch">
           <mxGeometry x="275" y="35" width="250" height="130" as="geometry" />
         </mxCell>
-        
-        <mxCell id="c4-desc" value="c4/&#xa;   └─ Clean markdown + diagrams&#xa;arc42/&#xa;   └─ 12 chapter docs&#xa;   └─ NO evidence IDs in output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="phase2-section">
+
+        <mxCell id="c4-desc" value="analyzed_architecture.json (Phase 2)&#xa;c4/&#xa;   └─ Clean markdown + diagrams&#xa;arc42/&#xa;   └─ 12 chapter docs (Phase 3)&#xa;   └─ NO evidence IDs in output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="phase2-section">
           <mxGeometry x="10" y="30" width="230" height="90" as="geometry" />
         </mxCell>
         
@@ -83,7 +83,7 @@
           <mxGeometry x="15" y="450" width="510" height="110" as="geometry" />
         </mxCell>
         
-        <mxCell id="quality-files" value="synthesis-report.md       → Phase 2 quality validation&#xa;quality-report.html       → HTML formatted report&#xa;consistency-check.md      → Phase 3 (planned) output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="quality">
+        <mxCell id="quality-files" value="synthesis-report.md       → Phase 2 quality validation&#xa;quality-report.html       → HTML formatted report&#xa;consistency-check.md      → Phase 3 (implemented) output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="quality">
           <mxGeometry x="10" y="30" width="490" height="70" as="geometry" />
         </mxCell>
         
@@ -101,7 +101,7 @@
           <mxGeometry x="580" y="165" width="240" height="80" as="geometry" />
         </mxCell>
         
-        <mxCell id="dev-files" value="Phase 4 output (planned)&#xa;   → JIRA items, code proposals" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="development">
+        <mxCell id="dev-files" value="Phase 4 output (IMPLEMENTED)&#xa;   → {task_id}_plan.json&#xa;   → Implementation plans" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;fontSize=10" vertex="1" parent="development">
           <mxGeometry x="10" y="30" width="220" height="45" as="geometry" />
         </mxCell>
         
@@ -128,7 +128,7 @@
           <mxGeometry y="26" width="240" height="26" as="geometry" />
         </mxCell>
         
-        <mxCell id="leg2" value="Phase 2 Output (LLM)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=10" vertex="1" parent="legend">
+        <mxCell id="leg2" value="Phase 2+3 Output (LLM)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=10" vertex="1" parent="legend">
           <mxGeometry y="52" width="240" height="26" as="geometry" />
         </mxCell>
         

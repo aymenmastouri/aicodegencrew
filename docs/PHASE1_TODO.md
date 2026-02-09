@@ -2,7 +2,7 @@
 
 **Stand:** 2026-02-05  
 **Layer:** KNOWLEDGE (Layer 1)  
-**Letzter Lauf:** 733 components, 125 interfaces, 169 relations, 1005 evidence
+**Letzter Lauf:** 951+ components, 226 interfaces, 190 relations, 1005 evidence
 
 > Phase 1 ist Teil des **Knowledge Layers** im 4-Layer-Architekturmodell.  
 > Siehe [AI_SDLC_ARCHITECTURE.md](AI_SDLC_ARCHITECTURE.md) und [layer-architecture.drawio](diagrams/layer-architecture.drawio)
@@ -43,7 +43,7 @@ interface.implemented_by = controller_name  # z.B. "WorkflowRestServiceImpl"
 
 ---
 
-## 🟡 Wichtig
+## Wichtig
 
 ### 3. Tables nicht im finalen Model
 **Problem:** OracleTableCollector findet 177 Tables, aber `Tables: 0` im Output  
@@ -56,13 +56,13 @@ interface.implemented_by = controller_name  # z.B. "WorkflowRestServiceImpl"
 **Lösung:** Migration-Facts ins Model übernehmen
 
 ### 5. Component Deduplication verbessern
-**Problem:** 813 → 733 components (10% Verlust)  
+**Problem:** 1050+ → 951+ components (~10% Verlust)  
 **Frage:** Werden echte Duplikate entfernt oder gehen Infos verloren?  
 **Aktion:** Dedup-Logik reviewen, evtl. Merge statt Drop
 
 ---
 
-## 🟢 Nice-to-Have
+## Nice-to-Have
 
 ### 6. Evidence Linking verbessern
 - [ ] Evidence IDs konsistent über alle Collectors
@@ -100,7 +100,7 @@ interface.implemented_by = controller_name  # z.B. "WorkflowRestServiceImpl"
 
 ### Collector - Model Pipeline
 ```
-Collectors (10 Steps)
+Collectors (31 in 4 groups)
     |
     v
 Raw Facts (CollectedComponent, CollectedInterface, etc.)
@@ -112,7 +112,7 @@ FactAdapter (Normalisierung)
 ModelBuilder (Dedup, ID-Generation, Relation Resolution)
     |
     v
-CanonicalModel (733 components, 125 interfaces, 169 relations)
+CanonicalModel (951+ components, 226 interfaces, 190 relations)
     |
     v
 DimensionWriters (11 JSON files)
@@ -176,7 +176,7 @@ Besser investierte Zeit:
 ### Empfohlene Alternative: RAG statt Fine-Tuning
 
 ```
-Phase 1 Facts (733 components, 169 relations, etc.)
+Phase 1 Facts (951+ components, 190 relations, etc.)
     |
     v
 Als Kontext fuer generisches LLM (GPT-4, Claude, etc.)

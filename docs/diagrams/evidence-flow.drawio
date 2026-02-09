@@ -66,28 +66,34 @@
         </mxCell>
         
         <!-- Synthesis -->
-        <mxCell id="synth-group" value="Phase 2: Synthesis (LLM)" style="swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="1">
-          <mxGeometry x="800" y="100" width="200" height="250" as="geometry" />
+        <!-- Phase 2: Analysis (LLM) -->
+        <mxCell id="analysis-group" value="Phase 2: Analysis (LLM)" style="swimlane;horizontal=1;startSize=30;fillColor=#e3f2fd;strokeColor=#1565c0;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="800" y="100" width="200" height="130" as="geometry" />
         </mxCell>
-        
-        <mxCell id="analyze-synth" value="analyze_system&#xa;━━━━━━━━━━━━━&#xa;THINK FIRST!&#xa;Query facts before docs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" vertex="1" parent="synth-group">
-          <mxGeometry x="20" y="40" width="160" height="50" as="geometry" />
+
+        <mxCell id="analysis-crew" value="5 Mini-Crews&#xa;━━━━━━━━━━━━━&#xa;tech, domain, workflow,&#xa;quality, synthesis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10" vertex="1" parent="analysis-group">
+          <mxGeometry x="20" y="40" width="160" height="55" as="geometry" />
         </mxCell>
-        
-        <mxCell id="c4-synth" value="C4 Crew (architect)&#xa;━━━━━━━━━━━━━&#xa;5 tasks → 4 diagrams" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="synth-group">
-          <mxGeometry x="20" y="100" width="160" height="45" as="geometry" />
+
+        <mxCell id="analysis-output" value="analyzed_architecture.json" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#1565c0" vertex="1" parent="analysis-group">
+          <mxGeometry x="20" y="100" width="160" height="20" as="geometry" />
         </mxCell>
-        
-        <mxCell id="arc42-synth" value="Arc42 Crew (architect)&#xa;━━━━━━━━━━━━━&#xa;13 tasks → 12 chapters" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="synth-group">
-          <mxGeometry x="20" y="150" width="160" height="45" as="geometry" />
+
+        <!-- Phase 3: Synthesis (LLM) -->
+        <mxCell id="synth-group" value="Phase 3: Synthesis (LLM)" style="swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="1">
+          <mxGeometry x="800" y="245" width="200" height="120" as="geometry" />
         </mxCell>
-        
-        <mxCell id="quality-gate" value="Quality Gate&#xa;(Phase 3 - Planned)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;dashed=1" vertex="1" parent="synth-group">
-          <mxGeometry x="20" y="200" width="160" height="35" as="geometry" />
+
+        <mxCell id="c4-synth" value="C4 Crew (5 mini-crews)&#xa;━━━━━━━━━━━━━&#xa;1 task per crew" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="synth-group">
+          <mxGeometry x="20" y="35" width="160" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arc42-synth" value="Arc42 Crew (18 mini-crews)&#xa;━━━━━━━━━━━━━&#xa;1 task per crew" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" vertex="1" parent="synth-group">
+          <mxGeometry x="20" y="80" width="160" height="35" as="geometry" />
         </mxCell>
         
         <!-- Output -->
-        <mxCell id="output-group" value="Phase 2 Output" style="swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="1">
+        <mxCell id="output-group" value="Phase 3 Output" style="swimlane;horizontal=1;startSize=30;fillColor=#f8cecc;strokeColor=#b85450;rounded=1" vertex="1" parent="1">
           <mxGeometry x="1050" y="100" width="200" height="250" as="geometry" />
         </mxCell>
         
@@ -118,17 +124,25 @@
           </mxGeometry>
         </mxCell>
         
-        <mxCell id="a3" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450" edge="1" parent="1">
+        <mxCell id="a3" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#e3f2fd;strokeColor=#1565c0" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="750" y="225" as="sourcePoint" />
-            <mxPoint x="800" y="225" as="targetPoint" />
+            <mxPoint x="750" y="165" as="sourcePoint" />
+            <mxPoint x="800" y="165" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        
-        <mxCell id="a4" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450" edge="1" parent="1">
+
+        <mxCell id="a3b" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1000" y="225" as="sourcePoint" />
-            <mxPoint x="1050" y="225" as="targetPoint" />
+            <mxPoint x="1000" y="305" as="sourcePoint" />
+            <mxPoint x="1050" y="305" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrow from Analysis to Synthesis -->
+        <mxCell id="a3c" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="900" y="230" as="sourcePoint" />
+            <mxPoint x="900" y="245" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         
