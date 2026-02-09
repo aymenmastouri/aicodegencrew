@@ -96,9 +96,10 @@ class ValidatorStage:
             layer_warnings = self._validate_layer_compliance(dev_plan)
             warnings.extend(layer_warnings)
 
-        # Validate component references
-        component_errors = self._validate_component_references(dev_plan)
-        errors.extend(component_errors)
+        # Validate component references (skip for upgrade tasks — steps are framework-level)
+        if "upgrade_plan" not in dev_plan:
+            component_errors = self._validate_component_references(dev_plan)
+            errors.extend(component_errors)
 
         # Validate upgrade plan (if upgrade task)
         if "upgrade_plan" in dev_plan:
