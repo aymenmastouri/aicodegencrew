@@ -645,14 +645,14 @@ aicodegencrew/
 │   └── diagrams/                   # DrawIO architecture diagrams
 │       ├── sdlc-overview.drawio
 │       ├── layer-architecture.drawio
-│       ├── phase-flow.drawio
-│       ├── collectors.drawio
+│       ├── pipeline-flow.drawio
+│       ├── facts-collectors.drawio
 │       ├── evidence-flow.drawio
 │       ├── knowledge-structure.drawio
 │       ├── analysis-crew.drawio
 │       ├── synthesis-crew.drawio
-│       ├── phase2-crew-architecture.drawio
-│       └── phase4-pipeline.drawio
+│       ├── analysis-crew-schema.drawio
+│       └── development-planning-pipeline.drawio
 ├── src/aicodegencrew/
 │   ├── cli.py                      # CLI entry point (argparse)
 │   ├── orchestrator.py             # Phase orchestration and dependency resolution
