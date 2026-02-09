@@ -176,3 +176,7 @@ reports/*.md
 !knowledge/architecture/.gitkeep
 !reports/.gitkeep
 !logs/.gitkeep
+
+# Generated outputs (Phase 4 development planning)
+knowledge/development/*.json
+knowledge/run_report.json
