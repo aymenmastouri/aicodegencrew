@@ -1028,12 +1028,15 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
             ], ["arc42/12-glossary.md"]),
         ]
 
+        # Get template data for filling {system_summary} placeholders
+        template_data = self._summarize_facts()
+
         for name, task_specs, expected_files in mini_crews:
             if not self.should_skip(name, completed):
                 try:
                     agent = self._create_agent()
                     tasks = [
-                        Task(description=desc, expected_output=output, agent=agent)
+                        Task(description=desc.format(**template_data), expected_output=output, agent=agent)
                         for desc, output in task_specs
                     ]
                     self._run_mini_crew(name, tasks, expected_files=expected_files)

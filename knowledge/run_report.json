@@ -1,0 +1,34 @@
+{
+  "run_id": "338ee272",
+  "timestamp": "2026-02-09T18:15:23.408232",
+  "status": "success",
+  "message": "Pipeline completed successfully",
+  "total_duration": "0:18:48",
+  "planned_phases": [
+    "phase3_architecture_synthesis"
+  ],
+  "environment": {
+    "repo_path": "C:\\uvz",
+    "index_mode": "auto",
+    "output_base_dir": "C:\\projects\\aicodegencrew",
+    "git_repo_url": null
+  },
+  "phases": [
+    {
+      "phase": "phase3_architecture_synthesis",
+      "status": "success",
+      "message": "Completed",
+      "duration": "1127.73s",
+      "duration_seconds": 1127.73,
+      "output_files": [
+        "C:\\projects\\aicodegencrew\\knowledge\\architecture\\c4",
+        "C:\\projects\\aicodegencrew\\knowledge\\architecture\\arc42"
+      ]
+    }
+  ],
+  "output_summary": {
+    "knowledge_dir": "C:\\projects\\aicodegencrew\\knowledge",
+    "log_file": "C:\\projects\\aicodegencrew\\logs\\current.log",
+    "metrics_file": "C:\\projects\\aicodegencrew\\logs\\metrics.jsonl"
+  }
+}
