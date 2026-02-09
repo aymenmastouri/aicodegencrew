@@ -6,8 +6,11 @@
 
 ## Was lieferst du?
 
-Ein ZIP-Ordner mit allem was der Endbenutzer braucht. **Kein Source Code!**
+Eine ZIP-Datei mit allem was der Endbenutzer braucht. **Kein Source Code!**
 
+**Datei:** `aicodegencrew-v0.1.0.zip` (486 KB)
+
+**Inhalt:**
 ```
 aicodegencrew-v0.1.0/
 ├── aicodegencrew-0.1.0-py3-none-any.whl   # Das Tool (installierbar)
@@ -15,7 +18,8 @@ aicodegencrew-v0.1.0/
 ├── docker-compose.yml                       # Docker Setup
 ├── config/
 │   └── phases_config.yaml                   # Phase-Konfiguration
-├── USER_GUIDE.md                            # Bedienungsanleitung
+├── USER_GUIDE.md                            # Bedienungsanleitung (Markdown)
+├── USER_GUIDE.pdf                           # Bedienungsanleitung (PDF)
 ├── CHANGELOG.md                             # Was ist neu (automatisch aus Git)
 ├── install.bat                              # Windows-Installer
 └── install.sh                               # Linux-Installer
@@ -89,26 +93,51 @@ git push
 
 ### Schritt 3: Ergebnis
 
-Das Script erstellt alles in `dist/release/`:
+Das Script erstellt automatisch:
+
+1. **Release-Ordner** `dist/release/` mit allen Dateien
+2. **ZIP-Datei** `dist/aicodegencrew-v0.1.0.zip` (fertig zum Versenden!)
 
 ```
 dist/
+├── aicodegencrew-v0.1.0.zip         ← FERTIGE LIEFERUNG (486 KB)
 └── release/
     ├── aicodegencrew-0.1.0-py3-none-any.whl
     ├── .env.example
     ├── docker-compose.yml
     ├── config/phases_config.yaml
     ├── USER_GUIDE.md
+    ├── USER_GUIDE.pdf               ← NEU! PDF-Version
     ├── CHANGELOG.md
     ├── install.bat
     └── install.sh
 ```
 
-### Schritt 4: ZIP erstellen und versenden
+**ZIP-Struktur (entpackt):**
+```
+aicodegencrew-v0.1.0/                ← Korrekter Root-Ordner
+├── aicodegencrew-0.1.0-py3-none-any.whl
+├── .env.example
+├── docker-compose.yml
+├── config/phases_config.yaml
+├── USER_GUIDE.md
+├── USER_GUIDE.pdf
+├── CHANGELOG.md
+├── install.bat
+└── install.sh
+```
 
-1. Rechtsklick auf `dist/release/` -> "In ZIP-Datei komprimieren"
-2. Umbenennen zu `aicodegencrew-v0.1.0.zip`
-3. Per Teams/SharePoint/E-Mail an den Entwickler schicken
+### Schritt 4: ZIP versenden
+
+Das ZIP ist fertig! Einfach versenden:
+
+```bash
+# Option 1: Per Teams/SharePoint hochladen
+# Option 2: Per E-Mail (486 KB, passt immer)
+# Option 3: Auf Netzlaufwerk kopieren
+```
+
+Die Datei `dist/aicodegencrew-v0.1.0.zip` an den Entwickler schicken
 
 ---
 
@@ -126,7 +155,7 @@ Ergebnis: `dist/aicodegencrew-0.1.0-py3-none-any.whl`
 
 ### Schritt 2: Lieferordner zusammenstellen
 
-Erstelle einen neuen Ordner und kopiere diese Dateien hinein:
+Erstelle einen neuen Ordner `aicodegencrew-v0.1.0/` und kopiere diese Dateien hinein:
 
 | Von (Quelle) | Nach (Lieferordner) |
 |---------------|---------------------|
@@ -137,9 +166,22 @@ Erstelle einen neuen Ordner und kopiere diese Dateien hinein:
 | `docs/USER_GUIDE.md` | `aicodegencrew-v0.1.0/USER_GUIDE.md` |
 | `CHANGELOG.md` | `aicodegencrew-v0.1.0/` |
 
-### Schritt 3: ZIP und versenden
+**WICHTIG:** Der Root-Ordner im ZIP muss `aicodegencrew-v0.1.0/` heißen!
 
-Wie oben — ZIP erstellen und verschicken.
+### Schritt 3: ZIP erstellen und versenden
+
+**PowerShell (Windows):**
+```powershell
+# Von AUSSEN zippen (nicht im Ordner drin!)
+Compress-Archive -Path aicodegencrew-v0.1.0 -DestinationPath aicodegencrew-v0.1.0.zip
+```
+
+**Linux/Mac:**
+```bash
+zip -r aicodegencrew-v0.1.0.zip aicodegencrew-v0.1.0/
+```
+
+ZIP verschicken.
 
 ---
 
