@@ -20,6 +20,7 @@ Usage:
 """
 
 import argparse
+import os
 import re
 import shutil
 import subprocess
@@ -290,13 +291,26 @@ def generate_pdf_from_markdown(md_path: Path, pdf_path: Path) -> bool:
     # Generate PDF with pandoc
     print(f"  Generating PDF: {pdf_path.name}...")
 
+    # Find xelatex (check PATH and Windows default location)
+    xelatex_cmd = "xelatex"
+    if sys.platform == "win32":
+        # Try default MiKTeX location on Windows
+        miktex_paths = [
+            r"C:\Program Files\MiKTeX\miktex\bin\x64\xelatex.exe",
+            os.path.expandvars(r"%LOCALAPPDATA%\Programs\MiKTeX\miktex\bin\x64\xelatex.exe"),
+        ]
+        for miktex_path in miktex_paths:
+            if Path(miktex_path).exists():
+                xelatex_cmd = miktex_path
+                break
+
     # Try with xelatex first (best quality, needs LaTeX)
     result = subprocess.run(
         [
             "pandoc",
             str(md_path),
             "-o", str(pdf_path),
-            "--pdf-engine=xelatex",
+            f"--pdf-engine={xelatex_cmd}",
             "-V", "geometry:margin=1in",
             "-V", "fontsize=11pt",
             "-V", "colorlinks=true",
