@@ -1,11 +1,11 @@
 {
-  "run_id": "019f0c63",
-  "timestamp": "2026-02-09T23:20:40.299384",
-  "status": "success",
-  "message": "Pipeline completed successfully",
-  "total_duration": "0:06:34",
+  "run_id": "6442253c",
+  "timestamp": "2026-02-09T23:37:08.848841",
+  "status": "failed",
+  "message": "Phase phase4_development_planning failed: Dependencies not met",
+  "total_duration": "0:00:00",
   "planned_phases": [
-    "phase1_architecture_facts"
+    "phase4_development_planning"
   ],
   "environment": {
     "repo_path": "C:\\uvz",
@@ -15,14 +15,13 @@
   },
   "phases": [
     {
-      "phase": "phase1_architecture_facts",
-      "status": "success",
-      "message": "Completed",
-      "duration": "394.10s",
-      "duration_seconds": 394.1,
+      "phase": "phase4_development_planning",
+      "status": "failed",
+      "message": "Dependencies not met",
+      "duration": "0.00s",
+      "duration_seconds": 0.0,
       "output_files": [
-        "C:\\projects\\aicodegencrew\\knowledge\\architecture\\architecture_facts.json",
-        "C:\\projects\\aicodegencrew\\knowledge\\architecture\\evidence_map.json"
+        "C:\\projects\\aicodegencrew\\knowledge\\development"
       ]
     }
   ],
