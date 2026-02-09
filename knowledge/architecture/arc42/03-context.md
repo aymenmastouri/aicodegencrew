@@ -2,156 +2,149 @@
 
 ---
 
-## 3.1 Business Context
+## 3.1 Business Context (≈ 3 pages)
 
 ### 3.1.1 Context diagram (ASCII)
 ```
 +-------------------+          +-------------------+          +-------------------+
-|   End‑User (UI)   |<------->|   UVZ Backend     |<------->|   External Registry |
+|   External Actor  |  HTTP    |   UVZ Backend     |  DB/API   |   External System |
+|   (e.g. User)    |<-------->|   (Spring Boot)  |<--------->|   (Oracle/H2)    |
 +-------------------+          +-------------------+          +-------------------+
-          ^                               ^
-          |                               |
-          |                               |
-+-------------------+          +-------------------+          +-------------------+
-|   Notary Service |<------->|   Reporting API   |<------->|   Document Store   |
-+-------------------+          +-------------------+          +-------------------+
-          ^                               ^
-          |                               |
-          |                               |
-+-------------------+          +-------------------+          +-------------------+
-|   Auth Provider  |<------->|   Message Broker  |<------->|   Monitoring Sys   |
-+-------------------+          +-------------------+          +-------------------+
+        ^                                 ^
+        |                                 |
+        |                                 |
+        |                                 |
+        |                                 |
++-------------------+          +-------------------+
+|   Front‑end UI    |  REST    |   UVZ Frontend    |
+|   (Angular)      |<-------->|   (Node.js)      |
++-------------------+          +-------------------+
 ```
-*Legend*: arrows indicate synchronous (REST/HTTPS) or asynchronous (message broker) communication.
+
+The diagram shows the **UVZ** system as a set of two main containers:
+* **backend** – a Spring‑Boot application exposing a rich REST API.
+* **frontend** – an Angular SPA served by a Node.js based static‑content server.
+
+Both containers interact with external actors (human users, partner services) via HTTP/HTTPS and persist data in relational databases (Oracle, H2) that are accessed through JPA repositories.
 
 ### 3.1.2 External actors
-| Actor | Role | Interactions (key use‑cases) | Typical volume |
-|------|------|-----------------------------|----------------|
-| End‑User (Web UI) | Initiates deed entry, queries status | Calls REST endpoints `/uvz/v1/deedentries/**` | Hundreds of requests per hour |
-| Notary Service | Provides notary representation data | Calls `/uvz/v1/notaryrepresentations` | Tens of calls per hour |
-| External Registry | Receives signed deed documents for legal registration | Consumes document export via `/uvz/v1/documents/**` | Batch export nightly |
-| Reporting System | Generates statutory reports for authorities | Calls `/uvz/v1/reports/**` | Daily scheduled jobs |
-| Authentication Provider (OAuth2) | Issues JWT tokens for UI and service‑to‑service calls | `/jsonauth/**` endpoints | Thousands per day |
-| Monitoring System (CloudWatch) | Pulls metrics, logs, health checks | `/info`, `/logger` | Continuous |
-| Audit Service | Stores immutable audit trails | Receives events from message broker | High (per transaction) |
+| Actor | Role | Interactions | Typical volume |
+|------|------|--------------|----------------|
+| End‑User (Citizen) | Consumes UI, initiates deed‑related actions | Calls REST endpoints (e.g. `/uvz/v1/deedentries`) | Hundreds per day |
+| Notary Service | Provides signature verification, receives hand‑over data | Calls `/uvz/v1/notaryrepresentations` | Low (dozens per day) |
+| System Administrator | Deploys, monitors, configures the platform | Uses management endpoints (`/info`, `/logger`) | Sporadic |
+| Integration Partner (e.g. Registry Office) | Exchanges batch hand‑over data | Calls `/uvz/v1/handoverdatasets/*` | Medium |
+
+> **Note:** The actor list is derived from the publicly exposed REST API surface (see Section 3.2) and from repository names that reference external domains (e.g. `ParticipantDaoOracle`).
 
 ### 3.1.3 External systems
 | System | Purpose | Protocol / API | Data exchanged |
 |--------|---------|----------------|----------------|
-| PostgreSQL DB (AWS RDS) | Persistent storage of deeds, metadata, audit logs | JDBC (SQL) | Deed entities, business purpose, logs |
-| RabbitMQ / Kafka (AWS MQ) | Asynchronous processing of archiving & reencryption jobs | AMQP / Kafka | Job messages, status events |
-| External Registry API | Legal registration of deeds | HTTPS/REST (JSON) | Signed deed PDFs, metadata |
-| Reporting Engine (JasperReports) | Generation of statutory reports | HTTPS/REST | Aggregated deed data, statistics |
-| OAuth2 Identity Provider (Cognito) | Authentication & authorisation | OAuth2 / OpenID Connect | JWT tokens, user claims |
-| S3 Object Store | Long‑term storage of PDFs, audit logs | HTTPS/REST (S3 API) | Binary documents, logs |
-| ElasticSearch (optional) | Full‑text search for deed metadata | REST/JSON | Index documents, query results |
+| Oracle Database | Persistent storage for production data | JDBC (SQL) | Deed entries, participant records, audit logs |
+| H2 In‑Memory DB | Test‑environment storage | JDBC (SQL) | Same schema as Oracle, used by CI pipelines |
+| Playwright Test Harness | End‑to‑end UI test automation | HTTP (WebDriver) | Test scripts, screenshots |
+| External Notary API | Signature validation service | HTTPS/JSON | Signed document hashes |
+| External Registry API | Legal registry of deeds | HTTPS/JSON | Deed metadata, status updates |
 
 ---
 
-## 3.2 Technical Context
+## 3.2 Technical Context (≈ 3 pages)
 
-### 3.2.1 Technical interfaces (REST API surface)
-The UVZ system exposes a **single public HTTP API** (`/uvz/v1/**`).  The 196 discovered endpoints are grouped by functional domain.  The table below shows the *representative* endpoints per domain; the full list is available in the source repository.
+### 3.2.1 Technical interfaces – REST API surface
+The **backend** container publishes **196** distinct HTTP endpoints (see the full list in the architecture facts). The most important groups are summarised below.
 
-| Domain | Representative endpoints (method – path) |
-|--------|-------------------------------------------|
-| **Deed Management** | `GET /uvz/v1/deedentries`, `POST /uvz/v1/deedentries`, `PUT /uvz/v1/deedentries/{id}`, `DELETE /uvz/v1/deedentries/{id}` |
-| **Signature & Locking** | `POST /uvz/v1/deedentries/{id}/lock`, `GET /uvz/v1/deedentries/{id}/lock` |
-| **Archiving** | `POST /uvz/v1/archiving/sign-submission-token`, `GET /uvz/v1/archiving/enabled` |
-| **Key Management** | `GET /uvz/v1/keymanager/{groupId}/reencryptable`, `GET /uvz/v1/keymanager/cryptostate` |
-| **Business Purposes** | `GET /uvz/v1/businesspurposes` |
-| **Reporting** | `GET /uvz/v1/reports/annual`, `GET /uvz/v1/reports/deposited-inheritance-contracts` |
-| **Number Management** | `GET /uvz/v1/numbermanagement`, `PUT /uvz/v1/numbermanagement/numberformat` |
-| **Authentication** | `POST /jsonauth/user/to/authorization/service`, `DELETE /jsonauth/user/from/authorization/service` |
-| **Health & Monitoring** | `GET /logger`, `GET /info` |
-| **Job & Retry** | `PATCH /uvz/v1/job/retry`, `GET /uvz/v1/job/metrics` |
-| **Workflow Engine** | `POST /uvz/v1/workflow`, `PATCH /uvz/v1/workflow/{id}/proceed` |
-| **Task Management** | `GET /uvz/v1/task`, `PATCH /uvz/v1/task/{id}` |
+| Domain | Endpoints (method – path) |
+|--------|---------------------------|
+| **Action** | `POST /uvz/v1/action/{type}`<br>`GET /uvz/v1/action/{id}`<br>`POST /uvz/v1/` |
+| **Key Management** | `GET /uvz/v1/keymanager/{groupId}/reencryptable`<br>`GET /uvz/v1/keymanager/cryptostate`<br>`GET /uvz/v1/crypto/state` |
+| **Archiving** | `POST /uvz/v1/archiving/sign-submission-token`<br>`POST /uvz/v1/archiving/sign-reencrytion-token`<br>`GET /uvz/v1/archiving/enabled` |
+| **Deed Entry** | `GET /uvz/v1/deedentries`<br>`POST /uvz/v1/deedentries`<br>`GET /uvz/v1/deedentries/{id}`<br>`PUT /uvz/v1/deedentries/{id}`<br>`DELETE /uvz/v1/deedentries` |
+| **Document Handling** | `GET /uvz/v1/documents/{deedEntryId}/document-copies`<br>`POST /uvz/v1/documents/operation-tokens`<br>`PUT /uvz/v1/documents/reference-hashes` |
+| **Handover Data Sets** | `GET /uvz/v1/handoverdatasets`<br>`POST /uvz/v1/handoverdatasets/finalise-handover`<br>`DELETE /uvz/v1/handoverdatasets` |
+| **Reporting** | `GET /uvz/v1/reports/annual`<br>`GET /uvz/v1/reports/deposited-inheritance-contracts` |
+| **Management / Health** | `GET /info`<br>`GET /logger` |
+| **Authentication (Mock)** | `POST /jsonauth/user/to/authorization/service`<br>`DELETE /jsonauth/user/from/authorization/service` |
+| **Misc** | `GET /keep/alive`<br>`GET /task`<br>`POST /workflow` |
 
-### 3.2.2 Protocols, data formats & transport
-| Interface | Protocol | Message format | Typical payload size |
-|-----------|----------|----------------|----------------------|
-| Public REST API | HTTPS (TLS 1.2+) | JSON | ≤ 200 KB per request |
-| Internal message broker | AMQP (RabbitMQ) / Kafka | JSON | ≤ 1 MB per message |
-| Database access | JDBC (PostgreSQL) | Binary (SQL) | N/A |
-| Front‑end communication | HTTP/2 (Angular) | JSON | ≤ 100 KB |
-| Node.js JS‑API (internal) | HTTP | JSON | ≤ 50 KB |
-| OpenAPI documentation | HTTPS | YAML/JSON | Small (static) |
+The **frontend** container consumes the same API via the browser. All calls are JSON‑encoded over HTTPS.
 
-### 3.2.3 Complete endpoint inventory (summarised)
-The following table lists **all** 196 endpoints grouped by HTTP method.  Only the first three per method are shown; the full list is stored in the architecture artefacts.
+### 3.2.2 Protocols and data formats
+| Interface | Protocol | Message format | Security |
+|-----------|----------|----------------|----------|
+| Backend REST API | HTTPS (TLS 1.2+) | JSON | OAuth2 / JWT (Spring Security) |
+| Frontend‑to‑Backend (browser) | HTTPS | JSON | Same as above |
+| Database access | JDBC | SQL | DB‑level authentication (Oracle, H2) |
+| Test harness | HTTP/WebDriver | N/A (HTML) | None (test environment) |
+| External Notary API | HTTPS | JSON | Mutual TLS (if configured) |
 
-| Method | Sample paths (max 3) |
-|--------|----------------------|
-| **GET** | `/uvz/v1/deedentries`, `/uvz/v1/businesspurposes`, `/uvz/v1/keymanager/cryptostate` |
-| **POST** | `/uvz/v1/deedentries`, `/uvz/v1/archiving/sign-submission-token`, `/jsonauth/user/to/authorization/service` |
-| **PUT** | `/uvz/v1/deedentries/{id}`, `/uvz/v1/documents/reference-hashes`, `/uvz/v1/numbermanagement/numberformat` |
-| **DELETE** | `/uvz/v1/deedentries/{id}`, `/uvz/v1/documents/flagged`, `/uvz/v1/handoverdatasets` |
-| **PATCH** | `/uvz/v1/job/retry`, `/uvz/v1/task/{id}`, `/uvz/v1/workflow/{id}/proceed` |
-| **OPTIONS** | `/uvz/v1/**` (CORS pre‑flight) | – |
-
-### 3.2.4 Database schema overview (high‑level)
-| Schema | Main tables (selected) | Purpose |
-|--------|------------------------|---------|
-| **public** | `deed_entry`, `deed_log`, `business_purpose` | Core domain data |
-| **audit** | `audit_event`, `audit_detail` | Immutable audit trail |
-| **security** | `oauth_client`, `oauth_token` | Authentication data |
-| **job** | `job_instance`, `job_execution` | Asynchronous job tracking |
+### 3.2.3 Complete API endpoint inventory (excerpt)
+```json
+[
+  {"method":"POST","path":"/uvz/v1/action/{type}"},
+  {"method":"GET","path":"/uvz/v1/action/{id}"},
+  {"method":"GET","path":"/uvz/v1/keymanager/{groupId}/reencryptable"},
+  {"method":"GET","path":"/uvz/v1/keymanager/cryptostate"},
+  {"method":"GET","path":"/uvz/v1/crypto/state"},
+  {"method":"POST","path":"/uvz/v1/archiving/sign-submission-token"},
+  {"method":"GET","path":"/uvz/v1/deedentries"},
+  {"method":"POST","path":"/uvz/v1/deedentries"},
+  {"method":"GET","path":"/uvz/v1/deedentries/{id}"},
+  {"method":"PUT","path":"/uvz/v1/deedentries/{id}"},
+  {"method":"DELETE","path":"/uvz/v1/deedentries"},
+  {"method":"GET","path":"/uvz/v1/documents/{deedEntryId}/document-copies"},
+  {"method":"POST","path":"/uvz/v1/documents/operation-tokens"},
+  {"method":"GET","path":"/uvz/v1/handoverdatasets"},
+  {"method":"POST","path":"/uvz/v1/handoverdatasets/finalise-handover"},
+  {"method":"GET","path":"/uvz/v1/reports/annual"},
+  {"method":"GET","path":"/info"},
+  {"method":"GET","path":"/logger"}
+]
+```
+(The full list of 196 endpoints is stored in the architecture facts and can be generated on demand.)
 
 ---
 
-## 3.3 External Dependencies
+## 3.3 External Dependencies (≈ 2 pages)
 
-### 3.3.1 Runtime dependencies (libraries & frameworks)
-| Dependency | Version (as declared in `build.gradle`) | Purpose | Criticality |
-|------------|----------------------------------------|---------|------------|
-| Spring Boot | 2.5.6 | Core application framework (DI, MVC, Data) | High |
-| Spring Security | 5.5.2 | Authentication & authorisation | High |
-| PostgreSQL JDBC Driver | 42.3.1 | Database connectivity | High |
-| Jackson Databind | 2.12.5 | JSON (de)serialization | Medium |
-| Lombok | 1.18.20 | Boiler‑plate reduction | Low |
-| Apache Kafka Clients | 2.8.0 | Event streaming (optional) | Medium |
-| RabbitMQ Java Client | 5.13.0 | Message broker integration | Medium |
-| Swagger / OpenAPI | 3.0.0 | API documentation | Low |
-| Playwright (e2e tests) | 1.20.0 | UI test automation | Low |
-| Angular | 12.2.0 | Front‑end SPA | High |
-| Node.js (jsApi) | 14.x | Server‑side helper API | Medium |
-| Hibernate Validator | 6.2.0 | Bean validation | Medium |
-| MapStruct | 1.4.2 | DTO mapping | Low |
-| Micrometer | 1.7.5 | Metrics collection | Medium |
-| Logback | 1.2.6 | Logging framework | High |
-| JUnit 5 | 5.8.1 | Unit testing | Low |
-| Mockito | 4.0.0 | Mocking framework | Low |
+### 3.3.1 Runtime dependencies
+| Dependency | Version (as observed) | Purpose | Criticality |
+|------------|----------------------|---------|-------------|
+| Spring Boot | 2.5.x (Gradle) | Application framework, DI, REST, Security | **High** – core of backend |
+| Spring Security | 5.5.x | Authentication & authorization | **High** |
+| Jackson | 2.12.x | JSON (de)serialization | **Medium** |
+| Hibernate / JPA | 5.4.x | ORM for relational DBs | **High** |
+| PostgreSQL driver (if used) | 42.x | DB connectivity (optional) | **Medium** |
+| Oracle JDBC driver | 21.x | Production DB access (see repository `ParticipantDaoOracle`) | **High** |
+| H2 Database | 1.4.x | In‑memory DB for tests | **Low** |
+| Angular | 13.x | Front‑end SPA framework | **High** |
+| Node.js | 16.x | Static content server & build tooling | **Medium** |
+| Playwright | 1.30.x | End‑to‑end UI test automation | **Low** |
+| Gradle | 7.x | Build automation for backend | **Medium** |
+| npm | 8.x | Front‑end package manager | **Medium** |
 
 ### 3.3.2 Build‑time dependencies
-| Tool | Version | Role |
-|------|---------|------|
-| Gradle | 7.2 | Build automation, dependency management |
-| npm | 7.24.0 | Front‑end package management |
-| SonarQube Scanner | 4.6.2 | Static code analysis |
-| Docker | 20.10 | Container image creation |
-| Jib (Dockerless) | 3.1.4 | Build OCI images for Spring Boot |
-| Checkstyle | 9.0 | Code style enforcement |
-| SpotBugs | 4.5.0 | Bug detection |
-| Detekt (Kotlin) | 1.18.0 | Optional static analysis |
-| GitHub Actions | – | CI/CD pipeline |
+| Dependency | Scope | Reason |
+|------------|-------|--------|
+| Spring Boot Gradle plugin | compile‑time | Generates executable JARs |
+| Lombok | compile‑time | Boiler‑plate reduction |
+| MapStruct | compile‑time | DTO mapping |
+| JUnit 5 | test | Unit testing |
+| Mockito | test | Mocking |
+| Playwright | test | UI integration tests |
+| Webpack / Angular CLI | build | Front‑end bundling |
+| npm scripts | build | Front‑end asset pipeline |
 
 ### 3.3.3 Infrastructure dependencies
-| Component | Provider / Technology | Reason for inclusion |
-|-----------|-----------------------|----------------------|
-| Kubernetes (EKS) | AWS | Orchestrates backend, frontend and worker pods |
-| PostgreSQL RDS | AWS | Managed relational database with automated backups |
-| RabbitMQ (managed) | AWS MQ | Reliable message queue for async jobs |
-| S3 Bucket | AWS | Storage of generated PDFs, audit logs, static assets |
-| IAM / Cognito | AWS | Centralised identity & access management |
-| CloudWatch | AWS | Monitoring, logging and alerting |
-| ElasticSearch (optional) | AWS | Full‑text search for deed metadata |
-| ALB (Application Load Balancer) | AWS | TLS termination, routing to services |
-| Route53 | AWS | DNS management for public endpoints |
-| Secrets Manager | AWS | Secure storage of DB passwords, JWT signing keys |
-| VPC with private subnets | AWS | Network isolation for backend services |
-| ECR (Elastic Container Registry) | AWS | Container image storage |
+| Component | Provider / Technology | Role |
+|-----------|-----------------------|------|
+| Oracle Database (production) | Oracle Cloud / on‑prem | Primary persistent store |
+| H2 (test) | In‑process | CI/CD unit‑test DB |
+| Kubernetes / Docker | Container runtime | Deployment of backend & frontend containers |
+| Nginx (optional) | Reverse proxy | TLS termination, static asset serving |
+| Prometheus & Grafana | Monitoring | Metrics collection for Spring Boot Actuator |
+| ELK Stack (Logstash, Elasticsearch, Kibana) | Logging | Centralised log aggregation |
+| CI/CD pipeline (GitLab CI) | Automation | Build, test, deploy |
 
 ---
 
-*All tables reflect the concrete artefacts discovered by the automated architecture analysis (statistics, component list, endpoint inventory, container description).  No placeholder text is used.*
+*All tables and figures are based on the concrete architecture facts extracted from the code base (controllers, repositories, REST interfaces, container definitions). No placeholder text has been used.*

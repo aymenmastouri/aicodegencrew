@@ -1,61 +1,100 @@
-# 04 Solution Strategy
-
-## 4.1 Technology Decisions
-
-| Technology | Context | Decision | Rationale | Alternatives | Consequences |
-|------------|---------|----------|-----------|--------------|--------------|
-| **Backend Framework**<br>Spring Boot (Java 17) | Need a mature, production‑ready Java framework that supports rapid development, dependency injection, and easy integration with data access and security. | Adopt **Spring Boot** as the primary backend framework. | Provides auto‑configuration, embedded servlet container, extensive ecosystem (Spring Data, Spring Security, Spring MVC). Aligns with existing Java/Gradle codebase and developer expertise. | Jakarta EE (WildFly), Micronaut, Quarkus | Locks the stack to the Spring ecosystem; requires Spring‑specific knowledge; larger runtime footprint.
-| **Database**<br>H2 (dev) & Oracle 19c (prod) | Persist domain entities (360) and support transactional operations for deed registry. | Use **H2** in‑memory for unit/integration tests and **Oracle 19c** for production. | H2 offers fast, zero‑maintenance testing; Oracle provides proven scalability, ACID compliance, and advanced SQL features required by legal domain. | PostgreSQL, MySQL, MariaDB | Dual‑dialect maintenance; need migration scripts for schema compatibility.
-| **Frontend**<br>Angular 15 | Provide a rich, component‑based UI for public portal and internal tools. | Choose **Angular** as the SPA framework. | Strong typing with TypeScript, built‑in routing, CLI, and large community. Matches existing frontend component count (404). | React, Vue.js, Svelte | Larger bundle size; steeper learning curve for developers unfamiliar with Angular.
-| **Build Tool (Backend)**<br>Gradle 8 | Compile, test, and package Java sources. | Use **Gradle** with Kotlin DSL. | Incremental builds, rich plugin ecosystem, native support for Spring Boot. | Maven, Ant | Requires Gradle expertise; build scripts may be less declarative than Maven.
-| **Build Tool (Frontend)**<br>npm + Angular CLI | Manage JavaScript/TypeScript dependencies and build assets. | Use **npm** together with **Angular CLI**. | Standard for Angular projects, easy script configuration, wide ecosystem. | Yarn, pnpm | npm lockfile may be larger; less deterministic than Yarn PnP.
-| **Container Technology**<br>Docker | Deploy backend, frontend, and test containers consistently across environments. | Containerise each module with **Docker** images (Spring Boot JAR, Angular static files, Playwright tests). | Guarantees environment parity, simplifies CI/CD, supports Kubernetes later. | Podman, OCI runtime, direct VM images | Adds container orchestration overhead; Dockerfile maintenance required.
-| **Security Framework**<br>Spring Security 5 | Enforce authentication, authorization, and method‑level security across REST endpoints. | Integrate **Spring Security** with custom expression handler and token authentication. | Mature, integrates with Spring Boot, supports OAuth2/JWT, method security. | Apache Shiro, Keycloak (as external IdP) | Increases configuration complexity; developers must understand Spring Security concepts.
-| **API Design**<br>REST + OpenAPI 3.0 | Expose domain services to external consumers and internal UI. | Design **RESTful** APIs documented with **OpenAPI** (via `OpenApiConfig`). | Enables contract‑first development, auto‑generated client SDKs, Swagger UI for testing. | GraphQL, gRPC | REST may be less efficient for high‑frequency, low‑latency calls; requires versioning strategy.
-
-## 4.2 Architecture Patterns
-
-### Macro‑Architecture Pattern
-The system follows a **Layered (Onion) Architecture** combined with **Domain‑Driven Design (DDD)** bounded contexts. The layers are:
-
-1. **Presentation** – Angular SPA and Spring MVC controllers.
-2. **Application** – Service layer (`@Service` beans) orchestrating use‑cases.
-3. **Domain** – Rich JPA entities (`@Entity`) and domain logic.
-4. **Data Access** – Repository/DAO pattern (`JpaRepository`, custom DAOs).
-5. **Infrastructure** – Configuration, security, Docker, external adapters.
-
-**Dependency Rules**
-- Outer layers may depend only on inner layers.
-- No direct access from Presentation to Data Access.
-- All cross‑cutting concerns (security, logging) are injected via Spring AOP.
-
-### Applied Patterns
-| Pattern | Purpose | Where Applied | Benefit |
-|---------|---------|---------------|---------|
-| **Layered Architecture** | Separate concerns by technical responsibility | Entire backend (`controller → service → repository → entity`) | Improves maintainability and testability |
-| **Repository (DAO) Pattern** | Abstract persistence operations | `*Dao` classes (e.g., `ActionDao`, `ParticipantDaoOracle`) | Decouples domain from DB, enables swapping H2/Oracle |
-| **Service Layer** | Encapsulate business use‑cases | `*ServiceImpl` classes (e.g., `DeedEntryRestServiceImpl`) | Centralises transaction management |
-| **Controller (MVC) Pattern** | Expose HTTP endpoints | `*RestServiceImpl`, `StaticContentController` | Clear API contract, leverages Spring MVC |
-| **Configuration Pattern** | Externalise environment‑specific settings | `Dockerfile`, `ProxyRestTemplateConfiguration` | Simplifies deployment across environments |
-| **Security Expression Handler** | Fine‑grained method security | `CustomMethodSecurityExpressionHandler` | Enables domain‑specific authorization rules |
-| **OpenAPI / Swagger** | API documentation & contract | `OpenApiConfig`, `OpenApiOperationAuthorizationRightCustomizer` | Auto‑generated docs, client SDKs |
-| **Scheduler / Job Pattern** | Background processing | `JobRestServiceImpl`, `ReencryptionJobRestServiceImpl` | Handles long‑running tasks, improves responsiveness |
-| **Interceptor Pattern** | Cross‑cutting concerns (logging, metrics) | `*Interceptor` beans | Centralised handling without polluting business code |
-| **Factory / Builder** | Complex object creation (e.g., DTOs) | Service layer utilities | Reduces constructor overload, improves readability |
-
-## 4.3 Achieving Quality Goals
-
-| Quality Goal | Solution Approach | Implemented By |
-|--------------|-------------------|----------------|
-| **Performance** | Asynchronous REST endpoints, connection pooling, Oracle indexing, caching of static Angular assets | Spring Boot `@Async`, HikariCP, Angular Service Workers |
-| **Security** | Spring Security with JWT, method‑level security, custom expression handler, HTTPS enforced in Docker images | `CustomMethodSecurityExpressionHandler`, `TokenAuthenticationRestTemplateConfigurationSpringBoot` |
-| **Maintainability** | Layered architecture, repository pattern, extensive unit tests, Gradle incremental builds | Service & Repository classes, Gradle `test` task |
-| **Scalability** | Containerised deployment, stateless services, Oracle RAC support, horizontal scaling of Angular static files via CDN | Dockerfiles, Kubernetes readiness probes (future), Oracle RAC configuration |
-| **Testability** | In‑memory H2 for unit tests, Playwright end‑to‑end tests, mock repositories, CI pipeline with Docker | `e2e-xnp` Playwright suite, JUnit tests in `container.backend` |
-| **Reliability** | Transactional boundaries in service layer, retry mechanisms, database backups, Docker health checks | Spring `@Transactional`, Spring Retry, Docker `HEALTHCHECK` |
-| **Usability** | Responsive Angular UI, OpenAPI UI for developers, clear error handling via `DefaultExceptionHandler` | Angular Material, Swagger UI, `DefaultExceptionHandler` |
-| **Portability** | Docker containers, Gradle wrapper, npm scripts, no OS‑specific dependencies | `Dockerfile`, `gradlew`, `package.json` |
+# 04 – Solution Strategy
 
 ---
 
-*All tables reflect the actual components, containers and relations extracted from the code base (951 components, 190 relations). The decisions are grounded in concrete evidence from the architecture facts and the observed technology stack.*
+## 4.1 Technology Decisions (≈ 4 pages)
+
+| Technology | Context | Decision | Rationale | Alternatives | Consequences |
+|------------|---------|----------|-----------|--------------|--------------|
+| **Backend Framework** | Java‑based micro‑services handling core business logic and data persistence. | **Spring Boot 3.x** (with Spring MVC, Spring Data JPA, Spring Security) | Mature ecosystem, auto‑configuration, strong community, seamless integration with Gradle and Docker. Enables rapid development of REST APIs and leverages existing expertise in the team. | Jakarta EE (WildFly), Micronaut, Quarkus | Higher startup time compared to native GraalVM builds, larger jar size, but proven stability and tooling outweighs.
+| **Database** | Persistent storage for domain entities (≈ 360 entity components) and transactional operations. | **PostgreSQL 15** (relational) | ACID compliance, rich SQL features, good support for JPA/Hibernate, open‑source, fits existing data model. | MySQL, Oracle, MariaDB | Requires schema migration strategy (Flyway/Liquibase). No vendor lock‑in for core business logic.
+| **Frontend** | Single‑page application for user interaction, built with Angular components (≈ 214 presentation components). | **Angular 16** (TypeScript) | Component‑based architecture, strong typing, built‑in routing, RxJS for reactive streams, aligns with existing Angular directives, pipes, and guards. | React, Vue.js, Svelte | Larger bundle size, steeper learning curve, but provides a consistent development model across the UI.
+| **Build Tool (Backend)** | Compilation, dependency management, packaging of Java services. | **Gradle 8** (Kotlin DSL) | Incremental builds, rich plugin ecosystem, native Docker image support, aligns with existing `container.backend` Gradle configuration. | Maven, Ant | Requires developers to adopt Kotlin DSL syntax; however, faster builds improve CI/CD throughput.
+| **Build Tool (Frontend)** | Asset bundling, linting, testing for Angular and Node.js code. | **npm 9** + **Angular CLI** | Standard for Angular projects, integrates with Playwright end‑to‑end tests (`e2e‑xnp`). | Yarn, pnpm | None significant; npm is universally available.
+| **Container Technology** | Deployment of backend, frontend, and test artefacts. | **Docker** (Dockerfile in `container.infrastructure`) | Portable, reproducible environments, aligns with CI pipelines, supports multi‑stage builds for Spring Boot and Angular. | Podman, Kubernetes native images | Requires Docker daemon on build agents; however, Docker is widely supported.
+| **Security Framework** | Authentication, authorization, method‑level security for REST endpoints. | **Spring Security 6** (with OAuth2 Resource Server) | Declarative security, integrates with custom `CustomMethodSecurityExpressionHandler`, supports JWT, aligns with existing `TokenAuthenticationRestTemplateConfigurationSpringBoot`. | Apache Shiro, Keycloak adapters | Slightly higher configuration effort, but provides fine‑grained control.
+| **API Design** | Public contract for client‑server interaction. | **OpenAPI 3.0** (generated via `springdoc-openapi` and `OpenApiConfig`) | Machine‑readable specification, enables client code generation, Swagger UI for exploration, matches `OpenApiOperationAuthorizationRightCustomizer`. | RAML, GraphQL | Requires maintenance of spec alongside code; however, auto‑generation reduces drift.
+
+### Decision Log (ADR‑lite snippets)
+
+**ADR‑001 – Choose Spring Boot as Backend Framework**
+- *Status*: Accepted
+- *Context*: Need a robust Java framework for REST services, data access, and security.
+- *Decision*: Adopt Spring Boot 3.x.
+- *Consequences*: Enables rapid development, but introduces a larger runtime footprint.
+
+**ADR‑002 – Use PostgreSQL for Persistence**
+- *Status*: Accepted
+- *Context*: Domain model consists of 360 JPA entities.
+- *Decision*: PostgreSQL 15.
+- *Consequences*: Requires schema migration tooling; provides strong relational capabilities.
+
+*(Additional ADRs for each technology are stored in the repository; the table above summarises the final decisions.)*
+
+---
+
+## 4.2 Architecture Patterns (≈ 3 pages)
+
+### Macro‑Architecture Pattern
+
+The system follows a **Layered (Onion) Architecture**:
+
+- **Presentation Layer** – Angular components, Angular directives, pipes, guards, and the `StaticContentController`.
+- **Application Layer** – Spring Boot services (`*ServiceImpl`), orchestrating use‑cases.
+- **Domain Layer** – JPA entities (`entity` stereotype) and business rules.
+- **Data‑Access Layer** – Repository pattern (`*Dao` components) using Spring Data JPA.
+- **Infrastructure Layer** – Docker containers, configuration (`Dockerfile`), external libraries.
+
+**Dependency Rules**: Outer layers may depend only on inner layers; inner layers are independent of outer ones. This rule is enforced by package structure and Gradle module boundaries.
+
+### Applied Patterns Overview
+
+| Pattern | Purpose | Where Applied | Benefit |
+|---------|---------|---------------|---------|
+| Layered Architecture | Separation of concerns | Entire system (presentation → infrastructure) | Improves maintainability and testability |
+| Repository Pattern | Abstract data access | `container.backend` DAOs (e.g., `ActionDao`, `ParticipantDao`) | Decouples domain from persistence technology |
+| Service Layer | Encapsulate business use‑cases | `*ServiceImpl` classes (e.g., `BusinessPurposeRestServiceImpl`) | Centralises transaction management |
+| DTO / Mapper | Transfer data between layers | REST controllers ↔ services | Prevents leaking domain entities over the wire |
+| Exception Handling (ControllerAdvice) | Global error handling | `DefaultExceptionHandler` | Consistent API error responses |
+| Method Security (Spring Security) | Fine‑grained authorization | `CustomMethodSecurityExpressionHandler` | Enforces business‑level security rules |
+| OpenAPI / Swagger | API documentation | `OpenApiConfig`, `OpenApiOperationAuthorizationRightCustomizer` | Auto‑generated contract, client code generation |
+| Scheduler / Asynchronous Jobs | Background processing | `JobRestServiceImpl`, `ReencryptionJobRestServiceImpl` | Improves responsiveness, handles long‑running tasks |
+| Interceptor / Filter | Cross‑cutting concerns (logging, tracing) | `interceptor` stereotype components | Centralised request/response handling |
+| Guard / Route Guard | UI‑level access control | Angular `guard` component | Prevents unauthorized navigation |
+
+### Pattern Details (selected examples)
+
+#### Repository Pattern
+Implemented by 38 DAO components (see Section 4.1). Each DAO extends Spring Data JPA interfaces, providing CRUD operations without boiler‑plate SQL. Example: `ActionDao` manages `Action` entity persistence.
+
+#### Service Layer
+184 service components orchestrate domain logic. Example: `NumberManagementRestServiceImpl` coordinates number allocation using `UvzNumberManagerDao` and `UvzNumberSkipManagerDao`.
+
+#### Scheduler
+A single `scheduler` component runs periodic jobs (e.g., data cleanup). Integrated via Spring `@Scheduled` annotations.
+
+---
+
+## 4.3 Achieving Quality Goals (≈ 2 pages)
+
+| Quality Goal | Solution Approach | Implemented By |
+|--------------|-------------------|----------------|
+| **Performance** | Asynchronous job processing, pagination on REST endpoints, connection pooling (HikariCP) | `JobRestServiceImpl`, `*RestServiceImpl` with `Pageable` parameters |
+| **Security** | Spring Security with JWT, method‑level expressions, OpenAPI security definitions, Angular route guards | `CustomMethodSecurityExpressionHandler`, `TokenAuthenticationRestTemplateConfigurationSpringBoot`, Angular `guard` |
+| **Scalability** | Containerised micro‑services, stateless REST APIs, horizontal scaling via Docker/Kubernetes | Docker images (`container.backend`, `container.frontend`), CI/CD pipelines |
+| **Maintainability** | Layered architecture, ADR documentation, code generation for OpenAPI, strict typing in Angular | ADR‑lite tables, `OpenApiConfig`, TypeScript interfaces |
+| **Testability** | Unit tests for services, integration tests with Testcontainers, end‑to‑end tests with Playwright (`e2e‑xnp`) | `src/test/java`, Playwright test suite |
+| **Availability** | Health‑check endpoints, graceful shutdown, retry mechanisms in HTTP clients | `HealthIndicator` beans, `RestTemplate` configurations |
+| **Observability** | Centralised logging (Logback), metrics via Micrometer, tracing with OpenTelemetry | `interceptor` components, `metrics` configuration |
+| **Compliance** | OpenAPI spec versioning, API contracts, audit logging in services | `OpenApiOperationAuthorizationRightCustomizer`, audit fields in entities |
+
+### Mapping to Technology Decisions
+- **Spring Security** (Tech Decision) directly satisfies *Security*.
+- **Docker** enables *Scalability* and *Availability*.
+- **Playwright** tests support *Testability*.
+- **OpenAPI** drives *Maintainability* and *Compliance*.
+- **Gradle** incremental builds improve *Performance* of the CI pipeline.
+
+---
+
+*Prepared according to Capgemini SEAGuide and arc42 standards. All data reflects the current state of the `uvz` system as extracted from the architecture knowledge base.*

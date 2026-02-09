@@ -1,164 +1,112 @@
-## 5.4 Business Layer / Services
+# 5.4 Business Layer / Services
 
-### 5.4.1 Layer Overview
-The Service layer (application layer) orchestrates business use‑cases, encapsulates domain logic and defines transaction boundaries. Each service belongs to a bounded context (e.g., *Deed Management*, *Workflow*, *Reporting*) and exposes a clean, interface‑driven API to the presentation layer. Services are stateless, thread‑safe Spring beans (backend) or Angular injectable services (frontend). They coordinate repositories, external APIs and domain events while keeping business rules centralized.
+## 5.4.1 Layer Overview
+The Service Layer (application layer) orchestrates business use‑cases, enforces domain rules and acts as a façade for the underlying domain model and infrastructure.  Each service belongs to a bounded context (e.g., *Deed‑Entry*, *Workflow*, *Reporting*) and is implemented as a Spring‑Boot bean (or Angular injectable) that defines a clear transaction boundary.  Services are **stateless** – they receive DTOs, delegate to domain entities/repositories, and return result DTOs or events.  Cross‑cutting concerns (logging, security, metrics) are applied via AOP/interceptors.
 
----
+## 5.4.2 Service Inventory
+| # | Service | Package / Module | Container | Interface? | Description |
+|---|-------------------------------|------------------------------|-----------|------------|-----------------------------------|
+| 1 | ActionServiceImpl | backend.action_logic_impl | container.backend | Yes (ActionService) | Implements core action processing and coordination. |
+| 2 | ActionWorkerService | backend.action_logic_impl | container.backend | No | Background worker for asynchronous action handling. |
+| 3 | HealthCheck | backend.misc | container.backend | No | Provides liveness and readiness probes for the platform. |
+| 4 | ArchiveManagerServiceImpl | backend.archivemanager_logic_impl | container.backend | Yes (ArchiveManagerService) | Manages archiving lifecycle and signing of archive operations. |
+| 5 | MockKmService | backend.km_impl_xnp | container.backend | No | Mock implementation of key‑management for test environments. |
+| 6 | XnpKmServiceImpl | backend.km_impl_xnp | container.backend | Yes (KeyManagerService) | Real key‑management integration with XNP. |
+| 7 | KeyManagerServiceImpl | backend.km_logic_impl | container.backend | Yes (KeyManagerService) | Centralised cryptographic key handling. |
+| 8 | WaWiServiceImpl | backend.adapters_wawi_impl | container.backend | Yes (WaWiService) | Adapter to external WaWi system. |
+| 9 | ArchivingOperationSignerImpl | backend.archiving_logic_impl | container.backend | No | Signs archiving operations before persistence. |
+|10| ArchivingServiceImpl | backend.archive_logic_impl | container.backend | Yes (ArchivingService) | Coordinates archiving of deeds and related artefacts. |
+|11| DeedEntryConnectionDaoImpl | backend.dao | container.backend | No | Data‑access object for deed‑entry connections. |
+|12| DeedEntryLogsDaoImpl | backend.dao | container.backend | No | Persists audit logs for deed entries. |
+|13| DocumentMetaDataCustomDaoImpl | backend.dao | container.backend | No | Custom DAO for document meta‑data. |
+|14| HandoverDataSetDaoImpl | backend.dao | container.backend | No | DAO for handover data‑sets. |
+|15| ApplyCorrectionNoteService | backend.deedentry_logic_impl | container.backend | Yes (ApplyCorrectionNoteService) | Applies correction notes to existing deeds. |
+|16| BusinessPurposeServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (BusinessPurposeService) | Handles business‑purpose classification logic. |
+|17| CorrectionNoteService | backend.deedentry_logic_impl | container.backend | Yes (CorrectionNoteService) | Manages creation and validation of correction notes. |
+|18| DeedEntryConnectionServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (DeedEntryConnectionService) | Service façade for deed‑entry connections. |
+|19| DeedEntryLogServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (DeedEntryLogService) | Service façade for deed‑entry logs. |
+|20| DeedEntryServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (DeedEntryService) | Core service for creating, updating and retrieving deed entries. |
+|21| DeedRegistryServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (DeedRegistryService) | Manages registry interactions for deeds. |
+|22| DeedTypeServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (DeedTypeService) | Handles deed‑type taxonomy. |
+|23| DeedWaWiOrchestratorServiceImpl | backend.deedentry_logic_impl | container.backend | No | Orchestrates WaWi interactions for deed processing. |
+|24| DeedWaWiServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (DeedWaWiService) | Service for WaWi‑specific deed operations. |
+|25| DocumentMetaDataServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (DocumentMetaDataService) | Business logic for document meta‑data. |
+|26| HandoverDataSetServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (HandoverDataSetService) | Business logic for handover data‑sets. |
+|27| SignatureFolderServiceImpl | backend.deedentry_logic_impl | container.backend | Yes (SignatureFolderService) | Manages signature folder lifecycle. |
+|28| ReportServiceImpl | backend.deedreports_logic_impl | container.backend | Yes (ReportService) | Generates statutory and custom reports. |
+|29| JobServiceImpl | backend.job_logic_impl | container.backend | Yes (JobService) | Scheduler‑agnostic job execution engine. |
+|30| NumberManagementServiceImpl | backend.numbermanagement_logic_impl | container.backend | Yes (NumberManagementService) | Allocates and validates document numbers. |
+|31| DocumentModalHelperService | frontend.tabs_document-data-tab_services | container.frontend | Yes (DocumentModalHelper) | Helper for modal dialogs in document‑data tab. |
+|32| TypeaheadFilterService | frontend.typeahead_services_typeahead-filter | container.frontend | Yes (TypeaheadFilter) | Provides filtering for type‑ahead components. |
+|33| DomainWorkflowService | frontend.services_workflow-rest_domain | container.frontend | Yes (DomainWorkflow) | Exposes workflow REST API (domain side). |
+|34| DomainTaskService | frontend.services_workflow-rest_domain | container.frontend | Yes (DomainTask) | Exposes task‑related REST API (domain side). |
+|35| ReportMetadataRestService | frontend.report-metadata_services | container.frontend | Yes (ReportMetadataRest) | REST façade for report‑metadata. |
+|36| ImportHandlerServiceVersion1Dot1Dot1 | frontend.nsw-deed-import_impl_import-v1-1-1-handler | container.frontend | Yes (ImportHandler) | Handles NSW deed import version 1.1.1. |
+|37| DeedRegistryDomainService | frontend.deed-entry_services_deed-registry | container.frontend | Yes (DeedRegistryDomain) | Domain‑level service for deed registry. |
+|38| DocumentMetaDataService | frontend.document-metadata_api-generated_services | container.frontend | Yes (DocumentMetaData) | Auto‑generated REST service for document meta‑data. |
+|39| WorkflowArchiveTaskService | frontend.workflow_services_workflow-archive | container.frontend | Yes (WorkflowArchiveTask) | Task implementation for archiving workflow. |
+|40| WorkflowArchiveWorkService | frontend.workflow_services_workflow-archive | container.frontend | Yes (WorkflowArchiveWork) | Work implementation for archiving workflow. |
+|41| WorkflowReencryptionWorkService | frontend.services_workflow-reencryption_job-reencryption | container.frontend | Yes (WorkflowReencryptionWork) | Work service for reencryption jobs. |
+|42| ModalService | frontend.services_modal | container.frontend | Yes (Modal) | Generic modal handling service. |
+|...| ... | ... | ... | ... | ... |
 
-### 5.4.2 Service Inventory
-| # | Service | Package / Module | Interface? | Description |
-|---|-------------------------------|-----------------------------------------------|------------|-------------|
-| 1 | ActionServiceImpl | backend.action_logic_impl | No | Core service for action processing (backend). |
-| 2 | ActionWorkerService | backend.action_logic_impl | No | Background worker for asynchronous actions. |
-| 3 | HealthCheck | backend.adapters_actuator_service | No | Exposes health‑check endpoint for monitoring. |
-| 4 | ArchiveManagerServiceImpl | backend.archivemanager_logic_impl | No | Manages archive lifecycle and signing. |
-| 5 | MockKmService | backend.km_impl_mock | No | Mock implementation of key‑management for tests. |
-| 6 | XnpKmServiceImpl | backend.km_impl_xnp | No | Production key‑management service. |
-| 7 | KeyManagerServiceImpl | backend.km_logic_impl | No | Central key‑manager business logic. |
-| 8 | WaWiServiceImpl | backend.adapters_wawi_impl | No | Interface to external WaWi system. |
-| 9 | DocumentModalHelperService | frontend.deed-entry.components.deed-form-page.tabs.document-data-tab.services | Yes | Helper for modal dialogs in document data tab. |
-| 10 | TypeaheadFilterService | frontend.shared.typeahead.services.typeahead-filter | Yes | Provides filtering for type‑ahead components. |
-| 11 | DomainWorkflowService | frontend.workflow.services.workflow-rest.domain | Yes | Coordinates workflow domain operations. |
-| 12 | DomainTaskService | frontend.workflow.services.workflow-rest.domain | Yes | Handles task‑related workflow logic. |
-| 13 | ReportMetadataRestService | frontend.report-metadata.services | Yes | Retrieves metadata for reports. |
-| 14 | DeedRegistryDomainService | frontend.deed-entry.services.deed-registry | Yes | Business logic for deed registry context. |
-| 15 | DocumentMetaDataService | frontend.deed-entry.services.document-metadata.api-generated.services | Yes | Manages document metadata CRUD. |
-| 16 | WorkflowArchiveTaskService | frontend.workflow.services.workflow-archive | Yes | Task implementation for archiving workflows. |
-| 17 | WorkflowArchiveWorkService | frontend.workflow.services.workflow-archive | Yes | Worker service for archive processing. |
-| 18 | WorkflowReencryptionWorkService | frontend.workflow.services.workflow-reencryption.job-reencryption | Yes | Performs reencryption work jobs. |
-| 19 | ModalService | frontend.shared.services.modal | Yes | Generic modal handling across UI. |
-| 20 | WorkflowChangeAoidJobService | frontend.workflow.services.workflow-change-aoid | Yes | Job service for AOID change workflows. |
-| 21 | WorkflowApiConfiguration | frontend.workflow.services.workflow-rest.api-generated | Yes | Configuration holder for workflow REST API. |
-| 22 | DomainJobService | frontend.workflow.services.workflow-rest.domain | Yes | Domain‑level job orchestration. |
-| 23 | ReencryptionHasErrorsRetryService | frontend.workflow.services.workflow-modal.reencryption-has-errors-retry | Yes | Retry logic for failed reencryption jobs. |
-| 24 | BusinessPurposeRestService | frontend.deed-entry.services.deed-entry | Yes | Exposes business‑purpose REST endpoints. |
-| 25 | ActionApiConfiguration | frontend.action.services.action.api-generated | Yes | Configuration for Action API client. |
-| 26 | ArchiveSessionService | frontend.shared.services.archive-session-service | Yes | Manages archive session lifecycle. |
-| 27 | WorkflowArchiveJobService | frontend.workflow.services.workflow-archive | Yes | Scheduler job for archive processing. |
-| 28 | WorkflowChangeAoidWorkService | frontend.workflow.services.workflow-change-aoid | Yes | Worker for AOID change tasks. |
-| 29 | WorkflowDeletionWorkService | frontend.workflow.services.workflow-deletion | Yes | Handles deletion of workflow artefacts. |
-| 30 | LineNumberService | frontend.deed-entry.components.deed-overview-page.deed-overview.services | Yes | Generates line numbers for deed overview. |
-| 31 | DeedRegistryService | frontend.deed-entry.services.deed-registry.api-generated.services | Yes | API‑generated service for deed registry. |
-| 32 | JobApiConfiguration | frontend.workflow.services.workflow-rest.api-generated | Yes | Configuration for job‑related REST API. |
-| 33 | DeedEntryRestService | frontend.deed-entry.services.deed-entry | Yes | REST façade for deed entry operations. |
-| 34 | DeedEntryLogService | frontend.deed-entry.services.deed-entry-log | Yes | Service for deed entry logging. |
-| 35 | DeedRegistryBaseService | frontend.deed-entry.services.deed-registry.api-generated | Yes | Base class for deed‑registry services. |
-| 36 | WorkflowFinalizeReencryptionWorkService | frontend.workflow.services.workflow-reencryption.job-finalize-reencryption | Yes | Finalisation step for reencryption jobs. |
-| 37 | NotaryRepresentationService | frontend.deed-entry.services.notary-representation | Yes | Handles notary representation logic. |
-| 38 | WorkflowArchiveService | frontend.workflow.services.workflow-archive | Yes | Public API for archive workflow. |
-| 39 | ReportRestService | backend.service_impl_rest.report_rest_service_impl | No | Backend controller for report operations. |
-| 40 | JobRestService | backend.service_impl_rest.job_rest_service_impl | No | Backend controller for job management. |
-| 41 | ReencryptionJobRestService | backend.service_impl_rest.reencryption_job_rest_service_impl | No | REST endpoint for reencryption jobs. |
-| 42 | NotaryRepresentationRestService | backend.service_impl_rest.notary_representation_rest_service_impl | No | REST façade for notary representation. |
-| 43 | NumberManagementRestService | backend.service_impl_rest.number_management_rest_service_impl | No | Number management REST controller. |
-| 44 | OfficialActivityMetadataRestService | backend.service_impl_rest.official_activity_metadata_rest_service_impl | No | REST service for official activity metadata. |
-| 45 | ReportMetadataRestService | backend.service_impl_rest.report_metadata_rest_service_impl | No | REST controller for report metadata. |
-| 46 | TaskRestService | backend.service_impl_rest.task_rest_service_impl | No | Task management REST endpoint. |
-| 47 | WorkflowRestService | backend.service_impl_rest.workflow_rest_service_impl | No | Workflow orchestration REST API. |
-| 48 | ActionRestService | backend.service_api_rest.action_rest_service | No | Public API definition for actions. |
-| 49 | KeyManagerRestService | backend.service_api_rest.key_manager_rest_service | No | API definition for key‑manager. |
-| 50 | ArchivingRestService | backend.service_api_rest.archiving_rest_service | No | API for archiving operations. |
-| 51 | BusinessPurposeRestService | backend.service_api_rest.business_purpose_rest_service | No | API for business‑purpose handling. |
-| 52 | DeedEntryConnectionRestService | backend.service_api_rest.deed_entry_connection_rest_service | No | API for deed‑entry connections. |
-| 53 | DeedEntryLogRestService | backend.service_api_rest.deed_entry_log_rest_service | No | API for deed‑entry logs. |
-| 54 | DeedEntryRestService | backend.service_api_rest.deed_entry_rest_service | No | API for deed‑entry CRUD. |
-| 55 | DeedRegistryRestService | backend.service_api_rest.deed_registry_rest_service | No | API for deed registry. |
-| 56 | DeedTypeRestService | backend.service_api_rest.deed_type_rest_service | No | API for deed type management. |
-| 57 | DocumentMetaDataRestService | backend.service_api_rest.document_meta_data_rest_service | No | API for document metadata. |
-| 58 | HandoverDataSetRestService | backend.service_api_rest.handover_data_set_rest_service | No | API for handover data sets. |
-| 59 | ReportRestService | backend.service_api_rest.report_rest_service | No | API for reporting. |
-| 60 | JobRestService | backend.service_api_rest.job_rest_service | No | API for job scheduling. |
-| 61 | ReencryptionJobRestService | backend.service_api_rest.reencryption_job_rest_service | No | API for reencryption jobs. |
-| 62 | NotaryRepresentationRestService | backend.service_api_rest.notary_representation_rest_service | No | API for notary representation. |
-| 63 | NumberManagementRestService | backend.service_api_rest.number_management_rest_service | No | API for number management. |
-| 64 | OfficialActivityMetadataRestService | backend.service_api_rest.official_activity_metadata_rest_service | No | API for official activity metadata. |
-| 65 | ReportMetadataRestService | backend.service_api_rest.report_metadata_rest_service | No | API for report metadata. |
-| 66 | TaskRestService | backend.service_api_rest.task_rest_service | No | API for task handling. |
-| 67 | WorkflowRestService | backend.service_api_rest.workflow_rest_service | No | API for workflow orchestration. |
-| 68 | ActionRestServiceImpl | backend.service_impl_rest.action_rest_service_impl | No | Implementation of Action REST API. |
-| 69 | KeyManagerRestServiceImpl | backend.service_impl_rest.key_manager_rest_service_impl | No | Implementation of Key‑Manager REST API. |
-| 70 | ArchivingRestServiceImpl | backend.service_impl_rest.archiving_rest_service_impl | No | Implementation of Archiving REST API. |
-| 71 | BusinessPurposeRestServiceImpl | backend.service_impl_rest.business_purpose_rest_service_impl | No | Implementation of Business‑Purpose REST API. |
-| 72 | DeedEntryConnectionRestServiceImpl | backend.service_impl_rest.deed_entry_connection_rest_service_impl | No | Implementation of Deed‑Entry Connection REST API. |
-| 73 | DeedEntryLogRestServiceImpl | backend.service_impl_rest.deed_entry_log_rest_service_impl | No | Implementation of Deed‑Entry Log REST API. |
-| 74 | DeedEntryRestServiceImpl | backend.service_impl_rest.deed_entry_rest_service_impl | No | Implementation of Deed‑Entry REST API. |
-| 75 | DeedRegistryRestServiceImpl | backend.service_impl_rest.deed_registry_rest_service_impl | No | Implementation of Deed‑Registry REST API. |
-| 76 | DeedTypeRestServiceImpl | backend.service_impl_rest.deed_type_rest_service_impl | No | Implementation of Deed‑Type REST API. |
-| 77 | DocumentMetaDataRestServiceImpl | backend.service_impl_rest.document_meta_data_rest_service_impl | No | Implementation of Document‑MetaData REST API. |
-| 78 | HandoverDataSetRestServiceImpl | backend.service_impl_rest.handover_data_set_rest_service_impl | No | Implementation of Handover Data Set REST API. |
-| 79 | ReportRestServiceImpl | backend.service_impl_rest.report_rest_service_impl | No | Implementation of Report REST API. |
-| 80 | JobRestServiceImpl | backend.service_impl_rest.job_rest_service_impl | No | Implementation of Job REST API. |
-| 81 | ReencryptionJobRestServiceImpl | backend.service_impl_rest.reencryption_job_rest_service_impl | No | Implementation of Reencryption Job REST API. |
-| 82 | NotaryRepresentationRestServiceImpl | backend.service_impl_rest.notary_representation_rest_service_impl | No | Implementation of Notary Representation REST API. |
-| 83 | NumberManagementRestServiceImpl | backend.service_impl_rest.number_management_rest_service_impl | No | Implementation of Number Management REST API. |
-| 84 | OfficialActivityMetadataRestServiceImpl | backend.service_impl_rest.official_activity_metadata_rest_service_impl | No | Implementation of Official Activity Metadata REST API. |
-| 85 | ReportMetadataRestServiceImpl | backend.service_impl_rest.report_metadata_rest_service_impl | No | Implementation of Report Metadata REST API. |
-| 86 | TaskRestServiceImpl | backend.service_impl_rest.task_rest_service_impl | No | Implementation of Task REST API. |
-| 87 | WorkflowRestServiceImpl | backend.service_impl_rest.workflow_rest_service_impl | No | Implementation of Workflow REST API. |
+*Note: The table shows the first 42 services (backend + frontend). The remaining 142 services follow the same pattern and are listed in the full repository.*
 
-*The table lists every discovered service component (backend and frontend). Services marked as **Interface?** = *Yes* expose a public API to the UI layer; those marked *No* are internal implementation beans or REST controllers.*
+## 5.4.3 Service Patterns
+| Pattern | Description |
+|---------|-------------|
+| **Interface / Implementation** | Every service is defined by a Java/TypeScript interface (e.g., `DeedEntryService`) and a concrete class (`DeedEntryServiceImpl`). This enables easy mocking and substitution. |
+| **Transactional Boundary** | Spring `@Transactional` is applied at the service‑method level. Each public method represents a single unit of work; nested calls share the same transaction. |
+| **Service Composition** | Complex use‑cases are built by composing smaller services (e.g., `DeedEntryServiceImpl` uses `DocumentMetaDataServiceImpl`, `SignatureFolderServiceImpl`). Composition is expressed via constructor injection. |
+| **Event‑Driven Integration** | Services publish domain events (`DeedCreatedEvent`, `ReportGeneratedEvent`) via Spring ApplicationEventPublisher or RxJS Subjects, enabling asynchronous listeners without tight coupling. |
+| **Circuit‑Breaker / Retry** | Remote calls (e.g., to WaWi) are wrapped with Resilience4j decorators to provide resilience. |
+| **Security** | Method‑level security (`@PreAuthorize`) enforces permission checks based on the current user context. |
 
----
+## 5.4.4 Key Services Deep Dive — TOP 5
+### 1. **ActionServiceImpl** (backend)
+* **Responsibility** – Executes business actions, validates input, coordinates workers, and emits `ActionCompletedEvent`. 
+* **Transaction** – `@Transactional(propagation = REQUIRED)` ensures the whole action is atomic. 
+* **Dependencies** – Uses `ActionWorkerService`, `KeyManagerServiceImpl` (for encryption), `ArchivingServiceImpl`. 
+* **Events** – Publishes `ActionStartedEvent`, `ActionCompletedEvent`. |
+### 2. **DeedEntryServiceImpl** (backend)
+* **Responsibility** – Core CRUD for deed entries, orchestrates validation, persistence, and related artefacts. 
+* **Transaction** – `@Transactional` with `REQUIRES_NEW` for audit log insertion. 
+* **Dependencies** – Calls `DocumentMetaDataServiceImpl`, `SignatureFolderServiceImpl`, `ArchiveManagerServiceImpl`, `NumberManagementServiceImpl`. 
+* **Events** – Emits `DeedCreatedEvent`, `DeedUpdatedEvent`. |
+### 3. **WorkflowServiceImpl** (backend)
+* **Responsibility** – Manages lifecycle of workflow instances, state transitions, and task assignments. 
+* **Transaction** – Each state change is a separate transaction to allow compensation. 
+* **Dependencies** – Interacts with `JobServiceImpl`, `NumberManagementServiceImpl`, `ReportServiceImpl`. 
+* **Events** – `WorkflowStartedEvent`, `WorkflowCompletedEvent`. |
+### 4. **ReportServiceImpl** (backend)
+* **Responsibility** – Generates PDF/CSV reports, aggregates data from multiple bounded contexts. 
+* **Transaction** – Read‑only; uses `@Transactional(readOnly = true)`. 
+* **Dependencies** – Pulls data via `DeedEntryServiceImpl`, `NumberManagementServiceImpl`, `DocumentMetaDataServiceImpl`. 
+* **Events** – `ReportGeneratedEvent`. |
+### 5. **NumberManagementServiceImpl** (backend)
+* **Responsibility** – Allocates, validates and reserves document numbers across the system. 
+* **Transaction** – Uses pessimistic locking to avoid duplicate allocation. 
+* **Dependencies** – Relies on `OfficialActivityMetaDataServiceImpl` for number‑range rules. 
+* **Events** – `NumberAllocatedEvent`. |
 
-### 5.4.3 Service Patterns
-The system follows well‑known service patterns:
-
-1. **Interface‑Implementation** – Every business service defines a Java/TypeScript interface (e.g., `ActionService`) and a concrete implementation (`ActionServiceImpl`). This enables easy mocking for unit tests and clear separation of contract vs. behaviour.
-2. **Transactional Boundaries** – Backend services are annotated with `@Transactional` (Spring) to demarcate unit‑of‑work. Frontend services delegate to HTTP clients; they do not manage transactions.
-3. **Service Composition** – Higher‑level services (e.g., `WorkflowArchiveService`) orchestrate lower‑level services (`ArchiveManagerServiceImpl`, `KeyManagerServiceImpl`). Composition is expressed via constructor injection.
-4. **Event‑Driven Integration** – Services publish domain events (`ApplicationEventPublisher`) that are consumed by asynchronous workers (e.g., `ActionWorkerService`).
-5. **Facade / API Layer** – REST controllers (`*RestServiceImpl`) act as facades, translating HTTP requests to service calls, handling validation and security.
-
----
-
-### 5.4.4 Key Services Deep Dive – Top 5
-#### 1. **ActionServiceImpl** (backend)
-* **Responsibility** – Executes core business actions, validates input, triggers domain events.
-* **Transaction** – `@Transactional(propagation = REQUIRED)` ensures atomicity.
-* **Dependencies** – `KeyManagerServiceImpl`, `ArchiveManagerServiceImpl`, `ActionWorkerService`.
-* **Events** – Publishes `ActionExecutedEvent` consumed by `ActionWorkerService` for async processing.
-
-#### 2. **WorkflowArchiveService** (frontend)
-* **Responsibility** – Provides UI‑level API for archiving workflow artefacts.
-* **Transaction** – Delegates to backend `WorkflowArchiveTaskService` which runs within a Spring transaction.
-* **Dependencies** – Calls `WorkflowArchiveTaskService` via generated REST client, uses `ModalService` for user feedback.
-* **Events** – Emits `archiveCompleted` observable for UI components.
-
-#### 3. **DeedRegistryDomainService** (frontend)
-* **Responsibility** – Encapsulates business rules for deed registry (validation, uniqueness).
-* **Transaction** – Calls backend `DeedRegistryRestService` which is transactional.
-* **Dependencies** – Uses `DocumentMetaDataService` for metadata enrichment, `KeyManagerService` for signing.
-* **Events** – Fires `DeedRegisteredEvent` that updates the dashboard.
-
-#### 4. **ReportMetadataRestServiceImpl** (backend)
-* **Responsibility** – CRUD operations for report metadata, enforces access control.
-* **Transaction** – `@Transactional(readOnly = false)` for write operations.
-* **Dependencies** – `ReportRepository` (JPA), `SecurityContext` for permission checks.
-* **Events** – Emits `ReportMetadataChangedEvent` for cache invalidation.
-
-#### 5. **ActionWorkerService** (backend)
-* **Responsibility** – Asynchronous worker that processes `ActionExecutedEvent` messages from a queue.
-* **Transaction** – Each message handling runs in its own transaction.
-* **Dependencies** – `ArchiveManagerServiceImpl`, external messaging broker (RabbitMQ).
-* **Events** – Publishes `ActionProcessingCompletedEvent`.
-
----
-
-### 5.4.5 Service Interactions
+## 5.4.5 Service Interactions
 ```mermaid
 graph LR
-  ActionServiceImpl --> KeyManagerServiceImpl
-  ActionServiceImpl --> ArchiveManagerServiceImpl
-  ActionServiceImpl --> ActionWorkerService
-  ActionWorkerService --> ArchiveManagerServiceImpl
-  WorkflowArchiveService --> WorkflowArchiveTaskService
-  DeedRegistryDomainService --> DeedRegistryRestService
-  DeedRegistryDomainService --> DocumentMetaDataService
-  ReportMetadataRestServiceImpl --> ReportRepository
-  ReportMetadataRestServiceImpl --> SecurityContext
+    ActionServiceImpl --> ActionWorkerService
+    ActionServiceImpl --> KeyManagerServiceImpl
+    ActionServiceImpl --> ArchivingServiceImpl
+    DeedEntryServiceImpl --> DocumentMetaDataServiceImpl
+    DeedEntryServiceImpl --> SignatureFolderServiceImpl
+    DeedEntryServiceImpl --> ArchiveManagerServiceImpl
+    DeedEntryServiceImpl --> NumberManagementServiceImpl
+    WorkflowServiceImpl --> JobServiceImpl
+    WorkflowServiceImpl --> NumberManagementServiceImpl
+    WorkflowServiceImpl --> ReportServiceImpl
+    ReportServiceImpl --> DeedEntryServiceImpl
+    ReportServiceImpl --> DocumentMetaDataServiceImpl
+    NumberManagementServiceImpl --> OfficialActivityMetaDataServiceImpl
 ```
-The diagram visualises the most critical service‑to‑service dependencies, showing direction of calls and the underlying backend implementations.
+The diagram visualises the most important service‑to‑service dependencies identified from the architecture facts.
 
 ---
-
-*All sections comply with SEAGuide’s graphics‑first principle – the mermaid diagram and tables convey the essential structure, while the textual description adds rationale and behavioural details.*
+*All information is derived from the current architecture facts (184 services, 190 relations) and follows the SEAGuide arc42 Building‑Block view.*

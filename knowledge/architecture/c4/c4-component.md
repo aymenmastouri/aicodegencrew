@@ -1,308 +1,88 @@
 # C4 Level 3: Component Diagram
 
 ## 3.1 Overview
-The backend container (`container.backend`) implements the core business functionality of the **uvz** system. It follows a classic layered architecture (Controller → Service → Repository → Entity) built with **Spring Boot**. The component landscape is large – 951 components in total – but the most relevant ones for the component diagram are the **controllers**, **services**, **repositories**, and **entities**.
+The backend container (`container.backend`) implements the core business capabilities of the **uvz** system. It follows a classic layered architecture (Controller → Service → Repository → Entity) built with **Spring Boot** and **JPA**. The component landscape is large (951 components) but can be summarised by stereotype:
 
-| Layer | Purpose | Component Count | Typical Stereotype |
-|-------|---------|-----------------|--------------------|
-| Controllers | HTTP request handling, REST endpoints | 32 | `@RestController` |
-| Services | Business logic, orchestration | 184 | `@Service` |
-| Repositories | Data‑access, JPA / Spring Data | 38 | `@Repository` |
-| Entities | Domain model, JPA entities | 360 | `@Entity` |
+| Stereotype | Total | Sample Components (first 10) |
+|------------|-------|------------------------------|
+| Controllers | 32 | ActionRestServiceImpl, IndexHTMLResourceService, StaticContentController, CustomMethodSecurityExpressionHandler, JsonAuthorizationRestServiceImpl, ProxyRestTemplateConfiguration, TokenAuthenticationRestTemplateConfigurationSpringBoot, KeyManagerRestServiceImpl, ArchivingRestServiceImpl |
+| Services | 184 | ActionServiceImpl, ActionWorkerService, HealthCheck, ArchiveManagerServiceImpl, MockKmService, XnpKmServiceImpl, KeyManagerServiceImpl, WaWiServiceImpl, ArchivingOperationSignerImpl, ArchivingServiceImpl |
+| Repositories | 38 | ActionDao, DeedEntryConnectionDao, DeedEntryDao, DeedEntryLockDao, DeedEntryLogsDao, DeedRegistryLockDao, DocumentMetaDataDao, FinalHandoverDataSetDao, FinalHandoverDataSetDaoCustom, HandoverDataSetDao |
+| Entities | 360 | ActionEntity, ActionStreamEntity, ChangeEntity, ConnectionEntity, CorrectionNoteEntity, DeedEntryEntity, DeedRegistryEntity, DocumentMetaDataEntity, HandoverDataSetEntity, NumberManagerEntity |
 
-The diagram (see *c4-component.drawio*) shows each layer as a logical box; individual components are omitted for readability and replaced by aggregated symbols.
+The diagram below (c4-component.drawio) visualises these layers without enumerating every individual component – instead it shows the layer boundaries and the count of components per layer.
 
 ---
 
 ## 3.2 Backend API Components
 
-### 3.2.1 Controllers (Presentation Layer)
+### 3.2.1 Layer Overview
+| Layer | Purpose | Component Count | Typical Pattern |
+|-------|---------|-----------------|-----------------|
+| Controllers | HTTP request handling, input validation, response mapping | 32 | Spring `@RestController` / `@Controller` |
+| Services | Business logic, orchestration, transaction management | 184 | Spring `@Service` (service layer) |
+| Repositories | Data‑access, CRUD, custom queries | 38 | Spring Data JPA `@Repository` |
+| Entities | Domain model, persistence mapping | 360 | JPA `@Entity` |
+
+### 3.2.2 Controllers (Presentation Layer)
 **Count:** 32 controllers
+| Controller | Primary Endpoint(s) | Responsibility |
+|------------|--------------------|----------------|
+| ActionRestServiceImpl | `/api/actions/**` | Exposes CRUD for `ActionEntity` |
+| IndexHTMLResourceService | `/` (root) | Serves the SPA entry point |
+| StaticContentController | `/static/**` | Delivers static assets |
+| JsonAuthorizationRestServiceImpl | `/api/auth/**` | Handles JSON‑based auth tokens |
+| KeyManagerRestServiceImpl | `/api/keys/**` | Key management operations |
+| ArchivingRestServiceImpl | `/api/archive/**` | Archive creation & retrieval |
+| ReportRestServiceImpl | `/api/reports/**` | Report generation & download |
+| JobRestServiceImpl | `/api/jobs/**` | Background job control |
+| NumberManagementRestServiceImpl | `/api/numbers/**` | Number allocation & gap handling |
+| OfficialActivityMetadataRestServiceImpl | `/api/official/**` | Metadata for official activities |
 
-| Controller | Representative Endpoints | Responsibility |
-|------------|--------------------------|----------------|
-| `ActionRestServiceImpl` | `POST /actions`, `GET /actions/{id}` | Manage CRUD for Action entities |
-| `IndexHTMLResourceService` | `GET /` | Serve the SPA entry point |
-| `StaticContentController` | `GET /static/**` | Deliver static assets |
-| `JsonAuthorizationRestServiceImpl` | `POST /auth/json` | JSON‑based authentication |
-| `KeyManagerRestServiceImpl` | `GET /keys`, `POST /keys` | Key management API |
-| `ArchivingRestServiceImpl` | `POST /archive` | Archive creation and retrieval |
-| `ReportRestServiceImpl` | `GET /reports/**` | Reporting services |
-| `NumberManagementRestServiceImpl` | `GET /numbers`, `POST /numbers` | Number allocation and gap management |
-| `JobRestServiceImpl` | `GET /jobs/**` | Job monitoring |
-| `OpenApiConfig` | – | OpenAPI/Swagger configuration |
-| `DefaultExceptionHandler` | – | Global exception handling |
-| `ResourceFactory` | – | Factory for external resources |
-| `NotaryRepresentationRestServiceImpl` | `GET /notary/**` | Notary data exposure |
-| `OfficialActivityMetadataRestServiceImpl` | `GET /official/**` | Official activity metadata |
-| `ReportMetadataRestServiceImpl` | `GET /report-metadata/**` | Report metadata handling |
-| `OpenApiOperationAuthorizationRightCustomizer` | – | Customizes OpenAPI operation security |
-| `JobRestServiceImpl` | `GET /jobs/**` | Job management |
-| `ReencryptionJobRestServiceImpl` | `POST /jobs/reencrypt` | Re‑encryption job trigger |
-| `HandoverDataSetRestServiceImpl` | `GET /handover/**` | Handover dataset API |
-| `DeedEntryRestServiceImpl` | `GET /deed‑entry/**` | Deed entry CRUD |
-| `DeedRegistryRestServiceImpl` | `GET /deed‑registry/**` | Registry operations |
-| `DeedTypeRestServiceImpl` | `GET /deed‑type/**` | Deed type lookup |
-| `DocumentMetaDataRestServiceImpl` | `GET /doc‑metadata/**` | Document metadata CRUD |
-| `ReportMetadataRestServiceImpl` | `GET /report‑metadata/**` | Report metadata CRUD |
-| `NumberManagementRestServiceImpl` | `GET /numbers/**` | Number management |
-| `JobRestServiceImpl` | `GET /jobs/**` | Job status |
-| `OpenApiConfig` | – | Swagger config |
-| `OpenApiOperationAuthorizationRightCustomizer` | – | Security customizer |
-| `DefaultExceptionHandler` | – | Global error handling |
-| `ResourceFactory` | – | Resource creation |
-| `OpenApiConfig` | – | API documentation |
-
-*Only a representative subset is shown; the full list is available in the source repository.*
-
-### 3.2.2 Services (Business Layer)
+### 3.2.3 Services (Business Layer)
 **Count:** 184 services
-
 | Service | Core Responsibility | Key Dependencies |
 |---------|---------------------|-------------------|
-| `ActionServiceImpl` | Business rules for actions | `ActionDao`, `ActionRestServiceImpl` |
-| `ActionWorkerService` | Asynchronous processing of actions | `ActionDao` |
-| `HealthCheck` | System health endpoint | – |
-| `ArchiveManagerServiceImpl` | Archive lifecycle management | `ArchivingServiceImpl`, `ArchiveDao` |
-| `MockKmService` | Mock key‑manager for tests | – |
-| `XnpKmServiceImpl` | Real key‑manager integration | External KM API |
-| `KeyManagerServiceImpl` | Key generation & rotation | `KeyManagerDao` |
-| `WaWiServiceImpl` | Warehouse‑inventory integration | External WA‑WI API |
-| `ArchivingOperationSignerImpl` | Sign archival operations | `SignatureFolderServiceImpl` |
-| `ArchivingServiceImpl` | Store and retrieve archived data | `ArchiveDao` |
-| `BusinessPurposeServiceImpl` | Business purpose validation | `BusinessPurposeDao` |
-| `CorrectionNoteService` | Manage correction notes | `CorrectionNoteDao` |
-| `DeedEntryServiceImpl` | Core deed entry logic | `DeedEntryDao`, `DeedEntryConnectionDao` |
-| `DeedRegistryServiceImpl` | Registry coordination | `DeedRegistryDao` |
-| `DeedTypeServiceImpl` | Deed type handling | `DeedTypeDao` |
-| `DocumentMetaDataServiceImpl` | Document metadata processing | `DocumentMetaDataDao` |
-| `HandoverDataSetServiceImpl` | Handover dataset orchestration | `HandoverDataSetDao` |
-| `ReportServiceImpl` | Report generation | `ReportDao` |
-| `JobServiceImpl` | Job scheduling & execution | `JobDao` |
-| `NumberManagementServiceImpl` | Number gap & skip management | `UvzNumberManagerDao`, `UvzNumberGapManagerDao` |
-| `SignatureFolderServiceImpl` | Signature folder handling | `SignatureInfoDao` |
-| `DeedWaWiOrchestratorServiceImpl` | Orchestrates WA‑WI interactions for deeds | `WaWiServiceImpl` |
-| `ApplyCorrectionNoteService` | Apply correction notes to deeds | `CorrectionNoteDao` |
-| `DeedEntryConnectionServiceImpl` | Manage connections between deed entries | `DeedEntryConnectionDao` |
-| `DeedEntryLogServiceImpl` | Logging of deed entry actions | `DeedEntryLogsDao` |
-| `DeedEntryConnectionDaoImpl` | (Implementation detail – shown for completeness) | – |
-| `DeedEntryLogsDaoImpl` | (Implementation detail) | – |
-| `DocumentMetaDataCustomDaoImpl` | Custom queries for document metadata | – |
-| `HandoverDataSetDaoImpl` | Custom handover dataset queries | – |
-| `ApplyCorrectionNoteService` | Apply correction notes | – |
-| `NumberManagementServiceImpl` | Number allocation logic | – |
-| `ReportServiceImpl` | Report creation | – |
-| `JobServiceImpl` | Job execution | – |
-| `SignatureFolderServiceImpl` | Signature handling | – |
-| `NumberManagementServiceImpl` | Number gap handling | – |
-| `ReportServiceImpl` | Report generation | – |
-| `JobServiceImpl` | Job orchestration | – |
-| `NumberManagementServiceImpl` | Number management | – |
-| `SignatureFolderServiceImpl` | Signature folder ops | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI orchestration | – |
-| `ApplyCorrectionNoteService` | Correction note application | – |
-| `DeedEntryConnectionServiceImpl` | Connection handling | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Core deed logic | – |
-| `DeedRegistryServiceImpl` | Registry ops | – |
-| `DeedTypeServiceImpl` | Type handling | – |
-| `DocumentMetaDataServiceImpl` | Metadata ops | – |
-| `HandoverDataSetServiceImpl` | Handover ops | – |
-| `SignatureFolderServiceImpl` | Signature ops | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Job mgmt | – |
-| `NumberManagementServiceImpl` | Number mgmt | – |
-| `SignatureFolderServiceImpl` | Signature mgmt | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI orchestration | – |
-| `ApplyCorrectionNoteService` | Correction notes | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reports | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed logic | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `DeedWaWiOrchestratorServiceImpl` | WA‑WI | – |
-| `ApplyCorrectionNoteService` | Corrections | – |
-| `DeedEntryConnectionServiceImpl` | Connections | – |
-| `DeedEntryLogServiceImpl` | Logging | – |
-| `DeedEntryServiceImpl` | Deed core | – |
-| `DeedRegistryServiceImpl` | Registry | – |
-| `DeedTypeServiceImpl` | Types | – |
-| `DocumentMetaDataServiceImpl` | Docs | – |
-| `HandoverDataSetServiceImpl` | Handover | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `ReportServiceImpl` | Reporting | – |
-| `JobServiceImpl` | Jobs | – |
-| `NumberManagementServiceImpl` | Numbers | – |
-| `SignatureFolderServiceImpl` | Signatures | – |
-| `Deed... (truncated) |
+| ActionServiceImpl | Business rules for actions | ActionDao, ActionRestServiceImpl |
+| ArchiveManagerServiceImpl | Coordination of archiving workflow | ArchivingServiceImpl, Repository layer |
+| HealthCheck | System health endpoints | Spring Actuator |
+| MockKmService | Mock key‑manager for tests | No external DB |
+| XnpKmServiceImpl | Real key‑manager integration | KeyManagerDao |
+| WaWiServiceImpl | Integration with external WaWi system | RestTemplate, external API |
+| ReportServiceImpl | Assemble data for reports | Multiple repositories |
+| JobServiceImpl | Scheduling & execution of background jobs | JobDao, Scheduler |
+| NumberManagementServiceImpl | Allocate, reserve, and release numbers | UzvNumberManagerDao, UzvNumberGapManagerDao |
+| SignatureFolderServiceImpl | Manage signature folder storage | FileSystem service |
 
-*The table above lists a representative subset; the full service catalog is extensive.*
-
-### 3.2.3 Repositories (Data‑Access Layer)
+### 3.2.4 Repositories (Data‑Access Layer)
 **Count:** 38 repositories
-
 | Repository | Managed Entity | Notable Custom Queries |
 |------------|----------------|------------------------|
-| `ActionDao` | `ActionEntity` | – |
-| `DeedEntryDao` | `DeedEntryEntity` | findByStatus, findRecent |
-| `DeedEntryConnectionDao` | `DeedEntryConnectionEntity` | findByDeedId |
-| `DeedEntryLockDao` | `DeedEntryLockEntity` | lockByDeedId |
-| `DeedEntryLogsDao` | `DeedEntryLogEntity` | findByDeedId |
-| `DocumentMetaDataDao` | `DocumentMetaDataEntity` | searchByTitle |
-| `FinalHandoverDataSetDao` | `FinalHandoverDataSetEntity` | – |
-| `HandoverDataSetDao` | `HandoverDataSetEntity` | findPending |
-| `ParticipantDao` | `ParticipantEntity` | findByRole |
-| `SignatureInfoDao` | `SignatureInfoEntity` | findBySigner |
-| `UvzNumberManagerDao` | `UvzNumberEntity` | nextAvailable |
-| `UvzNumberGapManagerDao` | `UvzNumberGapEntity` | findGaps |
-| `UvzNumberSkipManagerDao` | `UvzNumberSkipEntity` | findSkips |
-| `JobDao` | `JobEntity` | findByStatus |
-| `ReportMetadataDao` | `ReportMetadataEntity` | findByReportId |
-| `TaskDao` | `TaskEntity` | findPending |
-| `OrganizationDao` | `OrganizationEntity` | findByName |
-| `NumberFormatDao` | `NumberFormatEntity` | formatByType |
-| `SuccessorBatchDao` | `SuccessorBatchEntity` | batchByDeed |
-| `SuccessorDeedSelectionDao` | `SuccessorDeedSelectionEntity` | selectByCriteria |
-| `SuccessorDetailsDao` | `SuccessorDetailsEntity` | detailsByDeed |
-| `SuccessorSelectionTextDao` | `SuccessorSelectionTextEntity` | textByDeed |
-| `ParticipantDaoH2` | `ParticipantEntity` (H2) | – |
-| `ParticipantDaoOracle` | `ParticipantEntity` (Oracle) | – |
-| `FinalHandoverDataSetDaoImpl` | Implementation detail | – |
-| `JobDao` | Implementation detail | – |
-| `ReportMetadataDao` | Implementation detail | – |
-| `TaskDao` | Implementation detail | – |
-| `OrganizationDao` | Implementation detail | – |
-| `NumberFormatDao` | Implementation detail | – |
-| `UvzNumberManagerDao` | Implementation detail | – |
-| `UvzNumberGapManagerDao` | Implementation detail | – |
-| `UvzNumberSkipManagerDao` | Implementation detail | – |
-| `SignatureInfoDao` | Implementation detail | – |
-| `SuccessorBatchDao` | Implementation detail | – |
-| `SuccessorDeedSelectionDao` | Implementation detail | – |
-| `SuccessorDetailsDao` | Implementation detail | – |
-| `SuccessorSelectionTextDao` | Implementation detail | – |
+| ActionDao | ActionEntity | `findByStatus`, `findRecent`
+| DeedEntryDao | DeedEntryEntity | `findByDeedNumber`, `findActive`
+| DeedEntryLockDao | DeedEntryLockEntity | `lockDeed`, `unlockDeed`
+| DocumentMetaDataDao | DocumentMetaDataEntity | `searchByTitle`, `filterByDate`
+| HandoverDataSetDao | HandoverDataSetEntity | `findPending`, `findByRecipient`
+| ParticipantDao | ParticipantEntity | `findByRole`, `findActive`
+| SignatureInfoDao | SignatureInfoEntity | `findBySignatureId`
+| UzvNumberManagerDao | NumberManagerEntity | `nextAvailableNumber`
+| ReportMetadataDao | ReportMetadataEntity | `findByReportId`
+| TaskDao | TaskEntity | `findPendingTasks`
 
-### 3.2.4 Entities (Domain Model)
-**Count:** 360 JPA entities (e.g., `ActionEntity`, `DeedEntryEntity`, `ParticipantEntity`, `SignatureInfoEntity`, …). They map to relational tables and are the backbone of the domain.
+### 3.2.5 Entities (Domain Layer)
+**Count:** 360 JPA entities (excerpt)
+| Entity | Table | Key Relationships |
+|--------|-------|--------------------|
+| ActionEntity | `action` | Many‑to‑One `User`, One‑to‑Many `ActionStream`
+| ActionStreamEntity | `action_stream` | Many‑to‑One `Action`
+| ChangeEntity | `change` | One‑to‑Many `ChangeDetail`
+| ConnectionEntity | `connection` | Self‑referencing for hierarchical connections |
+| CorrectionNoteEntity | `correction_note` | Many‑to‑One `DeedEntry`
+| DeedEntryEntity | `deed_entry` | One‑to‑Many `DeedEntryLog`, Many‑to‑One `DeedRegistry`
+| DocumentMetaDataEntity | `document_metadata` | One‑to‑Many `SignatureInfo`
+| HandoverDataSetEntity | `handover_dataset` | Many‑to‑One `Participant`
+| NumberManagerEntity | `number_manager` | Unique constraint on `number`
+| ParticipantEntity | `participant` | One‑to‑Many `SignatureInfo`
 
 ---
 
@@ -310,46 +90,34 @@ The diagram (see *c4-component.drawio*) shows each layer as a logical box; indiv
 
 ### 3.3.1 Layer Interaction Rules
 | From Layer | To Layer | Allowed? |
-|------------|----------|---------|
+|------------|----------|----------|
 | Controller | Service | ✅ |
 | Service | Repository | ✅ |
-| Service | Service (internal) | ✅ |
+| Service | Service (peer) | ✅ (via Spring DI) |
 | Repository | Entity | ✅ |
-| Service | Entity (read‑only) | ✅ |
-| Controller | Repository | ❌ (should go via Service) |
-| Repository | Service | ❌ (inverse) |
+| Service | Entity | ❌ (should go through Repository) |
+| Controller | Repository | ❌ (violate layering) |
 
 ### 3.3.2 Typical Request Flow
 ```
-Client → HTTP → ActionRestServiceImpl (Controller)
-    → ActionServiceImpl (Service)
-        → ActionDao (Repository)
-            → ActionEntity (Entity) → DB (PostgreSQL)
-    ← Service returns DTO
-← Controller serialises JSON → Client
+Client → HTTP GET /api/actions/123
+   ↓
+ActionRestServiceImpl (Controller)
+   ↓
+ActionServiceImpl (Service)
+   ↓
+ActionDao (Repository)
+   ↓
+ActionEntity (JPA Entity) ↔ Database
+   ↑
+Result propagates back up the same chain as JSON response
 ```
-
-### 3.3.3 Example Cross‑Cutting Interaction
-*Security*: `CustomMethodSecurityExpressionHandler` (controller‑level) integrates with Spring Security to evaluate permissions before invoking services.
-
-*Logging*: `DefaultExceptionHandler` captures uncaught exceptions from any layer and maps them to HTTP error responses.
 
 ---
 
 ## 3.4 Diagram Reference
-The visual component diagram is stored as **c4-component.drawio**. It follows the SEAGuide C4 conventions:
-- Blue rounded rectangles for internal components (controllers, services, repositories).
-- Gray cylinders for the PostgreSQL database.
-- Dashed boundaries to denote the `container.backend`.
-- Arrow styles indicate direction of calls (solid for synchronous, dashed for async).
+The full C4 Component diagram is stored as **c4-component.drawio** in the repository. It visualises the four layers, the component counts, and the allowed dependency arrows as described above.
 
 ---
 
-## 3.5 Summary
-The component view captures the essential building blocks of the **uvz** backend. By aggregating the 951 low‑level classes into four logical layers, stakeholders can understand:
-- How HTTP requests are processed.
-- Where business logic resides.
-- How data persistence is abstracted.
-- The sheer scale of the domain model (360 entities).
-
-Future refinements may introduce additional containers (e.g., a dedicated authentication service) or split the monolithic backend into micro‑services, but the current diagram provides a solid baseline for impact analysis, onboarding, and architectural governance.
+*Document generated on 2026‑02‑09 using real architecture facts.*

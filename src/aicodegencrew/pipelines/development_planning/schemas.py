@@ -158,6 +158,31 @@ class ImplementationPlan(BaseModel):
     )
 
 
+class UpgradeRule(BaseModel):
+    """Single upgrade rule from migration sequence."""
+
+    rule_id: str = Field(..., description="Rule ID (e.g., ng19-standalone-default)")
+    title: str = Field(..., description="Short title of the rule")
+    severity: Literal["breaking", "deprecated", "recommended"] = Field(..., description="Impact severity")
+    migration_steps: List[str] = Field(default_factory=list, description="Step-by-step migration guide")
+    affected_files: List[str] = Field(default_factory=list, description="Files matched by this rule")
+    estimated_effort_minutes: int = Field(default=0, description="Estimated effort per occurrence")
+    schematic: Optional[str] = Field(default=None, description="Angular schematic command (if applicable)")
+
+
+class UpgradePlan(BaseModel):
+    """Framework upgrade plan with migration sequence."""
+
+    framework: str = Field(..., description="Framework name (e.g., Angular)")
+    from_version: str = Field(..., description="Current version")
+    to_version: str = Field(..., description="Target version")
+    migration_sequence: List[UpgradeRule] = Field(default_factory=list, description="Ordered migration rules by severity")
+    verification_commands: List[str] = Field(default_factory=list, description="Commands to verify upgrade (e.g., ng build, ng test)")
+    total_estimated_effort_hours: float = Field(default=0.0, description="Total estimated effort in hours")
+    pre_migration_checks: List[str] = Field(default_factory=list, description="Checks to run before migration")
+    post_migration_checks: List[str] = Field(default_factory=list, description="Checks to run after migration")
+
+
 class DevelopmentPlan(BaseModel):
     """Detailed development plan structure."""
 
@@ -165,6 +190,9 @@ class DevelopmentPlan(BaseModel):
     affected_components: List[ComponentMatch]
     interfaces: List[InterfaceMatch] = Field(default_factory=list)
     dependencies: List[DependencyRelation] = Field(default_factory=list)
+
+    # Upgrade Plan (for framework upgrade tasks only)
+    upgrade_plan: Optional[UpgradePlan] = Field(default=None, description="Framework upgrade migration plan")
 
     # Implementation
     implementation_steps: List[str] = Field(
