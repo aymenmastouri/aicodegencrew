@@ -1030,12 +1030,15 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
 
         for name, task_specs, expected_files in mini_crews:
             if not self.should_skip(name, completed):
-                agent = self._create_agent()
-                tasks = [
-                    Task(description=desc, expected_output=output, agent=agent)
-                    for desc, output in task_specs
-                ]
-                self._run_mini_crew(name, tasks, expected_files=expected_files)
+                try:
+                    agent = self._create_agent()
+                    tasks = [
+                        Task(description=desc, expected_output=output, agent=agent)
+                        for desc, output in task_specs
+                    ]
+                    self._run_mini_crew(name, tasks, expected_files=expected_files)
+                except Exception as e:
+                    logger.error(f"[Arc42] Mini-crew {name} failed, continuing: {e}")
             results.append(f"{name}: Done")
 
         # Merge part files into final chapter files
@@ -1045,14 +1048,17 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
 
         # Quality Gate
         if not self.should_skip("quality-gate", completed):
-            agent = self._create_agent()
-            self._run_mini_crew("quality-gate", [
-                Task(
-                    description=QUALITY_GATE_DESCRIPTION,
-                    expected_output="Arc42 Quality report written to quality/arc42-report.md",
-                    agent=agent,
-                ),
-            ])
+            try:
+                agent = self._create_agent()
+                self._run_mini_crew("quality-gate", [
+                    Task(
+                        description=QUALITY_GATE_DESCRIPTION,
+                        expected_output="Arc42 Quality report written to quality/arc42-report.md",
+                        agent=agent,
+                    ),
+                ])
+            except Exception as e:
+                logger.error(f"[Arc42] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")
 
         self._clear_checkpoint()

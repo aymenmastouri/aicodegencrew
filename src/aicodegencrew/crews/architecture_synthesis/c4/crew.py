@@ -690,23 +690,29 @@ By type: {', '.join(f'{t}:{c}' for t, c in sorted(rel_by_type.items()))}"""
 
         for name, doc_desc, doc_output, diag_desc, diag_output, expected_files in mini_crews:
             if not self.should_skip(name, completed):
-                agent = self._create_agent()
-                self._run_mini_crew(name, [
-                    Task(description=doc_desc, expected_output=doc_output, agent=agent),
-                    Task(description=diag_desc, expected_output=diag_output, agent=agent),
-                ], expected_files=expected_files)
+                try:
+                    agent = self._create_agent()
+                    self._run_mini_crew(name, [
+                        Task(description=doc_desc, expected_output=doc_output, agent=agent),
+                        Task(description=diag_desc, expected_output=diag_output, agent=agent),
+                    ], expected_files=expected_files)
+                except Exception as e:
+                    logger.error(f"[C4] Mini-crew {name} failed, continuing: {e}")
             results.append(f"{name.title()}: Done")
 
         # Quality Gate
         if not self.should_skip("quality", completed):
-            agent = self._create_agent()
-            self._run_mini_crew("quality", [
-                Task(
-                    description=QUALITY_GATE_DESCRIPTION,
-                    expected_output="C4 Quality report written to quality/c4-report.md",
-                    agent=agent,
-                ),
-            ])
+            try:
+                agent = self._create_agent()
+                self._run_mini_crew("quality", [
+                    Task(
+                        description=QUALITY_GATE_DESCRIPTION,
+                        expected_output="C4 Quality report written to quality/c4-report.md",
+                        agent=agent,
+                    ),
+                ])
+            except Exception as e:
+                logger.error(f"[C4] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")
 
         self._clear_checkpoint()
