@@ -42,3 +42,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Tool guardrails (loop prevention, call budgets)
 - Structured metrics logging (`logs/metrics.jsonl`)
 - Session correlation via run_id
+- Run reports exported to `knowledge/run_report.json` after each pipeline execution
+- Configurable output directory via `OUTPUT_BASE_DIR` environment variable
+
+**Multi-Format Export**
+- Automatic conversion of architecture docs to Confluence, AsciiDoc, and HTML formats
+- Export to `architecture-docs/` directory with all formats included
+
+**Testing**
+- Comprehensive test suite: 603 tests across 16 test files
+- Unit tests (13 files), integration tests, scenario tests, delivery tests
+- Test categories: CLI, orchestrator, parsers, validation, logger, guardrails, converters
+
+### Fixed
+
+**Phase 3 (Architecture Synthesis)**
+- Fixed template variable injection: `{system_summary}` placeholders now properly filled with real architecture statistics
+- Arc42 Chapter 01 (Introduction) now generates complete content (137 lines) instead of minimal stub
+- C4 and Arc42 crews now call `_summarize_facts()` and format task descriptions correctly
+
+**Phase 4 (Development Planning)**
+- Added `UpgradePlan` and `UpgradeRule` Pydantic models to `DevelopmentPlan` schema
+- Fixed upgrade plan schema to include `framework`, `from_version`, `to_version` fields
+- Fixed `affected_files` population in migration_sequence from UpgradeRulesEngine
+- Enhanced LLM prompt to explicitly copy `affected_files` from migration sequence
+- Added affected file paths to prompt formatting (shows first 10 files per rule)
+- Upgrade plans now include:
+  - Clear version information (e.g., "Angular 18 → 19")
+  - 15+ migration rules with severity levels (breaking/deprecated/recommended)
+  - Real file paths for affected files (142+ files for standalone components, 88 files for control flow, etc.)
+  - Accurate effort estimation per rule
+  - Migration steps and schematics per rule

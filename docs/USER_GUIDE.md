@@ -283,6 +283,13 @@ Output: `knowledge/development/{TASK_ID}_plan.json`
 
 Each plan contains:
 - **affected_components**: Components impacted by the change
+- **upgrade_plan** (for framework upgrades only):
+  - `framework`, `from_version`, `to_version` (e.g., "Angular 18 → 19")
+  - `migration_sequence`: 15+ upgrade rules with severity (breaking/deprecated/recommended)
+  - `affected_files`: Real file paths matched by each rule (e.g., 142 files for standalone components)
+  - `migration_steps`: Step-by-step migration guide per rule
+  - `estimated_effort_minutes`: Effort per rule
+  - `verification_commands`: Commands to verify upgrade (e.g., `ng build`, `ng test`)
 - **implementation_steps**: Ordered steps to implement the task
 - **test_strategy**: Recommended tests based on existing patterns
 - **security_considerations**: Security-relevant patterns found

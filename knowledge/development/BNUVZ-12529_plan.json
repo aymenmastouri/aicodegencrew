@@ -40,7 +40,16 @@
             "Update test imports to use component directly"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\reencryption-partial-success-modal-dialog\\reencryption-partial-success-modal-dialog.component.ts",
+            "frontend\\src\\app\\shared\\page\\access-denied-page\\access-denied-page.component.ts",
+            "frontend\\src\\app\\report-metadata\\report-metadata.module.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\copy-notes-container\\copy-notes-container.component.ts",
+            "frontend\\src\\app\\adapters\\page-with-plugin-bar\\page-with-plugin-bar.component.ts",
+            "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+            "frontend\\src\\app\\adapters\\page-with-plugin-bar\\plugin-bar\\plugin-bar.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-archiving-overlay\\document-archiving-overlay.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\confirm-reception-modal-dialog\\confirm-reception-modal-dialog.component.ts"
           ],
           "estimated_effort_minutes": 1420,
           "schematic": "ng generate @angular/core:standalone-migration"
@@ -57,10 +66,19 @@
             "Test: ng build --watch to verify all SCSS compiles"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\deposited-inheritance-contracts-preview\\deposited-inheritance-contracts-preview.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-participants-report-preview\\annual-participants-report-preview.component.scss",
+            "frontend\\src\\app\\shared\\quick-search\\quick-search.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-complete\\deed-successor-page.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\correction-notes-tab-data\\correction-notes-tab-data.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\validate-signature-process-modal\\validate-signature-process-modal.component.scss",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.scss",
+            "frontend\\src\\app\\shared\\multiselect-dropdown\\multiselect-dropdown.component.scss",
+            "frontend\\src\\app\\shared\\tooltip-table\\tooltip-table.component.scss",
+            "frontend\\src\\app\\shared\\page\\action-bar\\action-bar.component.scss"
           ],
           "estimated_effort_minutes": 75,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng19-builder-migration",
@@ -73,10 +91,10 @@
             "Update output path configuration"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\angular.json"
           ],
           "estimated_effort_minutes": 30,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng19-typescript-56",
@@ -87,10 +105,10 @@
             "Fix any new strict type errors from TS 5.5/5.6"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\package.json"
           ],
           "estimated_effort_minutes": 60,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng19-zonejs-015",
@@ -100,10 +118,10 @@
             "Run: npm install zone.js@~0.15.0"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\package.json"
           ],
           "estimated_effort_minutes": 10,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng20-control-flow",
@@ -117,7 +135,16 @@
             "Remove CommonModule imports where only used for ngIf/ngFor"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\src\\app\\deed-entry\\components\\deed-import\\deed-import-modal\\deed-import-modal.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\annual-deed-register-report-preview\\annual-deed-register-report-preview.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-archiving-fail-overlay\\document-archiving-fail-overlay.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-marked-for-removal-component\\document-marked-for-removal-component.html",
+            "frontend\\src\\app\\shared\\quick-search\\quick-search.component.html",
+            "frontend\\src\\app\\shared\\page\\page-header\\page-header.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-data-tab.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\remarks\\remarks-view.component.html",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\copy-notes-view\\copy-notes-view.component.html",
+            "frontend\\src\\app\\workflow\\components\\reencryption-finalization-confirm\\reencryption-finalization-confirm.component.html"
           ],
           "estimated_effort_minutes": 1464,
           "schematic": "ng generate @angular/core:control-flow-migration"
@@ -131,11 +158,10 @@
             "Update imports: remove APP_INITIALIZER, add provideAppInitializer"
           ],
           "affected_files": [
-
-            "<multiple files>"
+            "frontend\\src\\app\\app.module.ts"
           ],
           "estimated_effort_minutes": 30,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng20-karma-deprecated",
@@ -149,10 +175,10 @@
             "Update angular.json test architect"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\package.json"
           ],
           "estimated_effort_minutes": 120,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng-aggrid-compat",
@@ -164,10 +190,10 @@
             "Review AG Grid changelog for breaking changes"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\package.json"
           ],
           "estimated_effort_minutes": 60,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng-ngbootstrap-compat",
@@ -178,10 +204,10 @@
             "Review component API changes in changelog"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\package.json"
           ],
           "estimated_effort_minutes": 45,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng-ngxtranslate-compat",
@@ -192,10 +218,10 @@
             "Consider migration to @angular/localize if ngx-translate is unmaintained"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\package.json"
           ],
           "estimated_effort_minutes": 30,
-          "schematic": ""
+          "schematic": null
         },
         {
           "rule_id": "ng-signal-inputs",
@@ -207,7 +233,16 @@
             "Update template access: myInput -> myInput()"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\archiving-error-details-modal-dialog\\archiving-error-details-modal-dialog.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\copy-notes-view\\copy-notes-view.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\copy-notes-container\\copy-notes-container.component.ts",
+            "frontend\\src\\app\\shared\\text-area\\text-area.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\registrations-view-container\\registrations-view-container.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-refuse-modal-dialog\\document-refuse-modal-dialog.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-edit-component\\document-edit-component.component.ts",
+            "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\issue-notarised-copy-note-modal-dialog\\issue-notarised-copy-note-modal-dialog.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\non-archived-document-modal-dialog\\non-archived-document-modal-dialog.component.ts"
           ],
           "estimated_effort_minutes": 905,
           "schematic": "ng generate @angular/core:signal-input-migration"
@@ -223,7 +258,16 @@
             "Update access patterns to use signal calls"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\registrations-data-tab\\registrations-data-tab.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\copy-notes-container\\copy-notes-container.component.ts",
+            "frontend\\src\\app\\shared\\text-area\\text-area.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-view-page\\registrations-view-container\\registrations-view-container.component.ts",
+            "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-successor-page\\deed-successor-complete\\deed-successor-page.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\deed-overview.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-report-page\\deposited-inheritance-contracts-preview\\deposited-inheritance-contracts-preview.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview-page.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\basic-data-tab\\basic-data-tab.component.ts"
           ],
           "estimated_effort_minutes": 385,
           "schematic": "ng generate @angular/core:signal-queries-migration"
@@ -238,7 +282,16 @@
             "Update emit() calls"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\src\\app\\shared\\text-area\\text-area.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-form-page\\tabs\\document-data-tab\\document-edit-component\\document-edit-component.component.ts",
+            "frontend\\src\\app\\shared\\enhanced-search\\enhanced-search.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\deed-overview\\deed-overview.component.ts",
+            "frontend\\src\\app\\workflow\\components\\mocks\\workflow-rest-mock-control\\workflow-rest-mock-control.component.ts",
+            "frontend\\src\\app\\shared\\multiselect-dropdown\\multiselect-dropdown.component.ts",
+            "frontend\\src\\app\\shared\\input\\input.component.ts",
+            "frontend\\src\\app\\deed-entry\\components\\deed-overview-page\\column-display-panel\\column-display-panel.component.ts",
+            "frontend\\src\\app\\shared\\generic-modal-dialogs\\retrival-archiving-progress-indicator-modal-dialog\\retrival-archiving-progress-indicator-modal-dialog.component.ts",
+            "frontend\\src\\app\\shared\\page\\checkbox\\checkbox.component.ts"
           ],
           "estimated_effort_minutes": 225,
           "schematic": "ng generate @angular/core:output-migration"
@@ -253,10 +306,16 @@
             "Remove HttpClientModule from module imports array"
           ],
           "affected_files": [
-            "<multiple files>"
+            "frontend\\src\\app\\deed-entry\\services\\deed-registry\\api-generated\\deed-registry-api.module.ts",
+            "frontend\\src\\app\\workflow\\services\\workflow-rest\\api-generated\\job-api.module.ts",
+            "frontend\\src\\app\\workflow\\services\\workflow-rest\\api-generated\\workflow-api.module.ts",
+            "frontend\\src\\app\\deed-entry\\services\\document-metadata\\api-generated\\document-metadata-api.module.ts",
+            "frontend\\src\\app\\workflow\\services\\workflow-rest\\api-generated\\task-api.module.ts",
+            "frontend\\src\\app\\adapters\\reencryption\\xnp\\api-generated\\reencryption-api.module.ts",
+            "frontend\\src\\app\\action\\services\\action\\api-generated\\action-api.module.ts"
           ],
           "estimated_effort_minutes": 105,
-          "schematic": ""
+          "schematic": null
         }
       ],
       "verification_commands": [
@@ -265,62 +324,62 @@
       ],
       "total_estimated_effort_hours": 82.7,
       "pre_migration_checks": [
-        "Run npm audit and address existing vulnerabilities",
+        "Confirm Node.js version compatibility (>=22)",
         "Backup current repository and create a release tag",
-        "Verify CI pipeline passes on current version",
-        "Confirm Node.js version compatibility (upgrade to Node 22 if needed)"
+        "Run full test suite on current version",
+        "Document current dependency versions"
       ],
       "post_migration_checks": [
-        "Execute full unit and integration test suites",
-        "Perform manual UI regression testing",
-        "Run security scan on updated dependencies",
-        "Validate that vertical action bar still functions"
+        "Run full build and smoke tests on upgraded code",
+        "Validate that vertical action bar still renders correctly",
+        "Check that no deprecated PL 11.3.1 artifacts remain",
+        "Perform security scan for new vulnerabilities"
       ]
     },
     "implementation_steps": [
-      "Update Node.js to version 22 and verify npm install succeeds",
-      "Upgrade TypeScript to 5.6 and fix any compilation errors",
-      "Apply migration sequence steps in order, starting with standalone component migration",
-      "Upgrade third‑party libraries (ng-bootstrap, ag-grid, ng-select) to versions compatible with Angular 19",
-      "Replace deprecated APP_INITIALIZER usage with provideAppInitializer",
-      "Migrate test runner from Karma to Vitest and adjust CI configuration",
-      "Convert all @Input, @Output, @ViewChild usages to signal based APIs",
-      "Remove any remaining Angular 18 or PL 11.3.1 specific code and verify vertical action bar compatibility"
+      "1. Update Node.js to version 22 and TypeScript to 5.6 in package.json.",
+      "2. Upgrade Angular core, CLI, and related packages to version 19 using ng update.",
+      "3. Update Pattern Library to 12.6.0 and align all bnotk/ds-ng components.",
+      "4. Run ng generate @angular/core:standalone-migration to convert NgModules to standalone components.",
+      "5. Replace node-sass with sass and adjust SCSS files for Dart Sass compatibility.",
+      "6. Migrate builder configuration from browser builder to application builder.",
+      "7. Apply control‑flow migration for ngIf/ngFor/ngSwitch to @if/@for/@switch.",
+      "8. Update ng-bootstrap, ag-grid, and other third‑party libraries to versions compatible with Angular 19.",
+      "9. Convert APP_INITIALIZER usages to provideAppInitializer.",
+      "10. Switch test runner from Karma to Vitest and adjust test configuration.",
+      "11. Migrate @Input, @Output, @ViewChild/@ViewChildren to signal‑based APIs.",
+      "12. Replace HttpClientModule imports with provideHttpClient() calls.",
+      "13. Run the full test suite, fix failing tests, and perform smoke testing on the XNP environment.",
+      "14. Remove any remaining Angular 18 or PL 11.3.1 specific code and assets.",
+      "15. Document migration outcomes and update CI/CD pipelines to use the new build configuration."
     ],
     "test_strategy": {
       "unit_tests": [
-        "Verify each migrated component renders correctly with the new standalone format",
-        "Ensure signal‑based inputs and outputs emit and receive values as before"
+        "Verify each migrated component initializes without errors.",
+        "Assert that signal‑based inputs/outputs emit and receive expected values."
       ],
       "integration_tests": [
-        "Test end‑to‑end flows involving ag‑grid and ng‑bootstrap components",
-        "Validate API communication using the updated HttpClient provisioning"
+        "End‑to‑end flow through the vertical action bar across all modules.",
+        "Data retrieval via updated HttpClient providers."
       ],
       "similar_patterns": [
-        {
-          "pattern": "JsonAuthenticationAdapter",
-          "framework": "jasmine",
-          "type": "unit",
-          "relevance": 0.117,
-          "file": "frontend\\src\\app\\adapters\\authentication\\jsonauthenticationadapter\\JsonAuthenticationAdapter.spec.ts"
-        }
+        "JsonAuthenticationAdapter (jasmine, unit, relevance: 0.117)"
       ]
     },
     "security_considerations": [
-      "Ensure CORS configuration allows only trusted origins (ActionRestService, AbstractSecurityConfiguration, JsonAuthorizationRestServiceImpl)",
-      "Verify CSRF protection is enabled for state‑changing operations (AbstractSecurityConfiguration, KeyManagerRestService)",
-      "Apply pre_authorize checks where required (KeyManagerRestService)"
+      "Ensure CORS configuration allows only trusted origins (ActionRestService, AbstractSecurityConfiguration, JsonAuthorizationRestServiceImpl).",
+      "Verify CSRF protection is enabled for state‑changing operations (AbstractSecurityConfiguration).",
+      "Apply pre_authorize checks on sensitive services (KeyManagerRestService)."
     ],
     "validation_strategy": [
-      "Add @NotNull annotations to DeedEntry fields",
-      "Add @Valid annotations to DeedEntryRestService methods",
-      "Add @NotBlank, @Min, @Max annotations to KmConfig properties"
+      "Add @NotNull annotations to DeedEntry fields.",
+      "Add @Valid annotations to DeedEntryRestService methods.",
+      "Add @NotBlank, @Min, @Max annotations to KmConfig properties."
     ],
     "error_handling": [
-      "Create or reuse custom RuntimeException for generic error cases",
-      "Add @ExceptionHandler for Exception in global exception handler",
-      "Add @ExceptionHandler for HttpClientErrorException",
-      "Add @ExceptionHandler for HttpRequestMethodNotSupportedException"
+      "Create or reuse custom RuntimeException subclasses where needed.",
+      "Add @ExceptionHandler for generic Exception in global exception handler.",
+      "Add @ExceptionHandler for HttpClientErrorException and HttpRequestMethodNotSupportedException."
     ],
     "architecture_context": {
       "style": "Modular Monolith",
@@ -331,12 +390,12 @@
       ]
     },
     "estimated_complexity": "Medium",
-    "complexity_reasoning": "The migration involves extensive breaking changes (standalone components, control‑flow migration) and many deprecated APIs, but most third‑party libraries have compatible versions, keeping effort manageable.",
+    "complexity_reasoning": "The migration touches core framework, many components, and introduces new signal APIs, requiring extensive code changes and testing, but the existing modular structure limits impact scope.",
     "estimated_files_changed": 250,
     "risks": [
-      "Breaking changes from standalone migration may require extensive refactoring of module boundaries",
-      "Potential incompatibility of third‑party libraries (ag‑grid, ng‑bootstrap) with Angular 19",
-      "Regression of UI behavior due to control‑flow template changes"
+      "Breaking changes in third‑party libraries causing runtime errors.",
+      "Potential regression of UI behavior due to control‑flow migration.",
+      "Signal migration may introduce subtle bugs if not thoroughly tested."
     ],
     "evidence_sources": {
       "components": "architecture_facts.json",
