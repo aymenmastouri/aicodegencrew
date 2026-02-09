@@ -1,3326 +1,2515 @@
-[
-  {
-    "name": "POST /uvz/v1/action/{type}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/action/{type}",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\api\\rest\\ActionRestService.java",
-        "lines": "36-41",
-        "reason": "REST endpoint: POST /uvz/v1/action/{type}"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/action/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/action/{id}",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\api\\rest\\ActionRestService.java",
-        "lines": "40-45",
-        "reason": "REST endpoint: GET /uvz/v1/action/{id}"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\api\\rest\\ActionRestService.java",
-        "lines": "37-39",
-        "reason": "*RestService endpoint: POST /uvz/v1/ (create)"
-      }
-    ]
-  },
-  {
-    "name": "GET /logger",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/logger",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\impl\\rest\\ActionRestServiceImpl.java",
-        "lines": "33-35",
-        "reason": "*RestService endpoint: GET /logger (getLogger)"
-      }
-    ]
-  },
-  {
-    "name": "GET /info",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/info",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\action\\service\\impl\\rest\\ActionRestServiceImpl.java",
-        "lines": "47-49",
-        "reason": "*RestService endpoint: GET /info (info)"
-      }
-    ]
-  },
-  {
-    "name": "GET /web/uvz/",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/web/uvz/",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\staticwebresources\\StaticContentController.java",
-        "lines": "33-38",
-        "reason": "REST endpoint: GET /web/uvz/"
-      }
-    ]
-  },
-  {
-    "name": "POST /jsonauth/user/to/authorization/service",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/jsonauth/user/to/authorization/service",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\authorization\\impl\\mock\\rest\\JsonAuthorizationRestServiceImpl.java",
-        "lines": "41-43",
-        "reason": "*RestService endpoint: POST /jsonauth/user/to/authorization/service (addUserToAuthorizationService)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /jsonauth/user/from/authorization/service",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/jsonauth/user/from/authorization/service",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\authorization\\impl\\mock\\rest\\JsonAuthorizationRestServiceImpl.java",
-        "lines": "53-55",
-        "reason": "*RestService endpoint: DELETE /jsonauth/user/from/authorization/service (removeUserFromAuthorizationService)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/keymanager/{groupId}/reencryptable",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/keymanager/{groupId}/reencryptable",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\service\\api\\rest\\KeyManagerRestService.java",
-        "lines": "39-44",
-        "reason": "REST endpoint: GET /uvz/v1/keymanager/{groupId}/reencryptable"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/keymanager/cryptostate",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/keymanager/cryptostate",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\service\\api\\rest\\KeyManagerRestService.java",
-        "lines": "51-56",
-        "reason": "REST endpoint: GET /uvz/v1/keymanager/cryptostate"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/crypto/state",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/crypto/state",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\service\\api\\rest\\KeyManagerRestService.java",
-        "lines": "52-54",
-        "reason": "*RestService endpoint: GET /uvz/v1/crypto/state (getCryptoState)"
-      }
-    ]
-  },
-  {
-    "name": "GET /is/reencryption/possible",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/is/reencryption/possible",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\service\\impl\\rest\\KeyManagerRestServiceImpl.java",
-        "lines": "36-38",
-        "reason": "*RestService endpoint: GET /is/reencryption/possible (isReencryptionPossible)"
-      }
-    ]
-  },
-  {
-    "name": "GET /crypto/state",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/crypto/state",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\adapters\\km\\service\\impl\\rest\\KeyManagerRestServiceImpl.java",
-        "lines": "44-46",
-        "reason": "*RestService endpoint: GET /crypto/state (getCryptoState)"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/archiving/sign-submission-token",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/archiving/sign-submission-token",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\api\\rest\\ArchivingRestService.java",
-        "lines": "49-54",
-        "reason": "REST endpoint: POST /uvz/v1/archiving/sign-submission-token"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/archiving/sign-reencrytion-token",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/archiving/sign-reencrytion-token",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\api\\rest\\ArchivingRestService.java",
-        "lines": "60-65",
-        "reason": "REST endpoint: POST /uvz/v1/archiving/sign-reencrytion-token"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/archiving/enabled",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/archiving/enabled",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\api\\rest\\ArchivingRestService.java",
-        "lines": "70-75",
-        "reason": "REST endpoint: GET /uvz/v1/archiving/enabled"
-      }
-    ]
-  },
-  {
-    "name": "GET /validation/exception",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/validation/exception",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\impl\\rest\\ArchivingRestServiceImpl.java",
-        "lines": "44-46",
-        "reason": "*RestService endpoint: GET /validation/exception (ValidationException)"
-      }
-    ]
-  },
-  {
-    "name": "GET /assert/operation/signer/present",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/assert/operation/signer/present",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\impl\\rest\\ArchivingRestServiceImpl.java",
-        "lines": "49-51",
-        "reason": "*RestService endpoint: GET /assert/operation/signer/present (assertOperationSignerPresent)"
-      }
-    ]
-  },
-  {
-    "name": "GET /is/present",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/is/present",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\archive\\service\\impl\\rest\\ArchivingRestServiceImpl.java",
-        "lines": "52-54",
-        "reason": "*RestService endpoint: GET /is/present (isPresent)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/businesspurposes",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/businesspurposes",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\BusinessPurposeRestService.java",
-        "lines": "39-44",
-        "reason": "REST endpoint: GET /uvz/v1/businesspurposes"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/problem-connections",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/problem-connections",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryConnectionRestService.java",
-        "lines": "42-47",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/problem-connections"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/problem/connections",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/problem/connections",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryConnectionRestService.java",
-        "lines": "43-45",
-        "reason": "*RestService endpoint: GET /uvz/v1/problem/connections (getProblemConnections)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/{id}/logs",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}/logs",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryLogRestService.java",
-        "lines": "39-44",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/{id}/logs"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "49-54",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "61-66",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "74-79",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "85-90",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "97-102",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/{id}"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/to-be-signed",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/to-be-signed",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "110-115",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/to-be-signed"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/to-be-approved",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/to-be-approved",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "127-132",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/to-be-approved"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "152-157",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "170-175",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/deedentries/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "185-190",
-        "reason": "REST endpoint: PUT /uvz/v1/deedentries/{id}"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/deedentries/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "200-205",
-        "reason": "REST endpoint: PUT /uvz/v1/deedentries/{id}"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/bulkcapture",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/bulkcapture",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "218-223",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/bulkcapture"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/bulkcapture",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/bulkcapture",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "234-239",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/bulkcapture"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/{id}/signature-folder",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}/signature-folder",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "242-247",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/{id}/signature-folder"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/document-handover",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/document-handover",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "259-264",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/document-handover"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/handover",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/handover",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "275-280",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/handover"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/handover",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/handover",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "285-290",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/handover"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/handover",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/handover",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "296-301",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/handover"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/successordeedselection",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/successordeedselection",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "303-308",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/successordeedselection"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/successordeedselection/{processType}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/successordeedselection/{processType}",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "311-316",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/successordeedselection/{processType}"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/successordeedselection",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/successordeedselection",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "321-326",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/successordeedselection"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/{id}/correctionnote",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}/correctionnote",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "335-340",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/{id}/correctionnote"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/{id}/lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}/lock",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "343-348",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/{id}/lock"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/deedentries/{id}/lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}/lock",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "353-358",
-        "reason": "REST endpoint: POST /uvz/v1/deedentries/{id}/lock"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /uvz/v1/deedentries/{id}/lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}/lock",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "371-376",
-        "reason": "REST endpoint: DELETE /uvz/v1/deedentries/{id}/lock"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/deedentries/{id}/lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/{id}/lock",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "385-390",
-        "reason": "REST endpoint: PUT /uvz/v1/deedentries/{id}/lock"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/lock",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "402-407",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/lock"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/participants",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/participants",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "411-416",
-        "reason": "REST endpoint: GET /uvz/v1/participants"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "425-430",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /uvz/v1/deedentries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "445-450",
-        "reason": "REST endpoint: DELETE /uvz/v1/deedentries"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/check/submittedwithcf",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/check/submittedwithcf",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "455-460",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/check/submittedwithcf"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedentries/check/isvalidforsigning",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedentries/check/isvalidforsigning",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "464-469",
-        "reason": "REST endpoint: GET /uvz/v1/deedentries/check/isvalidforsigning"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/mark/predecessor/lock/in/progress",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/mark/predecessor/lock/in/progress",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "276-278",
-        "reason": "*RestService endpoint: GET /uvz/v1/mark/predecessor/lock/in/progress (markPredecessorLockInProgress)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/process/handover/for/b/not/o",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/process/handover/for/b/not/o",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "286-288",
-        "reason": "*RestService endpoint: GET /uvz/v1/process/handover/for/b/not/o (processHandoverFor51BNotO)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/successor/deed/selection",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/successor/deed/selection",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "304-306",
-        "reason": "*RestService endpoint: GET /uvz/v1/successor/deed/selection (successorDeedSelection)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/cancel/handover/process",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/cancel/handover/process",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "322-324",
-        "reason": "*RestService endpoint: GET /uvz/v1/cancel/handover/process (cancelHandoverProcess)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deed/entry/registry/lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deed/entry/registry/lock",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "405-407",
-        "reason": "*RestService endpoint: GET /uvz/v1/deed/entry/registry/lock (getDeedEntryRegistryLock)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/is/any/deed/with/submit/with/error/flag/status",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/is/any/deed/with/submit/with/error/flag/status",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedEntryRestService.java",
-        "lines": "456-458",
-        "reason": "*RestService endpoint: GET /uvz/v1/is/any/deed/with/submit/with/error/flag/status (isAnyDeedWithSubmitWithErrorFlagStatus)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedregistry/locks",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedregistry/locks",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedRegistryRestService.java",
-        "lines": "36-41",
-        "reason": "REST endpoint: GET /uvz/v1/deedregistry/locks"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedregistry/locks/{types}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedregistry/locks/{types}",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedRegistryRestService.java",
-        "lines": "49-54",
-        "reason": "REST endpoint: GET /uvz/v1/deedregistry/locks/{types}"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedregistry/lock/{type}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedregistry/lock/{type}",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedRegistryRestService.java",
-        "lines": "58-63",
-        "reason": "REST endpoint: GET /uvz/v1/deedregistry/lock/{type}"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/deedtypes",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/deedtypes",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DeedTypeRestService.java",
-        "lines": "38-43",
-        "reason": "REST endpoint: GET /uvz/v1/deedtypes"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/documents/{deedEntryId}/document-copies",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/{deedEntryId}/document-copies",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "51-56",
-        "reason": "REST endpoint: GET /uvz/v1/documents/{deedEntryId}/document-copies"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/documents/to-be-archived",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/to-be-archived",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "57-62",
-        "reason": "REST endpoint: GET /uvz/v1/documents/to-be-archived"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/documents/operation-tokens",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/operation-tokens",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "64-69",
-        "reason": "REST endpoint: POST /uvz/v1/documents/operation-tokens"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/reference-hashes",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/reference-hashes",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "73-78",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/reference-hashes"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/documents/check-reference-hashes",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/check-reference-hashes",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "82-87",
-        "reason": "REST endpoint: POST /uvz/v1/documents/check-reference-hashes"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/check-for-deletion",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/check-for-deletion",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "91-96",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/check-for-deletion"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/documents/info",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/info",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "102-107",
-        "reason": "REST endpoint: GET /uvz/v1/documents/info"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/triggerWawi",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/triggerWawi",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "109-114",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/triggerWawi"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/documents/archiving-failed",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/archiving-failed",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "118-123",
-        "reason": "REST endpoint: GET /uvz/v1/documents/archiving-failed"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/signing-info",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/signing-info",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "125-130",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/signing-info"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/report-metadata/signing-info",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/report-metadata/signing-info",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "142-147",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/report-metadata/signing-info"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/report-metadata/document-status",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/report-metadata/document-status",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "157-162",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/report-metadata/document-status"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/report-metadata/document-status-archive",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/report-metadata/document-status-archive",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "172-177",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/report-metadata/document-status-archive"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/documents/eto",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/eto",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "186-191",
-        "reason": "REST endpoint: GET /uvz/v1/documents/eto"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/documents/{aoId}/reencryption-state",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/{aoId}/reencryption-state",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "190-195",
-        "reason": "REST endpoint: PUT /uvz/v1/documents/{aoId}/reencryption-state"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/documents/to/be/archived",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/documents/to/be/archived",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "58-60",
-        "reason": "*RestService endpoint: GET /uvz/v1/documents/to/be/archived (getDocumentsToBeArchived)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /uvz/v1/flagged/documents/if/timeout/is/reached",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/flagged/documents/if/timeout/is/reached",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "93-95",
-        "reason": "*RestService endpoint: DELETE /uvz/v1/flagged/documents/if/timeout/is/reached (deleteFlaggedDocumentsIfTimeoutIsReached)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/trigger/wawi",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/trigger/wawi",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "111-113",
-        "reason": "*RestService endpoint: GET /uvz/v1/trigger/wawi (triggerWawi)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/archiving/failed/documents",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/archiving/failed/documents",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\DocumentMetaDataRestService.java",
-        "lines": "119-121",
-        "reason": "*RestService endpoint: GET /uvz/v1/archiving/failed/documents (getArchivingFailedDocuments)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/handoverdatasets",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "45-50",
-        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /uvz/v1/handoverdatasets",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "52-57",
-        "reason": "REST endpoint: DELETE /uvz/v1/handoverdatasets"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/handoverdatasets/predecessor",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets/predecessor",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "64-69",
-        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets/predecessor"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/handoverdatasets/finalise-handover",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets/finalise-handover",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "72-77",
-        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets/finalise-handover"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/handoverdatasets/finalise-handover",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets/finalise-handover",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "80-85",
-        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/finalise-handover"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/handoverdatasets/finalise-handover-retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "89-94",
-        "reason": "REST endpoint: GET /uvz/v1/handoverdatasets/finalise-handover-retry"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/handoverdatasets/finalise-handover-retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "97-102",
-        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/finalise-handover-retry"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "106-111",
-        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/handoverdatasets/accept",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handoverdatasets/accept",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "114-119",
-        "reason": "REST endpoint: POST /uvz/v1/handoverdatasets/accept"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/handover/info",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handover/info",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "46-48",
-        "reason": "*RestService endpoint: GET /uvz/v1/handover/info (getHandoverInfo)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /uvz/v1/handover/data/sets",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handover/data/sets",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "56-58",
-        "reason": "*RestService endpoint: DELETE /uvz/v1/handover/data/sets (deleteHandoverDataSets)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/handover/data/sets/for/predecessor",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/handover/data/sets/for/predecessor",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "65-67",
-        "reason": "*RestService endpoint: GET /uvz/v1/handover/data/sets/for/predecessor (getHandoverDataSetsForPredecessor)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/final/handover/data/sets",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/final/handover/data/sets",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "73-75",
-        "reason": "*RestService endpoint: GET /uvz/v1/final/handover/data/sets (getFinalHandoverDataSets)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/batch/ids/for/reencryption/retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/batch/ids/for/reencryption/retry",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\api\\rest\\HandoverDataSetRestService.java",
-        "lines": "90-92",
-        "reason": "*RestService endpoint: GET /uvz/v1/batch/ids/for/reencryption/retry (getBatchIdsForReencryptionRetry)"
-      }
-    ]
-  },
-  {
-    "name": "GET /business/purposes",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/business/purposes",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\BusinessPurposeRestServiceImpl.java",
-        "lines": "28-30",
-        "reason": "*RestService endpoint: GET /business/purposes (getBusinessPurposes)"
-      }
-    ]
-  },
-  {
-    "name": "GET /warn",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/warn",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryLogRestServiceImpl.java",
-        "lines": "35-37",
-        "reason": "*RestService endpoint: GET /warn (warn)"
-      }
-    ]
-  },
-  {
-    "name": "GET /abs",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/abs",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryLogRestServiceImpl.java",
-        "lines": "38-40",
-        "reason": "*RestService endpoint: GET /abs (abs)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/entry/logs",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entry/logs",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryLogRestServiceImpl.java",
-        "lines": "40-42",
-        "reason": "*RestService endpoint: GET /deed/entry/logs (getDeedEntryLogs)"
-      }
-    ]
-  },
-  {
-    "name": "GET /min",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/min",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "85-87",
-        "reason": "*RestService endpoint: GET /min (min)"
-      }
-    ]
-  },
-  {
-    "name": "GET /of",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/of",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "92-94",
-        "reason": "*RestService endpoint: GET /of (of)"
-      }
-    ]
-  },
-  {
-    "name": "GET /to/list",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/to/list",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "124-126",
-        "reason": "*RestService endpoint: GET /to/list (toList)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/entries/with/obj/to/be/signed",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entries/with/obj/to/be/signed",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "126-128",
-        "reason": "*RestService endpoint: GET /deed/entries/with/obj/to/be/signed (getDeedEntriesWithObjToBeSigned)"
-      }
-    ]
-  },
-  {
-    "name": "POST /initial/deed/entry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/initial/deed/entry",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "156-158",
-        "reason": "*RestService endpoint: POST /initial/deed/entry (saveInitialDeedEntry)"
-      }
-    ]
-  },
-  {
-    "name": "GET /submit/initial/deed/entry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/submit/initial/deed/entry",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "169-171",
-        "reason": "*RestService endpoint: GET /submit/initial/deed/entry (submitInitialDeedEntry)"
-      }
-    ]
-  },
-  {
-    "name": "POST /existing/deed/entry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/existing/deed/entry",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "188-190",
-        "reason": "*RestService endpoint: POST /existing/deed/entry (saveExistingDeedEntry)"
-      }
-    ]
-  },
-  {
-    "name": "GET /submit/existing/deed/entry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/submit/existing/deed/entry",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "205-207",
-        "reason": "*RestService endpoint: GET /submit/existing/deed/entry (submitExistingDeedEntry)"
-      }
-    ]
-  },
-  {
-    "name": "POST /bulk/capture/deed/entries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/bulk/capture/deed/entries",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "217-219",
-        "reason": "*RestService endpoint: POST /bulk/capture/deed/entries (saveBulkCaptureDeedEntries)"
-      }
-    ]
-  },
-  {
-    "name": "GET /submit/bulk/capture/deed/entries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/submit/bulk/capture/deed/entries",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "228-230",
-        "reason": "*RestService endpoint: GET /submit/bulk/capture/deed/entries (submitBulkCaptureDeedEntries)"
-      }
-    ]
-  },
-  {
-    "name": "GET /process/signature/folder",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/process/signature/folder",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "244-246",
-        "reason": "*RestService endpoint: GET /process/signature/folder (processSignatureFolder)"
-      }
-    ]
-  },
-  {
-    "name": "GET /debug",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/debug",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "254-256",
-        "reason": "*RestService endpoint: GET /debug (debug)"
-      }
-    ]
-  },
-  {
-    "name": "POST /pageable",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/pageable",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "258-260",
-        "reason": "*RestService endpoint: POST /pageable (createPageable)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/entries",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entries",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "260-262",
-        "reason": "*RestService endpoint: GET /deed/entries (getDeedEntries)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/entries/for/successor/selection",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entries/for/successor/selection",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "272-274",
-        "reason": "*RestService endpoint: GET /deed/entries/for/successor/selection (getDeedEntriesForSuccessorSelection)"
-      }
-    ]
-  },
-  {
-    "name": "GET /mark/predecessor/lock/in/progress",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/mark/predecessor/lock/in/progress",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "285-287",
-        "reason": "*RestService endpoint: GET /mark/predecessor/lock/in/progress (markPredecessorLockInProgress)"
-      }
-    ]
-  },
-  {
-    "name": "GET /preview/correction/note",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/preview/correction/note",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "316-318",
-        "reason": "*RestService endpoint: GET /preview/correction/note (previewCorrectionNote)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/entry/assignment/count/to",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entry/assignment/count/to",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "333-335",
-        "reason": "*RestService endpoint: GET /deed/entry/assignment/count/to (DeedEntryAssignmentCountTo)"
-      }
-    ]
-  },
-  {
-    "name": "GET /process/depositing/selection",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/process/depositing/selection",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "334-336",
-        "reason": "*RestService endpoint: GET /process/depositing/selection (processDepositingSelection)"
-      }
-    ]
-  },
-  {
-    "name": "GET /skipped/uvz/number",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/skipped/uvz/number",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "354-356",
-        "reason": "*RestService endpoint: GET /skipped/uvz/number (getSkippedUvzNumber)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/entries/for/type/ahead/search",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entries/for/type/ahead/search",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "367-369",
-        "reason": "*RestService endpoint: GET /deed/entries/for/type/ahead/search (getDeedEntriesForTypeAheadSearch)"
-      }
-    ]
-  },
-  {
-    "name": "GET /start/successor/to",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/start/successor/to",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "375-377",
-        "reason": "*RestService endpoint: GET /start/successor/to (StartSuccessorTo)"
-      }
-    ]
-  },
-  {
-    "name": "GET /start/successor/process",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/start/successor/process",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "376-378",
-        "reason": "*RestService endpoint: GET /start/successor/process (startSuccessorProcess)"
-      }
-    ]
-  },
-  {
-    "name": "GET /now",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/now",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "396-398",
-        "reason": "*RestService endpoint: GET /now (now)"
-      }
-    ]
-  },
-  {
-    "name": "GET /lock/deed/entry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/lock/deed/entry",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "404-406",
-        "reason": "*RestService endpoint: GET /lock/deed/entry (lockDeedEntry)"
-      }
-    ]
-  },
-  {
-    "name": "GET /user/details",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/user/details",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "420-422",
-        "reason": "*RestService endpoint: GET /user/details (getUserDetails)"
-      }
-    ]
-  },
-  {
-    "name": "PUT /deed/entry/lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entry/lock",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "437-439",
-        "reason": "*RestService endpoint: PUT /deed/entry/lock (updateDeedEntryLock)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/entries/for/ids",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entries/for/ids",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "481-483",
-        "reason": "*RestService endpoint: GET /deed/entries/for/ids (getDeedEntriesForIds)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /deed/entries/{ids}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/entries/{ids}",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedEntryRestServiceImpl.java",
-        "lines": "490-492",
-        "reason": "*RestService endpoint: DELETE /deed/entries/{ids} (deleteDeedEntriesByIds)"
-      }
-    ]
-  },
-  {
-    "name": "GET /internal",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/internal",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedRegistryRestServiceImpl.java",
-        "lines": "39-41",
-        "reason": "*RestService endpoint: GET /internal (getAllInternal)"
-      }
-    ]
-  },
-  {
-    "name": "GET /locks",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/locks",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedRegistryRestServiceImpl.java",
-        "lines": "60-62",
-        "reason": "*RestService endpoint: GET /locks (getLocks)"
-      }
-    ]
-  },
-  {
-    "name": "GET /build",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/build",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedRegistryRestServiceImpl.java",
-        "lines": "65-67",
-        "reason": "*RestService endpoint: GET /build (build)"
-      }
-    ]
-  },
-  {
-    "name": "GET /ok",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/ok",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedRegistryRestServiceImpl.java",
-        "lines": "67-69",
-        "reason": "*RestService endpoint: GET /ok (ok)"
-      }
-    ]
-  },
-  {
-    "name": "GET /lock",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/lock",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedRegistryRestServiceImpl.java",
-        "lines": "78-80",
-        "reason": "*RestService endpoint: GET /lock (getLock)"
-      }
-    ]
-  },
-  {
-    "name": "GET /deed/types",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/deed/types",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DeedTypeRestServiceImpl.java",
-        "lines": "25-27",
-        "reason": "*RestService endpoint: GET /deed/types (getDeedTypes)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /flagged/documents/if/timeout/is/reached",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/flagged/documents/if/timeout/is/reached",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DocumentMetaDataRestServiceImpl.java",
-        "lines": "91-93",
-        "reason": "*RestService endpoint: DELETE /flagged/documents/if/timeout/is/reached (deleteFlaggedDocumentsIfTimeoutIsReached)"
-      }
-    ]
-  },
-  {
-    "name": "GET /notify/wa/wi",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/notify/wa/wi",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DocumentMetaDataRestServiceImpl.java",
-        "lines": "104-106",
-        "reason": "*RestService endpoint: GET /notify/wa/wi (notifyWaWi)"
-      }
-    ]
-  },
-  {
-    "name": "GET /record/successful/signature/in/document/metadata",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/record/successful/signature/in/document/metadata",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DocumentMetaDataRestServiceImpl.java",
-        "lines": "122-124",
-        "reason": "*RestService endpoint: GET /record/successful/signature/in/document/metadata (recordSuccessfulSignatureInDocumentMetadata)"
-      }
-    ]
-  },
-  {
-    "name": "PUT /document/status",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/document/status",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DocumentMetaDataRestServiceImpl.java",
-        "lines": "127-129",
-        "reason": "*RestService endpoint: PUT /document/status (updateDocumentStatus)"
-      }
-    ]
-  },
-  {
-    "name": "PUT /document/status/archive",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/document/status/archive",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DocumentMetaDataRestServiceImpl.java",
-        "lines": "131-133",
-        "reason": "*RestService endpoint: PUT /document/status/archive (updateDocumentStatusArchive)"
-      }
-    ]
-  },
-  {
-    "name": "PUT /reencryption/state",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/reencryption/state",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\DocumentMetaDataRestServiceImpl.java",
-        "lines": "142-144",
-        "reason": "*RestService endpoint: PUT /reencryption/state (updateReencryptionState)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /handover/data/sets",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/handover/data/sets",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\HandoverDataSetRestServiceImpl.java",
-        "lines": "31-33",
-        "reason": "*RestService endpoint: DELETE /handover/data/sets (deleteHandoverDataSets)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /final/handover/data/sets",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/final/handover/data/sets",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\HandoverDataSetRestServiceImpl.java",
-        "lines": "47-49",
-        "reason": "*RestService endpoint: DELETE /final/handover/data/sets (deleteFinalHandoverDataSets)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /batch/ids/for/successful/reencryption/retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/batch/ids/for/successful/reencryption/retry",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\HandoverDataSetRestServiceImpl.java",
-        "lines": "58-60",
-        "reason": "*RestService endpoint: DELETE /batch/ids/for/successful/reencryption/retry (deleteBatchIdsForSuccessfulReencryptionRetry)"
-      }
-    ]
-  },
-  {
-    "name": "POST /batch/id/for/reencryption/retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/batch/id/for/reencryption/retry",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\HandoverDataSetRestServiceImpl.java",
-        "lines": "64-66",
-        "reason": "*RestService endpoint: POST /batch/id/for/reencryption/retry (saveBatchIdForReencryptionRetry)"
-      }
-    ]
-  },
-  {
-    "name": "GET /accept/handovers",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/accept/handovers",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedentry\\service\\impl\\rest\\HandoverDataSetRestServiceImpl.java",
-        "lines": "71-73",
-        "reason": "*RestService endpoint: GET /accept/handovers (acceptHandovers)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/reports/annual",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/reports/annual",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
-        "lines": "40-45",
-        "reason": "REST endpoint: GET /uvz/v1/reports/annual"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/reports/annual/validate",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/reports/annual/validate",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
-        "lines": "53-58",
-        "reason": "REST endpoint: GET /uvz/v1/reports/annual/validate"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/reports/annual-deed-register",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/reports/annual-deed-register",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
-        "lines": "72-77",
-        "reason": "REST endpoint: GET /uvz/v1/reports/annual-deed-register"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/reports/annual-participants",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/reports/annual-participants",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
-        "lines": "89-94",
-        "reason": "REST endpoint: GET /uvz/v1/reports/annual-participants"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/reports/deposited-inheritance-contracts",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/reports/deposited-inheritance-contracts",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\api\\rest\\ReportRestService.java",
-        "lines": "103-108",
-        "reason": "REST endpoint: GET /uvz/v1/reports/deposited-inheritance-contracts"
-      }
-    ]
-  },
-  {
-    "name": "GET /generate/report/criteria/to",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/generate/report/criteria/to",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\impl\\rest\\ReportRestServiceImpl.java",
-        "lines": "36-38",
-        "reason": "*RestService endpoint: GET /generate/report/criteria/to (GenerateReportCriteriaTo)"
-      }
-    ]
-  },
-  {
-    "name": "GET /validate/report/criteria/to",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/validate/report/criteria/to",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\impl\\rest\\ReportRestServiceImpl.java",
-        "lines": "48-50",
-        "reason": "*RestService endpoint: GET /validate/report/criteria/to (ValidateReportCriteriaTo)"
-      }
-    ]
-  },
-  {
-    "name": "GET /set/report/types",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/set/report/types",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\impl\\rest\\ReportRestServiceImpl.java",
-        "lines": "49-51",
-        "reason": "*RestService endpoint: GET /set/report/types (setReportTypes)"
-      }
-    ]
-  },
-  {
-    "name": "GET /is/annual/report/valid",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/is/annual/report/valid",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\deedreports\\service\\impl\\rest\\ReportRestServiceImpl.java",
-        "lines": "53-55",
-        "reason": "*RestService endpoint: GET /is/annual/report/valid (isAnnualReportValid)"
-      }
-    ]
-  },
-  {
-    "name": "PATCH /uvz/v1/job/retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/job/retry",
-    "method": "PATCH",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
-        "lines": "52-57",
-        "reason": "REST endpoint: PATCH /uvz/v1/job/retry"
-      }
-    ]
-  },
-  {
-    "name": "PATCH /uvz/v1/job/retry/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/job/retry/{id}",
-    "method": "PATCH",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
-        "lines": "63-68",
-        "reason": "REST endpoint: PATCH /uvz/v1/job/retry/{id}"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/job/metrics",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/job/metrics",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
-        "lines": "78-83",
-        "reason": "REST endpoint: GET /uvz/v1/job/metrics"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/job/{type}/state",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/job/{type}/state",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
-        "lines": "90-95",
-        "reason": "REST endpoint: GET /uvz/v1/job/{type}/state"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/retry",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
-        "lines": "53-55",
-        "reason": "*RestService endpoint: GET /uvz/v1/retry (retry)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/retry/{work}/id",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/retry/{work}/id",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\JobRestService.java",
-        "lines": "64-66",
-        "reason": "*RestService endpoint: GET /uvz/v1/retry/{work}/id (retryByWorkId)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/job/reencryption/{jobId}/document",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/job/reencryption/{jobId}/document",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\api\\rest\\ReencryptionJobRestService.java",
-        "lines": "41-46",
-        "reason": "REST endpoint: GET /uvz/v1/job/reencryption/{jobId}/document"
-      }
-    ]
-  },
-  {
-    "name": "GET /retry",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/retry",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\impl\\rest\\JobRestServiceImpl.java",
-        "lines": "35-37",
-        "reason": "*RestService endpoint: GET /retry (retry)"
-      }
-    ]
-  },
-  {
-    "name": "GET /job/metrics",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/job/metrics",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\impl\\rest\\JobRestServiceImpl.java",
-        "lines": "58-60",
-        "reason": "*RestService endpoint: GET /job/metrics (getJobMetrics)"
-      }
-    ]
-  },
-  {
-    "name": "GET /job/completion/state",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/job/completion/state",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\impl\\rest\\JobRestServiceImpl.java",
-        "lines": "67-69",
-        "reason": "*RestService endpoint: GET /job/completion/state (getJobCompletionState)"
-      }
-    ]
-  },
-  {
-    "name": "GET /recent/reencrypted/document",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/recent/reencrypted/document",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\job\\service\\impl\\rest\\ReencryptionJobRestServiceImpl.java",
-        "lines": "36-38",
-        "reason": "*RestService endpoint: GET /recent/reencrypted/document (getRecentReencryptedDocument)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/notaryrepresentations",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/notaryrepresentations",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\notaryrepresentation\\service\\api\\rest\\NotaryRepresentationRestService.java",
-        "lines": "51-56",
-        "reason": "REST endpoint: GET /uvz/v1/notaryrepresentations"
-      }
-    ]
-  },
-  {
-    "name": "GET /notary/representations",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/notary/representations",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\notaryrepresentation\\service\\impl\\rest\\NotaryRepresentationRestServiceImpl.java",
-        "lines": "40-42",
-        "reason": "*RestService endpoint: GET /notary/representations (getNotaryRepresentations)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/numbermanagement",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/numbermanagement",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
-        "lines": "51-56",
-        "reason": "REST endpoint: GET /uvz/v1/numbermanagement"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/numbermanagement/validate",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/numbermanagement/validate",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
-        "lines": "71-76",
-        "reason": "REST endpoint: GET /uvz/v1/numbermanagement/validate"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/numbermanagement/numberformat",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/numbermanagement/numberformat",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
-        "lines": "79-84",
-        "reason": "REST endpoint: GET /uvz/v1/numbermanagement/numberformat"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/numbermanagement/numberformat",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/numbermanagement/numberformat",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
-        "lines": "91-96",
-        "reason": "REST endpoint: PUT /uvz/v1/numbermanagement/numberformat"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/numbermanagement/validate/bulkcapture",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/numbermanagement/validate/bulkcapture",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\numbermanagement\\service\\api\\rest\\NumberManagementRestService.java",
-        "lines": "112-117",
-        "reason": "REST endpoint: GET /uvz/v1/numbermanagement/validate/bulkcapture"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/official-activity-metadata",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/official-activity-metadata",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\api\\rest\\OfficialActivityMetadataRestService.java",
-        "lines": "44-49",
-        "reason": "REST endpoint: GET /uvz/v1/official-activity-metadata"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/official-activity-metadata/notariesandchambers",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/official-activity-metadata/notariesandchambers",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\api\\rest\\OfficialActivityMetadataRestService.java",
-        "lines": "55-60",
-        "reason": "REST endpoint: GET /uvz/v1/official-activity-metadata/notariesandchambers"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/official-activity-metadata/successors",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/official-activity-metadata/successors",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\api\\rest\\OfficialActivityMetadataRestService.java",
-        "lines": "66-71",
-        "reason": "REST endpoint: GET /uvz/v1/official-activity-metadata/successors"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/successors",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/successors",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\api\\rest\\OfficialActivityMetadataRestService.java",
-        "lines": "68-70",
-        "reason": "*RestService endpoint: GET /uvz/v1/successors (getSuccessors)"
-      }
-    ]
-  },
-  {
-    "name": "GET /official/activity/metadata/list",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/official/activity/metadata/list",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\officialactivity\\service\\impl\\rest\\OfficialActivityMetadataRestServiceImpl.java",
-        "lines": "39-41",
-        "reason": "*RestService endpoint: GET /official/activity/metadata/list (getOfficialActivityMetadataList)"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/report-metadata/",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/report-metadata/",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
-        "lines": "41-46",
-        "reason": "REST endpoint: POST /uvz/v1/report-metadata/"
-      }
-    ]
-  },
-  {
-    "name": "PUT /uvz/v1/report-metadata/to-be-signed",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/report-metadata/to-be-signed",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
-        "lines": "51-56",
-        "reason": "REST endpoint: PUT /uvz/v1/report-metadata/to-be-signed"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/report-metadata/",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/report-metadata/",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
-        "lines": "68-73",
-        "reason": "REST endpoint: GET /uvz/v1/report-metadata/"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/report-metadata/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/report-metadata/{id}",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
-        "lines": "81-86",
-        "reason": "REST endpoint: GET /uvz/v1/report-metadata/{id}"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /uvz/v1/report-metadata/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/report-metadata/{id}",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\api\\rest\\ReportMetadataRestService.java",
-        "lines": "89-94",
-        "reason": "REST endpoint: DELETE /uvz/v1/report-metadata/{id}"
-      }
-    ]
-  },
-  {
-    "name": "POST /report/with/document/metadata",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/report/with/document/metadata",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\impl\\rest\\ReportMetadataRestServiceImpl.java",
-        "lines": "41-43",
-        "reason": "*RestService endpoint: POST /report/with/document/metadata (createReportWithDocumentMetadata)"
-      }
-    ]
-  },
-  {
-    "name": "PUT /report/signing/state/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/report/signing/state/{id}",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\impl\\rest\\ReportMetadataRestServiceImpl.java",
-        "lines": "48-50",
-        "reason": "*RestService endpoint: PUT /report/signing/state/{id} (updateReportSigningStateById)"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /report/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/report/{id}",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\reportmetadata\\service\\impl\\rest\\ReportMetadataRestServiceImpl.java",
-        "lines": "76-78",
-        "reason": "*RestService endpoint: DELETE /report/{id} (deleteReportById)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/task",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/task",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
-        "lines": "77-82",
-        "reason": "REST endpoint: GET /uvz/v1/task"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/task/initial",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/task/initial",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
-        "lines": "89-94",
-        "reason": "REST endpoint: GET /uvz/v1/task/initial"
-      }
-    ]
-  },
-  {
-    "name": "PATCH /uvz/v1/task/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/task/{id}",
-    "method": "PATCH",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
-        "lines": "98-103",
-        "reason": "REST endpoint: PATCH /uvz/v1/task/{id}"
-      }
-    ]
-  },
-  {
-    "name": "PATCH /uvz/v1/task/{id}/work",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/task/{id}/work",
-    "method": "PATCH",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
-        "lines": "110-115",
-        "reason": "REST endpoint: PATCH /uvz/v1/task/{id}/work"
-      }
-    ]
-  },
-  {
-    "name": "DELETE /uvz/v1/task/{id}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/task/{id}",
-    "method": "DELETE",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
-        "lines": "126-131",
-        "reason": "REST endpoint: DELETE /uvz/v1/task/{id}"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/initial/task",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/initial/task",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\api\\rest\\TaskRestService.java",
-        "lines": "90-92",
-        "reason": "*RestService endpoint: GET /uvz/v1/initial/task (getInitialTask)"
-      }
-    ]
-  },
-  {
-    "name": "GET /task",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/task",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\impl\\rest\\TaskRestServiceImpl.java",
-        "lines": "48-50",
-        "reason": "*RestService endpoint: GET /task (getTask)"
-      }
-    ]
-  },
-  {
-    "name": "POST /",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\impl\\rest\\TaskRestServiceImpl.java",
-        "lines": "69-71",
-        "reason": "*RestService endpoint: POST / (add)"
-      }
-    ]
-  },
-  {
-    "name": "GET /keep/alive",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/keep/alive",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\impl\\rest\\TaskRestServiceImpl.java",
-        "lines": "81-83",
-        "reason": "*RestService endpoint: GET /keep/alive (keepAlive)"
-      }
-    ]
-  },
-  {
-    "name": "PUT /task",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/task",
-    "method": "PUT",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\task\\service\\impl\\rest\\TaskRestServiceImpl.java",
-        "lines": "90-92",
-        "reason": "*RestService endpoint: PUT /task (updateTask)"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/workflow/{type}",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/workflow/{type}",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
-        "lines": "52-57",
-        "reason": "REST endpoint: GET /uvz/v1/workflow/{type}"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/workflow/initial",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/workflow/initial",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
-        "lines": "62-67",
-        "reason": "REST endpoint: GET /uvz/v1/workflow/initial"
-      }
-    ]
-  },
-  {
-    "name": "POST /uvz/v1/workflow",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/workflow",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
-        "lines": "74-79",
-        "reason": "REST endpoint: POST /uvz/v1/workflow"
-      }
-    ]
-  },
-  {
-    "name": "PATCH /uvz/v1/workflow/{id}/proceed",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/workflow/{id}/proceed",
-    "method": "PATCH",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
-        "lines": "83-88",
-        "reason": "REST endpoint: PATCH /uvz/v1/workflow/{id}/proceed"
-      }
-    ]
-  },
-  {
-    "name": "PATCH /uvz/v1/workflow/{id}/confirm",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/workflow/{id}/confirm",
-    "method": "PATCH",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
-        "lines": "91-96",
-        "reason": "REST endpoint: PATCH /uvz/v1/workflow/{id}/confirm"
-      }
-    ]
-  },
-  {
-    "name": "GET /uvz/v1/initial/workflow",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/uvz/v1/initial/workflow",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\api\\rest\\WorkflowRestService.java",
-        "lines": "63-65",
-        "reason": "*RestService endpoint: GET /uvz/v1/initial/workflow (getInitialWorkflow)"
-      }
-    ]
-  },
-  {
-    "name": "GET /workflow",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/workflow",
-    "method": "GET",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\impl\\rest\\WorkflowRestServiceImpl.java",
-        "lines": "36-38",
-        "reason": "*RestService endpoint: GET /workflow (getWorkflow)"
-      }
-    ]
-  },
-  {
-    "name": "POST /workflow",
-    "type": "rest_endpoint",
-    "container_hint": "backend",
-    "path": "/workflow",
-    "method": "POST",
-    "evidence": [
-      {
-        "path": "src\\main\\java\\de\\bnotk\\uvz\\module\\workflow\\service\\impl\\rest\\WorkflowRestServiceImpl.java",
-        "lines": "58-60",
-        "reason": "*RestService endpoint: POST /workflow (createWorkflow)"
-      }
-    ]
-  },
-  {
-    "name": "/basic-data",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/basic-data",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "50-55",
-        "reason": "Angular route: /basic-data"
-      }
-    ]
-  },
-  {
-    "name": "/remarks",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/remarks",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "59-64",
-        "reason": "Angular route: /remarks"
-      }
-    ]
-  },
-  {
-    "name": "/registrations",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/registrations",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "64-69",
-        "reason": "Angular route: /registrations"
-      }
-    ]
-  },
-  {
-    "name": "/participants",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/participants",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "69-74",
-        "reason": "Angular route: /participants"
-      }
-    ]
-  },
-  {
-    "name": "/issuing-copy-notes",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/issuing-copy-notes",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "75-80",
-        "reason": "Angular route: /issuing-copy-notes"
-      }
-    ]
-  },
-  {
-    "name": "/notes",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/notes",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "81-86",
-        "reason": "Angular route: /notes"
-      }
-    ]
-  },
-  {
-    "name": "/links",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/links",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "87-92",
-        "reason": "Angular route: /links"
-      }
-    ]
-  },
-  {
-    "name": "/document",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/document",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "96-101",
-        "reason": "Angular route: /document"
-      }
-    ]
-  },
-  {
-    "name": "/",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "107-112",
-        "reason": "Angular route: /"
-      }
-    ]
-  },
-  {
-    "name": "/uvz",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/uvz",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "112-117",
-        "reason": "Angular route: /uvz"
-      }
-    ]
-  },
-  {
-    "name": "/access-denied",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/access-denied",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "120-125",
-        "reason": "Angular route: /access-denied"
-      }
-    ]
-  },
-  {
-    "name": "/",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "125-130",
-        "reason": "Angular route: /"
-      }
-    ]
-  },
-  {
-    "name": "/",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "134-139",
-        "reason": "Angular route: /"
-      }
-    ]
-  },
-  {
-    "name": "/deed-entries",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/deed-entries",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "139-144",
-        "reason": "Angular route: /deed-entries"
-      }
-    ]
-  },
-  {
-    "name": "/deed-view/:deedEntryId",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/deed-view/:deedEntryId",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "153-158",
-        "reason": "Angular route: /deed-view/:deedEntryId"
-      }
-    ]
-  },
-  {
-    "name": "/deed-form",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/deed-form",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "162-167",
-        "reason": "Angular route: /deed-form"
-      }
-    ]
-  },
-  {
-    "name": "/deed-form-bulk-capture",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/deed-form-bulk-capture",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "171-176",
-        "reason": "Angular route: /deed-form-bulk-capture"
-      }
-    ]
-  },
-  {
-    "name": "/deed-form/:deedEntryId",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/deed-form/:deedEntryId",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "180-185",
-        "reason": "Angular route: /deed-form/:deedEntryId"
-      }
-    ]
-  },
-  {
-    "name": "/",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "189-194",
-        "reason": "Angular route: /"
-      }
-    ]
-  },
-  {
-    "name": "/reports",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/reports",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "194-199",
-        "reason": "Angular route: /reports"
-      }
-    ]
-  },
-  {
-    "name": "/annual/preview",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/annual/preview",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "206-211",
-        "reason": "Angular route: /annual/preview"
-      }
-    ]
-  },
-  {
-    "name": "/annual-deed-register/preview",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/annual-deed-register/preview",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "214-219",
-        "reason": "Angular route: /annual-deed-register/preview"
-      }
-    ]
-  },
-  {
-    "name": "/deposited-inheritance-contracts/preview",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/deposited-inheritance-contracts/preview",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "223-228",
-        "reason": "Angular route: /deposited-inheritance-contracts/preview"
-      }
-    ]
-  },
-  {
-    "name": "/annual-participants/preview",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/annual-participants/preview",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "231-236",
-        "reason": "Angular route: /annual-participants/preview"
-      }
-    ]
-  },
-  {
-    "name": "/reports-metadata/:id",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/reports-metadata/:id",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "239-244",
-        "reason": "Angular route: /reports-metadata/:id"
-      }
-    ]
-  },
-  {
-    "name": "/reports-metadata",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/reports-metadata",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "244-249",
-        "reason": "Angular route: /reports-metadata"
-      }
-    ]
-  },
-  {
-    "name": "/successor-depositing",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/successor-depositing",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "251-256",
-        "reason": "Angular route: /successor-depositing"
-      }
-    ]
-  },
-  {
-    "name": "/complete",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/complete",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "260-265",
-        "reason": "Angular route: /complete"
-      }
-    ]
-  },
-  {
-    "name": "/partial",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/partial",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "273-278",
-        "reason": "Angular route: /partial"
-      }
-    ]
-  },
-  {
-    "name": "/logging/:deedEntryId",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/logging/:deedEntryId",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "287-292",
-        "reason": "Angular route: /logging/:deedEntryId"
-      }
-    ]
-  },
-  {
-    "name": "/settings",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/settings",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "295-300",
-        "reason": "Angular route: /settings"
-      }
-    ]
-  },
-  {
-    "name": "/**",
-    "type": "route",
-    "container_hint": "frontend",
-    "path": "/**",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "305-310",
-        "reason": "Angular route: /**"
-      }
-    ]
-  },
-  {
-    "name": "UslIntegrationModeGuard",
-    "type": "route_guard",
-    "container_hint": "frontend",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "100-101",
-        "reason": "Route guard: UslIntegrationModeGuard (canActivate)"
-      }
-    ]
-  },
-  {
-    "name": "AuthGuard",
-    "type": "route_guard",
-    "container_hint": "frontend",
-    "evidence": [
-      {
-        "path": "src\\app\\core\\routes.ts",
-        "lines": "132-133",
-        "reason": "Route guard: AuthGuard (canActivate)"
-      }
-    ]
-  }
-]
+{
+  "total": 226,
+  "by_type": {
+    "rest_endpoint": {
+      "count": 196,
+      "methods": {
+        "POST": 30,
+        "GET": 128,
+        "DELETE": 14,
+        "PUT": 18,
+        "PATCH": 6
+      }
+    },
+    "route": {
+      "count": 29,
+      "methods": {
+        "GET": 29
+      }
+    },
+    "route_guard": {
+      "count": 1,
+      "methods": {
+        "GET": 1
+      }
+    }
+  },
+  "interfaces": [
+    {
+      "id": "interface.backend.rest_endpoint.4d09cd79",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/action/{type}",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.action_rest_service",
+      "evidence_ids": [
+        "ev_977"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a6192228",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/action/{id}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.action_rest_service",
+      "evidence_ids": [
+        "ev_978"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a4535e01",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.action_rest_service",
+      "evidence_ids": [
+        "ev_979"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ddaebf3a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/logger",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.action_rest_service_impl",
+      "evidence_ids": [
+        "ev_980"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d1ecd440",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/info",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.action_rest_service_impl",
+      "evidence_ids": [
+        "ev_981"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.8745194f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/web/uvz/",
+      "method": "GET",
+      "implemented_by": "component.backend.module_adapters_staticwebresources.static_content_controller",
+      "evidence_ids": [
+        "ev_982"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2cca99c5",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/jsonauth/user/to/authorization/service",
+      "method": "POST",
+      "implemented_by": "component.backend.impl_mock_rest.json_authorization_rest_service_impl",
+      "evidence_ids": [
+        "ev_983"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5f44bc1f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/jsonauth/user/from/authorization/service",
+      "method": "DELETE",
+      "implemented_by": "component.backend.impl_mock_rest.json_authorization_rest_service_impl",
+      "evidence_ids": [
+        "ev_984"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.20907447",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/keymanager/{groupId}/reencryptable",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
+      "evidence_ids": [
+        "ev_985"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.11ca0d42",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/keymanager/cryptostate",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
+      "evidence_ids": [
+        "ev_986"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6b47cce9",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/crypto/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.key_manager_rest_service",
+      "evidence_ids": [
+        "ev_987"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.25fcbf71",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/is/reencryption/possible",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.key_manager_rest_service_impl",
+      "evidence_ids": [
+        "ev_988"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bbea605b",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/crypto/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.key_manager_rest_service_impl",
+      "evidence_ids": [
+        "ev_989"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.be579f47",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/archiving/sign-submission-token",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
+      "evidence_ids": [
+        "ev_990"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.74407264",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/archiving/sign-reencrytion-token",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
+      "evidence_ids": [
+        "ev_991"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b9478349",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/archiving/enabled",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.archiving_rest_service",
+      "evidence_ids": [
+        "ev_992"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3f5d4efb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/validation/exception",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev_993"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6ef2897d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/assert/operation/signer/present",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev_994"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0ba5aa4d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/is/present",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.archiving_rest_service_impl",
+      "evidence_ids": [
+        "ev_995"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ed30cc43",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/businesspurposes",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.business_purpose_rest_service_impl",
+      "evidence_ids": [
+        "ev_996"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.92607754",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/problem-connections",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.deed_entry_connection_rest_service",
+      "evidence_ids": [
+        "ev_997"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c56a81ad",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/problem/connections",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.deed_entry_connection_rest_service",
+      "evidence_ids": [
+        "ev_998"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.8f11a86a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}/logs",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.deed_entry_log_rest_service",
+      "evidence_ids": [
+        "ev_999"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.36c94e08",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1000"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2a8dbdbb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1002"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a47136a0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1004"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d517ef11",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/to-be-signed",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1005"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.02aef095",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/to-be-approved",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1006"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.db576306",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1009"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.50c0bfe2",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/bulkcapture",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1011"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.45669c5e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}/signature-folder",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1013"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.aedcb4dd",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/document-handover",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1014"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e49ff620",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/handover",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1015"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4ff2895a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/successordeedselection",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1018"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9f439c97",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/successordeedselection/{processType}",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1019"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.54a81805",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}/correctionnote",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1021"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9ee54d52",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1022"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.35747387",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1023"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.937851ff",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1024"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.59032eda",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/{id}/lock",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1025"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f181f95c",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1026"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2ebe1101",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/participants",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1027"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.82c65db1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1029"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d48dadf8",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/check/submittedwithcf",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1030"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.68569a58",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedentries/check/isvalidforsigning",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1031"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.515a3382",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/mark/predecessor/lock/in/progress",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1032"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f244a6cf",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/process/handover/for/b/not/o",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1033"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7f1ee1bb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/successor/deed/selection",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1034"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.243ebed8",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/cancel/handover/process",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1035"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.101d8bfb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deed/entry/registry/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1036"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a6953a48",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/is/any/deed/with/submit/with/error/flag/status",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1037"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.53c32102",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedregistry/locks",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
+      "evidence_ids": [
+        "ev_1038"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.62dba621",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedregistry/locks/{types}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
+      "evidence_ids": [
+        "ev_1039"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.63fbed45",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedregistry/lock/{type}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.deed_registry_rest_service",
+      "evidence_ids": [
+        "ev_1040"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.421fcc02",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/deedtypes",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_type_rest_service_impl",
+      "evidence_ids": [
+        "ev_1041"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ae9a3857",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/{deedEntryId}/document-copies",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1042"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b0c52704",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/to-be-archived",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1043"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.12ac1d80",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/operation-tokens",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1044"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4237c0c6",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/reference-hashes",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1045"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5deb2976",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/check-reference-hashes",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1046"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.767a2b67",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/check-for-deletion",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1047"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.be92ae49",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/info",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1048"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.8cffedc0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/triggerWawi",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1049"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a8c6d4c8",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/archiving-failed",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1050"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bbfcd52e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/signing-info",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1051"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.51cf6070",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/report-metadata/signing-info",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1052"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.aefaae05",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/report-metadata/document-status",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1053"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0683b191",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/report-metadata/document-status-archive",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1054"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d101090f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/eto",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1055"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0892a064",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/{aoId}/reencryption-state",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1056"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.279ee33e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/documents/to/be/archived",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1057"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ea8629c6",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/flagged/documents/if/timeout/is/reached",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1058"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f9a85d13",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/trigger/wawi",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1059"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.be493b9f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/archiving/failed/documents",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.document_meta_data_rest_service",
+      "evidence_ids": [
+        "ev_1060"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2ec4e8d3",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1061"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.150711cd",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1062"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.709132e6",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets/predecessor",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1063"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.731c3a3f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1064"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1ad29453",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1065"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9c7ea508",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1066"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b32e41cb",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets/finalise-handover-retry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1067"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a447d839",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets/{batchId}/finalise-handover-retry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1068"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e71df41b",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handoverdatasets/accept",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1069"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b1a3079f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handover/info",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1070"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e5914fb2",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handover/data/sets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1071"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.565ec9c1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/handover/data/sets/for/predecessor",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1072"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1456c6ef",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/final/handover/data/sets",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1073"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.cd4ef442",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/batch/ids/for/reencryption/retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.handover_data_set_rest_service",
+      "evidence_ids": [
+        "ev_1074"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.17e675db",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/business/purposes",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.business_purpose_rest_service_impl",
+      "evidence_ids": [
+        "ev_1075"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5835330b",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/warn",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_log_rest_service_impl",
+      "evidence_ids": [
+        "ev_1076"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7cebbcae",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/abs",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_log_rest_service_impl",
+      "evidence_ids": [
+        "ev_1077"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3fe7ca84",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entry/logs",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_log_rest_service_impl",
+      "evidence_ids": [
+        "ev_1078"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.552ca38d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/min",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1079"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.19eaf871",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/of",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1080"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.8d489754",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/to/list",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1081"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.04b7b7d4",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/with/obj/to/be/signed",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1082"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.decbec3e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/initial/deed/entry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1083"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.db7979fd",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/submit/initial/deed/entry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1084"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.69c1ef57",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/existing/deed/entry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1085"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7b22cb32",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/submit/existing/deed/entry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1086"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9e848665",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/bulk/capture/deed/entries",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1087"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7c581744",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/submit/bulk/capture/deed/entries",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1088"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.69b7a8c7",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/process/signature/folder",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1089"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1a04f819",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/debug",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1090"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b8505880",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/pageable",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1091"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.71243fd0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1092"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2ba7c155",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/for/successor/selection",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1093"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3f12e79d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/mark/predecessor/lock/in/progress",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1094"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1f839f4f",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/preview/correction/note",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1095"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.871ba97c",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entry/assignment/count/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1096"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b732836a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/process/depositing/selection",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1097"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.eea4b3ef",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/skipped/uvz/number",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1098"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f912ed83",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/for/type/ahead/search",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1099"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.14564957",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/start/successor/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1100"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3b7acf33",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/start/successor/process",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1101"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bc83fe18",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/now",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1102"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.07d85149",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/lock/deed/entry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1103"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d5a8d439",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/user/details",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1104"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6b447283",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entry/lock",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1105"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4b2942c5",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/for/ids",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1106"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1454438d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/entries/{ids}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.deed_entry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1107"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9ac683df",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/internal",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1108"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0b001e54",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/locks",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1109"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.84ea9f80",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/build",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1110"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.cf077b9a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/ok",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1111"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.9b781084",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/lock",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_registry_rest_service_impl",
+      "evidence_ids": [
+        "ev_1112"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a25fc517",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/deed/types",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.deed_type_rest_service_impl",
+      "evidence_ids": [
+        "ev_1113"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.36366c25",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/flagged/documents/if/timeout/is/reached",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1114"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.55dc3b24",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/notify/wa/wi",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1115"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.156dbfc8",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/record/successful/signature/in/document/metadata",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1116"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.0b7063df",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/document/status",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1117"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.2bc064b1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/document/status/archive",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1118"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.64e48eab",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/reencryption/state",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.document_meta_data_rest_service_impl",
+      "evidence_ids": [
+        "ev_1119"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e4aa736e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/handover/data/sets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1120"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.8f7b0b0a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/final/handover/data/sets",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1121"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f866acfd",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/batch/ids/for/successful/reencryption/retry",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1122"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6a9998b1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/batch/id/for/reencryption/retry",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1123"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b806fdd0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/accept/handovers",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.handover_data_set_rest_service_impl",
+      "evidence_ids": [
+        "ev_1124"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c990e2b3",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/reports/annual",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
+      "evidence_ids": [
+        "ev_1125"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.adc17a4d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/reports/annual/validate",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
+      "evidence_ids": [
+        "ev_1126"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6ef3b7ad",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/reports/annual-deed-register",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
+      "evidence_ids": [
+        "ev_1127"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bec3bdaa",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/reports/annual-participants",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
+      "evidence_ids": [
+        "ev_1128"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c1ce3ae4",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/reports/deposited-inheritance-contracts",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.report_rest_service",
+      "evidence_ids": [
+        "ev_1129"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.90102df0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/generate/report/criteria/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1130"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.b377e637",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/validate/report/criteria/to",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1131"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4b81fac1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/set/report/types",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1132"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.cc7b4763",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/is/annual/report/valid",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_rest_service_impl",
+      "evidence_ids": [
+        "ev_1133"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.3c74b6e2",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/job/retry",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1134"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c889a724",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/job/retry/{id}",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1135"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.659ac604",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/job/metrics",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1136"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.818c10b0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/job/{type}/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1137"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.afa92643",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1138"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1787f71a",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/retry/{work}/id",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.job_rest_service",
+      "evidence_ids": [
+        "ev_1139"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.fcc02b8d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/job/reencryption/{jobId}/document",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.reencryption_job_rest_service",
+      "evidence_ids": [
+        "ev_1140"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4862bbc1",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/retry",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1141"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bb0821e3",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/job/metrics",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1142"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.37db8644",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/job/completion/state",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1143"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.76355598",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/recent/reencrypted/document",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.reencryption_job_rest_service_impl",
+      "evidence_ids": [
+        "ev_1144"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.55eedadd",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/notaryrepresentations",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.notary_representation_rest_service",
+      "evidence_ids": [
+        "ev_1145"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.6e35ccff",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/notary/representations",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.notary_representation_rest_service_impl",
+      "evidence_ids": [
+        "ev_1146"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5df85abf",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/numbermanagement",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev_1147"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f0521438",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/numbermanagement/validate",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev_1148"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c3293173",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/numbermanagement/numberformat",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev_1149"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.59003e7d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/numbermanagement/numberformat",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev_1150"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f4b4a73d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/numbermanagement/validate/bulkcapture",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.number_management_rest_service_impl",
+      "evidence_ids": [
+        "ev_1151"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.990ef683",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/official-activity-metadata",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
+      "evidence_ids": [
+        "ev_1152"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bfe88a07",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/official-activity-metadata/notariesandchambers",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
+      "evidence_ids": [
+        "ev_1153"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4dcb05de",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/official-activity-metadata/successors",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
+      "evidence_ids": [
+        "ev_1154"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e2e1f7ac",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/successors",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.official_activity_metadata_rest_service",
+      "evidence_ids": [
+        "ev_1155"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7b179081",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/official/activity/metadata/list",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.official_activity_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1156"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7a9dea3e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/report-metadata/",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1157"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.66d32b2d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/report-metadata/to-be-signed",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1158"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a4f4a238",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/report-metadata/",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1159"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ccc25080",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/report-metadata/{id}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1160"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.d542d170",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/report-metadata/{id}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1161"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.bc2ecab0",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/report/with/document/metadata",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1162"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f2bed239",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/report/signing/state/{id}",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1163"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f77e859e",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/report/{id}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_impl_rest.report_metadata_rest_service_impl",
+      "evidence_ids": [
+        "ev_1164"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.a4993ba2",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/task",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
+      "evidence_ids": [
+        "ev_1165"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.29be872b",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/task/initial",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
+      "evidence_ids": [
+        "ev_1166"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.dbb4f362",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/task/{id}",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
+      "evidence_ids": [
+        "ev_1167"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.90696e44",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/task/{id}/work",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
+      "evidence_ids": [
+        "ev_1168"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.4c0ba8d4",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/task/{id}",
+      "method": "DELETE",
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
+      "evidence_ids": [
+        "ev_1169"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.98959503",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/initial/task",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.task_rest_service",
+      "evidence_ids": [
+        "ev_1170"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.e928e43d",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/task",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1171"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c6277520",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1172"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.16240ab3",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/keep/alive",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1173"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.07da3585",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/task",
+      "method": "PUT",
+      "implemented_by": "component.backend.service_impl_rest.task_rest_service_impl",
+      "evidence_ids": [
+        "ev_1174"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.c3190869",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/workflow/{type}",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
+      "evidence_ids": [
+        "ev_1175"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.95676864",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/workflow/initial",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
+      "evidence_ids": [
+        "ev_1176"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.f9fb7da9",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/workflow",
+      "method": "POST",
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
+      "evidence_ids": [
+        "ev_1177"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.ae732d46",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/workflow/{id}/proceed",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
+      "evidence_ids": [
+        "ev_1178"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.329ca166",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/workflow/{id}/confirm",
+      "method": "PATCH",
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
+      "evidence_ids": [
+        "ev_1179"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.5913aa41",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/uvz/v1/initial/workflow",
+      "method": "GET",
+      "implemented_by": "component.backend.service_api_rest.workflow_rest_service",
+      "evidence_ids": [
+        "ev_1180"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.1766dad4",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/workflow",
+      "method": "GET",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev_1181"
+      ]
+    },
+    {
+      "id": "interface.backend.rest_endpoint.7d3f88ec",
+      "container": "container.backend",
+      "type": "rest_endpoint",
+      "path": "/workflow",
+      "method": "POST",
+      "implemented_by": "component.backend.service_impl_rest.workflow_rest_service_impl",
+      "evidence_ids": [
+        "ev_1182"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.basic_data",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/basic-data",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_basic-data-tab.basic_data_tab_component",
+      "evidence_ids": [
+        "ev_1183"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.remarks",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/remarks",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_remarks-data-tab.remarks_data_tab_component",
+      "evidence_ids": [
+        "ev_1184"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.registrations",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/registrations",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_registrations-data-tab.registrations_data_tab_component",
+      "evidence_ids": [
+        "ev_1185"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.participants",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/participants",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_participants-data-tab.participants_data_tab_component",
+      "evidence_ids": [
+        "ev_1186"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.issuing_copy_notes",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/issuing-copy-notes",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_issuing-copy-notes-data-tab.issuing_copy_notes_data_tab_component",
+      "evidence_ids": [
+        "ev_1187"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.notes",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/notes",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_correction-notes-tab-data.correction_notes_tab_data_component",
+      "evidence_ids": [
+        "ev_1188"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.links",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/links",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_connections-data-tab.connections_data_tab_component",
+      "evidence_ids": [
+        "ev_1189"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.document",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/document",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-form-page_tabs_document-data-tab.document_data_tab_component",
+      "evidence_ids": [
+        "ev_1190"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.root",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/",
+      "method": "GET",
+      "implemented_by": null,
+      "evidence_ids": [
+        "ev_1191"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.uvz",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/uvz",
+      "method": "GET",
+      "implemented_by": "component.frontend.adapters_authentication_login-page.login_page_component",
+      "evidence_ids": [
+        "ev_1192"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.access_denied",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/access-denied",
+      "method": "GET",
+      "implemented_by": "component.frontend.page_access-denied-page.access_denied_page_component",
+      "evidence_ids": [
+        "ev_1193"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.deed_entries",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/deed-entries",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-entry_components_deed-overview-page.deed_overview_page_component",
+      "evidence_ids": [
+        "ev_1196"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.deed_view__deedentryid",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/deed-view/:deedEntryId",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-entry_components_deed-view-page.deed_view_page_component",
+      "evidence_ids": [
+        "ev_1197"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.deed_form",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/deed-form",
+      "method": "GET",
+      "implemented_by": null,
+      "evidence_ids": [
+        "ev_1198"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.deed_form_bulk_capture",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/deed-form-bulk-capture",
+      "method": "GET",
+      "implemented_by": null,
+      "evidence_ids": [
+        "ev_1199"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.deed_form__deedentryid",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/deed-form/:deedEntryId",
+      "method": "GET",
+      "implemented_by": "component.frontend.deed-entry_components_deed-form-page.deed_form_page_component",
+      "evidence_ids": [
+        "ev_1200"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.reports",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/reports",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-report-page_report-configuration.report_configuration_component",
+      "evidence_ids": [
+        "ev_1202"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.annual_preview",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/annual/preview",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-report-page_annual-report-preview.annual_report_preview_component",
+      "evidence_ids": [
+        "ev_1203"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.annual_deed_register_preview",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/annual-deed-register/preview",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-report-page_annual-deed-register-report-preview.annual_deed_register_report_preview_component",
+      "evidence_ids": [
+        "ev_1204"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.deposited_inheritance_contracts_preview",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/deposited-inheritance-contracts/preview",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-report-page_deposited-inheritance-contracts-preview.deposited_inheritance_contracts_preview_component",
+      "evidence_ids": [
+        "ev_1205"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.annual_participants_preview",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/annual-participants/preview",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-report-page_annual-participants-report-preview.annual_participants_report_preview_component",
+      "evidence_ids": [
+        "ev_1206"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.reports_metadata__id",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/reports-metadata/:id",
+      "method": "GET",
+      "implemented_by": "component.frontend.report-metadata_report-readonly-view.report_readonly_view_component",
+      "evidence_ids": [
+        "ev_1207"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.reports_metadata",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/reports-metadata",
+      "method": "GET",
+      "implemented_by": "component.frontend.report-metadata_report-metadata-overview.report_metadata_overview_component",
+      "evidence_ids": [
+        "ev_1208"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.successor_depositing",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/successor-depositing",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-mode-selection.deed_successor_mode_selection_component",
+      "evidence_ids": [
+        "ev_1209"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.complete",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/complete",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-complete.deed_successor_page_component",
+      "evidence_ids": [
+        "ev_1210"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.partial",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/partial",
+      "method": "GET",
+      "implemented_by": "component.frontend.components_deed-successor-page_deed-successor-partial.deed_successor_partial_component",
+      "evidence_ids": [
+        "ev_1211"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.logging__deedentryid",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/logging/:deedEntryId",
+      "method": "GET",
+      "implemented_by": "component.frontend.logging.business_logging_component",
+      "evidence_ids": [
+        "ev_1212"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.settings",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/settings",
+      "method": "GET",
+      "implemented_by": "component.frontend.number-management_components.number_format_configuration_component",
+      "evidence_ids": [
+        "ev_1213"
+      ]
+    },
+    {
+      "id": "interface.frontend.route.__",
+      "container": "container.frontend",
+      "type": "route",
+      "path": "/**",
+      "method": "GET",
+      "implemented_by": "component.frontend.page_page-not-found-page.page_not_found_page_component",
+      "evidence_ids": [
+        "ev_1214"
+      ]
+    },
+    {
+      "id": "interface.frontend.route_guard.7528035a",
+      "container": "container.frontend",
+      "type": "route_guard",
+      "path": "",
+      "method": "GET",
+      "implemented_by": null,
+      "evidence_ids": [
+        "ev_1215"
+      ]
+    }
+  ]
+}
