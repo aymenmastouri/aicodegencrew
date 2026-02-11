@@ -74,18 +74,13 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
     </div>
   `,
   styles: [`
-    .filter-bar { margin-bottom: 16px; }
+    .filter-bar { @apply mb-4; }
     .filter-content {
-      display: flex;
-      align-items: center;
-      gap: 24px;
+      @apply flex items-center gap-6;
     }
     .metrics-table { width: 100%; }
     .data-cell {
-      max-width: 500px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      @apply max-w-[500px] overflow-hidden text-ellipsis whitespace-nowrap;
     }
   `],
 })

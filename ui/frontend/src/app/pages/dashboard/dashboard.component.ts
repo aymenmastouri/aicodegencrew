@@ -87,57 +87,40 @@ import { PipelineService } from '../../services/pipeline.service';
   `,
   styles: [`
     .status-banner {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      background: #f5f5f5;
-      margin-bottom: 24px;
+      @apply flex items-center gap-2 px-4 py-3 rounded-lg mb-6;
+      background: var(--cg-gray-100);
     }
     .status-banner.ok {
-      background: #e8f5e9;
+      background: rgba(40, 167, 69, 0.1);
     }
     .spacer { flex: 1; }
-    .status-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-    }
-    .status-completed { color: #2e7d32; }
-    .status-failed { color: #c62828; }
-    .status-running { color: #1565c0; }
-    .status-idle { color: #9e9e9e; }
+    .status-icon { font-size: 40px; width: 40px; height: 40px; }
+    .status-completed { color: var(--cg-success); }
+    .status-failed { color: var(--cg-error); }
+    .status-running { color: var(--cg-blue); }
+    .status-idle { color: var(--cg-gray-500); }
     .output-icon {
-      color: #1565c0;
+      color: var(--cg-blue);
       font-size: 18px;
       vertical-align: middle;
       margin-left: 8px;
     }
     .link-card {
-      cursor: pointer;
+      @apply cursor-pointer transition-shadow duration-200;
     }
     .link-card:hover {
-      box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+      @apply shadow-lg;
     }
     .running-banner {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      cursor: pointer;
+      @apply flex items-center gap-2 px-4 py-3 rounded-lg mb-4 cursor-pointer;
     }
-    .banner-running { background: #e3f2fd; color: #1565c0; }
-    .banner-completed { background: #e8f5e9; color: #2e7d32; }
-    .banner-failed { background: #ffebee; color: #c62828; }
-    .banner-cancelled { background: #fff8e1; color: #f57f17; }
+    .banner-running { background: rgba(0, 112, 173, 0.1); color: var(--cg-blue); }
+    .banner-completed { background: rgba(40, 167, 69, 0.1); color: var(--cg-success); }
+    .banner-failed { background: rgba(220, 53, 69, 0.1); color: var(--cg-error); }
+    .banner-cancelled { background: rgba(255, 193, 7, 0.15); color: #d4a017; }
     .banner-progress { flex: 1; max-width: 200px; }
     h2 {
-      margin-top: 32px;
-      margin-bottom: 16px;
-      font-weight: 400;
+      @apply mt-8 mb-4 font-normal;
     }
   `],
 })

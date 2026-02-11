@@ -27,12 +27,12 @@ import { ApiService, ReportList } from '../../services/api.service';
         <mat-tab label="Development Plans ({{ reports?.plans?.length || 0 }})">
           @if (reports?.plans?.length) {
             <mat-accordion>
-              @for (plan of reports.plans; track plan['task_id']) {
+              @for (plan of reports!.plans; track plan['task_id']) {
                 <mat-expansion-panel>
                   <mat-expansion-panel-header>
                     <mat-panel-title>{{ plan['task_id'] }}</mat-panel-title>
                     <mat-panel-description>
-                      {{ plan['understanding']?.['summary'] || 'No summary' }}
+                      {{ $any(plan['understanding'])?.['summary'] || 'No summary' }}
                     </mat-panel-description>
                   </mat-expansion-panel-header>
                   <pre class="mono plan-content">{{ plan | json }}</pre>
@@ -47,7 +47,7 @@ import { ApiService, ReportList } from '../../services/api.service';
         <mat-tab label="Codegen Reports ({{ reports?.codegen_reports?.length || 0 }})">
           @if (reports?.codegen_reports?.length) {
             <mat-accordion>
-              @for (report of reports.codegen_reports; track report['task_id']) {
+              @for (report of reports!.codegen_reports; track report['task_id']) {
                 <mat-expansion-panel>
                   <mat-expansion-panel-header>
                     <mat-panel-title>{{ report['task_id'] }}</mat-panel-title>
@@ -70,18 +70,13 @@ import { ApiService, ReportList } from '../../services/api.service';
   `,
   styles: [`
     .plan-content {
-      max-height: 400px;
-      overflow: auto;
-      background: #263238;
+      background: var(--cg-dark);
       color: #eeffff;
-      padding: 16px;
-      border-radius: 4px;
-      font-size: 12px;
+      @apply max-h-[400px] overflow-auto p-4 rounded text-xs;
     }
     .empty-state {
-      padding: 32px;
-      text-align: center;
-      color: #757575;
+      color: var(--cg-gray-500);
+      @apply p-8 text-center;
     }
   `],
 })

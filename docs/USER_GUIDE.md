@@ -43,13 +43,15 @@ AICodeGenCrew is an enterprise-grade AI-powered platform for Software Developmen
 
 - **Architecture Documentation**: C4 Model diagrams and arc42 technical documentation
 - **Development Plans**: Actionable implementation plans derived from JIRA tickets, requirements documents, and application logs
+- **Code Generation**: Automated code changes from development plans, committed to isolated git branches with security scanning
 - **Code Intelligence**: Comprehensive analysis of software components, dependencies, design patterns, and quality metrics
+- **Web Dashboard**: Interactive SDLC Dashboard for pipeline execution, live monitoring, and knowledge browsing
 
 **Data Security**: All processing occurs entirely on-premises. No source code or data is transmitted outside your corporate network.
 
 ### Platform Capabilities
 
-AICodeGenCrew operates through a five-phase pipeline, each optimized for specific deliverables:
+AICodeGenCrew operates through a six-phase pipeline, each optimized for specific deliverables:
 
 | Phase | Capability | AI Required | Est. Duration |
 |:-----:|-----------|:----------:|--------------|
@@ -58,6 +60,9 @@ AICodeGenCrew operates through a five-phase pipeline, each optimized for specifi
 | 2 | Architecture Analysis: AI-powered pattern recognition and quality assessment | Yes (on-prem LLM) | 5-15 min |
 | 3 | Documentation Synthesis: Automated generation of C4 diagrams and arc42 chapters | Yes (on-prem LLM) | 15-45 min |
 | 4 | Development Planning: Hybrid AI pipeline for task-specific implementation plans | Hybrid (1 LLM call) | 18-40 sec |
+| 5 | Code Generation: Automated code changes from plans with strategy pattern and git isolation | Hybrid (1 LLM per file) | 30s-5 min |
+
+Additionally, a **web-based SDLC Dashboard** provides an interactive UI for pipeline execution, live log streaming, and knowledge browsing.
 
 ---
 
@@ -522,10 +527,13 @@ C:\work\my-project\
 | Your Goal | Preset to Use | Time | LLM? |
 |-----------|---------------|------|------|
 | Generate development plan from JIRA ticket | `planning_only` | 30-40 sec | Hybrid |
+| Generate code from plans | `codegen_only` | 1-5 min | Hybrid |
+| Plan + generate code (end-to-end) | Use `codegen` command | 2-6 min | Hybrid |
 | Get quick architecture facts (no AI analysis) | `facts_only` | 3-5 min | No |
 | Full architecture documentation (C4 + arc42) | `architecture_workflow` | 45-60 min | Yes |
 | Architecture docs + development plan | `architecture_full` | 60-90 min | Yes |
 | Just update the vector index | Use `index` command | 5-10 min | No |
+| Run pipeline from web browser | Use SDLC Dashboard | N/A | Depends |
 
 ### Examples
 
@@ -541,7 +549,13 @@ aicodegencrew run --preset architecture_workflow
 ```
 Output: `knowledge/architecture/c4/*.md` + `*.drawio`
 
-**Use Case 3: "I want component list without waiting for LLM"**
+**Use Case 3: "I have plans, need generated code"**
+```bash
+aicodegencrew codegen
+```
+Output: Git branch `codegen/{task_id}` in target repo + `knowledge/codegen/{task_id}_report.json`
+
+**Use Case 4: "I want component list without waiting for LLM"**
 ```bash
 aicodegencrew run --preset facts_only
 ```
@@ -594,6 +608,7 @@ aicodegencrew [--env <path>] <command> [options]
 | Command | Description |
 |---------|-------------|
 | `plan` | Development planning (Phases 0+1+2+4) |
+| `codegen` | Code generation (Phases 0+1+2+4+5) |
 | `run` | Execute pipeline with preset or explicit phases |
 | `index` | Index repository only (Phase 0) |
 | `list` | Show available phases and presets |
@@ -610,6 +625,26 @@ aicodegencrew plan --repo-path C:\repos\other-project
 # Skip re-indexing (use existing index)
 aicodegencrew plan --index-mode off
 ```
+
+### `codegen` Command
+
+```bash
+# Generate code for all pending plans
+aicodegencrew codegen
+
+# Single task only
+aicodegencrew codegen --task-id PROJ-123
+
+# Preview mode (no file writes or git operations)
+aicodegencrew codegen --dry-run
+
+# Skip re-indexing
+aicodegencrew codegen --index-mode off
+```
+
+Phase 5 reads plans from `knowledge/development/`, generates code using a strategy pattern (feature/bugfix/upgrade/refactoring), validates syntax and security, and commits to a `codegen/{task_id}` git branch in the target repository.
+
+**Safety:** Dry-run mode previews all changes without writing files. The tool never pushes to remote and never modifies main/develop branches.
 
 ### `run` Command
 
@@ -827,6 +862,30 @@ After every pipeline run, `knowledge/run_report.json` is generated with:
 - **output_summary**: Paths to log file and metrics file
 
 This file is always written — even on failure — so you have a persistent record of what happened.
+
+### Code Generation Reports (Phase 5)
+
+Output: `knowledge/codegen/{TASK_ID}_report.json`
+
+Code changes are committed to a **git branch** (`codegen/{task_id}`) in the target repository. The report tracks:
+
+| Field | Description |
+|-------|-------------|
+| `task_id` | Matches the development plan |
+| `status` | `success`, `partial`, `failed`, or `dry_run` |
+| `branch_name` | Git branch where code was committed (e.g., `codegen/PROJ-123`) |
+| `files_changed` | Number of files modified |
+| `files_created` | Number of new files created |
+| `files_failed` | Number of files that failed generation/validation |
+| `llm_calls` | Total LLM API calls made |
+| `total_tokens` | Total tokens consumed |
+| `duration_seconds` | Total execution time |
+
+**Safety features:**
+- Changes are always on an **isolated branch** — never on main/develop
+- The tool **never pushes** to remote — you review and push manually
+- Use `--dry-run` to preview all changes without writing files or creating branches
+- If >50% of files fail validation, the entire task is aborted
 
 ### Architecture Documentation (Phase 3)
 
@@ -1110,7 +1169,71 @@ mkdir -p knowledge .cache architecture-docs
 
 ---
 
-## 20. FAQ
+## 20. SDLC Dashboard (Web UI)
+
+AICodeGenCrew includes a web-based dashboard for interactive pipeline management. You can run the entire pipeline, monitor progress in real-time, edit environment configuration, and browse all generated outputs — all from your browser.
+
+### Starting the Dashboard
+
+**Development Mode (Two Terminals):**
+
+```bash
+# Terminal 1: Start backend
+uvicorn ui.backend.main:app --reload --port 8000
+
+# Terminal 2: Start frontend
+cd ui/frontend && npm start
+```
+
+Open **http://localhost:4200** in your browser.
+
+**Docker Mode (Single Command):**
+
+```bash
+docker-compose -f ui/docker-compose.ui.yml up --build
+```
+
+Open **http://localhost** in your browser.
+
+### Dashboard Pages
+
+| Page | What It Does |
+|------|-------------|
+| **Dashboard** | Overview: health status, phase completion, running pipeline banner |
+| **Run Pipeline** | Select a preset or individual phases, edit .env overrides, click Run. Watch live logs stream in real-time. Cancel if needed. |
+| **Phases** | View all phases and presets. Click "Run" on any phase or preset to navigate to the execution page. |
+| **Knowledge** | Browse all generated files (architecture_facts.json, plans, reports). Preview JSON and Markdown inline. |
+| **Reports** | View development plans (Phase 4) and codegen reports (Phase 5) in expandable panels. |
+| **Metrics** | Explore pipeline execution events from `metrics.jsonl`. Filter by event type. |
+| **Logs** | Select and view log files with color-coded ERROR/WARNING/INFO levels. |
+
+### Running a Pipeline from the Dashboard
+
+1. Navigate to **Run Pipeline** (or click the play button on any preset in the Phases page)
+2. Select a **preset** (e.g., `planning_only`) or switch to **Custom Phases** tab and select individual phases
+3. Optionally expand **Environment Configuration** to override .env variables for this run
+4. Click **Run Pipeline**
+5. Watch the **Live Output** panel — logs stream in real-time via SSE
+6. The **Phase Timeline** shows progress for each phase (pending → running → completed/failed)
+7. After completion, the run appears in the **Run History** table at the bottom
+
+### Environment Configuration
+
+The dashboard reads variable descriptions from `.env.example` and groups them into categories:
+
+- **Repository** — `PROJECT_PATH`, `INCLUDE_SUBMODULES`
+- **LLM** — `LLM_PROVIDER`, `MODEL`, `API_BASE`, token limits
+- **Embeddings** — Ollama settings, batch sizes
+- **Indexing** — Index mode, ChromaDB settings, chunking
+- **Phase Control** — Input directories, skip flags
+- **Output** — Output directories, arc42 language
+- **Logging** — Log level, tracing
+
+Changes made in the UI are either applied as overrides for the current run (temporary) or saved directly to your `.env` file.
+
+---
+
+## 21. FAQ
 
 **Q: Does my data leave the network?**
 A: No. Everything runs on-premises. Embeddings use local Ollama, LLM calls go to your on-prem endpoint.

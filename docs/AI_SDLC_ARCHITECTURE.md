@@ -92,9 +92,9 @@ Establish a fully automated SDLC pipeline that covers:
 | Incremental Adoption | Phases can be executed independently |
 | Clean Output | No evidence IDs in final documentation |
 
-### 2.3 Current Focus: Knowledge + Reasoning Layers (Phases 0-4)
+### 2.3 Current Focus: Knowledge + Reasoning + Execution Layers (Phases 0-5)
 
-The implementation covers deterministic facts extraction through development planning:
+The implementation covers deterministic facts extraction through code generation:
 
 | Area | Implementation | Status |
 |------|----------------|--------|
@@ -103,6 +103,8 @@ The implementation covers deterministic facts extraction through development pla
 | **Phase 2 Analysis** | MapReduce multi-agent analysis | IMPLEMENTED |
 | **Phase 3 Synthesis** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
 | **Phase 4 Planning** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
+| **Phase 5 Code Gen** | Hybrid pipeline (4 deterministic + 1 LLM per file) | IMPLEMENTED |
+| **SDLC Dashboard** | Angular 19 + FastAPI web UI with SSE streaming | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
 ### 2.4 Knowledge Layer Capabilities
@@ -2058,6 +2060,132 @@ pytest tests/test_quality_gate.py -v
 
 ---
 
-## 15. License
+## 15. SDLC Dashboard (Web UI)
+
+AICodeGenCrew includes an interactive web dashboard for pipeline management, monitoring, and knowledge browsing.
+
+### 15.1 Architecture
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Backend** | FastAPI (Python) | REST API + SSE streaming |
+| **Frontend** | Angular 19 + Material Design | SPA with standalone components |
+| **Proxy** | Nginx | Reverse proxy, SSE buffering disabled, SPA routing |
+| **Deployment** | Docker Compose | Multi-container: backend (port 8000) + frontend (port 80) |
+
+### 15.2 Backend API
+
+8 routers registered in `ui/backend/main.py`:
+
+| Router | Prefix | Endpoints | Purpose |
+|--------|--------|-----------|---------|
+| **pipeline** | `/api/pipeline` | `POST /run`, `POST /cancel`, `GET /status`, `GET /stream`, `GET /history` | Pipeline execution, SSE streaming, run history |
+| **env** | `/api/env` | `GET /`, `PUT /`, `GET /schema` | .env read/write with variable metadata |
+| **phases** | `/api/phases` | `GET /`, `GET /presets`, `GET /status` | Phase config from `phases_config.yaml` |
+| **knowledge** | `/api/knowledge` | `GET /`, `GET /file` | Knowledge base file browsing |
+| **metrics** | `/api/metrics` | `GET /` | `metrics.jsonl` event viewing |
+| **reports** | `/api/reports` | `GET /`, `GET /{type}/{task_id}` | Plans + codegen reports |
+| **logs** | `/api/logs` | `GET /files`, `GET /` | Log file tailing |
+| **diagrams** | `/api/diagrams` | `GET /`, `GET /file/{path}` | DrawIO + Mermaid diagrams |
+
+### 15.3 Pipeline Execution Service
+
+**Subprocess Isolation Pattern:**
+
+```
+Dashboard (FastAPI)
+  └─ PipelineExecutor (singleton)
+      └─ subprocess.Popen("python -m aicodegencrew run --preset X --env path")
+          ├─ stdout → _log_lines[] buffer (thread-safe)
+          └─ exit code → state transition (completed/failed)
+```
+
+**Key Design Decisions:**
+
+| Decision | Rationale |
+|----------|-----------|
+| Subprocess isolation | Pipeline crash won't crash the dashboard |
+| Singleton executor | Only one pipeline at a time (409 on concurrent attempt) |
+| Background monitor thread | Non-blocking stdout capture |
+| SSE streaming | Real-time log lines + phase status (500ms poll) |
+| Temp `.env.run` file | Override env vars without modifying original `.env` |
+| `metrics.jsonl` parsing | Extract phase progress from `phase_start/phase_complete/phase_failed` events |
+
+**State Machine:**
+```
+idle ──[POST /run]──► running ──[completion]──► completed
+                         │                      failed
+                         └──[POST /cancel]──► cancelled
+```
+
+### 15.4 Environment Configuration Service
+
+Reads `.env.example` for variable descriptions, groups variables by category:
+
+| Group | Key Prefixes |
+|-------|-------------|
+| Repository | `PROJECT_PATH`, `INCLUDE_SUBMODULES` |
+| LLM | `LLM_*`, `MODEL`, `API_BASE`, `OPENAI_API_KEY`, `MAX_LLM_*` |
+| Embeddings | `OLLAMA_*`, `EMBED_*`, `NO_PROXY` |
+| Indexing | `INDEX_*`, `CHROMA_*`, `CHUNK_*`, `MAX_FILE_*`, `MAX_RAG_*` |
+| Phase Control | `SKIP_*`, `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` |
+| Output | `OUTPUT_BASE_DIR`, `DOCS_OUTPUT_DIR`, `ARC42_LANGUAGE` |
+| Logging | `LOG_LEVEL`, `CREWAI_TRACING` |
+
+### 15.5 Frontend Pages
+
+| Page | Route | Features |
+|------|-------|----------|
+| **Dashboard** | `/dashboard` | Health check, phase status cards, execution banner, quick links |
+| **Run Pipeline** | `/run` | Preset selector, phase checkboxes, env editor, live log viewer, phase timeline, cancel, run history |
+| **Phases** | `/phases` | Phase table with "Run" buttons, preset accordion with "Run Preset" buttons |
+| **Knowledge** | `/knowledge` | File browser with stats, JSON/Markdown preview |
+| **Reports** | `/reports` | Development plans + codegen reports (tabbed accordion) |
+| **Metrics** | `/metrics` | Event table with type filtering, run ID tracking |
+| **Logs** | `/logs` | Log file selector, color-coded terminal viewer |
+
+### 15.6 SSE Streaming
+
+The `/api/pipeline/stream` endpoint sends Server-Sent Events during execution:
+
+| Event Type | Payload | Frequency |
+|------------|---------|-----------|
+| `log_line` | stdout line from subprocess | As produced |
+| `status` | `ExecutionStatus` (state, phases, elapsed) | Every 500ms |
+| `pipeline_complete` | Final `ExecutionStatus` | Once, then stream closes |
+
+**Nginx SSE Configuration:**
+```nginx
+location /api/pipeline/stream {
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 3600s;
+    chunked_transfer_encoding off;
+}
+```
+
+### 15.7 Docker Deployment
+
+```bash
+# Start dashboard (backend + frontend)
+docker-compose -f ui/docker-compose.ui.yml up --build
+
+# Access: http://localhost (nginx) → proxies /api/* to http://backend:8000
+```
+
+**Volume Mounts:**
+
+| Volume | Mode | Purpose |
+|--------|------|---------|
+| `knowledge/` | read-write | Generated plans, reports, diagrams |
+| `logs/` | read-write | Application logs, metrics.jsonl |
+| `.env` | read-write | User configuration (editable from UI) |
+| `.env.example` | read-only | Variable descriptions and defaults |
+| `src/` | read-only | Source code for `aicodegencrew` CLI |
+| `.cache/` | read-write | ChromaDB vector store |
+
+---
+
+## 16. License
 
 Proprietary — Capgemini. See [LICENSE](../LICENSE) for details.
