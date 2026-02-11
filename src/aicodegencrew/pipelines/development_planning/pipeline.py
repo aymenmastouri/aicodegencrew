@@ -59,6 +59,7 @@ class DevelopmentPlanningPipeline:
         output_dir: str = "knowledge/development",
         chroma_dir: str = None,
         repo_path: str = None,
+        supplementary_files: Dict[str, List[str]] = None,
     ):
         """
         Initialize development planning pipeline.
@@ -71,6 +72,8 @@ class DevelopmentPlanningPipeline:
             output_dir: Output directory for plans
             chroma_dir: ChromaDB directory (Phase 0)
             repo_path: Target repository path (for upgrade code scanning)
+            supplementary_files: Additional context files by category
+                {"requirements": [...], "logs": [...], "reference": [...]}
         """
         # Support both single file and multi-file
         if input_files:
@@ -88,6 +91,7 @@ class DevelopmentPlanningPipeline:
         self.output_dir = Path(output_dir)
         self.chroma_dir = chroma_dir
         self.repo_path = repo_path
+        self.supplementary_files = supplementary_files or {}
 
         # Ensure output dir exists
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -96,6 +100,9 @@ class DevelopmentPlanningPipeline:
         self.facts = self._load_json(self.facts_path)
         self.analyzed_architecture = self._load_json(self.analyzed_path)
 
+        # Load supplementary context (text snippets for LLM prompt)
+        self.supplementary_context = self._load_supplementary_context()
+
         # Create stages
         self.stage1 = InputParserStage()
         self.stage2 = ComponentDiscoveryStage(
@@ -103,7 +110,10 @@ class DevelopmentPlanningPipeline:
             chroma_dir=self.chroma_dir,
         )
         self.stage3 = PatternMatcherStage(facts=self.facts, repo_path=self.repo_path)
-        self.stage4 = PlanGeneratorStage(analyzed_architecture=self.analyzed_architecture)
+        self.stage4 = PlanGeneratorStage(
+            analyzed_architecture=self.analyzed_architecture,
+            supplementary_context=self.supplementary_context,
+        )
         self.stage5 = ValidatorStage(analyzed_architecture=self.analyzed_architecture)
 
     def kickoff(self, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -408,6 +418,74 @@ class DevelopmentPlanningPipeline:
                 "validation_warnings": len(validation.warnings),
             },
         }
+
+    def _load_supplementary_context(self) -> Dict[str, str]:
+        """Load supplementary files into text snippets for LLM context."""
+        context: Dict[str, str] = {}
+        MAX_CHARS_PER_CATEGORY = 3000
+
+        for category, files in self.supplementary_files.items():
+            if not files:
+                continue
+
+            snippets = []
+            total_chars = 0
+
+            for file_path in files:
+                p = Path(file_path)
+                if not p.is_file():
+                    continue
+
+                ext = p.suffix.lower()
+                try:
+                    if ext in ('.txt', '.log', '.md', '.csv'):
+                        text = p.read_text(encoding='utf-8', errors='replace')
+                    elif ext == '.json':
+                        data = json.loads(p.read_text(encoding='utf-8'))
+                        text = json.dumps(data, indent=2, ensure_ascii=False)
+                    elif ext in ('.docx', '.doc'):
+                        try:
+                            from .parsers.docx_parser import parse_docx
+                            result = parse_docx(p)
+                            sections = result.get("sections", [])
+                            text = "\n".join(
+                                f"{s['title']}: {' '.join(s['content'])}"
+                                for s in sections[:5]
+                            )
+                        except Exception:
+                            text = f"[DOCX file: {p.name}]"
+                    elif ext in ('.xlsx', '.xls'):
+                        try:
+                            from .parsers.excel_parser import parse_excel
+                            result = parse_excel(p)
+                            sheets = result.get("sheets", {})
+                            rows = []
+                            for sheet_name, sheet in sheets.items():
+                                for row in sheet.get("data", [])[:20]:
+                                    rows.append(" | ".join(str(c) for c in row))
+                            text = "\n".join(rows)
+                        except Exception:
+                            text = f"[Excel file: {p.name}]"
+                    else:
+                        # Binary files (images, PDF, drawio) — just note the filename
+                        text = f"[{ext.upper()} file: {p.name}]"
+
+                    # Truncate per file
+                    remaining = MAX_CHARS_PER_CATEGORY - total_chars
+                    if remaining <= 0:
+                        break
+                    snippet = text[:remaining]
+                    snippets.append(f"--- {p.name} ---\n{snippet}")
+                    total_chars += len(snippet)
+
+                except Exception as e:
+                    logger.warning(f"[Phase4] Could not read supplementary file {p.name}: {e}")
+
+            if snippets:
+                context[category] = "\n\n".join(snippets)
+                logger.info(f"[Phase4] Loaded {len(snippets)} {category} file(s) ({total_chars} chars)")
+
+        return context
 
     def _load_json(self, path: Path) -> dict:
         """Load JSON file."""

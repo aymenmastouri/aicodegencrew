@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.3.0] - 2026-02-12
+
+### Added
+
+**Developer Experience: Reports Page Rewrite**
+- Structured plan viewer with affected components table, implementation steps, test strategy, collapsible security/validation/error/architecture sections
+- Code diff viewer with per-file expandable unified diffs (green/red/blue line coloring), action chips (created/modified/deleted), language badges
+- Git branch management tab — list `codegen/*` branches, file count, report indicator, delete with confirmation
+- "Show Raw JSON" toggle per plan/report for debugging
+- Backend: `GET /api/reports/branches`, `DELETE /api/reports/branches/{task_id}` endpoints
+- Backend: Branch list via `git branch --list codegen/*`, file count via `git diff --name-only`
+
+**Input Files Management**
+- New Input Files page (`/inputs`) with drag-and-drop upload
+- 4 categories: tasks (JIRA exports), requirements (specs), logs (traces), reference (mockups)
+- Extension validation per category, 20 MB size limit, filename sanitization
+- Auto-configuration of `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` in `.env`
+- Backend: `inputs` router with 6 endpoints (list, summary, categories, upload, delete)
+- Supplementary files support in Phase 4 — requirements, logs, and reference files injected into LLM prompt
+
+**Dashboard Redesign**
+- Hero section with gradient background, app title with colored accents, status pills
+- Phase status cards with color-coded left border, phase number indicator, output badges
+- Active pipeline banner with animated progress
+- Reduced quick links from 7 to 3 focused action cards
+- OnPush change detection for better performance
+
+**Knowledge Explorer Rewrite**
+- Multi-tab interface: Arc42 Docs, C4 Model, Knowledge Base, Containers, Dev Plans, Other
+- Document rendering: Markdown (via marked), JSON (syntax-highlighted), HTML (sanitized), AsciiDoc, Confluence wiki, DrawIO metadata
+- File grid view with stats bar showing file type counters
+- Source/rendered mode toggle per document
+
+**Frontend Infrastructure**
+- Upgraded Angular 19 → 21 (zoneless change detection)
+- Added Tailwind CSS with Capgemini custom theme
+- Grouped sidebar navigation (Operations, Explore, Monitor)
+- Sidenav footer with version badge
+
+**Backend Improvements**
+- Preset metadata format: `display_name`, `description`, `icon` per preset in `phases_config.yaml`
+- Backward-compatible preset parsing in orchestrator
+- Phase status logic: completed/ready/planned (was completed/idle)
+
+---
+
 ## [0.2.0] - 2026-02-11
 
 ### Added

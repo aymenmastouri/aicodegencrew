@@ -6,7 +6,6 @@ import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -16,6 +15,13 @@ import { ApiService, ReportList, BranchList } from '../../services/api.service';
 interface DiffLine {
   type: 'add' | 'del' | 'info' | 'context';
   content: string;
+}
+
+interface ParsedComponent {
+  id: string;
+  name: string;
+  container: string;
+  package: string;
 }
 
 @Component({
@@ -29,7 +35,6 @@ interface DiffLine {
     MatExpansionModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatTableModule,
     MatButtonModule,
     MatTooltipModule,
     MatSnackBarModule,
@@ -59,7 +64,7 @@ interface DiffLine {
 
             @if (reports?.plans?.length) {
               <mat-accordion class="report-accordion" multi>
-                @for (plan of reports!.plans; track plan['task_id']) {
+                @for (plan of reports!.plans; track $any(plan['task_id'])) {
                   <mat-expansion-panel>
                     <mat-expansion-panel-header>
                       <mat-panel-title>
@@ -67,10 +72,10 @@ interface DiffLine {
                         <span class="mono">{{ plan['task_id'] }}</span>
                       </mat-panel-title>
                       <mat-panel-description>
-                        @if ($any(plan['development_plan'])?.['complexity']) {
-                          <span class="status-chip"
-                            [class]="getComplexityClass($any(plan['development_plan'])['complexity'])">
-                            {{ $any(plan['development_plan'])['complexity'] }}
+                        @if ($any(plan['development_plan'])?.['estimated_complexity']) {
+                          <span class="severity-chip"
+                            [class]="getSeverityClass($any(plan['development_plan'])['estimated_complexity'])">
+                            {{ $any(plan['development_plan'])['estimated_complexity'] }}
                           </span>
                         }
                         <span class="plan-summary-text">
@@ -83,176 +88,297 @@ interface DiffLine {
                       <!-- Toggle Raw JSON -->
                       <div class="toggle-row">
                         <button mat-button (click)="toggleRawJson($any(plan['task_id']))">
-                          <mat-icon>{{ showRawJson[$any(plan['task_id'])] ? 'visibility' : 'code' }}</mat-icon>
-                          {{ showRawJson[$any(plan['task_id'])] ? 'Show Structured' : 'Show Raw JSON' }}
+                          <mat-icon>{{ showRawJson[$any(plan['task_id'])] ? 'visibility' : 'data_object' }}</mat-icon>
+                          {{ showRawJson[$any(plan['task_id'])] ? 'Structured View' : 'Raw JSON' }}
                         </button>
                       </div>
 
                       @if (showRawJson[$any(plan['task_id'])]) {
-                        <pre class="plan-content code-viewer">{{ plan | json }}</pre>
+                        <pre class="code-viewer">{{ plan | json }}</pre>
                       } @else {
-                        <!-- Summary -->
-                        @if ($any(plan['understanding'])) {
-                          <mat-card class="section-card">
-                            <mat-card-header>
-                              <mat-card-title>Summary</mat-card-title>
-                            </mat-card-header>
-                            <mat-card-content>
-                              <p>{{ $any(plan['understanding'])['summary'] }}</p>
-                              @if ($any(plan['understanding'])['acceptance_criteria']?.length) {
-                                <h4>Acceptance Criteria</h4>
-                                <ul class="criteria-list">
-                                  @for (c of $any(plan['understanding'])['acceptance_criteria']; track c) {
-                                    <li>{{ c }}</li>
-                                  }
-                                </ul>
-                              }
-                              @if ($any(plan['understanding'])['technical_notes']) {
-                                <h4>Technical Notes</h4>
-                                <p class="muted">{{ $any(plan['understanding'])['technical_notes'] }}</p>
-                              }
-                            </mat-card-content>
-                          </mat-card>
-                        }
+                        <!-- ==================== OVERVIEW ==================== -->
+                        <div class="overview-card">
+                          <h2 class="overview-title">{{ $any(plan['understanding'])?.['summary'] }}</h2>
 
-                        <!-- Affected Components -->
-                        @if ($any(plan['development_plan'])?.['affected_components']?.length) {
-                          <mat-card class="section-card">
-                            <mat-card-header>
-                              <mat-card-title>
-                                Affected Components ({{ $any(plan['development_plan'])['affected_components'].length }})
-                              </mat-card-title>
-                            </mat-card-header>
-                            <mat-card-content>
-                              <div class="table-scroll">
-                                <table mat-table [dataSource]="$any(plan['development_plan'])['affected_components']">
-                                  <ng-container matColumnDef="name">
-                                    <th mat-header-cell *matHeaderCellDef>Name</th>
-                                    <td mat-cell *matCellDef="let c" class="mono">{{ c.name }}</td>
-                                  </ng-container>
-                                  <ng-container matColumnDef="stereotype">
-                                    <th mat-header-cell *matHeaderCellDef>Stereotype</th>
-                                    <td mat-cell *matCellDef="let c">{{ c.stereotype || '-' }}</td>
-                                  </ng-container>
-                                  <ng-container matColumnDef="layer">
-                                    <th mat-header-cell *matHeaderCellDef>Layer</th>
-                                    <td mat-cell *matCellDef="let c">{{ c.layer || '-' }}</td>
-                                  </ng-container>
-                                  <ng-container matColumnDef="change_type">
-                                    <th mat-header-cell *matHeaderCellDef>Change Type</th>
-                                    <td mat-cell *matCellDef="let c">
-                                      <span class="status-chip" [class]="'action-' + (c.change_type || 'modified')">
-                                        {{ c.change_type || 'modify' }}
-                                      </span>
-                                    </td>
-                                  </ng-container>
-                                  <ng-container matColumnDef="relevance_score">
-                                    <th mat-header-cell *matHeaderCellDef>Relevance</th>
-                                    <td mat-cell *matCellDef="let c">
-                                      {{ c.relevance_score != null ? (c.relevance_score | number:'1.0-2') : '-' }}
-                                    </td>
-                                  </ng-container>
-                                  <tr mat-header-row *matHeaderRowDef="componentColumns"></tr>
-                                  <tr mat-row *matRowDef="let row; columns: componentColumns;"></tr>
-                                </table>
+                          <div class="metrics-row">
+                            @if ($any(plan['development_plan'])?.['estimated_complexity']) {
+                              <div class="metric-box">
+                                <span class="metric-label">Complexity</span>
+                                <span class="severity-chip"
+                                  [class]="getSeverityClass($any(plan['development_plan'])['estimated_complexity'])">
+                                  {{ $any(plan['development_plan'])['estimated_complexity'] }}
+                                </span>
                               </div>
-                            </mat-card-content>
-                          </mat-card>
-                        }
+                            }
+                            @if ($any(plan['development_plan'])?.['estimated_files_changed']) {
+                              <div class="metric-box">
+                                <span class="metric-label">Estimated Files</span>
+                                <span class="metric-value">{{ $any(plan['development_plan'])['estimated_files_changed'] }}</span>
+                              </div>
+                            }
+                            @if ($any(plan['development_plan'])?.['upgrade_plan']?.['total_estimated_effort_hours']) {
+                              <div class="metric-box">
+                                <span class="metric-label">Estimated Effort</span>
+                                <span class="metric-value">{{ $any(plan['development_plan'])['upgrade_plan']['total_estimated_effort_hours'] }}h</span>
+                              </div>
+                            }
+                            @if ($any(plan['development_plan'])?.['risks']?.length) {
+                              <div class="metric-box">
+                                <span class="metric-label">Risks</span>
+                                <span class="metric-value warn-text">{{ $any(plan['development_plan'])['risks'].length }}</span>
+                              </div>
+                            }
+                          </div>
 
-                        <!-- Implementation Steps -->
+                          @if ($any(plan['development_plan'])?.['complexity_reasoning']) {
+                            <p class="reasoning-text">{{ $any(plan['development_plan'])['complexity_reasoning'] }}</p>
+                          }
+                        </div>
+
+                        <!-- ==================== IMPLEMENTATION STEPS ==================== -->
                         @if ($any(plan['development_plan'])?.['implementation_steps']?.length) {
-                          <mat-card class="section-card">
-                            <mat-card-header>
-                              <mat-card-title>Implementation Steps</mat-card-title>
-                            </mat-card-header>
-                            <mat-card-content>
-                              <ol class="steps-list">
-                                @for (step of $any(plan['development_plan'])['implementation_steps']; track step) {
-                                  <li>
-                                    @if (isString(step)) {
-                                      {{ step }}
-                                    } @else {
-                                      <strong>{{ step['description'] || step['step'] }}</strong>
-                                      @if (step['details']) {
-                                        <p class="muted">{{ step['details'] }}</p>
-                                      }
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>checklist</mat-icon>
+                              Implementation Steps
+                            </h3>
+                            <ol class="steps-list">
+                              @for (step of $any(plan['development_plan'])['implementation_steps']; track $index) {
+                                <li>
+                                  @if (isString(step)) {
+                                    {{ stripStepNumber(step) }}
+                                  } @else {
+                                    <strong>{{ step['description'] || step['step'] }}</strong>
+                                    @if (step['details']) {
+                                      <span class="muted"> — {{ step['details'] }}</span>
                                     }
-                                  </li>
-                                }
-                              </ol>
-                            </mat-card-content>
-                          </mat-card>
+                                  }
+                                </li>
+                              }
+                            </ol>
+                          </div>
                         }
 
-                        <!-- Test Strategy -->
-                        @if ($any(plan['development_plan'])?.['test_strategy']) {
-                          <mat-card class="section-card">
-                            <mat-card-header>
-                              <mat-card-title>Test Strategy</mat-card-title>
-                            </mat-card-header>
-                            <mat-card-content>
-                              @if ($any(plan['development_plan'])['test_strategy']['unit_tests']?.length) {
-                                <h4>Unit Tests</h4>
-                                <ul>
-                                  @for (t of $any(plan['development_plan'])['test_strategy']['unit_tests']; track t) {
-                                    <li>{{ t }}</li>
-                                  }
-                                </ul>
-                              }
-                              @if ($any(plan['development_plan'])['test_strategy']['integration_tests']?.length) {
-                                <h4>Integration Tests</h4>
-                                <ul>
-                                  @for (t of $any(plan['development_plan'])['test_strategy']['integration_tests']; track t) {
-                                    <li>{{ t }}</li>
-                                  }
-                                </ul>
-                              }
-                              @if ($any(plan['development_plan'])['test_strategy']['similar_patterns']?.length) {
-                                <h4>Similar Patterns</h4>
-                                <div class="chip-list">
-                                  @for (p of $any(plan['development_plan'])['test_strategy']['similar_patterns']; track p) {
-                                    <span class="status-chip status-ready">{{ isString(p) ? p : p['name'] || p['pattern'] }}</span>
+                        <!-- ==================== AFFECTED COMPONENTS ==================== -->
+                        @if ($any(plan['development_plan'])?.['affected_components']?.length) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>widgets</mat-icon>
+                              Affected Components ({{ $any(plan['development_plan'])['affected_components'].length }})
+                            </h3>
+                            <div class="component-grid">
+                              @for (comp of parseComponents($any(plan['development_plan'])['affected_components']); track comp.id) {
+                                <div class="component-chip">
+                                  <span class="comp-container">{{ comp.container }}</span>
+                                  <span class="comp-name">{{ comp.name }}</span>
+                                  @if (comp.package) {
+                                    <span class="comp-package">{{ comp.package }}</span>
                                   }
                                 </div>
                               }
-                            </mat-card-content>
-                          </mat-card>
+                            </div>
+                          </div>
                         }
 
-                        <!-- Collapsible: Security, Validation, Error Handling, Architecture -->
-                        <mat-accordion class="nested-accordion">
-                          @if ($any(plan['development_plan'])?.['security_considerations']) {
+                        <!-- ==================== UPGRADE PLAN ==================== -->
+                        @if ($any(plan['development_plan'])?.['upgrade_plan']) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>upgrade</mat-icon>
+                              Upgrade Plan
+                              @if ($any(plan['development_plan'])['upgrade_plan']['framework']) {
+                                <span class="title-detail">
+                                  {{ $any(plan['development_plan'])['upgrade_plan']['framework'] }}
+                                  {{ $any(plan['development_plan'])['upgrade_plan']['from_version'] }}
+                                  → {{ $any(plan['development_plan'])['upgrade_plan']['to_version'] }}
+                                </span>
+                              }
+                            </h3>
+
+                            <!-- Pre-migration checks -->
+                            @if ($any(plan['development_plan'])['upgrade_plan']['pre_migration_checks']?.length) {
+                              <h4 class="subsection-title">Pre-Migration Checks</h4>
+                              <ul class="check-list">
+                                @for (check of $any(plan['development_plan'])['upgrade_plan']['pre_migration_checks']; track $index) {
+                                  <li><mat-icon class="check-icon">check_circle_outline</mat-icon> {{ check }}</li>
+                                }
+                              </ul>
+                            }
+
+                            <!-- Migration Sequence -->
+                            @if ($any(plan['development_plan'])['upgrade_plan']['migration_sequence']?.length) {
+                              <h4 class="subsection-title">Migration Sequence</h4>
+                              <mat-accordion class="migration-accordion">
+                                @for (migration of $any(plan['development_plan'])['upgrade_plan']['migration_sequence']; track migration['rule_id']; let i = $index) {
+                                  <mat-expansion-panel class="migration-panel">
+                                    <mat-expansion-panel-header>
+                                      <mat-panel-title class="migration-title">
+                                        <span class="step-number">{{ i + 1 }}</span>
+                                        <span>{{ migration['title'] }}</span>
+                                      </mat-panel-title>
+                                      <mat-panel-description class="migration-desc">
+                                        <span class="severity-chip" [class]="getSeverityClass(migration['severity'])">
+                                          {{ migration['severity'] }}
+                                        </span>
+                                        @if (migration['estimated_effort_minutes']) {
+                                          <span class="effort-badge">{{ formatMinutes(migration['estimated_effort_minutes']) }}</span>
+                                        }
+                                      </mat-panel-description>
+                                    </mat-expansion-panel-header>
+
+                                    <div class="migration-body">
+                                      @if (migration['migration_steps']?.length) {
+                                        <h5>Steps</h5>
+                                        <ol class="migration-steps">
+                                          @for (ms of migration['migration_steps']; track $index) {
+                                            <li>{{ ms }}</li>
+                                          }
+                                        </ol>
+                                      }
+                                      @if (migration['schematic']) {
+                                        <div class="schematic-box">
+                                          <mat-icon>terminal</mat-icon>
+                                          <code>{{ migration['schematic'] }}</code>
+                                        </div>
+                                      }
+                                      @if (migration['affected_files']?.length) {
+                                        <h5>Affected Files ({{ migration['affected_files'].length }})</h5>
+                                        <div class="affected-files">
+                                          @for (f of migration['affected_files']; track f) {
+                                            <div class="file-chip mono">{{ shortenPath(f) }}</div>
+                                          }
+                                        </div>
+                                      }
+                                    </div>
+                                  </mat-expansion-panel>
+                                }
+                              </mat-accordion>
+                            }
+
+                            <!-- Post-migration checks -->
+                            @if ($any(plan['development_plan'])['upgrade_plan']['post_migration_checks']?.length) {
+                              <h4 class="subsection-title">Post-Migration Checks</h4>
+                              <ul class="check-list">
+                                @for (check of $any(plan['development_plan'])['upgrade_plan']['post_migration_checks']; track $index) {
+                                  <li><mat-icon class="check-icon">verified</mat-icon> {{ check }}</li>
+                                }
+                              </ul>
+                            }
+
+                            <!-- Verification Commands -->
+                            @if ($any(plan['development_plan'])['upgrade_plan']['verification_commands']?.length) {
+                              <h4 class="subsection-title">Verification Commands</h4>
+                              <div class="commands-box">
+                                @for (cmd of $any(plan['development_plan'])['upgrade_plan']['verification_commands']; track cmd) {
+                                  <code class="command-line">$ {{ cmd }}</code>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+
+                        <!-- ==================== TEST STRATEGY ==================== -->
+                        @if ($any(plan['development_plan'])?.['test_strategy']) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>science</mat-icon>
+                              Test Strategy
+                            </h3>
+                            @if ($any(plan['development_plan'])['test_strategy']['unit_tests']?.length) {
+                              <h4 class="subsection-title">Unit Tests</h4>
+                              <ul class="detail-list">
+                                @for (t of $any(plan['development_plan'])['test_strategy']['unit_tests']; track $index) {
+                                  <li>{{ t }}</li>
+                                }
+                              </ul>
+                            }
+                            @if ($any(plan['development_plan'])['test_strategy']['integration_tests']?.length) {
+                              <h4 class="subsection-title">Integration Tests</h4>
+                              <ul class="detail-list">
+                                @for (t of $any(plan['development_plan'])['test_strategy']['integration_tests']; track $index) {
+                                  <li>{{ t }}</li>
+                                }
+                              </ul>
+                            }
+                            @if ($any(plan['development_plan'])['test_strategy']['similar_patterns']?.length) {
+                              <h4 class="subsection-title">Similar Patterns</h4>
+                              <div class="patterns-list">
+                                @for (p of $any(plan['development_plan'])['test_strategy']['similar_patterns']; track $index) {
+                                  <div class="pattern-chip">
+                                    {{ isString(p) ? p : (p['pattern'] || p['name']) }}
+                                    @if (!isString(p) && p['description']) {
+                                      <span class="muted"> — {{ p['description'] }}</span>
+                                    }
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
+
+                        <!-- ==================== RISKS ==================== -->
+                        @if ($any(plan['development_plan'])?.['risks']?.length) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>warning_amber</mat-icon>
+                              Risks
+                            </h3>
+                            <ul class="risks-list">
+                              @for (risk of $any(plan['development_plan'])['risks']; track $index) {
+                                <li>
+                                  <mat-icon class="risk-icon">error_outline</mat-icon>
+                                  {{ risk }}
+                                </li>
+                              }
+                            </ul>
+                          </div>
+                        }
+
+                        <!-- ==================== COLLAPSIBLE DETAILS ==================== -->
+                        <mat-accordion class="details-accordion">
+                          @if ($any(plan['development_plan'])?.['security_considerations']?.length) {
                             <mat-expansion-panel>
                               <mat-expansion-panel-header>
                                 <mat-panel-title>
                                   <mat-icon class="panel-icon">security</mat-icon>
-                                  Security Considerations
+                                  Security ({{ $any(plan['development_plan'])['security_considerations'].length }})
                                 </mat-panel-title>
                               </mat-expansion-panel-header>
-                              <pre class="section-json">{{ $any(plan['development_plan'])['security_considerations'] | json }}</pre>
+                              <ul class="detail-list">
+                                @for (item of $any(plan['development_plan'])['security_considerations']; track $index) {
+                                  <li>{{ item }}</li>
+                                }
+                              </ul>
                             </mat-expansion-panel>
                           }
-                          @if ($any(plan['development_plan'])?.['validation_strategy']) {
+                          @if ($any(plan['development_plan'])?.['validation_strategy']?.length) {
                             <mat-expansion-panel>
                               <mat-expansion-panel-header>
                                 <mat-panel-title>
                                   <mat-icon class="panel-icon">check_circle</mat-icon>
-                                  Validation Strategy
+                                  Validation ({{ $any(plan['development_plan'])['validation_strategy'].length }})
                                 </mat-panel-title>
                               </mat-expansion-panel-header>
-                              <pre class="section-json">{{ $any(plan['development_plan'])['validation_strategy'] | json }}</pre>
+                              <ul class="detail-list">
+                                @for (item of $any(plan['development_plan'])['validation_strategy']; track $index) {
+                                  <li>{{ item }}</li>
+                                }
+                              </ul>
                             </mat-expansion-panel>
                           }
-                          @if ($any(plan['development_plan'])?.['error_handling']) {
+                          @if ($any(plan['development_plan'])?.['error_handling']?.length) {
                             <mat-expansion-panel>
                               <mat-expansion-panel-header>
                                 <mat-panel-title>
                                   <mat-icon class="panel-icon">error_outline</mat-icon>
-                                  Error Handling
+                                  Error Handling ({{ $any(plan['development_plan'])['error_handling'].length }})
                                 </mat-panel-title>
                               </mat-expansion-panel-header>
-                              <pre class="section-json">{{ $any(plan['development_plan'])['error_handling'] | json }}</pre>
+                              <ul class="detail-list">
+                                @for (item of $any(plan['development_plan'])['error_handling']; track $index) {
+                                  <li>{{ item }}</li>
+                                }
+                              </ul>
                             </mat-expansion-panel>
                           }
                           @if ($any(plan['development_plan'])?.['architecture_context']) {
@@ -263,60 +389,50 @@ interface DiffLine {
                                   Architecture Context
                                 </mat-panel-title>
                               </mat-expansion-panel-header>
-                              <pre class="section-json">{{ $any(plan['development_plan'])['architecture_context'] | json }}</pre>
+                              <div class="arch-context">
+                                @if ($any(plan['development_plan'])['architecture_context']['style']) {
+                                  <div class="arch-row">
+                                    <span class="arch-label">Style</span>
+                                    <span>{{ $any(plan['development_plan'])['architecture_context']['style'] }}</span>
+                                  </div>
+                                }
+                                @if ($any(plan['development_plan'])['architecture_context']['layer_pattern']) {
+                                  <div class="arch-row">
+                                    <span class="arch-label">Layer Pattern</span>
+                                    <span class="mono">{{ $any(plan['development_plan'])['architecture_context']['layer_pattern'] }}</span>
+                                  </div>
+                                }
+                                @if ($any(plan['development_plan'])['architecture_context']['quality_grade']) {
+                                  <div class="arch-row">
+                                    <span class="arch-label">Quality Grade</span>
+                                    <span class="severity-chip" [class]="getGradeClass($any(plan['development_plan'])['architecture_context']['quality_grade'])">
+                                      {{ $any(plan['development_plan'])['architecture_context']['quality_grade'] }}
+                                    </span>
+                                  </div>
+                                }
+                                @if ($any(plan['development_plan'])['architecture_context']['layer_compliance']?.length) {
+                                  <div class="arch-row">
+                                    <span class="arch-label">Compliance</span>
+                                    <span>{{ $any(plan['development_plan'])['architecture_context']['layer_compliance'].join(', ') }}</span>
+                                  </div>
+                                }
+                              </div>
+                            </mat-expansion-panel>
+                          }
+
+                          <!-- JIRA Context (Technical Notes - collapsible at bottom) -->
+                          @if ($any(plan['understanding'])?.['technical_notes']) {
+                            <mat-expansion-panel>
+                              <mat-expansion-panel-header>
+                                <mat-panel-title>
+                                  <mat-icon class="panel-icon">article</mat-icon>
+                                  JIRA Context
+                                </mat-panel-title>
+                              </mat-expansion-panel-header>
+                              <div class="jira-content" [innerHTML]="cleanHtml($any(plan['understanding'])['technical_notes'])"></div>
                             </mat-expansion-panel>
                           }
                         </mat-accordion>
-
-                        <!-- Upgrade Plan (conditional) -->
-                        @if ($any(plan['development_plan'])?.['upgrade_plan']) {
-                          <mat-card class="section-card">
-                            <mat-card-header>
-                              <mat-card-title>Upgrade Plan</mat-card-title>
-                            </mat-card-header>
-                            <mat-card-content>
-                              @if ($any(plan['development_plan'])['upgrade_plan']['framework']) {
-                                <p><strong>Framework:</strong> {{ $any(plan['development_plan'])['upgrade_plan']['framework'] }}</p>
-                              }
-                              @if ($any(plan['development_plan'])['upgrade_plan']['from_version']) {
-                                <p>
-                                  <strong>Version:</strong>
-                                  {{ $any(plan['development_plan'])['upgrade_plan']['from_version'] }}
-                                  &rarr; {{ $any(plan['development_plan'])['upgrade_plan']['to_version'] }}
-                                </p>
-                              }
-                              @if ($any(plan['development_plan'])['upgrade_plan']['migration_sequence']?.length) {
-                                <h4>Migration Sequence</h4>
-                                <table class="simple-table">
-                                  <thead>
-                                    <tr>
-                                      <th>#</th>
-                                      <th>Step</th>
-                                      <th>Description</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    @for (step of $any(plan['development_plan'])['upgrade_plan']['migration_sequence']; track step; let i = $index) {
-                                      <tr>
-                                        <td>{{ i + 1 }}</td>
-                                        <td>{{ step['step'] || step['name'] || '-' }}</td>
-                                        <td>{{ step['description'] || step['details'] || '-' }}</td>
-                                      </tr>
-                                    }
-                                  </tbody>
-                                </table>
-                              }
-                              @if ($any(plan['development_plan'])['upgrade_plan']['verification_commands']?.length) {
-                                <h4>Verification Commands</h4>
-                                <ul class="mono">
-                                  @for (cmd of $any(plan['development_plan'])['upgrade_plan']['verification_commands']; track cmd) {
-                                    <li>{{ cmd }}</li>
-                                  }
-                                </ul>
-                              }
-                            </mat-card-content>
-                          </mat-card>
-                        }
                       }
                     </div>
                   </mat-expansion-panel>
@@ -341,7 +457,7 @@ interface DiffLine {
 
             @if (reports?.codegen_reports?.length) {
               <mat-accordion class="report-accordion" multi>
-                @for (report of reports!.codegen_reports; track report['task_id']) {
+                @for (report of reports!.codegen_reports; track $any(report['task_id'])) {
                   <mat-expansion-panel>
                     <mat-expansion-panel-header>
                       <mat-panel-title>
@@ -349,7 +465,7 @@ interface DiffLine {
                         <span class="mono">{{ report['task_id'] }}</span>
                       </mat-panel-title>
                       <mat-panel-description>
-                        <span class="status-chip" [class]="'status-' + report['status']">
+                        <span class="severity-chip" [class]="'status-' + report['status']">
                           {{ report['status'] }}
                         </span>
                         @if ($any(report['generated_files'])?.length) {
@@ -361,18 +477,16 @@ interface DiffLine {
                     </mat-expansion-panel-header>
 
                     <div class="report-body">
-                      <!-- Toggle Raw JSON -->
                       <div class="toggle-row">
                         <button mat-button (click)="toggleRawJson('report_' + report['task_id'])">
-                          <mat-icon>{{ showRawJson['report_' + report['task_id']] ? 'visibility' : 'code' }}</mat-icon>
-                          {{ showRawJson['report_' + report['task_id']] ? 'Show Structured' : 'Show Raw JSON' }}
+                          <mat-icon>{{ showRawJson['report_' + $any(report['task_id'])] ? 'visibility' : 'data_object' }}</mat-icon>
+                          {{ showRawJson['report_' + $any(report['task_id'])] ? 'Structured View' : 'Raw JSON' }}
                         </button>
                       </div>
 
-                      @if (showRawJson['report_' + report['task_id']]) {
-                        <pre class="plan-content code-viewer">{{ report | json }}</pre>
+                      @if (showRawJson['report_' + $any(report['task_id'])]) {
+                        <pre class="code-viewer">{{ report | json }}</pre>
                       } @else {
-                        <!-- Report Summary -->
                         <mat-card class="section-card">
                           <mat-card-content>
                             <div class="report-meta">
@@ -392,31 +506,30 @@ interface DiffLine {
                           </mat-card-content>
                         </mat-card>
 
-                        <!-- Generated Files -->
                         @if ($any(report['generated_files'])?.length) {
                           <div class="files-list">
                             @for (file of $any(report['generated_files']); track file['path']) {
                               <div class="file-entry"
-                                (click)="toggleFile(report['task_id'] + ':' + file['path'])"
-                                [class.expanded]="expandedFiles[report['task_id'] + ':' + file['path']]">
+                                (click)="toggleFile($any(report['task_id']) + ':' + file['path'])"
+                                [class.expanded]="expandedFiles[$any(report['task_id']) + ':' + file['path']]">
                                 <div class="file-header">
                                   <mat-icon class="expand-icon">
-                                    {{ expandedFiles[report['task_id'] + ':' + file['path']] ? 'expand_more' : 'chevron_right' }}
+                                    {{ expandedFiles[$any(report['task_id']) + ':' + file['path']] ? 'expand_more' : 'chevron_right' }}
                                   </mat-icon>
                                   <span class="file-path mono">{{ file['path'] }}</span>
-                                  <span class="status-chip" [class]="'action-' + (file['action'] || 'modified')">
+                                  <span class="severity-chip" [class]="'action-' + (file['action'] || 'modified')">
                                     {{ file['action'] || 'modified' }}
                                   </span>
                                   <span class="lang-badge">{{ getLanguage(file['path']) }}</span>
                                 </div>
-                                @if (expandedFiles[report['task_id'] + ':' + file['path']] && file['diff']) {
+                                @if (expandedFiles[$any(report['task_id']) + ':' + file['path']] && file['diff']) {
                                   <div class="diff-viewer">
                                     @for (line of parseDiffLines(file['diff']); track $index) {
                                       <div [class]="'diff-line diff-line-' + line.type">{{ line.content }}</div>
                                     }
                                   </div>
                                 }
-                                @if (expandedFiles[report['task_id'] + ':' + file['path']] && !file['diff']) {
+                                @if (expandedFiles[$any(report['task_id']) + ':' + file['path']] && !file['diff']) {
                                   <div class="diff-viewer">
                                     <span class="muted">No diff available for this file.</span>
                                   </div>
@@ -467,11 +580,11 @@ interface DiffLine {
                           <span class="mono branch-name">{{ branch.name }}</span>
                         </div>
                         <div class="branch-actions">
-                          <span class="status-chip status-ready" matTooltip="Files changed vs main">
+                          <span class="severity-chip status-ready" matTooltip="Files changed vs main">
                             {{ branch.file_count }} files
                           </span>
                           @if (branch.has_report) {
-                            <span class="status-chip status-completed"
+                            <span class="severity-chip status-completed"
                               matTooltip="View codegen report"
                               style="cursor:pointer"
                               (click)="goToReport(branch.task_id)">
@@ -503,163 +616,305 @@ interface DiffLine {
   styles: [`
     .tab-icon { margin-right: 6px; font-size: 18px; }
     .report-accordion { margin-top: 16px; }
-    .nested-accordion { margin-top: 12px; }
     .panel-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 8px;
-      color: var(--cg-blue);
+      font-size: 18px; width: 18px; height: 18px;
+      margin-right: 8px; color: var(--cg-blue);
     }
-    .plan-content {
-      max-height: 500px;
-      overflow: auto;
-      background: var(--cg-dark);
-      color: #eeffff;
-      padding: 16px;
-      border-radius: 8px;
-      font-size: 12px;
-      line-height: 1.6;
+    .code-viewer {
+      max-height: 500px; overflow: auto;
+      background: var(--cg-dark); color: #eeffff;
+      padding: 16px; border-radius: 8px;
+      font-size: 12px; line-height: 1.6;
     }
     .empty-inline {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--cg-gray-500);
-      font-size: 14px;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--cg-gray-500); font-size: 14px;
     }
     .empty-inline .mat-icon { color: var(--cg-gray-200); }
     .tab-empty { padding: 32px 16px; }
 
-    /* Plan structured view */
+    /* Plan body layout */
     .plan-body, .report-body { padding: 4px 0; }
-    .toggle-row { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-    .section-card { margin-bottom: 12px; }
-    .section-card mat-card-title { font-size: 15px; font-weight: 600; }
-    h4 { font-size: 13px; font-weight: 600; margin: 12px 0 6px; color: var(--cg-gray-900); }
-    .criteria-list, .steps-list { padding-left: 20px; margin: 4px 0; }
-    .criteria-list li, .steps-list li { margin: 4px 0; font-size: 13px; }
-    .muted { color: var(--cg-gray-500); font-size: 13px; }
-    .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-    .section-json {
-      background: var(--cg-gray-50);
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      line-height: 1.5;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
+    .toggle-row { display: flex; justify-content: flex-end; margin-bottom: 4px; }
     .plan-summary-text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 400px;
-      margin-left: 8px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 400px; margin-left: 8px;
     }
-    .table-scroll { overflow-x: auto; }
-    .simple-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 8px;
-    }
-    .simple-table th, .simple-table td {
+    .muted { color: var(--cg-gray-500); font-size: 13px; }
+
+    /* Overview card */
+    .overview-card {
+      background: linear-gradient(135deg, rgba(18,171,219,0.04) 0%, rgba(18,171,219,0.01) 100%);
       border: 1px solid var(--cg-gray-200);
-      padding: 6px 10px;
-      text-align: left;
+      border-left: 4px solid var(--cg-vibrant);
+      border-radius: 8px; padding: 20px; margin-bottom: 20px;
     }
-    .simple-table th {
-      background: var(--cg-gray-50);
-      font-weight: 600;
+    .overview-title {
+      font-size: 18px; font-weight: 600; margin: 0 0 14px;
+      color: var(--cg-gray-900); line-height: 1.4;
+    }
+    .metrics-row {
+      display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .metric-box {
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 8px 14px; background: white;
+      border: 1px solid var(--cg-gray-200); border-radius: 6px;
+      min-width: 100px;
+    }
+    .metric-label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--cg-gray-500); font-weight: 600;
+    }
+    .metric-value { font-size: 18px; font-weight: 700; color: var(--cg-gray-900); }
+    .warn-text { color: var(--cg-error) !important; }
+    .reasoning-text {
+      font-size: 13px; color: var(--cg-gray-500);
+      margin: 0; line-height: 1.5; font-style: italic;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 20px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--cg-gray-100);
+    }
+    .section:last-child { border-bottom: none; }
+    .section-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 600; margin: 0 0 12px;
+      color: var(--cg-gray-900);
+    }
+    .section-title .mat-icon {
+      font-size: 20px; width: 20px; height: 20px; color: var(--cg-blue);
+    }
+    .title-detail {
+      font-size: 13px; font-weight: 400; color: var(--cg-gray-500);
+      margin-left: 4px;
+    }
+    .subsection-title {
+      font-size: 13px; font-weight: 600; margin: 14px 0 8px;
+      color: var(--cg-gray-700);
+    }
+
+    /* Steps list */
+    .steps-list {
+      padding-left: 24px; margin: 0;
+      counter-reset: steps;
+    }
+    .steps-list li {
+      margin: 6px 0; font-size: 13px; line-height: 1.5;
+      color: var(--cg-gray-700);
+    }
+
+    /* Component grid */
+    .component-grid {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .component-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; background: var(--cg-gray-50);
+      border: 1px solid var(--cg-gray-200); border-radius: 6px;
+      font-size: 12px;
+    }
+    .comp-container {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--cg-vibrant); font-weight: 600;
+      padding: 1px 6px; background: rgba(18,171,219,0.08);
+      border-radius: 3px;
+    }
+    .comp-name { font-weight: 600; color: var(--cg-gray-900); }
+    .comp-package { color: var(--cg-gray-400); font-family: monospace; font-size: 11px; }
+
+    /* Severity / status chips */
+    .severity-chip {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; text-transform: capitalize;
+    }
+    .severity-low, .severity-recommended { background: rgba(40,167,69,0.1); color: var(--cg-success); }
+    .severity-medium, .severity-deprecated { background: rgba(255,193,7,0.15); color: #d4a017; }
+    .severity-high, .severity-breaking { background: rgba(220,53,69,0.1); color: var(--cg-error); }
+    .grade-a { background: rgba(40,167,69,0.1); color: var(--cg-success); }
+    .grade-b { background: rgba(0,112,173,0.1); color: var(--cg-blue); }
+    .grade-c { background: rgba(255,193,7,0.15); color: #d4a017; }
+    .grade-d, .grade-f { background: rgba(220,53,69,0.1); color: var(--cg-error); }
+
+    /* Migration accordion */
+    .migration-accordion { margin-top: 8px; }
+    .migration-panel { margin-bottom: 4px !important; }
+    .migration-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px !important;
+    }
+    .migration-desc {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .step-number {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--cg-vibrant); color: white;
+      font-size: 11px; font-weight: 700; flex-shrink: 0;
+    }
+    .effort-badge {
+      font-size: 11px; color: var(--cg-gray-500);
+      font-family: monospace;
+    }
+    .migration-body { padding: 4px 0; }
+    .migration-body h5 {
+      font-size: 12px; font-weight: 600; margin: 10px 0 6px;
+      color: var(--cg-gray-700); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .migration-steps {
+      padding-left: 20px; margin: 0;
+    }
+    .migration-steps li {
+      font-size: 12px; margin: 3px 0; line-height: 1.5;
+      color: var(--cg-gray-600);
+    }
+    .schematic-box {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; background: var(--cg-dark);
+      border-radius: 6px; margin-top: 8px;
+    }
+    .schematic-box .mat-icon { color: var(--cg-vibrant); font-size: 16px; width: 16px; height: 16px; }
+    .schematic-box code { color: #c3e88d; font-size: 12px; }
+    .affected-files {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;
+    }
+    .file-chip {
+      font-size: 11px; padding: 2px 8px;
+      background: var(--cg-gray-50); border: 1px solid var(--cg-gray-200);
+      border-radius: 4px; color: var(--cg-gray-600);
+    }
+
+    /* Check lists */
+    .check-list {
+      list-style: none; padding: 0; margin: 0;
+    }
+    .check-list li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; margin: 4px 0; color: var(--cg-gray-700);
+    }
+    .check-icon {
+      font-size: 16px !important; width: 16px !important; height: 16px !important;
+      color: var(--cg-success); margin-top: 2px; flex-shrink: 0;
+    }
+    .commands-box {
+      background: var(--cg-dark); border-radius: 6px;
+      padding: 12px 16px;
+    }
+    .command-line {
+      display: block; color: #c3e88d; font-size: 12px;
+      line-height: 1.8;
+    }
+
+    /* Detail lists */
+    .detail-list {
+      padding-left: 20px; margin: 0;
+    }
+    .detail-list li {
+      font-size: 13px; margin: 4px 0; line-height: 1.5;
+      color: var(--cg-gray-700);
+    }
+    .patterns-list { display: flex; flex-direction: column; gap: 4px; }
+    .pattern-chip {
+      font-size: 13px; padding: 6px 12px;
+      background: var(--cg-gray-50); border-radius: 6px;
+      border: 1px solid var(--cg-gray-200);
+    }
+
+    /* Risks */
+    .risks-list {
+      list-style: none; padding: 0; margin: 0;
+    }
+    .risks-list li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; margin: 6px 0; line-height: 1.5;
+      color: var(--cg-gray-700);
+    }
+    .risk-icon {
+      font-size: 16px !important; width: 16px !important; height: 16px !important;
+      color: #d4a017; margin-top: 2px; flex-shrink: 0;
+    }
+
+    /* Collapsible details */
+    .details-accordion { margin-top: 12px; }
+
+    /* Architecture context */
+    .arch-context { display: flex; flex-direction: column; gap: 8px; }
+    .arch-row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .arch-label {
+      font-weight: 600; color: var(--cg-gray-500); min-width: 120px;
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* JIRA content */
+    .jira-content {
+      font-size: 13px; line-height: 1.6; color: var(--cg-gray-700);
+      max-height: 400px; overflow-y: auto;
+      padding: 8px;
+    }
+    .jira-content :is(h2, h3, h4) {
+      font-size: 14px; font-weight: 600; margin: 12px 0 6px;
+      color: var(--cg-gray-900);
+    }
+    .jira-content ul, .jira-content ol {
+      padding-left: 20px; margin: 4px 0;
+    }
+    .jira-content li { margin: 2px 0; }
+    .jira-content a {
+      color: var(--cg-vibrant); text-decoration: none;
+    }
+    .jira-content a:hover { text-decoration: underline; }
+    .jira-content p { margin: 6px 0; }
+    .jira-content code, .jira-content tt {
+      background: var(--cg-gray-100); padding: 1px 4px;
+      border-radius: 3px; font-size: 12px;
     }
 
     /* Codegen report */
-    .report-meta {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
+    .section-card { margin-bottom: 12px; }
+    .report-meta { display: flex; gap: 20px; flex-wrap: wrap; }
     .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--cg-gray-500);
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--cg-gray-500);
     }
     .meta-item .mat-icon { font-size: 18px; width: 18px; height: 18px; }
-    .file-count-badge {
-      margin-left: 8px;
-      font-size: 12px;
-      color: var(--cg-gray-500);
-    }
+    .file-count-badge { margin-left: 8px; font-size: 12px; color: var(--cg-gray-500); }
     .files-list { margin-top: 12px; }
     .file-entry {
-      border: 1px solid var(--cg-gray-200);
-      border-radius: 8px;
-      margin-bottom: 8px;
-      overflow: hidden;
+      border: 1px solid var(--cg-gray-200); border-radius: 8px;
+      margin-bottom: 8px; overflow: hidden;
     }
     .file-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      cursor: pointer;
-      transition: background 0.15s;
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; cursor: pointer; transition: background 0.15s;
     }
     .file-header:hover { background: var(--cg-gray-50); }
     .expand-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      color: var(--cg-gray-500);
+      font-size: 20px; width: 20px; height: 20px; color: var(--cg-gray-500);
     }
     .file-path { flex: 1; font-size: 13px; }
     .lang-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: var(--cg-gray-100);
-      color: var(--cg-gray-500);
-      text-transform: uppercase;
-      font-weight: 600;
+      font-size: 11px; padding: 2px 8px; border-radius: 10px;
+      background: var(--cg-gray-100); color: var(--cg-gray-500);
+      text-transform: uppercase; font-weight: 600;
     }
     .diff-viewer { border-radius: 0 0 8px 8px; }
     .diff-line { min-height: 19px; padding: 0 12px; }
 
     /* Branches */
-    .branches-grid {
-      display: grid;
-      gap: 10px;
-      margin-top: 16px;
-    }
+    .branches-grid { display: grid; gap: 10px; margin-top: 16px; }
     .branch-card { margin: 0; }
     .branch-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
     }
-    .branch-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .branch-info { display: flex; align-items: center; gap: 8px; }
     .branch-icon {
-      color: var(--cg-blue);
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      color: var(--cg-blue); font-size: 20px; width: 20px; height: 20px;
     }
     .branch-name { font-size: 14px; }
-    .branch-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .branch-actions { display: flex; align-items: center; gap: 8px; }
   `],
 })
 export class ReportsComponent implements OnInit {
@@ -670,10 +925,6 @@ export class ReportsComponent implements OnInit {
   branchesError = '';
   showRawJson: Record<string, boolean> = {};
   expandedFiles: Record<string, boolean> = {};
-
-  componentColumns = ['name', 'stereotype', 'layer', 'change_type', 'relevance_score'];
-
-  private tabGroup: { selectedIndex: number } | null = null;
 
   constructor(
     private api: ApiService,
@@ -719,6 +970,75 @@ export class ReportsComponent implements OnInit {
     this.expandedFiles[fileKey] = !this.expandedFiles[fileKey];
   }
 
+  /** Parse component ID strings into structured objects */
+  parseComponents(ids: string[]): ParsedComponent[] {
+    if (!ids?.length) return [];
+    return ids.map(id => {
+      // "component.frontend.core.app_module" -> container=frontend, package=core, name=app_module
+      const parts = id.replace(/^component\./, '').split('.');
+      const container = parts[0] || '';
+      const name = parts[parts.length - 1] || id;
+      const pkg = parts.length > 2 ? parts.slice(1, -1).join('.') : '';
+      return {
+        id,
+        name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        container,
+        package: pkg,
+      };
+    });
+  }
+
+  /** Strip leading step numbers like "1. " from implementation steps */
+  stripStepNumber(step: string): string {
+    return step.replace(/^\d+\.\s*/, '');
+  }
+
+  /** Convert raw JIRA HTML/text to safe HTML for rendering */
+  cleanHtml(text: string): string {
+    if (!text) return '';
+    // Convert escaped newlines to <br> for plain text sections
+    let html = text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+    // Wrap comment blocks for visual separation
+    html = html.replace(/\[Comment (\d+)\]/g,
+      '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--cg-gray-200)"><strong style="color:var(--cg-blue)">Comment $1</strong></div>');
+    // Clean up JIRA user references
+    html = html.replace(/<a[^>]*class="user-hover"[^>]*>([^<]*)<\/a>/g, '<strong>$1</strong>');
+    // Remove image emoticons
+    html = html.replace(/<img[^>]*class="emoticon"[^>]*>/g, '');
+    // Wrap in paragraph if not already
+    if (!html.startsWith('<')) html = '<p>' + html + '</p>';
+    return html;
+  }
+
+  /** Format minutes to human readable */
+  formatMinutes(minutes: number): string {
+    if (minutes < 60) return `${minutes}min`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  }
+
+  /** Shorten file paths for display */
+  shortenPath(path: string): string {
+    // Remove common prefix like "frontend\src\app\"
+    return path.replace(/^frontend\\src\\app\\/, '').replace(/\\/g, '/');
+  }
+
+  getSeverityClass(level: string): string {
+    const l = (level || '').toLowerCase();
+    if (l === 'low' || l === 'recommended') return 'severity-chip severity-low';
+    if (l === 'high' || l === 'breaking') return 'severity-chip severity-high';
+    return 'severity-chip severity-medium';
+  }
+
+  getGradeClass(grade: string): string {
+    const g = (grade || '').toUpperCase();
+    if (g === 'A') return 'severity-chip grade-a';
+    if (g === 'B') return 'severity-chip grade-b';
+    if (g === 'C') return 'severity-chip grade-c';
+    return 'severity-chip grade-d';
+  }
+
   parseDiffLines(diff: string): DiffLine[] {
     return diff.split('\n').map(line => {
       if (line.startsWith('+')) return { type: 'add' as const, content: line };
@@ -739,13 +1059,6 @@ export class ReportsComponent implements OnInit {
     return map[ext] || ext.toUpperCase();
   }
 
-  getComplexityClass(level: string): string {
-    const l = (level || '').toLowerCase();
-    if (l === 'low') return 'status-chip complexity-low';
-    if (l === 'high') return 'status-chip complexity-high';
-    return 'status-chip complexity-medium';
-  }
-
   deleteBranch(taskId: string): void {
     if (!confirm(`Delete branch codegen/${taskId}?`)) return;
     this.api.deleteBranch(taskId).subscribe({
@@ -763,16 +1076,10 @@ export class ReportsComponent implements OnInit {
   }
 
   goToReport(taskId: string): void {
-    // Switch to Codegen Reports tab (index 1)
-    // We find the mat-tab-group element and set its selectedIndex
     const tabGroupEl = document.querySelector('mat-tab-group');
     if (tabGroupEl) {
-      const matTabGroup = (tabGroupEl as any).__ngContext__?.[0];
-      // Simple approach: use the DOM to click the second tab
       const tabs = tabGroupEl.querySelectorAll('.mat-mdc-tab');
-      if (tabs[1]) {
-        (tabs[1] as HTMLElement).click();
-      }
+      if (tabs[1]) (tabs[1] as HTMLElement).click();
     }
   }
 

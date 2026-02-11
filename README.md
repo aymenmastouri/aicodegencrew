@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![CrewAI](https://img.shields.io/badge/framework-CrewAI-orange.svg)](https://crewai.com/)
-[![Angular 19](https://img.shields.io/badge/dashboard-Angular%2019-red.svg)](#sdlc-dashboard)
+[![Angular 21](https://img.shields.io/badge/dashboard-Angular%2021-red.svg)](#sdlc-dashboard)
 [![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#why-on-premises)
 
 AICodeGenCrew automates the full Software Development Lifecycle, from architecture extraction to code generation. Point it at any repository, operate everything through the **SDLC Dashboard**, and get:
@@ -32,20 +32,31 @@ ollama pull all-minilm:latest && ollama serve     # embeddings
 
 ### 2. Launch the Dashboard
 
-```bash
-# Backend
-uvicorn ui.backend.main:app --reload --port 8000
+Open **two terminals** in the project root:
 
-# Frontend (separate terminal)
+```bash
+# Terminal 1 — Backend (FastAPI)
+uvicorn ui.backend.main:app --reload --port 8001
+
+# Terminal 2 — Frontend (Angular, includes proxy to backend)
 cd ui/frontend && npm install && npm start
 ```
 
 Open **http://localhost:4200** — the SDLC Dashboard is ready.
 
-### 3. Run a Pipeline
+### 3. Upload Input Files
+
+Go to **Input Files** in the sidebar and drag-and-drop your JIRA XML, DOCX, or Excel files into the matching category card. The `.env` is auto-configured.
+
+Or set paths manually in `.env`:
+```env
+TASK_INPUT_DIR=C:\work\my-project\tasks
+```
+
+### 4. Run a Pipeline
 
 From the Dashboard:
-1. Go to **Run Pipeline**
+1. Go to **Run Pipeline** — the input file summary shows what's uploaded
 2. Select a preset (e.g. `planning_only`) or pick individual phases
 3. Optionally adjust environment variables
 4. Click **Run Pipeline** and watch live log output
@@ -61,19 +72,25 @@ aicodegencrew codegen                               # Code generation
 
 ## SDLC Dashboard
 
-The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 19** + **FastAPI**.
+The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 21** + **FastAPI**.
 
 | Page | Purpose |
 |------|---------|
-| **Dashboard** | System health, pipeline status overview, quick links |
-| **Run Pipeline** | Execute presets or custom phases, edit env vars, live SSE log streaming |
+| **Dashboard** | System health, pipeline status with phase cards, active run banner, quick links |
+| **Run Pipeline** | Execute presets or custom phases, edit env vars, live SSE log streaming, input file summary |
+| **Input Files** | Drag-and-drop upload for tasks, requirements, logs, reference materials. Auto-configures `.env` |
 | **Phases** | Phase configuration, dependencies, run individual phases |
-| **Knowledge** | Browse generated JSON/Markdown files |
-| **Reports** | View development plans and codegen reports |
+| **Knowledge** | Multi-tab file browser with rendered previews (JSON, Markdown, AsciiDoc, HTML, Confluence, DrawIO) |
+| **Reports** | 3-tab view: structured plan viewer (overview metrics, migration sequence, component chips), code diff viewer (colored diffs), git branch management |
 | **Metrics** | Explore `metrics.jsonl` events with filters |
 | **Logs** | Tail application logs with color-coded levels |
 
 **Key capabilities:**
+- **File upload** with drag-and-drop, extension validation, 4 input categories
+- **Structured plan viewer** — overview card with complexity/effort/risk metrics, implementation steps, parsed component chips, full upgrade migration sequence with severity badges and per-step affected files, test strategy, collapsible security/validation/error handling details, rendered JIRA context
+- **Code diff viewer** — per-file expandable diffs with green/red line coloring, action chips (created/modified/deleted), language badges
+- **Git branch management** — list `codegen/*` branches with file count, report links, and delete action
+- **Document rendering** — JSON syntax highlighting, Markdown, AsciiDoc, HTML, Confluence wiki
 - Real-time log streaming via Server-Sent Events (SSE)
 - Environment configuration editing before each run
 - Phase-level progress timeline with durations
@@ -191,14 +208,19 @@ Common options: `--repo-path`, `--index-mode`, `--git-url`, `--branch`, `--confi
 
 ## Task Inputs (Phase 4)
 
-Place task files in `TASK_INPUT_DIR`:
+Two ways to provide input files:
 
-| Format | Extensions | Dependencies |
-|--------|-----------|-------------|
-| Plain Text | `.txt`, `.log` | None |
-| JIRA XML | `.xml` | None |
-| Word | `.docx` | `pip install python-docx` |
-| Excel | `.xlsx`, `.xls` | `pip install openpyxl` |
+| Mode | How |
+|------|-----|
+| **Dashboard** | Go to **Input Files**, drag-and-drop into category cards. `.env` auto-configured. |
+| **Manual** | Set `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` in `.env` |
+
+| Category | Extensions | Purpose |
+|----------|-----------|---------|
+| **Tasks** | `.xml` `.docx` `.pdf` `.txt` `.json` | JIRA exports, tickets |
+| **Requirements** | `.xlsx` `.docx` `.pdf` `.txt` `.csv` | Requirement docs, specs |
+| **Logs** | `.log` `.txt` `.xlsx` `.csv` | Application logs |
+| **Reference** | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` | Mockups, diagrams |
 
 Output: `knowledge/development/{task_id}_plan.json` with affected components, implementation steps, test/security/validation strategies.
 
@@ -269,8 +291,8 @@ pytest tests/ --ignore=tests/e2e    # Unit + integration only
 ```
 aicodegencrew/
 ├── ui/                          # SDLC Dashboard (primary interface)
-│   ├── frontend/                #   Angular 19 SPA (7 pages, Material + Tailwind)
-│   ├── backend/                 #   FastAPI (8 routers, SSE streaming)
+│   ├── frontend/                #   Angular 21 SPA (9 pages, Material + Tailwind)
+│   ├── backend/                 #   FastAPI (10 routers, SSE streaming, file upload)
 │   └── docker-compose.ui.yml
 ├── src/aicodegencrew/
 │   ├── cli.py                   # CLI entry point
@@ -292,10 +314,11 @@ aicodegencrew/
 
 **Copyright 2024-2026 Capgemini** — Proprietary and confidential.
 
-Developed by Aymen Mastouri.
+Developed by **Aymen Mastouri** (Capgemini).
 
 ---
 
 <p align="center">
-  Built with <a href="https://crewai.com/">CrewAI</a> &middot; Powered by local LLMs &middot; Made for enterprise
+  Built with <a href="https://crewai.com/">CrewAI</a> &middot; Powered by local LLMs &middot; Made for enterprise<br>
+  <sub>Developed by Aymen Mastouri</sub>
 </p>

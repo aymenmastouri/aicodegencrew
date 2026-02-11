@@ -13,6 +13,11 @@ export const routes: Routes = [
       import('./pages/run-pipeline/run-pipeline.component').then(m => m.RunPipelineComponent),
   },
   {
+    path: 'inputs',
+    loadComponent: () =>
+      import('./pages/input-files/input-files.component').then(m => m.InputFilesComponent),
+  },
+  {
     path: 'phases',
     loadComponent: () =>
       import('./pages/phases/phases.component').then(m => m.PhasesComponent),

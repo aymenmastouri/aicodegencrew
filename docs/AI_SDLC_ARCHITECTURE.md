@@ -104,7 +104,7 @@ The implementation covers deterministic facts extraction through code generation
 | **Phase 3 Synthesis** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
 | **Phase 4 Planning** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
 | **Phase 5 Code Gen** | Hybrid pipeline (4 deterministic + 1 LLM per file) | IMPLEMENTED |
-| **SDLC Dashboard** | Angular 19 + FastAPI web UI with SSE streaming | IMPLEMENTED |
+| **SDLC Dashboard** | Angular 21 + FastAPI web UI with SSE streaming, file upload, doc rendering | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
 ### 2.4 Knowledge Layer Capabilities
@@ -139,6 +139,8 @@ Phase 1 extracts comprehensive architecture facts from any codebase:
 ### 3.1 Core Principle: Evidence-First Architecture
 
 > See [pipeline-flow.drawio](diagrams/pipeline-flow.drawio) for the full 4-layer pipeline diagram.
+
+**Why Evidence-First?** LLMs hallucinate. If you ask an LLM "what components does this system have?", it will guess based on naming conventions. By extracting facts deterministically first (Phase 1, no LLM), then feeding only verified facts to the LLM (Phase 2+), every statement in the output is traceable to real code. This is critical for enterprise documentation that auditors and architects rely on.
 
 **Key Rules:**
 - Phase 1 produces facts and evidence (deterministic, no LLM)
@@ -192,6 +194,8 @@ result = orchestrator.run(preset="architecture_full")
 | **Strict CLI** | Preset/phase names validated against `phases_config.yaml` |
 
 ### 3.5 Mini-Crews Pattern (Phase 3)
+
+**Why Mini-Crews?** CrewAI's default pattern — one Crew with many sequential tasks — fails for large documents. After ~10-15 tasks, the accumulated conversation history exceeds the LLM context window (120K tokens), producing `max_tokens must be at least 1` errors. Mini-Crews solve this by giving each sub-task a fresh agent with a fresh context window, passing data via template variables instead of conversation history.
 
 Phase 3 uses the **Mini-Crews Pattern** instead of a single large Crew:
 
@@ -1020,10 +1024,10 @@ knowledge/architecture/
 | Module | `pipelines/development_planning/` |
 | LLM Requirement | Yes (Stage 4 only, 1 call per task) |
 | Multi-File | 1 file = single run; N files (same epic) = parse all, sort, process each |
-| Input | `inputs/tasks/` (`.txt`, `.log`, `.xml`, `.docx`, `.xlsx`) |
-| | `inputs/requirements/` (Specs, documentation) |
-| | `inputs/logs/` (Error logs, traces) |
-| | `inputs/reference/` (Examples, patterns) |
+| Input | `inputs/tasks/` (`.txt`, `.log`, `.xml`, `.docx`, `.xlsx`) — primary task files |
+| | `inputs/requirements/` (Specs, documentation) — supplementary context for richer plans |
+| | `inputs/logs/` (Error logs, traces) — supplementary context for debugging tasks |
+| | `inputs/reference/` (Examples, patterns) — supplementary context for design guidance |
 | | `architecture_facts.json` (Phase 1, all 17 keys) |
 | | `analyzed_architecture.json` (Phase 2) |
 | | ChromaDB (Phase 0, semantic search) |
@@ -1033,7 +1037,7 @@ knowledge/architecture/
 
 #### Architecture: Hybrid Pipeline
 
-**Why Hybrid?** Multi-agent workflows (CrewAI) are too slow (5-7 minutes) and unreliable (70-80% success) for this task. Pattern matching doesn't need LLM reasoning - algorithms are faster and deterministic.
+**Why Hybrid?** Development planning is 80% pattern matching and 20% creative synthesis. Multi-agent workflows (CrewAI) use LLMs for everything — including deterministic tasks like "find components matching keyword X" — which is slow (5-7 min), expensive (5 LLM calls), and unreliable (70-80% success). The hybrid approach uses algorithms for what algorithms do best (TF-IDF similarity, regex matching, rule-based lookup) and the LLM only for the creative step (synthesizing a coherent implementation plan from structured inputs). Result: 10-20x faster, 95%+ success rate, and fully debuggable.
 
 **5-Stage Pipeline:**
 
@@ -1434,9 +1438,7 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 #### Architecture: Hybrid Pipeline
 
-**Why Hybrid?** Code generation requires precise, per-file modifications. Multi-agent crews
-produce inconsistent output and waste tokens on coordination. A pipeline with 1 LLM call per
-file is faster, more deterministic, and easier to debug.
+**Why Hybrid?** Code generation needs precision, not creativity. Each modified file has a clear context (existing code + plan + patterns), and the LLM's job is to produce valid code that fits. Multi-agent crews waste tokens on inter-agent coordination and produce inconsistent style across files. One LLM call per file with a strategy-specific prompt (feature/bugfix/upgrade/refactoring) gives predictable, reviewable output that developers trust.
 
 **5-Stage Pipeline:**
 
@@ -1672,8 +1674,10 @@ Unknown presets raise an error instead of silently falling back.
 | `facts_only` | 0, 1 | Indexing + Architecture Facts (no LLM) |
 | `analysis_only` | 0, 1, 2 | Indexing + Facts + Analysis |
 | `architecture_workflow` | 0, 1, 2, 3 | C4 Model + arc42 documentation (excludes Phase 4) |
+| `planning_only` | 0, 1, 2, 4 | Development planning (most common preset) |
+| `codegen_only` | 0, 1, 2, 4, 5 | Planning + code generation |
 | `architecture_full` | 0, 1, 2, 3, 4 | Architecture documentation + Development Planning |
-| `full_pipeline` | 0-8 | Complete automated SDLC pipeline (future) |
+| `full_pipeline` | 0-7 | Complete automated SDLC pipeline |
 
 ---
 
@@ -2062,35 +2066,45 @@ pytest tests/test_quality_gate.py -v
 
 ## 15. SDLC Dashboard (Web UI)
 
-AICodeGenCrew includes an interactive web dashboard for pipeline management, monitoring, and knowledge browsing.
+### Why a Dashboard?
+
+CLI tools are powerful for automation but create friction for daily developer workflows. Developers want to:
+- **See results visually** — structured plan views instead of raw JSON dumps
+- **Upload files without touching `.env`** — drag-and-drop JIRA exports instead of editing paths
+- **Monitor pipelines in real-time** — live log streaming instead of `tail -f`
+- **Browse artifacts without an IDE** — rendered Markdown, syntax-highlighted JSON, colored diffs
+- **Manage git branches** — see what codegen produced without switching to terminal
+
+The Dashboard wraps the same CLI pipeline in a visual interface. It does NOT replace the CLI — both share the same backend logic.
 
 ### 15.1 Architecture
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Backend** | FastAPI (Python) | REST API + SSE streaming |
-| **Frontend** | Angular 19 + Material Design | SPA with standalone components |
-| **Proxy** | Nginx | Reverse proxy, SSE buffering disabled, SPA routing |
-| **Deployment** | Docker Compose | Multi-container: backend (port 8000) + frontend (port 80) |
+| Component | Technology | Why This Choice |
+|-----------|-----------|-----------------|
+| **Backend** | FastAPI (Python) | Same language as pipeline — can import directly, no serialization overhead |
+| **Frontend** | Angular 21 + Material Design | Enterprise-standard, standalone components, zoneless change detection for performance |
+| **Proxy** | Nginx | Required for SSE buffering (browsers limit concurrent SSE connections per domain) |
+| **Deployment** | Docker Compose | One command to start everything; volumes for persistent data |
 
 ### 15.2 Backend API
 
-8 routers registered in `ui/backend/main.py`:
+10 routers registered in `ui/backend/main.py`:
 
-| Router | Prefix | Endpoints | Purpose |
-|--------|--------|-----------|---------|
-| **pipeline** | `/api/pipeline` | `POST /run`, `POST /cancel`, `GET /status`, `GET /stream`, `GET /history` | Pipeline execution, SSE streaming, run history |
+| Router | Prefix | Key Endpoints | Purpose |
+|--------|--------|---------------|---------|
+| **pipeline** | `/api/pipeline` | `POST /run`, `POST /cancel`, `GET /stream`, `GET /history` | Pipeline execution + SSE streaming |
 | **env** | `/api/env` | `GET /`, `PUT /`, `GET /schema` | .env read/write with variable metadata |
 | **phases** | `/api/phases` | `GET /`, `GET /presets`, `GET /status` | Phase config from `phases_config.yaml` |
-| **knowledge** | `/api/knowledge` | `GET /`, `GET /file` | Knowledge base file browsing |
+| **knowledge** | `/api/knowledge` | `GET /`, `GET /file` | Knowledge base file browsing + content |
 | **metrics** | `/api/metrics` | `GET /` | `metrics.jsonl` event viewing |
-| **reports** | `/api/reports` | `GET /`, `GET /{type}/{task_id}` | Plans + codegen reports |
+| **reports** | `/api/reports` | `GET /`, `GET /branches`, `DELETE /branches/{id}` | Plans, codegen reports, git branches |
 | **logs** | `/api/logs` | `GET /files`, `GET /` | Log file tailing |
 | **diagrams** | `/api/diagrams` | `GET /`, `GET /file/{path}` | DrawIO + Mermaid diagrams |
+| **inputs** | `/api/inputs` | `GET /`, `POST /{cat}/upload`, `DELETE /{cat}/{file}` | File upload, 4 categories, auto `.env` config |
 
 ### 15.3 Pipeline Execution Service
 
-**Subprocess Isolation Pattern:**
+**Why Subprocess Isolation?** The pipeline uses CrewAI agents, ChromaDB, and LLM connections that can crash or hang. Running the pipeline as a subprocess means the Dashboard stays responsive even if the pipeline fails.
 
 ```
 Dashboard (FastAPI)
@@ -2134,15 +2148,44 @@ Reads `.env.example` for variable descriptions, groups variables by category:
 
 ### 15.5 Frontend Pages
 
-| Page | Route | Features |
-|------|-------|----------|
-| **Dashboard** | `/dashboard` | Health check, phase status cards, execution banner, quick links |
-| **Run Pipeline** | `/run` | Preset selector, phase checkboxes, env editor, live log viewer, phase timeline, cancel, run history |
-| **Phases** | `/phases` | Phase table with "Run" buttons, preset accordion with "Run Preset" buttons |
-| **Knowledge** | `/knowledge` | File browser with stats, JSON/Markdown preview |
-| **Reports** | `/reports` | Development plans + codegen reports (tabbed accordion) |
-| **Metrics** | `/metrics` | Event table with type filtering, run ID tracking |
-| **Logs** | `/logs` | Log file selector, color-coded terminal viewer |
+**Why 9 pages?** Each page maps to one developer concern. Mixing concerns (e.g., logs + metrics on one page) creates cognitive overload. Separate pages with lazy loading keep the UI fast.
+
+| Page | Route | What It Does | Why It Exists |
+|------|-------|-------------|---------------|
+| **Dashboard** | `/dashboard` | Hero section, phase status cards with color-coded borders, active run banner, quick links | First thing you see — answers "what's the state of my project?" |
+| **Run Pipeline** | `/run` | Preset selector, phase checkboxes, env editor, live SSE log viewer, phase timeline, cancel | Central control panel for executing pipelines |
+| **Input Files** | `/inputs` | Drag-and-drop upload for 4 categories (tasks, requirements, logs, reference), extension validation, auto `.env` config | Eliminates manual file path configuration in `.env` |
+| **Phases** | `/phases` | Phase table with "Run" buttons, preset accordion with "Run Preset" buttons | Fine-grained control for re-running individual phases |
+| **Knowledge** | `/knowledge` | Multi-tab browser (Arc42, C4, Knowledge Base, Containers, Dev Plans), rendered previews for JSON/Markdown/AsciiDoc/HTML/Confluence/DrawIO | Browse generated artifacts without leaving the browser |
+| **Reports** | `/reports` | **Tab 1:** Structured plan viewer (components table, steps, test strategy, security/validation sections). **Tab 2:** Codegen reports with per-file expandable diff viewer (colored lines). **Tab 3:** Git branch list with delete action | Developer-friendly view of plans and generated code — replaces raw JSON dumps |
+| **Metrics** | `/metrics` | Event table with type filtering, run ID tracking | Operational monitoring — which phases took how long, what failed |
+| **Logs** | `/logs` | Log file selector, color-coded terminal viewer (ERROR=red, WARNING=yellow) | Debugging — tail logs without SSH |
+
+#### Reports Page: 3-Tab Architecture
+
+**Why structured views?** Raw JSON dumps are unreadable for plans with 20+ affected components. Developers need:
+
+| Tab | Replaces | Key Features |
+|-----|----------|-------------|
+| **Development Plans** | `<pre>{{ plan \| json }}</pre>` | Summary card, affected components Material table (Name/Stereotype/Layer/Change/Relevance), numbered implementation steps, test strategy with similar patterns, collapsible security/validation/error sections, upgrade plan with migration table |
+| **Codegen Reports** | `<pre>{{ report \| json }}</pre>` | File list with action chips (created/modified/deleted), language badges, per-file expandable unified diff with green (+) / red (-) / blue (@@) line coloring |
+| **Git Branches** | Nothing (new) | Lists `codegen/*` branches with file count, report indicator, delete button with confirmation dialog |
+
+Each tab has a "Show Raw JSON" toggle for debugging.
+
+#### Input Files: 4-Category Upload System
+
+**Why categories?** Different pipeline stages consume different file types. Categorization enables:
+- Extension validation per category (`.xml` for tasks, `.xlsx` for requirements, etc.)
+- Auto-configuration of `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` in `.env`
+- Supplementary context injection into Phase 4 LLM prompts
+
+| Category | Extensions | Pipeline Consumer |
+|----------|-----------|-------------------|
+| **Tasks** | `.xml` `.docx` `.pdf` `.txt` `.json` | Stage 1: Input Parser (Phase 4) |
+| **Requirements** | `.xlsx` `.docx` `.pdf` `.txt` `.csv` | Stage 4: Plan Generator (supplementary context) |
+| **Logs** | `.log` `.txt` `.xlsx` `.csv` | Stage 4: Plan Generator (supplementary context) |
+| **Reference** | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` | Stage 4: Plan Generator (supplementary context) |
 
 ### 15.6 SSE Streaming
 
@@ -2170,7 +2213,7 @@ location /api/pipeline/stream {
 # Start dashboard (backend + frontend)
 docker-compose -f ui/docker-compose.ui.yml up --build
 
-# Access: http://localhost (nginx) → proxies /api/* to http://backend:8000
+# Access: http://localhost (nginx) → proxies /api/* to http://backend:8001
 ```
 
 **Volume Mounts:**
@@ -2179,6 +2222,7 @@ docker-compose -f ui/docker-compose.ui.yml up --build
 |--------|------|---------|
 | `knowledge/` | read-write | Generated plans, reports, diagrams |
 | `logs/` | read-write | Application logs, metrics.jsonl |
+| `inputs/` | read-write | Uploaded task files (from Input Files page) |
 | `.env` | read-write | User configuration (editable from UI) |
 | `.env.example` | read-only | Variable descriptions and defaults |
 | `src/` | read-only | Source code for `aicodegencrew` CLI |
@@ -2189,3 +2233,5 @@ docker-compose -f ui/docker-compose.ui.yml up --build
 ## 16. License
 
 Proprietary — Capgemini. See [LICENSE](../LICENSE) for details.
+
+Developed by **Aymen Mastouri** (Capgemini).
