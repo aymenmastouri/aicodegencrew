@@ -15,7 +15,6 @@ Subclasses only need to implement:
 - run() -> str
 """
 import json
-import logging
 import os
 import time
 from abc import ABC, abstractmethod
@@ -34,8 +33,9 @@ from .tools import (
 )
 from ..architecture_analysis.tools import RAGQueryTool
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
+from ...shared.utils.logger import setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 # Retry settings for transient LLM connection failures
 _MAX_RETRIES = 2
@@ -161,8 +161,8 @@ class MiniCrewBase(ABC):
         ...
 
     @abstractmethod
-    def run(self) -> str:
-        """Execute all mini-crews and return summary."""
+    def run(self) -> str | dict:
+        """Execute all mini-crews and return summary or result dict."""
         ...
 
     # -------------------------------------------------------------------------

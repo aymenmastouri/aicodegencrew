@@ -131,9 +131,9 @@ class ComponentDiscoveryStage:
         )
 
         return {
-            "affected_components": [c.dict() for c in affected_components],
-            "interfaces": [i.dict() for i in related_interfaces],
-            "dependencies": [d.dict() for d in dependencies],
+            "affected_components": [c.model_dump() for c in affected_components],
+            "interfaces": [i.model_dump() for i in related_interfaces],
+            "dependencies": [d.model_dump() for d in dependencies],
         }
 
     def _upgrade_discovery(self, task: TaskInput) -> Dict[str, Any]:
@@ -170,7 +170,7 @@ class ComponentDiscoveryStage:
         logger.info(f"[Stage2] Upgrade discovery: {len(affected)} components in {target_container or 'all containers'}")
 
         return {
-            "affected_components": [c.dict() for c in affected],
+            "affected_components": [c.model_dump() for c in affected],
             "interfaces": [],
             "dependencies": [],
         }

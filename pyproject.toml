@@ -60,5 +60,24 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/aicodegencrew"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "phase0: Phase 0 tests (indexing)",
+    "phase1: Phase 1 tests (facts extraction)",
+    "phase2: Phase 2 tests (architecture analysis)",
+    "phase3: Phase 3 tests (architecture synthesis)",
+    "phase4: Phase 4 tests (development planning)",
+    "phase5: Phase 5 tests (code generation)",
+    "e2e: End-to-end tests (require LLM/ChromaDB)",
+    "slow: Slow tests (>10 seconds)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
 [tool.crewai]
 type = "crew"

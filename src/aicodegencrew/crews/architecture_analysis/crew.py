@@ -18,7 +18,6 @@ Mini-Crew Layout:
   5. synthesis        (synthesis_lead)   -> 1 task
 """
 import json
-import logging
 import os
 import time
 from pathlib import Path
@@ -30,6 +29,7 @@ from crewai_tools import FileWriterTool
 
 from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool, PartialResultsTool
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
+from ...shared.utils.logger import setup_logger
 
 # MCP server script path (project root)
 _MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
@@ -55,7 +55,7 @@ from ...shared.models import (
     AnalyzedArchitecture,
 )
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 # =============================================================================
@@ -1073,7 +1073,7 @@ class ArchitectureAnalysisCrew:
     # MAIN EXECUTION
     # =========================================================================
 
-    def run(self) -> str:
+    def run(self) -> Dict[str, Any]:
         """Execute all 5 mini-crews sequentially with checkpoint resume."""
         completed = self._load_checkpoint()
         is_resume = len(completed) > 0
@@ -1113,14 +1113,20 @@ class ArchitectureAnalysisCrew:
         # Post-processing
         self._format_json_outputs()
 
+        output_path = str(self.output_dir / "analyzed_architecture.json")
+
         logger.info("")
         logger.info("=" * 60)
         logger.info("PHASE 2 COMPLETE: Architecture Analysis finished")
         logger.info("=" * 60)
-        logger.info(f"Output: {self.output_dir / 'analyzed_architecture.json'}")
+        logger.info(f"Output: {output_path}")
 
-        return str(self.output_dir / "analyzed_architecture.json")
+        return {
+            "status": "completed",
+            "phase": "phase2_architecture_analysis",
+            "result": output_path,
+        }
 
-    def kickoff(self, inputs: Dict[str, Any] = None) -> str:
+    def kickoff(self, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
         """Execute crew - compatible with orchestrator interface."""
         return self.run()

@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../knowledge:/app/knowledge:ro
+      - ../logs:/app/logs:ro
+      - ../src/aicodegencrew/config:/app/src/aicodegencrew/config:ro
+    environment:
+      - AICODEGENCREW_ROOT=/app
+      - DASHBOARD_CORS_ORIGINS=http://localhost:4200,http://localhost:80
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

@@ -14,7 +14,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
-from ...shared.utils.logger import setup_logger
+from ...shared.utils.logger import setup_logger, log_metric
 from .repo_discovery_tool import RepoDiscoveryTool
 from .repo_reader_tool import RepoReaderTool
 from .chunker_tool import ChunkerTool
@@ -408,8 +408,11 @@ class IndexingPipeline:
         logger.info("[START] Repository Indexing Pipeline")
         logger.info(f"[CONFIG] INDEX_MODE={self.index_mode}  repo={self.repo_path}")
 
+        log_metric("phase_start", phase="phase0_indexing", index_mode=self.index_mode)
+
         if self.index_mode == "off":
             logger.info("[SKIP] INDEX_MODE=off")
+            log_metric("phase_complete", phase="phase0_indexing", status="skipped")
             return {
                 "phase": "phase0_indexing",
                 "status": "success",
@@ -421,6 +424,14 @@ class IndexingPipeline:
         try:
             result_msg = self._run()
             skipped = result_msg.startswith("Skipped:")
+            log_metric(
+                "phase_complete",
+                phase="phase0_indexing",
+                status="success",
+                skipped=skipped,
+                duration_seconds=round(self.metrics.duration_seconds, 2),
+                chunks_indexed=self.metrics.total_chunks_indexed,
+            )
             return {
                 "phase": "phase0_indexing",
                 "status": "success",
@@ -432,6 +443,7 @@ class IndexingPipeline:
             }
         except Exception as e:
             logger.error(f"[ERROR] Indexing failed: {e}", exc_info=True)
+            log_metric("phase_failed", phase="phase0_indexing", error=str(e)[:500])
             return {
                 "phase": "phase0_indexing",
                 "status": "failed",

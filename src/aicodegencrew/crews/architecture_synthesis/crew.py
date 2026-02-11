@@ -11,13 +11,13 @@ REVERSE ENGINEERING APPROACH:
 The agents are REVERSE ENGINEERING EXPERTS who analyze extracted facts
 and generate comprehensive architecture documentation.
 """
-import logging
 from pathlib import Path
 
 from .c4.crew import C4Crew
 from .arc42.crew import Arc42Crew
+from ...shared.utils.logger import setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 class ArchitectureSynthesisCrew:
@@ -119,19 +119,19 @@ class ArchitectureSynthesisCrew:
         else:
             logger.info("   [OK] No old outputs to clean (first run)")
     
-    def run(self) -> str:
+    def run(self) -> dict:
         """
         Execute both crews sequentially.
-        
+
         Sequence:
         1. C4: Facts + Analysis -> 4 C4 diagrams + DrawIO
         2. Arc42: Facts + Analysis -> 12 deep chapters (50+ pages)
-        
-        Returns combined result summary.
+
+        Returns dict with status and result summary.
         """
         # Validate prerequisites before running
         self._validate_prerequisites()
-        
+
         # Only archive on fresh run. When resuming (checkpoint exists),
         # keep existing files — skipped crews depend on them still being there.
         c4_checkpoint = self.facts_path.parent / ".checkpoint_c4.json"
@@ -143,45 +143,49 @@ class ArchitectureSynthesisCrew:
         else:
             logger.info("[Phase3] Fresh run — archive and clean old outputs...")
             self._archive_and_clean_old_outputs()
-        
+
         results = []
-        
+
         # Phase 3a: C4 Diagrams
         logger.info("=" * 60)
         logger.info("PHASE 3a: C4 CREW - Creating C4 Diagrams + DrawIO")
         logger.info("=" * 60)
-        
+
         self.c4_crew = C4Crew(
             facts_path=str(self.facts_path),
             analyzed_path=str(self.analyzed_path)
         )
         c4_result = self.c4_crew.run()
         results.append(f"C4 Crew Result:\n{c4_result}")
-        
+
         logger.info("C4 Crew completed")
-        
+
         # Phase 3b: Arc42 Documentation
         logger.info("=" * 60)
         logger.info("PHASE 3b: ARC42 CREW - Creating Deep arc42 Documentation (50+ pages)")
         logger.info("=" * 60)
-        
+
         self.arc42_crew = Arc42Crew(
             facts_path=str(self.facts_path),
             analyzed_path=str(self.analyzed_path)
         )
         arc42_result = self.arc42_crew.run()
         results.append(f"Arc42 Crew Result:\n{arc42_result}")
-        
+
         logger.info("Arc42 Crew completed")
-        
+
         # Combined summary
         summary = "\n\n".join(results)
         logger.info("=" * 60)
         logger.info("PHASE 3 COMPLETE: Reverse Engineering Documentation created")
         logger.info("=" * 60)
-        
-        return summary
-    
+
+        return {
+            "status": "completed",
+            "phase": "phase3_architecture_synthesis",
+            "result": summary,
+        }
+
     def run_c4_only(self) -> str:
         """Run only the C4 Crew."""
         self._validate_prerequisites()
@@ -201,15 +205,15 @@ class ArchitectureSynthesisCrew:
             analyzed_path=str(self.analyzed_path)
         )
         return self.arc42_crew.run()
-    
-    def kickoff(self, inputs: dict = None) -> str:
+
+    def kickoff(self, inputs: dict = None) -> dict:
         """
         Execute crews - compatible with orchestrator interface.
-        
+
         Args:
             inputs: Optional inputs dict (ignored, we use facts_path)
-            
+
         Returns:
-            Combined result summary.
+            Dict with status and result.
         """
         return self.run()

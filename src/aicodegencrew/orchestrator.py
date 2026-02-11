@@ -324,35 +324,11 @@ class SDLCOrchestrator:
     
     def _invoke_executable(self, executable: PhaseExecutable, inputs: Dict[str, Any]) -> Any:
         """
-        Invoke an executable (Pipeline or Crew).
-        
-        Handles different execution patterns:
-        1. Crew with run() method
-        2. CrewBase with crew() method
-        3. Pipeline with kickoff() method
+        Invoke an executable via the unified kickoff() interface.
+
+        All phases implement kickoff(inputs) -> Dict[str, Any].
         """
-        # Add summaries if available (for Crews)
-        if hasattr(executable, "summaries") and isinstance(executable.summaries, dict):
-            inputs.update(executable.summaries)
-        
-        # Style 1: Crew with run() method (ArchitectureSynthesisCrew)
-        if hasattr(executable, "run") and callable(executable.run):
-            return executable.run()
-        
-        # Style 2: CrewBase with crew() factory method
-        if hasattr(executable, "crew") and callable(executable.crew):
-            crew = executable.crew()
-            result = crew.kickoff(inputs=inputs)
-            # Normalize CrewOutput
-            if hasattr(result, "raw"):
-                return {"raw": result.raw, "status": "success"}
-            return result
-        
-        # Style 3: Pipeline with kickoff() method
-        if hasattr(executable, "kickoff"):
-            return executable.kickoff(inputs)
-        
-        raise ValueError(f"Unknown executable type: {type(executable)}")
+        return executable.kickoff(inputs)
     
     def _check_dependencies(self, phase_id: str) -> bool:
         """Check if phase dependencies are satisfied (existence + validation)."""
