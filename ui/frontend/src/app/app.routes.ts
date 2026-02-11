@@ -8,6 +8,11 @@ export const routes: Routes = [
       import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
   },
   {
+    path: 'run',
+    loadComponent: () =>
+      import('./pages/run-pipeline/run-pipeline.component').then(m => m.RunPipelineComponent),
+  },
+  {
     path: 'phases',
     loadComponent: () =>
       import('./pages/phases/phases.component').then(m => m.PhasesComponent),

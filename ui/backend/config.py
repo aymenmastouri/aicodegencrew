@@ -21,6 +21,9 @@ class Settings:
             / "config"
             / "phases_config.yaml"
         )
+        self.env_file = self.project_root / ".env"
+        self.env_example = self.project_root / ".env.example"
+        self.run_report = self.project_root / "knowledge" / "run_report.json"
         self.host = os.getenv("DASHBOARD_HOST", "0.0.0.0")
         self.port = int(os.getenv("DASHBOARD_PORT", "8000"))
         self.cors_origins = os.getenv(

@@ -19,7 +19,7 @@ from pathlib import Path
 
 from .config import settings
 from .schemas import HealthResponse
-from .routers import phases, knowledge, metrics, reports, logs, diagrams
+from .routers import phases, knowledge, metrics, reports, logs, diagrams, pipeline, env
 
 app = FastAPI(
     title="AICodeGenCrew Dashboard",
@@ -43,6 +43,8 @@ app.include_router(metrics.router)
 app.include_router(reports.router)
 app.include_router(logs.router)
 app.include_router(diagrams.router)
+app.include_router(pipeline.router)
+app.include_router(env.router)
 
 
 @app.get("/api/health", response_model=HealthResponse)

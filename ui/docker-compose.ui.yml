@@ -8,12 +8,17 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ../knowledge:/app/knowledge:ro
-      - ../logs:/app/logs:ro
+      - ../knowledge:/app/knowledge
+      - ../logs:/app/logs
       - ../src/aicodegencrew/config:/app/src/aicodegencrew/config:ro
+      - ../src:/app/src:ro
+      - ../.env:/app/.env
+      - ../.env.example:/app/.env.example:ro
+      - ../.cache:/app/.cache
     environment:
       - AICODEGENCREW_ROOT=/app
       - DASHBOARD_CORS_ORIGINS=http://localhost:4200,http://localhost:80
+      - PYTHONPATH=/app/src
 
   frontend:
     build:

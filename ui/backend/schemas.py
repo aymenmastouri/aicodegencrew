@@ -100,3 +100,61 @@ class HealthResponse(BaseModel):
     version: str = "0.1.0"
     knowledge_dir_exists: bool = False
     phases_config_exists: bool = False
+
+
+# --- Pipeline Execution ---
+
+
+class RunRequest(BaseModel):
+    preset: Optional[str] = None
+    phases: Optional[list[str]] = None
+    env_overrides: Optional[dict[str, str]] = None
+
+
+class RunResponse(BaseModel):
+    run_id: str
+    status: str
+    message: str
+
+
+class PhaseProgress(BaseModel):
+    phase_id: str
+    name: str
+    status: str = "pending"  # pending | running | completed | failed
+    started_at: Optional[str] = None
+    duration_seconds: Optional[float] = None
+
+
+class ExecutionStatus(BaseModel):
+    state: str = "idle"  # idle | running | completed | failed | cancelled
+    run_id: Optional[str] = None
+    preset: Optional[str] = None
+    phases: list[str] = []
+    started_at: Optional[str] = None
+    elapsed_seconds: Optional[float] = None
+    phase_progress: list[PhaseProgress] = []
+
+
+class RunHistoryEntry(BaseModel):
+    run_id: str
+    status: str
+    preset: Optional[str] = None
+    phases: list[str] = []
+    started_at: Optional[str] = None
+    duration: Optional[str] = None
+    phase_results: list[dict[str, Any]] = []
+
+
+# --- Environment Config ---
+
+
+class EnvVariable(BaseModel):
+    name: str
+    value: str = ""
+    description: str = ""
+    group: str = "General"
+    required: bool = False
+
+
+class EnvUpdate(BaseModel):
+    values: dict[str, str]

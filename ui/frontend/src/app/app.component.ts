@@ -81,6 +81,7 @@ import { MatButtonModule } from '@angular/material/button';
 export class AppComponent {
   navItems = [
     { route: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+    { route: '/run', icon: 'play_circle', label: 'Run Pipeline' },
     { route: '/phases', icon: 'layers', label: 'Phases' },
     { route: '/knowledge', icon: 'folder_open', label: 'Knowledge' },
     { route: '/reports', icon: 'description', label: 'Reports' },
