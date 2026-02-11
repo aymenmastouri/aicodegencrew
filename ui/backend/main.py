@@ -9,7 +9,7 @@ Serves the Angular frontend and provides REST API for:
 - Diagram browsing
 
 Usage:
-    uvicorn ui.backend.main:app --reload --port 8000
+    uvicorn ui.backend.main:app --reload --port 8001
 """
 
 from fastapi import FastAPI
@@ -19,12 +19,12 @@ from pathlib import Path
 
 from .config import settings
 from .schemas import HealthResponse
-from .routers import phases, knowledge, metrics, reports, logs, diagrams, pipeline, env
+from .routers import phases, knowledge, metrics, reports, logs, diagrams, pipeline, env, inputs
 
 app = FastAPI(
     title="AICodeGenCrew Dashboard",
     description="SDLC Pipeline Dashboard API",
-    version="0.1.0",
+    version="0.3.0",
 )
 
 # CORS for Angular dev server
@@ -45,6 +45,7 @@ app.include_router(logs.router)
 app.include_router(diagrams.router)
 app.include_router(pipeline.router)
 app.include_router(env.router)
+app.include_router(inputs.router)
 
 
 @app.get("/api/health", response_model=HealthResponse)

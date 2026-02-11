@@ -101,7 +101,7 @@ class DiagramList(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str = "ok"
-    version: str = "0.1.0"
+    version: str = "0.3.0"
     knowledge_dir_exists: bool = False
     phases_config_exists: bool = False
 

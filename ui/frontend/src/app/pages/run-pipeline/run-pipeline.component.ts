@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,6 +26,7 @@ import {
   EnvVariable,
   SSEEvent,
 } from '../../services/pipeline.service';
+import { InputsService, InputsSummary } from '../../services/inputs.service';
 
 @Component({
   selector: 'app-run-pipeline',
@@ -39,17 +41,19 @@ import {
     MatCheckboxModule,
     MatExpansionModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatChipsModule,
     MatInputModule,
     MatFormFieldModule,
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
+    RouterLink,
   ],
   template: `
     <div class="page-container">
       <h1 class="page-title">
-        <mat-icon class="title-icon">play_circle</mat-icon>
+        <mat-icon>rocket_launch</mat-icon>
         Run Pipeline
       </h1>
 
@@ -67,13 +71,16 @@ import {
                   <mat-label>Select Preset</mat-label>
                   <mat-select [(ngModel)]="selectedPreset">
                     @for (preset of presets; track preset.name) {
-                      <mat-option [value]="preset.name">{{ preset.name }}</mat-option>
+                      <mat-option [value]="preset.name">
+                        <mat-icon style="font-size:18px;vertical-align:middle;margin-right:6px">{{ preset.icon || 'playlist_play' }}</mat-icon>
+                        {{ preset.display_name || preset.name }}
+                      </mat-option>
                     }
                   </mat-select>
                 </mat-form-field>
                 @if (selectedPreset) {
                   <div class="phase-chips">
-                    <strong>Phases:</strong>
+                    <span class="chips-label">Phases:</span>
                     @for (phase of getPresetPhases(); track phase) {
                       <mat-chip>{{ phase }}</mat-chip>
                     }
@@ -103,11 +110,43 @@ import {
         </mat-card-content>
       </mat-card>
 
+      <!-- Input Files Summary -->
+      <mat-card class="input-summary-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="input-icon">upload_file</mat-icon>
+          <mat-card-title>Input Files</mat-card-title>
+          <mat-card-subtitle>
+            @if (inputSummary && inputSummary.total_files > 0) {
+              {{ inputSummary.total_files }} file{{ inputSummary.total_files > 1 ? 's' : '' }} ready
+            } @else {
+              Upload task files to run Phase 4
+            }
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="input-chips">
+            @if (inputSummary) {
+              @for (catEntry of inputCategoryEntries; track catEntry.key) {
+                <span class="input-chip" [class.has-files]="catEntry.value.file_count > 0">
+                  <mat-icon>{{ catEntry.value.icon }}</mat-icon>
+                  {{ catEntry.value.label }}
+                  <span class="chip-count">{{ catEntry.value.file_count }}</span>
+                </span>
+              }
+            }
+          </div>
+          <a mat-stroked-button routerLink="/inputs" class="manage-btn">
+            <mat-icon>settings</mat-icon>
+            Manage Files
+          </a>
+        </mat-card-content>
+      </mat-card>
+
       <!-- Environment Config -->
       <mat-expansion-panel class="env-panel">
         <mat-expansion-panel-header>
           <mat-panel-title>
-            <mat-icon>settings</mat-icon>
+            <mat-icon>tune</mat-icon>
             Environment Configuration
           </mat-panel-title>
           <mat-panel-description>Override .env variables for this run</mat-panel-description>
@@ -133,13 +172,13 @@ import {
 
       <!-- Action Buttons -->
       <div class="action-bar">
-        <button mat-raised-button color="primary"
+        <button mat-flat-button color="primary"
                 [disabled]="status?.state === 'running' || (!selectedPreset && selectedPhases.length === 0)"
                 (click)="runPipeline()">
-          <mat-icon>play_arrow</mat-icon>
+          <mat-icon>{{ status?.state === 'running' ? 'sync' : 'play_arrow' }}</mat-icon>
           {{ status?.state === 'running' ? 'Running...' : 'Run Pipeline' }}
         </button>
-        <button mat-raised-button color="warn"
+        <button mat-stroked-button color="warn"
                 [disabled]="status?.state !== 'running'"
                 (click)="cancelPipeline()">
           <mat-icon>stop</mat-icon>
@@ -189,9 +228,10 @@ import {
       @if (logLines.length > 0) {
         <mat-card class="log-card">
           <mat-card-header>
-            <mat-card-title>
-              <mat-icon>terminal</mat-icon>
+            <mat-card-title class="log-title">
+              <mat-icon>receipt_long</mat-icon>
               Live Output
+              <span class="log-count">{{ logLines.length }} lines</span>
             </mat-card-title>
             <span class="spacer"></span>
             <button mat-icon-button (click)="scrollToTop()" matTooltip="Scroll to top">
@@ -201,7 +241,9 @@ import {
           <mat-card-content>
             <div class="log-viewer" #logViewer>
               @for (line of logLines; track $index) {
-                <div class="log-line" [class]="getLogLevel(line)">{{ line }}</div>
+                <div class="log-line" [class]="getLogLevel(line)">
+                  <span class="log-num">{{ $index + 1 }}</span>{{ line }}
+                </div>
               }
             </div>
           </mat-card-content>
@@ -211,14 +253,17 @@ import {
       <!-- Run History -->
       <mat-card class="history-card">
         <mat-card-header>
-          <mat-card-title>
+          <mat-card-title class="section-card-title">
             <mat-icon>history</mat-icon>
             Run History
           </mat-card-title>
         </mat-card-header>
         <mat-card-content>
           @if (history.length === 0) {
-            <p class="empty-state">No previous runs found</p>
+            <div class="empty-inline">
+              <mat-icon>schedule</mat-icon>
+              <span>No previous runs. Start your first pipeline above.</span>
+            </div>
           } @else {
             <table mat-table [dataSource]="history" class="history-table">
               <ng-container matColumnDef="started_at">
@@ -260,16 +305,6 @@ import {
     </div>
   `,
   styles: [`
-    .page-container { padding: 24px; }
-    .page-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 24px;
-      font-weight: 400;
-      margin-bottom: 24px;
-    }
-    .title-icon { font-size: 32px; width: 32px; height: 32px; }
     .config-card { margin-bottom: 16px; }
     .tab-content { padding: 16px 0; }
     .full-width { width: 100%; }
@@ -280,6 +315,7 @@ import {
       flex-wrap: wrap;
       margin-top: 8px;
     }
+    .chips-label { font-size: 13px; font-weight: 500; color: var(--cg-gray-500); }
     .phase-checkboxes {
       display: flex;
       flex-direction: column;
@@ -287,10 +323,69 @@ import {
     }
     .phase-label { display: inline-flex; align-items: center; gap: 4px; }
     .phase-id { color: var(--cg-gray-500); font-size: 12px; }
+    .input-summary-card { margin-bottom: 16px; }
+    .input-icon {
+      background: rgba(0, 112, 173, 0.08);
+      color: var(--cg-blue) !important;
+      border-radius: 10px !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+    .input-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .input-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--cg-gray-100);
+      font-size: 12px;
+      color: var(--cg-gray-500);
+    }
+    .input-chip .mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+    .input-chip.has-files {
+      background: rgba(18, 171, 219, 0.1);
+      color: var(--cg-blue);
+      font-weight: 500;
+    }
+    .chip-count {
+      min-width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9px;
+      background: rgba(0,0,0,0.06);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .input-chip.has-files .chip-count {
+      background: var(--cg-vibrant);
+      color: #fff;
+    }
+    .manage-btn {
+      font-size: 13px;
+    }
+    .manage-btn .mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+    }
     .env-panel { margin-bottom: 16px; }
     .env-group-title {
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--cg-blue);
       margin: 16px 0 8px;
       text-transform: uppercase;
@@ -323,52 +418,79 @@ import {
     .phase-timeline {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 12px;
       padding: 16px 0;
     }
     .phase-step {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
-      border-radius: 8px;
+      padding: 8px 14px;
+      border-radius: 10px;
       background: var(--cg-gray-100);
     }
-    .step-running { background: rgba(0, 112, 173, 0.1); }
-    .step-completed { background: rgba(40, 167, 69, 0.1); }
-    .step-failed { background: rgba(220, 53, 69, 0.1); }
-    .step-icon { font-size: 20px; width: 20px; height: 20px; }
+    .step-running { background: rgba(0, 112, 173, 0.08); }
+    .step-completed { background: rgba(40, 167, 69, 0.08); }
+    .step-failed { background: rgba(220, 53, 69, 0.08); }
+    .step-icon { font-size: 18px; width: 18px; height: 18px; }
     .step-info { display: flex; flex-direction: column; }
     .step-name { font-size: 13px; font-weight: 500; }
     .step-duration { font-size: 11px; color: var(--cg-gray-500); }
 
     .log-card { margin-bottom: 16px; }
-    .log-card mat-card-header {
-      display: flex;
+    .log-card mat-card-header { display: flex; align-items: center; }
+    .log-title {
+      display: flex !important;
       align-items: center;
+      gap: 8px;
+    }
+    .log-count {
+      font-size: 12px;
+      color: var(--cg-gray-500);
+      font-weight: 400;
     }
     .spacer { flex: 1; }
     .log-viewer {
       background: var(--cg-dark);
       color: #d4d4d4;
-      font-family: 'Consolas', 'Courier New', monospace;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
       font-size: 12px;
       padding: 12px;
-      border-radius: 4px;
+      border-radius: 8px;
       max-height: 500px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
     }
-    .log-line { line-height: 1.5; }
+    .log-line { line-height: 1.6; }
+    .log-num {
+      display: inline-block;
+      width: 36px;
+      text-align: right;
+      margin-right: 12px;
+      color: rgba(255,255,255,0.2);
+      user-select: none;
+    }
     .log-error { color: #f48771; }
     .log-warning { color: #cca700; }
     .log-info { color: #89d185; }
 
+    .section-card-title {
+      display: flex !important;
+      align-items: center;
+      gap: 8px;
+    }
     .history-card { margin-bottom: 24px; }
     .history-table { width: 100%; }
-    .empty-state { color: var(--cg-gray-500); font-style: italic; padding: 16px; }
-    .mono { font-family: monospace; }
+    .empty-inline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 24px 16px;
+      color: var(--cg-gray-500);
+      font-size: 14px;
+    }
+    .empty-inline .mat-icon { color: var(--cg-gray-200); }
     .small-chip { font-size: 11px; }
   `],
 })
@@ -387,6 +509,10 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   envGroups: string[] = [];
   envValues: Record<string, string> = {};
 
+  // Input files
+  inputSummary: InputsSummary | null = null;
+  inputCategoryEntries: { key: string; value: { label: string; icon: string; file_count: number } }[] = [];
+
   // Execution
   status: ExecutionStatus | null = null;
   logLines: string[] = [];
@@ -399,29 +525,34 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   constructor(
     private api: ApiService,
     private pipeline: PipelineService,
+    private inputsService: InputsService,
     private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    // Load config
-    this.api.getPresets().subscribe(p => this.presets = p);
-    this.api.getPhases().subscribe(p => this.phases = p);
-    this.pipeline.getHistory().subscribe(h => this.history = h);
+    this.api.getPresets().subscribe(p => { this.presets = p; this.cdr.markForCheck(); });
+    this.api.getPhases().subscribe(p => { this.phases = p; this.cdr.markForCheck(); });
+    this.pipeline.getHistory().subscribe(h => { this.history = h; this.cdr.markForCheck(); });
     this.pipeline.getStatus().subscribe(s => {
       this.status = s;
-      if (s.state === 'running') {
-        this.connectSSE();
-      }
+      if (s.state === 'running') { this.connectSSE(); }
+      this.cdr.markForCheck();
     });
 
-    // Load environment
+    this.inputsService.getSummary().subscribe(s => {
+      this.inputSummary = s;
+      this.inputCategoryEntries = Object.entries(s.categories).map(([key, value]) => ({ key, value }));
+      this.cdr.markForCheck();
+    });
+
     this.pipeline.getEnv().subscribe(vars => {
       this.envVariables = vars;
       this.envGroups = [...new Set(vars.map(v => v.group))];
       vars.forEach(v => this.envValues[v.name] = v.value);
+      this.cdr.markForCheck();
     });
 
-    // Check for route params (pre-selected preset/phase)
     this.route.queryParams.subscribe(params => {
       if (params['preset']) {
         this.selectedPreset = params['preset'];
@@ -431,6 +562,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         this.selectedPhases = [params['phase']];
         this.runModeIndex = 1;
       }
+      this.cdr.markForCheck();
     });
   }
 
@@ -459,7 +591,6 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   runPipeline(): void {
-    // Collect env overrides (only changed values)
     const overrides: Record<string, string> = {};
     for (const v of this.envVariables) {
       if (this.envValues[v.name] && this.envValues[v.name] !== v.value) {
@@ -479,12 +610,11 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
     this.logLines = [];
     this.pipeline.startPipeline(request).subscribe({
-      next: (res) => {
-        this.connectSSE();
-      },
+      next: () => { this.connectSSE(); },
       error: (err) => {
         const msg = err?.error?.detail || 'Failed to start pipeline';
         this.logLines = [`ERROR: ${msg}`];
+        this.cdr.markForCheck();
       },
     });
   }
@@ -511,8 +641,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         }
         if (event.type === 'pipeline_complete') {
           this.status = event.data as ExecutionStatus;
-          this.pipeline.getHistory().subscribe(h => this.history = h);
+          this.pipeline.getHistory().subscribe(h => { this.history = h; this.cdr.markForCheck(); });
         }
+        this.cdr.markForCheck();
       },
       complete: () => {
         this.refreshStatus();
@@ -521,8 +652,8 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   private refreshStatus(): void {
-    this.pipeline.getStatus().subscribe(s => this.status = s);
-    this.pipeline.getHistory().subscribe(h => this.history = h);
+    this.pipeline.getStatus().subscribe(s => { this.status = s; this.cdr.markForCheck(); });
+    this.pipeline.getHistory().subscribe(h => { this.history = h; this.cdr.markForCheck(); });
   }
 
   private scrollToBottom(): void {
@@ -541,7 +672,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     switch (state) {
       case 'completed': return 'check_circle';
       case 'failed': return 'error';
-      case 'running': return 'hourglass_empty';
+      case 'running': return 'sync';
       case 'cancelled': return 'cancel';
       default: return 'radio_button_unchecked';
     }

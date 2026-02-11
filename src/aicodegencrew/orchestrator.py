@@ -188,7 +188,10 @@ class SDLCOrchestrator:
     
     def get_preset_phases(self, preset_name: str) -> List[str]:
         """Get phases for a preset execution mode."""
-        return self.config.get("presets", {}).get(preset_name, [])
+        value = self.config.get("presets", {}).get(preset_name, [])
+        if isinstance(value, dict):
+            return value.get("phases", [])
+        return value
     
     # -------------------------------------------------------------------------
     # CONTEXT (Backward Compatibility)
@@ -219,7 +222,8 @@ class SDLCOrchestrator:
         if explicit_phases:
             phases = explicit_phases
         elif preset:
-            phases = self.config.get("presets", {}).get(preset, [])
+            preset_value = self.config.get("presets", {}).get(preset, [])
+            phases = preset_value.get("phases", []) if isinstance(preset_value, dict) else preset_value
             if not phases:
                 logger.warning(f"[Orchestrator] Unknown preset: {preset}")
         else:

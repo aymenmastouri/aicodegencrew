@@ -10,7 +10,17 @@ from ..schemas import KnowledgeFile, KnowledgeSummary
 
 def _file_type(path: Path) -> str:
     suffix = path.suffix.lower()
-    return {".json": "json", ".md": "md", ".drawio": "drawio"}.get(suffix, "other")
+    return {
+        ".json": "json",
+        ".md": "md",
+        ".drawio": "drawio",
+        ".html": "html",
+        ".adoc": "adoc",
+        ".confluence": "confluence",
+        ".xml": "xml",
+        ".yaml": "yaml",
+        ".yml": "yaml",
+    }.get(suffix, "other")
 
 
 def list_knowledge_files() -> KnowledgeSummary:

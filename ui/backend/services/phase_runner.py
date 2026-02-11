@@ -36,10 +36,21 @@ def get_phases() -> list[PhaseInfo]:
 def get_presets() -> list[PresetInfo]:
     """Get all configured presets."""
     config = _load_phases_config()
-    return [
-        PresetInfo(name=name, phases=phases)
-        for name, phases in config.get("presets", {}).items()
-    ]
+    presets = []
+    for name, value in config.get("presets", {}).items():
+        if isinstance(value, list):
+            # Legacy format: preset_name: [phase_list]
+            presets.append(PresetInfo(name=name, phases=value))
+        elif isinstance(value, dict):
+            # New format: preset_name: {display_name, description, icon, phases}
+            presets.append(PresetInfo(
+                name=name,
+                display_name=value.get("display_name", name),
+                description=value.get("description", ""),
+                icon=value.get("icon", "playlist_play"),
+                phases=value.get("phases", []),
+            ))
+    return presets
 
 
 def get_pipeline_status() -> PipelineStatus:
@@ -62,12 +73,21 @@ def get_pipeline_status() -> PipelineStatus:
     ):
         output_path = settings.project_root / output_checks.get(phase_id, "")
         output_exists = output_path.exists() if output_checks.get(phase_id) else False
+        enabled = phase_cfg.get("enabled", False)
+
+        if output_exists:
+            status = "completed"
+        elif enabled:
+            status = "ready"
+        else:
+            status = "planned"
 
         statuses.append(
             PhaseStatus(
                 id=phase_id,
                 name=phase_cfg.get("name", phase_id),
-                status="completed" if output_exists else "idle",
+                status=status,
+                enabled=enabled,
                 output_exists=output_exists,
             )
         )

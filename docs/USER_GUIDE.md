@@ -1,6 +1,8 @@
 # AICodeGenCrew - User Guide
 
-**Version 0.1.0 | Capgemini Proprietary**
+**Version 0.3.0 | Capgemini Proprietary**
+
+Developed by **Aymen Mastouri** (Capgemini)
 
 ---
 
@@ -45,7 +47,7 @@ AICodeGenCrew is an enterprise-grade AI-powered platform for Software Developmen
 - **Development Plans**: Actionable implementation plans derived from JIRA tickets, requirements documents, and application logs
 - **Code Generation**: Automated code changes from development plans, committed to isolated git branches with security scanning
 - **Code Intelligence**: Comprehensive analysis of software components, dependencies, design patterns, and quality metrics
-- **Web Dashboard**: Interactive SDLC Dashboard for pipeline execution, live monitoring, and knowledge browsing
+- **Web Dashboard**: Interactive SDLC Dashboard with 9 pages — pipeline execution, file upload, structured plan viewer, code diff viewer, git branch management, document rendering (JSON/Markdown/AsciiDoc/HTML/Confluence), and live monitoring
 
 **Data Security**: All processing occurs entirely on-premises. No source code or data is transmitted outside your corporate network.
 
@@ -62,17 +64,21 @@ AICodeGenCrew operates through a six-phase pipeline, each optimized for specific
 | 4 | Development Planning: Hybrid AI pipeline for task-specific implementation plans | Hybrid (1 LLM call) | 18-40 sec |
 | 5 | Code Generation: Automated code changes from plans with strategy pattern and git isolation | Hybrid (1 LLM per file) | 30s-5 min |
 
-Additionally, a **web-based SDLC Dashboard** provides an interactive UI for pipeline execution, live log streaming, and knowledge browsing.
+Additionally, a **web-based SDLC Dashboard** (Angular 21 + FastAPI) provides:
+- **Input Files**: Drag-and-drop upload for JIRA exports, requirements, logs, and reference materials
+- **Structured Reports**: Plan viewer with components table, code diff viewer with colored diffs, git branch management
+- **Knowledge Explorer**: Browse and render generated artifacts (JSON, Markdown, AsciiDoc, HTML, Confluence wiki, DrawIO)
+- **Live Monitoring**: Real-time log streaming via SSE, phase progress timeline, run history
 
 ---
 
 ## 2. Delivery Package Contents
 
-The distribution package (`aicodegencrew-v0.1.0.zip`) contains the following components:
+The distribution package (`aicodegencrew-v0.3.0.zip`) contains the following components:
 
 ```
-aicodegencrew-v0.1.0/
-├── aicodegencrew-0.1.0-py3-none-any.whl   ← Installable Python package (compiled wheel)
+aicodegencrew-v0.3.0/
+├── aicodegencrew-0.3.0-py3-none-any.whl   ← Installable Python package (compiled wheel)
 ├── .env.example                            ← Environment configuration template
 ├── install.bat / install.sh                ← Platform-specific installation scripts
 ├── uninstall.bat / uninstall.sh            ← Platform-specific uninstall scripts
@@ -309,7 +315,7 @@ You received a `.whl` file from the development team.
 
 ```bash
 # Install (with DOCX/Excel parser support)
-pip install aicodegencrew-0.1.0-py3-none-any.whl[parsers]
+pip install aicodegencrew-0.3.0-py3-none-any.whl[parsers]
 
 # Verify installation
 aicodegencrew --help
@@ -325,10 +331,10 @@ You received a Docker image (`.tar.gz` file or access to a registry).
 
 ```bash
 # Load from file
-docker load -i aicodegencrew-0.1.0.tar.gz
+docker load -i aicodegencrew-0.3.0.tar.gz
 
 # Or pull from registry
-docker pull <registry>/aicodegencrew:0.1.0
+docker pull <registry>/aicodegencrew:0.3.0
 
 # Verify
 docker run aicodegencrew:latest --help
@@ -456,6 +462,11 @@ After first run, your working directory will look like this:
 ```
 your-workspace/              ← Your chosen directory
 ├── .env                     ← Your configuration (YOU created this)
+├── inputs/                  ← GUI-uploaded files (auto-created by Dashboard)
+│   ├── tasks/               ← JIRA XML, DOCX, PDF (TASK_INPUT_DIR)
+│   ├── requirements/        ← Requirements docs (REQUIREMENTS_DIR)
+│   ├── logs/                ← Application logs (LOGS_DIR)
+│   └── reference/           ← Mockups, diagrams (REFERENCE_DIR)
 ├── knowledge/               ← Tool outputs (auto-created)
 │   ├── run_report.json      ← Status of last run
 │   ├── architecture/
@@ -728,8 +739,35 @@ aicodegencrew plan --index-mode force
 
 ### For Development Planning (Phase 4)
 
-Input files are stored **outside** the tool installation — on your local machine or a shared drive.
-Configure the paths in your `.env` file:
+There are **two ways** to provide input files — choose whichever fits your workflow:
+
+| Mode | Best For | How |
+|------|----------|-----|
+| **GUI Upload** (Dashboard) | Quick start, individual users | Drag-and-drop files in the web dashboard |
+| **External Paths** (.env) | Teams, CI/CD, shared drives | Set directory paths in `.env` configuration |
+
+Both modes can coexist: the dashboard reads from whichever directory is configured.
+
+### Mode A: GUI Upload (Dashboard)
+
+1. Open the SDLC Dashboard and navigate to **Input Files** (in the Operations sidebar)
+2. You'll see 4 category cards — one for each input type
+3. **Drag-and-drop** files onto a card, or **click** the drop zone to browse
+4. Files are stored in `inputs/{category}/` inside the project directory
+5. The `.env` file is **automatically updated** to point to the managed directory
+
+**What happens behind the scenes:**
+- Files are validated by extension (e.g., `.exe` is rejected for Tasks)
+- Filenames are sanitized (no path traversal, no directory components)
+- Duplicate filenames get a `_1`, `_2` suffix automatically
+- `.env` is only updated if the variable is empty or points to a non-existent path (intentional external paths are never overwritten)
+- Maximum file size: 20 MB per file
+
+The **Run Pipeline** page also shows an input file summary with per-category counts and a link to manage files.
+
+### Mode B: External Paths (.env)
+
+For power users and CI/CD pipelines, set directory paths directly in `.env`:
 
 ```env
 # REQUIRED: Folder with JIRA XMLs, DOCX, Excel, or text files
@@ -756,7 +794,16 @@ C:\work\my-project\
 └── reference/          # OPTIONAL: Reference code examples
 ```
 
-### Supported Formats
+### Supported Formats by Category
+
+| Category | `.env` Variable | Accepted Extensions | Purpose |
+|----------|----------------|---------------------|---------|
+| **Tasks** | `TASK_INPUT_DIR` | `.xml` `.docx` `.doc` `.pdf` `.txt` `.json` | JIRA exports, tickets, task descriptions |
+| **Requirements** | `REQUIREMENTS_DIR` | `.xlsx` `.xls` `.docx` `.doc` `.pdf` `.txt` `.csv` | Requirements docs, specifications |
+| **Logs** | `LOGS_DIR` | `.log` `.txt` `.xlsx` `.xls` `.csv` | Application logs for analysis |
+| **Reference** | `REFERENCE_DIR` | `.png` `.jpg` `.svg` `.pdf` `.docx` `.pptx` `.drawio` `.md` | Mockups, diagrams, design docs |
+
+### Format Details
 
 | Format | Extension | What Gets Extracted |
 |--------|-----------|---------------------|
@@ -1179,7 +1226,7 @@ AICodeGenCrew includes a web-based dashboard for interactive pipeline management
 
 ```bash
 # Terminal 1: Start backend
-uvicorn ui.backend.main:app --reload --port 8000
+uvicorn ui.backend.main:app --reload --port 8001
 
 # Terminal 2: Start frontend
 cd ui/frontend && npm start
@@ -1199,13 +1246,14 @@ Open **http://localhost** in your browser.
 
 | Page | What It Does |
 |------|-------------|
-| **Dashboard** | Overview: health status, phase completion, running pipeline banner |
-| **Run Pipeline** | Select a preset or individual phases, edit .env overrides, click Run. Watch live logs stream in real-time. Cancel if needed. |
-| **Phases** | View all phases and presets. Click "Run" on any phase or preset to navigate to the execution page. |
-| **Knowledge** | Browse all generated files (architecture_facts.json, plans, reports). Preview JSON and Markdown inline. |
-| **Reports** | View development plans (Phase 4) and codegen reports (Phase 5) in expandable panels. |
-| **Metrics** | Explore pipeline execution events from `metrics.jsonl`. Filter by event type. |
-| **Logs** | Select and view log files with color-coded ERROR/WARNING/INFO levels. |
+| **Dashboard** | Hero section with system health, phase status cards (color-coded), active pipeline banner, quick links |
+| **Run Pipeline** | Select preset or custom phases, edit .env overrides, click Run. Live SSE log streaming. Phase timeline with durations. Cancel support. Input file summary. |
+| **Input Files** | Drag-and-drop upload for 4 categories (tasks, requirements, logs, reference). Extension validation. Auto-configures `.env` paths. |
+| **Phases** | Phase table with "Run" buttons, preset accordion with metadata (icon, description). |
+| **Knowledge** | Multi-tab browser (Arc42, C4, Knowledge Base, Containers, Dev Plans). Renders JSON (syntax-highlighted), Markdown, AsciiDoc, HTML, Confluence wiki, DrawIO metadata. Source/rendered toggle. |
+| **Reports** | **3 tabs:** (1) Structured plan viewer with components table, implementation steps, test strategy, collapsible security/validation sections. (2) Codegen reports with per-file diff viewer (green/red/blue line coloring). (3) Git branch list (`codegen/*`) with file count, delete action. |
+| **Metrics** | Event table with type filtering, run ID tracking. |
+| **Logs** | Log file selector, color-coded terminal viewer (ERROR=red, WARNING=yellow, INFO=default). |
 
 ### Running a Pipeline from the Dashboard
 
@@ -1260,3 +1308,5 @@ A: Yes. Place all XML files in your `TASK_INPUT_DIR` folder (configured in `.env
 ---
 
 *Capgemini Proprietary - Internal Use Only*
+
+*Developed by Aymen Mastouri*

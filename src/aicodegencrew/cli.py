@@ -524,14 +524,30 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         facts_path = str(arch_dir / "architecture_facts.json")
         analyzed_path = str(arch_dir / "analyzed_architecture.json")
 
+        # Collect supplementary files from REQUIREMENTS_DIR, LOGS_DIR, REFERENCE_DIR
+        supplementary_files = {}
+        for env_key, category in [
+            ("REQUIREMENTS_DIR", "requirements"),
+            ("LOGS_DIR", "logs"),
+            ("REFERENCE_DIR", "reference"),
+        ]:
+            dir_path = os.getenv(env_key, "").strip()
+            if dir_path and Path(dir_path).is_dir():
+                cat_files = sorted(Path(dir_path).glob("*"))
+                cat_files = [f for f in cat_files if f.is_file() and not f.name.startswith(".")]
+                if cat_files:
+                    supplementary_files[category] = [str(f) for f in cat_files]
+                    logger.info(f"[Phase4] Found {len(cat_files)} {category} file(s) in {dir_path}")
+
         if input_files:
-            logger.info(f"[Phase4] Found {len(input_files)} input file(s) in {input_dir}")
+            logger.info(f"[Phase4] Found {len(input_files)} task file(s) in {input_dir}")
             planning_pipeline = DevelopmentPlanningPipeline(
                 input_files=[str(f) for f in input_files],
                 facts_path=facts_path,
                 analyzed_path=analyzed_path,
                 output_dir=str(dev_dir),
                 repo_path=os.getenv("PROJECT_PATH"),
+                supplementary_files=supplementary_files,
             )
             orchestrator.register_phase("phase4_development_planning", planning_pipeline)
         else:

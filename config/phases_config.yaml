@@ -254,58 +254,82 @@ execution:
 # Quick Presets
 # =============================================================================
 presets:
-  # Index repository only
   indexing_only:
-    - phase0_indexing
+    display_name: "Repository Indexing"
+    description: "Index codebase into vector store (ChromaDB)"
+    icon: "cloud_sync"
+    phases:
+      - phase0_indexing
 
-  # Index + architecture facts (deterministic, no LLM)
   facts_only:
-    - phase0_indexing
-    - phase1_architecture_facts
+    display_name: "Facts Extraction"
+    description: "Deterministic architecture facts extraction (no LLM)"
+    icon: "fact_check"
+    phases:
+      - phase0_indexing
+      - phase1_architecture_facts
 
-  # Index + facts + analysis (Phase 2 only)
   analysis_only:
-    - phase0_indexing
-    - phase1_architecture_facts
-    - phase2_architecture_analysis
+    display_name: "Architecture Analysis"
+    description: "AI-powered analysis of architecture patterns and quality"
+    icon: "psychology"
+    phases:
+      - phase0_indexing
+      - phase1_architecture_facts
+      - phase2_architecture_analysis
 
-  # Index + facts + analysis + synthesis (full architecture documentation)
   architecture_workflow:
-    - phase0_indexing
-    - phase1_architecture_facts
-    - phase2_architecture_analysis
-    - phase3_architecture_synthesis
+    display_name: "Architecture Documentation"
+    description: "Generate full Arc42 + C4 architecture documentation"
+    icon: "menu_book"
+    phases:
+      - phase0_indexing
+      - phase1_architecture_facts
+      - phase2_architecture_analysis
+      - phase3_architecture_synthesis
 
-  # Development Planning only (Phase 0+1+2+4, skips Phase 3 synthesis)
   planning_only:
-    - phase0_indexing
-    - phase1_architecture_facts
-    - phase2_architecture_analysis
-    - phase4_development_planning
+    display_name: "Development Planning"
+    description: "Generate implementation plans from task descriptions"
+    icon: "assignment"
+    phases:
+      - phase0_indexing
+      - phase1_architecture_facts
+      - phase2_architecture_analysis
+      - phase4_development_planning
 
-  # Code Generation only (Phase 0+1+2+4+5, skips Phase 3 synthesis)
   codegen_only:
-    - phase0_indexing
-    - phase1_architecture_facts
-    - phase2_architecture_analysis
-    - phase4_development_planning
-    - phase5_code_generation
+    display_name: "Code Generation"
+    description: "Generate code from plans (Planning + Code Gen)"
+    icon: "code"
+    phases:
+      - phase0_indexing
+      - phase1_architecture_facts
+      - phase2_architecture_analysis
+      - phase4_development_planning
+      - phase5_code_generation
 
-  # Architecture + Development Planning (all)
   architecture_full:
-    - phase0_indexing
-    - phase1_architecture_facts
-    - phase2_architecture_analysis
-    - phase3_architecture_synthesis
-    - phase4_development_planning
+    display_name: "Architecture + Planning"
+    description: "Full architecture docs + development planning"
+    icon: "architecture"
+    phases:
+      - phase0_indexing
+      - phase1_architecture_facts
+      - phase2_architecture_analysis
+      - phase3_architecture_synthesis
+      - phase4_development_planning
 
-  # Full SDLC pipeline (all phases)
   full_pipeline:
-    - phase0_indexing
-    - phase1_architecture_facts
-    - phase2_architecture_analysis
-    - phase3_architecture_synthesis
-    - phase4_development_planning
-    - phase5_code_generation
-    - phase6_test_generation
-    - phase7_review_deploy
+    display_name: "Full SDLC Pipeline"
+    description: "All phases: indexing → analysis → docs → planning → codegen"
+    icon: "rocket_launch"
+    phases:
+      - phase0_indexing
+      - phase1_architecture_facts
+      - phase2_architecture_analysis
+      - phase3_architecture_synthesis
+      - phase4_development_planning
+      - phase5_code_generation
+      - phase6_test_generation
+      - phase7_review_deploy

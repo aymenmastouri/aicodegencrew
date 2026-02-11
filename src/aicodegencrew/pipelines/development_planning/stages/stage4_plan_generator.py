@@ -23,14 +23,17 @@ class PlanGeneratorStage:
     Generate implementation plan using LLM (single call).
     """
 
-    def __init__(self, analyzed_architecture: dict = None):
+    def __init__(self, analyzed_architecture: dict = None, supplementary_context: dict = None):
         """
         Initialize plan generator.
 
         Args:
             analyzed_architecture: analyzed_architecture.json (from Phase 2)
+            supplementary_context: Additional context by category
+                {"requirements": "...", "logs": "...", "reference": "..."}
         """
         self.analyzed_architecture = analyzed_architecture or {}
+        self.supplementary_context = supplementary_context or {}
         self.llm = self._create_llm()
 
     def _create_llm(self):
@@ -164,7 +167,7 @@ ERROR HANDLING PATTERNS:
 ARCHITECTURE CONTEXT:
 - Style: {arch_style}
 - Quality Grade: {arch_quality}
-"""
+{self._format_supplementary_context()}"""
 
         # Inject upgrade assessment if available
         upgrade = patterns.get("upgrade_assessment", {})
@@ -275,6 +278,24 @@ IMPORTANT:
 Generate the plan now:"""
 
         return prompt
+
+    def _format_supplementary_context(self) -> str:
+        """Format supplementary files (requirements, logs, reference) for LLM prompt."""
+        if not self.supplementary_context:
+            return ""
+
+        sections = []
+        labels = {
+            "requirements": "REQUIREMENTS DOCUMENTS",
+            "logs": "APPLICATION LOGS",
+            "reference": "REFERENCE MATERIALS",
+        }
+
+        for category, content in self.supplementary_context.items():
+            label = labels.get(category, category.upper())
+            sections.append(f"\n{label}:\n{content}")
+
+        return "\n".join(sections)
 
     @staticmethod
     def _format_list(items: list) -> str:
