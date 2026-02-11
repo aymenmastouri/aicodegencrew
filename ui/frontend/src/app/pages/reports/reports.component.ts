@@ -70,13 +70,18 @@ import { ApiService, ReportList } from '../../services/api.service';
   `,
   styles: [`
     .plan-content {
+      max-height: 400px;
+      overflow: auto;
       background: var(--cg-dark);
       color: #eeffff;
-      @apply max-h-[400px] overflow-auto p-4 rounded text-xs;
+      padding: 16px;
+      border-radius: 4px;
+      font-size: 12px;
     }
     .empty-state {
+      padding: 32px;
+      text-align: center;
       color: var(--cg-gray-500);
-      @apply p-8 text-center;
     }
   `],
 })

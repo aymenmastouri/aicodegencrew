@@ -20,9 +20,9 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule,
   ],
   template: `
-    <mat-toolbar class="!bg-cg-navy !text-white sticky top-0 z-[1000]">
+    <mat-toolbar class="app-toolbar sticky top-0 z-[1000]">
       <button mat-icon-button (click)="sidenav.toggle()">
-        <mat-icon class="!text-white">menu</mat-icon>
+        <mat-icon class="text-white">menu</mat-icon>
       </button>
       <span class="font-medium ml-2">
         <span class="text-cg-vibrant">AI</span>CodeGenCrew
@@ -43,12 +43,16 @@ import { MatButtonModule } from '@angular/material/button';
         </mat-nav-list>
       </mat-sidenav>
 
-      <mat-sidenav-content class="content">
+      <mat-sidenav-content class="p-0">
         <router-outlet />
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
   styles: [`
+    .app-toolbar {
+      background: var(--cg-navy) !important;
+      color: #fff !important;
+    }
     .sidenav-container {
       height: calc(100vh - 64px);
     }
@@ -56,28 +60,27 @@ import { MatButtonModule } from '@angular/material/button';
       width: 220px;
       background: var(--cg-navy);
     }
-    .sidenav :deep(.mat-mdc-nav-list) {
+    .sidenav ::ng-deep .mat-mdc-nav-list {
       padding-top: 8px;
     }
-    .sidenav :deep(.mat-mdc-list-item) {
+    .sidenav ::ng-deep .mat-mdc-list-item {
       color: rgba(255, 255, 255, 0.7);
     }
-    .sidenav :deep(.mat-mdc-list-item .mat-icon) {
+    .sidenav ::ng-deep .mat-mdc-list-item .mat-icon {
       color: rgba(255, 255, 255, 0.7);
     }
-    .sidenav :deep(.mat-mdc-list-item:hover) {
+    .sidenav ::ng-deep .mat-mdc-list-item:hover {
       background: rgba(255, 255, 255, 0.08);
     }
     .active-link {
       background: rgba(18, 171, 219, 0.15) !important;
     }
-    .active-link :deep(.mat-mdc-list-item-title),
-    .active-link :deep(.mat-icon) {
+    .active-link ::ng-deep .mdc-list-item__primary-text {
       color: var(--cg-vibrant) !important;
       font-weight: 500;
     }
-    .content {
-      padding: 0;
+    .active-link ::ng-deep .mat-icon {
+      color: var(--cg-vibrant) !important;
     }
   `],
 })

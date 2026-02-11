@@ -1,126 +1,65 @@
-// --- Custom Angular Material Theme (Capgemini) ---
-// @use must come before any other rules in SCSS
+// =============================================================================
+// AICodeGenCrew — Global Styles
+// Order: @use → Material theme → Tailwind directives → Custom CSS
+// =============================================================================
+
 @use '@angular/material' as mat;
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-// Capgemini primary palette: cg-blue #0070AD
+// ---------------------------------------------------------------------------
+// Capgemini Material palettes
+// ---------------------------------------------------------------------------
 $cg-primary: mat.m2-define-palette((
-  50: #e0f0f9,
-  100: #b3d9ef,
-  200: #80c0e4,
-  300: #4da7d9,
-  400: #2695d1,
-  500: #0070AD,
-  600: #0065a0,
-  700: #005790,
-  800: #004a80,
-  900: #003562,
-  A100: #80d4ff,
-  A200: #4dc2ff,
-  A400: #1ab0ff,
-  A700: #00a3ff,
+  50: #e0f0f9, 100: #b3d9ef, 200: #80c0e4, 300: #4da7d9, 400: #2695d1,
+  500: #0070AD, 600: #0065a0, 700: #005790, 800: #004a80, 900: #003562,
+  A100: #80d4ff, A200: #4dc2ff, A400: #1ab0ff, A700: #00a3ff,
   contrast: (
-    50: rgba(0, 0, 0, 0.87),
-    100: rgba(0, 0, 0, 0.87),
-    200: rgba(0, 0, 0, 0.87),
-    300: white,
-    400: white,
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
-    A100: rgba(0, 0, 0, 0.87),
-    A200: rgba(0, 0, 0, 0.87),
-    A400: white,
-    A700: white,
+    50: rgba(0,0,0,0.87), 100: rgba(0,0,0,0.87), 200: rgba(0,0,0,0.87),
+    300: #fff, 400: #fff, 500: #fff, 600: #fff, 700: #fff, 800: #fff, 900: #fff,
+    A100: rgba(0,0,0,0.87), A200: rgba(0,0,0,0.87), A400: #fff, A700: #fff,
   )
 ));
 
-// Capgemini accent palette: cg-vibrant #12ABDB
 $cg-accent: mat.m2-define-palette((
-  50: #e3f5fb,
-  100: #b8e6f5,
-  200: #89d5ee,
-  300: #59c4e7,
-  400: #36b8e1,
-  500: #12ABDB,
-  600: #0f9dcb,
-  700: #0b8bb7,
-  800: #087aa3,
-  900: #045c82,
-  A100: #b3ecff,
-  A200: #80dfff,
-  A400: #4dd2ff,
-  A700: #33ccff,
+  50: #e3f5fb, 100: #b8e6f5, 200: #89d5ee, 300: #59c4e7, 400: #36b8e1,
+  500: #12ABDB, 600: #0f9dcb, 700: #0b8bb7, 800: #087aa3, 900: #045c82,
+  A100: #b3ecff, A200: #80dfff, A400: #4dd2ff, A700: #33ccff,
   contrast: (
-    50: rgba(0, 0, 0, 0.87),
-    100: rgba(0, 0, 0, 0.87),
-    200: rgba(0, 0, 0, 0.87),
-    300: rgba(0, 0, 0, 0.87),
-    400: white,
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
-    A100: rgba(0, 0, 0, 0.87),
-    A200: rgba(0, 0, 0, 0.87),
-    A400: rgba(0, 0, 0, 0.87),
-    A700: white,
+    50: rgba(0,0,0,0.87), 100: rgba(0,0,0,0.87), 200: rgba(0,0,0,0.87),
+    300: rgba(0,0,0,0.87), 400: #fff, 500: #fff, 600: #fff, 700: #fff,
+    800: #fff, 900: #fff, A100: rgba(0,0,0,0.87), A200: rgba(0,0,0,0.87),
+    A400: rgba(0,0,0,0.87), A700: #fff,
   )
 ));
 
-// Warn palette: cg-error #DC3545
 $cg-warn: mat.m2-define-palette((
-  50: #fce4e6,
-  100: #f7bcc1,
-  200: #f29098,
-  300: #ed636f,
-  400: #e94150,
-  500: #DC3545,
-  600: #d02f40,
-  700: #c12838,
-  800: #b32131,
-  900: #981422,
-  A100: #ff8a98,
-  A200: #ff5768,
-  A400: #ff2440,
-  A700: #ff0a29,
+  50: #fce4e6, 100: #f7bcc1, 200: #f29098, 300: #ed636f, 400: #e94150,
+  500: #DC3545, 600: #d02f40, 700: #c12838, 800: #b32131, 900: #981422,
+  A100: #ff8a98, A200: #ff5768, A400: #ff2440, A700: #ff0a29,
   contrast: (
-    50: rgba(0, 0, 0, 0.87),
-    100: rgba(0, 0, 0, 0.87),
-    200: rgba(0, 0, 0, 0.87),
-    300: white,
-    400: white,
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
-    A100: rgba(0, 0, 0, 0.87),
-    A200: white,
-    A400: white,
-    A700: white,
+    50: rgba(0,0,0,0.87), 100: rgba(0,0,0,0.87), 200: rgba(0,0,0,0.87),
+    300: #fff, 400: #fff, 500: #fff, 600: #fff, 700: #fff, 800: #fff, 900: #fff,
+    A100: rgba(0,0,0,0.87), A200: #fff, A400: #fff, A700: #fff,
   )
 ));
 
 $cg-theme: mat.m2-define-light-theme((
-  color: (
-    primary: $cg-primary,
-    accent: $cg-accent,
-    warn: $cg-warn,
-  ),
+  color: (primary: $cg-primary, accent: $cg-accent, warn: $cg-warn),
   typography: mat.m2-define-typography-config(),
   density: 0,
 ));
 
 @include mat.all-component-themes($cg-theme);
 
-// --- CSS Custom Properties (Capgemini tokens) ---
+// ---------------------------------------------------------------------------
+// Tailwind (Preflight + components + utilities)
+// ---------------------------------------------------------------------------
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// ---------------------------------------------------------------------------
+// CSS Custom Properties
+// ---------------------------------------------------------------------------
 :root {
   --cg-blue: #0070AD;
   --cg-vibrant: #12ABDB;
@@ -137,7 +76,9 @@ $cg-theme: mat.m2-define-light-theme((
   --cg-warn: #FFC107;
 }
 
-// --- Global Styles ---
+// ---------------------------------------------------------------------------
+// Base — restore what Preflight resets that Material needs
+// ---------------------------------------------------------------------------
 html, body {
   height: 100%;
   margin: 0;
@@ -146,19 +87,33 @@ html, body {
   color: var(--cg-gray-900);
 }
 
-// --- Reusable component classes ---
+// Preflight sets border-width:0 — restore for Material dividers/borders
+*,
+::before,
+::after {
+  border-color: currentColor;
+}
+
+// ---------------------------------------------------------------------------
+// Shared component classes
+// ---------------------------------------------------------------------------
 .page-container {
-  @apply max-w-screen-xl mx-auto p-6;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
 .page-title {
-  @apply mb-6 font-light text-[28px];
+  margin-bottom: 24px;
+  font-weight: 300;
+  font-size: 28px;
   color: var(--cg-gray-900);
 }
 
 .card-grid {
-  @apply grid gap-4;
+  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
 }
 
 .mono {
@@ -166,12 +121,19 @@ html, body {
   font-size: 13px;
 }
 
-// --- Status chips ---
+// ---------------------------------------------------------------------------
+// Status chips
+// ---------------------------------------------------------------------------
 .status-chip {
-  @apply inline-block px-2.5 py-0.5 rounded-xl text-xs font-medium uppercase;
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
 }
 
-.status-completed {
+.status-completed, .status-success {
   background: rgba(40, 167, 69, 0.1);
   color: var(--cg-success);
 }
@@ -189,11 +151,6 @@ html, body {
 .status-idle {
   background: var(--cg-gray-100);
   color: var(--cg-gray-500);
-}
-
-.status-success {
-  background: rgba(40, 167, 69, 0.1);
-  color: var(--cg-success);
 }
 
 .status-cancelled {

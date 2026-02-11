@@ -102,7 +102,7 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
   `,
   styles: [`
     .phase-table { width: 100%; }
-    h2 { @apply mt-8 mb-4 font-normal; }
+    h2 { margin-top: 32px; margin-bottom: 16px; font-weight: 400; }
   `],
 })
 export class PhasesComponent implements OnInit {
