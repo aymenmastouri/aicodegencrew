@@ -174,20 +174,26 @@ phases:
         reference: "./inputs/reference"
 
   # =========================================================================
-  # CREW: Phase 5 - Code Generation (PLANNED)
+  # PIPELINE: Phase 5 - Code Generation (HYBRID ARCHITECTURE)
   # =========================================================================
-  # Type:      Crew (AI Agents)
-  # Location:  crews/code_generation/ (planned)
-  # Purpose:   Feature implementation following architecture patterns
-  # Tasks:     Generate code matching existing service/component patterns
-  # Input:     Task plan from Phase 4 + architecture patterns
-  # Output:    New code files (Java/TypeScript)
+  # Type:      Pipeline (Hybrid: Deterministic + 1 LLM Call per file)
+  # Location:  pipelines/code_generation/
+  # Architecture:
+  #   Stage 1: Plan Reader (deterministic, <1s)
+  #   Stage 2: Context Collector (file I/O, 2-5s)
+  #   Stage 3: Code Generator (LLM, 10-30s per file)
+  #   Stage 4: Code Validator (deterministic, 1-3s)
+  #   Stage 5: Output Writer (git + file I/O, 2-5s)
+  #
+  # Input:     knowledge/development/{task_id}_plan.json (Phase 4)
+  # Output:    Git branch codegen/{task_id} in target repo
+  #            knowledge/codegen/{task_id}_report.json
   # =========================================================================
   phase5_code_generation:
-    enabled: false
-    name: "Code Generation"
-    description: "Feature implementation following architecture patterns"
-    type: crew
+    enabled: true
+    name: "Code Generation (Hybrid Pipeline)"
+    description: "Generate code from Phase 4 plans using hybrid architecture"
+    type: pipeline
     required: false
     order: 5
     dependencies: [phase4_development_planning]
@@ -276,6 +282,14 @@ presets:
     - phase1_architecture_facts
     - phase2_architecture_analysis
     - phase4_development_planning
+
+  # Code Generation only (Phase 0+1+2+4+5, skips Phase 3 synthesis)
+  codegen_only:
+    - phase0_indexing
+    - phase1_architecture_facts
+    - phase2_architecture_analysis
+    - phase4_development_planning
+    - phase5_code_generation
 
   # Architecture + Development Planning (all)
   architecture_full:

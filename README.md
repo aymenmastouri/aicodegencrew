@@ -400,6 +400,7 @@ Presets are predefined phase combinations defined in [`config/phases_config.yaml
 | `planning_only` | 0 – 2, 4 | Development planning (skips Phase 3 synthesis) |
 | `architecture_workflow` | 0 – 3 | C4 Model + arc42 documentation |
 | `architecture_full` | 0 – 4 | Architecture documentation + Development Planning |
+| `codegen_only` | 0 – 2, 4 – 5 | Development planning + code generation (skips Phase 3) |
 | `full_pipeline` | 0 – 7 | All phases (end-to-end SDLC) |
 
 ---
@@ -422,6 +423,7 @@ aicodegencrew [--env <path>] <command> [options]
 |---------|-------------|
 | `run` | Execute pipeline phases (presets or explicit phase list) |
 | `plan` | Run development planning (shortcut for `run --preset planning_only`) |
+| `codegen` | Run code generation (shortcut for `run --preset codegen_only`) |
 | `index` | Run indexing only (shortcut for Phase 0) |
 | `list` | List available phases and presets |
 
@@ -443,6 +445,16 @@ aicodegencrew [--env <path>] <command> [options]
 
 | Option | Description |
 |--------|-------------|
+| `--repo-path <path>` | Override `PROJECT_PATH` from `.env` |
+| `--index-mode <mode>` | Override `INDEX_MODE` (`off` / `auto` / `force` / `smart`) |
+| `--config <path>` | Custom path to `phases_config.yaml` |
+
+### `codegen` Options
+
+| Option | Description |
+|--------|-------------|
+| `--task-id <id>` | Process a single task ID (skip all others) |
+| `--dry-run` | Preview mode: run stages 1-4 but skip file writes and git operations |
 | `--repo-path <path>` | Override `PROJECT_PATH` from `.env` |
 | `--index-mode <mode>` | Override `INDEX_MODE` (`off` / `auto` / `force` / `smart`) |
 | `--config <path>` | Custom path to `phases_config.yaml` |
@@ -502,6 +514,15 @@ aicodegencrew run --preset indexing_only
 
 # Architecture + development planning (Phases 0-4)
 aicodegencrew run --preset architecture_full
+
+# Code generation (Phases 0+1+2+4+5)
+aicodegencrew codegen
+
+# Code generation for a single task
+aicodegencrew codegen --task-id PROJ-123
+
+# Preview (no file writes or git operations)
+aicodegencrew codegen --dry-run
 
 # All phases end-to-end (Phases 0-7)
 aicodegencrew run --preset full_pipeline
@@ -613,7 +634,7 @@ python -m aicodegencrew list
 | 2 | **Architecture Analysis** | Crew | Yes | Implemented | Multi-agent analysis (4 analysts + Map-Reduce) |
 | 3 | **Architecture Synthesis** | Crew | Yes | Implemented | C4 + arc42 document generation (Mini-Crews pattern) |
 | 4 | **Development Planning** | Pipeline | Hybrid | Implemented | Hybrid pipeline (5 stages: 4 deterministic + 1 LLM). Parses tasks, discovers components (RAG), matches patterns (TF-IDF), generates plans (LLM), validates. 18-40s, 100% data usage. |
-| 5 | **Code Generation** | Crew | Yes | Planned | Feature implementation and refactoring |
+| 5 | **Code Generation** | Pipeline | Hybrid | Implemented | Hybrid pipeline (5 stages: 4 deterministic + 1 LLM per file). Reads Phase 4 plans, collects source context, generates code (LLM), validates syntax/security, writes to git branch. 30s-5min. |
 | 6 | **Test Generation** | Crew | Yes | Planned | Unit and integration test generation |
 | 7 | **Review + Deploy** | Pipeline | No | Planned | CI/CD configuration and release management |
 
@@ -862,15 +883,31 @@ aicodegencrew/
 │   │   │       ├── angular/        #     Angular (components, modules, routing, services)
 │   │   │       └── database/       #     Database (migrations, tables, procedures)
 │   │   │
-│   │   └── development_planning/   # Phase 4: Hybrid development planning
-│   │       ├── pipeline.py         #   DevelopmentPlanningPipeline (orchestrator)
-│   │       ├── schemas.py          #   Pydantic models for all stages
-│   │       └── stages/             #   5-stage hybrid architecture
-│   │           ├── stage1_input_parser.py     # JIRA XML, DOCX, Excel, logs
-│   │           ├── stage2_component_discovery.py  # RAG + multi-signal scoring
-│   │           ├── stage3_pattern_matcher.py      # TF-IDF + rule-based matching
-│   │           ├── stage4_plan_generator.py       # LLM synthesis (only LLM stage)
-│   │           └── stage5_validator.py            # Pydantic + completeness checks
+│   │   ├── development_planning/   # Phase 4: Hybrid development planning
+│   │   │   ├── pipeline.py         #   DevelopmentPlanningPipeline (orchestrator)
+│   │   │   ├── schemas.py          #   Pydantic models for all stages
+│   │   │   └── stages/             #   5-stage hybrid architecture
+│   │   │       ├── stage1_input_parser.py     # JIRA XML, DOCX, Excel, logs
+│   │   │       ├── stage2_component_discovery.py  # RAG + multi-signal scoring
+│   │   │       ├── stage3_pattern_matcher.py      # TF-IDF + rule-based matching
+│   │   │       ├── stage4_plan_generator.py       # LLM synthesis (only LLM stage)
+│   │   │       └── stage5_validator.py            # Pydantic + completeness checks
+│   │   │
+│   │   └── code_generation/        # Phase 5: Hybrid code generation
+│   │       ├── pipeline.py         #   CodeGenerationPipeline (5 stages)
+│   │       ├── schemas.py          #   Pydantic models (8 schemas)
+│   │       ├── stages/             #   5-stage hybrid architecture
+│   │       │   ├── stage1_plan_reader.py      # Read Phase 4 plan + resolve paths
+│   │       │   ├── stage2_context_collector.py # Collect source from target repo
+│   │       │   ├── stage3_code_generator.py   # LLM call per file (only LLM)
+│   │       │   ├── stage4_code_validator.py   # Syntax, security, pattern checks
+│   │       │   └── stage5_output_writer.py    # Git branch + file writes + report
+│   │       └── strategies/         #   Task-type-specific strategies
+│   │           ├── base.py         #     BaseStrategy ABC
+│   │           ├── feature_strategy.py
+│   │           ├── bugfix_strategy.py
+│   │           ├── upgrade_strategy.py
+│   │           └── refactoring_strategy.py
 │   │
 │   ├── shared/                     # Shared utilities
 │   │   ├── validation.py           # Phase output validation
@@ -931,6 +968,7 @@ pytest tests/ --cov=aicodegencrew --cov-report=term-missing
 | `test_validation_model.py` | Phase validation, model builder, ID generation, layer classification | ~50 |
 | `test_confluence_converter.py` | Markdown to Confluence/AsciiDoc/HTML conversion | ~50 |
 | `test_development_planning.py` | Phase 4 pipeline stages, schemas, pattern matching | ~33 |
+| `test_code_generation.py` | Phase 5 pipeline stages, strategies, schemas, dry-run | ~50 |
 | `test_chunker.py` | Text chunking for indexing | 6 |
 | `test_chroma_index.py` | ChromaDB upsert/query operations | 7 |
 | `test_repo_discovery.py` | Git repo detection, submodules | 6 |

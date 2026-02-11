@@ -160,10 +160,10 @@
         <mxCell id="phase5-box" value="&lt;b&gt;Phase 5&lt;/b&gt;&lt;br&gt;Code Generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
           <mxGeometry x="260" y="410" width="140" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="phase5-detail" value="Feature Code&lt;br&gt;Pattern-Compliant" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
+        <mxCell id="phase5-detail" value="Hybrid Pipeline&lt;br&gt;5 Stages, 1 LLM/file" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
           <mxGeometry x="260" y="485" width="140" height="35" as="geometry"/>
         </mxCell>
-        <mxCell id="phase5-status" value="SKELETON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFA000;strokeColor=#E65100;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="phase5-status" value="IMPLEMENTED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="275" y="515" width="110" height="18" as="geometry"/>
         </mxCell>
         
