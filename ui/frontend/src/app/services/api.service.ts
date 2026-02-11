@@ -15,6 +15,7 @@ export interface PhaseStatus {
   id: string;
   name: string;
   status: string;
+  enabled: boolean;
   last_run?: string;
   duration_seconds?: number;
   output_exists: boolean;
@@ -28,6 +29,9 @@ export interface PipelineStatus {
 
 export interface PresetInfo {
   name: string;
+  display_name: string;
+  description: string;
+  icon: string;
   phases: string[];
 }
 
@@ -60,6 +64,18 @@ export interface MetricsSummary {
 export interface ReportList {
   plans: Record<string, unknown>[];
   codegen_reports: Record<string, unknown>[];
+}
+
+export interface BranchInfo {
+  name: string;
+  task_id: string;
+  file_count: number;
+  has_report: boolean;
+}
+
+export interface BranchList {
+  branches: BranchInfo[];
+  repo_path: string;
 }
 
 export interface LogResponse {
@@ -131,6 +147,15 @@ export class ApiService {
 
   getReport(type: string, taskId: string): Observable<unknown> {
     return this.http.get(`${this.base}/reports/${type}/${taskId}`);
+  }
+
+  // Branches
+  getBranches(): Observable<BranchList> {
+    return this.http.get<BranchList>(`${this.base}/reports/branches`);
+  }
+
+  deleteBranch(taskId: string): Observable<{ status: string }> {
+    return this.http.delete<{ status: string }>(`${this.base}/reports/branches/${taskId}`);
   }
 
   // Logs

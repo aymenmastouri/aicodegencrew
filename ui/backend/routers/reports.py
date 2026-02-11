@@ -1,9 +1,14 @@
-"""Reports API routes (development plans + codegen reports)."""
+"""Reports API routes (development plans + codegen reports + branches)."""
 
 from fastapi import APIRouter, HTTPException, Path as PathParam
 
-from ..services.report_reader import list_reports, read_report
-from ..schemas import ReportList
+from ..services.report_reader import (
+    delete_codegen_branch,
+    list_codegen_branches,
+    list_reports,
+    read_report,
+)
+from ..schemas import BranchList, ReportList
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -12,6 +17,25 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 def get_reports():
     """List all development plans and codegen reports."""
     return list_reports()
+
+
+@router.get("/branches", response_model=BranchList)
+def get_branches():
+    """List all codegen/* git branches."""
+    return list_codegen_branches()
+
+
+@router.delete("/branches/{task_id}")
+def remove_branch(
+    task_id: str = PathParam(..., pattern=r"^[A-Za-z0-9_-]+$"),
+):
+    """Delete a codegen branch by task_id."""
+    try:
+        return delete_codegen_branch(task_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{report_type}/{task_id}")

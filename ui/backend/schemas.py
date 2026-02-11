@@ -18,7 +18,8 @@ class PhaseInfo(BaseModel):
 class PhaseStatus(BaseModel):
     id: str
     name: str
-    status: str = "idle"  # idle | running | completed | failed
+    status: str = "idle"  # idle | ready | running | completed | failed | planned
+    enabled: bool = True
     last_run: Optional[str] = None
     duration_seconds: Optional[float] = None
     output_exists: bool = False
@@ -32,6 +33,9 @@ class PipelineStatus(BaseModel):
 
 class PresetInfo(BaseModel):
     name: str
+    display_name: str = ""
+    description: str = ""
+    icon: str = "playlist_play"
     phases: list[str]
 
 
@@ -158,3 +162,18 @@ class EnvVariable(BaseModel):
 
 class EnvUpdate(BaseModel):
     values: dict[str, str]
+
+
+# --- Git Branches ---
+
+
+class BranchInfo(BaseModel):
+    name: str  # "codegen/TASK-123"
+    task_id: str  # "TASK-123"
+    file_count: int = 0
+    has_report: bool = False
+
+
+class BranchList(BaseModel):
+    branches: list[BranchInfo] = []
+    repo_path: str = ""
