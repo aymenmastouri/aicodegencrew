@@ -20,13 +20,15 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule,
   ],
   template: `
-    <mat-toolbar color="primary" class="app-toolbar">
+    <mat-toolbar class="!bg-cg-navy !text-white sticky top-0 z-[1000]">
       <button mat-icon-button (click)="sidenav.toggle()">
-        <mat-icon>menu</mat-icon>
+        <mat-icon class="!text-white">menu</mat-icon>
       </button>
-      <span class="brand">AICodeGenCrew</span>
-      <span class="spacer"></span>
-      <span class="subtitle">SDLC Dashboard</span>
+      <span class="font-medium ml-2">
+        <span class="text-cg-vibrant">AI</span>CodeGenCrew
+      </span>
+      <span class="flex-1"></span>
+      <span class="text-sm opacity-80">SDLC Dashboard</span>
     </mat-toolbar>
 
     <mat-sidenav-container class="sidenav-container">
@@ -47,34 +49,35 @@ import { MatButtonModule } from '@angular/material/button';
     </mat-sidenav-container>
   `,
   styles: [`
-    .app-toolbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .brand {
-      font-weight: 500;
-      margin-left: 8px;
-    }
-    .spacer {
-      flex: 1;
-    }
-    .subtitle {
-      font-size: 14px;
-      opacity: 0.8;
-    }
     .sidenav-container {
       height: calc(100vh - 64px);
     }
     .sidenav {
       width: 220px;
+      background: var(--cg-navy);
+    }
+    .sidenav :deep(.mat-mdc-nav-list) {
+      padding-top: 8px;
+    }
+    .sidenav :deep(.mat-mdc-list-item) {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .sidenav :deep(.mat-mdc-list-item .mat-icon) {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .sidenav :deep(.mat-mdc-list-item:hover) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .active-link {
+      background: rgba(18, 171, 219, 0.15) !important;
+    }
+    .active-link :deep(.mat-mdc-list-item-title),
+    .active-link :deep(.mat-icon) {
+      color: var(--cg-vibrant) !important;
+      font-weight: 500;
     }
     .content {
       padding: 0;
-    }
-    .active-link {
-      background: rgba(0, 0, 0, 0.04);
-      font-weight: 500;
     }
   `],
 })

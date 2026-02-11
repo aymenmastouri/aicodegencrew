@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.2.0] - 2026-02-11
+
+### Added
+
+**Code Generation (Phase 5)**
+- Hybrid 5-stage pipeline (4 deterministic + 1 LLM call per file)
+- Strategy pattern: FeatureStrategy, BugfixStrategy, UpgradeStrategy, RefactoringStrategy
+- Plan reader with automatic file path resolution from architecture_facts.json
+- Context collector: reads source files, detects language, finds sibling files, extracts patterns
+- Code validator: syntax checks (balanced braces), security scan (hardcoded secrets, SQL injection, XSS, eval), pattern compliance
+- Output writer with git branch isolation (`codegen/{task_id}`), explicit staging, and failure threshold (>50% abort)
+- Safety features: dry-run mode (`--dry-run`), dirty tree check, never pushes to remote, never touches main
+- Unified diff generation for modified files
+- JSON report per task in `knowledge/codegen/{task_id}_report.json`
+- CLI `codegen` command with `--task-id` and `--dry-run` options
+- Configurable: `CODEGEN_CALL_DELAY`, `CODEGEN_MAX_RETRIES` environment variables
+- `codegen_only` preset (Phases 0+1+2+4+5)
+
+**SDLC Dashboard (Web UI)**
+- Full web-based dashboard: Angular 19 (frontend) + FastAPI (backend)
+- Pipeline execution from UI: trigger presets or custom phase combinations
+- Real-time log streaming via Server-Sent Events (SSE)
+- Environment configuration panel: edit .env variables grouped by category (Repository, LLM, Embeddings, Indexing, Phase Control, Output, Logging)
+- Phase progress timeline with status indicators and durations
+- Knowledge base browser with file preview (JSON, Markdown, DrawIO)
+- Metrics viewer with event filtering
+- Log viewer with color-coded levels (ERROR/WARNING/INFO)
+- Development plans and codegen reports viewer
+- Run history from run_report.json
+- Subprocess isolation: pipeline runs as child process (crash-safe)
+- Singleton guard: only one pipeline at a time (409 Conflict)
+- Cancel running pipeline (SIGTERM → SIGKILL fallback)
+- Docker Compose deployment with nginx reverse proxy
+- SSE-specific nginx config (proxy_buffering off, 1h timeout)
+- 8 REST API routers: phases, knowledge, metrics, reports, logs, diagrams, pipeline, env
+
+---
+
 ## [0.1.0] - 2026-02-09
 
 ### Added

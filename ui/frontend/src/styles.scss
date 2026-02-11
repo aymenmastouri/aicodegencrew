@@ -1,0 +1,202 @@
+// --- Custom Angular Material Theme (Capgemini) ---
+// @use must come before any other rules in SCSS
+@use '@angular/material' as mat;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Capgemini primary palette: cg-blue #0070AD
+$cg-primary: mat.m2-define-palette((
+  50: #e0f0f9,
+  100: #b3d9ef,
+  200: #80c0e4,
+  300: #4da7d9,
+  400: #2695d1,
+  500: #0070AD,
+  600: #0065a0,
+  700: #005790,
+  800: #004a80,
+  900: #003562,
+  A100: #80d4ff,
+  A200: #4dc2ff,
+  A400: #1ab0ff,
+  A700: #00a3ff,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: rgba(0, 0, 0, 0.87),
+    A400: white,
+    A700: white,
+  )
+));
+
+// Capgemini accent palette: cg-vibrant #12ABDB
+$cg-accent: mat.m2-define-palette((
+  50: #e3f5fb,
+  100: #b8e6f5,
+  200: #89d5ee,
+  300: #59c4e7,
+  400: #36b8e1,
+  500: #12ABDB,
+  600: #0f9dcb,
+  700: #0b8bb7,
+  800: #087aa3,
+  900: #045c82,
+  A100: #b3ecff,
+  A200: #80dfff,
+  A400: #4dd2ff,
+  A700: #33ccff,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: rgba(0, 0, 0, 0.87),
+    A400: rgba(0, 0, 0, 0.87),
+    A700: white,
+  )
+));
+
+// Warn palette: cg-error #DC3545
+$cg-warn: mat.m2-define-palette((
+  50: #fce4e6,
+  100: #f7bcc1,
+  200: #f29098,
+  300: #ed636f,
+  400: #e94150,
+  500: #DC3545,
+  600: #d02f40,
+  700: #c12838,
+  800: #b32131,
+  900: #981422,
+  A100: #ff8a98,
+  A200: #ff5768,
+  A400: #ff2440,
+  A700: #ff0a29,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: white,
+    A400: white,
+    A700: white,
+  )
+));
+
+$cg-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $cg-primary,
+    accent: $cg-accent,
+    warn: $cg-warn,
+  ),
+  typography: mat.m2-define-typography-config(),
+  density: 0,
+));
+
+@include mat.all-component-themes($cg-theme);
+
+// --- CSS Custom Properties (Capgemini tokens) ---
+:root {
+  --cg-blue: #0070AD;
+  --cg-vibrant: #12ABDB;
+  --cg-navy: #2B0A3D;
+  --cg-dark: #1A1446;
+  --cg-white: #FFFFFF;
+  --cg-gray-50: #F8F9FA;
+  --cg-gray-100: #E9ECEF;
+  --cg-gray-200: #DEE2E6;
+  --cg-gray-500: #6C757D;
+  --cg-gray-900: #212529;
+  --cg-success: #28A745;
+  --cg-error: #DC3545;
+  --cg-warn: #FFC107;
+}
+
+// --- Global Styles ---
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: var(--cg-gray-50);
+  color: var(--cg-gray-900);
+}
+
+// --- Reusable component classes ---
+.page-container {
+  @apply max-w-screen-xl mx-auto p-6;
+}
+
+.page-title {
+  @apply mb-6 font-light text-[28px];
+  color: var(--cg-gray-900);
+}
+
+.card-grid {
+  @apply grid gap-4;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.mono {
+  font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+}
+
+// --- Status chips ---
+.status-chip {
+  @apply inline-block px-2.5 py-0.5 rounded-xl text-xs font-medium uppercase;
+}
+
+.status-completed {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--cg-success);
+}
+
+.status-failed {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--cg-error);
+}
+
+.status-running {
+  background: rgba(0, 112, 173, 0.1);
+  color: var(--cg-blue);
+}
+
+.status-idle {
+  background: var(--cg-gray-100);
+  color: var(--cg-gray-500);
+}
+
+.status-success {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--cg-success);
+}
+
+.status-cancelled {
+  background: rgba(255, 193, 7, 0.15);
+  color: #d4a017;
+}

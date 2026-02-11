@@ -260,125 +260,84 @@ import {
     </div>
   `,
   styles: [`
-    .page-container { padding: 24px; }
+    .page-container { @apply p-6; }
     .page-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 24px;
-      font-weight: 400;
-      margin-bottom: 24px;
+      @apply flex items-center gap-2 text-2xl font-normal mb-6;
     }
     .title-icon { font-size: 32px; width: 32px; height: 32px; }
-    .config-card { margin-bottom: 16px; }
-    .tab-content { padding: 16px 0; }
+    .config-card { @apply mb-4; }
+    .tab-content { @apply py-4; }
     .full-width { width: 100%; }
     .phase-chips {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
+      @apply flex items-center gap-2 flex-wrap mt-2;
     }
     .phase-checkboxes {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      @apply flex flex-col gap-2;
     }
-    .phase-label { display: inline-flex; align-items: center; gap: 4px; }
-    .phase-id { color: #666; font-size: 12px; }
-    .env-panel { margin-bottom: 16px; }
+    .phase-label { @apply inline-flex items-center gap-1; }
+    .phase-id { color: var(--cg-gray-500); font-size: 12px; }
+    .env-panel { @apply mb-4; }
     .env-group-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: #1565c0;
-      margin: 16px 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      @apply text-sm font-medium uppercase tracking-wide mt-4 mb-2;
+      color: var(--cg-blue);
     }
     .env-fields {
-      display: grid;
+      @apply grid gap-2;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 8px;
     }
     .env-field { width: 100%; }
     .action-bar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 16px 0;
+      @apply flex items-center gap-3 my-4;
     }
     .run-progress { flex: 1; }
 
-    .status-card { margin-bottom: 16px; }
-    .state-completed { border-left: 4px solid #2e7d32; }
-    .state-failed { border-left: 4px solid #c62828; }
-    .state-running { border-left: 4px solid #1565c0; }
-    .state-cancelled { border-left: 4px solid #f57f17; }
-    .state-icon-completed { color: #2e7d32; }
-    .state-icon-failed { color: #c62828; }
-    .state-icon-running { color: #1565c0; }
-    .state-icon-cancelled { color: #f57f17; }
+    .status-card { @apply mb-4; }
+    .state-completed { border-left: 4px solid var(--cg-success); }
+    .state-failed { border-left: 4px solid var(--cg-error); }
+    .state-running { border-left: 4px solid var(--cg-blue); }
+    .state-cancelled { border-left: 4px solid var(--cg-warn); }
+    .state-icon-completed { color: var(--cg-success); }
+    .state-icon-failed { color: var(--cg-error); }
+    .state-icon-running { color: var(--cg-blue); }
+    .state-icon-cancelled { color: var(--cg-warn); }
 
     .phase-timeline {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      padding: 16px 0;
+      @apply flex flex-wrap gap-4 py-4;
     }
     .phase-step {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: #f5f5f5;
+      @apply flex items-center gap-2 py-2 px-3 rounded-lg;
+      background: var(--cg-gray-100);
     }
-    .step-running { background: #e3f2fd; }
-    .step-completed { background: #e8f5e9; }
-    .step-failed { background: #ffebee; }
+    .step-running { background: rgba(0, 112, 173, 0.1); }
+    .step-completed { background: rgba(40, 167, 69, 0.1); }
+    .step-failed { background: rgba(220, 53, 69, 0.1); }
     .step-icon { font-size: 20px; width: 20px; height: 20px; }
-    .step-info { display: flex; flex-direction: column; }
-    .step-name { font-size: 13px; font-weight: 500; }
-    .step-duration { font-size: 11px; color: #666; }
+    .step-info { @apply flex flex-col; }
+    .step-name { @apply text-xs font-medium; }
+    .step-duration { font-size: 11px; color: var(--cg-gray-500); }
 
-    .log-card { margin-bottom: 16px; }
+    .log-card { @apply mb-4; }
     .log-card mat-card-header {
-      display: flex;
-      align-items: center;
+      @apply flex items-center;
     }
     .spacer { flex: 1; }
     .log-viewer {
-      background: #1e1e1e;
+      background: var(--cg-dark);
       color: #d4d4d4;
       font-family: 'Consolas', 'Courier New', monospace;
       font-size: 12px;
-      padding: 12px;
-      border-radius: 4px;
-      max-height: 500px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
+      @apply p-3 rounded max-h-[500px] overflow-y-auto whitespace-pre-wrap break-all;
     }
     .log-line { line-height: 1.5; }
     .log-error { color: #f48771; }
     .log-warning { color: #cca700; }
     .log-info { color: #89d185; }
 
-    .history-card { margin-bottom: 24px; }
+    .history-card { @apply mb-6; }
     .history-table { width: 100%; }
-    .empty-state { color: #666; font-style: italic; padding: 16px; }
+    .empty-state { color: var(--cg-gray-500); @apply italic p-4; }
     .mono { font-family: monospace; }
     .small-chip { font-size: 11px; }
-    .status-chip {
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .status-success { background: #e8f5e9; color: #2e7d32; }
-    .status-failed { background: #ffebee; color: #c62828; }
-    .status-running { background: #e3f2fd; color: #1565c0; }
   `],
 })
 export class RunPipelineComponent implements OnInit, OnDestroy {
