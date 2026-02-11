@@ -1,20 +1,24 @@
 # =============================================================================
-# AI CodeGen Crew - Git Ignore
+# AICodeGenCrew - .gitignore
+# Stack: Python 3.12 | Angular 19 | Node | Docker | CrewAI | ChromaDB
 # =============================================================================
 
-# -----------------------------------------------------------------------------
-# Environment & Secrets
-# -----------------------------------------------------------------------------
+# =============================================================================
+# SECRETS & ENVIRONMENT
+# =============================================================================
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
 secrets/
+credentials/
 
-# -----------------------------------------------------------------------------
-# Python
-# -----------------------------------------------------------------------------
+# =============================================================================
+# PYTHON
+# =============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,64 +27,44 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
+.installed.cfg
 MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
+sdist/
+wheels/
+share/python-wheels/
 
-# -----------------------------------------------------------------------------
 # Virtual Environments
-# -----------------------------------------------------------------------------
 .venv/
 venv/
 env/
 ENV/
 .conda/
 
-# -----------------------------------------------------------------------------
-# Cache & Database
-# -----------------------------------------------------------------------------
-.cache/
-.chroma_db/
-*.chroma_db/
-*.db
-*.sqlite3
+# Packaging
+*.manifest
+*.spec
+.pybuilder/
 
-# -----------------------------------------------------------------------------
-# Claude Code
-# -----------------------------------------------------------------------------
-.claude/
+# =============================================================================
+# NODE / ANGULAR
+# =============================================================================
+node_modules/
+.angular/
+.sass-cache/
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# -----------------------------------------------------------------------------
-# IDE & Editors
-# -----------------------------------------------------------------------------
-.vscode/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.idea/
-*.swp
-*.swo
-*~
-*.sublime-project
-*.sublime-workspace
-
-# -----------------------------------------------------------------------------
-# Testing & Coverage
-# -----------------------------------------------------------------------------
+# =============================================================================
+# TESTING & COVERAGE
+# =============================================================================
 .coverage
 .coverage.*
 htmlcov/
@@ -92,34 +76,54 @@ coverage.xml
 *.py,cover
 .hypothesis/
 
-# -----------------------------------------------------------------------------
-# Node / Frontend
-# -----------------------------------------------------------------------------
-node_modules/
-.angular/
-.sass-cache/
+# =============================================================================
+# IDE & EDITORS
+# =============================================================================
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
 
-# -----------------------------------------------------------------------------
-# Logs
-# -----------------------------------------------------------------------------
+# =============================================================================
+# OS
+# =============================================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# =============================================================================
+# CLAUDE CODE
+# =============================================================================
+.claude/
+
+# =============================================================================
+# DOCKER
+# =============================================================================
+docker-compose.override.yml
+
+# =============================================================================
+# LOGS (root-level only, not ui/frontend/src/app/pages/logs/)
+# =============================================================================
 /logs/
 *.log
 
-# -----------------------------------------------------------------------------
-# OS Generated
-# -----------------------------------------------------------------------------
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
+# =============================================================================
+# CACHE & DATABASES
+# =============================================================================
+.cache/
+*.db
+*.sqlite3
 
-# -----------------------------------------------------------------------------
-# Temporary & Backup Files
-# -----------------------------------------------------------------------------
+# =============================================================================
+# TEMPORARY & BACKUP
+# =============================================================================
 *.tmp
 *.temp
 *.bak
@@ -127,63 +131,41 @@ desktop.ini
 *.orig
 *~
 
-# Knowledge backup folders (timestamped runs)
-knowledge-*/
+# =============================================================================
+# PROJECT-SPECIFIC: Runtime & Generated Files
+# =============================================================================
 
-# Phase 3 architecture docs export (default DOCS_OUTPUT_DIR)
-architecture-docs/
-
-# -----------------------------------------------------------------------------
-# Build & Distribution
-# -----------------------------------------------------------------------------
-*.manifest
-*.spec
-.pybuilder/
-
-# -----------------------------------------------------------------------------
-# Input Files (user-provided tasks, requirements, logs, references)
-# -----------------------------------------------------------------------------
-inputs/
-
-# -----------------------------------------------------------------------------
-# Generated Runtime Files
-# -----------------------------------------------------------------------------
+# Runtime generated files
 nul
 discovered_files.txt
 indexing_output.log
 indexed_files.txt
 SESSION_STATE.md
 
-# -----------------------------------------------------------------------------
-# Generated Knowledge (Runtime Output)
-# -----------------------------------------------------------------------------
-# Phase 1 outputs - TRACKED (important for reproducibility)
-# knowledge/architecture/architecture_facts.json
-# knowledge/architecture/evidence_map.json
+# Input files (user-provided JIRA/DOCX/Excel — external to repo)
+inputs/
+
+# Phase 3 architecture docs export (DOCS_OUTPUT_DIR)
+architecture-docs/
+
+# Knowledge backup folders (timestamped runs)
+knowledge-*/
+
+# Knowledge runtime outputs
 knowledge/architecture/evidence/
-
-# Phase 2 outputs - TRACKED
-# knowledge/architecture/analyzed_architecture.json
-# knowledge/architecture/analysis_*.json
-
-# Archive folder (timestamped backups for recovery) - ONLY this is ignored
 knowledge/architecture/archive/
-
-# Checkpoint files (runtime state, not needed in git)
 knowledge/architecture/.checkpoint_*.json
+knowledge/development/*.json
+knowledge/codegen/*.json
+knowledge/run_report.json
 
 # Reports (regenerated)
 reports/*.md
-!reports/.gitkeep
 
-# -----------------------------------------------------------------------------
-# Keep Empty Directories
-# -----------------------------------------------------------------------------
+# =============================================================================
+# KEEP EMPTY DIRECTORIES
+# =============================================================================
 !knowledge/.gitkeep
 !knowledge/architecture/.gitkeep
 !reports/.gitkeep
 !logs/.gitkeep
-
-# Generated outputs (Phase 4 development planning)
-knowledge/development/*.json
-knowledge/run_report.json
