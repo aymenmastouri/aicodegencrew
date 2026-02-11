@@ -7,6 +7,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { RouterLink } from '@angular/router';
 
 import { ApiService, PipelineStatus, HealthResponse } from '../../services/api.service';
+import { PipelineService } from '../../services/pipeline.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,6 +33,16 @@ import { ApiService, PipelineStatus, HealthResponse } from '../../services/api.s
             <mat-chip [highlighted]="health.knowledge_dir_exists">Knowledge</mat-chip>
             <mat-chip [highlighted]="health.phases_config_exists">Config</mat-chip>
           </mat-chip-set>
+        </div>
+      }
+
+      @if (executionState && executionState !== 'idle') {
+        <div class="running-banner" [class]="'banner-' + executionState" [routerLink]="'/run'">
+          <mat-icon>{{ executionState === 'running' ? 'hourglass_empty' : (executionState === 'completed' ? 'check_circle' : 'error') }}</mat-icon>
+          <span>Pipeline {{ executionState }} {{ executionRunId ? '(Run: ' + executionRunId + ')' : '' }}</span>
+          @if (executionState === 'running') {
+            <mat-progress-bar mode="indeterminate" class="banner-progress"></mat-progress-bar>
+          }
         </div>
       }
 
@@ -109,6 +120,20 @@ import { ApiService, PipelineStatus, HealthResponse } from '../../services/api.s
     .link-card:hover {
       box-shadow: 0 4px 8px rgba(0,0,0,0.12);
     }
+    .running-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+    .banner-running { background: #e3f2fd; color: #1565c0; }
+    .banner-completed { background: #e8f5e9; color: #2e7d32; }
+    .banner-failed { background: #ffebee; color: #c62828; }
+    .banner-cancelled { background: #fff8e1; color: #f57f17; }
+    .banner-progress { flex: 1; max-width: 200px; }
     h2 {
       margin-top: 32px;
       margin-bottom: 16px;
@@ -120,18 +145,26 @@ export class DashboardComponent implements OnInit {
   health: HealthResponse | null = null;
   pipeline: PipelineStatus | null = null;
 
+  executionState: string = 'idle';
+  executionRunId: string = '';
+
   quickLinks = [
+    { route: '/run', icon: 'play_circle', label: 'Run Pipeline', description: 'Execute pipeline presets or individual phases' },
     { route: '/knowledge', icon: 'folder_open', label: 'Knowledge Explorer', description: 'Browse architecture facts and analysis' },
     { route: '/reports', icon: 'description', label: 'Reports', description: 'View development plans and codegen reports' },
     { route: '/metrics', icon: 'analytics', label: 'Metrics', description: 'Pipeline execution metrics' },
     { route: '/logs', icon: 'terminal', label: 'Logs', description: 'View application logs' },
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private pipelineSvc: PipelineService) {}
 
   ngOnInit(): void {
     this.api.health().subscribe(h => this.health = h);
     this.api.getPipelineStatus().subscribe(p => this.pipeline = p);
+    this.pipelineSvc.getStatus().subscribe(s => {
+      this.executionState = s.state;
+      this.executionRunId = s.run_id || '';
+    });
   }
 
   statusIcon(status: string): string {
