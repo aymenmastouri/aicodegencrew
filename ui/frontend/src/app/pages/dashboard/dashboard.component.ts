@@ -87,7 +87,12 @@ import { PipelineService } from '../../services/pipeline.service';
   `,
   styles: [`
     .status-banner {
-      @apply flex items-center gap-2 px-4 py-3 rounded-lg mb-6;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
       background: var(--cg-gray-100);
     }
     .status-banner.ok {
@@ -106,13 +111,20 @@ import { PipelineService } from '../../services/pipeline.service';
       margin-left: 8px;
     }
     .link-card {
-      @apply cursor-pointer transition-shadow duration-200;
+      cursor: pointer;
+      transition: box-shadow 0.2s;
     }
     .link-card:hover {
-      @apply shadow-lg;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
     }
     .running-banner {
-      @apply flex items-center gap-2 px-4 py-3 rounded-lg mb-4 cursor-pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      cursor: pointer;
     }
     .banner-running { background: rgba(0, 112, 173, 0.1); color: var(--cg-blue); }
     .banner-completed { background: rgba(40, 167, 69, 0.1); color: var(--cg-success); }
@@ -120,7 +132,9 @@ import { PipelineService } from '../../services/pipeline.service';
     .banner-cancelled { background: rgba(255, 193, 7, 0.15); color: #d4a017; }
     .banner-progress { flex: 1; max-width: 200px; }
     h2 {
-      @apply mt-8 mb-4 font-normal;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      font-weight: 400;
     }
   `],
 })

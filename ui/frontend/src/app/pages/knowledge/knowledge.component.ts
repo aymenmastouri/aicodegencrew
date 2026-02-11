@@ -86,14 +86,19 @@ import { ApiService, KnowledgeFile, KnowledgeSummary } from '../../services/api.
     </div>
   `,
   styles: [`
-    .stats { @apply mb-4; }
+    .stats { margin-bottom: 16px; }
     .files-table { width: 100%; }
     .spacer { flex: 1; }
-    .preview-card { @apply mt-4; }
+    .preview-card { margin-top: 16px; }
     .file-content {
+      max-height: 500px;
+      overflow: auto;
       background: var(--cg-dark);
       color: #eeffff;
-      @apply max-h-[500px] overflow-auto p-4 rounded whitespace-pre-wrap break-all;
+      padding: 16px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   `],
 })

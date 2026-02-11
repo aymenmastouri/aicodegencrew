@@ -57,21 +57,29 @@ import { ApiService, LogResponse } from '../../services/api.service';
   `,
   styles: [`
     .toolbar {
-      @apply flex items-center gap-4;
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    .toolbar-card { @apply mb-4; }
+    .toolbar-card { margin-bottom: 16px; }
     .line-count {
       color: var(--cg-gray-500);
-      @apply text-xs;
+      font-size: 13px;
     }
     .log-viewer {
+      max-height: 600px;
+      overflow: auto;
       background: var(--cg-dark);
+      padding: 12px;
+      border-radius: 4px;
       font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
-      @apply max-h-[600px] overflow-auto p-3 rounded text-xs leading-relaxed;
+      font-size: 12px;
+      line-height: 1.6;
     }
     .log-line {
       color: #d4d4d4;
-      @apply whitespace-pre-wrap break-all;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
     .log-line.error { color: #f48771; }
     .log-line.warning { color: #cca700; }
