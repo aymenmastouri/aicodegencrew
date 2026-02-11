@@ -60,6 +60,8 @@ class Config:
     git_repo_url: str
     git_branch: str
     output_base: Path = Path(".")
+    dry_run: bool = False
+    task_id: str | None = None
 
     @classmethod
     def from_env(cls, **overrides) -> "Config":
@@ -90,6 +92,8 @@ class Config:
             git_repo_url=git_url.strip(),
             git_branch=git_branch.strip(),
             output_base=Path(output_base),
+            dry_run=overrides.get("dry_run", False),
+            task_id=overrides.get("task_id"),
         )
 
 
@@ -338,6 +342,9 @@ def _export_run_report(
         "phase4_development_planning": [
             str(base / "knowledge" / "development"),
         ],
+        "phase5_code_generation": [
+            str(base / "knowledge" / "codegen"),
+        ],
     }
 
     phases_detail = []
@@ -495,6 +502,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
 
     # --- Phase 4: Development Planning (Hybrid Pipeline) ---
+    codegen_task_id = None  # For Phase 5 single-task mode
     if "phase4_development_planning" in planned_phases:
         from .pipelines.development_planning import DevelopmentPlanningPipeline
 
@@ -528,6 +536,23 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             orchestrator.register_phase("phase4_development_planning", planning_pipeline)
         else:
             logger.warning(f"[Phase4] No input files found in {input_dir}, skipping phase")
+
+    # --- Phase 5: Code Generation (Hybrid Pipeline) ---
+    if "phase5_code_generation" in planned_phases:
+        from .pipelines.code_generation import CodeGenerationPipeline
+
+        codegen_dry_run = getattr(config, "dry_run", False)
+        codegen_task = getattr(config, "task_id", None) or codegen_task_id
+
+        codegen_pipeline = CodeGenerationPipeline(
+            repo_path=str(repo_path),
+            task_id=codegen_task,
+            plans_dir=str(dev_dir),
+            facts_path=str(arch_dir / "architecture_facts.json"),
+            report_dir=str(knowledge_dir / "codegen"),
+            dry_run=codegen_dry_run,
+        )
+        orchestrator.register_phase("phase5_code_generation", codegen_pipeline)
 
     # Execute
     try:
@@ -669,6 +694,32 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to phases_config.yaml",
     )
 
+    # --- codegen command (shortcut for run --preset codegen_only) ---
+    codegen_parser = subparsers.add_parser(
+        "codegen", help="Run code generation (shortcut for: run --preset codegen_only)",
+    )
+    codegen_parser.add_argument(
+        "--repo-path",
+        help="Path to repository (default: PROJECT_PATH from .env)",
+    )
+    codegen_parser.add_argument(
+        "--task-id",
+        help="Process a single task ID (skip all others)",
+    )
+    codegen_parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Preview mode: run stages 1-4 but skip file writes and git operations",
+    )
+    codegen_parser.add_argument(
+        "--index-mode",
+        choices=["off", "auto", "force", "smart"],
+        help="Override INDEX_MODE from .env",
+    )
+    codegen_parser.add_argument(
+        "--config",
+        help="Path to phases_config.yaml",
+    )
+
     return parser
 
 
@@ -747,6 +798,18 @@ def main(argv: list[str] | None = None) -> int:
         )
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
         return cmd_run(config, preset="planning_only")
+
+    # --- codegen (shortcut for run --preset codegen_only) ---
+    if args.command == "codegen":
+        config = Config.from_env(
+            repo_path=args.repo_path,
+            index_mode=args.index_mode,
+            config_path=args.config,
+            dry_run=args.dry_run,
+            task_id=args.task_id,
+        )
+        logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
+        return cmd_run(config, preset="codegen_only")
 
     parser.print_help()
     return 1

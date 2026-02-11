@@ -35,7 +35,7 @@ The system is organized into 4 distinct layers, each with clear responsibilities
 | 2 | Architecture Analysis | Reasoning | Crew | IMPLEMENTED |
 | 3 | Architecture Synthesis | Reasoning | Crew | IMPLEMENTED |
 | 4 | Development Planning | Reasoning | Hybrid | IMPLEMENTED |
-| 5 | Code Generation | Execution | Crew | PLANNED |
+| 5 | Code Generation | Execution | Hybrid | IMPLEMENTED |
 | 6 | Test Generation | Execution | Crew | PLANNED |
 | 7 | Review + Deploy | Execution | Pipeline | PLANNED |
 
@@ -77,7 +77,7 @@ Establish a fully automated SDLC pipeline that covers:
 | Phase 2: Architecture Analysis | Reasoning | Multi-agent architecture analysis | Crew (MapReduce) |
 | Phase 3: Architecture Synthesis | Reasoning | C4 + arc42 documentation | Crew (Mini-Crews) |
 | Phase 4: Development Planning | Reasoning | Parse tasks + create implementation plans | Hybrid Pipeline (IMPLEMENTED) |
-| Phase 5: Code Generation | Execution | Feature implementation | Crew (Planned) |
+| Phase 5: Code Generation | Execution | Feature implementation | Hybrid Pipeline (IMPLEMENTED) |
 | Phase 6: Test Generation | Execution | Test creation | Crew (Planned) |
 | Phase 7: Review + Deploy | Execution | CI/CD integration | Pipeline (Planned) |
 
@@ -327,11 +327,8 @@ src/aicodegencrew/
                 facts_query_tool.py    # Query architecture facts
                 chunked_writer_tool.py # ChunkedWriterTool + StereotypeListTool
 
-        codegen/                       # Phase 5: Code Generation (PLANNED)
-            __init__.py
-            agents.py                  # Code generation agents
-            crew.py                    # CodeGenerationCrew
-            tasks.py                   # Code generation tasks
+        codegen/                       # Phase 5: Code Generation (IMPLEMENTED)
+            (deleted — moved to pipelines/code_generation/)
 
         testing/                       # Phase 6: Test Generation (PLANNED)
             __init__.py
@@ -397,6 +394,27 @@ src/aicodegencrew/
                 dependency_upgrades.py # Dependency updates
                 breaking_changes.py    # Breaking change detection
                 migration_steps.py     # Migration step generation
+
+        code_generation/                # Phase 5: Code Generation (HYBRID)
+            __init__.py
+            pipeline.py                # CodeGenerationPipeline (5 stages)
+            schemas.py                 # Pydantic schemas (8 models)
+
+            stages/                    # 5-stage hybrid architecture
+                __init__.py
+                stage1_plan_reader.py      # Read Phase 4 plan + resolve file paths
+                stage2_context_collector.py # Collect source code from target repo
+                stage3_code_generator.py   # LLM call per file (only LLM stage)
+                stage4_code_validator.py   # Syntax, security, pattern validation
+                stage5_output_writer.py    # Git branch + file writes + report
+
+            strategies/                # Task-type-specific strategies
+                __init__.py
+                base.py                # BaseStrategy ABC
+                feature_strategy.py    # New feature implementation
+                bugfix_strategy.py     # Targeted bug fixes
+                upgrade_strategy.py    # Framework migration (Angular, Spring)
+                refactoring_strategy.py # Code restructuring
 
         merge/                         # Pipeline merge utilities
             __init__.py
@@ -1397,19 +1415,96 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 ---
 
-### 4.6 Phase 5: Code Generation (PLANNED)
+### 4.6 Phase 5: Code Generation (HYBRID PIPELINE - IMPLEMENTED)
 
 | Attribute | Specification |
 |-----------|---------------|
-| Type | Crew |
-| Purpose | Derive work items from architecture |
-| Status | Planned |
+| Type | Pipeline (Hybrid: Deterministic + 1 LLM Call per file) |
+| Module | `pipelines/code_generation/` |
+| LLM Requirement | Yes (Stage 3 only, 1 call per affected file) |
+| Input | `knowledge/development/{task_id}_plan.json` (Phase 4) |
+| | Target repository source code (`PROJECT_PATH`) |
+| | `architecture_facts.json` (Phase 1, for file path resolution) |
+| Output | Git branch `codegen/{task_id}` in target repo |
+| | `knowledge/codegen/{task_id}_report.json` |
+| Dependency | Phase 4 (Development Planning) |
+| Status | **IMPLEMENTED** |
 
-#### Tasks
+#### Architecture: Hybrid Pipeline
 
-- Architecture debt/risk -> JIRA items
-- Refactoring/Test/Observability spikes
-- Optional: Code changes/PR proposals
+**Why Hybrid?** Code generation requires precise, per-file modifications. Multi-agent crews
+produce inconsistent output and waste tokens on coordination. A pipeline with 1 LLM call per
+file is faster, more deterministic, and easier to debug.
+
+**5-Stage Pipeline:**
+
+```
+Stage 1: Plan Reader (Deterministic, <1s) - IMPLEMENTED
+  └─ Read Phase 4 plan JSON → CodegenPlanInput
+  └─ Resolve missing file paths from architecture_facts.json
+  └─ Select strategy (feature/bugfix/upgrade/refactoring)
+
+Stage 2: Context Collector (File I/O, 2-5s) - IMPLEMENTED
+  └─ Read current source files from target repo
+  └─ Detect language, find sibling files, extract related patterns
+  └─ Truncate large files (>12K chars) to fit LLM context
+
+Stage 3: Code Generator (LLM, 10-30s per file) - IMPLEMENTED ← ONLY LLM CALLS
+  └─ Strategy-specific prompt per file (feature/bugfix/upgrade/refactoring)
+  └─ Retry with backoff on failure (configurable CODEGEN_MAX_RETRIES)
+  └─ Rate limiting between calls (configurable CODEGEN_CALL_DELAY)
+
+Stage 4: Code Validator (Deterministic, 1-3s) - IMPLEMENTED
+  └─ Syntax validation (balanced braces/parens, class declarations)
+  └─ Security scan (hardcoded secrets, SQL injection, XSS, eval)
+  └─ Pattern compliance (class name matches file, exports present)
+  └─ Unified diff generation for modified files
+
+Stage 5: Output Writer (Git + File I/O, 2-5s) - IMPLEMENTED
+  └─ Safety: abort if working tree dirty, never push, never touch main
+  └─ Create branch codegen/{task_id}, write files, commit, switch back
+  └─ >50% failure threshold → abort entire task
+  └─ Write JSON report to knowledge/codegen/
+
+Total: 30s-5min depending on file count
+```
+
+#### Strategy Pattern
+
+| Strategy | Task Type | Key Behavior |
+|----------|-----------|-------------|
+| `FeatureStrategy` | feature | Add new code following existing patterns |
+| `BugfixStrategy` | bugfix | Minimal targeted changes only |
+| `UpgradeStrategy` | upgrade | Apply migration rules per file |
+| `RefactoringStrategy` | refactoring | Restructure while preserving behavior |
+
+#### Safety Features
+
+| Feature | Description |
+|---------|-------------|
+| **Dry-run mode** | `--dry-run` runs Stages 1-4 but skips file writes and git |
+| **Dirty tree check** | Aborts if target repo has uncommitted changes |
+| **Branch isolation** | Creates `codegen/{task_id}` branch, never touches main/develop |
+| **No push** | Never pushes to remote — user reviews and pushes manually |
+| **Failure threshold** | Aborts if >50% of files fail generation/validation |
+| **Security scan** | Blocks hardcoded secrets, SQL injection, XSS, eval/exec |
+| **Explicit git add** | Only stages files explicitly written (no `git add -A`) |
+
+#### CLI: `codegen` Command
+
+```bash
+# Generate code for all pending plans
+aicodegencrew codegen
+
+# Single task
+aicodegencrew codegen --task-id PROJ-123
+
+# Preview mode (no file writes)
+aicodegencrew codegen --dry-run
+
+# Skip re-indexing
+aicodegencrew codegen --index-mode off
+```
 
 ---
 
@@ -1430,6 +1525,7 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 | Phase 3 | `c4/*.md`, `c4/*.drawio` | Phase 4 |
 | Phase 3 | `arc42/*.md` | Phase 4 |
 | Phase 4 | Development Plans | Phase 5 |
+| Phase 5 | Git branch + codegen report | Phase 6, Phase 7 |
 
 ### 5.2 Knowledge Directory Structure
 

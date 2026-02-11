@@ -170,7 +170,7 @@
         <mxCell id="p5-title" value="Phase 5: Code Generation" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#E65100;" parent="1" vertex="1">
           <mxGeometry x="350" y="555" width="230" height="25" as="geometry"/>
         </mxCell>
-        <mxCell id="p5-items" value="- Pattern-Compliant Code&#xa;- Architecture-Aware&#xa;- Multi-File Changes" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#E65100;spacingLeft=10;" parent="1" vertex="1">
+        <mxCell id="p5-items" value="- Hybrid Pipeline (5 stages)&#xa;- 1 LLM call per file, 4 strategies&#xa;- Git branch per task, dry-run mode" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#E65100;spacingLeft=10;" parent="1" vertex="1">
           <mxGeometry x="350" y="580" width="230" height="60" as="geometry"/>
         </mxCell>
         
@@ -257,7 +257,7 @@
         <mxCell id="status-p4" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="250" y="555" width="50" height="20" as="geometry"/>
         </mxCell>
-        <mxCell id="status-p5" value="SKELETON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFA000;strokeColor=#E65100;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+        <mxCell id="status-p5" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">
           <mxGeometry x="540" y="555" width="50" height="20" as="geometry"/>
         </mxCell>
         <mxCell id="status-p6" value="SKELETON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFA000;strokeColor=#E65100;fontColor=#FFFFFF;fontSize=10;fontStyle=1;" parent="1" vertex="1">

@@ -126,10 +126,10 @@
         </mxCell>
         
         <!-- LAYER 3: EXECUTION (Planned) -->
-        <mxCell id="layer3-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;opacity=30;dashed=1;" vertex="1" parent="1">
+        <mxCell id="layer3-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=2;opacity=30;" vertex="1" parent="1">
           <mxGeometry x="910" y="100" width="420" height="280" as="geometry" />
         </mxCell>
-        <mxCell id="layer3-label" value="LAYER 3: EXECUTION (Partially Implemented)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#E65100;" vertex="1" parent="1">
+        <mxCell id="layer3-label" value="LAYER 3: EXECUTION" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#E65100;" vertex="1" parent="1">
           <mxGeometry x="920" y="105" width="250" height="25" as="geometry" />
         </mxCell>
         
@@ -150,18 +150,21 @@
           <mxGeometry x="920" y="190" width="130" height="45" as="geometry" />
         </mxCell>
 
-        <!-- Phase 5: Code Generation (SKELETON) -->
-        <mxCell id="phase5-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+        <!-- Phase 5: Code Generation (IMPLEMENTED) -->
+        <mxCell id="phase5-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;shadow=1;" vertex="1" parent="1">
           <mxGeometry x="1060" y="145" width="120" height="100" as="geometry" />
         </mxCell>
         <mxCell id="phase5-badge" value="PHASE 5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E65100;strokeColor=none;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="1065" y="150" width="55" height="16" as="geometry" />
         </mxCell>
+        <mxCell id="phase5-impl" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=8;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="150" width="45" height="14" as="geometry" />
+        </mxCell>
         <mxCell id="phase5-title" value="&lt;b&gt;CODE GEN&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
           <mxGeometry x="1060" y="168" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase5-tasks" value="Pattern-Compliant&lt;br&gt;Architecture-Aware" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
-          <mxGeometry x="1060" y="190" width="120" height="35" as="geometry" />
+        <mxCell id="phase5-tasks" value="Hybrid Pipeline&lt;br&gt;5 stages, 1 LLM/file&lt;br&gt;4 strategies" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="190" width="120" height="45" as="geometry" />
         </mxCell>
 
         <!-- Phase 6: Test Generation (SKELETON) -->
@@ -179,7 +182,7 @@
         </mxCell>
 
         <!-- Arrows between Phase 4-5-6 -->
-        <mxCell id="arrow-p4-p5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="phase4-box" target="phase5-box">
+        <mxCell id="arrow-p4-p5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;" edge="1" parent="1" source="phase4-box" target="phase5-box">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="arrow-p5-p6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="phase5-box" target="phase6-box">

@@ -61,6 +61,18 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
         "min_file_size": 500,  # Minimum bytes per output file
         "description": "C4 + Arc42 documentation",
     },
+    "phase4_development_planning": {
+        "required_paths": [
+            "knowledge/development",
+        ],
+        "description": "Development plans from hybrid pipeline",
+    },
+    "phase5_code_generation": {
+        "required_paths": [
+            "knowledge/codegen",
+        ],
+        "description": "Code generation reports",
+    },
 }
 
 
