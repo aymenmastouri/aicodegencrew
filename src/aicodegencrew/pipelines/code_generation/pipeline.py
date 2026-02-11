@@ -74,6 +74,7 @@ class CodeGenerationPipeline:
             report_dict = report.model_dump()
             return {
                 "status": report.status,
+                "phase": "phase5_code_generation",
                 "task_id": report.task_id,
                 "report": report_dict,
                 "reports": [report_dict],
@@ -97,7 +98,7 @@ class CodeGenerationPipeline:
         plan_files = sorted(self.plans_dir.glob("*_plan.json"))
         if not plan_files:
             logger.warning(f"[Phase5] No plan files found in {self.plans_dir}")
-            return {"status": "skipped", "message": "No plan files found", "reports": []}
+            return {"status": "skipped", "phase": "phase5_code_generation", "message": "No plan files found", "reports": []}
 
         logger.info("=" * 80)
         logger.info(f"[Phase5] Code Generation Pipeline - {len(plan_files)} plans")
@@ -144,6 +145,7 @@ class CodeGenerationPipeline:
 
         return {
             "status": "completed" if failed == 0 else "partial",
+            "phase": "phase5_code_generation",
             "reports": reports,
             "metrics": {
                 "tasks_total": len(plan_files),

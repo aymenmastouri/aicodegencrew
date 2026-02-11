@@ -132,6 +132,7 @@ class DevelopmentPlanningPipeline:
             result = self._run_single(self.input_files[0])
             return {
                 "status": "completed",
+                "phase": "phase4_development_planning",
                 "task_id": result["task_id"],
                 "output_file": result["output_file"],
                 "output_files": [result["output_file"]],
@@ -215,6 +216,7 @@ class DevelopmentPlanningPipeline:
 
         return {
             "status": "completed" if failed == 0 else "partial",
+            "phase": "phase4_development_planning",
             "output_files": output_files,
             "duration_seconds": total_duration,
             "results": results,
@@ -423,7 +425,7 @@ class DevelopmentPlanningPipeline:
     def _write_plan(self, plan: ImplementationPlan, output_file: Path):
         """Write plan to JSON file."""
         try:
-            plan_dict = plan.dict()
+            plan_dict = plan.model_dump()
 
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(plan_dict, f, indent=2, ensure_ascii=False)

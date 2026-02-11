@@ -118,11 +118,11 @@ class PatternMatcherStage:
         )
 
         return {
-            "test_patterns": [p.dict() for p in test_patterns],
-            "security_patterns": [p.dict() for p in security_patterns],
-            "validation_patterns": [p.dict() for p in validation_patterns],
-            "error_patterns": [p.dict() for p in error_patterns],
-            "workflow_context": [w.dict() for w in workflow_context],
+            "test_patterns": [p.model_dump() for p in test_patterns],
+            "security_patterns": [p.model_dump() for p in security_patterns],
+            "validation_patterns": [p.model_dump() for p in validation_patterns],
+            "error_patterns": [p.model_dump() for p in error_patterns],
+            "workflow_context": [w.model_dump() for w in workflow_context],
             "upgrade_assessment": upgrade_assessment,
         }
 

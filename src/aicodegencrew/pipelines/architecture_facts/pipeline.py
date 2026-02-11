@@ -25,7 +25,7 @@ from .collectors.fact_adapter import DimensionResultsAdapter
 from .model_builder import ArchitectureModelBuilder
 from .dimension_writers import CanonicalModelWriter
 from .endpoint_flow_builder import EndpointFlowBuilder
-from ...shared.utils.logger import logger
+from ...shared.utils.logger import logger, log_metric
 
 
 class ArchitectureFactsPipeline:
@@ -140,7 +140,9 @@ class ArchitectureFactsPipeline:
         logger.info("[Phase1] Starting Architecture Facts Extraction")
         logger.info("[Phase1] Mode: DETERMINISTIC (no LLM)")
         logger.info("=" * 60)
-        
+
+        log_metric("phase_start", phase="phase1_architecture_facts")
+
         # Step 0: Archive and clean old outputs
         logger.info("[Phase1] Step 0: Archive and clean old outputs...")
         self._archive_and_clean_old_outputs()
@@ -252,7 +254,17 @@ class ArchitectureFactsPipeline:
             logger.info(f"[Phase1] Migrations: {len(results.migrations)}")
             logger.info(f"[Phase1] Infrastructure: {len(results.infrastructure)}")
             logger.info(f"[Phase1] Output: {combined_path}")
-            
+
+            log_metric(
+                "phase_complete",
+                phase="phase1_architecture_facts",
+                status="success",
+                components=stats['components'],
+                relations=stats['relations'],
+                interfaces=stats['interfaces'],
+                containers=stats['containers'],
+            )
+
             return {
                 "phase": "phase1_architecture_facts",
                 "status": "success",
@@ -266,9 +278,10 @@ class ArchitectureFactsPipeline:
                     "endpoint_flows": len(endpoint_flows),
                 },
             }
-            
+
         except Exception as e:
             logger.error(f"[Phase1] Error: {e}", exc_info=True)
+            log_metric("phase_failed", phase="phase1_architecture_facts", error=str(e)[:500])
             return {
                 "phase": "phase1_architecture_facts",
                 "status": "failed",

@@ -1,0 +1,48 @@
+"""Service for reading metrics.jsonl."""
+
+import json
+from pathlib import Path
+
+from ..config import settings
+from ..schemas import MetricEvent, MetricsSummary
+
+
+def read_metrics(limit: int = 200, event_filter: str | None = None) -> MetricsSummary:
+    """Read metrics events from metrics.jsonl."""
+    metrics_file = settings.metrics_file
+    if not metrics_file.exists():
+        return MetricsSummary(total_events=0, events=[], run_ids=[])
+
+    events: list[MetricEvent] = []
+    run_ids: set[str] = set()
+
+    with open(metrics_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                data = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            event_name = data.pop("event", "unknown")
+            timestamp = data.pop("timestamp", "")
+
+            if "run_id" in data:
+                run_ids.add(data["run_id"])
+
+            if event_filter and event_name != event_filter:
+                continue
+
+            events.append(
+                MetricEvent(timestamp=timestamp, event=event_name, data=data)
+            )
+
+    # Return most recent events first, up to limit
+    events.reverse()
+    return MetricsSummary(
+        total_events=len(events),
+        events=events[:limit],
+        run_ids=sorted(run_ids),
+    )

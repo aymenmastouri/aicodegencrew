@@ -13,15 +13,15 @@ Usage:
         raise ValueError(f"Phase 1 output invalid: {errors}")
 """
 import json
-import logging
 from pathlib import Path
 from typing import Any
 
 from pydantic import ValidationError
 
 from .models.architecture_facts_schema import ArchitectureFacts
+from .utils.logger import setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 # =============================================================================
@@ -65,12 +65,14 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
         "required_paths": [
             "knowledge/development",
         ],
+        "schema": "development_plan",
         "description": "Development plans from hybrid pipeline",
     },
     "phase5_code_generation": {
         "required_paths": [
             "knowledge/codegen",
         ],
+        "schema": "codegen_report",
         "description": "Code generation reports",
     },
 }
@@ -108,6 +110,10 @@ class PhaseOutputValidator:
             errors.extend(self._validate_facts(spec))
         elif schema_type == "analyzed_architecture":
             errors.extend(self._validate_analysis(spec))
+        elif schema_type == "development_plan":
+            errors.extend(self._validate_development_plans(spec))
+        elif schema_type == "codegen_report":
+            errors.extend(self._validate_codegen_reports(spec))
 
         # 3. Minimum file size check
         min_size = spec.get("min_file_size", 0)
@@ -209,5 +215,72 @@ class PhaseOutputValidator:
         for key in spec.get("required_keys", []):
             if key not in data:
                 errors.append(f"Missing key '{key}' in analysis output")
+
+        return errors
+
+    def _validate_development_plans(self, spec: dict) -> list[str]:
+        """Validate Phase 4 development plan JSON files."""
+        errors = []
+        plans_dir = Path("knowledge/development")
+
+        if not plans_dir.is_dir():
+            return []  # Directory existence already checked
+
+        plan_files = list(plans_dir.glob("*_plan.json"))
+        if not plan_files:
+            errors.append("No plan files (*_plan.json) in knowledge/development/")
+            return errors
+
+        required_keys = {"task_id", "understanding", "development_plan"}
+        plan_required_keys = {"affected_components", "implementation_steps"}
+
+        for plan_file in plan_files:
+            try:
+                with open(plan_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except json.JSONDecodeError as e:
+                errors.append(f"Invalid JSON in {plan_file.name}: {e}")
+                continue
+
+            missing = required_keys - set(data.keys())
+            if missing:
+                errors.append(f"{plan_file.name}: missing top-level keys: {missing}")
+
+            dev_plan = data.get("development_plan", {})
+            if isinstance(dev_plan, dict):
+                plan_missing = plan_required_keys - set(dev_plan.keys())
+                if plan_missing:
+                    errors.append(
+                        f"{plan_file.name}: development_plan missing keys: {plan_missing}"
+                    )
+
+        return errors
+
+    def _validate_codegen_reports(self, spec: dict) -> list[str]:
+        """Validate Phase 5 code generation report JSON files."""
+        errors = []
+        reports_dir = Path("knowledge/codegen")
+
+        if not reports_dir.is_dir():
+            return []  # Directory existence already checked
+
+        report_files = list(reports_dir.glob("*_report.json"))
+        if not report_files:
+            # Codegen may not have produced reports yet — not an error for dependency check
+            return []
+
+        required_keys = {"task_id", "status"}
+
+        for report_file in report_files:
+            try:
+                with open(report_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except json.JSONDecodeError as e:
+                errors.append(f"Invalid JSON in {report_file.name}: {e}")
+                continue
+
+            missing = required_keys - set(data.keys())
+            if missing:
+                errors.append(f"{report_file.name}: missing keys: {missing}")
 
         return errors
