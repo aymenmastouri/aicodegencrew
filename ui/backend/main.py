@@ -12,14 +12,15 @@ Usage:
     uvicorn ui.backend.main:app --reload --port 8001
 """
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 
 from .config import settings
+from .routers import diagrams, env, inputs, knowledge, logs, metrics, phases, pipeline, reports
 from .schemas import HealthResponse
-from .routers import phases, knowledge, metrics, reports, logs, diagrams, pipeline, env, inputs
 
 app = FastAPI(
     title="AICodeGenCrew Dashboard",

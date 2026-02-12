@@ -52,7 +52,6 @@ interface ParsedComponent {
         </div>
       } @else {
         <mat-tab-group (selectedTabChange)="onTabChange($event)">
-
           <!-- ============================================================ -->
           <!-- TAB 1: Development Plans                                     -->
           <!-- ============================================================ -->
@@ -73,8 +72,10 @@ interface ParsedComponent {
                       </mat-panel-title>
                       <mat-panel-description>
                         @if ($any(plan['development_plan'])?.['estimated_complexity']) {
-                          <span class="severity-chip"
-                            [class]="getSeverityClass($any(plan['development_plan'])['estimated_complexity'])">
+                          <span
+                            class="severity-chip"
+                            [class]="getSeverityClass($any(plan['development_plan'])['estimated_complexity'])"
+                          >
                             {{ $any(plan['development_plan'])['estimated_complexity'] }}
                           </span>
                         }
@@ -104,8 +105,10 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])?.['estimated_complexity']) {
                               <div class="metric-box">
                                 <span class="metric-label">Complexity</span>
-                                <span class="severity-chip"
-                                  [class]="getSeverityClass($any(plan['development_plan'])['estimated_complexity'])">
+                                <span
+                                  class="severity-chip"
+                                  [class]="getSeverityClass($any(plan['development_plan'])['estimated_complexity'])"
+                                >
                                   {{ $any(plan['development_plan'])['estimated_complexity'] }}
                                 </span>
                               </div>
@@ -113,19 +116,27 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])?.['estimated_files_changed']) {
                               <div class="metric-box">
                                 <span class="metric-label">Estimated Files</span>
-                                <span class="metric-value">{{ $any(plan['development_plan'])['estimated_files_changed'] }}</span>
+                                <span class="metric-value">{{
+                                  $any(plan['development_plan'])['estimated_files_changed']
+                                }}</span>
                               </div>
                             }
                             @if ($any(plan['development_plan'])?.['upgrade_plan']?.['total_estimated_effort_hours']) {
                               <div class="metric-box">
                                 <span class="metric-label">Estimated Effort</span>
-                                <span class="metric-value">{{ $any(plan['development_plan'])['upgrade_plan']['total_estimated_effort_hours'] }}h</span>
+                                <span class="metric-value"
+                                  >{{
+                                    $any(plan['development_plan'])['upgrade_plan']['total_estimated_effort_hours']
+                                  }}h</span
+                                >
                               </div>
                             }
                             @if ($any(plan['development_plan'])?.['risks']?.length) {
                               <div class="metric-box">
                                 <span class="metric-label">Risks</span>
-                                <span class="metric-value warn-text">{{ $any(plan['development_plan'])['risks'].length }}</span>
+                                <span class="metric-value warn-text">{{
+                                  $any(plan['development_plan'])['risks'].length
+                                }}</span>
                               </div>
                             }
                           </div>
@@ -167,7 +178,10 @@ interface ParsedComponent {
                               Affected Components ({{ $any(plan['development_plan'])['affected_components'].length }})
                             </h3>
                             <div class="component-grid">
-                              @for (comp of parseComponents($any(plan['development_plan'])['affected_components']); track comp.id) {
+                              @for (
+                                comp of parseComponents($any(plan['development_plan'])['affected_components']);
+                                track comp.id
+                              ) {
                                 <div class="component-chip">
                                   <span class="comp-container">{{ comp.container }}</span>
                                   <span class="comp-name">{{ comp.name }}</span>
@@ -199,7 +213,10 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])['upgrade_plan']['pre_migration_checks']?.length) {
                               <h4 class="subsection-title">Pre-Migration Checks</h4>
                               <ul class="check-list">
-                                @for (check of $any(plan['development_plan'])['upgrade_plan']['pre_migration_checks']; track $index) {
+                                @for (
+                                  check of $any(plan['development_plan'])['upgrade_plan']['pre_migration_checks'];
+                                  track $index
+                                ) {
                                   <li><mat-icon class="check-icon">check_circle_outline</mat-icon> {{ check }}</li>
                                 }
                               </ul>
@@ -209,7 +226,11 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])['upgrade_plan']['migration_sequence']?.length) {
                               <h4 class="subsection-title">Migration Sequence</h4>
                               <mat-accordion class="migration-accordion">
-                                @for (migration of $any(plan['development_plan'])['upgrade_plan']['migration_sequence']; track migration['rule_id']; let i = $index) {
+                                @for (
+                                  migration of $any(plan['development_plan'])['upgrade_plan']['migration_sequence'];
+                                  track migration['rule_id'];
+                                  let i = $index
+                                ) {
                                   <mat-expansion-panel class="migration-panel">
                                     <mat-expansion-panel-header>
                                       <mat-panel-title class="migration-title">
@@ -221,7 +242,9 @@ interface ParsedComponent {
                                           {{ migration['severity'] }}
                                         </span>
                                         @if (migration['estimated_effort_minutes']) {
-                                          <span class="effort-badge">{{ formatMinutes(migration['estimated_effort_minutes']) }}</span>
+                                          <span class="effort-badge">{{
+                                            formatMinutes(migration['estimated_effort_minutes'])
+                                          }}</span>
                                         }
                                       </mat-panel-description>
                                     </mat-expansion-panel-header>
@@ -259,7 +282,10 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])['upgrade_plan']['post_migration_checks']?.length) {
                               <h4 class="subsection-title">Post-Migration Checks</h4>
                               <ul class="check-list">
-                                @for (check of $any(plan['development_plan'])['upgrade_plan']['post_migration_checks']; track $index) {
+                                @for (
+                                  check of $any(plan['development_plan'])['upgrade_plan']['post_migration_checks'];
+                                  track $index
+                                ) {
                                   <li><mat-icon class="check-icon">verified</mat-icon> {{ check }}</li>
                                 }
                               </ul>
@@ -269,7 +295,10 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])['upgrade_plan']['verification_commands']?.length) {
                               <h4 class="subsection-title">Verification Commands</h4>
                               <div class="commands-box">
-                                @for (cmd of $any(plan['development_plan'])['upgrade_plan']['verification_commands']; track cmd) {
+                                @for (
+                                  cmd of $any(plan['development_plan'])['upgrade_plan']['verification_commands'];
+                                  track cmd
+                                ) {
                                   <code class="command-line">$ {{ cmd }}</code>
                                 }
                               </div>
@@ -287,7 +316,10 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])['test_strategy']['unit_tests']?.length) {
                               <h4 class="subsection-title">Unit Tests</h4>
                               <ul class="detail-list">
-                                @for (t of $any(plan['development_plan'])['test_strategy']['unit_tests']; track $index) {
+                                @for (
+                                  t of $any(plan['development_plan'])['test_strategy']['unit_tests'];
+                                  track $index
+                                ) {
                                   <li>{{ t }}</li>
                                 }
                               </ul>
@@ -295,7 +327,10 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])['test_strategy']['integration_tests']?.length) {
                               <h4 class="subsection-title">Integration Tests</h4>
                               <ul class="detail-list">
-                                @for (t of $any(plan['development_plan'])['test_strategy']['integration_tests']; track $index) {
+                                @for (
+                                  t of $any(plan['development_plan'])['test_strategy']['integration_tests'];
+                                  track $index
+                                ) {
                                   <li>{{ t }}</li>
                                 }
                               </ul>
@@ -303,9 +338,12 @@ interface ParsedComponent {
                             @if ($any(plan['development_plan'])['test_strategy']['similar_patterns']?.length) {
                               <h4 class="subsection-title">Similar Patterns</h4>
                               <div class="patterns-list">
-                                @for (p of $any(plan['development_plan'])['test_strategy']['similar_patterns']; track $index) {
+                                @for (
+                                  p of $any(plan['development_plan'])['test_strategy']['similar_patterns'];
+                                  track $index
+                                ) {
                                   <div class="pattern-chip">
-                                    {{ isString(p) ? p : (p['pattern'] || p['name']) }}
+                                    {{ isString(p) ? p : p['pattern'] || p['name'] }}
                                     @if (!isString(p) && p['description']) {
                                       <span class="muted"> — {{ p['description'] }}</span>
                                     }
@@ -399,21 +437,36 @@ interface ParsedComponent {
                                 @if ($any(plan['development_plan'])['architecture_context']['layer_pattern']) {
                                   <div class="arch-row">
                                     <span class="arch-label">Layer Pattern</span>
-                                    <span class="mono">{{ $any(plan['development_plan'])['architecture_context']['layer_pattern'] }}</span>
+                                    <span class="mono">{{
+                                      $any(plan['development_plan'])['architecture_context']['layer_pattern']
+                                    }}</span>
                                   </div>
                                 }
                                 @if ($any(plan['development_plan'])['architecture_context']['quality_grade']) {
                                   <div class="arch-row">
                                     <span class="arch-label">Quality Grade</span>
-                                    <span class="severity-chip" [class]="getGradeClass($any(plan['development_plan'])['architecture_context']['quality_grade'])">
+                                    <span
+                                      class="severity-chip"
+                                      [class]="
+                                        getGradeClass(
+                                          $any(plan['development_plan'])['architecture_context']['quality_grade']
+                                        )
+                                      "
+                                    >
                                       {{ $any(plan['development_plan'])['architecture_context']['quality_grade'] }}
                                     </span>
                                   </div>
                                 }
-                                @if ($any(plan['development_plan'])['architecture_context']['layer_compliance']?.length) {
+                                @if (
+                                  $any(plan['development_plan'])['architecture_context']['layer_compliance']?.length
+                                ) {
                                   <div class="arch-row">
                                     <span class="arch-label">Compliance</span>
-                                    <span>{{ $any(plan['development_plan'])['architecture_context']['layer_compliance'].join(', ') }}</span>
+                                    <span>{{
+                                      $any(plan['development_plan'])['architecture_context']['layer_compliance'].join(
+                                        ', '
+                                      )
+                                    }}</span>
                                   </div>
                                 }
                               </div>
@@ -429,7 +482,10 @@ interface ParsedComponent {
                                   JIRA Context
                                 </mat-panel-title>
                               </mat-expansion-panel-header>
-                              <div class="jira-content" [innerHTML]="cleanHtml($any(plan['understanding'])['technical_notes'])"></div>
+                              <div
+                                class="jira-content"
+                                [innerHTML]="cleanHtml($any(plan['understanding'])['technical_notes'])"
+                              ></div>
                             </mat-expansion-panel>
                           }
                         </mat-accordion>
@@ -469,9 +525,7 @@ interface ParsedComponent {
                           {{ report['status'] }}
                         </span>
                         @if ($any(report['generated_files'])?.length) {
-                          <span class="file-count-badge">
-                            {{ $any(report['generated_files']).length }} files
-                          </span>
+                          <span class="file-count-badge"> {{ $any(report['generated_files']).length }} files </span>
                         }
                       </mat-panel-description>
                     </mat-expansion-panel-header>
@@ -479,7 +533,9 @@ interface ParsedComponent {
                     <div class="report-body">
                       <div class="toggle-row">
                         <button mat-button (click)="toggleRawJson('report_' + report['task_id'])">
-                          <mat-icon>{{ showRawJson['report_' + $any(report['task_id'])] ? 'visibility' : 'data_object' }}</mat-icon>
+                          <mat-icon>{{
+                            showRawJson['report_' + $any(report['task_id'])] ? 'visibility' : 'data_object'
+                          }}</mat-icon>
                           {{ showRawJson['report_' + $any(report['task_id'])] ? 'Structured View' : 'Raw JSON' }}
                         </button>
                       </div>
@@ -499,7 +555,9 @@ interface ParsedComponent {
                               @if (report['token_usage']) {
                                 <div class="meta-item">
                                   <mat-icon>token</mat-icon>
-                                  <span>{{ $any(report['token_usage'])['total'] || report['token_usage'] }} tokens</span>
+                                  <span
+                                    >{{ $any(report['token_usage'])['total'] || report['token_usage'] }} tokens</span
+                                  >
                                 </div>
                               }
                             </div>
@@ -509,12 +567,18 @@ interface ParsedComponent {
                         @if ($any(report['generated_files'])?.length) {
                           <div class="files-list">
                             @for (file of $any(report['generated_files']); track file['path']) {
-                              <div class="file-entry"
+                              <div
+                                class="file-entry"
                                 (click)="toggleFile($any(report['task_id']) + ':' + file['path'])"
-                                [class.expanded]="expandedFiles[$any(report['task_id']) + ':' + file['path']]">
+                                [class.expanded]="expandedFiles[$any(report['task_id']) + ':' + file['path']]"
+                              >
                                 <div class="file-header">
                                   <mat-icon class="expand-icon">
-                                    {{ expandedFiles[$any(report['task_id']) + ':' + file['path']] ? 'expand_more' : 'chevron_right' }}
+                                    {{
+                                      expandedFiles[$any(report['task_id']) + ':' + file['path']]
+                                        ? 'expand_more'
+                                        : 'chevron_right'
+                                    }}
                                   </mat-icon>
                                   <span class="file-path mono">{{ file['path'] }}</span>
                                   <span class="severity-chip" [class]="'action-' + (file['action'] || 'modified')">
@@ -584,16 +648,21 @@ interface ParsedComponent {
                             {{ branch.file_count }} files
                           </span>
                           @if (branch.has_report) {
-                            <span class="severity-chip status-completed"
+                            <span
+                              class="severity-chip status-completed"
                               matTooltip="View codegen report"
                               style="cursor:pointer"
-                              (click)="goToReport(branch.task_id)">
+                              (click)="goToReport(branch.task_id)"
+                            >
                               Has Report
                             </span>
                           }
-                          <button mat-icon-button color="warn"
+                          <button
+                            mat-icon-button
+                            color="warn"
                             matTooltip="Delete branch"
-                            (click)="deleteBranch(branch.task_id)">
+                            (click)="deleteBranch(branch.task_id)"
+                          >
                             <mat-icon>delete</mat-icon>
                           </button>
                         </div>
@@ -613,309 +682,601 @@ interface ParsedComponent {
       }
     </div>
   `,
-  styles: [`
-    .tab-icon { margin-right: 6px; font-size: 18px; }
-    .report-accordion { margin-top: 16px; }
-    .panel-icon {
-      font-size: 18px; width: 18px; height: 18px;
-      margin-right: 8px; color: var(--cg-blue);
-    }
-    .code-viewer {
-      max-height: 500px; overflow: auto;
-      background: var(--cg-dark); color: #eeffff;
-      padding: 16px; border-radius: 8px;
-      font-size: 12px; line-height: 1.6;
-    }
-    .empty-inline {
-      display: flex; align-items: center; gap: 10px;
-      color: var(--cg-gray-500); font-size: 14px;
-    }
-    .empty-inline .mat-icon { color: var(--cg-gray-200); }
-    .tab-empty { padding: 32px 16px; }
+  styles: [
+    `
+      .tab-icon {
+        margin-right: 6px;
+        font-size: 18px;
+      }
+      .report-accordion {
+        margin-top: 16px;
+      }
+      .panel-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        color: var(--cg-blue);
+      }
+      .code-viewer {
+        max-height: 500px;
+        overflow: auto;
+        background: var(--cg-dark);
+        color: #eeffff;
+        padding: 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .empty-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--cg-gray-500);
+        font-size: 14px;
+      }
+      .empty-inline .mat-icon {
+        color: var(--cg-gray-200);
+      }
+      .tab-empty {
+        padding: 32px 16px;
+      }
 
-    /* Plan body layout */
-    .plan-body, .report-body { padding: 4px 0; }
-    .toggle-row { display: flex; justify-content: flex-end; margin-bottom: 4px; }
-    .plan-summary-text {
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      max-width: 400px; margin-left: 8px;
-    }
-    .muted { color: var(--cg-gray-500); font-size: 13px; }
+      /* Plan body layout */
+      .plan-body,
+      .report-body {
+        padding: 4px 0;
+      }
+      .toggle-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 4px;
+      }
+      .plan-summary-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 400px;
+        margin-left: 8px;
+      }
+      .muted {
+        color: var(--cg-gray-500);
+        font-size: 13px;
+      }
 
-    /* Overview card */
-    .overview-card {
-      background: linear-gradient(135deg, rgba(18,171,219,0.04) 0%, rgba(18,171,219,0.01) 100%);
-      border: 1px solid var(--cg-gray-200);
-      border-left: 4px solid var(--cg-vibrant);
-      border-radius: 8px; padding: 20px; margin-bottom: 20px;
-    }
-    .overview-title {
-      font-size: 18px; font-weight: 600; margin: 0 0 14px;
-      color: var(--cg-gray-900); line-height: 1.4;
-    }
-    .metrics-row {
-      display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px;
-    }
-    .metric-box {
-      display: flex; flex-direction: column; gap: 4px;
-      padding: 8px 14px; background: white;
-      border: 1px solid var(--cg-gray-200); border-radius: 6px;
-      min-width: 100px;
-    }
-    .metric-label {
-      font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
-      color: var(--cg-gray-500); font-weight: 600;
-    }
-    .metric-value { font-size: 18px; font-weight: 700; color: var(--cg-gray-900); }
-    .warn-text { color: var(--cg-error) !important; }
-    .reasoning-text {
-      font-size: 13px; color: var(--cg-gray-500);
-      margin: 0; line-height: 1.5; font-style: italic;
-    }
+      /* Overview card */
+      .overview-card {
+        background: linear-gradient(135deg, rgba(18, 171, 219, 0.04) 0%, rgba(18, 171, 219, 0.01) 100%);
+        border: 1px solid var(--cg-gray-200);
+        border-left: 4px solid var(--cg-vibrant);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .overview-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 14px;
+        color: var(--cg-gray-900);
+        line-height: 1.4;
+      }
+      .metrics-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .metric-box {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 14px;
+        background: white;
+        border: 1px solid var(--cg-gray-200);
+        border-radius: 6px;
+        min-width: 100px;
+      }
+      .metric-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--cg-gray-500);
+        font-weight: 600;
+      }
+      .metric-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--cg-gray-900);
+      }
+      .warn-text {
+        color: var(--cg-error) !important;
+      }
+      .reasoning-text {
+        font-size: 13px;
+        color: var(--cg-gray-500);
+        margin: 0;
+        line-height: 1.5;
+        font-style: italic;
+      }
 
-    /* Sections */
-    .section {
-      margin-bottom: 20px; padding-bottom: 16px;
-      border-bottom: 1px solid var(--cg-gray-100);
-    }
-    .section:last-child { border-bottom: none; }
-    .section-title {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 15px; font-weight: 600; margin: 0 0 12px;
-      color: var(--cg-gray-900);
-    }
-    .section-title .mat-icon {
-      font-size: 20px; width: 20px; height: 20px; color: var(--cg-blue);
-    }
-    .title-detail {
-      font-size: 13px; font-weight: 400; color: var(--cg-gray-500);
-      margin-left: 4px;
-    }
-    .subsection-title {
-      font-size: 13px; font-weight: 600; margin: 14px 0 8px;
-      color: var(--cg-gray-700);
-    }
+      /* Sections */
+      .section {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--cg-gray-100);
+      }
+      .section:last-child {
+        border-bottom: none;
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 12px;
+        color: var(--cg-gray-900);
+      }
+      .section-title .mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--cg-blue);
+      }
+      .title-detail {
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--cg-gray-500);
+        margin-left: 4px;
+      }
+      .subsection-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 14px 0 8px;
+        color: var(--cg-gray-700);
+      }
 
-    /* Steps list */
-    .steps-list {
-      padding-left: 24px; margin: 0;
-      counter-reset: steps;
-    }
-    .steps-list li {
-      margin: 6px 0; font-size: 13px; line-height: 1.5;
-      color: var(--cg-gray-700);
-    }
+      /* Steps list */
+      .steps-list {
+        padding-left: 24px;
+        margin: 0;
+        counter-reset: steps;
+      }
+      .steps-list li {
+        margin: 6px 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--cg-gray-700);
+      }
 
-    /* Component grid */
-    .component-grid {
-      display: flex; flex-wrap: wrap; gap: 8px;
-    }
-    .component-chip {
-      display: flex; align-items: center; gap: 6px;
-      padding: 6px 12px; background: var(--cg-gray-50);
-      border: 1px solid var(--cg-gray-200); border-radius: 6px;
-      font-size: 12px;
-    }
-    .comp-container {
-      font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--cg-vibrant); font-weight: 600;
-      padding: 1px 6px; background: rgba(18,171,219,0.08);
-      border-radius: 3px;
-    }
-    .comp-name { font-weight: 600; color: var(--cg-gray-900); }
-    .comp-package { color: var(--cg-gray-400); font-family: monospace; font-size: 11px; }
+      /* Component grid */
+      .component-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .component-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: var(--cg-gray-50);
+        border: 1px solid var(--cg-gray-200);
+        border-radius: 6px;
+        font-size: 12px;
+      }
+      .comp-container {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--cg-vibrant);
+        font-weight: 600;
+        padding: 1px 6px;
+        background: rgba(18, 171, 219, 0.08);
+        border-radius: 3px;
+      }
+      .comp-name {
+        font-weight: 600;
+        color: var(--cg-gray-900);
+      }
+      .comp-package {
+        color: var(--cg-gray-400);
+        font-family: monospace;
+        font-size: 11px;
+      }
 
-    /* Severity / status chips */
-    .severity-chip {
-      display: inline-block; padding: 2px 10px; border-radius: 12px;
-      font-size: 11px; font-weight: 600; text-transform: capitalize;
-    }
-    .severity-low, .severity-recommended { background: rgba(40,167,69,0.1); color: var(--cg-success); }
-    .severity-medium, .severity-deprecated { background: rgba(255,193,7,0.15); color: #d4a017; }
-    .severity-high, .severity-breaking { background: rgba(220,53,69,0.1); color: var(--cg-error); }
-    .grade-a { background: rgba(40,167,69,0.1); color: var(--cg-success); }
-    .grade-b { background: rgba(0,112,173,0.1); color: var(--cg-blue); }
-    .grade-c { background: rgba(255,193,7,0.15); color: #d4a017; }
-    .grade-d, .grade-f { background: rgba(220,53,69,0.1); color: var(--cg-error); }
+      /* Severity / status chips */
+      .severity-chip {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: capitalize;
+      }
+      .severity-low,
+      .severity-recommended {
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--cg-success);
+      }
+      .severity-medium,
+      .severity-deprecated {
+        background: rgba(255, 193, 7, 0.15);
+        color: #d4a017;
+      }
+      .severity-high,
+      .severity-breaking {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--cg-error);
+      }
+      .grade-a {
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--cg-success);
+      }
+      .grade-b {
+        background: rgba(0, 112, 173, 0.1);
+        color: var(--cg-blue);
+      }
+      .grade-c {
+        background: rgba(255, 193, 7, 0.15);
+        color: #d4a017;
+      }
+      .grade-d,
+      .grade-f {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--cg-error);
+      }
 
-    /* Migration accordion */
-    .migration-accordion { margin-top: 8px; }
-    .migration-panel { margin-bottom: 4px !important; }
-    .migration-title {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px !important;
-    }
-    .migration-desc {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .step-number {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--cg-vibrant); color: white;
-      font-size: 11px; font-weight: 700; flex-shrink: 0;
-    }
-    .effort-badge {
-      font-size: 11px; color: var(--cg-gray-500);
-      font-family: monospace;
-    }
-    .migration-body { padding: 4px 0; }
-    .migration-body h5 {
-      font-size: 12px; font-weight: 600; margin: 10px 0 6px;
-      color: var(--cg-gray-700); text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .migration-steps {
-      padding-left: 20px; margin: 0;
-    }
-    .migration-steps li {
-      font-size: 12px; margin: 3px 0; line-height: 1.5;
-      color: var(--cg-gray-600);
-    }
-    .schematic-box {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 12px; background: var(--cg-dark);
-      border-radius: 6px; margin-top: 8px;
-    }
-    .schematic-box .mat-icon { color: var(--cg-vibrant); font-size: 16px; width: 16px; height: 16px; }
-    .schematic-box code { color: #c3e88d; font-size: 12px; }
-    .affected-files {
-      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;
-    }
-    .file-chip {
-      font-size: 11px; padding: 2px 8px;
-      background: var(--cg-gray-50); border: 1px solid var(--cg-gray-200);
-      border-radius: 4px; color: var(--cg-gray-600);
-    }
+      /* Migration accordion */
+      .migration-accordion {
+        margin-top: 8px;
+      }
+      .migration-panel {
+        margin-bottom: 4px !important;
+      }
+      .migration-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px !important;
+      }
+      .migration-desc {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--cg-vibrant);
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .effort-badge {
+        font-size: 11px;
+        color: var(--cg-gray-500);
+        font-family: monospace;
+      }
+      .migration-body {
+        padding: 4px 0;
+      }
+      .migration-body h5 {
+        font-size: 12px;
+        font-weight: 600;
+        margin: 10px 0 6px;
+        color: var(--cg-gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .migration-steps {
+        padding-left: 20px;
+        margin: 0;
+      }
+      .migration-steps li {
+        font-size: 12px;
+        margin: 3px 0;
+        line-height: 1.5;
+        color: var(--cg-gray-600);
+      }
+      .schematic-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: var(--cg-dark);
+        border-radius: 6px;
+        margin-top: 8px;
+      }
+      .schematic-box .mat-icon {
+        color: var(--cg-vibrant);
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+      .schematic-box code {
+        color: #c3e88d;
+        font-size: 12px;
+      }
+      .affected-files {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 4px;
+      }
+      .file-chip {
+        font-size: 11px;
+        padding: 2px 8px;
+        background: var(--cg-gray-50);
+        border: 1px solid var(--cg-gray-200);
+        border-radius: 4px;
+        color: var(--cg-gray-600);
+      }
 
-    /* Check lists */
-    .check-list {
-      list-style: none; padding: 0; margin: 0;
-    }
-    .check-list li {
-      display: flex; align-items: flex-start; gap: 8px;
-      font-size: 13px; margin: 4px 0; color: var(--cg-gray-700);
-    }
-    .check-icon {
-      font-size: 16px !important; width: 16px !important; height: 16px !important;
-      color: var(--cg-success); margin-top: 2px; flex-shrink: 0;
-    }
-    .commands-box {
-      background: var(--cg-dark); border-radius: 6px;
-      padding: 12px 16px;
-    }
-    .command-line {
-      display: block; color: #c3e88d; font-size: 12px;
-      line-height: 1.8;
-    }
+      /* Check lists */
+      .check-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .check-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 13px;
+        margin: 4px 0;
+        color: var(--cg-gray-700);
+      }
+      .check-icon {
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
+        color: var(--cg-success);
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
+      .commands-box {
+        background: var(--cg-dark);
+        border-radius: 6px;
+        padding: 12px 16px;
+      }
+      .command-line {
+        display: block;
+        color: #c3e88d;
+        font-size: 12px;
+        line-height: 1.8;
+      }
 
-    /* Detail lists */
-    .detail-list {
-      padding-left: 20px; margin: 0;
-    }
-    .detail-list li {
-      font-size: 13px; margin: 4px 0; line-height: 1.5;
-      color: var(--cg-gray-700);
-    }
-    .patterns-list { display: flex; flex-direction: column; gap: 4px; }
-    .pattern-chip {
-      font-size: 13px; padding: 6px 12px;
-      background: var(--cg-gray-50); border-radius: 6px;
-      border: 1px solid var(--cg-gray-200);
-    }
+      /* Detail lists */
+      .detail-list {
+        padding-left: 20px;
+        margin: 0;
+      }
+      .detail-list li {
+        font-size: 13px;
+        margin: 4px 0;
+        line-height: 1.5;
+        color: var(--cg-gray-700);
+      }
+      .patterns-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .pattern-chip {
+        font-size: 13px;
+        padding: 6px 12px;
+        background: var(--cg-gray-50);
+        border-radius: 6px;
+        border: 1px solid var(--cg-gray-200);
+      }
 
-    /* Risks */
-    .risks-list {
-      list-style: none; padding: 0; margin: 0;
-    }
-    .risks-list li {
-      display: flex; align-items: flex-start; gap: 8px;
-      font-size: 13px; margin: 6px 0; line-height: 1.5;
-      color: var(--cg-gray-700);
-    }
-    .risk-icon {
-      font-size: 16px !important; width: 16px !important; height: 16px !important;
-      color: #d4a017; margin-top: 2px; flex-shrink: 0;
-    }
+      /* Risks */
+      .risks-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .risks-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 13px;
+        margin: 6px 0;
+        line-height: 1.5;
+        color: var(--cg-gray-700);
+      }
+      .risk-icon {
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
+        color: #d4a017;
+        margin-top: 2px;
+        flex-shrink: 0;
+      }
 
-    /* Collapsible details */
-    .details-accordion { margin-top: 12px; }
+      /* Collapsible details */
+      .details-accordion {
+        margin-top: 12px;
+      }
 
-    /* Architecture context */
-    .arch-context { display: flex; flex-direction: column; gap: 8px; }
-    .arch-row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-    .arch-label {
-      font-weight: 600; color: var(--cg-gray-500); min-width: 120px;
-      font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
+      /* Architecture context */
+      .arch-context {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .arch-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+      }
+      .arch-label {
+        font-weight: 600;
+        color: var(--cg-gray-500);
+        min-width: 120px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
 
-    /* JIRA content */
-    .jira-content {
-      font-size: 13px; line-height: 1.6; color: var(--cg-gray-700);
-      max-height: 400px; overflow-y: auto;
-      padding: 8px;
-    }
-    .jira-content :is(h2, h3, h4) {
-      font-size: 14px; font-weight: 600; margin: 12px 0 6px;
-      color: var(--cg-gray-900);
-    }
-    .jira-content ul, .jira-content ol {
-      padding-left: 20px; margin: 4px 0;
-    }
-    .jira-content li { margin: 2px 0; }
-    .jira-content a {
-      color: var(--cg-vibrant); text-decoration: none;
-    }
-    .jira-content a:hover { text-decoration: underline; }
-    .jira-content p { margin: 6px 0; }
-    .jira-content code, .jira-content tt {
-      background: var(--cg-gray-100); padding: 1px 4px;
-      border-radius: 3px; font-size: 12px;
-    }
+      /* JIRA content */
+      .jira-content {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--cg-gray-700);
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 8px;
+      }
+      .jira-content :is(h2, h3, h4) {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 12px 0 6px;
+        color: var(--cg-gray-900);
+      }
+      .jira-content ul,
+      .jira-content ol {
+        padding-left: 20px;
+        margin: 4px 0;
+      }
+      .jira-content li {
+        margin: 2px 0;
+      }
+      .jira-content a {
+        color: var(--cg-vibrant);
+        text-decoration: none;
+      }
+      .jira-content a:hover {
+        text-decoration: underline;
+      }
+      .jira-content p {
+        margin: 6px 0;
+      }
+      .jira-content code,
+      .jira-content tt {
+        background: var(--cg-gray-100);
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
 
-    /* Codegen report */
-    .section-card { margin-bottom: 12px; }
-    .report-meta { display: flex; gap: 20px; flex-wrap: wrap; }
-    .meta-item {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 13px; color: var(--cg-gray-500);
-    }
-    .meta-item .mat-icon { font-size: 18px; width: 18px; height: 18px; }
-    .file-count-badge { margin-left: 8px; font-size: 12px; color: var(--cg-gray-500); }
-    .files-list { margin-top: 12px; }
-    .file-entry {
-      border: 1px solid var(--cg-gray-200); border-radius: 8px;
-      margin-bottom: 8px; overflow: hidden;
-    }
-    .file-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 14px; cursor: pointer; transition: background 0.15s;
-    }
-    .file-header:hover { background: var(--cg-gray-50); }
-    .expand-icon {
-      font-size: 20px; width: 20px; height: 20px; color: var(--cg-gray-500);
-    }
-    .file-path { flex: 1; font-size: 13px; }
-    .lang-badge {
-      font-size: 11px; padding: 2px 8px; border-radius: 10px;
-      background: var(--cg-gray-100); color: var(--cg-gray-500);
-      text-transform: uppercase; font-weight: 600;
-    }
-    .diff-viewer { border-radius: 0 0 8px 8px; }
-    .diff-line { min-height: 19px; padding: 0 12px; }
+      /* Codegen report */
+      .section-card {
+        margin-bottom: 12px;
+      }
+      .report-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--cg-gray-500);
+      }
+      .meta-item .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      .file-count-badge {
+        margin-left: 8px;
+        font-size: 12px;
+        color: var(--cg-gray-500);
+      }
+      .files-list {
+        margin-top: 12px;
+      }
+      .file-entry {
+        border: 1px solid var(--cg-gray-200);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        overflow: hidden;
+      }
+      .file-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .file-header:hover {
+        background: var(--cg-gray-50);
+      }
+      .expand-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--cg-gray-500);
+      }
+      .file-path {
+        flex: 1;
+        font-size: 13px;
+      }
+      .lang-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-500);
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      .diff-viewer {
+        border-radius: 0 0 8px 8px;
+      }
+      .diff-line {
+        min-height: 19px;
+        padding: 0 12px;
+      }
 
-    /* Branches */
-    .branches-grid { display: grid; gap: 10px; margin-top: 16px; }
-    .branch-card { margin: 0; }
-    .branch-row {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 10px;
-    }
-    .branch-info { display: flex; align-items: center; gap: 8px; }
-    .branch-icon {
-      color: var(--cg-blue); font-size: 20px; width: 20px; height: 20px;
-    }
-    .branch-name { font-size: 14px; }
-    .branch-actions { display: flex; align-items: center; gap: 8px; }
-  `],
+      /* Branches */
+      .branches-grid {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .branch-card {
+        margin: 0;
+      }
+      .branch-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .branch-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .branch-icon {
+        color: var(--cg-blue);
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      .branch-name {
+        font-size: 14px;
+      }
+      .branch-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    `,
+  ],
 })
 export class ReportsComponent implements OnInit {
   reports: ReportList | null = null;
@@ -934,8 +1295,15 @@ export class ReportsComponent implements OnInit {
 
   ngOnInit(): void {
     this.api.getReports().subscribe({
-      next: r => { this.reports = r; this.loading = false; this.cdr.markForCheck(); },
-      error: () => { this.loading = false; this.cdr.markForCheck(); },
+      next: (r) => {
+        this.reports = r;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -949,7 +1317,7 @@ export class ReportsComponent implements OnInit {
     this.branchesLoading = true;
     this.branchesError = '';
     this.api.getBranches().subscribe({
-      next: b => {
+      next: (b) => {
         this.branches = b;
         this.branchesLoading = false;
         this.cdr.markForCheck();
@@ -973,7 +1341,7 @@ export class ReportsComponent implements OnInit {
   /** Parse component ID strings into structured objects */
   parseComponents(ids: string[]): ParsedComponent[] {
     if (!ids?.length) return [];
-    return ids.map(id => {
+    return ids.map((id) => {
       // "component.frontend.core.app_module" -> container=frontend, package=core, name=app_module
       const parts = id.replace(/^component\./, '').split('.');
       const container = parts[0] || '';
@@ -981,7 +1349,7 @@ export class ReportsComponent implements OnInit {
       const pkg = parts.length > 2 ? parts.slice(1, -1).join('.') : '';
       return {
         id,
-        name: name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        name: name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
         container,
         package: pkg,
       };
@@ -999,8 +1367,10 @@ export class ReportsComponent implements OnInit {
     // Convert escaped newlines to <br> for plain text sections
     let html = text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
     // Wrap comment blocks for visual separation
-    html = html.replace(/\[Comment (\d+)\]/g,
-      '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--cg-gray-200)"><strong style="color:var(--cg-blue)">Comment $1</strong></div>');
+    html = html.replace(
+      /\[Comment (\d+)\]/g,
+      '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--cg-gray-200)"><strong style="color:var(--cg-blue)">Comment $1</strong></div>',
+    );
     // Clean up JIRA user references
     html = html.replace(/<a[^>]*class="user-hover"[^>]*>([^<]*)<\/a>/g, '<strong>$1</strong>');
     // Remove image emoticons
@@ -1040,7 +1410,7 @@ export class ReportsComponent implements OnInit {
   }
 
   parseDiffLines(diff: string): DiffLine[] {
-    return diff.split('\n').map(line => {
+    return diff.split('\n').map((line) => {
       if (line.startsWith('+')) return { type: 'add' as const, content: line };
       if (line.startsWith('-')) return { type: 'del' as const, content: line };
       if (line.startsWith('@@')) return { type: 'info' as const, content: line };
@@ -1051,10 +1421,22 @@ export class ReportsComponent implements OnInit {
   getLanguage(filePath: string): string {
     const ext = filePath.split('.').pop()?.toLowerCase() || '';
     const map: Record<string, string> = {
-      ts: 'TypeScript', js: 'JavaScript', java: 'Java', py: 'Python',
-      html: 'HTML', css: 'CSS', scss: 'SCSS', json: 'JSON',
-      xml: 'XML', yaml: 'YAML', yml: 'YAML', kt: 'Kotlin',
-      sql: 'SQL', sh: 'Shell', md: 'Markdown', gradle: 'Gradle',
+      ts: 'TypeScript',
+      js: 'JavaScript',
+      java: 'Java',
+      py: 'Python',
+      html: 'HTML',
+      css: 'CSS',
+      scss: 'SCSS',
+      json: 'JSON',
+      xml: 'XML',
+      yaml: 'YAML',
+      yml: 'YAML',
+      kt: 'Kotlin',
+      sql: 'SQL',
+      sh: 'Shell',
+      md: 'Markdown',
+      gradle: 'Gradle',
     };
     return map[ext] || ext.toUpperCase();
   }
@@ -1064,7 +1446,7 @@ export class ReportsComponent implements OnInit {
     this.api.deleteBranch(taskId).subscribe({
       next: () => {
         if (this.branches) {
-          this.branches.branches = this.branches.branches.filter(b => b.task_id !== taskId);
+          this.branches.branches = this.branches.branches.filter((b) => b.task_id !== taskId);
         }
         this.snackBar.open(`Branch codegen/${taskId} deleted`, 'OK', { duration: 3000 });
         this.cdr.markForCheck();

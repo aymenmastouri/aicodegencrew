@@ -12,7 +12,6 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -131,8 +130,7 @@ class GitRepoManager:
 
             if not self._username or not self._password:
                 raise RuntimeError(
-                    "Git credentials required but not provided. "
-                    "Cannot proceed with repository clone/update."
+                    "Git credentials required but not provided. Cannot proceed with repository clone/update."
                 )
 
     def _show_credential_dialog(self) -> tuple[str, str]:
@@ -157,9 +155,7 @@ class GitRepoManager:
 
         # Prompt for username
         username = simpledialog.askstring(
-            "Git Credentials",
-            f"Repository: {self.repo_name}\n\nEnter Git username:",
-            parent=root
+            "Git Credentials", f"Repository: {self.repo_name}\n\nEnter Git username:", parent=root
         )
 
         if not username:
@@ -168,10 +164,7 @@ class GitRepoManager:
 
         # Prompt for password
         password = simpledialog.askstring(
-            "Git Credentials",
-            f"Repository: {self.repo_name}\n\nEnter Git password/token:",
-            parent=root,
-            show="*"
+            "Git Credentials", f"Repository: {self.repo_name}\n\nEnter Git password/token:", parent=root, show="*"
         )
 
         root.destroy()
@@ -191,11 +184,7 @@ class GitRepoManager:
 
         parsed = urlparse(self.repo_url)
         # Rebuild with credentials
-        auth_url = (
-            f"{parsed.scheme}://"
-            f"{self._username}:{self._password}"
-            f"@{parsed.hostname}"
-        )
+        auth_url = f"{parsed.scheme}://{self._username}:{self._password}@{parsed.hostname}"
         if parsed.port:
             auth_url += f":{parsed.port}"
         auth_url += parsed.path
@@ -277,11 +266,11 @@ class GitRepoManager:
 
         Sets GIT_TERMINAL_PROMPT=0 to prevent hanging on auth prompts.
         """
-        cmd = ["git"] + args
+        cmd = ["git", *args]
         env_extra = {"GIT_TERMINAL_PROMPT": "0"}
 
         # Build env: inherit current env + our overrides
-        import os
+
         env = {**os.environ, **env_extra}
 
         logger.debug(f"[GIT] Running: git {self._sanitize(' '.join(args))}")

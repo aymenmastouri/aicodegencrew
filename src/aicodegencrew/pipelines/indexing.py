@@ -5,17 +5,17 @@ This module provides backward compatibility.
 """
 
 from .indexing import (
-    IndexingPipeline,
-    ensure_repo_indexed,
     IndexingConfig,
     IndexingMetrics,
+    IndexingPipeline,
     IndexingState,
+    ensure_repo_indexed,
 )
 
 __all__ = [
-    "IndexingPipeline",
-    "ensure_repo_indexed",
     "IndexingConfig",
     "IndexingMetrics",
+    "IndexingPipeline",
     "IndexingState",
+    "ensure_repo_indexed",
 ]

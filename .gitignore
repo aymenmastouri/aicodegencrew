@@ -72,6 +72,9 @@ htmlcov/
 .tox/
 .nox/
 coverage.xml
+test-results/
+coverage/
+playwright-report/
 *.cover
 *.py,cover
 .hypothesis/

@@ -40,18 +40,19 @@ warnings.filterwarnings("ignore", message=".*Pydantic.*")
 warnings.filterwarnings("ignore", message=".*LangChain.*")
 
 from dotenv import load_dotenv
+
 # load_dotenv moved into main() to support --env flag
-
 from .shared.utils.logger import logger
-
 
 # =============================================================================
 # Configuration
 # =============================================================================
 
+
 @dataclass(frozen=True)
 class Config:
     """Immutable CLI configuration."""
+
     repo_path: Path
     index_mode: str
     config_path: str | None
@@ -64,7 +65,7 @@ class Config:
     task_id: str | None = None
 
     @classmethod
-    def from_env(cls, **overrides) -> "Config":
+    def from_env(cls, **overrides) -> Config:
         """Create config from environment with optional overrides."""
         repo = overrides.get("repo_path") or os.getenv("PROJECT_PATH") or os.getenv("REPO_PATH", ".")
         mode = overrides.get("index_mode") or os.getenv("INDEX_MODE", "auto")
@@ -101,22 +102,23 @@ class Config:
 # Logging Setup
 # =============================================================================
 
+
 def setup_logging() -> None:
     """Configure logging for CrewAI and dependencies."""
     log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-    
+
     logging.getLogger().setLevel(getattr(logging, log_level))
-    
+
     # Quiet noisy loggers
     for noisy in ("httpx", "httpcore", "chromadb", "openai"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
     for very_noisy in ("litellm", "LiteLLM"):
         logging.getLogger(very_noisy).setLevel(logging.ERROR)
-    
+
     # Keep our logs visible
     logging.getLogger("crewai").setLevel(logging.INFO)
     logging.getLogger("aicodegencrew").setLevel(getattr(logging, log_level))
-    
+
     logger.info(f"[CONFIG] LOG_LEVEL = {log_level}")
 
 
@@ -124,15 +126,17 @@ def setup_logging() -> None:
 # Knowledge Directory Management
 # =============================================================================
 
+
 def clean_knowledge(phase: str = "all") -> None:
     """Clean knowledge directory before running a phase."""
     from .shared.utils.logger import OUTPUT_BASE_DIR
+
     knowledge_dir = OUTPUT_BASE_DIR / "knowledge"
     if not knowledge_dir.exists():
         return
-    
+
     cleaned: list[str] = []
-    
+
     # Phase 1: Architecture
     if phase in ("all", "phase1"):
         arch_dir = knowledge_dir / "architecture"
@@ -149,24 +153,24 @@ def clean_knowledge(phase: str = "all") -> None:
                 if sub_path.exists():
                     shutil.rmtree(sub_path)
                     cleaned.append(str(sub_path))
-    
+
     # Phase 2: Analysis
     if phase in ("all", "phase2"):
         analysis_dir = knowledge_dir / "analysis"
         if analysis_dir.exists():
             shutil.rmtree(analysis_dir)
             cleaned.append(str(analysis_dir))
-    
+
     # Phase 3: Development
     if phase in ("all", "phase3"):
         dev_dir = knowledge_dir / "development"
         if dev_dir.exists():
             shutil.rmtree(dev_dir)
             cleaned.append(str(dev_dir))
-    
+
     if cleaned:
         logger.info(f"[CLEAN] Removed {len(cleaned)} items")
-    
+
     # Recreate structure
     (knowledge_dir / "architecture" / "quality").mkdir(parents=True, exist_ok=True)
     (knowledge_dir / "analysis").mkdir(parents=True, exist_ok=True)
@@ -176,6 +180,7 @@ def clean_knowledge(phase: str = "all") -> None:
 # =============================================================================
 # Git Repository Resolution
 # =============================================================================
+
 
 def _resolve_repo_path(config: Config) -> Path:
     """Resolve the effective repository path.
@@ -199,33 +204,34 @@ def _resolve_repo_path(config: Config) -> Path:
 # Commands
 # =============================================================================
 
+
 def cmd_list(config: Config) -> int:
     """List all available phases."""
     from .orchestrator import SDLCOrchestrator
-    
+
     orchestrator = SDLCOrchestrator(config_path=config.config_path)
-    
+
     print("\n" + "=" * 60)
     print("Available SDLC Phases")
     print("=" * 60)
     print(f"\n[CONFIG] INDEX_MODE = {config.index_mode}\n")
-    
+
     phases_config = orchestrator.config.get("phases", {})
     for phase_id, phase_cfg in sorted(phases_config.items(), key=lambda x: x[1].get("order", 999)):
         enabled = "[ON]" if phase_cfg.get("enabled", False) else "[OFF]"
         required = " (REQUIRED)" if phase_cfg.get("required", False) else ""
         name = phase_cfg.get("name", phase_id)
         order = phase_cfg.get("order", "?")
-        
+
         print(f"{enabled} Phase {order}: {name}{required}")
         print(f"       ID: {phase_id}")
-    
+
     print("\n" + "=" * 60)
     print("\nPresets:")
     for preset_name in orchestrator.config.get("presets", {}):
         print(f"  --preset {preset_name}")
     print()
-    
+
     return 0
 
 
@@ -272,7 +278,7 @@ def cmd_index(config: Config) -> int:
 
 
 def _resolve_phases_to_run(
-    orchestrator: "SDLCOrchestrator",
+    orchestrator: SDLCOrchestrator,
     preset: str | None,
     phases: list[str] | None,
 ) -> set[str]:
@@ -287,8 +293,7 @@ def _resolve_phases_to_run(
         unknown = set(phases) - known_phases
         if unknown:
             raise ValueError(
-                f"Unknown phase(s): {', '.join(sorted(unknown))}. "
-                f"Valid phases: {', '.join(sorted(known_phases))}"
+                f"Unknown phase(s): {', '.join(sorted(unknown))}. Valid phases: {', '.join(sorted(known_phases))}"
             )
         return set(phases)
 
@@ -297,10 +302,7 @@ def _resolve_phases_to_run(
         preset_phases = orchestrator.get_preset_phases(preset)
         if not preset_phases:
             known_presets = list(orchestrator.config.get("presets", {}).keys())
-            raise ValueError(
-                f"Unknown preset: '{preset}'. "
-                f"Valid presets: {', '.join(known_presets)}"
-            )
+            raise ValueError(f"Unknown preset: '{preset}'. Valid presets: {', '.join(known_presets)}")
         return set(preset_phases)
 
     # Default: all enabled phases
@@ -308,7 +310,7 @@ def _resolve_phases_to_run(
 
 
 def _export_run_report(
-    result: "PipelineResult",
+    result: PipelineResult,
     config: Config,
     planned_phases: set[str],
 ) -> Path | None:
@@ -318,7 +320,8 @@ def _export_run_report(
     during the pipeline run — visible alongside the generated artifacts.
     """
     import json
-    from .shared.utils.logger import RUN_ID, METRICS_LOG, CURRENT_LOG, OUTPUT_BASE_DIR
+
+    from .shared.utils.logger import CURRENT_LOG, METRICS_LOG, RUN_ID
 
     base = config.output_base.resolve()
     report_dir = base / "knowledge"
@@ -392,6 +395,7 @@ def _export_architecture_docs():
     Default: <output_base>/architecture-docs. Override with DOCS_OUTPUT_DIR in .env.
     """
     import shutil
+
     from .shared.utils.logger import OUTPUT_BASE_DIR
 
     docs_dir = os.getenv("DOCS_OUTPUT_DIR", str(OUTPUT_BASE_DIR / "architecture-docs"))
@@ -417,6 +421,7 @@ def _export_architecture_docs():
 
         # Convert to additional formats (Confluence, AsciiDoc, HTML)
         from .shared.utils.confluence_converter import DocumentConverter
+
         converter = DocumentConverter()
         formats = ["confluence", "adoc", "html"]
         lang = os.getenv("ARC42_LANGUAGE", "en")
@@ -428,9 +433,9 @@ def _export_architecture_docs():
 
 def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None = None) -> int:
     """Run SDLC pipeline."""
+    from .crews import ArchitectureSynthesisCrew
     from .orchestrator import SDLCOrchestrator
-    from .pipelines import IndexingPipeline, ArchitectureFactsPipeline
-    from .crews import ArchitectureAnalysisCrew, ArchitectureSynthesisCrew
+    from .pipelines import ArchitectureFactsPipeline, IndexingPipeline
     from .shared.utils.logger import configure_output_dir
 
     # Set output base directory BEFORE any file I/O
@@ -486,9 +491,8 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # --- Phase 2: Architecture Analysis ---
     if "phase2_architecture_analysis" in planned_phases:
         from .crews.architecture_analysis import MapReduceAnalysisCrew
-        analysis_crew = MapReduceAnalysisCrew(
-            facts_path=str(arch_dir / "architecture_facts.json")
-        )
+
+        analysis_crew = MapReduceAnalysisCrew(facts_path=str(arch_dir / "architecture_facts.json"))
         orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
 
     # --- Phase 3: Architecture Synthesis ---
@@ -496,9 +500,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         logger.info("[CONFIG] SKIP_SYNTHESIS=true -> Skipping Phase 3")
         orchestrator.config["phases"]["phase3_architecture_synthesis"]["enabled"] = False
     elif "phase3_architecture_synthesis" in planned_phases:
-        synthesis_crew = ArchitectureSynthesisCrew(
-            facts_path=str(arch_dir / "architecture_facts.json")
-        )
+        synthesis_crew = ArchitectureSynthesisCrew(facts_path=str(arch_dir / "architecture_facts.json"))
         orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
 
     # --- Phase 4: Development Planning (Hybrid Pipeline) ---
@@ -509,8 +511,12 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         # Get input directory from .env (REQUIRED - no hardcoded default)
         input_dir = os.getenv("TASK_INPUT_DIR", "")
         if not input_dir:
-            logger.error("[Phase4] TASK_INPUT_DIR not set in .env! Set it to the folder containing your JIRA XML files.")
-            raise ValueError("TASK_INPUT_DIR not configured. Set it in your .env file (e.g. TASK_INPUT_DIR=C:\\projects\\inputs)")
+            logger.error(
+                "[Phase4] TASK_INPUT_DIR not set in .env! Set it to the folder containing your JIRA XML files."
+            )
+            raise ValueError(
+                "TASK_INPUT_DIR not configured. Set it in your .env file (e.g. TASK_INPUT_DIR=C:\\projects\\inputs)"
+            )
 
         input_path = Path(input_dir)
         if not input_path.exists():
@@ -578,7 +584,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         _export_run_report(result, config, planned_phases)
 
         if result.status == "success":
-            logger.info(f"\n[OK] Pipeline successful!")
+            logger.info("\n[OK] Pipeline successful!")
             logger.info(f"Time: {result.total_duration}")
 
             # Export Phase 3 docs to external dir if configured
@@ -602,6 +608,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 # Argument Parsing
 # =============================================================================
 
+
 def create_parser() -> argparse.ArgumentParser:
     """Create CLI argument parser with subcommands."""
     parser = argparse.ArgumentParser(
@@ -609,14 +616,15 @@ def create_parser() -> argparse.ArgumentParser:
         description="AI Code Generation Crew - SDLC Automation",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    
+
     parser.add_argument(
-        "--env", dest="env_file",
+        "--env",
+        dest="env_file",
         help="Path to .env configuration file (default: .env in current directory)",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # --- run command ---
     run_parser = subparsers.add_parser("run", help="Run SDLC pipeline")
     run_parser.add_argument(
@@ -624,7 +632,8 @@ def create_parser() -> argparse.ArgumentParser:
         help="Run a preset combination of phases (see 'list' command for available presets)",
     )
     run_parser.add_argument(
-        "--phases", nargs="+",
+        "--phases",
+        nargs="+",
         help="Explicit list of phases to run",
     )
     run_parser.add_argument(
@@ -637,11 +646,13 @@ def create_parser() -> argparse.ArgumentParser:
         help="Override INDEX_MODE from .env",
     )
     run_parser.add_argument(
-        "--clean", action="store_true",
+        "--clean",
+        action="store_true",
         help="Clean knowledge directories before running",
     )
     run_parser.add_argument(
-        "--no-clean", action="store_true",
+        "--no-clean",
+        action="store_true",
         help="Skip auto-cleaning",
     )
     run_parser.add_argument(
@@ -660,16 +671,21 @@ def create_parser() -> argparse.ArgumentParser:
     # --- index command ---
     index_parser = subparsers.add_parser("index", help="Index repository")
     index_parser.add_argument(
-        "--mode", "-m",
+        "--mode",
+        "-m",
         choices=["off", "auto", "force", "smart"],
         help="Indexing mode (overrides INDEX_MODE in .env)",
     )
     index_parser.add_argument(
-        "-f", "--force", action="store_true",
+        "-f",
+        "--force",
+        action="store_true",
         help="Force re-index (same as --mode force)",
     )
     index_parser.add_argument(
-        "-s", "--smart", action="store_true",
+        "-s",
+        "--smart",
+        action="store_true",
         help="Smart incremental (same as --mode smart)",
     )
     index_parser.add_argument(
@@ -694,7 +710,8 @@ def create_parser() -> argparse.ArgumentParser:
 
     # --- plan command (shortcut for run --preset planning_only) ---
     plan_parser = subparsers.add_parser(
-        "plan", help="Run development planning (shortcut for: run --preset planning_only)",
+        "plan",
+        help="Run development planning (shortcut for: run --preset planning_only)",
     )
     plan_parser.add_argument(
         "--repo-path",
@@ -712,7 +729,8 @@ def create_parser() -> argparse.ArgumentParser:
 
     # --- codegen command (shortcut for run --preset codegen_only) ---
     codegen_parser = subparsers.add_parser(
-        "codegen", help="Run code generation (shortcut for: run --preset codegen_only)",
+        "codegen",
+        help="Run code generation (shortcut for: run --preset codegen_only)",
     )
     codegen_parser.add_argument(
         "--repo-path",
@@ -723,7 +741,8 @@ def create_parser() -> argparse.ArgumentParser:
         help="Process a single task ID (skip all others)",
     )
     codegen_parser.add_argument(
-        "--dry-run", action="store_true",
+        "--dry-run",
+        action="store_true",
         help="Preview mode: run stages 1-4 but skip file writes and git operations",
     )
     codegen_parser.add_argument(
@@ -742,6 +761,7 @@ def create_parser() -> argparse.ArgumentParser:
 # =============================================================================
 # Main Entry Point
 # =============================================================================
+
 
 def main(argv: list[str] | None = None) -> int:
     """Main CLI entry point."""
@@ -766,12 +786,12 @@ def main(argv: list[str] | None = None) -> int:
     if not args.command:
         parser.print_help()
         return 0
-    
+
     # --- list ---
     if args.command == "list":
         config = Config.from_env(config_path=getattr(args, "config", None))
         return cmd_list(config)
-    
+
     # --- index ---
     if args.command == "index":
         # Determine mode: CLI flags > --mode > .env

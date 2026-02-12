@@ -8,10 +8,9 @@ Duration: 2-5s (file I/O only, no LLM)
 """
 
 from pathlib import Path
-from typing import Optional
 
-from ..schemas import CodegenPlanInput, ComponentTarget, FileContext, CollectedContext
 from ....shared.utils.logger import setup_logger
+from ..schemas import CodegenPlanInput, CollectedContext, ComponentTarget, FileContext
 
 logger = setup_logger(__name__)
 
@@ -48,10 +47,7 @@ class ContextCollectorStage:
         Returns:
             CollectedContext with file contents and patterns.
         """
-        logger.info(
-            f"[Stage2] Collecting context for {len(plan.affected_components)} components "
-            f"from {self.repo_path}"
-        )
+        logger.info(f"[Stage2] Collecting context for {len(plan.affected_components)} components from {self.repo_path}")
 
         file_contexts = []
         skipped = 0
@@ -69,16 +65,11 @@ class ContextCollectorStage:
             skipped_files=skipped,
         )
 
-        logger.info(
-            f"[Stage2] Collected {result.total_files} files, "
-            f"skipped {result.skipped_files}"
-        )
+        logger.info(f"[Stage2] Collected {result.total_files} files, skipped {result.skipped_files}")
 
         return result
 
-    def _collect_file_context(
-        self, comp: ComponentTarget, plan: CodegenPlanInput
-    ) -> Optional[FileContext]:
+    def _collect_file_context(self, comp: ComponentTarget, plan: CodegenPlanInput) -> FileContext | None:
         """Collect context for a single component file."""
         file_path = self._resolve_file_path(comp.file_path)
 
@@ -104,10 +95,7 @@ class ContextCollectorStage:
 
         # Truncate if too large
         if len(content) > MAX_FILE_CHARS:
-            logger.info(
-                f"[Stage2] Truncating {file_path.name}: "
-                f"{len(content)} -> {MAX_FILE_CHARS} chars"
-            )
+            logger.info(f"[Stage2] Truncating {file_path.name}: {len(content)} -> {MAX_FILE_CHARS} chars")
             content = content[:MAX_FILE_CHARS] + "\n// ... (truncated)"
 
         return FileContext(
@@ -119,7 +107,7 @@ class ContextCollectorStage:
             component=comp,
         )
 
-    def _resolve_file_path(self, file_path: str) -> Optional[Path]:
+    def _resolve_file_path(self, file_path: str) -> Path | None:
         """Resolve a file path to an absolute path in the target repo."""
         if not file_path:
             return None
@@ -169,7 +157,7 @@ class ContextCollectorStage:
         return EXT_TO_LANG.get(ext, "other")
 
     @staticmethod
-    def _read_file(path: Path) -> Optional[str]:
+    def _read_file(path: Path) -> str | None:
         """Read file content safely."""
         try:
             return path.read_text(encoding="utf-8")
@@ -182,36 +170,25 @@ class ContextCollectorStage:
             return None
 
     @staticmethod
-    def _extract_related_patterns(
-        comp: ComponentTarget, plan: CodegenPlanInput
-    ) -> list[str]:
+    def _extract_related_patterns(comp: ComponentTarget, plan: CodegenPlanInput) -> list[str]:
         """Extract patterns relevant to this component."""
         patterns = []
 
         # Security patterns
         for sec in plan.patterns.get("security_considerations", []):
             if isinstance(sec, dict):
-                patterns.append(
-                    f"[security] {sec.get('security_type', '')}: "
-                    f"{sec.get('recommendation', '')}"
-                )
+                patterns.append(f"[security] {sec.get('security_type', '')}: {sec.get('recommendation', '')}")
 
         # Validation patterns
         for val in plan.patterns.get("validation_strategy", []):
             if isinstance(val, dict):
                 target = val.get("target_class", "")
                 if comp.name.lower() in target.lower() or not target:
-                    patterns.append(
-                        f"[validation] {val.get('validation_type', '')}: "
-                        f"{val.get('recommendation', '')}"
-                    )
+                    patterns.append(f"[validation] {val.get('validation_type', '')}: {val.get('recommendation', '')}")
 
         # Error handling patterns
         for err in plan.patterns.get("error_handling", []):
             if isinstance(err, dict):
-                patterns.append(
-                    f"[error] {err.get('exception_class', '')}: "
-                    f"{err.get('recommendation', '')}"
-                )
+                patterns.append(f"[error] {err.get('exception_class', '')}: {err.get('recommendation', '')}")
 
         return patterns[:10]

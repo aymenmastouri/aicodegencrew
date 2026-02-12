@@ -8,16 +8,16 @@ Database Specialist Collectors
 - MigrationCollector: Liquibase/Flyway migrations
 """
 
+from .migration_collector import MigrationCollector
 from .oracle_table_collector import OracleTableCollector
+from .procedure_collector import OracleProcedureCollector
 from .schema_collector import OracleSchemaCollector
 from .view_collector import OracleViewCollector
-from .procedure_collector import OracleProcedureCollector
-from .migration_collector import MigrationCollector
 
 __all__ = [
-    "OracleTableCollector",
-    "OracleSchemaCollector",
-    "OracleViewCollector",
-    "OracleProcedureCollector",
     "MigrationCollector",
+    "OracleProcedureCollector",
+    "OracleSchemaCollector",
+    "OracleTableCollector",
+    "OracleViewCollector",
 ]

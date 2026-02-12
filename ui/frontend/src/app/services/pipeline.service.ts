@@ -59,7 +59,10 @@ export interface SSEEvent {
 export class PipelineService {
   private base = '/api';
 
-  constructor(private http: HttpClient, private zone: NgZone) {}
+  constructor(
+    private http: HttpClient,
+    private zone: NgZone,
+  ) {}
 
   // Pipeline execution
   startPipeline(request: RunRequest): Observable<RunResponse> {
@@ -67,9 +70,7 @@ export class PipelineService {
   }
 
   cancelPipeline(): Observable<{ success: boolean; message: string }> {
-    return this.http.post<{ success: boolean; message: string }>(
-      `${this.base}/pipeline/cancel`, {}
-    );
+    return this.http.post<{ success: boolean; message: string }>(`${this.base}/pipeline/cancel`, {});
   }
 
   getStatus(): Observable<ExecutionStatus> {
@@ -82,7 +83,7 @@ export class PipelineService {
 
   // SSE stream
   connectSSE(): Observable<SSEEvent> {
-    return new Observable<SSEEvent>(observer => {
+    return new Observable<SSEEvent>((observer) => {
       const eventSource = new EventSource(`${this.base}/pipeline/stream`);
 
       eventSource.onmessage = (event) => {

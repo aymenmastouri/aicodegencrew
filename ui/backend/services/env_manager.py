@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Optional
 
 from ..config import settings
 from ..schemas import EnvVariable
@@ -32,7 +31,7 @@ def _classify_group(key: str) -> str:
     return "General"
 
 
-def read_env(path: Optional[Path] = None) -> dict[str, str]:
+def read_env(path: Path | None = None) -> dict[str, str]:
     """Parse .env file into key-value dict, ignoring comments and blank lines."""
     env_path = path or settings.env_file
     result: dict[str, str] = {}
@@ -40,7 +39,7 @@ def read_env(path: Optional[Path] = None) -> dict[str, str]:
     if not env_path.exists():
         return result
 
-    with open(env_path, "r", encoding="utf-8") as f:
+    with open(env_path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             # Skip empty, BOM, comments
@@ -59,13 +58,13 @@ def read_env(path: Optional[Path] = None) -> dict[str, str]:
     return result
 
 
-def write_env(values: dict[str, str], path: Optional[Path] = None) -> None:
+def write_env(values: dict[str, str], path: Path | None = None) -> None:
     """Update .env file preserving comments and order. Only changes existing keys or appends new ones."""
     env_path = path or settings.env_file
     lines: list[str] = []
 
     if env_path.exists():
-        with open(env_path, "r", encoding="utf-8") as f:
+        with open(env_path, encoding="utf-8") as f:
             lines = f.readlines()
 
     applied: set[str] = set()
@@ -121,7 +120,7 @@ def _parse_example_file() -> list[tuple[str, str]]:
     variables: list[tuple[str, str]] = []
     pending_comments: list[str] = []
 
-    with open(example_path, "r", encoding="utf-8-sig") as f:
+    with open(example_path, encoding="utf-8-sig") as f:
         for line in f:
             stripped = line.strip()
 

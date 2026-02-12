@@ -5,29 +5,29 @@ This module provides backward compatibility.
 """
 
 from ..indexing import (
-    IndexingPipeline,
-    ensure_repo_indexed,
+    ChromaIndexTool,
+    ChunkerTool,
     IndexingConfig,
     IndexingMetrics,
+    IndexingPipeline,
+    OllamaEmbeddingsTool,
     RepoDiscoveryTool,
     RepoReaderTool,
-    ChunkerTool,
-    OllamaEmbeddingsTool,
-    ChromaIndexTool,
+    ensure_repo_indexed,
 )
 
 # Alias
 EmbeddingsTool = OllamaEmbeddingsTool
 
 __all__ = [
-    "IndexingPipeline",
-    "ensure_repo_indexed",
+    "ChromaIndexTool",
+    "ChunkerTool",
+    "EmbeddingsTool",
     "IndexingConfig",
     "IndexingMetrics",
+    "IndexingPipeline",
+    "OllamaEmbeddingsTool",
     "RepoDiscoveryTool",
     "RepoReaderTool",
-    "ChunkerTool",
-    "OllamaEmbeddingsTool",
-    "EmbeddingsTool",
-    "ChromaIndexTool",
+    "ensure_repo_indexed",
 ]

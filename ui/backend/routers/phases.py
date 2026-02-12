@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter
 
-from ..services.phase_runner import get_phases, get_presets, get_pipeline_status
-from ..schemas import PhaseInfo, PresetInfo, PipelineStatus
+from ..schemas import PhaseInfo, PipelineStatus, PresetInfo
+from ..services.phase_runner import get_phases, get_pipeline_status, get_presets
 
 router = APIRouter(prefix="/api/phases", tags=["phases"])
 

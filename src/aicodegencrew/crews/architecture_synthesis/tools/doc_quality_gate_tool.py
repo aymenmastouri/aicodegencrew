@@ -11,9 +11,10 @@ This tool enforces:
 import json
 import re
 from pathlib import Path
-from typing import Type, Dict, List, Any, Optional, Set
-from pydantic import BaseModel, Field
+from typing import Any
+
 from crewai.tools import BaseTool
+from pydantic import BaseModel, Field
 
 from ....shared.utils.logger import setup_logger
 
@@ -22,6 +23,7 @@ logger = setup_logger(__name__)
 
 class DocQualityGateInput(BaseModel):
     """Input schema for DocQualityGateTool."""
+
     docs_dir: str = Field(..., description="Directory containing generated docs (e.g., knowledge/architecture/arc42)")
     facts_path: str = Field(..., description="Path to architecture_facts.json")
     output_path: str = Field(..., description="Path to save quality report")
@@ -45,7 +47,7 @@ class DocQualityGateTool(BaseTool):
         "Validates generated architecture documentation against facts. "
         "Checks evidence coverage, detects invented claims, enforces evidence-first compliance."
     )
-    args_schema: Type[BaseModel] = DocQualityGateInput
+    args_schema: type[BaseModel] = DocQualityGateInput
 
     # Banned phrases that indicate facts were not consulted
     BANNED_PHRASES = [
@@ -96,7 +98,7 @@ class DocQualityGateTool(BaseTool):
                 return json.dumps({"error": f"Facts file not found: {facts_path}", "status": "FAIL"})
 
             # Load facts
-            with open(facts_file, 'r', encoding='utf-8') as f:
+            with open(facts_file, encoding="utf-8") as f:
                 facts = json.load(f)
 
             # Run checks
@@ -133,7 +135,7 @@ class DocQualityGateTool(BaseTool):
             # Save report
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(report)
 
             logger.info(f"Quality gate {overall_status}: {passed}/{len(checks)} checks passed")
@@ -153,12 +155,7 @@ class DocQualityGateTool(BaseTool):
             logger.error(f"Quality gate error: {e}")
             return json.dumps({"error": str(e), "status": "ERROR"})
 
-    def _check_evidence_coverage(
-        self,
-        docs_path: Path,
-        facts: Dict,
-        min_coverage: float
-    ) -> Dict[str, Any]:
+    def _check_evidence_coverage(self, docs_path: Path, facts: dict, min_coverage: float) -> dict[str, Any]:
         """Check evidence ID coverage in documentation."""
         # Extract all evidence IDs from facts
         available_evidence = set()
@@ -177,13 +174,13 @@ class DocQualityGateTool(BaseTool):
 
         # Extract evidence IDs referenced in docs
         referenced_evidence = set()
-        evidence_pattern = re.compile(r'\[?ev_[a-z_]+_\d+\]?')
+        evidence_pattern = re.compile(r"\[?ev_[a-z_]+_\d+\]?")
 
         for doc_file in docs_path.rglob("*.md"):
-            content = doc_file.read_text(encoding='utf-8')
+            content = doc_file.read_text(encoding="utf-8")
             matches = evidence_pattern.findall(content)
             for match in matches:
-                ev_id = match.strip('[]')
+                ev_id = match.strip("[]")
                 referenced_evidence.add(ev_id)
 
         # Calculate coverage
@@ -201,7 +198,7 @@ class DocQualityGateTool(BaseTool):
                     "available": len(available_evidence),
                     "referenced": len(referenced_evidence),
                     "coverage": coverage,
-                }
+                },
             }
         else:
             return {
@@ -212,15 +209,15 @@ class DocQualityGateTool(BaseTool):
                     "available": len(available_evidence),
                     "referenced": len(referenced_evidence),
                     "coverage": coverage,
-                }
+                },
             }
 
-    def _check_banned_phrases(self, docs_path: Path) -> Dict[str, Any]:
+    def _check_banned_phrases(self, docs_path: Path) -> dict[str, Any]:
         """Check for banned phrases that indicate facts not consulted."""
         violations = []
 
         for doc_file in docs_path.rglob("*.md"):
-            content = doc_file.read_text(encoding='utf-8')
+            content = doc_file.read_text(encoding="utf-8")
 
             for phrase in self.BANNED_PHRASES:
                 if phrase.lower() in content.lower():
@@ -241,7 +238,7 @@ class DocQualityGateTool(BaseTool):
                 "message": "No banned phrases found",
             }
 
-    def _check_invented_facts(self, docs_path: Path, facts: Dict) -> Dict[str, Any]:
+    def _check_invented_facts(self, docs_path: Path, facts: dict) -> dict[str, Any]:
         """Check for component/relation claims not present in facts."""
         # Build set of known component names and IDs
         known_components = set()
@@ -250,12 +247,14 @@ class DocQualityGateTool(BaseTool):
             known_components.add(comp.get("id", "").lower())
 
         # Pattern to detect component references (CamelCase class names)
-        component_pattern = re.compile(r'\b([A-Z][a-z]+(?:[A-Z][a-z]+)+(?:Controller|Service|Repository|Impl|Entity)?)\b')
+        component_pattern = re.compile(
+            r"\b([A-Z][a-z]+(?:[A-Z][a-z]+)+(?:Controller|Service|Repository|Impl|Entity)?)\b"
+        )
 
         violations = []
 
         for doc_file in docs_path.rglob("*.md"):
-            content = doc_file.read_text(encoding='utf-8')
+            content = doc_file.read_text(encoding="utf-8")
 
             # Find potential component references
             matches = component_pattern.findall(content)
@@ -279,7 +278,7 @@ class DocQualityGateTool(BaseTool):
                 "message": "No significant invented facts detected",
             }
 
-    def _check_required_chapters(self, docs_path: Path) -> Dict[str, Any]:
+    def _check_required_chapters(self, docs_path: Path) -> dict[str, Any]:
         """Check that required arc42 chapters exist."""
         required_files = [
             "01-introduction.md",
@@ -316,16 +315,16 @@ class DocQualityGateTool(BaseTool):
                 "message": "All required chapters present",
             }
 
-    def _check_generic_content(self, docs_path: Path) -> Dict[str, Any]:
+    def _check_generic_content(self, docs_path: Path) -> dict[str, Any]:
         """Check for excessive generic/filler content."""
         generic_count = 0
         total_sentences = 0
 
         for doc_file in docs_path.rglob("*.md"):
-            content = doc_file.read_text(encoding='utf-8')
+            content = doc_file.read_text(encoding="utf-8")
 
             # Count sentences (approximate)
-            sentences = re.split(r'[.!?]+', content)
+            sentences = re.split(r"[.!?]+", content)
             total_sentences += len(sentences)
 
             # Count generic phrases
@@ -346,7 +345,7 @@ class DocQualityGateTool(BaseTool):
                     "generic_phrases": generic_count,
                     "total_sentences": total_sentences,
                     "ratio": generic_ratio,
-                }
+                },
             }
         else:
             return {
@@ -357,7 +356,7 @@ class DocQualityGateTool(BaseTool):
 
     def _generate_report(
         self,
-        checks: List[Dict[str, Any]],
+        checks: list[dict[str, Any]],
         overall_status: str,
         passed: int,
         failed: int,

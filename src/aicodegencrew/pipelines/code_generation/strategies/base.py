@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from ..schemas import FileContext, CodegenPlanInput
+from ..schemas import CodegenPlanInput, FileContext
 
 
 class BaseStrategy(ABC):
@@ -63,7 +63,7 @@ class BaseStrategy(ABC):
         """Format implementation steps for prompt."""
         if not steps:
             return "  (none)"
-        return "\n".join(f"  {i+1}. {s}" for i, s in enumerate(steps))
+        return "\n".join(f"  {i + 1}. {s}" for i, s in enumerate(steps))
 
     @staticmethod
     def _format_patterns(patterns: list) -> str:

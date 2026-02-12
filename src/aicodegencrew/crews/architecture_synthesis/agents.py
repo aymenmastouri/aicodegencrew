@@ -9,14 +9,15 @@
 # - Output should be production-ready documentation
 # =============================================================================
 
-from crewai import Agent, LLM
+from crewai import LLM, Agent
+
 from .tools import DocWriterTool, DrawioDiagramTool
 
 
 def build_c4_synthesizer(llm: LLM, tools=None) -> Agent:
     """
     Build the C4 Model Synthesizer agent.
-    
+
     Role: Senior Software Architect specializing in C4 Model visualization.
     """
     # Add default tools if not provided
@@ -25,11 +26,11 @@ def build_c4_synthesizer(llm: LLM, tools=None) -> Agent:
     else:
         # Ensure our tools are included
         tool_names = {t.name for t in tools}
-        if 'doc_writer' not in tool_names:
+        if "doc_writer" not in tool_names:
             tools.append(DocWriterTool())
-        if 'create_drawio_diagram' not in tool_names:
+        if "create_drawio_diagram" not in tool_names:
             tools.append(DrawioDiagramTool())
-    
+
     return Agent(
         role="Senior Software Architect - C4 Modeling Expert",
         goal=(
@@ -104,7 +105,7 @@ def build_c4_synthesizer(llm: LLM, tools=None) -> Agent:
 def build_arc42_synthesizer(llm: LLM, tools=None) -> Agent:
     """
     Build the arc42 Documentation Synthesizer agent.
-    
+
     Role: Senior Software Architect performing Reverse Engineering & Top-Down Analysis.
     """
     # Add default tools if not provided
@@ -113,11 +114,11 @@ def build_arc42_synthesizer(llm: LLM, tools=None) -> Agent:
     else:
         # Ensure our tools are included
         tool_names = {t.name for t in tools}
-        if 'doc_writer' not in tool_names:
+        if "doc_writer" not in tool_names:
             tools.append(DocWriterTool())
-        if 'create_drawio_diagram' not in tool_names:
+        if "create_drawio_diagram" not in tool_names:
             tools.append(DrawioDiagramTool())
-    
+
     return Agent(
         role="Senior Software Architect",
         goal=(
@@ -195,7 +196,7 @@ def build_arc42_synthesizer(llm: LLM, tools=None) -> Agent:
 def build_synthesis_quality_gate(llm: LLM, tools=None) -> Agent:
     """
     Build the Synthesis Quality Gate agent.
-    
+
     Role: Ensure documentation meets professional standards.
     """
     # Quality gate only needs doc_writer
@@ -203,9 +204,9 @@ def build_synthesis_quality_gate(llm: LLM, tools=None) -> Agent:
         tools = [DocWriterTool()]
     else:
         tool_names = {t.name for t in tools}
-        if 'doc_writer' not in tool_names:
+        if "doc_writer" not in tool_names:
             tools.append(DocWriterTool())
-    
+
     return Agent(
         role="Synthesis Quality Assurance Expert",
         goal=(

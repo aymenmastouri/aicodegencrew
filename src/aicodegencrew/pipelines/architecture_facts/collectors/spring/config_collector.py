@@ -17,10 +17,9 @@ Output feeds -> infrastructure.json (config components)
 
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
-from ..base import DimensionCollector, CollectorOutput, RawComponent, RawInfraFact
 from .....shared.utils.logger import logger
+from ..base import CollectorOutput, DimensionCollector, RawComponent, RawInfraFact
 
 
 class SpringConfigCollector(DimensionCollector):
@@ -31,13 +30,13 @@ class SpringConfigCollector(DimensionCollector):
     DIMENSION = "spring_config"
 
     # Patterns
-    CONFIGURATION_PATTERN = re.compile(r'@Configuration')
-    BEAN_PATTERN = re.compile(r'@Bean')
-    CLASS_PATTERN = re.compile(r'^(?:public\s+)?class\s+([A-Z]\w*)', re.MULTILINE)
+    CONFIGURATION_PATTERN = re.compile(r"@Configuration")
+    BEAN_PATTERN = re.compile(r"@Bean")
+    CLASS_PATTERN = re.compile(r"^(?:public\s+)?class\s+([A-Z]\w*)", re.MULTILINE)
 
     # Profile patterns
     PROFILE_PATTERN = re.compile(r'@Profile\s*\(\s*["\']([^"\']+)["\']')
-    CONDITIONAL_PATTERN = re.compile(r'@Conditional\w+')
+    CONDITIONAL_PATTERN = re.compile(r"@Conditional\w+")
 
     # Config file search directories (relative to repo root)
     CONFIG_SEARCH_DIRS = [
@@ -54,62 +53,62 @@ class SpringConfigCollector(DimensionCollector):
     ]
 
     # Skip directories
-    SKIP_DIRS = {'node_modules', 'dist', 'build', 'target', '.git', 'bin', 'generated'}
-    
+    SKIP_DIRS = {"node_modules", "dist", "build", "target", ".git", "bin", "generated"}
+
     def __init__(self, repo_path: Path, container_id: str = "backend"):
         super().__init__(repo_path)
         self.container_id = container_id
-    
+
     def collect(self) -> CollectorOutput:
         """Collect Spring configuration facts."""
         self._log_start()
-        
+
         # Collect @Configuration classes
         self._collect_configuration_classes()
-        
+
         # Collect application.yml/properties
         self._collect_config_files()
-        
+
         # Collect profiles
         self._collect_profiles()
-        
+
         self._log_end()
         return self.output
-    
+
     def _collect_configuration_classes(self):
         """Collect @Configuration annotated classes (Java and Kotlin)."""
         # Collect Java and Kotlin files
         java_files = self._find_files("*.java")
         kotlin_files = self._find_files("*.kt")
         all_files = java_files + kotlin_files
-        
+
         for src_file in all_files:
             content = self._read_file_content(src_file)
-            
+
             if not self.CONFIGURATION_PATTERN.search(content):
                 continue
-            
+
             lines = self._read_file(src_file)
             rel_path = self._relative_path(src_file)
-            
+
             # Get class name
             class_match = self.CLASS_PATTERN.search(content)
             if not class_match:
                 continue
-            
+
             class_name = class_match.group(1)
             class_line = self._find_line_number(lines, f"class {class_name}")
-            
+
             # Count @Bean methods
             bean_count = len(self.BEAN_PATTERN.findall(content))
-            
+
             # Check for profile
             profile_match = self.PROFILE_PATTERN.search(content)
             profile = profile_match.group(1) if profile_match else None
-            
+
             # Check for conditionals
             has_conditionals = bool(self.CONDITIONAL_PATTERN.search(content))
-            
+
             config = RawComponent(
                 name=class_name,
                 stereotype="configuration",
@@ -118,22 +117,22 @@ class SpringConfigCollector(DimensionCollector):
                 file_path=rel_path,
                 layer_hint="infrastructure",
             )
-            
+
             config.metadata["bean_count"] = bean_count
             if profile:
                 config.metadata["profile"] = profile
             if has_conditionals:
                 config.metadata["conditional"] = True
-            
+
             config.add_evidence(
                 path=rel_path,
                 line_start=class_line - 1,
                 line_end=class_line + 5,
-                reason=f"@Configuration: {class_name} ({bean_count} beans)"
+                reason=f"@Configuration: {class_name} ({bean_count} beans)",
             )
-            
+
             self.output.add_fact(config)
-    
+
     def _collect_config_files(self):
         """Collect application.yml/properties files from ALL possible locations."""
         config_patterns = [
@@ -149,7 +148,7 @@ class SpringConfigCollector(DimensionCollector):
             "bootstrap-*.yaml",
         ]
 
-        found_files: Set[Path] = set()
+        found_files: set[Path] = set()
 
         # Strategy 1: Search in known config directories
         for config_dir in self.CONFIG_SEARCH_DIRS:
@@ -202,8 +201,20 @@ class SpringConfigCollector(DimensionCollector):
         environment = None
         path_parts = rel_path.replace("\\", "/").split("/")
         for part in path_parts:
-            if part.lower() in ('dev', 'test', 'stage', 'staging', 'prod', 'production',
-                                'local', 'docker', 'kubernetes', 'k8s', 'integration', 'qa'):
+            if part.lower() in (
+                "dev",
+                "test",
+                "stage",
+                "staging",
+                "prod",
+                "production",
+                "local",
+                "docker",
+                "kubernetes",
+                "k8s",
+                "integration",
+                "qa",
+            ):
                 environment = part.lower()
                 break
 
@@ -222,7 +233,7 @@ class SpringConfigCollector(DimensionCollector):
 
         # Extract some key properties
         content = self._read_file_content(config_file)
-        config.metadata["size_lines"] = content.count('\n')
+        config.metadata["size_lines"] = content.count("\n")
 
         # Look for common properties
         props_found = []
@@ -247,21 +258,28 @@ class SpringConfigCollector(DimensionCollector):
         config.add_evidence(
             path=rel_path,
             line_start=1,
-            line_end=min(20, content.count('\n')),
-            reason=f"Spring config: {config_file.name}" + (f" (env: {environment})" if environment else "") + (f" (profile: {profile})" if profile else "")
+            line_end=min(20, content.count("\n")),
+            reason=f"Spring config: {config_file.name}"
+            + (f" (env: {environment})" if environment else "")
+            + (f" (profile: {profile})" if profile else ""),
         )
 
         self.output.add_fact(config)
         logger.debug(f"[SpringConfigCollector] Processed: {rel_path}")
-    
+
     def _collect_profiles(self):
         """Collect Spring profiles from config files and annotations."""
-        profiles_found: Set[str] = set()
-        environments_found: Set[str] = set()
+        profiles_found: set[str] = set()
+        environments_found: set[str] = set()
 
         # From application-{profile}.yml files (recursive search)
-        for pattern in ["application-*.yml", "application-*.yaml", "application-*.properties",
-                        "bootstrap-*.yml", "bootstrap-*.yaml"]:
+        for pattern in [
+            "application-*.yml",
+            "application-*.yaml",
+            "application-*.properties",
+            "bootstrap-*.yml",
+            "bootstrap-*.yaml",
+        ]:
             for f in self.repo_path.rglob(pattern):
                 if self._should_skip_path(f):
                     continue
@@ -276,8 +294,20 @@ class SpringConfigCollector(DimensionCollector):
                 profiles_found.add(match.group(1))
 
         # From directory names (e.g., distResources/dev/, environments/prod/)
-        env_dir_names = {'dev', 'test', 'stage', 'staging', 'prod', 'production',
-                         'local', 'docker', 'kubernetes', 'k8s', 'integration', 'qa'}
+        env_dir_names = {
+            "dev",
+            "test",
+            "stage",
+            "staging",
+            "prod",
+            "production",
+            "local",
+            "docker",
+            "kubernetes",
+            "k8s",
+            "integration",
+            "qa",
+        }
         for config_dir in self.CONFIG_SEARCH_DIRS:
             for search_path in self.repo_path.rglob(config_dir):
                 if not search_path.is_dir():
@@ -292,7 +322,7 @@ class SpringConfigCollector(DimensionCollector):
                 name=f"profile-{profile}",
                 type="spring_profile",
                 category="configuration",
-                metadata={"profile_name": profile}
+                metadata={"profile_name": profile},
             )
             profile_fact.tags.append(f"profile:{profile}")
             self.output.add_fact(profile_fact)
@@ -304,7 +334,7 @@ class SpringConfigCollector(DimensionCollector):
                 name=f"environment-{env}",
                 type="environment",
                 category="configuration",
-                metadata={"environment_name": env}
+                metadata={"environment_name": env},
             )
             env_fact.tags.append(f"env:{env}")
             self.output.add_fact(env_fact)

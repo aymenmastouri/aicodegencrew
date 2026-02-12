@@ -1,9 +1,10 @@
 """Tests for ChromaDB index tool."""
 
-import pytest
-import tempfile
 import shutil
-from pathlib import Path
+import tempfile
+
+import pytest
+
 from aicodegencrew.pipelines.indexing.chroma_index_tool import ChromaIndexTool
 
 
@@ -38,45 +39,32 @@ def test_upsert_chunks(chroma_tool):
         }
     ]
     embeddings = [[0.1] * 768]  # Mock embedding
-    
+
     result = chroma_tool._run(
-        operation="upsert",
-        chunks=chunks,
-        embeddings=embeddings,
-        collection_name="test_collection"
+        operation="upsert", chunks=chunks, embeddings=embeddings, collection_name="test_collection"
     )
-    
+
     assert result["success"] is True
     assert result["upserted_count"] == 1
 
 
 def test_upsert_empty_chunks(chroma_tool):
     """Test upserting empty chunks list."""
-    result = chroma_tool._run(
-        operation="upsert",
-        chunks=[],
-        embeddings=[],
-        collection_name="test_collection"
-    )
-    
+    result = chroma_tool._run(operation="upsert", chunks=[], embeddings=[], collection_name="test_collection")
+
     assert result["success"] is False
     assert "No chunks" in result["error"]
 
 
 def test_upsert_mismatched_lengths(chroma_tool):
     """Test upserting with mismatched chunk and embedding counts."""
-    chunks = [
-        {"chunk_id": "test_001", "text": "Test", "file_path": "test.txt", "chunk_index": 0}
-    ]
+    chunks = [{"chunk_id": "test_001", "text": "Test", "file_path": "test.txt", "chunk_index": 0}]
     embeddings = [[0.1] * 768, [0.2] * 768]  # More embeddings than chunks
-    
+
     result = chroma_tool._run(
-        operation="upsert",
-        chunks=chunks,
-        embeddings=embeddings,
-        collection_name="test_collection"
+        operation="upsert", chunks=chunks, embeddings=embeddings, collection_name="test_collection"
     )
-    
+
     assert result["success"] is False
     assert "Mismatch" in result["error"]
 
@@ -84,15 +72,15 @@ def test_upsert_mismatched_lengths(chroma_tool):
 def test_query_empty_collection(chroma_tool):
     """Test querying an empty collection."""
     query_embedding = [0.1] * 768
-    
+
     result = chroma_tool._run(
         operation="query",
         query_text="test query",
         query_embedding=query_embedding,
         top_k=5,
-        collection_name="empty_collection"
+        collection_name="empty_collection",
     )
-    
+
     # Should succeed but return no results
     assert result["success"] is True
     assert result["count"] == 0
@@ -101,24 +89,17 @@ def test_query_empty_collection(chroma_tool):
 def test_query_without_embedding(chroma_tool):
     """Test querying without providing embedding."""
     result = chroma_tool._run(
-        operation="query",
-        query_text="test query",
-        query_embedding=[],
-        top_k=5,
-        collection_name="test_collection"
+        operation="query", query_text="test query", query_embedding=[], top_k=5, collection_name="test_collection"
     )
-    
+
     assert result["success"] is False
     assert "No query embedding" in result["error"]
 
 
 def test_invalid_operation(chroma_tool):
     """Test invalid operation."""
-    result = chroma_tool._run(
-        operation="invalid_op",
-        collection_name="test_collection"
-    )
-    
+    result = chroma_tool._run(operation="invalid_op", collection_name="test_collection")
+
     assert result["success"] is False
     assert "Unknown operation" in result["error"]
 
@@ -137,27 +118,24 @@ def test_upsert_and_query_roundtrip(chroma_tool):
         }
     ]
     embeddings = [[0.5] * 768]
-    
+
     upsert_result = chroma_tool._run(
-        operation="upsert",
-        chunks=chunks,
-        embeddings=embeddings,
-        collection_name="roundtrip_test"
+        operation="upsert", chunks=chunks, embeddings=embeddings, collection_name="roundtrip_test"
     )
-    
+
     assert upsert_result["success"] is True
-    
+
     # Then query with similar embedding
     query_embedding = [0.51] * 768  # Similar to upserted embedding
-    
+
     query_result = chroma_tool._run(
         operation="query",
         query_text="search query",
         query_embedding=query_embedding,
         top_k=5,
-        collection_name="roundtrip_test"
+        collection_name="roundtrip_test",
     )
-    
+
     assert query_result["success"] is True
     assert query_result["count"] >= 1
     if query_result["count"] > 0:

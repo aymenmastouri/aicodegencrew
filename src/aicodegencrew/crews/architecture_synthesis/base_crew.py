@@ -14,6 +14,7 @@ Subclasses only need to implement:
 - _summarize_facts() -> dict
 - run() -> str
 """
+
 import json
 import os
 import time
@@ -21,19 +22,19 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
-from crewai import Agent, Crew, LLM, Process, Task
+from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 
+from ...shared.utils.logger import setup_logger
+from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
+from ..architecture_analysis.tools import RAGQueryTool
 from .tools import (
-    DrawioDiagramTool,
     DocWriterTool,
+    DrawioDiagramTool,
     FactsQueryTool,
     FileReadTool,
     StereotypeListTool,
 )
-from ..architecture_analysis.tools import RAGQueryTool
-from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
-from ...shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -113,18 +114,14 @@ class MiniCrewBase(ABC):
     ):
         self.facts_path = Path(facts_path)
         self.analyzed_path = (
-            Path(analyzed_path)
-            if analyzed_path
-            else self.facts_path.parent / "analyzed_architecture.json"
+            Path(analyzed_path) if analyzed_path else self.facts_path.parent / "analyzed_architecture.json"
         )
         self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", ".cache/.chroma")
 
         # Load data
         self.facts = self._load_json(self.facts_path)
         self.analysis = self._load_json(self.analyzed_path)
-        self.evidence_map = self._load_json(
-            self.facts_path.parent / "evidence_map.json"
-        )
+        self.evidence_map = self._load_json(self.facts_path.parent / "evidence_map.json")
 
         # Build template variables for tasks
         self.summaries = self._summarize_facts()
@@ -174,7 +171,7 @@ class MiniCrewBase(ABC):
         """Load JSON file, return empty dict on error."""
         if path.exists():
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     return json.load(f)
             except Exception:
                 return {}
@@ -345,6 +342,7 @@ class MiniCrewBase(ABC):
                 self._save_checkpoint()
 
                 from ...shared.utils.logger import log_metric
+
                 log_metric(
                     "mini_crew_complete",
                     crew_type=self.crew_name,
@@ -374,21 +372,18 @@ class MiniCrewBase(ABC):
                     continue
 
                 # Final attempt failed — recover and continue
-                self._handle_crew_failure(
-                    name, tasks, e, start_time, expected_files
-                )
+                self._handle_crew_failure(name, tasks, e, start_time, expected_files)
                 return None  # Recovery done in _handle_crew_failure
 
             except Exception as e:
                 # Non-retryable: Pydantic validation, unexpected errors
-                self._handle_crew_failure(
-                    name, tasks, e, start_time, expected_files
-                )
+                self._handle_crew_failure(name, tasks, e, start_time, expected_files)
                 return None  # Recovery done in _handle_crew_failure
 
             finally:
                 if tracker and tracker.calls:
                     from ...shared.utils.logger import log_metric as _log_metric
+
                     _log_metric(
                         "guardrail_summary",
                         crew_name=name,
@@ -414,13 +409,11 @@ class MiniCrewBase(ABC):
         error_type = type(error).__name__
         error_msg = str(error)[:500]
 
-        logger.error(
-            f"[{self.crew_name}] Failed Mini-Crew: {name} "
-            f"({duration:.1f}s, {error_type}): {error_msg}"
-        )
+        logger.error(f"[{self.crew_name}] Failed Mini-Crew: {name} ({duration:.1f}s, {error_type}): {error_msg}")
 
         # Log failure metric to metrics.jsonl
         from ...shared.utils.logger import log_metric
+
         log_metric(
             "mini_crew_failed",
             crew_type=self.crew_name,
@@ -436,13 +429,15 @@ class MiniCrewBase(ABC):
             self._recover_missing_files(name, expected_files)
 
         # Record failed checkpoint
-        self._checkpoints.append({
-            "crew": name,
-            "status": "failed",
-            "duration_seconds": round(duration, 1),
-            "tasks": len(tasks),
-            "error": error_msg,
-        })
+        self._checkpoints.append(
+            {
+                "crew": name,
+                "status": "failed",
+                "duration_seconds": round(duration, 1),
+                "tasks": len(tasks),
+                "error": error_msg,
+            }
+        )
         self._save_checkpoint()
 
     # -------------------------------------------------------------------------
@@ -461,6 +456,7 @@ class MiniCrewBase(ABC):
         stripped = result.strip()
         if stripped.startswith("{") and '"content"' in stripped:
             import re
+
             match = re.search(r'"content"\s*:\s*"', stripped)
             if match:
                 start = match.end()
@@ -470,9 +466,7 @@ class MiniCrewBase(ABC):
                     return content
         return result
 
-    def _validate_and_fallback(
-        self, crew_name: str, result: str, expected_files: list[str], tracker=None
-    ) -> None:
+    def _validate_and_fallback(self, crew_name: str, result: str, expected_files: list[str], tracker=None) -> None:
         """Check expected output files exist; fallback-write from result if not.
 
         When the agent writes doc content in its response instead of using
@@ -496,7 +490,7 @@ class MiniCrewBase(ABC):
             if full.exists() and full.stat().st_size > 100:
                 # Fix JSON-wrapped files in-place
                 try:
-                    with open(full, "r", encoding="utf-8") as f:
+                    with open(full, encoding="utf-8") as f:
                         existing = f.read()
                     if existing.strip().startswith("{") and '"content"' in existing:
                         cleaned = self._extract_content(existing)
@@ -504,8 +498,7 @@ class MiniCrewBase(ABC):
                             with open(full, "w", encoding="utf-8") as f:
                                 f.write(cleaned)
                             logger.info(
-                                f"[{self.crew_name}] {crew_name}: Fixed JSON-wrapped "
-                                f"{file_path} ({len(cleaned)} chars)"
+                                f"[{self.crew_name}] {crew_name}: Fixed JSON-wrapped {file_path} ({len(cleaned)} chars)"
                             )
                 except Exception:
                     pass
@@ -596,9 +589,7 @@ For detailed architecture information, refer to the facts:
 This chapter requires manual completion or re-running with a more capable LLM.
 """
 
-    def _recover_missing_files(
-        self, crew_name: str, expected_files: list[str]
-    ) -> None:
+    def _recover_missing_files(self, crew_name: str, expected_files: list[str]) -> None:
         """Generate minimal stub documents for missing output files after failure.
 
         When a mini-crew fails entirely (e.g. Pydantic validation error),
@@ -626,13 +617,8 @@ This chapter requires manual completion or re-running with a more capable LLM.
                 s = comp.get("stereotype", "unknown")
                 by_stereo[s] = by_stereo.get(s, 0) + 1
 
-            stats_lines = "\n".join(
-                f"| {s} | {n} |" for s, n in sorted(by_stereo.items())
-            )
-            container_lines = "\n".join(
-                f"| {c.get('name', '?')} | {c.get('technology', '?')} |"
-                for c in containers
-            )
+            stats_lines = "\n".join(f"| {s} | {n} |" for s, n in sorted(by_stereo.items()))
+            container_lines = "\n".join(f"| {c.get('name', '?')} | {c.get('technology', '?')} |" for c in containers)
 
             content = (
                 f"# {stem}\n\n"
@@ -649,8 +635,7 @@ This chapter requires manual completion or re-running with a more capable LLM.
             with open(full, "w", encoding="utf-8") as f:
                 f.write(content)
             logger.warning(
-                f"[{self.crew_name}] {crew_name}: Recovery-generated stub "
-                f"for {file_path} ({len(content)} chars)"
+                f"[{self.crew_name}] {crew_name}: Recovery-generated stub for {file_path} ({len(content)} chars)"
             )
 
     # -------------------------------------------------------------------------
@@ -667,9 +652,7 @@ This chapter requires manual completion or re-running with a more capable LLM.
         data = {
             "crew_name": self.crew_name,
             "checkpoints": self._checkpoints,
-            "completed_crews": [
-                c["crew"] for c in self._checkpoints if c["status"] == "completed"
-            ],
+            "completed_crews": [c["crew"] for c in self._checkpoints if c["status"] == "completed"],
         }
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
@@ -684,13 +667,11 @@ This chapter requires manual completion or re-running with a more capable LLM.
         if not path.exists():
             return set()
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             completed = set(data.get("completed_crews", []))
             if completed:
-                logger.info(
-                    f"[{self.crew_name}] Resuming: {len(completed)} mini-crews already completed"
-                )
+                logger.info(f"[{self.crew_name}] Resuming: {len(completed)} mini-crews already completed")
             return completed
         except Exception:
             return set()
@@ -761,8 +742,6 @@ This chapter requires manual completion or re-running with a more capable LLM.
             tokens = cp.get("total_tokens", 0)
             status = cp.get("status", "?")
             est = " (est)" if cp.get("estimated") else ""
-            lines.append(
-                f"  {cp['crew']:25s} {status:10s} ~{tokens:,} tokens{est}"
-            )
+            lines.append(f"  {cp['crew']:25s} {status:10s} ~{tokens:,} tokens{est}")
 
         return "\n".join(lines)

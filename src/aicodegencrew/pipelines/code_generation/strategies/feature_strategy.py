@@ -1,7 +1,7 @@
 """Strategy for new feature implementation."""
 
+from ..schemas import CodegenPlanInput, FileContext
 from .base import BaseStrategy
-from ..schemas import FileContext, CodegenPlanInput
 
 
 class FeatureStrategy(BaseStrategy):
@@ -17,7 +17,7 @@ class FeatureStrategy(BaseStrategy):
         # For new files, show sibling files as pattern reference
         sibling_hint = ""
         if file_ctx.sibling_files:
-            sibling_hint = f"\nSIBLING FILES (for pattern reference):\n"
+            sibling_hint = "\nSIBLING FILES (for pattern reference):\n"
             sibling_hint += "\n".join(f"  - {s}" for s in file_ctx.sibling_files[:5])
 
         arch_ctx = plan.architecture_context

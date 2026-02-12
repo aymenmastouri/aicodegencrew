@@ -11,12 +11,10 @@ Output -> tests dimension
 """
 
 import re
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Dict, Optional, Set
 
-from .base import DimensionCollector, CollectorOutput, RawTestFact
 from ....shared.utils.logger import logger
+from .base import CollectorOutput, DimensionCollector, RawTestFact
 
 
 class TestCollector(DimensionCollector):
@@ -27,14 +25,14 @@ class TestCollector(DimensionCollector):
     SKIP_DIRS = {"node_modules", "dist", "build", "target", ".git", "deployment", "bin", "generated"}
 
     # Cucumber/Gherkin patterns
-    FEATURE_PATTERN = re.compile(r'^Feature:\s*(.+)', re.MULTILINE)
-    SCENARIO_PATTERN = re.compile(r'^\s*(?:Scenario|Scenario Outline|Szenario|Szenariovorlage):\s*(.+)', re.MULTILINE)
-    GHERKIN_TAG_PATTERN = re.compile(r'@(\w+)')
+    FEATURE_PATTERN = re.compile(r"^Feature:\s*(.+)", re.MULTILINE)
+    SCENARIO_PATTERN = re.compile(r"^\s*(?:Scenario|Scenario Outline|Szenario|Szenariovorlage):\s*(.+)", re.MULTILINE)
+    GHERKIN_TAG_PATTERN = re.compile(r"@(\w+)")
 
     # Java test patterns
-    JAVA_TEST_CLASS_PATTERN = re.compile(r'class\s+(\w+(?:Test|IT|Tests|Spec))\b')
-    JAVA_TEST_METHOD_PATTERN = re.compile(r'@Test\s+.*?(?:public|private|protected)?\s+void\s+(\w+)\s*\(', re.DOTALL)
-    JAVA_TEST_ANNOTATION_PATTERN = re.compile(r'@(SpringBootTest|DataJpaTest|WebMvcTest|MockitoExtension|ExtendWith)')
+    JAVA_TEST_CLASS_PATTERN = re.compile(r"class\s+(\w+(?:Test|IT|Tests|Spec))\b")
+    JAVA_TEST_METHOD_PATTERN = re.compile(r"@Test\s+.*?(?:public|private|protected)?\s+void\s+(\w+)\s*\(", re.DOTALL)
+    JAVA_TEST_ANNOTATION_PATTERN = re.compile(r"@(SpringBootTest|DataJpaTest|WebMvcTest|MockitoExtension|ExtendWith)")
     JAVA_DISPLAY_NAME_PATTERN = re.compile(r'@DisplayName\s*\(\s*"([^"]+)"')
 
     # TypeScript test patterns
@@ -44,7 +42,7 @@ class TestCollector(DimensionCollector):
     PLAYWRIGHT_DESCRIBE_PATTERN = re.compile(r"test\.describe\s*\(\s*['\"]([^'\"]+)['\"]")
 
     # Test component hint patterns
-    TEST_COMPONENT_HINT = re.compile(r'^(\w+?)(?:Test|IT|Tests|Spec|E2eSpec)$')
+    TEST_COMPONENT_HINT = re.compile(r"^(\w+?)(?:Test|IT|Tests|Spec|E2eSpec)$")
 
     def __init__(self, repo_path: Path, container_id: str = ""):
         super().__init__(repo_path)
@@ -79,7 +77,7 @@ class TestCollector(DimensionCollector):
 
         for feature_file in feature_files:
             try:
-                content = feature_file.read_text(encoding='utf-8', errors='ignore')
+                content = feature_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
@@ -110,7 +108,7 @@ class TestCollector(DimensionCollector):
             fact.add_evidence(
                 path=self._relative_path(feature_file),
                 line_start=1,
-                line_end=min(len(content.split('\n')), 50),
+                line_end=min(len(content.split("\n")), 50),
                 reason=f"Cucumber feature: {feature_name} ({len(scenarios)} scenarios)",
             )
             self.output.add_fact(fact)
@@ -121,8 +119,7 @@ class TestCollector(DimensionCollector):
 
     def _collect_java_tests(self):
         """Collect Java/Kotlin test class facts."""
-        test_patterns = ["*Test.java", "*IT.java", "*Tests.java", "*Spec.java",
-                         "*Test.kt", "*IT.kt"]
+        test_patterns = ["*Test.java", "*IT.java", "*Tests.java", "*Spec.java", "*Test.kt", "*IT.kt"]
         test_files = []
         for pattern in test_patterns:
             test_files.extend(self.repo_path.rglob(pattern))
@@ -132,7 +129,7 @@ class TestCollector(DimensionCollector):
 
         for test_file in test_files:
             try:
-                content = test_file.read_text(encoding='utf-8', errors='ignore')
+                content = test_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
@@ -182,7 +179,7 @@ class TestCollector(DimensionCollector):
                 metadata={"test_method_count": len(test_methods)},
             )
 
-            line_num = content[:class_match.start()].count('\n') + 1 if class_match else 1
+            line_num = content[: class_match.start()].count("\n") + 1 if class_match else 1
             fact.add_evidence(
                 path=self._relative_path(test_file),
                 line_start=line_num,
@@ -204,19 +201,19 @@ class TestCollector(DimensionCollector):
 
         for spec_file in spec_files:
             try:
-                content = spec_file.read_text(encoding='utf-8', errors='ignore')
+                content = spec_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
             # Determine test type
             file_str = str(spec_file).lower()
-            if '.e2e-spec.' in file_str or 'e2e' in file_str:
+            if ".e2e-spec." in file_str or "e2e" in file_str:
                 test_type = "e2e"
-                framework = "playwright" if 'playwright' in content or '@playwright' in content else "protractor"
+                framework = "playwright" if "playwright" in content or "@playwright" in content else "protractor"
             else:
                 test_type = "unit"
                 framework = "jasmine"
-                if 'jest' in content.lower() or "jest" in file_str:
+                if "jest" in content.lower() or "jest" in file_str:
                     framework = "jest"
 
             # Describe blocks
@@ -228,7 +225,9 @@ class TestCollector(DimensionCollector):
             playwright_tests = self.PLAYWRIGHT_TEST_PATTERN.findall(content)
 
             scenarios = list(set(its + playwright_tests))
-            top_describe = describes[0] if describes else (playwright_describes[0] if playwright_describes else spec_file.stem)
+            top_describe = (
+                describes[0] if describes else (playwright_describes[0] if playwright_describes else spec_file.stem)
+            )
 
             # Guess tested component
             tested_hint = self._guess_component_from_path(spec_file)
@@ -246,7 +245,7 @@ class TestCollector(DimensionCollector):
             fact.add_evidence(
                 path=self._relative_path(spec_file),
                 line_start=1,
-                line_end=min(len(content.split('\n')), 30),
+                line_end=min(len(content.split("\n")), 30),
                 reason=f"TypeScript test: {top_describe} ({len(scenarios)} tests)",
             )
             self.output.add_fact(fact)
@@ -259,10 +258,10 @@ class TestCollector(DimensionCollector):
         """Guess the component under test from file path."""
         stem = file_path.stem
         # Remove test suffixes
-        for suffix in ['.e2e-spec', '.spec', '.e2e', 'Test', 'IT', 'Tests', 'Spec']:
-            stem = stem.replace(suffix, '')
+        for suffix in [".e2e-spec", ".spec", ".e2e", "Test", "IT", "Tests", "Spec"]:
+            stem = stem.replace(suffix, "")
         # Remove leading test-
-        if stem.startswith('test-'):
+        if stem.startswith("test-"):
             stem = stem[5:]
         return stem if stem else ""
 

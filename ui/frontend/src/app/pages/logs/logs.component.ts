@@ -59,7 +59,8 @@ import { ApiService, LogResponse } from '../../services/api.service';
             <div class="log-viewer">
               @for (line of logResponse.lines; track $index) {
                 <div class="log-line" [class]="lineClass(line)">
-                  <span class="log-num">{{ $index + 1 }}</span>{{ line }}
+                  <span class="log-num">{{ $index + 1 }}</span
+                  >{{ line }}
                 </div>
               }
             </div>
@@ -73,44 +74,54 @@ import { ApiService, LogResponse } from '../../services/api.service';
       }
     </div>
   `,
-  styles: [`
-    .toolbar {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .toolbar-card { margin-bottom: 16px; }
-    .line-count {
-      color: var(--cg-gray-500);
-      font-size: 13px;
-    }
-    .log-viewer {
-      max-height: 600px;
-      overflow: auto;
-      background: var(--cg-dark);
-      padding: 12px;
-      border-radius: 8px;
-      font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
-      font-size: 12px;
-      line-height: 1.6;
-    }
-    .log-line {
-      color: #d4d4d4;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-    .log-num {
-      display: inline-block;
-      width: 36px;
-      text-align: right;
-      margin-right: 12px;
-      color: rgba(255,255,255,0.2);
-      user-select: none;
-    }
-    .log-line.error { color: #f48771; }
-    .log-line.warning { color: #cca700; }
-    .log-line.info { color: #d4d4d4; }
-  `],
+  styles: [
+    `
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .toolbar-card {
+        margin-bottom: 16px;
+      }
+      .line-count {
+        color: var(--cg-gray-500);
+        font-size: 13px;
+      }
+      .log-viewer {
+        max-height: 600px;
+        overflow: auto;
+        background: var(--cg-dark);
+        padding: 12px;
+        border-radius: 8px;
+        font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .log-line {
+        color: #d4d4d4;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .log-num {
+        display: inline-block;
+        width: 36px;
+        text-align: right;
+        margin-right: 12px;
+        color: rgba(255, 255, 255, 0.2);
+        user-select: none;
+      }
+      .log-line.error {
+        color: #f48771;
+      }
+      .log-line.warning {
+        color: #cca700;
+      }
+      .log-line.info {
+        color: #d4d4d4;
+      }
+    `,
+  ],
 })
 export class LogsComponent implements OnInit {
   logFiles: string[] = [];
@@ -118,11 +129,14 @@ export class LogsComponent implements OnInit {
   logResponse: LogResponse | null = null;
   loading = true;
 
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private api: ApiService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.api.getLogFiles().subscribe({
-      next: files => {
+      next: (files) => {
         this.logFiles = files;
         if (files.length) {
           this.selectedFile = files[0];
@@ -132,7 +146,10 @@ export class LogsComponent implements OnInit {
         }
         this.cdr.markForCheck();
       },
-      error: () => { this.loading = false; this.cdr.markForCheck(); },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 
@@ -140,8 +157,15 @@ export class LogsComponent implements OnInit {
     this.loading = true;
     this.cdr.markForCheck();
     this.api.getLogs(this.selectedFile, 500).subscribe({
-      next: r => { this.logResponse = r; this.loading = false; this.cdr.markForCheck(); },
-      error: () => { this.loading = false; this.cdr.markForCheck(); },
+      next: (r) => {
+        this.logResponse = r;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 

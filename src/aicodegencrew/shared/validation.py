@@ -12,6 +12,7 @@ Usage:
     if errors:
         raise ValueError(f"Phase 1 output invalid: {errors}")
 """
+
 import json
 from pathlib import Path
 from typing import Any
@@ -121,10 +122,7 @@ class PhaseOutputValidator:
             for path_str in spec.get("required_paths", []):
                 path = Path(path_str)
                 if path.is_file() and path.stat().st_size < min_size:
-                    errors.append(
-                        f"Output too small: {path_str} "
-                        f"({path.stat().st_size} bytes, min {min_size})"
-                    )
+                    errors.append(f"Output too small: {path_str} ({path.stat().st_size} bytes, min {min_size})")
 
         return errors
 
@@ -160,7 +158,7 @@ class PhaseOutputValidator:
         facts_path = Path("knowledge/architecture/architecture_facts.json")
 
         try:
-            with open(facts_path, "r", encoding="utf-8") as f:
+            with open(facts_path, encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             return [f"Invalid JSON in {facts_path}: {e}"]
@@ -174,27 +172,21 @@ class PhaseOutputValidator:
         # Content validation
         min_comp = spec.get("min_components", 0)
         if len(facts.components) < min_comp:
-            errors.append(
-                f"Too few components: {len(facts.components)} (min {min_comp})"
-            )
+            errors.append(f"Too few components: {len(facts.components)} (min {min_comp})")
 
         min_cont = spec.get("min_containers", 0)
         if len(facts.containers) < min_cont:
-            errors.append(
-                f"Too few containers: {len(facts.containers)} (min {min_cont})"
-            )
+            errors.append(f"Too few containers: {len(facts.containers)} (min {min_cont})")
 
         # Evidence cross-reference
         evidence_path = Path("knowledge/architecture/evidence_map.json")
         if evidence_path.exists():
             try:
-                with open(evidence_path, "r", encoding="utf-8") as f:
+                with open(evidence_path, encoding="utf-8") as f:
                     evidence_data = json.load(f)
                 ev_errors = facts.validate_evidence(evidence_data)
                 if ev_errors:
-                    errors.append(
-                        f"Evidence validation: {len(ev_errors)} broken references"
-                    )
+                    errors.append(f"Evidence validation: {len(ev_errors)} broken references")
             except Exception:
                 pass
 
@@ -206,7 +198,7 @@ class PhaseOutputValidator:
         analysis_path = Path("knowledge/architecture/analyzed_architecture.json")
 
         try:
-            with open(analysis_path, "r", encoding="utf-8") as f:
+            with open(analysis_path, encoding="utf-8") as f:
                 data = json.load(f)
         except json.JSONDecodeError as e:
             return [f"Invalid JSON in {analysis_path}: {e}"]
@@ -236,7 +228,7 @@ class PhaseOutputValidator:
 
         for plan_file in plan_files:
             try:
-                with open(plan_file, "r", encoding="utf-8") as f:
+                with open(plan_file, encoding="utf-8") as f:
                     data = json.load(f)
             except json.JSONDecodeError as e:
                 errors.append(f"Invalid JSON in {plan_file.name}: {e}")
@@ -250,9 +242,7 @@ class PhaseOutputValidator:
             if isinstance(dev_plan, dict):
                 plan_missing = plan_required_keys - set(dev_plan.keys())
                 if plan_missing:
-                    errors.append(
-                        f"{plan_file.name}: development_plan missing keys: {plan_missing}"
-                    )
+                    errors.append(f"{plan_file.name}: development_plan missing keys: {plan_missing}")
 
         return errors
 
@@ -273,7 +263,7 @@ class PhaseOutputValidator:
 
         for report_file in report_files:
             try:
-                with open(report_file, "r", encoding="utf-8") as f:
+                with open(report_file, encoding="utf-8") as f:
                     data = json.load(f)
             except json.JSONDecodeError as e:
                 errors.append(f"Invalid JSON in {report_file.name}: {e}")

@@ -9,10 +9,10 @@ import sys
 import threading
 import time
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from collections.abc import Generator
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Generator, Optional
 
 from ..config import settings
 
@@ -22,16 +22,16 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RunInfo:
     run_id: str
-    preset: Optional[str]
+    preset: str | None
     phases: list[str]
     started_at: str
-    pid: Optional[int] = None
+    pid: int | None = None
 
 
 class PipelineExecutor:
     """Singleton executor that manages one pipeline subprocess at a time."""
 
-    _instance: Optional[PipelineExecutor] = None
+    _instance: PipelineExecutor | None = None
     _lock = threading.Lock()
 
     def __new__(cls) -> PipelineExecutor:
@@ -44,19 +44,19 @@ class PipelineExecutor:
 
     def _init(self) -> None:
         self.state: str = "idle"  # idle | running | completed | failed | cancelled
-        self.current_run: Optional[RunInfo] = None
-        self._process: Optional[subprocess.Popen] = None
+        self.current_run: RunInfo | None = None
+        self._process: subprocess.Popen | None = None
         self._log_lines: list[str] = []
         self._log_lock = threading.Lock()
         self._state_lock = threading.Lock()
-        self._started_at: Optional[float] = None
-        self._exit_code: Optional[int] = None
+        self._started_at: float | None = None
+        self._exit_code: int | None = None
 
     def start(
         self,
-        preset: Optional[str] = None,
-        phases: Optional[list[str]] = None,
-        env_overrides: Optional[dict[str, str]] = None,
+        preset: str | None = None,
+        phases: list[str] | None = None,
+        env_overrides: dict[str, str] | None = None,
     ) -> RunInfo:
         """Start a pipeline run. Raises RuntimeError if already running."""
         with self._state_lock:
@@ -64,7 +64,7 @@ class PipelineExecutor:
                 raise RuntimeError("A pipeline is already running")
 
             run_id = uuid.uuid4().hex[:8]
-            now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(UTC).isoformat()
 
             # Build command
             cmd = [sys.executable, "-m", "aicodegencrew", "run"]
@@ -74,6 +74,7 @@ class PipelineExecutor:
                 cmd.extend(["--preset", preset])
                 # Resolve phases from preset for display
                 from .phase_runner import get_presets
+
                 for p in get_presets():
                     if p.name == preset:
                         phase_list = p.phases
@@ -84,6 +85,7 @@ class PipelineExecutor:
                 # use the preset that matches or run individual phases
                 # For now, find the best-matching preset
                 from .phase_runner import get_presets
+
                 for p in get_presets():
                     if set(p.phases) == set(phases):
                         cmd.extend(["--preset", p.name])
@@ -124,7 +126,9 @@ class PipelineExecutor:
                 self.current_run.pid = self._process.pid
                 logger.info(
                     "Pipeline started: run_id=%s, pid=%d, cmd=%s",
-                    run_id, self._process.pid, " ".join(cmd),
+                    run_id,
+                    self._process.pid,
+                    " ".join(cmd),
                 )
             except Exception as exc:
                 self.state = "failed"
@@ -155,8 +159,7 @@ class PipelineExecutor:
                 except subprocess.TimeoutExpired:
                     self._process.kill()
                 self.state = "cancelled"
-                logger.info("Pipeline cancelled: run_id=%s",
-                            self.current_run.run_id if self.current_run else "?")
+                logger.info("Pipeline cancelled: run_id=%s", self.current_run.run_id if self.current_run else "?")
                 return True
             except Exception as exc:
                 logger.error("Failed to cancel pipeline: %s", exc)
@@ -217,7 +220,7 @@ class PipelineExecutor:
         # Check for current run_report.json
         if settings.run_report.exists():
             try:
-                with open(settings.run_report, "r", encoding="utf-8") as f:
+                with open(settings.run_report, encoding="utf-8") as f:
                     data = json.load(f)
                 reports.append(self._format_history_entry(data))
             except (json.JSONDecodeError, KeyError) as exc:
@@ -228,7 +231,7 @@ class PipelineExecutor:
         if archive_dir.exists():
             for report_file in sorted(archive_dir.glob("run_report*.json"), reverse=True):
                 try:
-                    with open(report_file, "r", encoding="utf-8") as f:
+                    with open(report_file, encoding="utf-8") as f:
                         data = json.load(f)
                     reports.append(self._format_history_entry(data))
                 except (json.JSONDecodeError, KeyError):
@@ -285,7 +288,7 @@ class PipelineExecutor:
             return []
 
         try:
-            with open(metrics_file, "r", encoding="utf-8") as f:
+            with open(metrics_file, encoding="utf-8") as f:
                 lines = f.readlines()
 
             # Only look at recent lines (last 200)
@@ -338,14 +341,12 @@ class PipelineExecutor:
 
         return list(progress.values())
 
-    def _write_env_with_overrides(
-        self, overrides: dict[str, str], target: Path
-    ) -> None:
+    def _write_env_with_overrides(self, overrides: dict[str, str], target: Path) -> None:
         """Write a .env file based on the current one with overrides applied."""
         lines: list[str] = []
 
         if settings.env_file.exists():
-            with open(settings.env_file, "r", encoding="utf-8") as f:
+            with open(settings.env_file, encoding="utf-8") as f:
                 lines = f.readlines()
 
         applied = set()

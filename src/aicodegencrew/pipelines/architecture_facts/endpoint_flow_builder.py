@@ -6,11 +6,8 @@ from collected components, interfaces, and relations.
 NO LLM. Only evidence-based construction from Phase 1 facts.
 """
 
-from typing import List, Dict, Set, Tuple, Optional
-from pathlib import Path
-
-from .collectors.fact_adapter import CollectedComponent, CollectedInterface, CollectedRelation, CollectedEvidence
 from ...shared.utils.logger import logger
+from .collectors.fact_adapter import CollectedComponent, CollectedEvidence, CollectedInterface, CollectedRelation
 
 
 class EndpointFlowBuilder:
@@ -32,14 +29,14 @@ class EndpointFlowBuilder:
     """
 
     # REST interface type patterns (case-insensitive)
-    REST_TYPES = {'rest', 'rest_endpoint', 'rest-endpoint', 'openapi_endpoint', 'openapi-endpoint'}
+    REST_TYPES = {"rest", "rest_endpoint", "rest-endpoint", "openapi_endpoint", "openapi-endpoint"}
 
     def __init__(
         self,
-        components: List[CollectedComponent],
-        interfaces: List[CollectedInterface],
-        relations: List[CollectedRelation],
-        evidence: Dict[str, CollectedEvidence],
+        components: list[CollectedComponent],
+        interfaces: list[CollectedInterface],
+        relations: list[CollectedRelation],
+        evidence: dict[str, CollectedEvidence],
     ):
         """
         Initialize the endpoint flow builder.
@@ -56,38 +53,34 @@ class EndpointFlowBuilder:
         self.evidence = evidence
 
         # Build lookup indices
-        self.component_by_id: Dict[str, CollectedComponent] = {
-            c.id: c for c in components
-        }
-        self.component_by_name: Dict[str, CollectedComponent] = {
-            c.name: c for c in components
-        }
+        self.component_by_id: dict[str, CollectedComponent] = {c.id: c for c in components}
+        self.component_by_name: dict[str, CollectedComponent] = {c.name: c for c in components}
         # Also index by lowercase name for fuzzy matching
-        self.component_by_name_lower: Dict[str, CollectedComponent] = {
-            c.name.lower(): c for c in components
-        }
+        self.component_by_name_lower: dict[str, CollectedComponent] = {c.name.lower(): c for c in components}
         # Reverse lookup: adapter ID -> component name
-        self._id_to_name: Dict[str, str] = {c.id: c.name for c in components}
+        self._id_to_name: dict[str, str] = {c.id: c.name for c in components}
 
         # Index relations by from_id (raw component NAME, since RelationHints use names)
-        self.relations_from: Dict[str, List[CollectedRelation]] = {}
+        self.relations_from: dict[str, list[CollectedRelation]] = {}
         for rel in relations:
             if rel.from_id not in self.relations_from:
                 self.relations_from[rel.from_id] = []
             self.relations_from[rel.from_id].append(rel)
 
         # Also index by lowercase for fuzzy matching
-        self.relations_from_lower: Dict[str, List[CollectedRelation]] = {}
+        self.relations_from_lower: dict[str, list[CollectedRelation]] = {}
         for rel in relations:
             key = rel.from_id.lower()
             if key not in self.relations_from_lower:
                 self.relations_from_lower[key] = []
             self.relations_from_lower[key].append(rel)
 
-        logger.info(f"[EndpointFlowBuilder] Initialized with {len(components)} components, "
-                   f"{len(interfaces)} interfaces, {len(relations)} relations")
+        logger.info(
+            f"[EndpointFlowBuilder] Initialized with {len(components)} components, "
+            f"{len(interfaces)} interfaces, {len(relations)} relations"
+        )
 
-    def build_flows(self) -> List[Dict]:
+    def build_flows(self) -> list[dict]:
         """
         Build all endpoint flows.
 
@@ -99,12 +92,12 @@ class EndpointFlowBuilder:
 
         for interface in self.interfaces:
             # Support both 'type' and 'interface_type' attributes (case-insensitive)
-            iface_type = getattr(interface, 'type', None) or getattr(interface, 'interface_type', '')
+            iface_type = getattr(interface, "type", None) or getattr(interface, "interface_type", "")
             if not iface_type:
                 continue
 
             # Check if it's a REST-type interface
-            if iface_type.lower().replace('-', '_') not in self.REST_TYPES:
+            if iface_type.lower().replace("-", "_") not in self.REST_TYPES:
                 continue
 
             rest_count += 1
@@ -115,7 +108,7 @@ class EndpointFlowBuilder:
         logger.info(f"[EndpointFlowBuilder] Found {rest_count} REST interfaces, built {len(flows)} endpoint flows")
         return flows
 
-    def _find_controller(self, interface: CollectedInterface) -> Optional[CollectedComponent]:
+    def _find_controller(self, interface: CollectedInterface) -> CollectedComponent | None:
         """
         Find the controller/implementer for an interface.
 
@@ -127,9 +120,7 @@ class EndpointFlowBuilder:
         """
         # Try implemented_by or implemented_by_hint
         controller_name = (
-            getattr(interface, 'implemented_by', '') or
-            getattr(interface, 'implemented_by_hint', '') or
-            ''
+            getattr(interface, "implemented_by", "") or getattr(interface, "implemented_by_hint", "") or ""
         )
 
         if controller_name:
@@ -149,22 +140,22 @@ class EndpointFlowBuilder:
                 return controller
 
         # Try to find controller by stereotype matching the path
-        iface_path = getattr(interface, 'path', '') or ''
+        iface_path = getattr(interface, "path", "") or ""
         if iface_path:
             # Extract possible controller name from path (e.g., /api/users -> Users, User)
-            path_parts = [p for p in iface_path.split('/') if p and not p.startswith('{')]
+            path_parts = [p for p in iface_path.split("/") if p and not p.startswith("{")]
             if path_parts:
-                last_part = path_parts[-1] if path_parts else ''
+                last_part = path_parts[-1] if path_parts else ""
                 # Try to find a controller with matching name
                 for comp in self.components:
-                    if comp.stereotype in ('controller', 'rest_interface'):
+                    if comp.stereotype in ("controller", "rest_interface"):
                         comp_name_lower = comp.name.lower()
                         if last_part.lower() in comp_name_lower:
                             return comp
 
         return None
 
-    def _build_single_flow(self, interface: CollectedInterface) -> Optional[Dict]:
+    def _build_single_flow(self, interface: CollectedInterface) -> dict | None:
         """
         Build a single endpoint flow.
 
@@ -179,25 +170,25 @@ class EndpointFlowBuilder:
 
         if not controller:
             # Log at debug level to avoid spam
-            iface_id = getattr(interface, 'id', 'unknown')
+            iface_id = getattr(interface, "id", "unknown")
             logger.debug(f"[EndpointFlowBuilder] No controller found for interface: {iface_id}")
             return None
 
         # Build call chain starting from controller
         chain = [controller.id]
         visited = {controller.id}
-        evidence_ids = list(getattr(interface, 'evidence_ids', []))
+        evidence_ids = list(getattr(interface, "evidence_ids", []))
 
         # Follow relations through layers: controller -> service -> repository
         self._follow_chain(controller.id, chain, visited, evidence_ids, max_depth=5)
 
         # Create flow ID
-        iface_id = getattr(interface, 'id', 'unknown')
+        iface_id = getattr(interface, "id", "unknown")
         flow_id = f"flow_{iface_id}"
 
         # Get path - support both 'path' and 'endpoint' attributes
-        iface_path = getattr(interface, 'path', None) or getattr(interface, 'endpoint', 'UNKNOWN')
-        iface_method = getattr(interface, 'method', 'UNKNOWN')
+        iface_path = getattr(interface, "path", None) or getattr(interface, "endpoint", "UNKNOWN")
+        iface_method = getattr(interface, "method", "UNKNOWN")
 
         # Build flow dictionary
         flow = {
@@ -214,9 +205,9 @@ class EndpointFlowBuilder:
     def _follow_chain(
         self,
         component_id: str,
-        chain: List[str],
-        visited: Set[str],
-        evidence_ids: List[str],
+        chain: list[str],
+        visited: set[str],
+        evidence_ids: list[str],
         max_depth: int,
     ):
         """
@@ -269,24 +260,18 @@ class EndpointFlowBuilder:
         sorted_relations.sort(key=lambda x: x[0])
 
         # Follow the most relevant relations
-        for priority, rel, target_component in sorted_relations[:3]:  # Limit to top 3 relations per level
+        for _priority, rel, target_component in sorted_relations[:3]:  # Limit to top 3 relations per level
             if target_component.id not in visited:
                 visited.add(target_component.id)
                 chain.append(target_component.id)
 
                 # Safely extend evidence_ids
-                rel_evidence = getattr(rel, 'evidence_ids', [])
+                rel_evidence = getattr(rel, "evidence_ids", [])
                 if rel_evidence:
                     evidence_ids.extend(rel_evidence)
 
                 # Recursively follow from this component
-                self._follow_chain(
-                    target_component.id,
-                    chain,
-                    visited,
-                    evidence_ids,
-                    max_depth - 1
-                )
+                self._follow_chain(target_component.id, chain, visited, evidence_ids, max_depth - 1)
 
                 # Only follow one main path per component to avoid explosion
                 break

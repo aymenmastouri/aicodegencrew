@@ -2,7 +2,6 @@
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from pathlib import Path
 
 from ..config import settings
 from ..schemas import DiagramInfo, DiagramList
@@ -36,7 +35,7 @@ def list_diagrams():
 @router.get("/file/{path:path}")
 def get_diagram_file(path: str):
     """Download a diagram file."""
-    file_path = knowledge_dir = settings.knowledge_dir / path
+    file_path = settings.knowledge_dir / path
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Diagram not found")

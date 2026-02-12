@@ -12,12 +12,10 @@ Output -> security_details dimension
 """
 
 import re
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Dict, Optional, Set
 
-from .base import DimensionCollector, CollectorOutput, RawSecurityDetail
 from ....shared.utils.logger import logger
+from .base import CollectorOutput, DimensionCollector, RawSecurityDetail
 
 
 class SecurityDetailCollector(DimensionCollector):
@@ -28,12 +26,8 @@ class SecurityDetailCollector(DimensionCollector):
     SKIP_DIRS = {"node_modules", "dist", "build", "target", ".git", "deployment", "bin", "generated"}
 
     # Java/Spring patterns
-    PRE_AUTHORIZE_PATTERN = re.compile(
-        r'@PreAuthorize\s*\(\s*"([^"]+)"\s*\)', re.MULTILINE
-    )
-    SECURED_PATTERN = re.compile(
-        r'@Secured\s*\(\s*\{?\s*"([^"]+)"(?:\s*,\s*"([^"]+)")*\s*\}?\s*\)', re.MULTILINE
-    )
+    PRE_AUTHORIZE_PATTERN = re.compile(r'@PreAuthorize\s*\(\s*"([^"]+)"\s*\)', re.MULTILINE)
+    SECURED_PATTERN = re.compile(r'@Secured\s*\(\s*\{?\s*"([^"]+)"(?:\s*,\s*"([^"]+)")*\s*\}?\s*\)', re.MULTILINE)
     ROLES_ALLOWED_PATTERN = re.compile(
         r'@RolesAllowed\s*\(\s*\{?\s*"([^"]+)"(?:\s*,\s*"([^"]+)")*\s*\}?\s*\)', re.MULTILINE
     )
@@ -41,18 +35,16 @@ class SecurityDetailCollector(DimensionCollector):
     HAS_AUTHORITY_PATTERN = re.compile(r"hasAuthority\s*\(\s*'([^']+)'\s*\)")
 
     # Method before annotation
-    METHOD_PATTERN = re.compile(
-        r'(?:public|protected|private)\s+\w+\s+(\w+)\s*\(', re.MULTILINE
-    )
-    CLASS_PATTERN = re.compile(r'class\s+(\w+)')
+    METHOD_PATTERN = re.compile(r"(?:public|protected|private)\s+\w+\s+(\w+)\s*\(", re.MULTILINE)
+    CLASS_PATTERN = re.compile(r"class\s+(\w+)")
 
     # CSRF/CORS
-    CSRF_PATTERN = re.compile(r'\.csrf\s*\(\s*\)\s*\.\s*(\w+)')
-    CORS_PATTERN = re.compile(r'\.cors\s*\(|CorsConfiguration|@CrossOrigin')
+    CSRF_PATTERN = re.compile(r"\.csrf\s*\(\s*\)\s*\.\s*(\w+)")
+    CORS_PATTERN = re.compile(r"\.cors\s*\(|CorsConfiguration|@CrossOrigin")
     CORS_ALLOWED_ORIGINS_PATTERN = re.compile(r'allowedOrigins?\s*\(\s*"([^"]+)"')
 
     # Angular guards
-    ANGULAR_GUARD_PATTERN = re.compile(r'canActivate|canDeactivate|canLoad|CanActivateFn')
+    ANGULAR_GUARD_PATTERN = re.compile(r"canActivate|canDeactivate|canLoad|CanActivateFn")
     ANGULAR_ROLE_CHECK_PATTERN = re.compile(r"role[s]?\s*[=:]\s*\[([^\]]+)\]", re.IGNORECASE)
 
     def __init__(self, repo_path: Path, container_id: str = ""):
@@ -81,7 +73,7 @@ class SecurityDetailCollector(DimensionCollector):
 
         for java_file in java_files:
             try:
-                content = java_file.read_text(encoding='utf-8', errors='ignore')
+                content = java_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
@@ -93,7 +85,7 @@ class SecurityDetailCollector(DimensionCollector):
                 expr = match.group(1)
                 roles = self.HAS_ROLE_PATTERN.findall(expr) + self.HAS_AUTHORITY_PATTERN.findall(expr)
                 method_name = self._find_next_method(content, match.end())
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 fact = RawSecurityDetail(
                     name=f"{class_name}.{method_name}" if method_name else class_name,
@@ -108,8 +100,8 @@ class SecurityDetailCollector(DimensionCollector):
                     path=self._relative_path(java_file),
                     line_start=line_num,
                     line_end=line_num + 5,
-                    reason=f"@PreAuthorize(\"{expr}\")",
-                    snippet=f"@PreAuthorize(\"{expr}\")",
+                    reason=f'@PreAuthorize("{expr}")',
+                    snippet=f'@PreAuthorize("{expr}")',
                 )
                 self.output.add_fact(fact)
 
@@ -117,7 +109,7 @@ class SecurityDetailCollector(DimensionCollector):
             for match in self.SECURED_PATTERN.finditer(content):
                 roles = [r for r in match.groups() if r]
                 method_name = self._find_next_method(content, match.end())
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 fact = RawSecurityDetail(
                     name=f"{class_name}.{method_name}" if method_name else class_name,
@@ -140,7 +132,7 @@ class SecurityDetailCollector(DimensionCollector):
             for match in self.ROLES_ALLOWED_PATTERN.finditer(content):
                 roles = [r for r in match.groups() if r]
                 method_name = self._find_next_method(content, match.end())
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 fact = RawSecurityDetail(
                     name=f"{class_name}.{method_name}" if method_name else class_name,
@@ -162,7 +154,7 @@ class SecurityDetailCollector(DimensionCollector):
             # CSRF configuration
             for match in self.CSRF_PATTERN.finditer(content):
                 csrf_action = match.group(1)
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 fact = RawSecurityDetail(
                     name=f"{class_name}_csrf",
@@ -185,7 +177,7 @@ class SecurityDetailCollector(DimensionCollector):
             # CORS configuration
             if self.CORS_PATTERN.search(content):
                 origins = self.CORS_ALLOWED_ORIGINS_PATTERN.findall(content)
-                line_num = content[:self.CORS_PATTERN.search(content).start()].count('\n') + 1
+                line_num = content[: self.CORS_PATTERN.search(content).start()].count("\n") + 1
 
                 fact = RawSecurityDetail(
                     name=f"{class_name}_cors",
@@ -208,19 +200,20 @@ class SecurityDetailCollector(DimensionCollector):
     def _collect_angular_security(self):
         """Collect Angular route guard facts."""
         ts_files = list(self.repo_path.rglob("*.ts"))
-        ts_files = [f for f in ts_files if not self._should_skip(f)
-                     and 'guard' in str(f).lower() or 'auth' in str(f).lower()]
+        ts_files = [
+            f for f in ts_files if (not self._should_skip(f) and "guard" in str(f).lower()) or "auth" in str(f).lower()
+        ]
 
         for ts_file in ts_files:
             try:
-                content = ts_file.read_text(encoding='utf-8', errors='ignore')
+                content = ts_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
             if not self.ANGULAR_GUARD_PATTERN.search(content):
                 continue
 
-            class_match = re.search(r'(?:class|const)\s+(\w+)', content)
+            class_match = re.search(r"(?:class|const)\s+(\w+)", content)
             guard_name = class_match.group(1) if class_match else ts_file.stem
 
             # Extract role checks
@@ -232,7 +225,7 @@ class SecurityDetailCollector(DimensionCollector):
             line_num = 1
             guard_match = self.ANGULAR_GUARD_PATTERN.search(content)
             if guard_match:
-                line_num = content[:guard_match.start()].count('\n') + 1
+                line_num = content[: guard_match.start()].count("\n") + 1
 
             fact = RawSecurityDetail(
                 name=guard_name,
@@ -251,9 +244,9 @@ class SecurityDetailCollector(DimensionCollector):
             )
             self.output.add_fact(fact)
 
-    def _find_next_method(self, content: str, pos: int) -> Optional[str]:
+    def _find_next_method(self, content: str, pos: int) -> str | None:
         """Find the next method declaration after a given position."""
-        remaining = content[pos:pos + 200]
+        remaining = content[pos : pos + 200]
         match = self.METHOD_PATTERN.search(remaining)
         return match.group(1) if match else None
 

@@ -7,10 +7,9 @@ Duration: 2-5 seconds (no LLM).
 
 import re
 from pathlib import Path
-from typing import List, Tuple
 
-from .base import UpgradeRule, UpgradeRuleSet, UpgradeImpact, CodePattern
 from ....shared.utils.logger import setup_logger
+from .base import CodePattern, UpgradeImpact, UpgradeRule, UpgradeRuleSet
 
 logger = setup_logger(__name__)
 
@@ -28,7 +27,7 @@ class UpgradeCodeScanner:
             if (self.repo_path / "angular.json").exists():
                 self.frontend_root = self.repo_path
 
-    def scan_rules(self, rule_set: UpgradeRuleSet) -> List[UpgradeImpact]:
+    def scan_rules(self, rule_set: UpgradeRuleSet) -> list[UpgradeImpact]:
         """Scan codebase for all rules in a rule set."""
         impacts = []
         for rule in rule_set.rules:
@@ -36,8 +35,7 @@ class UpgradeCodeScanner:
             impacts.append(impact)
             if impact.occurrences > 0:
                 logger.info(
-                    f"[Scanner] {rule.id}: {impact.occurrences} occurrences "
-                    f"in {len(impact.affected_files)} files"
+                    f"[Scanner] {rule.id}: {impact.occurrences} occurrences in {len(impact.affected_files)} files"
                 )
         return impacts
 
@@ -63,7 +61,7 @@ class UpgradeCodeScanner:
             details=details,
         )
 
-    def _scan_pattern(self, pattern: CodePattern) -> Tuple[int, List[str]]:
+    def _scan_pattern(self, pattern: CodePattern) -> tuple[int, list[str]]:
         """Scan for a single code pattern."""
         count = 0
         affected_files = []

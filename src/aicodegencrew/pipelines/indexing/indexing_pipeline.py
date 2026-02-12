@@ -5,22 +5,23 @@ persistent state, stale lock recovery, and embedding failure monitoring.
 """
 
 import ctypes
-import os
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Optional
-from ...shared.utils.logger import setup_logger, log_metric
-from .repo_discovery_tool import RepoDiscoveryTool
-from .repo_reader_tool import RepoReaderTool
+from typing import Any, Optional
+
+from ...shared.utils.file_filters import collect_files
+from ...shared.utils.logger import log_metric, setup_logger
+from .chroma_index_tool import ChromaIndexTool
 from .chunker_tool import ChunkerTool
 from .embeddings_tool import OllamaEmbeddingsTool
-from .chroma_index_tool import ChromaIndexTool
-from ...shared.utils.file_filters import collect_files
+from .repo_discovery_tool import RepoDiscoveryTool
+from .repo_reader_tool import RepoReaderTool
 
 logger = setup_logger(__name__)
 
@@ -29,12 +30,14 @@ logger = setup_logger(__name__)
 # Configuration
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class IndexingConfig:
     """Configuration for indexing pipeline."""
+
     repo_path: Path
     index_mode: str = "auto"
-    chroma_dir: Optional[str] = None
+    chroma_dir: str | None = None
     collection_name: str = "repo_docs"
     include_submodules: bool = True
     batch_size: int = 50
@@ -47,8 +50,7 @@ class IndexingConfig:
     fingerprint_max_files: int = 2000
 
     @classmethod
-    def from_env(cls, repo_path: str = None, index_mode: str = None,
-                 chroma_dir: str = None) -> 'IndexingConfig':
+    def from_env(cls, repo_path: str = None, index_mode: str = None, chroma_dir: str = None) -> "IndexingConfig":
         """Create config from environment variables with optional overrides."""
         if repo_path is None:
             repo_path = os.getenv("PROJECT_PATH") or os.getenv("REPO_PATH")
@@ -80,9 +82,11 @@ class IndexingConfig:
 # Metrics
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class IndexingMetrics:
     """Metrics for indexing operation."""
+
     total_files_discovered: int = 0
     total_files_processed: int = 0
     total_chunks_created: int = 0
@@ -91,14 +95,14 @@ class IndexingMetrics:
     batches_processed: int = 0
     batches_failed: int = 0
     start_time: float = field(default_factory=time.time)
-    end_time: Optional[float] = None
+    end_time: float | None = None
 
     @property
     def duration_seconds(self) -> float:
         end = self.end_time or time.time()
         return end - self.start_time
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "total_files_discovered": self.total_files_discovered,
             "total_files_processed": self.total_files_processed,
@@ -109,8 +113,7 @@ class IndexingMetrics:
             "batches_failed": self.batches_failed,
             "duration_seconds": self.duration_seconds,
             "chunks_per_second": (
-                self.total_chunks_indexed / self.duration_seconds
-                if self.duration_seconds > 0 else 0
+                self.total_chunks_indexed / self.duration_seconds if self.duration_seconds > 0 else 0
             ),
         }
 
@@ -118,6 +121,7 @@ class IndexingMetrics:
 # ---------------------------------------------------------------------------
 # Persistent state
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class IndexingState:
@@ -127,6 +131,7 @@ class IndexingState:
     "fingerprint unchanged but ChromaDB missing" and warn instead of
     silently re-indexing for 3 hours.
     """
+
     fingerprint: str = ""
     fingerprint_type: str = ""
     chunk_count: int = 0
@@ -140,7 +145,7 @@ class IndexingState:
         return cache_dir / cls._STATE_FILENAME
 
     @classmethod
-    def load(cls, cache_dir: Path) -> Optional['IndexingState']:
+    def load(cls, cache_dir: Path) -> Optional["IndexingState"]:
         path = cls._state_path(cache_dir)
         if not path.exists():
             return None
@@ -175,7 +180,8 @@ class IndexingState:
 # Lock helpers
 # ---------------------------------------------------------------------------
 
-def _get_index_lock_path(chroma_dir: Optional[str] = None) -> Path:
+
+def _get_index_lock_path(chroma_dir: str | None = None) -> Path:
     d = chroma_dir or os.getenv("CHROMA_DIR", "./.chroma_db")
     return Path(d).resolve() / ".index.lock"
 
@@ -184,9 +190,7 @@ def _is_pid_alive(pid: int) -> bool:
     """Check if a process is alive (Windows-specific via kernel32)."""
     try:
         PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-        handle = ctypes.windll.kernel32.OpenProcess(
-            PROCESS_QUERY_LIMITED_INFORMATION, False, pid
-        )
+        handle = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
         if handle:
             ctypes.windll.kernel32.CloseHandle(handle)
             return True
@@ -208,9 +212,7 @@ def _acquire_index_lock(lock_path: Path, timeout_s: int) -> bool:
                 if line.startswith("pid="):
                     old_pid = int(line.split("=", 1)[1])
                     if not _is_pid_alive(old_pid):
-                        logger.warning(
-                            f"Stale lock detected (pid={old_pid} not alive). Removing."
-                        )
+                        logger.warning(f"Stale lock detected (pid={old_pid} not alive). Removing.")
                         lock_path.unlink(missing_ok=True)
                     break
         except Exception as e:
@@ -240,11 +242,12 @@ def _release_index_lock(lock_path: Path) -> None:
 # Fingerprint
 # ---------------------------------------------------------------------------
 
+
 def _calculate_repo_fingerprint(
     repo_path: Path,
     include_submodules: bool,
     max_files: int = 2000,
-) -> Tuple[str, str]:
+) -> tuple[str, str]:
     """Calculate a stable fingerprint for "did repo change?".
 
     Prefers Git state (fast + accurate). Falls back to filesystem stat sampling.
@@ -256,10 +259,13 @@ def _calculate_repo_fingerprint(
     def _sha16(text: str) -> str:
         return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
-    def _git(args: List[str]) -> str:
+    def _git(args: list[str]) -> str:
         result = subprocess.run(
             ["git", "-C", str(repo_path), *args],
-            capture_output=True, text=True, timeout=8, check=False,
+            capture_output=True,
+            text=True,
+            timeout=8,
+            check=False,
         )
         if result.returncode != 0:
             raise RuntimeError(result.stderr.strip() or "git command failed")
@@ -320,6 +326,7 @@ def _calculate_repo_fingerprint(
 # Pipeline
 # ---------------------------------------------------------------------------
 
+
 class IndexingPipeline:
     """Repository indexing pipeline (Phase 0).
 
@@ -334,7 +341,7 @@ class IndexingPipeline:
         self,
         repo_path: str,
         index_mode: str = "auto",
-        chroma_dir: Optional[str] = None,
+        chroma_dir: str | None = None,
     ):
         self.config = IndexingConfig.from_env(
             repo_path=repo_path,
@@ -343,9 +350,7 @@ class IndexingPipeline:
         )
         # Normalise mode
         if self.config.index_mode not in ("off", "auto", "smart", "force"):
-            logger.warning(
-                f"Unknown INDEX_MODE '{self.config.index_mode}', defaulting to 'auto'"
-            )
+            logger.warning(f"Unknown INDEX_MODE '{self.config.index_mode}', defaulting to 'auto'")
             self.config.index_mode = "auto"
 
         self.index_mode = self.config.index_mode
@@ -353,10 +358,7 @@ class IndexingPipeline:
         self.metrics = IndexingMetrics()
 
         # Resolve cache dir (sibling of chroma dir for state persistence)
-        chroma_resolved = Path(
-            self.config.chroma_dir
-            or os.getenv("CHROMA_DIR", "./.chroma_db")
-        ).resolve()
+        chroma_resolved = Path(self.config.chroma_dir or os.getenv("CHROMA_DIR", "./.chroma_db")).resolve()
         self._cache_dir = chroma_resolved.parent
         self._chroma_dir_resolved = str(chroma_resolved)
 
@@ -403,7 +405,7 @@ class IndexingPipeline:
 
     # -- Public API ---------------------------------------------------------
 
-    def kickoff(self, inputs: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
         """Execute the indexing pipeline (orchestrator Protocol)."""
         logger.info("[START] Repository Indexing Pipeline")
         logger.info(f"[CONFIG] INDEX_MODE={self.index_mode}  repo={self.repo_path}")
@@ -504,7 +506,7 @@ class IndexingPipeline:
 
     # -- Needs-indexing check (mode-aware) ----------------------------------
 
-    def _check_needs_indexing(self) -> Tuple[bool, str, str, str]:
+    def _check_needs_indexing(self) -> tuple[bool, str, str, str]:
         """Determine whether indexing should proceed.
 
         Returns:
@@ -546,9 +548,11 @@ class IndexingPipeline:
                     "Repo has NOT changed since last successful index. "
                     "Use --index-mode force to re-index."
                 )
-                return False, current_fp, fp_type, (
-                    f"Skipped: fingerprint unchanged (ChromaDB missing, "
-                    f"last indexed {saved.chunk_count} chunks)"
+                return (
+                    False,
+                    current_fp,
+                    fp_type,
+                    (f"Skipped: fingerprint unchanged (ChromaDB missing, last indexed {saved.chunk_count} chunks)"),
                 )
 
         if not chroma_has_data:
@@ -603,7 +607,7 @@ class IndexingPipeline:
 
         return f"Indexed {self.metrics.total_files_processed} files ({self.metrics.total_chunks_indexed} chunks)"
 
-    def _discover_files(self) -> List[str]:
+    def _discover_files(self) -> list[str]:
         discovery = self.discovery_tool._run(
             str(self.config.repo_path),
             self.config.include_submodules,
@@ -620,12 +624,12 @@ class IndexingPipeline:
 
         if len(all_file_paths) > self.config.max_total_files:
             logger.warning(f"Limiting {len(all_file_paths)} files to {self.config.max_total_files}")
-            all_file_paths = all_file_paths[:self.config.max_total_files]
+            all_file_paths = all_file_paths[: self.config.max_total_files]
 
         logger.info(f"Discovered {len(all_file_paths)} files to process")
         return all_file_paths
 
-    def _process_batches(self, all_file_paths: List[str], fingerprint: str, fp_type: str) -> None:
+    def _process_batches(self, all_file_paths: list[str], fingerprint: str, fp_type: str) -> None:
         total_batches = (len(all_file_paths) + self.config.batch_size - 1) // self.config.batch_size
 
         for i in range(0, len(all_file_paths), self.config.batch_size):
@@ -637,7 +641,7 @@ class IndexingPipeline:
                 break
 
             batch_num = (i // self.config.batch_size) + 1
-            batch_paths = all_file_paths[i:i + self.config.batch_size]
+            batch_paths = all_file_paths[i : i + self.config.batch_size]
 
             # ETA calculation
             elapsed_s = time.time() - self.metrics.start_time
@@ -657,7 +661,7 @@ class IndexingPipeline:
                 logger.error(f"Batch {batch_num} failed: {e}")
                 self.metrics.batches_failed += 1
 
-    def _process_batch(self, batch_paths: List[str], fingerprint: str, fp_type: str) -> None:
+    def _process_batch(self, batch_paths: list[str], fingerprint: str, fp_type: str) -> None:
         # Read
         read_res = self.reader_tool._run(
             str(self.config.repo_path),
@@ -703,8 +707,7 @@ class IndexingPipeline:
         # Attach per-file metadata
         file_hash_by_path = {
             f.get("path", ""): (
-                f.get("file_hash")
-                or hashlib.sha256((f.get("content") or "").encode("utf-8")).hexdigest()
+                f.get("file_hash") or hashlib.sha256((f.get("content") or "").encode("utf-8")).hexdigest()
             )
             for f in files_batch
         }
@@ -736,9 +739,7 @@ class IndexingPipeline:
                     f"({none_count}/{len(embeddings_batch)} None)"
                 )
             if pct > 5:
-                logger.warning(
-                    f"Embedding failure rate {pct:.1f}% ({none_count}/{len(embeddings_batch)} None)"
-                )
+                logger.warning(f"Embedding failure rate {pct:.1f}% ({none_count}/{len(embeddings_batch)} None)")
 
         # Store
         index_res = self.chroma_tool._run(
@@ -761,11 +762,9 @@ class IndexingPipeline:
 
     # -- Smart-mode per-file filter -----------------------------------------
 
-    def _filter_unchanged_files(
-        self, files_batch: List[Dict[str, Any]], repo_path_str: str
-    ) -> List[Dict[str, Any]]:
+    def _filter_unchanged_files(self, files_batch: list[dict[str, Any]], repo_path_str: str) -> list[dict[str, Any]]:
         """Filter out files whose hash hasn't changed (smart/incremental mode)."""
-        filtered: List[Dict[str, Any]] = []
+        filtered: list[dict[str, Any]] = []
         for file_info in files_batch:
             file_path = file_info.get("path", "")
             content = file_info.get("content") or ""
@@ -804,6 +803,7 @@ class IndexingPipeline:
     def _generate_indexed_files_report(self) -> None:
         try:
             import chromadb
+
             chroma_path = Path(self._chroma_dir_resolved)
             client = chromadb.PersistentClient(path=str(chroma_path))
             coll = client.get_collection(self.config.collection_name)
@@ -817,15 +817,14 @@ class IndexingPipeline:
                     if not repo_path and "repo_path" in meta:
                         repo_path = meta["repo_path"]
 
-            submodules: Dict[str, int] = {}
+            submodules: dict[str, int] = {}
             for fp in files:
                 parts = fp.replace("\\", "/").split("/")
                 if parts:
                     first = parts[0]
                     submod = (
                         first
-                        if first not in [".gitignore", ".env", "README.md"]
-                        and not first.startswith(".")
+                        if first not in [".gitignore", ".env", "README.md"] and not first.startswith(".")
                         else "root"
                     )
                     submodules[submod] = submodules.get(submod, 0) + 1
@@ -874,6 +873,7 @@ class IndexingPipeline:
 # ---------------------------------------------------------------------------
 # Backward-compat wrapper
 # ---------------------------------------------------------------------------
+
 
 def ensure_repo_indexed(
     repo_path: str = None,

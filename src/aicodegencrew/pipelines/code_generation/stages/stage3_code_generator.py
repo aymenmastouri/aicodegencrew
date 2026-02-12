@@ -8,11 +8,10 @@ Duration: 10-30s per file (LLM)
 
 import os
 import time
-from typing import List
 
-from ..schemas import CodegenPlanInput, FileContext, CollectedContext, GeneratedFile
-from ..strategies.base import BaseStrategy
 from ....shared.utils.logger import setup_logger
+from ..schemas import CodegenPlanInput, CollectedContext, FileContext, GeneratedFile
+from ..strategies.base import BaseStrategy
 
 logger = setup_logger(__name__)
 
@@ -49,7 +48,7 @@ class CodeGeneratorStage:
         plan: CodegenPlanInput,
         context: CollectedContext,
         strategy: BaseStrategy,
-    ) -> List[GeneratedFile]:
+    ) -> list[GeneratedFile]:
         """
         Generate code for all files in context.
 
@@ -61,10 +60,7 @@ class CodeGeneratorStage:
         Returns:
             List of GeneratedFile with generated/modified content.
         """
-        logger.info(
-            f"[Stage3] Generating code for {context.total_files} files "
-            f"using {strategy.__class__.__name__}"
-        )
+        logger.info(f"[Stage3] Generating code for {context.total_files} files using {strategy.__class__.__name__}")
 
         generated = []
 
@@ -151,10 +147,7 @@ class CodeGeneratorStage:
                 )
 
             except Exception as e:
-                logger.warning(
-                    f"[Stage3] Attempt {attempt}/{MAX_RETRIES} failed for "
-                    f"{file_ctx.file_path}: {e}"
-                )
+                logger.warning(f"[Stage3] Attempt {attempt}/{MAX_RETRIES} failed for {file_ctx.file_path}: {e}")
                 if attempt < MAX_RETRIES:
                     time.sleep(5 * (2 ** (attempt - 1)))
 

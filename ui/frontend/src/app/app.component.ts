@@ -27,7 +27,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         <mat-icon class="text-white">menu</mat-icon>
       </button>
       <span class="brand font-medium ml-3">
-        <span class="text-cg-vibrant font-bold">AI</span><span class="text-white">CodeGen</span><span class="text-cg-vibrant">Crew</span>
+        <span class="text-cg-vibrant font-bold">AI</span><span class="text-white">CodeGen</span
+        ><span class="text-cg-vibrant">Crew</span>
       </span>
       <span class="flex-1"></span>
       <span class="toolbar-badge">SDLC Dashboard</span>
@@ -63,99 +64,101 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
-  styles: [`
-    .app-toolbar {
-      background: var(--cg-navy) !important;
-      color: #fff !important;
-      height: 56px;
-    }
-    .brand {
-      font-size: 18px;
-      letter-spacing: -0.3px;
-    }
-    .toolbar-badge {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      opacity: 0.6;
-      font-weight: 500;
-    }
-    .sidenav-container {
-      height: calc(100vh - 56px);
-    }
-    .sidenav {
-      width: 230px;
-      background: var(--cg-navy);
-      border-right: none !important;
-    }
-    .sidenav-inner {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-    .nav-content {
-      flex: 1;
-      overflow-y: auto;
-      padding-top: 8px;
-    }
-    .nav-group-label {
-      padding: 16px 20px 4px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: rgba(255, 255, 255, 0.35);
-    }
-    .nav-section {
-      padding-top: 0 !important;
-      padding-bottom: 0 !important;
-    }
-    .nav-section ::ng-deep .mat-mdc-list-item {
-      color: rgba(255, 255, 255, 0.7);
-      height: 44px !important;
-      margin: 1px 8px;
-      border-radius: 8px;
-    }
-    .nav-section ::ng-deep .mat-mdc-list-item .mat-icon {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-    .nav-section ::ng-deep .mat-mdc-list-item:hover {
-      background: rgba(255, 255, 255, 0.06);
-    }
-    .active-link {
-      background: rgba(18, 171, 219, 0.12) !important;
-    }
-    .active-link ::ng-deep .mdc-list-item__primary-text {
-      color: var(--cg-vibrant) !important;
-      font-weight: 500;
-    }
-    .active-link ::ng-deep .mat-icon {
-      color: var(--cg-vibrant) !important;
-    }
-    .sidenav-footer {
-      padding: 12px 16px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .version-badge {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 11px;
-      font-family: monospace;
-    }
-    .version-icon {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-    }
-    .content-area {
-      background: var(--cg-gray-50);
-    }
-  `],
+  styles: [
+    `
+      .app-toolbar {
+        background: var(--cg-navy) !important;
+        color: #fff !important;
+        height: 56px;
+      }
+      .brand {
+        font-size: 18px;
+        letter-spacing: -0.3px;
+      }
+      .toolbar-badge {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        opacity: 0.6;
+        font-weight: 500;
+      }
+      .sidenav-container {
+        height: calc(100vh - 56px);
+      }
+      .sidenav {
+        width: 230px;
+        background: var(--cg-navy);
+        border-right: none !important;
+      }
+      .sidenav-inner {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .nav-content {
+        flex: 1;
+        overflow-y: auto;
+        padding-top: 8px;
+      }
+      .nav-group-label {
+        padding: 16px 20px 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: rgba(255, 255, 255, 0.35);
+      }
+      .nav-section {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+      }
+      .nav-section ::ng-deep .mat-mdc-list-item {
+        color: rgba(255, 255, 255, 0.7);
+        height: 44px !important;
+        margin: 1px 8px;
+        border-radius: 8px;
+      }
+      .nav-section ::ng-deep .mat-mdc-list-item .mat-icon {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      .nav-section ::ng-deep .mat-mdc-list-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .active-link {
+        background: rgba(18, 171, 219, 0.12) !important;
+      }
+      .active-link ::ng-deep .mdc-list-item__primary-text {
+        color: var(--cg-vibrant) !important;
+        font-weight: 500;
+      }
+      .active-link ::ng-deep .mat-icon {
+        color: var(--cg-vibrant) !important;
+      }
+      .sidenav-footer {
+        padding: 12px 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .version-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 11px;
+        font-family: monospace;
+      }
+      .version-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+      .content-area {
+        background: var(--cg-gray-50);
+      }
+    `,
+  ],
 })
 export class AppComponent {
   navGroups = [

@@ -1,4 +1,5 @@
 """Test the _summarize_facts method for compact output."""
+
 import json
 import sys
 from pathlib import Path
@@ -30,13 +31,13 @@ def test_summarize_facts_is_compact():
     if not facts_path.exists():
         pytest.skip(f"{facts_path} not found")
 
-    with open(facts_path, "r", encoding="utf-8") as f:
+    with open(facts_path, encoding="utf-8") as f:
         facts = json.load(f)
 
     analyzed_path = facts_path.parent / "analyzed_architecture.json"
     analysis = {}
     if analyzed_path.exists():
-        with open(analyzed_path, "r", encoding="utf-8") as f:
+        with open(analyzed_path, encoding="utf-8") as f:
             analysis = json.load(f)
 
     crew = _make_crew_with_facts(facts, analysis)

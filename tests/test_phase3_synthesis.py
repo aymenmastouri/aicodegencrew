@@ -8,18 +8,18 @@ and factory methods with mocked dependencies.
 
 import json
 import os
-import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock, PropertyMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from aicodegencrew.crews.architecture_synthesis.arc42.crew import ARC42_AGENT_CONFIG, Arc42Crew
 from aicodegencrew.crews.architecture_synthesis.base_crew import (
-    MiniCrewBase,
     TOOL_INSTRUCTION,
+    MiniCrewBase,
 )
-from aicodegencrew.crews.architecture_synthesis.c4.crew import C4Crew, C4_AGENT_CONFIG
-from aicodegencrew.crews.architecture_synthesis.arc42.crew import Arc42Crew, ARC42_AGENT_CONFIG
+from aicodegencrew.crews.architecture_synthesis.c4.crew import C4_AGENT_CONFIG, C4Crew
 from aicodegencrew.crews.architecture_synthesis.crew import ArchitectureSynthesisCrew
-
 
 # =============================================================================
 # Helpers
@@ -53,9 +53,7 @@ MINIMAL_ANALYSIS = {
     "patterns": {"domain_patterns": []},
 }
 
-MINIMAL_EVIDENCE = {
-    "ev_1": {"file_path": "Svc.java", "start_line": 1, "end_line": 5, "reason": "test"}
-}
+MINIMAL_EVIDENCE = {"ev_1": {"file_path": "Svc.java", "start_line": 1, "end_line": 5, "reason": "test"}}
 
 
 # =============================================================================
@@ -93,12 +91,15 @@ class TestMiniCrewBaseDataLoading:
 class TestMiniCrewBaseLLMFactory:
     """Test LLM creation from env vars."""
 
-    @patch.dict(os.environ, {
-        "MODEL": "test-model",
-        "API_BASE": "http://localhost:11434",
-        "MAX_LLM_OUTPUT_TOKENS": "2000",
-        "LLM_CONTEXT_WINDOW": "64000",
-    })
+    @patch.dict(
+        os.environ,
+        {
+            "MODEL": "test-model",
+            "API_BASE": "http://localhost:11434",
+            "MAX_LLM_OUTPUT_TOKENS": "2000",
+            "LLM_CONTEXT_WINDOW": "64000",
+        },
+    )
     @patch("aicodegencrew.crews.architecture_synthesis.base_crew.LLM")
     def test_create_llm_from_env(self, MockLLM):
         """LLM is created with env var settings."""
@@ -109,12 +110,18 @@ class TestMiniCrewBaseLLMFactory:
         class TestCrew(MiniCrewBase):
             crew_name = "Test"
             agent_config = {"role": "r", "goal": "g", "backstory": "b"}
-            def _summarize_facts(self): return {}
-            def run(self): return ""
+
+            def _summarize_facts(self):
+                return {}
+
+            def run(self):
+                return ""
 
         # Mock _load_json and _resolve_mcp_server_path to avoid file I/O
-        with patch.object(MiniCrewBase, '_load_json', return_value={}), \
-             patch.object(MiniCrewBase, '_resolve_mcp_server_path', return_value="/fake/mcp.py"):
+        with (
+            patch.object(MiniCrewBase, "_load_json", return_value={}),
+            patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"),
+        ):
             crew = TestCrew.__new__(TestCrew)
             crew.facts_path = Path("fake.json")
             crew.analyzed_path = Path("fake2.json")
@@ -128,7 +135,7 @@ class TestMiniCrewBaseLLMFactory:
             crew._token_budget = 64000
             crew._token_usage = []
 
-            llm = crew._create_llm()
+            crew._create_llm()
 
             MockLLM.assert_called_once()
             call_kwargs = MockLLM.call_args[1]
@@ -148,11 +155,17 @@ class TestMiniCrewBaseLLMFactory:
         class TestCrew(MiniCrewBase):
             crew_name = "Test"
             agent_config = {"role": "r", "goal": "g", "backstory": "b"}
-            def _summarize_facts(self): return {}
-            def run(self): return ""
 
-        with patch.object(MiniCrewBase, '_load_json', return_value={}), \
-             patch.object(MiniCrewBase, '_resolve_mcp_server_path', return_value="/fake/mcp.py"):
+            def _summarize_facts(self):
+                return {}
+
+            def run(self):
+                return ""
+
+        with (
+            patch.object(MiniCrewBase, "_load_json", return_value={}),
+            patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"),
+        ):
             crew = TestCrew.__new__(TestCrew)
             crew.facts_path = Path("fake.json")
             crew.facts = {}
@@ -217,7 +230,7 @@ class TestC4CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, '_resolve_mcp_server_path', return_value="/fake/mcp.py"):
+        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
             crew = C4Crew(
                 facts_path=str(tmp_path / "facts.json"),
                 analyzed_path=str(tmp_path / "analyzed.json"),
@@ -230,7 +243,7 @@ class TestC4CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, '_resolve_mcp_server_path', return_value="/fake/mcp.py"):
+        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
             crew = C4Crew(
                 facts_path=str(tmp_path / "facts.json"),
                 analyzed_path=str(tmp_path / "analyzed.json"),
@@ -260,7 +273,7 @@ class TestArc42CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, '_resolve_mcp_server_path', return_value="/fake/mcp.py"):
+        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
             crew = Arc42Crew(
                 facts_path=str(tmp_path / "facts.json"),
                 analyzed_path=str(tmp_path / "analyzed.json"),
@@ -273,7 +286,7 @@ class TestArc42CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, '_resolve_mcp_server_path', return_value="/fake/mcp.py"):
+        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
             crew = Arc42Crew(
                 facts_path=str(tmp_path / "facts.json"),
                 analyzed_path=str(tmp_path / "analyzed.json"),
@@ -295,9 +308,7 @@ class TestSynthesisCrewPrerequisites:
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
         _write_json(tmp_path / "analyzed_architecture.json", MINIMAL_ANALYSIS)
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
         # Should not raise
         crew._validate_prerequisites()
 
@@ -306,9 +317,7 @@ class TestSynthesisCrewPrerequisites:
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
         _write_json(tmp_path / "analyzed_architecture.json", MINIMAL_ANALYSIS)
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
         with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
             crew._validate_prerequisites()
 
@@ -317,9 +326,7 @@ class TestSynthesisCrewPrerequisites:
         _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
         with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
             crew._validate_prerequisites()
 
@@ -331,9 +338,7 @@ class TestSynthesisCrewArchive:
         """No error when there's nothing to archive."""
         _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
         # Should not raise
         crew._archive_and_clean_old_outputs()
 
@@ -344,9 +349,7 @@ class TestSynthesisCrewArchive:
         c4_dir.mkdir()
         (c4_dir / "test.md").write_text("test content", encoding="utf-8")
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
         crew._archive_and_clean_old_outputs()
 
         # c4 dir should be recreated empty
@@ -370,9 +373,7 @@ class TestSynthesisCrewArchive:
         c4_dir.mkdir()
         (c4_dir / "test.md").write_text("keep me", encoding="utf-8")
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
 
         # Verify is_resume logic
         c4_checkpoint = crew.facts_path.parent / ".checkpoint_c4.json"
@@ -389,12 +390,10 @@ class TestSynthesisCrewKickoff:
         """kickoff() calls run()."""
         _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
 
         mock_result = {"status": "completed", "phase": "phase3_architecture_synthesis"}
-        with patch.object(crew, 'run', return_value=mock_result) as mock_run:
+        with patch.object(crew, "run", return_value=mock_result) as mock_run:
             result = crew.kickoff()
 
         mock_run.assert_called_once()

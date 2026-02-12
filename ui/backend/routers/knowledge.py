@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, HTTPException, Query
 
-from ..services.knowledge_reader import list_knowledge_files, read_knowledge_file
 from ..schemas import KnowledgeSummary
+from ..services.knowledge_reader import list_knowledge_files, read_knowledge_file
 
 router = APIRouter(prefix="/api/knowledge", tags=["knowledge"])
 

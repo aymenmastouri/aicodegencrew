@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # Intermediate representation
 # ---------------------------------------------------------------------------
 
+
 class BlockType(Enum):
     HEADING = auto()
     PARAGRAPH = auto()
@@ -39,23 +40,23 @@ class BlockType(Enum):
 class Block:
     type: BlockType
     lines: list[str] = field(default_factory=list)
-    level: int = 0           # heading level (1-6) or list nesting depth
-    language: str = ""       # code block language
-    header_row: int = -1     # table: index of header row (-1 = none)
+    level: int = 0  # heading level (1-6) or list nesting depth
+    language: str = ""  # code block language
+    header_row: int = -1  # table: index of header row (-1 = none)
 
 
 # ---------------------------------------------------------------------------
 # Markdown Parser → Block list
 # ---------------------------------------------------------------------------
 
-_RE_HEADING = re.compile(r'^(#{1,6})\s+(.*)')
-_RE_CODE_FENCE = re.compile(r'^```(\w*)')
-_RE_TABLE_ROW = re.compile(r'^\|(.+)\|$')
-_RE_TABLE_SEP = re.compile(r'^\|[\s:]*-{2,}[\s:]*')
-_RE_UNORDERED = re.compile(r'^(\s*)[*\-]\s+(.*)')
-_RE_ORDERED = re.compile(r'^(\s*)\d+\.\s+(.*)')
-_RE_BLOCKQUOTE = re.compile(r'^>\s?(.*)')
-_RE_HR = re.compile(r'^-{3,}\s*$')
+_RE_HEADING = re.compile(r"^(#{1,6})\s+(.*)")
+_RE_CODE_FENCE = re.compile(r"^```(\w*)")
+_RE_TABLE_ROW = re.compile(r"^\|(.+)\|$")
+_RE_TABLE_SEP = re.compile(r"^\|[\s:]*-{2,}[\s:]*")
+_RE_UNORDERED = re.compile(r"^(\s*)[*\-]\s+(.*)")
+_RE_ORDERED = re.compile(r"^(\s*)\d+\.\s+(.*)")
+_RE_BLOCKQUOTE = re.compile(r"^>\s?(.*)")
+_RE_HR = re.compile(r"^-{3,}\s*$")
 
 
 def _parse_markdown(text: str) -> list[Block]:
@@ -166,10 +167,17 @@ def _parse_markdown(text: str) -> list[Block]:
 
         # --- Paragraph (fallback) ---
         para_lines: list[str] = []
-        while i < len(lines) and lines[i].strip() and not _RE_HEADING.match(lines[i]) \
-                and not _RE_CODE_FENCE.match(lines[i]) and not _RE_TABLE_ROW.match(lines[i]) \
-                and not _RE_BLOCKQUOTE.match(lines[i]) and not _RE_UNORDERED.match(lines[i]) \
-                and not _RE_ORDERED.match(lines[i]) and not _RE_HR.match(lines[i]):
+        while (
+            i < len(lines)
+            and lines[i].strip()
+            and not _RE_HEADING.match(lines[i])
+            and not _RE_CODE_FENCE.match(lines[i])
+            and not _RE_TABLE_ROW.match(lines[i])
+            and not _RE_BLOCKQUOTE.match(lines[i])
+            and not _RE_UNORDERED.match(lines[i])
+            and not _RE_ORDERED.match(lines[i])
+            and not _RE_HR.match(lines[i])
+        ):
             para_lines.append(lines[i])
             i += 1
         if para_lines:
@@ -182,28 +190,29 @@ def _parse_markdown(text: str) -> list[Block]:
 # Inline formatting converters
 # ---------------------------------------------------------------------------
 
+
 def _inline_confluence(text: str) -> str:
     """Convert inline Markdown formatting to Confluence Wiki Markup."""
     # Bold: **text** -> *text*  (do before single * handling)
-    text = re.sub(r'\*\*(.+?)\*\*', r'*\1*', text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"*\1*", text)
     # Inline code: `code` -> {{code}}
-    text = re.sub(r'`([^`]+)`', r'{{\1}}', text)
+    text = re.sub(r"`([^`]+)`", r"{{\1}}", text)
     # Images: ![alt](src) -> !src!
-    text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'!\2!', text)
+    text = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r"!\2!", text)
     # Links: [text](url) -> [text|url]
-    text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'[\1|\2]', text)
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"[\1|\2]", text)
     return text
 
 
 def _inline_asciidoc(text: str) -> str:
     """Convert inline Markdown formatting to AsciiDoc."""
     # Bold: **text** -> *text*
-    text = re.sub(r'\*\*(.+?)\*\*', r'*\1*', text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"*\1*", text)
     # Inline code stays: `code` -> `code`
     # Images: ![alt](src) -> image:src[alt]
-    text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'image:\2[\1]', text)
+    text = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r"image:\2[\1]", text)
     # Links: [text](url) -> link:url[text]
-    text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'link:\2[\1]', text)
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", r"link:\2[\1]", text)
     return text
 
 
@@ -220,6 +229,7 @@ def _parse_table_cells(row: str) -> list[str]:
 # ---------------------------------------------------------------------------
 # Renderers
 # ---------------------------------------------------------------------------
+
 
 def _render_confluence(blocks: list[Block]) -> str:
     """Render blocks as Confluence Wiki Markup."""
@@ -272,7 +282,7 @@ def _render_confluence(blocks: list[Block]) -> str:
 
         if blk.type == BlockType.UNORDERED_LIST:
             levels = getattr(blk, "_levels", [1] * len(blk.lines))
-            for item, depth in zip(blk.lines, levels):
+            for item, depth in zip(blk.lines, levels, strict=False):
                 prefix = "*" * depth
                 out.append(f"{prefix} {_inline_confluence(item)}")
             out.append("")
@@ -280,7 +290,7 @@ def _render_confluence(blocks: list[Block]) -> str:
 
         if blk.type == BlockType.ORDERED_LIST:
             levels = getattr(blk, "_levels", [1] * len(blk.lines))
-            for item, depth in zip(blk.lines, levels):
+            for item, depth in zip(blk.lines, levels, strict=False):
                 prefix = "#" * depth
                 out.append(f"{prefix} {_inline_confluence(item)}")
             out.append("")
@@ -328,7 +338,7 @@ def _render_asciidoc(blocks: list[Block]) -> str:
             # Determine column count from first row
             first_cells = _parse_table_cells(blk.lines[0]) if blk.lines else []
             col_count = len(first_cells)
-            out.append(f"[cols=\"{',' .join(['1'] * col_count)}\", options=\"header\"]")
+            out.append(f'[cols="{",".join(["1"] * col_count)}", options="header"]')
             out.append("|===")
             for idx, row in enumerate(blk.lines):
                 cells = _parse_table_cells(row)
@@ -356,7 +366,7 @@ def _render_asciidoc(blocks: list[Block]) -> str:
 
         if blk.type == BlockType.UNORDERED_LIST:
             levels = getattr(blk, "_levels", [1] * len(blk.lines))
-            for item, depth in zip(blk.lines, levels):
+            for item, depth in zip(blk.lines, levels, strict=False):
                 prefix = "*" * depth
                 out.append(f"{prefix} {_inline_asciidoc(item)}")
             out.append("")
@@ -364,7 +374,7 @@ def _render_asciidoc(blocks: list[Block]) -> str:
 
         if blk.type == BlockType.ORDERED_LIST:
             levels = getattr(blk, "_levels", [1] * len(blk.lines))
-            for item, depth in zip(blk.lines, levels):
+            for item, depth in zip(blk.lines, levels, strict=False):
                 prefix = "." * depth
                 out.append(f"{prefix} {_inline_asciidoc(item)}")
             out.append("")
@@ -451,7 +461,7 @@ ARC42_CHAPTERS = {
 
 def _get_chapter_number(filename: str) -> str | None:
     """Extract 2-digit chapter number from filename like '01-introduction.md'."""
-    m = re.match(r'^(\d{2})-', filename)
+    m = re.match(r"^(\d{2})-", filename)
     return m.group(1) if m else None
 
 
@@ -483,8 +493,7 @@ def _generate_arc42_toc(chapters: dict[str, str], lang: str, fmt: str) -> str:
 
     elif fmt == "html":
         items = "\n".join(
-            f'  <li><a href="{num}-*.html">{num}. {name}</a></li>'
-            for num, name in sorted(chapters.items())
+            f'  <li><a href="{num}-*.html">{num}. {name}</a></li>' for num, name in sorted(chapters.items())
         )
         body = f"<h1>{title}</h1>\n<ol>\n{items}\n</ol>\n"
         body += '<p><em>Based on <a href="https://arc42.org">arc42</a> template</em></p>'
@@ -496,6 +505,7 @@ def _generate_arc42_toc(chapters: dict[str, str], lang: str, fmt: str) -> str:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 class DocumentConverter:
     """Convert Markdown to Confluence Wiki Markup, AsciiDoc, and HTML.

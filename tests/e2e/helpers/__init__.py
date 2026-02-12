@@ -7,8 +7,8 @@ Exports:
 - SynthesisValidator: Validate Phase 2 synthesis outputs
 """
 
-from .facts_validator import FactsValidator
 from .evidence_validator import EvidenceValidator
+from .facts_validator import FactsValidator
 from .synthesis_validator import SynthesisValidator
 
-__all__ = ["FactsValidator", "EvidenceValidator", "SynthesisValidator"]
+__all__ = ["EvidenceValidator", "FactsValidator", "SynthesisValidator"]

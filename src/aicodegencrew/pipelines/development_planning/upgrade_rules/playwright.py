@@ -6,10 +6,12 @@ Scans for patterns in any Playwright project.
 """
 
 from .base import (
-    UpgradeRule, UpgradeRuleSet, CodePattern,
-    UpgradeSeverity, UpgradeCategory,
+    CodePattern,
+    UpgradeCategory,
+    UpgradeRule,
+    UpgradeRuleSet,
+    UpgradeSeverity,
 )
-
 
 # =============================================================================
 # Playwright 1.x incremental upgrades
@@ -32,12 +34,12 @@ PLAYWRIGHT_GENERAL = UpgradeRuleSet(
             id="pw-waitfor-deprecated",
             title="waitForNavigation -> waitForURL",
             description=(
-                "page.waitForNavigation() is deprecated. "
-                "Use page.waitForURL() or expect auto-waiting instead."
+                "page.waitForNavigation() is deprecated. Use page.waitForURL() or expect auto-waiting instead."
             ),
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="1", to_version="2",
+            from_version="1",
+            to_version="2",
             detection_patterns=[
                 CodePattern(
                     name="waitfor_navigation",
@@ -66,7 +68,8 @@ PLAYWRIGHT_GENERAL = UpgradeRuleSet(
             description="page.waitForSelector() is deprecated. Use locator.waitFor().",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="1", to_version="2",
+            from_version="1",
+            to_version="2",
             detection_patterns=[
                 CodePattern(
                     name="waitfor_selector",
@@ -94,7 +97,8 @@ PLAYWRIGHT_GENERAL = UpgradeRuleSet(
             description="page.$() and page.$$() are discouraged. Use locator API.",
             severity=UpgradeSeverity.RECOMMENDED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="1", to_version="2",
+            from_version="1",
+            to_version="2",
             detection_patterns=[
                 CodePattern(
                     name="dollar_selector",
@@ -123,7 +127,8 @@ PLAYWRIGHT_GENERAL = UpgradeRuleSet(
             description="ElementHandle methods are deprecated. Use Locator-based API.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="1", to_version="2",
+            from_version="1",
+            to_version="2",
             detection_patterns=[
                 CodePattern(
                     name="elementhandle_type",
@@ -146,7 +151,8 @@ PLAYWRIGHT_GENERAL = UpgradeRuleSet(
             description="Playwright config API evolves. Check for deprecated config options.",
             severity=UpgradeSeverity.RECOMMENDED,
             category=UpgradeCategory.BUILD_CONFIG,
-            from_version="1", to_version="2",
+            from_version="1",
+            to_version="2",
             detection_patterns=[
                 CodePattern(
                     name="pw_config_ts",
@@ -175,7 +181,8 @@ PLAYWRIGHT_GENERAL = UpgradeRuleSet(
             description="Playwright-BDD and Cucumber versions must match Playwright version.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="1", to_version="2",
+            from_version="1",
+            to_version="2",
             detection_patterns=[
                 CodePattern(
                     name="playwright_bdd_dep",

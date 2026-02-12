@@ -7,9 +7,9 @@ from .stage4_code_validator import CodeValidatorStage
 from .stage5_output_writer import OutputWriterStage
 
 __all__ = [
-    "PlanReaderStage",
-    "ContextCollectorStage",
     "CodeGeneratorStage",
     "CodeValidatorStage",
+    "ContextCollectorStage",
     "OutputWriterStage",
+    "PlanReaderStage",
 ]

@@ -1,8 +1,8 @@
 """Service for reading knowledge base files."""
 
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from ..config import settings
 from ..schemas import KnowledgeFile, KnowledgeSummary
@@ -33,9 +33,7 @@ def list_knowledge_files() -> KnowledgeSummary:
     total_size = 0
 
     for path in sorted(knowledge_dir.rglob("*")):
-        if path.is_file() and not any(
-            p == "archive" for p in path.relative_to(knowledge_dir).parts
-        ):
+        if path.is_file() and not any(p == "archive" for p in path.relative_to(knowledge_dir).parts):
             size = path.stat().st_size
             total_size += size
             files.append(
@@ -43,16 +41,12 @@ def list_knowledge_files() -> KnowledgeSummary:
                     path=str(path.relative_to(knowledge_dir)),
                     name=path.name,
                     size_bytes=size,
-                    modified=datetime.fromtimestamp(
-                        path.stat().st_mtime
-                    ).isoformat(),
+                    modified=datetime.fromtimestamp(path.stat().st_mtime).isoformat(),
                     type=_file_type(path),
                 )
             )
 
-    return KnowledgeSummary(
-        total_files=len(files), total_size_bytes=total_size, files=files
-    )
+    return KnowledgeSummary(total_files=len(files), total_size_bytes=total_size, files=files)
 
 
 def read_knowledge_file(relative_path: str) -> dict | list | str:
@@ -68,8 +62,8 @@ def read_knowledge_file(relative_path: str) -> dict | list | str:
         raise ValueError("Path traversal not allowed")
 
     if file_path.suffix == ".json":
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             return json.load(f)
 
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         return f.read()

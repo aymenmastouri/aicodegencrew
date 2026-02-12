@@ -1,7 +1,6 @@
 """Service for reading phase configuration and status."""
 
 import yaml
-from pathlib import Path
 
 from ..config import settings
 from ..schemas import PhaseInfo, PhaseStatus, PipelineStatus, PresetInfo
@@ -11,7 +10,7 @@ def _load_phases_config() -> dict:
     """Load phases_config.yaml."""
     if not settings.phases_config.exists():
         return {"phases": {}, "presets": {}}
-    with open(settings.phases_config, "r", encoding="utf-8") as f:
+    with open(settings.phases_config, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
 
@@ -43,13 +42,15 @@ def get_presets() -> list[PresetInfo]:
             presets.append(PresetInfo(name=name, phases=value))
         elif isinstance(value, dict):
             # New format: preset_name: {display_name, description, icon, phases}
-            presets.append(PresetInfo(
-                name=name,
-                display_name=value.get("display_name", name),
-                description=value.get("description", ""),
-                icon=value.get("icon", "playlist_play"),
-                phases=value.get("phases", []),
-            ))
+            presets.append(
+                PresetInfo(
+                    name=name,
+                    display_name=value.get("display_name", name),
+                    description=value.get("description", ""),
+                    icon=value.get("icon", "playlist_play"),
+                    phases=value.get("phases", []),
+                )
+            )
     return presets
 
 

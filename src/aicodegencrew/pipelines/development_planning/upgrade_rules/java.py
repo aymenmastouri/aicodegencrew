@@ -6,10 +6,12 @@ Scans for patterns in any Java project.
 """
 
 from .base import (
-    UpgradeRule, UpgradeRuleSet, CodePattern,
-    UpgradeSeverity, UpgradeCategory,
+    CodePattern,
+    UpgradeCategory,
+    UpgradeRule,
+    UpgradeRuleSet,
+    UpgradeSeverity,
 )
-
 
 # =============================================================================
 # Java 17 -> 21
@@ -30,7 +32,8 @@ JAVA_17_TO_21 = UpgradeRuleSet(
             description="SecurityManager and related APIs are removed in Java 21.",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.API_CHANGE,
-            from_version="17", to_version="21",
+            from_version="17",
+            to_version="21",
             detection_patterns=[
                 CodePattern(
                     name="security_manager",
@@ -53,7 +56,8 @@ JAVA_17_TO_21 = UpgradeRuleSet(
             description="finalize() is deprecated for removal. Use Cleaner or try-with-resources.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="17", to_version="21",
+            from_version="17",
+            to_version="21",
             detection_patterns=[
                 CodePattern(
                     name="finalize_method",
@@ -65,7 +69,7 @@ JAVA_17_TO_21 = UpgradeRuleSet(
             migration_steps=[
                 "1. Replace finalize() with AutoCloseable + try-with-resources",
                 "2. For native resources, use java.lang.ref.Cleaner",
-                "3. Remove @SuppressWarnings(\"deprecation\") for finalize",
+                '3. Remove @SuppressWarnings("deprecation") for finalize',
             ],
             affected_stereotypes=[],
             effort_per_occurrence=30,
@@ -76,7 +80,8 @@ JAVA_17_TO_21 = UpgradeRuleSet(
             description="Java 21 finalizes record patterns and pattern matching for switch.",
             severity=UpgradeSeverity.OPTIONAL,
             category=UpgradeCategory.SYNTAX,
-            from_version="17", to_version="21",
+            from_version="17",
+            to_version="21",
             detection_patterns=[
                 CodePattern(
                     name="instanceof_cast",
@@ -99,7 +104,8 @@ JAVA_17_TO_21 = UpgradeRuleSet(
             description="Java 21 requires Gradle 8.4+ for full support.",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.BUILD_CONFIG,
-            from_version="17", to_version="21",
+            from_version="17",
+            to_version="21",
             detection_patterns=[
                 CodePattern(
                     name="gradle_wrapper_old",
@@ -121,7 +127,8 @@ JAVA_17_TO_21 = UpgradeRuleSet(
             description="Maven compiler plugin needs update for Java 21.",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.BUILD_CONFIG,
-            from_version="17", to_version="21",
+            from_version="17",
+            to_version="21",
             detection_patterns=[
                 CodePattern(
                     name="maven_compiler_source",

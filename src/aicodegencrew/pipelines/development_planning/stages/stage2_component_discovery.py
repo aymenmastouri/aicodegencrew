@@ -15,10 +15,10 @@ NO LLM REQUIRED
 
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from ..schemas import TaskInput, ComponentMatch, InterfaceMatch, DependencyRelation
 from ....shared.utils.logger import setup_logger
+from ..schemas import ComponentMatch, DependencyRelation, InterfaceMatch, TaskInput
 
 logger = setup_logger(__name__)
 
@@ -49,7 +49,7 @@ class ComponentDiscoveryStage:
 
         self.collection = None  # Lazy init
 
-    def run(self, task: TaskInput, top_k: int = 10) -> Dict[str, Any]:
+    def run(self, task: TaskInput, top_k: int = 10) -> dict[str, Any]:
         """
         Discover affected components.
 
@@ -88,11 +88,7 @@ class ComponentDiscoveryStage:
         )
 
         # Get top K components
-        top_component_ids = sorted(
-            combined_scores.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )[:top_k]
+        top_component_ids = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)[:top_k]
 
         # Enrich with component details
         affected_components = []
@@ -109,21 +105,15 @@ class ComponentDiscoveryStage:
                         file_path=comp.get("file_path", ""),
                         relevance_score=round(score, 3),
                         change_type=self._infer_change_type(task.description),
-                        source=self._determine_source(
-                            comp_id, semantic_scores, name_scores, package_scores
-                        ),
+                        source=self._determine_source(comp_id, semantic_scores, name_scores, package_scores),
                     )
                 )
 
         # Find related interfaces
-        related_interfaces = self._find_interfaces(
-            [c.id for c in affected_components]
-        )
+        related_interfaces = self._find_interfaces([c.id for c in affected_components])
 
         # Find dependencies
-        dependencies = self._find_dependencies(
-            [c.id for c in affected_components]
-        )
+        dependencies = self._find_dependencies([c.id for c in affected_components])
 
         logger.info(
             f"[Stage2] Discovered {len(affected_components)} components, "
@@ -136,7 +126,7 @@ class ComponentDiscoveryStage:
             "dependencies": [d.model_dump() for d in dependencies],
         }
 
-    def _upgrade_discovery(self, task: TaskInput) -> Dict[str, Any]:
+    def _upgrade_discovery(self, task: TaskInput) -> dict[str, Any]:
         """Discover ALL components for upgrade tasks (not top-K scoring)."""
         # Detect which container is being upgraded
         text = f"{task.summary} {task.description}".lower()
@@ -175,7 +165,7 @@ class ComponentDiscoveryStage:
             "dependencies": [],
         }
 
-    def _semantic_search(self, query: str, n: int) -> Dict[str, float]:
+    def _semantic_search(self, query: str, n: int) -> dict[str, float]:
         """Semantic search using ChromaDB."""
         scores = {}
 
@@ -192,9 +182,7 @@ class ComponentDiscoveryStage:
                 return scores
 
             results = collection.query(
-                query_embeddings=[query_embedding],
-                n_results=n,
-                include=["metadatas", "distances"]
+                query_embeddings=[query_embedding], n_results=n, include=["metadatas", "distances"]
             )
 
             if results and results.get("metadatas"):
@@ -215,7 +203,7 @@ class ComponentDiscoveryStage:
 
         return scores
 
-    def _name_matching(self, query: str) -> Dict[str, float]:
+    def _name_matching(self, query: str) -> dict[str, float]:
         """Fuzzy name matching using difflib (stdlib)."""
         from difflib import SequenceMatcher
 
@@ -240,7 +228,7 @@ class ComponentDiscoveryStage:
 
         return scores
 
-    def _package_matching(self, labels: List[str]) -> Dict[str, float]:
+    def _package_matching(self, labels: list[str]) -> dict[str, float]:
         """Match components by package/module labels."""
         scores = {}
 
@@ -261,7 +249,7 @@ class ComponentDiscoveryStage:
 
         return scores
 
-    def _stereotype_matching(self, query: str) -> Dict[str, float]:
+    def _stereotype_matching(self, query: str) -> dict[str, float]:
         """Match by stereotype keywords."""
         stereotype_keywords = {
             "controller": ["endpoint", "rest", "api", "http", "controller"],
@@ -294,11 +282,11 @@ class ComponentDiscoveryStage:
 
     def _combine_scores(
         self,
-        semantic: Dict[str, float],
-        name: Dict[str, float],
-        package: Dict[str, float],
-        stereotype: Dict[str, float],
-    ) -> Dict[str, float]:
+        semantic: dict[str, float],
+        name: dict[str, float],
+        package: dict[str, float],
+        stereotype: dict[str, float],
+    ) -> dict[str, float]:
         """Combine scores with weights."""
         weights = {
             "semantic": 0.4,
@@ -312,16 +300,16 @@ class ComponentDiscoveryStage:
         combined = {}
         for comp_id in all_ids:
             score = (
-                semantic.get(comp_id, 0) * weights["semantic"] +
-                name.get(comp_id, 0) * weights["name"] +
-                package.get(comp_id, 0) * weights["package"] +
-                stereotype.get(comp_id, 0) * weights["stereotype"]
+                semantic.get(comp_id, 0) * weights["semantic"]
+                + name.get(comp_id, 0) * weights["name"]
+                + package.get(comp_id, 0) * weights["package"]
+                + stereotype.get(comp_id, 0) * weights["stereotype"]
             )
             combined[comp_id] = score
 
         return combined
 
-    def _find_interfaces(self, component_ids: List[str]) -> List[InterfaceMatch]:
+    def _find_interfaces(self, component_ids: list[str]) -> list[InterfaceMatch]:
         """Find interfaces implemented by these components."""
         interfaces = []
 
@@ -342,7 +330,7 @@ class ComponentDiscoveryStage:
 
         return interfaces
 
-    def _find_dependencies(self, component_ids: List[str]) -> List[DependencyRelation]:
+    def _find_dependencies(self, component_ids: list[str]) -> list[DependencyRelation]:
         """Find dependencies between components."""
         dependencies = []
 
@@ -362,14 +350,14 @@ class ComponentDiscoveryStage:
 
         return dependencies
 
-    def _get_component_by_id(self, comp_id: str) -> Optional[dict]:
+    def _get_component_by_id(self, comp_id: str) -> dict | None:
         """Get component by ID."""
         for comp in self.components:
             if comp["id"] == comp_id:
                 return comp
         return None
 
-    def _find_component_by_path(self, file_path: str) -> Optional[str]:
+    def _find_component_by_path(self, file_path: str) -> str | None:
         """Find component ID by file path."""
         for comp in self.components:
             comp_file = comp.get("file_path", "")
@@ -391,9 +379,9 @@ class ComponentDiscoveryStage:
     def _determine_source(
         self,
         comp_id: str,
-        semantic: Dict[str, float],
-        name: Dict[str, float],
-        package: Dict[str, float],
+        semantic: dict[str, float],
+        name: dict[str, float],
+        package: dict[str, float],
     ) -> str:
         """Determine which signal contributed most to this match."""
         scores = {
@@ -436,10 +424,11 @@ class ComponentDiscoveryStage:
             logger.error(f"[Stage2] ChromaDB initialization error: {e}")
             return None
 
-    def _embed_query(self, text: str) -> Optional[List[float]]:
+    def _embed_query(self, text: str) -> list[float] | None:
         """Embed query text using the same Ollama client as the indexing pipeline."""
         try:
             from ....shared.utils.ollama_client import OllamaClient
+
             client = OllamaClient()
             return client.embed_text(text)
         except Exception as e:

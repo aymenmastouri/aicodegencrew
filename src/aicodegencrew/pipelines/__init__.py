@@ -7,13 +7,13 @@ Phase 4: Development Planning - Hybrid (deterministic + 1 LLM call)
 Phase 5: Code Generation - Hybrid (deterministic + 1 LLM call per file)
 """
 
-from .indexing import IndexingPipeline, ensure_repo_indexed
 from .architecture_facts import ArchitectureFactsPipeline
 from .code_generation import CodeGenerationPipeline
+from .indexing import IndexingPipeline, ensure_repo_indexed
 
 __all__ = [
-    "IndexingPipeline",
-    "ensure_repo_indexed",
     "ArchitectureFactsPipeline",
     "CodeGenerationPipeline",
+    "IndexingPipeline",
+    "ensure_repo_indexed",
 ]

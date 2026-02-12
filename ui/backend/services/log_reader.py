@@ -1,7 +1,5 @@
 """Service for reading log files."""
 
-from pathlib import Path
-
 from ..config import settings
 from ..schemas import LogResponse
 
@@ -19,7 +17,7 @@ def read_log(filename: str = "aicodegencrew.log", tail: int = 200) -> LogRespons
     except ValueError:
         raise ValueError("Path traversal not allowed")
 
-    with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+    with open(log_path, encoding="utf-8", errors="replace") as f:
         all_lines = f.readlines()
 
     total = len(all_lines)
@@ -32,8 +30,4 @@ def list_log_files() -> list[str]:
     """List available log files."""
     if not settings.logs_dir.exists():
         return []
-    return sorted(
-        f.name
-        for f in settings.logs_dir.iterdir()
-        if f.is_file() and f.suffix in (".log", ".jsonl")
-    )
+    return sorted(f.name for f in settings.logs_dir.iterdir() if f.is_file() and f.suffix in (".log", ".jsonl"))

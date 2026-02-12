@@ -1,0 +1,8 @@
+dist/
+node_modules/
+coverage/
+.angular/
+test-results/
+playwright-report/
+*.min.js
+*.min.css

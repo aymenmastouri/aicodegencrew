@@ -10,11 +10,10 @@ Duration: <1s (deterministic)
 
 import json
 from pathlib import Path
-from typing import Optional
 
+from ....shared.utils.logger import setup_logger
 from ..schemas import CodegenPlanInput, ComponentTarget
 from ..strategies import STRATEGY_MAP, BaseStrategy
-from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -33,8 +32,8 @@ class PlanReaderStage:
 
     def run(
         self,
-        task_id: Optional[str] = None,
-        plan_path: Optional[str] = None,
+        task_id: str | None = None,
+        plan_path: str | None = None,
     ) -> tuple[CodegenPlanInput, BaseStrategy]:
         """
         Read and validate a Phase 4 plan.
@@ -60,7 +59,7 @@ class PlanReaderStage:
         logger.info(f"[Stage1] Reading plan: {path}")
 
         # Load JSON
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             raw = json.load(f)
 
         # Extract fields from Phase 4 output structure
@@ -167,9 +166,7 @@ class PlanReaderStage:
 
                 # Resolve from facts if file_path is missing
                 if not file_path:
-                    file_path = self._resolve_file_path(
-                        comp.get("id", ""), comp.get("name", "")
-                    )
+                    file_path = self._resolve_file_path(comp.get("id", ""), comp.get("name", ""))
 
                 components.append(
                     ComponentTarget(
@@ -230,7 +227,7 @@ class PlanReaderStage:
             return self._facts_components
 
         try:
-            with open(self.facts_path, "r", encoding="utf-8") as f:
+            with open(self.facts_path, encoding="utf-8") as f:
                 facts = json.load(f)
             for comp in facts.get("components", []):
                 cid = comp.get("id", "")

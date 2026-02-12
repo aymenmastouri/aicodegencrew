@@ -1,7 +1,7 @@
 """Strategy for targeted bug fixes."""
 
+from ..schemas import CodegenPlanInput, FileContext
 from .base import BaseStrategy
-from ..schemas import FileContext, CodegenPlanInput
 
 
 class BugfixStrategy(BaseStrategy):

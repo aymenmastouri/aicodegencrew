@@ -79,5 +79,38 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+src = ["src", "tests", "ui/backend"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "RUF"]
+ignore = [
+    "B008",    # Function call in argument defaults (FastAPI Depends)
+    "B904",    # raise ... from err in except clauses (too pervasive to fix now)
+    "E402",    # Module-level import not at top (intentional: filter warnings before imports)
+    "E722",    # Bare except (used in JSON parsing fallbacks)
+    "RUF012",  # Mutable class variables (CrewAI pattern)
+    "RUF013",  # Implicit Optional (would touch hundreds of signatures)
+    "S101",    # Use of assert (OK in tests)
+    "S110",    # try-except-pass (intentional in metric logging)
+    "S104",    # Binding to all interfaces (intentional for Docker)
+    "S112",    # try-except-continue (intentional in batch processing)
+    "S314",    # XML parsing (internal files only)
+    "S324",    # Insecure hash (not for security purposes)
+    "S603",    # subprocess call (internal commands only)
+    "S607",    # Partial executable path (git, python — trusted)
+    "E501",    # Line too long (handled by formatter where possible)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "B017"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
 [tool.crewai]
 type = "crew"

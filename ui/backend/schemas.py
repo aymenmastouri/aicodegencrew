@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -20,14 +21,14 @@ class PhaseStatus(BaseModel):
     name: str
     status: str = "idle"  # idle | ready | running | completed | failed | planned
     enabled: bool = True
-    last_run: Optional[str] = None
-    duration_seconds: Optional[float] = None
+    last_run: str | None = None
+    duration_seconds: float | None = None
     output_exists: bool = False
 
 
 class PipelineStatus(BaseModel):
     phases: list[PhaseStatus]
-    active_preset: Optional[str] = None
+    active_preset: str | None = None
     is_running: bool = False
 
 
@@ -110,9 +111,9 @@ class HealthResponse(BaseModel):
 
 
 class RunRequest(BaseModel):
-    preset: Optional[str] = None
-    phases: Optional[list[str]] = None
-    env_overrides: Optional[dict[str, str]] = None
+    preset: str | None = None
+    phases: list[str] | None = None
+    env_overrides: dict[str, str] | None = None
 
 
 class RunResponse(BaseModel):
@@ -125,27 +126,27 @@ class PhaseProgress(BaseModel):
     phase_id: str
     name: str
     status: str = "pending"  # pending | running | completed | failed
-    started_at: Optional[str] = None
-    duration_seconds: Optional[float] = None
+    started_at: str | None = None
+    duration_seconds: float | None = None
 
 
 class ExecutionStatus(BaseModel):
     state: str = "idle"  # idle | running | completed | failed | cancelled
-    run_id: Optional[str] = None
-    preset: Optional[str] = None
+    run_id: str | None = None
+    preset: str | None = None
     phases: list[str] = []
-    started_at: Optional[str] = None
-    elapsed_seconds: Optional[float] = None
+    started_at: str | None = None
+    elapsed_seconds: float | None = None
     phase_progress: list[PhaseProgress] = []
 
 
 class RunHistoryEntry(BaseModel):
     run_id: str
     status: str
-    preset: Optional[str] = None
+    preset: str | None = None
     phases: list[str] = []
-    started_at: Optional[str] = None
-    duration: Optional[str] = None
+    started_at: str | None = None
+    duration: str | None = None
     phase_results: list[dict[str, Any]] = []
 
 

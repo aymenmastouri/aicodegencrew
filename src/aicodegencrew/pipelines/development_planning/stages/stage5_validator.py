@@ -7,10 +7,8 @@ Duration: <1 second (deterministic)
 NO LLM REQUIRED
 """
 
-from typing import Dict, Any, List
-
-from ..schemas import ImplementationPlan, ValidationResult
 from ....shared.utils.logger import setup_logger
+from ..schemas import ImplementationPlan, ValidationResult
 
 logger = setup_logger(__name__)
 
@@ -121,18 +119,17 @@ class ValidatorStage:
             logger.info(f"[Stage5] Plan is valid (warnings: {len(warnings)})")
         else:
             logger.warning(
-                f"[Stage5] Plan validation failed: "
-                f"{len(errors)} errors, {len(missing_fields)} missing fields"
+                f"[Stage5] Plan validation failed: {len(errors)} errors, {len(missing_fields)} missing fields"
             )
 
         return result
 
-    def _validate_layer_compliance(self, dev_plan: dict) -> List[str]:
+    def _validate_layer_compliance(self, dev_plan: dict) -> list[str]:
         """Check if changes follow architecture layer rules."""
         warnings = []
 
         # Get layer structure from analyzed architecture
-        micro_arch = self.analyzed_architecture.get("micro_architecture", {})
+        self.analyzed_architecture.get("micro_architecture", {})
 
         # For now, just warn if layer_compliance is not mentioned
         arch_context = dev_plan.get("architecture_context", {})
@@ -142,7 +139,7 @@ class ValidatorStage:
 
         return warnings
 
-    def _validate_component_references(self, dev_plan: dict) -> List[str]:
+    def _validate_component_references(self, dev_plan: dict) -> list[str]:
         """Validate that implementation steps reference actual components."""
         errors = []
 
@@ -189,7 +186,7 @@ class ValidatorStage:
         else:
             for i, step in enumerate(migration_seq):
                 if not step.get("migration_steps"):
-                    warnings.append(f"Migration step {i+1} ({step.get('title', '?')}) has no migration_steps")
+                    warnings.append(f"Migration step {i + 1} ({step.get('title', '?')}) has no migration_steps")
 
         if not upgrade_plan.get("verification_commands"):
             warnings.append("Upgrade plan has no verification_commands")

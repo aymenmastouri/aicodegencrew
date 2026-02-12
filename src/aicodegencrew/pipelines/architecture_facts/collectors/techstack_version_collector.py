@@ -13,20 +13,20 @@ Detects versions from:
 Output -> tech_versions in system.json
 """
 
-import re
 import json
+import re
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Any
 from xml.etree import ElementTree as ET
-from dataclasses import dataclass, field
 
-from .base import DimensionCollector, CollectorOutput, RawFact
 from ....shared.utils.logger import logger
+from .base import CollectorOutput, DimensionCollector, RawFact
 
 
 @dataclass
 class TechVersion(RawFact):
     """A technology version fact."""
+
     technology: str = ""
     version: str = ""
     source_file: str = ""
@@ -43,12 +43,12 @@ class TechStackVersionCollector(DimensionCollector):
     DIMENSION = "tech_versions"
 
     # Skip directories
-    SKIP_DIRS = {'node_modules', 'dist', 'build', 'target', '.git', 'bin', 'generated'}
+    SKIP_DIRS = {"node_modules", "dist", "build", "target", ".git", "bin", "generated"}
 
     def __init__(self, repo_path: Path, container_id: str = ""):
         super().__init__(repo_path)
         self.container_id = container_id
-        self.versions: Dict[str, TechVersion] = {}
+        self.versions: dict[str, TechVersion] = {}
 
     def collect(self) -> CollectorOutput:
         """Collect all technology version facts."""
@@ -97,12 +97,7 @@ class TechStackVersionCollector(DimensionCollector):
             source_file=source_file,
             category=category,
         )
-        fact.add_evidence(
-            path=source_file,
-            line_start=1,
-            line_end=10,
-            reason=f"{technology} version: {version}"
-        )
+        fact.add_evidence(path=source_file, line_start=1, line_end=10, reason=f"{technology} version: {version}")
         self.versions[key] = fact
         logger.debug(f"[TechStackVersionCollector] {technology}: {version} ({source_file})")
 
@@ -134,7 +129,7 @@ class TechStackVersionCollector(DimensionCollector):
     def _parse_gradle_file(self, file_path: Path):
         """Parse build.gradle for versions."""
         try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
             # Spring Boot version
@@ -176,7 +171,7 @@ class TechStackVersionCollector(DimensionCollector):
     def _parse_gradle_wrapper(self, file_path: Path):
         """Parse gradle-wrapper.properties for Gradle version."""
         try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
             # distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
@@ -190,7 +185,7 @@ class TechStackVersionCollector(DimensionCollector):
     def _parse_gradle_properties(self, file_path: Path):
         """Parse gradle.properties for versions."""
         try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
             # Common version properties
@@ -223,32 +218,32 @@ class TechStackVersionCollector(DimensionCollector):
     def _parse_pom_file(self, file_path: Path):
         """Parse pom.xml for versions."""
         try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
             # Try XML parsing
             try:
                 tree = ET.parse(file_path)
                 root = tree.getroot()
-                ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
+                ns = {"m": "http://maven.apache.org/POM/4.0.0"}
 
                 # Spring Boot parent version
-                parent = root.find('.//m:parent', ns) or root.find('.//parent')
+                parent = root.find(".//m:parent", ns) or root.find(".//parent")
                 if parent is not None:
-                    artifact = parent.find('m:artifactId', ns) or parent.find('artifactId')
-                    version = parent.find('m:version', ns) or parent.find('version')
+                    artifact = parent.find("m:artifactId", ns) or parent.find("artifactId")
+                    version = parent.find("m:version", ns) or parent.find("version")
                     if artifact is not None and version is not None:
-                        if 'spring-boot' in (artifact.text or '').lower():
+                        if "spring-boot" in (artifact.text or "").lower():
                             self._add_version("Spring Boot", version.text, rel_path, "framework")
 
                 # Java version from properties
-                props = root.find('.//m:properties', ns) or root.find('.//properties')
+                props = root.find(".//m:properties", ns) or root.find(".//properties")
                 if props is not None:
-                    java_version = props.find('m:java.version', ns) or props.find('java.version')
+                    java_version = props.find("m:java.version", ns) or props.find("java.version")
                     if java_version is not None and java_version.text:
                         self._add_version("Java", java_version.text, rel_path, "language")
 
-                    maven_compiler = props.find('m:maven.compiler.source', ns) or props.find('maven.compiler.source')
+                    maven_compiler = props.find("m:maven.compiler.source", ns) or props.find("maven.compiler.source")
                     if maven_compiler is not None and maven_compiler.text:
                         self._add_version("Java", maven_compiler.text, rel_path, "language")
 
@@ -278,7 +273,7 @@ class TechStackVersionCollector(DimensionCollector):
             if self._should_skip(version_file):
                 continue
             try:
-                version = version_file.read_text(encoding='utf-8').strip()
+                version = version_file.read_text(encoding="utf-8").strip()
                 if version:
                     self._add_version("Java", version, self._relative_path(version_file), "language")
             except Exception:
@@ -298,7 +293,7 @@ class TechStackVersionCollector(DimensionCollector):
     def _parse_package_json(self, file_path: Path):
         """Parse package.json for versions."""
         try:
-            content = file_path.read_text(encoding='utf-8')
+            content = file_path.read_text(encoding="utf-8")
             pkg = json.loads(content)
             rel_path = self._relative_path(file_path)
 
@@ -328,9 +323,9 @@ class TechStackVersionCollector(DimensionCollector):
                 if dep_name in all_deps:
                     version = all_deps[dep_name]
                     # Clean version (remove ^, ~, v prefix, extract major version)
-                    clean_version = re.sub(r'^[\^~>=<v]+', '', str(version))
+                    clean_version = re.sub(r"^[\^~>=<v]+", "", str(version))
                     # Extract major version: "18.2.13" -> "18", "18-lts" -> "18"
-                    match = re.match(r'^(\d+)', clean_version)
+                    match = re.match(r"^(\d+)", clean_version)
                     if match:
                         clean_version = match.group(1)
                     self._add_version(tech_name, clean_version, rel_path, category)
@@ -338,7 +333,7 @@ class TechStackVersionCollector(DimensionCollector):
             # Node.js engine
             engines = pkg.get("engines", {})
             if "node" in engines:
-                node_version = re.sub(r'^[\^~>=<]+', '', str(engines["node"]))
+                node_version = re.sub(r"^[\^~>=<]+", "", str(engines["node"]))
                 self._add_version("Node.js", node_version, rel_path, "runtime")
 
         except Exception as e:
@@ -350,7 +345,7 @@ class TechStackVersionCollector(DimensionCollector):
             if self._should_skip(angular_file):
                 continue
             try:
-                content = angular_file.read_text(encoding='utf-8')
+                content = angular_file.read_text(encoding="utf-8")
                 pkg = json.loads(content)
                 rel_path = self._relative_path(angular_file)
 
@@ -370,10 +365,10 @@ class TechStackVersionCollector(DimensionCollector):
                 if self._should_skip(version_file):
                     continue
                 try:
-                    version = version_file.read_text(encoding='utf-8').strip()
+                    version = version_file.read_text(encoding="utf-8").strip()
                     if version:
                         # Remove 'v' prefix if present
-                        version = version.lstrip('v')
+                        version = version.lstrip("v")
                         self._add_version("Node.js", version, self._relative_path(version_file), "runtime")
                 except Exception:
                     pass
@@ -392,24 +387,24 @@ class TechStackVersionCollector(DimensionCollector):
     def _parse_dockerfile(self, file_path: Path):
         """Parse Dockerfile for base image versions."""
         try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
             # FROM image:version
-            for match in re.finditer(r'^FROM\s+([^:\s]+):([^\s]+)', content, re.MULTILINE):
+            for match in re.finditer(r"^FROM\s+([^:\s]+):([^\s]+)", content, re.MULTILINE):
                 image = match.group(1)
                 version = match.group(2)
 
                 # Map common images
-                if 'openjdk' in image.lower() or 'eclipse-temurin' in image.lower():
+                if "openjdk" in image.lower() or "eclipse-temurin" in image.lower():
                     self._add_version("Java (Docker)", version, rel_path, "runtime")
-                elif 'node' in image.lower():
+                elif "node" in image.lower():
                     self._add_version("Node.js (Docker)", version, rel_path, "runtime")
-                elif 'nginx' in image.lower():
+                elif "nginx" in image.lower():
                     self._add_version("Nginx (Docker)", version, rel_path, "runtime")
-                elif 'postgres' in image.lower():
+                elif "postgres" in image.lower():
                     self._add_version("PostgreSQL (Docker)", version, rel_path, "database")
-                elif 'oracle' in image.lower():
+                elif "oracle" in image.lower():
                     self._add_version("Oracle (Docker)", version, rel_path, "database")
 
         except Exception as e:

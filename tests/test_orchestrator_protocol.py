@@ -5,20 +5,16 @@ Verifies that all phase executables satisfy the PhaseExecutable protocol
 and that _invoke_executable() dispatches correctly.
 """
 
-import json
-import pytest
-from pathlib import Path
-from typing import Dict, Any
-from unittest.mock import MagicMock, patch
+from typing import Any
+from unittest.mock import MagicMock
 
+import pytest
 import yaml
 
 from aicodegencrew.orchestrator import (
-    PhaseExecutable,
-    SDLCOrchestrator,
     PhaseResult,
+    SDLCOrchestrator,
 )
-
 
 MINIMAL_PHASES_CONFIG = {
     "phases": {
@@ -58,7 +54,7 @@ class _MockPhase:
     def __init__(self, result: dict = None):
         self._result = result or {"status": "completed", "phase": "mock"}
 
-    def kickoff(self, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
+    def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         return self._result
 
 
@@ -105,26 +101,32 @@ class TestRealPhasesHaveKickoff:
 
     def test_indexing_pipeline_has_kickoff(self):
         from aicodegencrew.pipelines.indexing.indexing_pipeline import IndexingPipeline
+
         assert hasattr(IndexingPipeline, "kickoff")
 
     def test_facts_pipeline_has_kickoff(self):
         from aicodegencrew.pipelines.architecture_facts.pipeline import ArchitectureFactsPipeline
+
         assert hasattr(ArchitectureFactsPipeline, "kickoff")
 
     def test_analysis_crew_has_kickoff(self):
         from aicodegencrew.crews.architecture_analysis.crew import ArchitectureAnalysisCrew
+
         assert hasattr(ArchitectureAnalysisCrew, "kickoff")
 
     def test_synthesis_crew_has_kickoff(self):
         from aicodegencrew.crews.architecture_synthesis.crew import ArchitectureSynthesisCrew
+
         assert hasattr(ArchitectureSynthesisCrew, "kickoff")
 
     def test_planning_pipeline_has_kickoff(self):
         from aicodegencrew.pipelines.development_planning.pipeline import DevelopmentPlanningPipeline
+
         assert hasattr(DevelopmentPlanningPipeline, "kickoff")
 
     def test_codegen_pipeline_has_kickoff(self):
         from aicodegencrew.pipelines.code_generation.pipeline import CodeGenerationPipeline
+
         assert hasattr(CodeGenerationPipeline, "kickoff")
 
 

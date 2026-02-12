@@ -72,7 +72,9 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                   <mat-select [(ngModel)]="selectedPreset">
                     @for (preset of presets; track preset.name) {
                       <mat-option [value]="preset.name">
-                        <mat-icon style="font-size:18px;vertical-align:middle;margin-right:6px">{{ preset.icon || 'playlist_play' }}</mat-icon>
+                        <mat-icon style="font-size:18px;vertical-align:middle;margin-right:6px">{{
+                          preset.icon || 'playlist_play'
+                        }}</mat-icon>
                         {{ preset.display_name || preset.name }}
                       </mat-option>
                     }
@@ -96,7 +98,8 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                   @for (phase of phases; track phase.id) {
                     <mat-checkbox
                       [checked]="selectedPhases.includes(phase.id)"
-                      (change)="togglePhase(phase.id, $event.checked)">
+                      (change)="togglePhase(phase.id, $event.checked)"
+                    >
                       <span class="phase-label">
                         <strong>{{ phase.order }}.</strong> {{ phase.name }}
                         <span class="phase-id">({{ phase.id }})</span>
@@ -158,9 +161,12 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
             @for (v of getEnvByGroup(group); track v.name) {
               <mat-form-field appearance="outline" class="env-field">
                 <mat-label>{{ v.name }}</mat-label>
-                <input matInput [(ngModel)]="envValues[v.name]"
-                       [placeholder]="v.value || '(not set)'"
-                       [matTooltip]="v.description">
+                <input
+                  matInput
+                  [(ngModel)]="envValues[v.name]"
+                  [placeholder]="v.value || '(not set)'"
+                  [matTooltip]="v.description"
+                />
                 @if (v.required) {
                   <mat-icon matSuffix color="warn" matTooltip="Required">star</mat-icon>
                 }
@@ -172,15 +178,16 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
 
       <!-- Action Buttons -->
       <div class="action-bar">
-        <button mat-flat-button color="primary"
-                [disabled]="status?.state === 'running' || (!selectedPreset && selectedPhases.length === 0)"
-                (click)="runPipeline()">
+        <button
+          mat-flat-button
+          color="primary"
+          [disabled]="status?.state === 'running' || (!selectedPreset && selectedPhases.length === 0)"
+          (click)="runPipeline()"
+        >
           <mat-icon>{{ status?.state === 'running' ? 'sync' : 'play_arrow' }}</mat-icon>
           {{ status?.state === 'running' ? 'Running...' : 'Run Pipeline' }}
         </button>
-        <button mat-stroked-button color="warn"
-                [disabled]="status?.state !== 'running'"
-                (click)="cancelPipeline()">
+        <button mat-stroked-button color="warn" [disabled]="status?.state !== 'running'" (click)="cancelPipeline()">
           <mat-icon>stop</mat-icon>
           Cancel
         </button>
@@ -198,8 +205,12 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
             </mat-icon>
             <mat-card-title>{{ status.state | titlecase }}</mat-card-title>
             <mat-card-subtitle>
-              @if (status.run_id) { Run: {{ status.run_id }} }
-              @if (status.elapsed_seconds) { | Elapsed: {{ formatDuration(status.elapsed_seconds) }} }
+              @if (status.run_id) {
+                Run: {{ status.run_id }}
+              }
+              @if (status.elapsed_seconds) {
+                | Elapsed: {{ formatDuration(status.elapsed_seconds) }}
+              }
             </mat-card-subtitle>
           </mat-card-header>
 
@@ -213,7 +224,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                     <div class="step-info">
                       <span class="step-name">{{ pp.name || pp.phase_id }}</span>
                       @if (pp.duration_seconds) {
-                        <span class="step-duration">{{ pp.duration_seconds | number:'1.1-1' }}s</span>
+                        <span class="step-duration">{{ pp.duration_seconds | number: '1.1-1' }}s</span>
                       }
                     </div>
                   </div>
@@ -242,7 +253,8 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
             <div class="log-viewer" #logViewer>
               @for (line of logLines; track $index) {
                 <div class="log-line" [class]="getLogLevel(line)">
-                  <span class="log-num">{{ $index + 1 }}</span>{{ line }}
+                  <span class="log-num">{{ $index + 1 }}</span
+                  >{{ line }}
                 </div>
               }
             </div>
@@ -268,7 +280,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
             <table mat-table [dataSource]="history" class="history-table">
               <ng-container matColumnDef="started_at">
                 <th mat-header-cell *matHeaderCellDef>Date</th>
-                <td mat-cell *matCellDef="let r">{{ r.started_at | date:'short' }}</td>
+                <td mat-cell *matCellDef="let r">{{ r.started_at | date: 'short' }}</td>
               </ng-container>
               <ng-container matColumnDef="run_id">
                 <th mat-header-cell *matHeaderCellDef>Run ID</th>
@@ -282,7 +294,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                 <th mat-header-cell *matHeaderCellDef>Phases</th>
                 <td mat-cell *matCellDef="let r">
                   @for (p of r.phases; track p) {
-                    <mat-chip class="small-chip">{{ p | slice:0:20 }}</mat-chip>
+                    <mat-chip class="small-chip">{{ p | slice: 0 : 20 }}</mat-chip>
                   }
                 </td>
               </ng-container>
@@ -297,202 +309,289 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                 <td mat-cell *matCellDef="let r">{{ r.duration || '-' }}</td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: historyColumns;"></tr>
+              <tr mat-row *matRowDef="let row; columns: historyColumns"></tr>
             </table>
           }
         </mat-card-content>
       </mat-card>
     </div>
   `,
-  styles: [`
-    .config-card { margin-bottom: 16px; }
-    .tab-content { padding: 16px 0; }
-    .full-width { width: 100%; }
-    .phase-chips {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .chips-label { font-size: 13px; font-weight: 500; color: var(--cg-gray-500); }
-    .phase-checkboxes {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .phase-label { display: inline-flex; align-items: center; gap: 4px; }
-    .phase-id { color: var(--cg-gray-500); font-size: 12px; }
-    .input-summary-card { margin-bottom: 16px; }
-    .input-icon {
-      background: rgba(0, 112, 173, 0.08);
-      color: var(--cg-blue) !important;
-      border-radius: 10px !important;
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-    }
-    .input-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .input-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 8px;
-      background: var(--cg-gray-100);
-      font-size: 12px;
-      color: var(--cg-gray-500);
-    }
-    .input-chip .mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-    }
-    .input-chip.has-files {
-      background: rgba(18, 171, 219, 0.1);
-      color: var(--cg-blue);
-      font-weight: 500;
-    }
-    .chip-count {
-      min-width: 18px;
-      height: 18px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 9px;
-      background: rgba(0,0,0,0.06);
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .input-chip.has-files .chip-count {
-      background: var(--cg-vibrant);
-      color: #fff;
-    }
-    .manage-btn {
-      font-size: 13px;
-    }
-    .manage-btn .mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 4px;
-    }
-    .env-panel { margin-bottom: 16px; }
-    .env-group-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--cg-blue);
-      margin: 16px 0 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .env-fields {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 8px;
-    }
-    .env-field { width: 100%; }
-    .action-bar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 16px 0;
-    }
-    .run-progress { flex: 1; }
+  styles: [
+    `
+      .config-card {
+        margin-bottom: 16px;
+      }
+      .tab-content {
+        padding: 16px 0;
+      }
+      .full-width {
+        width: 100%;
+      }
+      .phase-chips {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .chips-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-500);
+      }
+      .phase-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .phase-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .phase-id {
+        color: var(--cg-gray-500);
+        font-size: 12px;
+      }
+      .input-summary-card {
+        margin-bottom: 16px;
+      }
+      .input-icon {
+        background: rgba(0, 112, 173, 0.08);
+        color: var(--cg-blue) !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+      .input-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .input-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        background: var(--cg-gray-100);
+        font-size: 12px;
+        color: var(--cg-gray-500);
+      }
+      .input-chip .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+      .input-chip.has-files {
+        background: rgba(18, 171, 219, 0.1);
+        color: var(--cg-blue);
+        font-weight: 500;
+      }
+      .chip-count {
+        min-width: 18px;
+        height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: rgba(0, 0, 0, 0.06);
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .input-chip.has-files .chip-count {
+        background: var(--cg-vibrant);
+        color: #fff;
+      }
+      .manage-btn {
+        font-size: 13px;
+      }
+      .manage-btn .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 4px;
+      }
+      .env-panel {
+        margin-bottom: 16px;
+      }
+      .env-group-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--cg-blue);
+        margin: 16px 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .env-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 8px;
+      }
+      .env-field {
+        width: 100%;
+      }
+      .action-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 16px 0;
+      }
+      .run-progress {
+        flex: 1;
+      }
 
-    .status-card { margin-bottom: 16px; }
-    .state-completed { border-left: 4px solid var(--cg-success); }
-    .state-failed { border-left: 4px solid var(--cg-error); }
-    .state-running { border-left: 4px solid var(--cg-blue); }
-    .state-cancelled { border-left: 4px solid var(--cg-warn); }
-    .state-icon-completed { color: var(--cg-success); }
-    .state-icon-failed { color: var(--cg-error); }
-    .state-icon-running { color: var(--cg-blue); }
-    .state-icon-cancelled { color: var(--cg-warn); }
+      .status-card {
+        margin-bottom: 16px;
+      }
+      .state-completed {
+        border-left: 4px solid var(--cg-success);
+      }
+      .state-failed {
+        border-left: 4px solid var(--cg-error);
+      }
+      .state-running {
+        border-left: 4px solid var(--cg-blue);
+      }
+      .state-cancelled {
+        border-left: 4px solid var(--cg-warn);
+      }
+      .state-icon-completed {
+        color: var(--cg-success);
+      }
+      .state-icon-failed {
+        color: var(--cg-error);
+      }
+      .state-icon-running {
+        color: var(--cg-blue);
+      }
+      .state-icon-cancelled {
+        color: var(--cg-warn);
+      }
 
-    .phase-timeline {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding: 16px 0;
-    }
-    .phase-step {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      border-radius: 10px;
-      background: var(--cg-gray-100);
-    }
-    .step-running { background: rgba(0, 112, 173, 0.08); }
-    .step-completed { background: rgba(40, 167, 69, 0.08); }
-    .step-failed { background: rgba(220, 53, 69, 0.08); }
-    .step-icon { font-size: 18px; width: 18px; height: 18px; }
-    .step-info { display: flex; flex-direction: column; }
-    .step-name { font-size: 13px; font-weight: 500; }
-    .step-duration { font-size: 11px; color: var(--cg-gray-500); }
+      .phase-timeline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 16px 0;
+      }
+      .phase-step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: var(--cg-gray-100);
+      }
+      .step-running {
+        background: rgba(0, 112, 173, 0.08);
+      }
+      .step-completed {
+        background: rgba(40, 167, 69, 0.08);
+      }
+      .step-failed {
+        background: rgba(220, 53, 69, 0.08);
+      }
+      .step-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      .step-info {
+        display: flex;
+        flex-direction: column;
+      }
+      .step-name {
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .step-duration {
+        font-size: 11px;
+        color: var(--cg-gray-500);
+      }
 
-    .log-card { margin-bottom: 16px; }
-    .log-card mat-card-header { display: flex; align-items: center; }
-    .log-title {
-      display: flex !important;
-      align-items: center;
-      gap: 8px;
-    }
-    .log-count {
-      font-size: 12px;
-      color: var(--cg-gray-500);
-      font-weight: 400;
-    }
-    .spacer { flex: 1; }
-    .log-viewer {
-      background: var(--cg-dark);
-      color: #d4d4d4;
-      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-      font-size: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      max-height: 500px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-    .log-line { line-height: 1.6; }
-    .log-num {
-      display: inline-block;
-      width: 36px;
-      text-align: right;
-      margin-right: 12px;
-      color: rgba(255,255,255,0.2);
-      user-select: none;
-    }
-    .log-error { color: #f48771; }
-    .log-warning { color: #cca700; }
-    .log-info { color: #89d185; }
+      .log-card {
+        margin-bottom: 16px;
+      }
+      .log-card mat-card-header {
+        display: flex;
+        align-items: center;
+      }
+      .log-title {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+      }
+      .log-count {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        font-weight: 400;
+      }
+      .spacer {
+        flex: 1;
+      }
+      .log-viewer {
+        background: var(--cg-dark);
+        color: #d4d4d4;
+        font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+        font-size: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        max-height: 500px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .log-line {
+        line-height: 1.6;
+      }
+      .log-num {
+        display: inline-block;
+        width: 36px;
+        text-align: right;
+        margin-right: 12px;
+        color: rgba(255, 255, 255, 0.2);
+        user-select: none;
+      }
+      .log-error {
+        color: #f48771;
+      }
+      .log-warning {
+        color: #cca700;
+      }
+      .log-info {
+        color: #89d185;
+      }
 
-    .section-card-title {
-      display: flex !important;
-      align-items: center;
-      gap: 8px;
-    }
-    .history-card { margin-bottom: 24px; }
-    .history-table { width: 100%; }
-    .empty-inline {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 24px 16px;
-      color: var(--cg-gray-500);
-      font-size: 14px;
-    }
-    .empty-inline .mat-icon { color: var(--cg-gray-200); }
-    .small-chip { font-size: 11px; }
-  `],
+      .section-card-title {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+      }
+      .history-card {
+        margin-bottom: 24px;
+      }
+      .history-table {
+        width: 100%;
+      }
+      .empty-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 24px 16px;
+        color: var(--cg-gray-500);
+        font-size: 14px;
+      }
+      .empty-inline .mat-icon {
+        color: var(--cg-gray-200);
+      }
+      .small-chip {
+        font-size: 11px;
+      }
+    `,
+  ],
 })
 export class RunPipelineComponent implements OnInit, OnDestroy {
   @ViewChild('logViewer') logViewerRef?: ElementRef;
@@ -531,29 +630,40 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.api.getPresets().subscribe(p => { this.presets = p; this.cdr.markForCheck(); });
-    this.api.getPhases().subscribe(p => { this.phases = p; this.cdr.markForCheck(); });
-    this.pipeline.getHistory().subscribe(h => { this.history = h; this.cdr.markForCheck(); });
-    this.pipeline.getStatus().subscribe(s => {
+    this.api.getPresets().subscribe((p) => {
+      this.presets = p;
+      this.cdr.markForCheck();
+    });
+    this.api.getPhases().subscribe((p) => {
+      this.phases = p;
+      this.cdr.markForCheck();
+    });
+    this.pipeline.getHistory().subscribe((h) => {
+      this.history = h;
+      this.cdr.markForCheck();
+    });
+    this.pipeline.getStatus().subscribe((s) => {
       this.status = s;
-      if (s.state === 'running') { this.connectSSE(); }
+      if (s.state === 'running') {
+        this.connectSSE();
+      }
       this.cdr.markForCheck();
     });
 
-    this.inputsService.getSummary().subscribe(s => {
+    this.inputsService.getSummary().subscribe((s) => {
       this.inputSummary = s;
       this.inputCategoryEntries = Object.entries(s.categories).map(([key, value]) => ({ key, value }));
       this.cdr.markForCheck();
     });
 
-    this.pipeline.getEnv().subscribe(vars => {
+    this.pipeline.getEnv().subscribe((vars) => {
       this.envVariables = vars;
-      this.envGroups = [...new Set(vars.map(v => v.group))];
-      vars.forEach(v => this.envValues[v.name] = v.value);
+      this.envGroups = [...new Set(vars.map((v) => v.group))];
+      vars.forEach((v) => (this.envValues[v.name] = v.value));
       this.cdr.markForCheck();
     });
 
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       if (params['preset']) {
         this.selectedPreset = params['preset'];
         this.runModeIndex = 0;
@@ -572,12 +682,12 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   getPresetPhases(): string[] {
-    const preset = this.presets.find(p => p.name === this.selectedPreset);
+    const preset = this.presets.find((p) => p.name === this.selectedPreset);
     return preset?.phases || [];
   }
 
   getEnvByGroup(group: string): EnvVariable[] {
-    return this.envVariables.filter(v => v.group === group);
+    return this.envVariables.filter((v) => v.group === group);
   }
 
   togglePhase(phaseId: string, checked: boolean | null): void {
@@ -586,7 +696,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         this.selectedPhases = [...this.selectedPhases, phaseId];
       }
     } else {
-      this.selectedPhases = this.selectedPhases.filter(p => p !== phaseId);
+      this.selectedPhases = this.selectedPhases.filter((p) => p !== phaseId);
     }
   }
 
@@ -610,7 +720,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
     this.logLines = [];
     this.pipeline.startPipeline(request).subscribe({
-      next: () => { this.connectSSE(); },
+      next: () => {
+        this.connectSSE();
+      },
       error: (err) => {
         const msg = err?.error?.detail || 'Failed to start pipeline';
         this.logLines = [`ERROR: ${msg}`];
@@ -641,7 +753,10 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         }
         if (event.type === 'pipeline_complete') {
           this.status = event.data as ExecutionStatus;
-          this.pipeline.getHistory().subscribe(h => { this.history = h; this.cdr.markForCheck(); });
+          this.pipeline.getHistory().subscribe((h) => {
+            this.history = h;
+            this.cdr.markForCheck();
+          });
         }
         this.cdr.markForCheck();
       },
@@ -652,8 +767,14 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   private refreshStatus(): void {
-    this.pipeline.getStatus().subscribe(s => { this.status = s; this.cdr.markForCheck(); });
-    this.pipeline.getHistory().subscribe(h => { this.history = h; this.cdr.markForCheck(); });
+    this.pipeline.getStatus().subscribe((s) => {
+      this.status = s;
+      this.cdr.markForCheck();
+    });
+    this.pipeline.getHistory().subscribe((h) => {
+      this.history = h;
+      this.cdr.markForCheck();
+    });
   }
 
   private scrollToBottom(): void {
@@ -670,20 +791,29 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
   stateIcon(state: string): string {
     switch (state) {
-      case 'completed': return 'check_circle';
-      case 'failed': return 'error';
-      case 'running': return 'sync';
-      case 'cancelled': return 'cancel';
-      default: return 'radio_button_unchecked';
+      case 'completed':
+        return 'check_circle';
+      case 'failed':
+        return 'error';
+      case 'running':
+        return 'sync';
+      case 'cancelled':
+        return 'cancel';
+      default:
+        return 'radio_button_unchecked';
     }
   }
 
   phaseStepIcon(status: string): string {
     switch (status) {
-      case 'completed': return 'check_circle';
-      case 'failed': return 'error';
-      case 'running': return 'sync';
-      default: return 'radio_button_unchecked';
+      case 'completed':
+        return 'check_circle';
+      case 'failed':
+        return 'error';
+      case 'running':
+        return 'sync';
+      default:
+        return 'radio_button_unchecked';
     }
   }
 

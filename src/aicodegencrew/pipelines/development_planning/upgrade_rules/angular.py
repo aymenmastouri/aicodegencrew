@@ -7,10 +7,12 @@ Rules ordered by recommended execution sequence.
 """
 
 from .base import (
-    UpgradeRule, UpgradeRuleSet, CodePattern,
-    UpgradeSeverity, UpgradeCategory,
+    CodePattern,
+    UpgradeCategory,
+    UpgradeRule,
+    UpgradeRuleSet,
+    UpgradeSeverity,
 )
-
 
 # =============================================================================
 # Angular 18 -> 19
@@ -37,7 +39,8 @@ ANGULAR_18_TO_19 = UpgradeRuleSet(
             ),
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.MIGRATION,
-            from_version="18", to_version="19",
+            from_version="18",
+            to_version="19",
             detection_patterns=[
                 CodePattern(
                     name="ngmodule_declarations",
@@ -66,12 +69,12 @@ ANGULAR_18_TO_19 = UpgradeRuleSet(
             id="ng19-builder-migration",
             title="Browser builder -> Application builder",
             description=(
-                "@angular-devkit/build-angular:browser is replaced by "
-                "@angular/build:application (esbuild-based)."
+                "@angular-devkit/build-angular:browser is replaced by @angular/build:application (esbuild-based)."
             ),
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.BUILD_CONFIG,
-            from_version="18", to_version="19",
+            from_version="18",
+            to_version="19",
             detection_patterns=[
                 CodePattern(
                     name="browser_builder",
@@ -95,7 +98,8 @@ ANGULAR_18_TO_19 = UpgradeRuleSet(
             description="APP_INITIALIZER token is deprecated. Use provideAppInitializer() instead.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="18", to_version="19",
+            from_version="18",
+            to_version="19",
             detection_patterns=[
                 CodePattern(
                     name="app_initializer_token",
@@ -121,7 +125,8 @@ ANGULAR_18_TO_19 = UpgradeRuleSet(
             ),
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.BUILD_CONFIG,
-            from_version="18", to_version="19",
+            from_version="18",
+            to_version="19",
             detection_patterns=[
                 CodePattern(
                     name="node_sass_dependency",
@@ -158,7 +163,8 @@ ANGULAR_18_TO_19 = UpgradeRuleSet(
             description="Angular 19 requires TypeScript 5.6+.",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="18", to_version="19",
+            from_version="18",
+            to_version="19",
             detection_patterns=[
                 CodePattern(
                     name="typescript_version",
@@ -180,7 +186,8 @@ ANGULAR_18_TO_19 = UpgradeRuleSet(
             description="Angular 19 requires Zone.js 0.15+.",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="18", to_version="19",
+            from_version="18",
+            to_version="19",
             detection_patterns=[
                 CodePattern(
                     name="zonejs_version",
@@ -222,7 +229,8 @@ ANGULAR_19_TO_20 = UpgradeRuleSet(
             ),
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.SYNTAX,
-            from_version="19", to_version="20",
+            from_version="19",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="ngif_usage",
@@ -260,7 +268,8 @@ ANGULAR_19_TO_20 = UpgradeRuleSet(
             description="Karma is deprecated in Angular 20. Migrate to Vitest or Web Test Runner.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.TEST_RUNNER,
-            from_version="19", to_version="20",
+            from_version="19",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="karma_config",
@@ -291,7 +300,8 @@ ANGULAR_19_TO_20 = UpgradeRuleSet(
             description="InjectFlags enum removed. Use inject() options object instead.",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.API_CHANGE,
-            from_version="19", to_version="20",
+            from_version="19",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="inject_flags",
@@ -314,7 +324,8 @@ ANGULAR_19_TO_20 = UpgradeRuleSet(
             description="HammerJS gesture support deprecated. Use native pointer events.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="19", to_version="20",
+            from_version="19",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="hammerjs_import",
@@ -351,7 +362,8 @@ ANGULAR_SIGNAL_MIGRATION = UpgradeRuleSet(
             description="Migrate decorator-based inputs to signal-based inputs.",
             severity=UpgradeSeverity.RECOMMENDED,
             category=UpgradeCategory.MIGRATION,
-            from_version="18", to_version="20",
+            from_version="18",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="decorator_input",
@@ -375,7 +387,8 @@ ANGULAR_SIGNAL_MIGRATION = UpgradeRuleSet(
             description="Migrate EventEmitter outputs to signal-based outputs.",
             severity=UpgradeSeverity.RECOMMENDED,
             category=UpgradeCategory.MIGRATION,
-            from_version="18", to_version="20",
+            from_version="18",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="decorator_output",
@@ -399,7 +412,8 @@ ANGULAR_SIGNAL_MIGRATION = UpgradeRuleSet(
             description="Migrate @ViewChild/@ViewChildren to signal-based queries.",
             severity=UpgradeSeverity.RECOMMENDED,
             category=UpgradeCategory.MIGRATION,
-            from_version="18", to_version="20",
+            from_version="18",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="viewchild_decorator",
@@ -430,7 +444,8 @@ ANGULAR_SIGNAL_MIGRATION = UpgradeRuleSet(
             description="Migrate module-based HttpClient to functional provider.",
             severity=UpgradeSeverity.RECOMMENDED,
             category=UpgradeCategory.MIGRATION,
-            from_version="18", to_version="20",
+            from_version="18",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="httpclient_module",
@@ -466,7 +481,8 @@ ANGULAR_THIRD_PARTY = UpgradeRuleSet(
             description="AG Grid 31.x may need upgrade for Angular 19/20 compatibility.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="18", to_version="20",
+            from_version="18",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="aggrid_dependency",
@@ -489,7 +505,8 @@ ANGULAR_THIRD_PARTY = UpgradeRuleSet(
             description="ng-bootstrap 17.x needs upgrade for Angular 19/20.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="18", to_version="20",
+            from_version="18",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="ngbootstrap_dependency",
@@ -511,7 +528,8 @@ ANGULAR_THIRD_PARTY = UpgradeRuleSet(
             description="ngx-translate 15.x may need upgrade for Angular 19/20.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="18", to_version="20",
+            from_version="18",
+            to_version="20",
             detection_patterns=[
                 CodePattern(
                     name="ngxtranslate_dependency",

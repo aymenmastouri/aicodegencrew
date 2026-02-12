@@ -8,12 +8,12 @@ This is the ONLY stage that uses LLM.
 Duration: 15-30 seconds (single LLM call)
 """
 
-import os
 import json
-from typing import Dict, Any
+import os
+from typing import Any
 
-from ..schemas import TaskInput, ImplementationPlan
 from ....shared.utils.logger import setup_logger
+from ..schemas import ImplementationPlan, TaskInput
 
 logger = setup_logger(__name__)
 
@@ -53,8 +53,8 @@ class PlanGeneratorStage:
     def run(
         self,
         task: TaskInput,
-        discovery_result: Dict[str, Any],
-        pattern_result: Dict[str, Any],
+        discovery_result: dict[str, Any],
+        pattern_result: dict[str, Any],
     ) -> ImplementationPlan:
         """
         Generate implementation plan using LLM.
@@ -110,7 +110,7 @@ class PlanGeneratorStage:
                 development_plan=plan_json.get("development_plan", {}),
             )
 
-            logger.info(f"[Stage4] Generated plan successfully")
+            logger.info("[Stage4] Generated plan successfully")
 
             return plan
 
@@ -121,8 +121,8 @@ class PlanGeneratorStage:
     def _build_prompt(
         self,
         task: TaskInput,
-        discovery: Dict[str, Any],
-        patterns: Dict[str, Any],
+        discovery: dict[str, Any],
+        patterns: dict[str, Any],
     ) -> str:
         """Build prompt for LLM."""
 
@@ -302,7 +302,7 @@ Generate the plan now:"""
         """Format list as numbered items."""
         if not items:
             return "  (none)"
-        return "\n".join(f"  {i+1}. {item}" for i, item in enumerate(items))
+        return "\n".join(f"  {i + 1}. {item}" for i, item in enumerate(items))
 
     @staticmethod
     def _format_components(components: list) -> str:
@@ -341,10 +341,7 @@ Generate the plan now:"""
 
         lines = []
         for dep in dependencies[:10]:
-            lines.append(
-                f"  - {dep['from_component']} → {dep['to_component']} "
-                f"({dep['relation_type']})"
-            )
+            lines.append(f"  - {dep['from_component']} → {dep['to_component']} ({dep['relation_type']})")
         return "\n".join(lines)
 
     @staticmethod
@@ -371,10 +368,7 @@ Generate the plan now:"""
 
         lines = []
         for p in patterns[:5]:
-            lines.append(
-                f"  - {p['security_type']} in {p['class_name']}\n"
-                f"    Recommendation: {p['recommendation']}"
-            )
+            lines.append(f"  - {p['security_type']} in {p['class_name']}\n    Recommendation: {p['recommendation']}")
         return "\n".join(lines)
 
     @staticmethod
@@ -386,8 +380,7 @@ Generate the plan now:"""
         lines = []
         for p in patterns[:5]:
             lines.append(
-                f"  - {p['validation_type']} on {p['target_class']}\n"
-                f"    Recommendation: {p['recommendation']}"
+                f"  - {p['validation_type']} on {p['target_class']}\n    Recommendation: {p['recommendation']}"
             )
         return "\n".join(lines)
 
@@ -400,8 +393,7 @@ Generate the plan now:"""
         lines = []
         for p in patterns[:5]:
             lines.append(
-                f"  - {p['exception_class']} ({p['handling_type']})\n"
-                f"    Recommendation: {p['recommendation']}"
+                f"  - {p['exception_class']} ({p['handling_type']})\n    Recommendation: {p['recommendation']}"
             )
         return "\n".join(lines)
 
@@ -414,7 +406,7 @@ Generate the plan now:"""
         lines = []
         for i, step in enumerate(sequence, 1):
             severity = step.get("severity", "unknown")
-            affected_files = step.get('affected_files', [])
+            affected_files = step.get("affected_files", [])
             file_count = len(affected_files)
 
             lines.append(

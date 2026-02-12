@@ -14,17 +14,17 @@ Success Rate: 95%+ (deterministic stages don't fail)
 import json
 import time
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
+from ...shared.utils.logger import log_metric, setup_logger, step_done, step_fail, step_start
+from .schemas import ImplementationPlan, TaskInput
 from .stages import (
-    InputParserStage,
     ComponentDiscoveryStage,
+    InputParserStage,
     PatternMatcherStage,
     PlanGeneratorStage,
     ValidatorStage,
 )
-from .schemas import TaskInput, ImplementationPlan
-from ...shared.utils.logger import setup_logger, log_metric, step_start, step_done, step_fail
 
 logger = setup_logger(__name__)
 
@@ -43,23 +43,30 @@ class DevelopmentPlanningPipeline:
 
     # JIRA priority ordering (lower = higher priority)
     PRIORITY_ORDER = {
-        "Blocker": 1, "Critical": 2, "Major": 3, "Minor": 4, "Trivial": 5,
+        "Blocker": 1,
+        "Critical": 2,
+        "Major": 3,
+        "Minor": 4,
+        "Trivial": 5,
     }
     # Task type ordering for sorting
     TASK_TYPE_ORDER = {
-        "upgrade": 1, "bugfix": 2, "feature": 3, "refactoring": 4,
+        "upgrade": 1,
+        "bugfix": 2,
+        "feature": 3,
+        "refactoring": 4,
     }
 
     def __init__(
         self,
         input_file: str = None,
-        input_files: List[str] = None,
+        input_files: list[str] = None,
         facts_path: str = "knowledge/architecture/architecture_facts.json",
         analyzed_path: str = "knowledge/architecture/analyzed_architecture.json",
         output_dir: str = "knowledge/development",
         chroma_dir: str = None,
         repo_path: str = None,
-        supplementary_files: Dict[str, List[str]] = None,
+        supplementary_files: dict[str, list[str]] = None,
     ):
         """
         Initialize development planning pipeline.
@@ -116,7 +123,7 @@ class DevelopmentPlanningPipeline:
         )
         self.stage5 = ValidatorStage(analyzed_architecture=self.analyzed_architecture)
 
-    def kickoff(self, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
+    def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """
         Execute pipeline (Orchestrator-compatible interface).
 
@@ -128,7 +135,7 @@ class DevelopmentPlanningPipeline:
         """
         return self.run()
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         """
         Run pipeline for all input files.
 
@@ -153,7 +160,7 @@ class DevelopmentPlanningPipeline:
 
         return self._run_multi()
 
-    def _run_multi(self) -> Dict[str, Any]:
+    def _run_multi(self) -> dict[str, Any]:
         """Process multiple input files with content-based sorting."""
         start_time = time.time()
         n = len(self.input_files)
@@ -164,7 +171,7 @@ class DevelopmentPlanningPipeline:
 
         # Step 1: Parse all files with Stage 1 (fast, <1s each)
         step_start(f"Stage 1: Parsing {n} input files")
-        parsed_tasks: List[TaskInput] = []
+        parsed_tasks: list[TaskInput] = []
         for f in self.input_files:
             try:
                 task = self.stage1.run(f)
@@ -181,10 +188,7 @@ class DevelopmentPlanningPipeline:
 
         logger.info("[Phase4] Processing order:")
         for i, task in enumerate(sorted_tasks, 1):
-            logger.info(
-                f"  {i}. {task.task_id} [{task.priority}] "
-                f"type={task.task_type} links={task.linked_tasks}"
-            )
+            logger.info(f"  {i}. {task.task_id} [{task.priority}] type={task.task_type} links={task.linked_tasks}")
 
         # Step 3: Process each task sequentially (Stages 2-5)
         results = []
@@ -199,11 +203,13 @@ class DevelopmentPlanningPipeline:
                 succeeded += 1
             except Exception as e:
                 logger.error(f"[Phase4] Task {task.task_id} failed: {e}")
-                results.append({
-                    "status": "failed",
-                    "task_id": task.task_id,
-                    "error": str(e),
-                })
+                results.append(
+                    {
+                        "status": "failed",
+                        "task_id": task.task_id,
+                        "error": str(e),
+                    }
+                )
                 failed += 1
 
         total_duration = time.time() - start_time
@@ -213,7 +219,8 @@ class DevelopmentPlanningPipeline:
         logger.info(f"[Phase4] Total Duration: {total_duration:.2f}s")
         logger.info("=" * 80)
 
-        log_metric("phase_complete",
+        log_metric(
+            "phase_complete",
             phase="phase4_development_planning",
             status="success" if failed == 0 else "partial",
             duration_seconds=total_duration,
@@ -237,7 +244,7 @@ class DevelopmentPlanningPipeline:
             },
         }
 
-    def _sort_tasks(self, tasks: List[TaskInput]) -> List[TaskInput]:
+    def _sort_tasks(self, tasks: list[TaskInput]) -> list[TaskInput]:
         """Sort tasks by JIRA priority, task type, and dependency order."""
         task_ids = {t.task_id for t in tasks}
 
@@ -253,7 +260,7 @@ class DevelopmentPlanningPipeline:
 
         return sorted(tasks, key=sort_key)
 
-    def _run_single(self, input_file: str) -> Dict[str, Any]:
+    def _run_single(self, input_file: str) -> dict[str, Any]:
         """Run full pipeline (Stages 1-5) for a single input file."""
         start_time = time.time()
 
@@ -270,7 +277,8 @@ class DevelopmentPlanningPipeline:
             stage1_duration = time.time() - stage1_start
             step_done("Stage 1: Input Parser")
 
-            log_metric("stage_complete",
+            log_metric(
+                "stage_complete",
                 phase="phase4_development_planning",
                 stage="stage1_input_parser",
                 duration_seconds=stage1_duration,
@@ -285,13 +293,14 @@ class DevelopmentPlanningPipeline:
             result["duration_seconds"] = total_duration
 
             logger.info("=" * 80)
-            logger.info(f"[Phase4] Pipeline completed successfully")
+            logger.info("[Phase4] Pipeline completed successfully")
             logger.info(f"[Phase4] Task ID: {task.task_id}")
             logger.info(f"[Phase4] Output: {result['output_file']}")
             logger.info(f"[Phase4] Total Duration: {total_duration:.2f}s")
             logger.info("=" * 80)
 
-            log_metric("phase_complete",
+            log_metric(
+                "phase_complete",
                 phase="phase4_development_planning",
                 status="success",
                 duration_seconds=total_duration,
@@ -305,7 +314,8 @@ class DevelopmentPlanningPipeline:
             total_duration = time.time() - start_time
             logger.error(f"[Phase4] Pipeline failed: {e}", exc_info=True)
 
-            log_metric("phase_failed",
+            log_metric(
+                "phase_failed",
                 phase="phase4_development_planning",
                 error=str(e),
                 duration_seconds=total_duration,
@@ -313,7 +323,7 @@ class DevelopmentPlanningPipeline:
 
             raise
 
-    def _run_stages_2_to_5(self, task: TaskInput) -> Dict[str, Any]:
+    def _run_stages_2_to_5(self, task: TaskInput) -> dict[str, Any]:
         """Run Stages 2-5 for a pre-parsed TaskInput."""
 
         # Stage 2: Component Discovery
@@ -323,7 +333,8 @@ class DevelopmentPlanningPipeline:
         stage2_duration = time.time() - stage2_start
         step_done(f"Stage 2: Component Discovery ({task.task_id})")
 
-        log_metric("stage_complete",
+        log_metric(
+            "stage_complete",
             phase="phase4_development_planning",
             stage="stage2_component_discovery",
             duration_seconds=stage2_duration,
@@ -342,7 +353,8 @@ class DevelopmentPlanningPipeline:
         stage3_duration = time.time() - stage3_start
         step_done(f"Stage 3: Pattern Matching ({task.task_id})")
 
-        log_metric("stage_complete",
+        log_metric(
+            "stage_complete",
             phase="phase4_development_planning",
             stage="stage3_pattern_matcher",
             duration_seconds=stage3_duration,
@@ -360,7 +372,8 @@ class DevelopmentPlanningPipeline:
         stage4_duration = time.time() - stage4_start
         step_done(f"Stage 4: Plan Generation ({task.task_id})")
 
-        log_metric("stage_complete",
+        log_metric(
+            "stage_complete",
             phase="phase4_development_planning",
             stage="stage4_plan_generator",
             duration_seconds=stage4_duration,
@@ -390,7 +403,8 @@ class DevelopmentPlanningPipeline:
 
         step_done(f"Stage 5: Validation ({task.task_id})")
 
-        log_metric("stage_complete",
+        log_metric(
+            "stage_complete",
             phase="phase4_development_planning",
             stage="stage5_validator",
             duration_seconds=stage5_duration,
@@ -419,9 +433,9 @@ class DevelopmentPlanningPipeline:
             },
         }
 
-    def _load_supplementary_context(self) -> Dict[str, str]:
+    def _load_supplementary_context(self) -> dict[str, str]:
         """Load supplementary files into text snippets for LLM context."""
-        context: Dict[str, str] = {}
+        context: dict[str, str] = {}
         MAX_CHARS_PER_CATEGORY = 3000
 
         for category, files in self.supplementary_files.items():
@@ -438,29 +452,28 @@ class DevelopmentPlanningPipeline:
 
                 ext = p.suffix.lower()
                 try:
-                    if ext in ('.txt', '.log', '.md', '.csv'):
-                        text = p.read_text(encoding='utf-8', errors='replace')
-                    elif ext == '.json':
-                        data = json.loads(p.read_text(encoding='utf-8'))
+                    if ext in (".txt", ".log", ".md", ".csv"):
+                        text = p.read_text(encoding="utf-8", errors="replace")
+                    elif ext == ".json":
+                        data = json.loads(p.read_text(encoding="utf-8"))
                         text = json.dumps(data, indent=2, ensure_ascii=False)
-                    elif ext in ('.docx', '.doc'):
+                    elif ext in (".docx", ".doc"):
                         try:
                             from .parsers.docx_parser import parse_docx
+
                             result = parse_docx(p)
                             sections = result.get("sections", [])
-                            text = "\n".join(
-                                f"{s['title']}: {' '.join(s['content'])}"
-                                for s in sections[:5]
-                            )
+                            text = "\n".join(f"{s['title']}: {' '.join(s['content'])}" for s in sections[:5])
                         except Exception:
                             text = f"[DOCX file: {p.name}]"
-                    elif ext in ('.xlsx', '.xls'):
+                    elif ext in (".xlsx", ".xls"):
                         try:
                             from .parsers.excel_parser import parse_excel
+
                             result = parse_excel(p)
                             sheets = result.get("sheets", {})
                             rows = []
-                            for sheet_name, sheet in sheets.items():
+                            for _sheet_name, sheet in sheets.items():
                                 for row in sheet.get("data", [])[:20]:
                                     rows.append(" | ".join(str(c) for c in row))
                             text = "\n".join(rows)
@@ -494,7 +507,7 @@ class DevelopmentPlanningPipeline:
             return {}
 
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"[Phase4] Failed to load {path}: {e}")
@@ -505,7 +518,7 @@ class DevelopmentPlanningPipeline:
         try:
             plan_dict = plan.model_dump()
 
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(plan_dict, f, indent=2, ensure_ascii=False)
 
             logger.info(f"[Phase4] Plan written to: {output_file}")

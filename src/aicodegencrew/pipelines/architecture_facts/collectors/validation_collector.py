@@ -11,12 +11,10 @@ Output -> validation dimension
 """
 
 import re
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Dict, Optional, Set
 
-from .base import DimensionCollector, CollectorOutput, RawValidationRule
 from ....shared.utils.logger import logger
+from .base import CollectorOutput, DimensionCollector, RawValidationRule
 
 
 class ValidationCollector(DimensionCollector):
@@ -51,41 +49,36 @@ class ValidationCollector(DimensionCollector):
 
     # Pattern for annotation with optional parameters
     ANNOTATION_PATTERN = re.compile(
-        r'(@(?:NotNull|NotBlank|NotEmpty|Size|Min|Max|Pattern|Email|'
-        r'Positive(?:OrZero)?|Negative(?:OrZero)?|Past(?:OrPresent)?|'
-        r'Future(?:OrPresent)?|Digits|DecimalMin|DecimalMax|Valid)'
-        r'(?:\s*\(([^)]*)\))?)',
-        re.MULTILINE
+        r"(@(?:NotNull|NotBlank|NotEmpty|Size|Min|Max|Pattern|Email|"
+        r"Positive(?:OrZero)?|Negative(?:OrZero)?|Past(?:OrPresent)?|"
+        r"Future(?:OrPresent)?|Digits|DecimalMin|DecimalMax|Valid)"
+        r"(?:\s*\(([^)]*)\))?)",
+        re.MULTILINE,
     )
 
     # Field following annotation
     FIELD_PATTERN = re.compile(
-        r'(?:private|protected|public)?\s*(?:final\s+)?(\w+(?:<[^>]+>)?)\s+(\w+)\s*[;=]',
-        re.MULTILINE
+        r"(?:private|protected|public)?\s*(?:final\s+)?(\w+(?:<[^>]+>)?)\s+(\w+)\s*[;=]", re.MULTILINE
     )
 
     # Method parameter with @Valid
-    VALID_PARAM_PATTERN = re.compile(
-        r'@Valid\s+(?:@\w+(?:\([^)]*\))?\s+)*(\w+)\s+(\w+)',
-        re.MULTILINE
-    )
+    VALID_PARAM_PATTERN = re.compile(r"@Valid\s+(?:@\w+(?:\([^)]*\))?\s+)*(\w+)\s+(\w+)", re.MULTILINE)
 
     # Custom validator
     CUSTOM_VALIDATOR_PATTERN = re.compile(
-        r'class\s+(\w+)\s+implements\s+ConstraintValidator\s*<\s*(\w+)\s*,\s*(\w+)\s*>'
+        r"class\s+(\w+)\s+implements\s+ConstraintValidator\s*<\s*(\w+)\s*,\s*(\w+)\s*>"
     )
 
     # Class pattern
-    CLASS_PATTERN = re.compile(r'class\s+(\w+)')
+    CLASS_PATTERN = re.compile(r"class\s+(\w+)")
 
     # Angular Validators
     ANGULAR_VALIDATOR_PATTERN = re.compile(
-        r'Validators\s*\.\s*(required|minLength|maxLength|min|max|pattern|email|nullValidator)'
-        r'(?:\s*\(\s*([^)]*)\s*\))?'
+        r"Validators\s*\.\s*(required|minLength|maxLength|min|max|pattern|email|nullValidator)"
+        r"(?:\s*\(\s*([^)]*)\s*\))?"
     )
     ANGULAR_FORMCONTROL_PATTERN = re.compile(
-        r"['\"]([\w]+)['\"].*?(?:new\s+FormControl|FormBuilder.*?)\s*\([^)]*\[([^\]]+)\]",
-        re.DOTALL
+        r"['\"]([\w]+)['\"].*?(?:new\s+FormControl|FormBuilder.*?)\s*\([^)]*\[([^\]]+)\]", re.DOTALL
     )
 
     def __init__(self, repo_path: Path, container_id: str = ""):
@@ -111,24 +104,24 @@ class ValidationCollector(DimensionCollector):
 
         for java_file in java_files:
             try:
-                content = java_file.read_text(encoding='utf-8', errors='ignore')
+                content = java_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
             # Skip files without validation imports
-            if 'javax.validation' not in content and 'jakarta.validation' not in content and '@Valid' not in content:
+            if "javax.validation" not in content and "jakarta.validation" not in content and "@Valid" not in content:
                 continue
 
             class_match = self.CLASS_PATTERN.search(content)
             class_name = class_match.group(1) if class_match else java_file.stem
 
             # Find validation annotations on fields
-            lines = content.split('\n')
+            lines = content.split("\n")
             for i, line in enumerate(lines):
                 for ann_match in self.ANNOTATION_PATTERN.finditer(line):
-                    annotation = ann_match.group(1).split('(')[0]  # e.g. @NotNull
+                    annotation = ann_match.group(1).split("(")[0]  # e.g. @NotNull
                     params = ann_match.group(2) or ""
-                    validation_type = self.VALIDATION_ANNOTATIONS.get(annotation, annotation.lstrip('@').lower())
+                    validation_type = self.VALIDATION_ANNOTATIONS.get(annotation, annotation.lstrip("@").lower())
 
                     # Find the field this annotation applies to
                     field_name = ""
@@ -159,7 +152,7 @@ class ValidationCollector(DimensionCollector):
             for match in self.VALID_PARAM_PATTERN.finditer(content):
                 param_type = match.group(1)
                 param_name = match.group(2)
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 fact = RawValidationRule(
                     name=f"{class_name}.@Valid_{param_name}",
@@ -184,7 +177,7 @@ class ValidationCollector(DimensionCollector):
                 validator_name = match.group(1)
                 annotation_name = match.group(2)
                 target_type = match.group(3)
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 fact = RawValidationRule(
                     name=validator_name,
@@ -207,25 +200,24 @@ class ValidationCollector(DimensionCollector):
     def _collect_angular_validation(self):
         """Collect Angular form validators."""
         ts_files = list(self.repo_path.rglob("*.ts"))
-        ts_files = [f for f in ts_files if not self._should_skip(f)
-                     and '.spec.' not in str(f)]
+        ts_files = [f for f in ts_files if not self._should_skip(f) and ".spec." not in str(f)]
 
         for ts_file in ts_files:
             try:
-                content = ts_file.read_text(encoding='utf-8', errors='ignore')
+                content = ts_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
-            if 'Validators' not in content:
+            if "Validators" not in content:
                 continue
 
-            class_match = re.search(r'(?:class|const)\s+(\w+)', content)
+            class_match = re.search(r"(?:class|const)\s+(\w+)", content)
             component_name = class_match.group(1) if class_match else ts_file.stem
 
             for match in self.ANGULAR_VALIDATOR_PATTERN.finditer(content):
                 validator_type = match.group(1)
                 params = match.group(2) or ""
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 fact = RawValidationRule(
                     name=f"{component_name}.{validator_type}",

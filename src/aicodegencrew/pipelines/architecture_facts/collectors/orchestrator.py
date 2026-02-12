@@ -17,87 +17,86 @@ Flow:
     EvidenceCollector   -> aggregates all evidence
 """
 
-from pathlib import Path
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field, asdict
 import json
-
-from .base import CollectorOutput, RawFact, RawEvidence
-from .system_collector import SystemCollector
-from .container_collector import ContainerCollector
-from .component_collector import ComponentCollector
-from .interface_collector import InterfaceCollector
-from .data_model_collector import DataModelCollector
-from .runtime_collector import RuntimeCollector
-from .infrastructure_collector import InfrastructureCollector
-from .dependency_collector import DependencyCollector
-from .workflow_collector import WorkflowCollector
-from .techstack_version_collector import TechStackVersionCollector
-from .security_detail_collector import SecurityDetailCollector
-from .validation_collector import ValidationCollector
-from .test_collector import TestCollector
-from .error_handling_collector import ErrorHandlingCollector
-from .evidence_collector import EvidenceCollector
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any
 
 from ....shared.utils.logger import logger
+from .base import RawEvidence, RawFact
+from .component_collector import ComponentCollector
+from .container_collector import ContainerCollector
+from .data_model_collector import DataModelCollector
+from .dependency_collector import DependencyCollector
+from .error_handling_collector import ErrorHandlingCollector
+from .evidence_collector import EvidenceCollector
+from .infrastructure_collector import InfrastructureCollector
+from .interface_collector import InterfaceCollector
+from .runtime_collector import RuntimeCollector
+from .security_detail_collector import SecurityDetailCollector
+from .system_collector import SystemCollector
+from .techstack_version_collector import TechStackVersionCollector
+from .test_collector import TestCollector
+from .validation_collector import ValidationCollector
+from .workflow_collector import WorkflowCollector
 
 
 @dataclass
 class DimensionResults:
     """Results from all collectors organized by dimension."""
-    
+
     # System level
     system_name: str = ""
-    subsystems: List[Dict] = field(default_factory=list)
-    
+    subsystems: list[dict] = field(default_factory=list)
+
     # Containers
-    containers: List[Dict] = field(default_factory=list)
-    
+    containers: list[dict] = field(default_factory=list)
+
     # Components (from all specialists)
-    components: List[RawFact] = field(default_factory=list)
-    
+    components: list[RawFact] = field(default_factory=list)
+
     # Interfaces (REST, routes, messages, etc.)
-    interfaces: List[RawFact] = field(default_factory=list)
-    
+    interfaces: list[RawFact] = field(default_factory=list)
+
     # Data model (entities, tables)
-    entities: List[RawFact] = field(default_factory=list)
-    tables: List[RawFact] = field(default_factory=list)
-    migrations: List[RawFact] = field(default_factory=list)
-    
+    entities: list[RawFact] = field(default_factory=list)
+    tables: list[RawFact] = field(default_factory=list)
+    migrations: list[RawFact] = field(default_factory=list)
+
     # Runtime (schedulers, async, events)
-    runtime: List[RawFact] = field(default_factory=list)
-    
+    runtime: list[RawFact] = field(default_factory=list)
+
     # Infrastructure (docker, k8s, ci/cd)
-    infrastructure: List[RawFact] = field(default_factory=list)
-    
+    infrastructure: list[RawFact] = field(default_factory=list)
+
     # Dependencies (external libraries/packages)
-    dependencies: List[RawFact] = field(default_factory=list)
-    
+    dependencies: list[RawFact] = field(default_factory=list)
+
     # Workflows (state machines, BPMN, NgRx, etc.)
-    workflows: List[RawFact] = field(default_factory=list)
+    workflows: list[RawFact] = field(default_factory=list)
 
     # Technology versions (for upgrade planning)
-    tech_versions: List[RawFact] = field(default_factory=list)
+    tech_versions: list[RawFact] = field(default_factory=list)
 
     # Security details (method-level security, CSRF, CORS)
-    security_details: List[RawFact] = field(default_factory=list)
+    security_details: list[RawFact] = field(default_factory=list)
 
     # Validation rules (Bean Validation, custom validators)
-    validation: List[RawFact] = field(default_factory=list)
+    validation: list[RawFact] = field(default_factory=list)
 
     # Tests (unit, integration, e2e, cucumber)
-    tests: List[RawFact] = field(default_factory=list)
+    tests: list[RawFact] = field(default_factory=list)
 
     # Error handling (exception handlers, advice, custom exceptions)
-    error_handling: List[RawFact] = field(default_factory=list)
+    error_handling: list[RawFact] = field(default_factory=list)
 
     # All relations (hints for model builder)
-    relation_hints: List[Dict] = field(default_factory=list)
+    relation_hints: list[dict] = field(default_factory=list)
 
     # Evidence map
-    evidence: Dict[str, RawEvidence] = field(default_factory=dict)
+    evidence: dict[str, RawEvidence] = field(default_factory=dict)
 
-    def get_statistics(self) -> Dict[str, int]:
+    def get_statistics(self) -> dict[str, int]:
         """Get counts for all dimensions."""
         return {
             "subsystems": len(self.subsystems),
@@ -124,76 +123,103 @@ class DimensionResults:
 class CollectorOrchestrator:
     """
     Orchestrates all collectors to extract architecture facts.
-    
+
     This replaces the scattered collector calls in the old pipeline.
     Each collector is run once, results are aggregated by dimension.
-    
+
     Can optionally write JSON files after each collector step for robustness.
     """
-    
+
     def __init__(self, repo_path: Path, output_dir: Path = None):
         """
         Initialize the orchestrator.
-        
+
         Args:
             repo_path: Path to the repository to analyze
             output_dir: Optional directory to write JSON files to (for incremental output)
         """
         self.repo_path = Path(repo_path).resolve()
         self.output_dir = Path(output_dir) if output_dir else None
-        
+
         # Results accumulator
         self.results = DimensionResults()
-        
+
         # Evidence aggregator
         self.evidence_collector = EvidenceCollector(self.repo_path)
-        
+
         # Create output dir if specified
         if self.output_dir:
             self.output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     def _write_json(self, filename: str, data: Any) -> None:
         """Write JSON file to output directory if configured."""
         if not self.output_dir:
             return
-        
+
         filepath = self.output_dir / filename
         try:
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False, default=str)
             logger.info(f"  [OK] Wrote {filepath.name}")
         except Exception as e:
             logger.warning(f"  [WARN] Failed to write {filepath}: {e}")
-    
-    def _fact_to_dict(self, fact: RawFact) -> Dict:
+
+    def _fact_to_dict(self, fact: RawFact) -> dict:
         """Convert a RawFact to dictionary."""
         result = {
             "name": fact.name,
         }
         # Add all non-None attributes
-        for attr in ['type', 'workflow_type', 'stereotype', 'container_hint', 'file_path',
-                     'module', 'layer_hint', 'path', 'method', 'version', 'scope', 'group',
-                     'states', 'transitions', 'actions',
-                     'security_type', 'roles', 'class_name',
-                     'validation_type', 'constraint', 'target_class', 'target_field',
-                     'test_type', 'framework', 'scenarios', 'tested_component_hint',
-                     'handling_type', 'exception_class', 'http_status', 'handler_method',
-                     'technology', 'source_file', 'category']:
+        for attr in [
+            "type",
+            "workflow_type",
+            "stereotype",
+            "container_hint",
+            "file_path",
+            "module",
+            "layer_hint",
+            "path",
+            "method",
+            "version",
+            "scope",
+            "group",
+            "states",
+            "transitions",
+            "actions",
+            "security_type",
+            "roles",
+            "class_name",
+            "validation_type",
+            "constraint",
+            "target_class",
+            "target_field",
+            "test_type",
+            "framework",
+            "scenarios",
+            "tested_component_hint",
+            "handling_type",
+            "exception_class",
+            "http_status",
+            "handler_method",
+            "technology",
+            "source_file",
+            "category",
+        ]:
             if hasattr(fact, attr):
                 val = getattr(fact, attr)
                 if val is not None and val != "" and val != []:
                     result[attr] = val
-        
+
         # Add evidence
-        if hasattr(fact, 'evidence') and fact.evidence:
-            result['evidence'] = [e.to_dict() for e in fact.evidence]
-        
+        if hasattr(fact, "evidence") and fact.evidence:
+            result["evidence"] = [e.to_dict() for e in fact.evidence]
+
         return result
-    
+
     def run_all(self) -> DimensionResults:
         """
         Run all collectors and return aggregated results.
-        
+
         Order matters:
         1. System - gets system name
         2. Container - detects deployable units
@@ -207,39 +233,39 @@ class CollectorOrchestrator:
         10. Evidence - final aggregation
         """
         logger.info("[CollectorOrchestrator] Starting architecture extraction...")
-        
+
         # 1. System facts
         logger.info("[CollectorOrchestrator] Step 1/15: System facts...")
         self._run_system_collector()
-        
+
         # 2. Container detection
         logger.info("[CollectorOrchestrator] Step 2/15: Container detection...")
         self._run_container_collector()
-        
+
         # 3. Component extraction (includes specialists)
         logger.info("[CollectorOrchestrator] Step 3/15: Component extraction...")
         self._run_component_collector()
-        
+
         # 4. Interface extraction
         logger.info("[CollectorOrchestrator] Step 4/15: Interface extraction...")
         self._run_interface_collector()
-        
+
         # 5. Data model extraction
         logger.info("[CollectorOrchestrator] Step 5/15: Data model extraction...")
         self._run_data_model_collector()
-        
+
         # 6. Runtime extraction
         logger.info("[CollectorOrchestrator] Step 6/15: Runtime extraction...")
         self._run_runtime_collector()
-        
+
         # 7. Infrastructure extraction
         logger.info("[CollectorOrchestrator] Step 7/15: Infrastructure extraction...")
         self._run_infrastructure_collector()
-        
+
         # 8. Dependencies extraction
         logger.info("[CollectorOrchestrator] Step 8/15: Dependencies extraction...")
         self._run_dependency_collector()
-        
+
         # 9. Workflows extraction
         logger.info("[CollectorOrchestrator] Step 9/15: Workflows extraction...")
         self._run_workflow_collector()
@@ -267,91 +293,99 @@ class CollectorOrchestrator:
         # 15. Evidence aggregation
         logger.info("[CollectorOrchestrator] Step 15/15: Evidence aggregation...")
         self._aggregate_evidence()
-        
+
         # Log statistics
         stats = self.results.get_statistics()
         logger.info("[CollectorOrchestrator] Extraction complete:")
         for key, value in stats.items():
             if value > 0:
                 logger.info(f"  - {key}: {value}")
-        
+
         # Write combined architecture_facts.json (raw collector output)
         self._write_combined_facts()
-        
+
         return self.results
-    
+
     def _run_system_collector(self) -> None:
         """Run SystemCollector to get system name and subsystems."""
-        from .system_collector import RawSystemInfo, RawSubsystem
-        
+        from .system_collector import RawSubsystem, RawSystemInfo
+
         collector = SystemCollector(self.repo_path)
         output = collector.collect()
-        
+
         # Extract system name from facts
         for fact in output.facts:
             if isinstance(fact, RawSystemInfo):
                 self.results.system_name = fact.name
             elif isinstance(fact, RawSubsystem):
-                self.results.subsystems.append({
-                    "name": fact.name,
-                    "type": fact.type,
-                    "root_path": fact.root_path,
-                })
-        
+                self.results.subsystems.append(
+                    {
+                        "name": fact.name,
+                        "type": fact.type,
+                        "root_path": fact.root_path,
+                    }
+                )
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         # Add relation hints
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         if not self.results.system_name:
             self.results.system_name = self.repo_path.name
-        
+
         # Write system.json
-        self._write_json("system.json", {
-            "name": self.results.system_name,
-            "version": None,
-            "description": None,
-            "contexts": [s["name"] for s in self.results.subsystems]
-        })
-    
+        self._write_json(
+            "system.json",
+            {
+                "name": self.results.system_name,
+                "version": None,
+                "description": None,
+                "contexts": [s["name"] for s in self.results.subsystems],
+            },
+        )
+
     def _run_container_collector(self) -> None:
         """Run ContainerCollector to detect deployable units."""
         collector = ContainerCollector(self.repo_path)
         output = collector.collect()
-        
+
         # Convert RawContainer facts to dicts
         for fact in output.facts:
             container_dict = {
                 "name": fact.name,
-                "type": getattr(fact, 'type', 'unknown'),
-                "technology": getattr(fact, 'technology', ''),
-                "category": getattr(fact, 'category', 'unknown'),
-                "root_path": str(getattr(fact, 'root_path', '')),
-                "metadata": getattr(fact, 'metadata', {}),
+                "type": getattr(fact, "type", "unknown"),
+                "technology": getattr(fact, "technology", ""),
+                "category": getattr(fact, "category", "unknown"),
+                "root_path": str(getattr(fact, "root_path", "")),
+                "metadata": getattr(fact, "metadata", {}),
             }
             self.results.containers.append(container_dict)
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Detected {len(self.results.containers)} containers")
-        
+
         # Write containers.json
-        containers_out = [{
-            "id": c["name"],
-            "name": c["name"],
-            "type": c["type"],
-            "technology": c["technology"],
-            "path": c["root_path"],
-            "category": c["category"]
-        } for c in self.results.containers]
+        containers_out = [
+            {
+                "id": c["name"],
+                "name": c["name"],
+                "type": c["type"],
+                "technology": c["technology"],
+                "path": c["root_path"],
+                "category": c["category"],
+            }
+            for c in self.results.containers
+        ]
         self._write_json("containers.json", containers_out)
-    
+
     def _run_component_collector(self) -> None:
         """
         Run ComponentCollector with detected container context.
-        
+
         ComponentCollector internally runs specialists:
         - Spring: RestCollector, ServiceCollector, RepositoryCollector
         - Angular: ModuleCollector, ComponentCollector, ServiceCollector
@@ -359,151 +393,155 @@ class CollectorOrchestrator:
         # Pass container info directly (containers already has the right format)
         collector = ComponentCollector(self.repo_path, self.results.containers)
         output = collector.collect()
-        
+
         # Add components
         self.results.components.extend(output.facts)
-        
+
         # Add relation hints
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Extracted {len(output.facts)} components")
-        
+
         # Write components.json
         components_out = [self._fact_to_dict(c) for c in self.results.components]
         self._write_json("components.json", components_out)
-    
+
     def _run_interface_collector(self) -> None:
         """Run InterfaceCollector for REST, routes, messages."""
         # Pass container info to interface collector
         collector = InterfaceCollector(self.repo_path, self.results.containers)
         output = collector.collect()
-        
+
         # Add interfaces
         self.results.interfaces.extend(output.facts)
-        
+
         # Add relation hints
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Extracted {len(output.facts)} interfaces")
-        
+
         # Write interfaces.json
         interfaces_out = [self._fact_to_dict(i) for i in self.results.interfaces]
         self._write_json("interfaces.json", interfaces_out)
-    
+
     def _run_data_model_collector(self) -> None:
         """Run DataModelCollector for entities, tables, migrations."""
         collector = DataModelCollector(self.repo_path)
         output = collector.collect()
-        
+
         # Separate into entities, tables, migrations
         for fact in output.facts:
-            fact_type = getattr(fact, 'fact_type', 'entity')
-            
-            if fact_type == 'jpa_entity' or fact_type == 'entity':
+            fact_type = getattr(fact, "fact_type", "entity")
+
+            if fact_type == "jpa_entity" or fact_type == "entity":
                 self.results.entities.append(fact)
-            elif fact_type == 'table':
+            elif fact_type == "table":
                 self.results.tables.append(fact)
-            elif fact_type == 'migration':
+            elif fact_type == "migration":
                 self.results.migrations.append(fact)
             else:
                 # Default to entity
                 self.results.entities.append(fact)
-        
+
         # Add relation hints (entity relationships)
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Extracted {len(self.results.entities)} entities, {len(self.results.tables)} tables")
-        
+
         # Write data_model.json
         data_model_out = {
             "entities": [self._fact_to_dict(e) for e in self.results.entities],
             "tables": [self._fact_to_dict(t) for t in self.results.tables],
-            "migrations": [self._fact_to_dict(m) for m in self.results.migrations]
+            "migrations": [self._fact_to_dict(m) for m in self.results.migrations],
         }
         self._write_json("data_model.json", data_model_out)
-    
+
     def _run_runtime_collector(self) -> None:
         """Run RuntimeCollector for schedulers, async, events."""
         collector = RuntimeCollector(self.repo_path)
         output = collector.collect()
-        
+
         # Add runtime facts
         self.results.runtime.extend(output.facts)
-        
+
         # Add relation hints
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Extracted {len(output.facts)} runtime facts")
-        
+
         # Write runtime.json
         runtime_out = [self._fact_to_dict(r) for r in self.results.runtime]
         self._write_json("runtime.json", runtime_out)
-    
+
     def _run_infrastructure_collector(self) -> None:
         """Run InfrastructureCollector for docker, k8s, ci/cd."""
         collector = InfrastructureCollector(self.repo_path)
         output = collector.collect()
-        
+
         # Add infrastructure facts
         self.results.infrastructure.extend(output.facts)
-        
+
         # Also detect containers from infrastructure
         for fact in output.facts:
-            fact_type = getattr(fact, 'fact_type', '')
-            
+            fact_type = getattr(fact, "fact_type", "")
+
             # Compose services become containers
-            if fact_type == 'compose_service':
+            if fact_type == "compose_service":
                 existing_names = [c.get("name") for c in self.results.containers]
                 if fact.name not in existing_names:
-                    self.results.containers.append({
-                        "name": fact.name,
-                        "technology": getattr(fact, 'image', "docker"),
-                        "category": "database" if "db" in fact.name.lower() or "postgres" in str(getattr(fact, 'image', '')).lower() else "backend",
-                        "root_path": "",
-                        "description": f"Docker service: {fact.name}",
-                        "config_files": [],
-                    })
-        
+                    self.results.containers.append(
+                        {
+                            "name": fact.name,
+                            "technology": getattr(fact, "image", "docker"),
+                            "category": "database"
+                            if "db" in fact.name.lower() or "postgres" in str(getattr(fact, "image", "")).lower()
+                            else "backend",
+                            "root_path": "",
+                            "description": f"Docker service: {fact.name}",
+                            "config_files": [],
+                        }
+                    )
+
         # Add relation hints
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Extracted {len(output.facts)} infrastructure facts")
-        
+
         # Write infrastructure.json
         infra_out = [self._fact_to_dict(i) for i in self.results.infrastructure]
         self._write_json("infrastructure.json", infra_out)
-    
+
     def _run_dependency_collector(self) -> None:
         """Run DependencyCollector for external libraries/packages."""
         collector = DependencyCollector(self.repo_path)
         output = collector.collect()
-        
+
         # Add dependency facts
         self.results.dependencies.extend(output.facts)
-        
+
         # Add relation hints (dependencies create relations)
         self.results.relation_hints.extend([r.to_dict() for r in output.relations])
-        
+
         # Add evidence
         self.evidence_collector.add_from_output(output)
-        
+
         logger.info(f"  Extracted {len(output.facts)} dependencies")
-        
+
         # Write dependencies.json
         deps_out = [self._fact_to_dict(d) for d in self.results.dependencies]
         self._write_json("dependencies.json", deps_out)
@@ -544,12 +582,14 @@ class CollectorOrchestrator:
         # Write tech_versions.json
         versions_out = []
         for fact in self.results.tech_versions:
-            versions_out.append({
-                "technology": getattr(fact, 'technology', fact.name),
-                "version": getattr(fact, 'version', ''),
-                "category": getattr(fact, 'category', ''),
-                "source_file": getattr(fact, 'source_file', ''),
-            })
+            versions_out.append(
+                {
+                    "technology": getattr(fact, "technology", fact.name),
+                    "version": getattr(fact, "version", ""),
+                    "category": getattr(fact, "category", ""),
+                    "source_file": getattr(fact, "source_file", ""),
+                }
+            )
         self._write_json("tech_versions.json", versions_out)
 
     def _run_security_detail_collector(self) -> None:
@@ -612,11 +652,11 @@ class CollectorOrchestrator:
         """Build final evidence map."""
         self.results.evidence = self.evidence_collector.build_evidence_map()
         logger.info(f"  Aggregated {len(self.results.evidence)} evidence items")
-        
+
         # Write evidence_map.json
-        evidence_out = {k: v.to_dict() if hasattr(v, 'to_dict') else v for k, v in self.results.evidence.items()}
+        evidence_out = {k: v.to_dict() if hasattr(v, "to_dict") else v for k, v in self.results.evidence.items()}
         self._write_json("evidence_map.json", evidence_out)
-        
+
         # Write relations.json
         self._write_json("relations.json", self.results.relation_hints)
 
@@ -624,21 +664,24 @@ class CollectorOrchestrator:
         """Write combined architecture_facts.json with all collected data."""
         if not self.output_dir:
             return
-        
+
         # Build combined structure
         combined = {
             "system": {
                 "name": self.results.system_name,
                 "subsystems": self.results.subsystems,
             },
-            "containers": [{
-                "id": c["name"],
-                "name": c["name"],
-                "type": c.get("type", "unknown"),
-                "technology": c.get("technology", ""),
-                "path": c.get("root_path", ""),
-                "category": c.get("category", "unknown"),
-            } for c in self.results.containers],
+            "containers": [
+                {
+                    "id": c["name"],
+                    "name": c["name"],
+                    "type": c.get("type", "unknown"),
+                    "technology": c.get("technology", ""),
+                    "path": c.get("root_path", ""),
+                    "category": c.get("category", "unknown"),
+                }
+                for c in self.results.containers
+            ],
             "components": [self._fact_to_dict(c) for c in self.results.components],
             "interfaces": [self._fact_to_dict(i) for i in self.results.interfaces],
             "relations": self.results.relation_hints,
@@ -651,19 +694,22 @@ class CollectorOrchestrator:
             "infrastructure": [self._fact_to_dict(i) for i in self.results.infrastructure],
             "dependencies": [self._fact_to_dict(d) for d in self.results.dependencies],
             "workflows": [self._fact_to_dict(w) for w in self.results.workflows],
-            "tech_versions": [{
-                "technology": getattr(v, 'technology', v.name),
-                "version": getattr(v, 'version', ''),
-                "category": getattr(v, 'category', ''),
-                "source_file": getattr(v, 'source_file', ''),
-            } for v in self.results.tech_versions],
+            "tech_versions": [
+                {
+                    "technology": getattr(v, "technology", v.name),
+                    "version": getattr(v, "version", ""),
+                    "category": getattr(v, "category", ""),
+                    "source_file": getattr(v, "source_file", ""),
+                }
+                for v in self.results.tech_versions
+            ],
             "security_details": [self._fact_to_dict(s) for s in self.results.security_details],
             "validation": [self._fact_to_dict(v) for v in self.results.validation],
             "tests": [self._fact_to_dict(t) for t in self.results.tests],
             "error_handling": [self._fact_to_dict(e) for e in self.results.error_handling],
-            "evidence": {k: v.to_dict() if hasattr(v, 'to_dict') else v for k, v in self.results.evidence.items()},
+            "evidence": {k: v.to_dict() if hasattr(v, "to_dict") else v for k, v in self.results.evidence.items()},
             "statistics": self.results.get_statistics(),
         }
-        
+
         self._write_json("architecture_facts.json", combined)
-        logger.info(f"[CollectorOrchestrator] Wrote architecture_facts.json (combined)")
+        logger.info("[CollectorOrchestrator] Wrote architecture_facts.json (combined)")

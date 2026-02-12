@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, Query
 
-from ..services.log_reader import read_log, list_log_files
 from ..schemas import LogResponse
+from ..services.log_reader import list_log_files, read_log
 
 router = APIRouter(prefix="/api/logs", tags=["logs"])
 

@@ -12,12 +12,10 @@ Output -> error_handling dimension
 """
 
 import re
-from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Dict, Optional, Set
 
-from .base import DimensionCollector, CollectorOutput, RawErrorHandlingFact
 from ....shared.utils.logger import logger
+from .base import CollectorOutput, DimensionCollector, RawErrorHandlingFact
 
 
 class ErrorHandlingCollector(DimensionCollector):
@@ -29,35 +27,21 @@ class ErrorHandlingCollector(DimensionCollector):
 
     # Java patterns
     EXCEPTION_HANDLER_PATTERN = re.compile(
-        r'@ExceptionHandler\s*(?:\(\s*(?:value\s*=\s*)?(\w+(?:\.\w+)*)\.class\s*\))?'
+        r"@ExceptionHandler\s*(?:\(\s*(?:value\s*=\s*)?(\w+(?:\.\w+)*)\.class\s*\))?"
     )
-    CONTROLLER_ADVICE_PATTERN = re.compile(
-        r'@(ControllerAdvice|RestControllerAdvice)'
-    )
+    CONTROLLER_ADVICE_PATTERN = re.compile(r"@(ControllerAdvice|RestControllerAdvice)")
     CUSTOM_EXCEPTION_PATTERN = re.compile(
-        r'class\s+(\w+Exception|\w+Error)\s+extends\s+(\w+(?:Exception|Error|Throwable))'
+        r"class\s+(\w+Exception|\w+Error)\s+extends\s+(\w+(?:Exception|Error|Throwable))"
     )
-    RESPONSE_STATUS_PATTERN = re.compile(
-        r'@ResponseStatus\s*\(\s*(?:value\s*=\s*)?(?:HttpStatus\.)?(\w+)\s*\)'
-    )
-    HTTP_STATUS_IN_HANDLER = re.compile(
-        r'(?:HttpStatus|ResponseEntity\.status\s*\(\s*HttpStatus)\.(\w+)'
-    )
-    CLASS_PATTERN = re.compile(r'class\s+(\w+)')
-    METHOD_PATTERN = re.compile(
-        r'(?:public|protected|private)\s+\w+(?:<[^>]+>)?\s+(\w+)\s*\('
-    )
+    RESPONSE_STATUS_PATTERN = re.compile(r"@ResponseStatus\s*\(\s*(?:value\s*=\s*)?(?:HttpStatus\.)?(\w+)\s*\)")
+    HTTP_STATUS_IN_HANDLER = re.compile(r"(?:HttpStatus|ResponseEntity\.status\s*\(\s*HttpStatus)\.(\w+)")
+    CLASS_PATTERN = re.compile(r"class\s+(\w+)")
+    METHOD_PATTERN = re.compile(r"(?:public|protected|private)\s+\w+(?:<[^>]+>)?\s+(\w+)\s*\(")
 
     # Angular patterns
-    ANGULAR_ERROR_HANDLER_PATTERN = re.compile(
-        r'(?:implements|extends)\s+ErrorHandler'
-    )
-    ANGULAR_INTERCEPTOR_PATTERN = re.compile(
-        r'(?:implements\s+HttpInterceptor|HttpInterceptorFn)'
-    )
-    ANGULAR_CATCH_ERROR_PATTERN = re.compile(
-        r'catchError\s*\('
-    )
+    ANGULAR_ERROR_HANDLER_PATTERN = re.compile(r"(?:implements|extends)\s+ErrorHandler")
+    ANGULAR_INTERCEPTOR_PATTERN = re.compile(r"(?:implements\s+HttpInterceptor|HttpInterceptorFn)")
+    ANGULAR_CATCH_ERROR_PATTERN = re.compile(r"catchError\s*\(")
 
     def __init__(self, repo_path: Path, container_id: str = ""):
         super().__init__(repo_path)
@@ -86,7 +70,7 @@ class ErrorHandlingCollector(DimensionCollector):
 
         for java_file in java_files:
             try:
-                content = java_file.read_text(encoding='utf-8', errors='ignore')
+                content = java_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
@@ -97,21 +81,21 @@ class ErrorHandlingCollector(DimensionCollector):
             advice_match = self.CONTROLLER_ADVICE_PATTERN.search(content)
             if advice_match:
                 advice_type = advice_match.group(1)
-                line_num = content[:advice_match.start()].count('\n') + 1
+                line_num = content[: advice_match.start()].count("\n") + 1
 
                 # Collect all @ExceptionHandler methods within this class
                 handlers = list(self.EXCEPTION_HANDLER_PATTERN.finditer(content))
                 for handler in handlers:
                     exception_class = handler.group(1) or "Exception"
-                    handler_line = content[:handler.start()].count('\n') + 1
+                    handler_line = content[: handler.start()].count("\n") + 1
 
                     # Find method name after @ExceptionHandler
-                    remaining = content[handler.end():handler.end() + 300]
+                    remaining = content[handler.end() : handler.end() + 300]
                     method_match = self.METHOD_PATTERN.search(remaining)
                     method_name = method_match.group(1) if method_match else "handle"
 
                     # Find HTTP status
-                    handler_block = content[handler.start():handler.start() + 500]
+                    handler_block = content[handler.start() : handler.start() + 500]
                     status_match = self.RESPONSE_STATUS_PATTERN.search(handler_block)
                     if not status_match:
                         status_match = self.HTTP_STATUS_IN_HANDLER.search(handler_block)
@@ -158,10 +142,10 @@ class ErrorHandlingCollector(DimensionCollector):
             for match in self.CUSTOM_EXCEPTION_PATTERN.finditer(content):
                 exc_name = match.group(1)
                 parent = match.group(2)
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
                 # Check for @ResponseStatus on the exception
-                exc_block = content[max(0, match.start() - 200):match.start()]
+                exc_block = content[max(0, match.start() - 200) : match.start()]
                 status_match = self.RESPONSE_STATUS_PATTERN.search(exc_block)
                 http_status = status_match.group(1) if status_match else ""
 
@@ -189,21 +173,20 @@ class ErrorHandlingCollector(DimensionCollector):
     def _collect_angular_error_handling(self):
         """Collect Angular error handling patterns."""
         ts_files = list(self.repo_path.rglob("*.ts"))
-        ts_files = [f for f in ts_files if not self._should_skip(f)
-                     and '.spec.' not in str(f)]
+        ts_files = [f for f in ts_files if not self._should_skip(f) and ".spec." not in str(f)]
 
         for ts_file in ts_files:
             try:
-                content = ts_file.read_text(encoding='utf-8', errors='ignore')
+                content = ts_file.read_text(encoding="utf-8", errors="ignore")
             except Exception:
                 continue
 
-            class_match = re.search(r'(?:class|const)\s+(\w+)', content)
+            class_match = re.search(r"(?:class|const)\s+(\w+)", content)
             class_name = class_match.group(1) if class_match else ts_file.stem
 
             # Angular ErrorHandler
             if self.ANGULAR_ERROR_HANDLER_PATTERN.search(content):
-                line_num = content[:self.ANGULAR_ERROR_HANDLER_PATTERN.search(content).start()].count('\n') + 1
+                line_num = content[: self.ANGULAR_ERROR_HANDLER_PATTERN.search(content).start()].count("\n") + 1
 
                 fact = RawErrorHandlingFact(
                     name=class_name,
@@ -226,7 +209,7 @@ class ErrorHandlingCollector(DimensionCollector):
             if self.ANGULAR_INTERCEPTOR_PATTERN.search(content):
                 has_error_handling = self.ANGULAR_CATCH_ERROR_PATTERN.search(content)
                 if has_error_handling:
-                    line_num = content[:self.ANGULAR_INTERCEPTOR_PATTERN.search(content).start()].count('\n') + 1
+                    line_num = content[: self.ANGULAR_INTERCEPTOR_PATTERN.search(content).start()].count("\n") + 1
 
                     fact = RawErrorHandlingFact(
                         name=class_name,

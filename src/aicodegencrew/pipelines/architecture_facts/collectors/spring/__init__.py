@@ -8,16 +8,16 @@ Each collector extracts ONE specific aspect of Spring applications:
 - SpringConfigCollector: @Configuration, application.yml, profiles
 """
 
-from .rest_collector import SpringRestCollector
-from .service_collector import SpringServiceCollector
-from .repository_collector import SpringRepositoryCollector
 from .config_collector import SpringConfigCollector
+from .repository_collector import SpringRepositoryCollector
+from .rest_collector import SpringRestCollector
 from .security_collector import SpringSecurityCollector
+from .service_collector import SpringServiceCollector
 
 __all__ = [
-    "SpringRestCollector",
-    "SpringServiceCollector", 
-    "SpringRepositoryCollector",
     "SpringConfigCollector",
+    "SpringRepositoryCollector",
+    "SpringRestCollector",
     "SpringSecurityCollector",
+    "SpringServiceCollector",
 ]

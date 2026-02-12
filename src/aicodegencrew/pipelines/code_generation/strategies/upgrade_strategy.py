@@ -1,7 +1,7 @@
 """Strategy for framework upgrade tasks (Angular, Spring, Java)."""
 
+from ..schemas import CodegenPlanInput, FileContext
 from .base import BaseStrategy
-from ..schemas import FileContext, CodegenPlanInput
 
 
 class UpgradeStrategy(BaseStrategy):
@@ -61,10 +61,7 @@ Return the complete file:"""
         if file_ctx.language in ("java", "typescript") and "import" not in code:
             if "import" in file_ctx.content:
                 # LLM dropped imports — prepend originals
-                original_imports = [
-                    line for line in file_ctx.content.split("\n")
-                    if line.strip().startswith("import ")
-                ]
+                original_imports = [line for line in file_ctx.content.split("\n") if line.strip().startswith("import ")]
                 code = "\n".join(original_imports) + "\n\n" + code
         return code
 

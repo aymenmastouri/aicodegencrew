@@ -4,6 +4,7 @@ Integration tests for phase data flow.
 Tests the data contracts between SDLC phases without requiring LLM or network.
 Each test group verifies that output from one phase can be consumed by the next.
 """
+
 import json
 import sys
 import time
@@ -18,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 # =============================================================================
 # Phase 0 -> Phase 1  data flow
 # =============================================================================
+
 
 class TestPhase0ToPhase1:
     """IndexingConfig, IndexingState, and fingerprint calculation."""
@@ -201,6 +203,7 @@ class TestPhase0ToPhase1:
 # Phase 1 -> Phase 2  data flow
 # =============================================================================
 
+
 class TestPhase1ToPhase2:
     """Validates architecture_facts.json, evidence_map.json, and collector orchestrator."""
 
@@ -293,9 +296,17 @@ class TestPhase1ToPhase2:
         facts = self._create_mock_facts(tmp_path)
 
         required_keys = [
-            "system", "containers", "components", "interfaces",
-            "relations", "data_model", "runtime", "infrastructure",
-            "dependencies", "workflows", "statistics",
+            "system",
+            "containers",
+            "components",
+            "interfaces",
+            "relations",
+            "data_model",
+            "runtime",
+            "infrastructure",
+            "dependencies",
+            "workflows",
+            "statistics",
         ]
         for key in required_keys:
             assert key in facts, f"Missing key: {key}"
@@ -394,9 +405,7 @@ public class UserController {
         )
 
         output_dir = tmp_path / "output"
-        orchestrator = CollectorOrchestrator(
-            repo_path=tmp_path, output_dir=output_dir
-        )
+        orchestrator = CollectorOrchestrator(repo_path=tmp_path, output_dir=output_dir)
         results = orchestrator.run_all()
 
         assert isinstance(results, DimensionResults)
@@ -416,11 +425,24 @@ public class UserController {
         stats = results.get_statistics()
 
         expected_keys = [
-            "subsystems", "containers", "components", "interfaces",
-            "entities", "tables", "migrations", "runtime_facts",
-            "infrastructure_facts", "dependencies", "workflows",
-            "tech_versions", "security_details", "validation",
-            "tests", "error_handling", "relation_hints", "evidence_items",
+            "subsystems",
+            "containers",
+            "components",
+            "interfaces",
+            "entities",
+            "tables",
+            "migrations",
+            "runtime_facts",
+            "infrastructure_facts",
+            "dependencies",
+            "workflows",
+            "tech_versions",
+            "security_details",
+            "validation",
+            "tests",
+            "error_handling",
+            "relation_hints",
+            "evidence_items",
         ]
         for key in expected_keys:
             assert key in stats, f"Missing stat key: {key}"
@@ -430,6 +452,7 @@ public class UserController {
 # =============================================================================
 # Phase 2 -> Phase 3  data flow
 # =============================================================================
+
 
 class TestPhase2ToPhase3:
     """Validates analyzed_architecture.json and MiniCrewBase._load_json."""
@@ -503,9 +526,7 @@ class TestPhase2ToPhase3:
             ArchitectureSynthesisCrew,
         )
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "nonexistent" / "facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "nonexistent" / "facts.json"))
         with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
             crew._validate_prerequisites()
 
@@ -513,6 +534,7 @@ class TestPhase2ToPhase3:
 # =============================================================================
 # Phase 4  pipeline stages flow
 # =============================================================================
+
 
 class TestPhase4StageFlow:
     """Tests Stage 1->2->3->5 data flow without LLM (Stage 4 is mocked)."""
@@ -631,15 +653,14 @@ class TestPhase4StageFlow:
 
     def test_stage1_parses_text_file(self, tmp_path):
         """Stage 1 InputParserStage can parse a .txt task file."""
+        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
         from aicodegencrew.pipelines.development_planning.stages import (
             InputParserStage,
         )
-        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
 
         task_file = tmp_path / "TASK-001.txt"
         task_file.write_text(
-            "Implement user authentication with JWT tokens.\n"
-            "The UserService needs a new login method.\n",
+            "Implement user authentication with JWT tokens.\nThe UserService needs a new login method.\n",
             encoding="utf-8",
         )
 
@@ -659,8 +680,7 @@ class TestPhase4StageFlow:
 
         task_file = tmp_path / "TASK-002.txt"
         task_file.write_text(
-            "Angular upgrade from version 16 to version 17.\n"
-            "Breaking changes in Angular router.\n",
+            "Angular upgrade from version 16 to version 17.\nBreaking changes in Angular router.\n",
             encoding="utf-8",
         )
 
@@ -676,8 +696,7 @@ class TestPhase4StageFlow:
 
         task_file = tmp_path / "BUG-003.txt"
         task_file.write_text(
-            "Fix null pointer error in UserService.getUser()\n"
-            "NullPointerException at line 42.\n",
+            "Fix null pointer error in UserService.getUser()\nNullPointerException at line 42.\n",
             encoding="utf-8",
         )
 
@@ -687,10 +706,10 @@ class TestPhase4StageFlow:
 
     def test_stage2_component_discovery_no_chromadb(self, mock_facts):
         """Stage 2 works with facts-only scoring when ChromaDB is unavailable."""
+        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
         from aicodegencrew.pipelines.development_planning.stages import (
             ComponentDiscoveryStage,
         )
-        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
 
         stage2 = ComponentDiscoveryStage(
             facts=mock_facts,
@@ -713,10 +732,10 @@ class TestPhase4StageFlow:
 
     def test_stage3_pattern_matcher_returns_all_categories(self, mock_facts):
         """Stage 3 returns test_patterns, security_patterns, etc."""
+        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
         from aicodegencrew.pipelines.development_planning.stages import (
             PatternMatcherStage,
         )
-        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
 
         stage3 = PatternMatcherStage(facts=mock_facts)
 
@@ -750,11 +769,11 @@ class TestPhase4StageFlow:
 
     def test_stage5_validates_valid_plan(self):
         """Stage 5 validates a well-formed plan as valid."""
-        from aicodegencrew.pipelines.development_planning.stages import ValidatorStage
         from aicodegencrew.pipelines.development_planning.schemas import (
             ImplementationPlan,
             ValidationResult,
         )
+        from aicodegencrew.pipelines.development_planning.stages import ValidatorStage
 
         stage5 = ValidatorStage(analyzed_architecture={})
 
@@ -799,10 +818,10 @@ class TestPhase4StageFlow:
 
     def test_stage5_rejects_empty_components(self):
         """Stage 5 rejects plans with no affected components."""
-        from aicodegencrew.pipelines.development_planning.stages import ValidatorStage
         from aicodegencrew.pipelines.development_planning.schemas import (
             ImplementationPlan,
         )
+        from aicodegencrew.pipelines.development_planning.stages import ValidatorStage
 
         stage5 = ValidatorStage()
 
@@ -826,16 +845,15 @@ class TestPhase4StageFlow:
     def test_stage_chain_1_to_3_with_mock_data(self, tmp_path, mock_facts):
         """Full Stage 1 -> 2 -> 3 chain with mock data (no LLM)."""
         from aicodegencrew.pipelines.development_planning.stages import (
-            InputParserStage,
             ComponentDiscoveryStage,
+            InputParserStage,
             PatternMatcherStage,
         )
 
         # Stage 1: Parse input
         task_file = tmp_path / "FEAT-100.txt"
         task_file.write_text(
-            "Add UserService caching layer for performance improvement.\n"
-            "The UserService response time is too slow.\n",
+            "Add UserService caching layer for performance improvement.\nThe UserService response time is too slow.\n",
             encoding="utf-8",
         )
 
@@ -884,6 +902,7 @@ class TestPhase4StageFlow:
 # =============================================================================
 # Confluence converter integration
 # =============================================================================
+
 
 class TestConfluenceConverterIntegration:
     """Tests DocumentConverter on realistic markdown content."""
@@ -1020,7 +1039,6 @@ public class MainController {
         """German arc42 ToC uses German chapter titles."""
         from aicodegencrew.shared.utils.confluence_converter import (
             DocumentConverter,
-            ARC42_CHAPTERS,
         )
 
         arc42_dir = tmp_path / "arc42"
@@ -1049,7 +1067,7 @@ public class MainController {
             pytest.skip("No C4 markdown files available")
 
         converter = DocumentConverter()
-        results = converter.convert_file(list(c4_dir.glob("*.md"))[0])
+        results = converter.convert_file(next(iter(c4_dir.glob("*.md"))))
 
         assert len(results) >= 1
         for fmt, path in results.items():
@@ -1061,6 +1079,7 @@ public class MainController {
 # Pydantic schema validation (Phase 1 output)
 # =============================================================================
 
+
 class TestArchitectureFactsSchema:
     """Validates ArchitectureFacts Pydantic schema."""
 
@@ -1068,9 +1087,9 @@ class TestArchitectureFactsSchema:
         """Valid architecture facts pass Pydantic validation."""
         from aicodegencrew.shared.models.architecture_facts_schema import (
             ArchitectureFacts,
-            SystemInfo,
-            Container,
             Component,
+            Container,
+            SystemInfo,
         )
 
         facts = ArchitectureFacts(
@@ -1102,8 +1121,8 @@ class TestArchitectureFactsSchema:
         """validate_evidence catches references to nonexistent evidence."""
         from aicodegencrew.shared.models.architecture_facts_schema import (
             ArchitectureFacts,
-            SystemInfo,
             Container,
+            SystemInfo,
         )
 
         facts = ArchitectureFacts(
@@ -1126,9 +1145,9 @@ class TestArchitectureFactsSchema:
         """validate_evidence returns empty list when all references exist."""
         from aicodegencrew.shared.models.architecture_facts_schema import (
             ArchitectureFacts,
-            SystemInfo,
-            Container,
             Component,
+            Container,
+            SystemInfo,
         )
 
         facts = ArchitectureFacts(

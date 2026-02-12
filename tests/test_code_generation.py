@@ -6,19 +6,21 @@ dry-run mode, and error paths.
 """
 
 import json
-import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+
+from aicodegencrew.pipelines.code_generation.pipeline import CodeGenerationPipeline
 from aicodegencrew.pipelines.code_generation.schemas import (
-    ComponentTarget,
     CodegenPlanInput,
-    FileContext,
-    CollectedContext,
-    GeneratedFile,
-    FileValidationResult,
-    ValidationResult,
     CodegenReport,
+    CollectedContext,
+    ComponentTarget,
+    FileContext,
+    FileValidationResult,
+    GeneratedFile,
+    ValidationResult,
 )
 from aicodegencrew.pipelines.code_generation.stages.stage1_plan_reader import PlanReaderStage
 from aicodegencrew.pipelines.code_generation.stages.stage2_context_collector import ContextCollectorStage
@@ -26,15 +28,13 @@ from aicodegencrew.pipelines.code_generation.stages.stage3_code_generator import
 from aicodegencrew.pipelines.code_generation.stages.stage4_code_validator import CodeValidatorStage
 from aicodegencrew.pipelines.code_generation.stages.stage5_output_writer import OutputWriterStage
 from aicodegencrew.pipelines.code_generation.strategies import (
-    BaseStrategy,
-    FeatureStrategy,
-    BugfixStrategy,
-    UpgradeStrategy,
-    RefactoringStrategy,
     STRATEGY_MAP,
+    BaseStrategy,
+    BugfixStrategy,
+    FeatureStrategy,
+    RefactoringStrategy,
+    UpgradeStrategy,
 )
-from aicodegencrew.pipelines.code_generation.pipeline import CodeGenerationPipeline
-
 
 # =============================================================================
 # Test Data Builders
@@ -178,18 +178,14 @@ SAMPLE_FACTS = {
             "name": "UserServiceImpl",
             "stereotype": "service",
             "layer": "application",
-            "file_paths": [
-                "backend/src/main/java/com/example/user/UserServiceImpl.java"
-            ],
+            "file_paths": ["backend/src/main/java/com/example/user/UserServiceImpl.java"],
         },
         {
             "id": "component.backend.service.email_service",
             "name": "EmailService",
             "stereotype": "service",
             "layer": "application",
-            "file_paths": [
-                "backend/src/main/java/com/example/email/EmailService.java"
-            ],
+            "file_paths": ["backend/src/main/java/com/example/email/EmailService.java"],
         },
     ]
 }
@@ -224,6 +220,7 @@ def _create_repo_file(repo_path: Path, rel_path: str, content: str) -> Path:
 # =============================================================================
 # Schema Tests
 # =============================================================================
+
 
 class TestSchemas:
     """Test Pydantic schema defaults, ranges, and validation."""
@@ -292,6 +289,7 @@ class TestSchemas:
 # Stage 1: Plan Reader Tests
 # =============================================================================
 
+
 class TestPlanReaderStage:
     """Test Stage 1: Plan Reader."""
 
@@ -320,7 +318,7 @@ class TestPlanReaderStage:
     def test_read_by_plan_path(self, tmp_path):
         plan_file = _write_plan(tmp_path, SAMPLE_PLAN_JSON)
         stage = PlanReaderStage(plans_dir=str(tmp_path))  # Wrong dir, but plan_path overrides
-        plan_input, strategy = stage.run(plan_path=str(plan_file))
+        plan_input, _strategy = stage.run(plan_path=str(plan_file))
         assert plan_input.task_id == "TEST-001"
 
     def test_missing_plan_raises(self, tmp_path):
@@ -413,23 +411,29 @@ class TestPlanReaderStage:
 # Stage 2: Context Collector Tests
 # =============================================================================
 
+
 class TestContextCollectorStage:
     """Test Stage 2: Context Collector."""
 
     def test_collect_existing_file(self, tmp_path):
         repo = tmp_path / "repo"
         _create_repo_file(
-            repo, "backend/src/main/java/UserServiceImpl.java",
+            repo,
+            "backend/src/main/java/UserServiceImpl.java",
             "package com.example;\npublic class UserServiceImpl { }",
         )
 
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="feature", summary="Test",
+            task_id="T-1",
+            task_type="feature",
+            summary="Test",
             affected_components=[
                 ComponentTarget(
-                    id="c1", name="UserServiceImpl",
+                    id="c1",
+                    name="UserServiceImpl",
                     file_path="backend/src/main/java/UserServiceImpl.java",
-                    stereotype="service", layer="application",
+                    stereotype="service",
+                    layer="application",
                 ),
             ],
         )
@@ -447,12 +451,16 @@ class TestContextCollectorStage:
         repo.mkdir()
 
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="feature", summary="Test",
+            task_id="T-1",
+            task_type="feature",
+            summary="Test",
             affected_components=[
                 ComponentTarget(
-                    id="c1", name="Missing",
+                    id="c1",
+                    name="Missing",
                     file_path="nonexistent/File.java",
-                    stereotype="service", layer="application",
+                    stereotype="service",
+                    layer="application",
                     change_type="modify",
                 ),
             ],
@@ -468,10 +476,13 @@ class TestContextCollectorStage:
         repo.mkdir()
 
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="feature", summary="Test",
+            task_id="T-1",
+            task_type="feature",
+            summary="Test",
             affected_components=[
                 ComponentTarget(
-                    id="c1", name="NewService",
+                    id="c1",
+                    name="NewService",
                     file_path="backend/src/NewService.java",
                     change_type="create",
                 ),
@@ -489,7 +500,9 @@ class TestContextCollectorStage:
         _create_repo_file(repo, "big.java", content)
 
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="feature", summary="Test",
+            task_id="T-1",
+            task_type="feature",
+            summary="Test",
             affected_components=[
                 ComponentTarget(id="c1", name="Big", file_path="big.java"),
             ],
@@ -503,14 +516,20 @@ class TestContextCollectorStage:
     def test_language_detection(self, tmp_path):
         repo = tmp_path / "repo"
         for fname, expected_lang in [
-            ("A.java", "java"), ("B.ts", "typescript"), ("C.html", "html"),
-            ("D.scss", "scss"), ("E.json", "json"), ("F.xml", "xml"),
+            ("A.java", "java"),
+            ("B.ts", "typescript"),
+            ("C.html", "html"),
+            ("D.scss", "scss"),
+            ("E.json", "json"),
+            ("F.xml", "xml"),
             ("G.txt", "other"),
         ]:
             _create_repo_file(repo, fname, "content")
 
             plan = CodegenPlanInput(
-                task_id="T-1", task_type="feature", summary="Test",
+                task_id="T-1",
+                task_type="feature",
+                summary="Test",
                 affected_components=[
                     ComponentTarget(id="c1", name="X", file_path=fname),
                 ],
@@ -524,7 +543,9 @@ class TestContextCollectorStage:
         _create_repo_file(repo, "Svc.java", "class Svc {}")
 
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="feature", summary="Test",
+            task_id="T-1",
+            task_type="feature",
+            summary="Test",
             affected_components=[
                 ComponentTarget(id="c1", name="Svc", file_path="Svc.java"),
             ],
@@ -546,6 +567,7 @@ class TestContextCollectorStage:
 # =============================================================================
 # Stage 3: Code Generator Tests
 # =============================================================================
+
 
 class TestCodeGeneratorStage:
     """Test Stage 3: Code Generator (with mocked LLM)."""
@@ -575,7 +597,9 @@ class TestCodeGeneratorStage:
         )
 
         fc = FileContext(
-            file_path="Svc.java", content="class Svc {}", language="java",
+            file_path="Svc.java",
+            content="class Svc {}",
+            language="java",
             component=ComponentTarget(id="c1", name="Svc", file_path="Svc.java"),
         )
         plan = CodegenPlanInput(task_id="T-1", task_type="feature", summary="Add foo")
@@ -590,14 +614,17 @@ class TestCodeGeneratorStage:
 
     def test_generate_create(self):
         stage = self._mock_stage()
-        stage.llm.chat.completions.create.return_value = self._mock_response(
-            "public class NewSvc { }"
-        )
+        stage.llm.chat.completions.create.return_value = self._mock_response("public class NewSvc { }")
 
         fc = FileContext(
-            file_path="NewSvc.java", content="", language="java",
+            file_path="NewSvc.java",
+            content="",
+            language="java",
             component=ComponentTarget(
-                id="c1", name="NewSvc", file_path="NewSvc.java", change_type="create",
+                id="c1",
+                name="NewSvc",
+                file_path="NewSvc.java",
+                change_type="create",
             ),
         )
         plan = CodegenPlanInput(task_id="T-1", task_type="feature", summary="Create new")
@@ -610,9 +637,14 @@ class TestCodeGeneratorStage:
         stage = self._mock_stage()
 
         fc = FileContext(
-            file_path="Old.java", content="class Old {}", language="java",
+            file_path="Old.java",
+            content="class Old {}",
+            language="java",
             component=ComponentTarget(
-                id="c1", name="Old", file_path="Old.java", change_type="delete",
+                id="c1",
+                name="Old",
+                file_path="Old.java",
+                change_type="delete",
             ),
         )
         plan = CodegenPlanInput(task_id="T-1", task_type="refactoring", summary="Delete")
@@ -628,14 +660,18 @@ class TestCodeGeneratorStage:
         stage.llm.chat.completions.create.side_effect = RuntimeError("LLM down")
 
         fc = FileContext(
-            file_path="Svc.java", content="class Svc {}", language="java",
+            file_path="Svc.java",
+            content="class Svc {}",
+            language="java",
             component=ComponentTarget(id="c1", name="Svc", file_path="Svc.java"),
         )
         plan = CodegenPlanInput(task_id="T-1", task_type="feature", summary="Test")
         ctx = CollectedContext(file_contexts=[fc], total_files=1)
 
-        with patch("aicodegencrew.pipelines.code_generation.stages.stage3_code_generator.MAX_RETRIES", 1), \
-             patch("aicodegencrew.pipelines.code_generation.stages.stage3_code_generator.CALL_DELAY", 0):
+        with (
+            patch("aicodegencrew.pipelines.code_generation.stages.stage3_code_generator.MAX_RETRIES", 1),
+            patch("aicodegencrew.pipelines.code_generation.stages.stage3_code_generator.CALL_DELAY", 0),
+        ):
             result = stage.run(plan, ctx, FeatureStrategy())
 
         assert result[0].error != ""
@@ -650,7 +686,9 @@ class TestCodeGeneratorStage:
         ]
 
         fc = FileContext(
-            file_path="Svc.java", content="class Svc {}", language="java",
+            file_path="Svc.java",
+            content="class Svc {}",
+            language="java",
             component=ComponentTarget(id="c1", name="Svc", file_path="Svc.java"),
         )
         plan = CodegenPlanInput(task_id="T-1", task_type="feature", summary="Test")
@@ -667,6 +705,7 @@ class TestCodeGeneratorStage:
 # Stage 4: Code Validator Tests
 # =============================================================================
 
+
 class TestCodeValidatorStage:
     """Test Stage 4: Code Validator."""
 
@@ -674,7 +713,7 @@ class TestCodeValidatorStage:
         stage = CodeValidatorStage()
         gf = GeneratedFile(
             file_path="Svc.java",
-            content='package com.example;\npublic class Svc { void run() {} }',
+            content="package com.example;\npublic class Svc { void run() {} }",
             language="java",
         )
         result = stage.run([gf])
@@ -732,7 +771,8 @@ class TestCodeValidatorStage:
     def test_already_failed_file(self):
         stage = CodeValidatorStage()
         gf = GeneratedFile(
-            file_path="Fail.java", error="LLM generation failed after 2 retries",
+            file_path="Fail.java",
+            error="LLM generation failed after 2 retries",
         )
         result = stage.run([gf])
         assert result.total_invalid == 1
@@ -746,7 +786,7 @@ class TestCodeValidatorStage:
             action="modify",
             language="java",
         )
-        result = stage.run([gf])
+        stage.run([gf])
         assert gf.diff != ""
         assert "run()" in gf.diff
 
@@ -776,12 +816,14 @@ class TestCodeValidatorStage:
 # Stage 5: Output Writer Tests
 # =============================================================================
 
+
 class TestOutputWriterStage:
     """Test Stage 5: Output Writer."""
 
     def test_dry_run_skips_writes(self, tmp_path):
         stage = OutputWriterStage(
-            repo_path=str(tmp_path), report_dir=str(tmp_path / "reports"),
+            repo_path=str(tmp_path),
+            report_dir=str(tmp_path / "reports"),
             dry_run=True,
         )
 
@@ -796,7 +838,9 @@ class TestOutputWriterStage:
         )
 
         report = stage.run(
-            task_id="T-1", generated_files=[gf], validation=validation,
+            task_id="T-1",
+            generated_files=[gf],
+            validation=validation,
         )
 
         assert report.status == "dry_run"
@@ -804,17 +848,13 @@ class TestOutputWriterStage:
 
     def test_failure_threshold_aborts(self, tmp_path):
         stage = OutputWriterStage(
-            repo_path=str(tmp_path), report_dir=str(tmp_path / "reports"),
+            repo_path=str(tmp_path),
+            report_dir=str(tmp_path / "reports"),
         )
 
-        files = [
-            GeneratedFile(file_path=f"f{i}.java", error="failed") for i in range(3)
-        ]
+        files = [GeneratedFile(file_path=f"f{i}.java", error="failed") for i in range(3)]
         validation = ValidationResult(
-            file_results=[
-                FileValidationResult(file_path=f.file_path, is_valid=False, errors=["err"])
-                for f in files
-            ],
+            file_results=[FileValidationResult(file_path=f.file_path, is_valid=False, errors=["err"]) for f in files],
             total_invalid=3,
         )
 
@@ -823,7 +863,8 @@ class TestOutputWriterStage:
 
     def test_report_json_written(self, tmp_path):
         stage = OutputWriterStage(
-            repo_path=str(tmp_path), report_dir=str(tmp_path / "reports"),
+            repo_path=str(tmp_path),
+            report_dir=str(tmp_path / "reports"),
             dry_run=True,
         )
 
@@ -833,7 +874,7 @@ class TestOutputWriterStage:
             total_valid=1,
         )
 
-        report = stage.run(task_id="T-1", generated_files=[gf], validation=validation)
+        stage.run(task_id="T-1", generated_files=[gf], validation=validation)
 
         # Report should be written (even in dry_run)
         report_file = tmp_path / "reports" / "T-1_report.json"
@@ -844,7 +885,8 @@ class TestOutputWriterStage:
 
     def test_not_git_repo_fails(self, tmp_path):
         stage = OutputWriterStage(
-            repo_path=str(tmp_path), report_dir=str(tmp_path / "reports"),
+            repo_path=str(tmp_path),
+            report_dir=str(tmp_path / "reports"),
         )
 
         gf = GeneratedFile(file_path="a.java", content="class A {}", language="java")
@@ -878,6 +920,7 @@ class TestOutputWriterStage:
 # Strategy Tests
 # =============================================================================
 
+
 class TestStrategies:
     """Test all 4 code generation strategies."""
 
@@ -891,12 +934,17 @@ class TestStrategies:
     def test_feature_strategy_modify_prompt(self):
         strategy = FeatureStrategy()
         fc = FileContext(
-            file_path="Svc.java", content="class Svc {}", language="java",
-            component=ComponentTarget(id="c1", name="Svc", file_path="Svc.java",
-                                      stereotype="service", layer="application"),
+            file_path="Svc.java",
+            content="class Svc {}",
+            language="java",
+            component=ComponentTarget(
+                id="c1", name="Svc", file_path="Svc.java", stereotype="service", layer="application"
+            ),
         )
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="feature", summary="Add method",
+            task_id="T-1",
+            task_type="feature",
+            summary="Add method",
             implementation_steps=["1. Add foo()", "2. Add bar()"],
             architecture_context={"style": "Layered", "layer_pattern": "C -> S -> R"},
         )
@@ -910,9 +958,12 @@ class TestStrategies:
     def test_feature_strategy_create_prompt(self):
         strategy = FeatureStrategy()
         fc = FileContext(
-            file_path="New.java", content="", language="java",
-            component=ComponentTarget(id="c1", name="New", file_path="New.java",
-                                      stereotype="service", change_type="create"),
+            file_path="New.java",
+            content="",
+            language="java",
+            component=ComponentTarget(
+                id="c1", name="New", file_path="New.java", stereotype="service", change_type="create"
+            ),
         )
         plan = CodegenPlanInput(task_id="T-1", task_type="feature", summary="Create service")
 
@@ -924,7 +975,9 @@ class TestStrategies:
         strategy = BugfixStrategy()
         fc = FileContext(file_path="Svc.java", content="class Svc {}", language="java")
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="bugfix", summary="Fix NPE in login",
+            task_id="T-1",
+            task_type="bugfix",
+            summary="Fix NPE in login",
             implementation_steps=["1. Add null check"],
         )
 
@@ -940,7 +993,9 @@ class TestStrategies:
             language="typescript",
         )
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="upgrade", summary="Angular upgrade",
+            task_id="T-1",
+            task_type="upgrade",
+            summary="Angular upgrade",
             upgrade_plan={
                 "framework": "Angular",
                 "from_version": "18",
@@ -970,7 +1025,9 @@ class TestStrategies:
         strategy = UpgradeStrategy()
         fc = FileContext(file_path="a.ts", content="code", language="typescript")
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="upgrade", summary="Upgrade",
+            task_id="T-1",
+            task_type="upgrade",
+            summary="Upgrade",
             upgrade_plan={
                 "framework": "Angular",
                 "current_version": "16",
@@ -985,7 +1042,8 @@ class TestStrategies:
         strategy = RefactoringStrategy()
         fc = FileContext(file_path="Svc.java", content="class Svc {}", language="java")
         plan = CodegenPlanInput(
-            task_id="T-1", task_type="refactoring",
+            task_id="T-1",
+            task_type="refactoring",
             summary="Extract method pattern",
             architecture_context={"style": "Layered", "layer_pattern": "C -> S -> R"},
         )
@@ -1029,6 +1087,7 @@ class TestStrategies:
 # Pipeline Integration Tests
 # =============================================================================
 
+
 class TestCodeGenerationPipeline:
     """Test the full pipeline orchestration."""
 
@@ -1049,10 +1108,9 @@ class TestCodeGenerationPipeline:
             mock_client = MagicMock()
             mock_resp = MagicMock()
             mock_resp.choices = [MagicMock()]
-            mock_resp.choices[0].message.content = (
-                "package com.example.user;\n"
-                "public class UserServiceImpl { void sendEmail() {} }"
-            )
+            mock_resp.choices[
+                0
+            ].message.content = "package com.example.user;\npublic class UserServiceImpl { void sendEmail() {} }"
             mock_resp.usage = MagicMock()
             mock_resp.usage.total_tokens = 200
             mock_client.chat.completions.create.return_value = mock_resp
@@ -1094,10 +1152,9 @@ class TestCodeGenerationPipeline:
             mock_client = MagicMock()
             mock_resp = MagicMock()
             mock_resp.choices = [MagicMock()]
-            mock_resp.choices[0].message.content = (
-                "package com.example.user;\n"
-                "public class UserServiceImpl { void sendEmail() {} }"
-            )
+            mock_resp.choices[
+                0
+            ].message.content = "package com.example.user;\npublic class UserServiceImpl { void sendEmail() {} }"
             mock_resp.usage = MagicMock()
             mock_resp.usage.total_tokens = 200
             mock_client.chat.completions.create.return_value = mock_resp
@@ -1137,10 +1194,9 @@ class TestCodeGenerationPipeline:
             mock_client = MagicMock()
             mock_resp = MagicMock()
             mock_resp.choices = [MagicMock()]
-            mock_resp.choices[0].message.content = (
-                "package com.example.user;\n"
-                "public class UserServiceImpl { void run() {} }"
-            )
+            mock_resp.choices[
+                0
+            ].message.content = "package com.example.user;\npublic class UserServiceImpl { void run() {} }"
             mock_resp.usage = MagicMock()
             mock_resp.usage.total_tokens = 100
             mock_client.chat.completions.create.return_value = mock_resp
