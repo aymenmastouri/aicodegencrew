@@ -19,9 +19,9 @@ test.describe('App Shell', () => {
     await expect(page.locator('.nav-group-label').nth(2)).toContainText('Monitor');
   });
 
-  test('should render all 8 nav items', async ({ page }) => {
+  test('should render all 9 nav items', async ({ page }) => {
     const navItems = page.locator('mat-nav-list a[mat-list-item]');
-    await expect(navItems).toHaveCount(8);
+    await expect(navItems).toHaveCount(9);
   });
 
   test('should show version badge in sidenav footer', async ({ page }) => {
@@ -39,6 +39,7 @@ test.describe('App Shell', () => {
     const routes = [
       { label: 'Run Pipeline', url: '/run' },
       { label: 'Input Files', url: '/inputs' },
+      { label: 'Collectors', url: '/collectors' },
       { label: 'Phases', url: '/phases' },
       { label: 'Knowledge', url: '/knowledge' },
       { label: 'Reports', url: '/reports' },
