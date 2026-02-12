@@ -176,6 +176,20 @@ class PipelineExecutor:
 
         phase_progress = self._read_phase_progress()
 
+        # Compute progress percent
+        total = len(self.current_run.phases) if self.current_run else 0
+        if total == 0 and phase_progress:
+            total = len(phase_progress)
+        completed = sum(1 for p in phase_progress if p.get("status") == "completed")
+        running = sum(1 for p in phase_progress if p.get("status") == "running")
+        progress = round((completed + running * 0.5) / total * 100, 1) if total > 0 else 0
+
+        # Live metrics
+        live_metrics = self._read_live_metrics() if self.state == "running" else None
+
+        # ETA estimation
+        eta = self._estimate_eta(elapsed) if self.state == "running" and elapsed else None
+
         return {
             "state": self.state,
             "run_id": self.current_run.run_id if self.current_run else None,
@@ -184,6 +198,11 @@ class PipelineExecutor:
             "started_at": self.current_run.started_at if self.current_run else None,
             "elapsed_seconds": elapsed,
             "phase_progress": phase_progress,
+            "progress_percent": progress,
+            "completed_phase_count": completed,
+            "total_phase_count": total,
+            "eta_seconds": eta,
+            "live_metrics": live_metrics,
         }
 
     def get_log_lines(self, since: int = 0) -> list[str]:
@@ -305,9 +324,34 @@ class PipelineExecutor:
         except Exception as exc:
             logger.warning("Failed to write history entry: %s", exc)
 
+    # Mapping from crew_type in metrics to parent phase_id
+    _CREW_PHASE_MAP: dict[str, str] = {
+        # Phase 1 (Facts)
+        "architecture_collector": "facts_extraction",
+        "dependency_collector": "facts_extraction",
+        "quality_collector": "facts_extraction",
+        "security_collector": "facts_extraction",
+        "test_collector": "facts_extraction",
+        # Phase 2 (Analysis)
+        "architecture_analyzer": "deep_analysis",
+        "dependency_analyzer": "deep_analysis",
+        "quality_analyzer": "deep_analysis",
+        "impact_analyzer": "deep_analysis",
+        # Phase 3 (Synthesis)
+        "synthesis_crew": "synthesis",
+        "cross_cutting_crew": "synthesis",
+        "recommendation_crew": "synthesis",
+        # Phase 4 (Planning)
+        "planning_crew": "planning",
+        # Phase 5 (CodeGen)
+        "code_generation_crew": "code_generation",
+        "code_validation_crew": "code_generation",
+    }
+
     def _read_phase_progress(self) -> list[dict]:
-        """Read phase progress from metrics.jsonl tail."""
+        """Read phase progress from metrics.jsonl tail, including sub-phase data."""
         progress: dict[str, dict] = {}
+        sub_phases: dict[str, list[dict]] = {}  # phase_id -> list of sub-phase dicts
         metrics_file = settings.metrics_file
 
         if not metrics_file.exists():
@@ -317,8 +361,8 @@ class PipelineExecutor:
             with open(metrics_file, encoding="utf-8") as f:
                 lines = f.readlines()
 
-            # Only look at recent lines (last 200)
-            for line in lines[-200:]:
+            # Only look at recent lines (last 300 to cover sub-phases)
+            for line in lines[-300:]:
                 try:
                     event = json.loads(line.strip())
                 except json.JSONDecodeError:
@@ -327,7 +371,6 @@ class PipelineExecutor:
                 event_name = event.get("event", "")
                 data = event.get("data", {})
 
-                # Match current run by checking recent timestamps
                 if event_name == "phase_start":
                     phase_id = data.get("phase", "")
                     progress[phase_id] = {
@@ -336,6 +379,8 @@ class PipelineExecutor:
                         "status": "running",
                         "started_at": event.get("timestamp"),
                         "duration_seconds": None,
+                        "sub_phases": [],
+                        "total_tokens": 0,
                     }
                 elif event_name == "phase_complete":
                     phase_id = data.get("phase", "")
@@ -349,6 +394,8 @@ class PipelineExecutor:
                             "status": "completed",
                             "started_at": None,
                             "duration_seconds": data.get("duration_seconds"),
+                            "sub_phases": [],
+                            "total_tokens": 0,
                         }
                 elif event_name == "phase_failed":
                     phase_id = data.get("phase", "")
@@ -361,11 +408,84 @@ class PipelineExecutor:
                             "status": "failed",
                             "started_at": None,
                             "duration_seconds": None,
+                            "sub_phases": [],
+                            "total_tokens": 0,
                         }
+                elif event_name in ("mini_crew_complete", "mini_crew_failed"):
+                    crew_type = data.get("crew_type", "")
+                    parent_phase = self._CREW_PHASE_MAP.get(crew_type, "")
+                    tokens = data.get("total_tokens", 0) or data.get("tokens", 0) or 0
+                    sub = {
+                        "name": data.get("crew_name", crew_type),
+                        "status": "completed" if event_name == "mini_crew_complete" else "failed",
+                        "duration_seconds": data.get("duration_seconds"),
+                        "total_tokens": tokens,
+                        "tasks": data.get("tasks", []),
+                    }
+                    if parent_phase not in sub_phases:
+                        sub_phases[parent_phase] = []
+                    sub_phases[parent_phase].append(sub)
         except Exception as exc:
             logger.warning("Failed to read metrics for progress: %s", exc)
 
+        # Attach sub-phases and aggregate tokens
+        for phase_id, phase_data in progress.items():
+            subs = sub_phases.get(phase_id, [])
+            phase_data["sub_phases"] = subs
+            phase_data["total_tokens"] = sum(s.get("total_tokens", 0) for s in subs)
+
         return list(progress.values())
+
+    def _read_live_metrics(self) -> dict | None:
+        """Aggregate live token usage and crew completions from metrics.jsonl."""
+        metrics_file = settings.metrics_file
+        if not metrics_file.exists():
+            return None
+
+        total_tokens = 0
+        crew_completions = 0
+
+        try:
+            with open(metrics_file, encoding="utf-8") as f:
+                lines = f.readlines()
+
+            for line in lines[-300:]:
+                try:
+                    event = json.loads(line.strip())
+                except json.JSONDecodeError:
+                    continue
+
+                if event.get("event") == "mini_crew_complete":
+                    data = event.get("data", {})
+                    total_tokens += data.get("total_tokens", 0) or data.get("tokens", 0) or 0
+                    crew_completions += 1
+        except Exception as exc:
+            logger.warning("Failed to read live metrics: %s", exc)
+            return None
+
+        return {"total_tokens": total_tokens, "crew_completions": crew_completions}
+
+    def _estimate_eta(self, elapsed: float | None) -> float | None:
+        """Estimate remaining time based on historical run durations."""
+        if not elapsed or elapsed < 5:
+            return None
+
+        try:
+            from .history_service import get_run_history
+
+            recent = get_run_history(limit=10)
+            durations = [
+                r["duration_seconds"]
+                for r in recent
+                if r.get("duration_seconds") and r.get("status") == "completed" and r.get("trigger") == "pipeline"
+            ]
+            if len(durations) < 2:
+                return None
+            avg_duration = sum(durations) / len(durations)
+            remaining = avg_duration - elapsed
+            return round(max(remaining, 0), 1)
+        except Exception:
+            return None
 
     def _write_env_with_overrides(self, overrides: dict[str, str], target: Path) -> None:
         """Write a .env file based on the current one with overrides applied."""

@@ -7,6 +7,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { NotificationService } from './services/notification.service';
 
@@ -24,6 +25,7 @@ import { NotificationService } from './services/notification.service';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
+    MatProgressBarModule,
   ],
   template: `
     <mat-toolbar class="app-toolbar sticky top-0 z-[1000]">
@@ -41,10 +43,17 @@ import { NotificationService } from './services/notification.service';
       <!-- Pipeline Status Indicator -->
       @if (notifSvc.notification$ | async; as notif) {
         @if (notif.state === 'running') {
-          <div class="status-indicator status-running" matTooltip="Pipeline is running">
-            <span class="status-dot-pulse"></span>
-            <span class="status-text">Running...</span>
-          </div>
+          <a class="status-indicator status-running" routerLink="/run"
+             matTooltip="Pipeline running — click to view">
+            <div class="mini-progress-wrap">
+              <mat-progress-bar mode="determinate" [value]="notif.progressPercent"
+                class="mini-progress-bar"></mat-progress-bar>
+            </div>
+            <span class="mini-progress-pct">{{ notif.progressPercent | number:'1.0-0' }}%</span>
+            @if (notif.etaSeconds != null && notif.etaSeconds > 0) {
+              <span class="mini-eta">~{{ formatEta(notif.etaSeconds) }}</span>
+            }
+          </a>
         }
         @if (notif.state === 'completed') {
           <div class="status-indicator status-completed" matTooltip="Pipeline completed">
@@ -178,6 +187,32 @@ import { NotificationService } from './services/notification.service';
         font-size: 12px;
       }
 
+      /* Mini progress bar in toolbar */
+      .mini-progress-wrap {
+        width: 80px;
+        height: 4px;
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .mini-progress-bar ::ng-deep .mdc-linear-progress__bar-inner {
+        border-color: var(--cg-vibrant) !important;
+      }
+      .mini-progress-bar ::ng-deep .mdc-linear-progress__buffer-bar {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+      }
+      .mini-progress-pct {
+        font-size: 11px;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-weight: 600;
+        color: var(--cg-vibrant);
+        min-width: 28px;
+      }
+      .mini-eta {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.45);
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+      }
+
       /* Pulsing dot */
       .status-dot-pulse {
         width: 8px;
@@ -289,6 +324,13 @@ import { NotificationService } from './services/notification.service';
 })
 export class AppComponent {
   constructor(public notifSvc: NotificationService) {}
+
+  formatEta(seconds: number): string {
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const min = Math.floor(seconds / 60);
+    const sec = Math.round(seconds % 60);
+    return `${min}m ${sec}s`;
+  }
 
   navGroups = [
     {

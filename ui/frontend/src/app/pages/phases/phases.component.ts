@@ -10,9 +10,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../services/api.service';
 import { PipelineService, ResetPreview } from '../../services/pipeline.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 
 @Component({
   selector: 'app-phases',
@@ -28,6 +30,7 @@ import { PipelineService, ResetPreview } from '../../services/pipeline.service';
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatDialogModule,
   ],
   template: `
     <div class="page-container">
@@ -207,6 +210,7 @@ export class PhasesComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -253,11 +257,19 @@ export class PhasesComponent implements OnInit {
   resetPhase(phaseId: string): void {
     this.pipelineService.previewReset([phaseId]).subscribe({
       next: (preview: ResetPreview) => {
-        const msg =
-          `Reset ${preview.phases_to_reset.length} phase(s):\n` +
-          preview.phases_to_reset.join(', ') +
-          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
-        if (confirm(msg)) {
+        const ref = this.dialog.open(ConfirmDialogComponent, {
+          width: '480px',
+          data: {
+            title: 'Reset Phase',
+            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
+            details: preview.phases_to_reset,
+            type: 'warn',
+            icon: 'restart_alt',
+            confirmLabel: 'Reset',
+          } as ConfirmDialogData,
+        });
+        ref.afterClosed().subscribe((confirmed) => {
+          if (!confirmed) return;
           this.pipelineService.executeReset([phaseId]).subscribe({
             next: (result) => {
               this.snackBar.open(
@@ -271,7 +283,7 @@ export class PhasesComponent implements OnInit {
               this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
             },
           });
-        }
+        });
       },
     });
   }
@@ -281,11 +293,19 @@ export class PhasesComponent implements OnInit {
       this.pipeline?.phases.filter((p) => p.status === 'completed').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
-        const msg =
-          `Reset ALL completed phases:\n` +
-          preview.phases_to_reset.join(', ') +
-          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
-        if (confirm(msg)) {
+        const ref = this.dialog.open(ConfirmDialogComponent, {
+          width: '480px',
+          data: {
+            title: 'Reset All Phases',
+            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
+            details: preview.phases_to_reset,
+            type: 'warn',
+            icon: 'restart_alt',
+            confirmLabel: 'Reset All',
+          } as ConfirmDialogData,
+        });
+        ref.afterClosed().subscribe((confirmed) => {
+          if (!confirmed) return;
           this.pipelineService.resetAll().subscribe({
             next: (result) => {
               this.snackBar.open(
@@ -299,7 +319,7 @@ export class PhasesComponent implements OnInit {
               this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
             },
           });
-        }
+        });
       },
     });
   }

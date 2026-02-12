@@ -14,12 +14,27 @@ export interface RunResponse {
   message: string;
 }
 
+export interface SubPhaseProgress {
+  name: string;
+  status: string;
+  duration_seconds?: number;
+  total_tokens: number;
+  tasks: string[];
+}
+
+export interface LiveMetrics {
+  total_tokens: number;
+  crew_completions: number;
+}
+
 export interface PhaseProgress {
   phase_id: string;
   name: string;
   status: string;
   started_at?: string;
   duration_seconds?: number;
+  sub_phases?: SubPhaseProgress[];
+  total_tokens?: number;
 }
 
 export interface ExecutionStatus {
@@ -30,6 +45,11 @@ export interface ExecutionStatus {
   started_at?: string;
   elapsed_seconds?: number;
   phase_progress: PhaseProgress[];
+  progress_percent?: number;
+  completed_phase_count?: number;
+  total_phase_count?: number;
+  eta_seconds?: number;
+  live_metrics?: LiveMetrics;
 }
 
 export interface RunHistoryEntry {

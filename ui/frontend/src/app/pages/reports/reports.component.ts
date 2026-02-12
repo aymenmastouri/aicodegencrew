@@ -9,8 +9,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ApiService, ReportList, BranchList } from '../../services/api.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 
 interface DiffLine {
   type: 'add' | 'del' | 'info' | 'context';
@@ -38,6 +40,7 @@ interface ParsedComponent {
     MatButtonModule,
     MatTooltipModule,
     MatSnackBarModule,
+    MatDialogModule,
   ],
   template: `
     <div class="page-container">
@@ -1284,6 +1287,7 @@ export class ReportsComponent implements OnInit {
     private api: ApiService,
     private cdr: ChangeDetectorRef,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -1435,18 +1439,30 @@ export class ReportsComponent implements OnInit {
   }
 
   deleteBranch(taskId: string): void {
-    if (!confirm(`Delete branch codegen/${taskId}?`)) return;
-    this.api.deleteBranch(taskId).subscribe({
-      next: () => {
-        if (this.branches) {
-          this.branches.branches = this.branches.branches.filter((b) => b.task_id !== taskId);
-        }
-        this.snackBar.open(`Branch codegen/${taskId} deleted`, 'OK', { duration: 3000 });
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.snackBar.open(`Failed to delete branch: ${err.error?.detail || err.message}`, 'OK', { duration: 5000 });
-      },
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Delete Branch',
+        message: `Delete branch codegen/${taskId}? This cannot be undone.`,
+        type: 'warn',
+        icon: 'delete',
+        confirmLabel: 'Delete',
+      } as ConfirmDialogData,
+    });
+    ref.afterClosed().subscribe((confirmed) => {
+      if (!confirmed) return;
+      this.api.deleteBranch(taskId).subscribe({
+        next: () => {
+          if (this.branches) {
+            this.branches.branches = this.branches.branches.filter((b) => b.task_id !== taskId);
+          }
+          this.snackBar.open(`Branch codegen/${taskId} deleted`, 'OK', { duration: 3000 });
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.snackBar.open(`Failed to delete branch: ${err.error?.detail || err.message}`, 'OK', { duration: 5000 });
+        },
+      });
     });
   }
 
