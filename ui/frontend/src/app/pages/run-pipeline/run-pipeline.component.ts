@@ -282,6 +282,20 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                 <th mat-header-cell *matHeaderCellDef>Date</th>
                 <td mat-cell *matCellDef="let r">{{ r.started_at | date: 'short' }}</td>
               </ng-container>
+              <ng-container matColumnDef="trigger">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let r">
+                  @if (r.trigger === 'reset') {
+                    <span class="trigger-chip trigger-reset">
+                      <mat-icon class="trigger-icon">restart_alt</mat-icon> Reset
+                    </span>
+                  } @else {
+                    <span class="trigger-chip trigger-run">
+                      <mat-icon class="trigger-icon">play_arrow</mat-icon> Run
+                    </span>
+                  }
+                </td>
+              </ng-container>
               <ng-container matColumnDef="run_id">
                 <th mat-header-cell *matHeaderCellDef>Run ID</th>
                 <td mat-cell *matCellDef="let r" class="mono">{{ r.run_id }}</td>
@@ -590,6 +604,28 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
       .small-chip {
         font-size: 11px;
       }
+      .trigger-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .trigger-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+      .trigger-run {
+        background: rgba(0, 112, 173, 0.1);
+        color: var(--cg-blue);
+      }
+      .trigger-reset {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--cg-error, #dc3545);
+      }
     `,
   ],
 })
@@ -616,7 +652,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   status: ExecutionStatus | null = null;
   logLines: string[] = [];
   history: RunHistoryEntry[] = [];
-  historyColumns = ['started_at', 'run_id', 'preset', 'phases', 'status', 'duration'];
+  historyColumns = ['started_at', 'trigger', 'run_id', 'preset', 'phases', 'status', 'duration'];
 
   private sseSub?: Subscription;
   private statusInterval?: ReturnType<typeof setInterval>;

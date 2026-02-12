@@ -6,10 +6,12 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 
 import { ApiService, PipelineStatus, HealthResponse } from '../../services/api.service';
-import { PipelineService } from '../../services/pipeline.service';
+import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,12 +24,15 @@ import { PipelineService } from '../../services/pipeline.service';
     MatProgressSpinnerModule,
     MatChipsModule,
     MatButtonModule,
+    MatSnackBarModule,
+    MatTooltipModule,
     RouterLink,
   ],
   template: `
     <div class="page-container">
       <!-- Hero Section -->
       <div class="hero">
+        <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="hero-logo" />
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">AI</span>CodeGen<span class="hero-accent">Crew</span></h1>
           <p class="hero-subtitle">Full SDLC Pipeline — from Architecture Analysis to Code Generation</p>
@@ -75,9 +80,17 @@ import { PipelineService } from '../../services/pipeline.service';
       <!-- Phase Status -->
       <div class="section-header">
         <h2>Pipeline Phases</h2>
-        <button mat-stroked-button color="primary" routerLink="/run">
-          <mat-icon>rocket_launch</mat-icon> Run Pipeline
-        </button>
+        <div class="section-actions">
+          <button mat-stroked-button color="warn"
+            [disabled]="!hasCompletedPhases()"
+            (click)="resetAll()"
+            matTooltip="Reset all completed phases">
+            <mat-icon>restart_alt</mat-icon> Reset All
+          </button>
+          <button mat-stroked-button color="primary" routerLink="/run">
+            <mat-icon>rocket_launch</mat-icon> Run Pipeline
+          </button>
+        </div>
       </div>
 
       @if (loading) {
@@ -105,6 +118,13 @@ import { PipelineService } from '../../services/pipeline.service';
                 @if (phase.output_exists) {
                   <span class="output-badge"> <mat-icon>inventory_2</mat-icon> Output </span>
                 }
+                <span class="footer-spacer"></span>
+                @if (phase.status === 'completed') {
+                  <button class="reset-mini" (click)="resetPhase(phase.id); $event.stopPropagation()"
+                    matTooltip="Reset this phase">
+                    <mat-icon>restart_alt</mat-icon>
+                  </button>
+                }
               </div>
             </div>
           }
@@ -116,6 +136,35 @@ import { PipelineService } from '../../services/pipeline.service';
           <button mat-flat-button color="primary" routerLink="/run">
             <mat-icon>rocket_launch</mat-icon> Get Started
           </button>
+        </div>
+      }
+
+      <!-- Recent Activity -->
+      @if (recentHistory.length > 0) {
+        <h2 class="section-title">Recent Activity</h2>
+        <div class="activity-list">
+          @for (entry of recentHistory; track entry.run_id) {
+            <div class="activity-row">
+              <div class="activity-type">
+                @if (entry.trigger === 'reset') {
+                  <span class="trigger-chip trigger-reset">
+                    <mat-icon class="trigger-icon">restart_alt</mat-icon> Reset
+                  </span>
+                } @else {
+                  <span class="trigger-chip trigger-run">
+                    <mat-icon class="trigger-icon">play_arrow</mat-icon> Run
+                  </span>
+                }
+              </div>
+              <div class="activity-info">
+                <span class="activity-id">{{ entry.run_id }}</span>
+                <span class="activity-phases">{{ entry.phases.length }} phase{{ entry.phases.length > 1 ? 's' : '' }}</span>
+              </div>
+              <span class="status-chip" [class]="'status-' + entry.status">{{ entry.status }}</span>
+              <span class="activity-time">{{ entry.started_at | date: 'short' }}</span>
+            </div>
+          }
+          <a class="activity-more" routerLink="/history">View all history →</a>
         </div>
       }
 
@@ -147,6 +196,14 @@ import { PipelineService } from '../../services/pipeline.service';
         justify-content: space-between;
         align-items: center;
         gap: 24px;
+        position: relative;
+      }
+      .hero-logo {
+        position: absolute;
+        top: 20px;
+        right: 24px;
+        height: 28px;
+        opacity: 0.4;
       }
       .hero-title {
         font-size: 28px;
@@ -388,6 +445,7 @@ import { PipelineService } from '../../services/pipeline.service';
         align-items: center;
         gap: 8px;
       }
+      .footer-spacer { flex: 1; }
       .output-badge {
         display: inline-flex;
         align-items: center;
@@ -400,6 +458,21 @@ import { PipelineService } from '../../services/pipeline.service';
         width: 14px;
         height: 14px;
       }
+      .reset-mini {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px; height: 26px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(220, 53, 69, 0.08);
+        color: var(--cg-error, #dc3545);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .reset-mini:hover { background: rgba(220, 53, 69, 0.18); }
+      .reset-mini .mat-icon { font-size: 16px; width: 16px; height: 16px; }
+      .section-actions { display: flex; gap: 8px; }
 
       /* Loading */
       .loading-center {
@@ -473,6 +546,49 @@ import { PipelineService } from '../../services/pipeline.service';
       .action-arrow {
         color: var(--cg-gray-200);
       }
+
+      /* Recent Activity */
+      .activity-list {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .activity-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--cg-gray-100);
+        font-size: 13px;
+      }
+      .activity-row:last-of-type { border-bottom: none; }
+      .activity-type { flex-shrink: 0; }
+      .trigger-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .trigger-icon { font-size: 14px; width: 14px; height: 14px; }
+      .trigger-run { background: rgba(0, 112, 173, 0.1); color: var(--cg-blue); }
+      .trigger-reset { background: rgba(220, 53, 69, 0.1); color: var(--cg-error, #dc3545); }
+      .activity-info { flex: 1; display: flex; gap: 8px; align-items: center; }
+      .activity-id { font-family: monospace; font-size: 12px; color: var(--cg-gray-500); }
+      .activity-phases { font-size: 12px; color: var(--cg-gray-500); }
+      .activity-time { font-size: 12px; color: var(--cg-gray-500); white-space: nowrap; }
+      .activity-more {
+        display: block;
+        text-align: center;
+        padding: 10px;
+        font-size: 13px;
+        color: var(--cg-blue);
+        text-decoration: none;
+        border-top: 1px solid var(--cg-gray-100);
+      }
+      .activity-more:hover { background: var(--cg-gray-100); }
     `,
   ],
 })
@@ -480,6 +596,7 @@ export class DashboardComponent implements OnInit {
   health: HealthResponse | null = null;
   pipeline: PipelineStatus | null = null;
   loading = true;
+  recentHistory: RunHistoryEntry[] = [];
 
   executionState: string = 'idle';
   executionRunId: string = '';
@@ -509,6 +626,7 @@ export class DashboardComponent implements OnInit {
     private api: ApiService,
     private pipelineSvc: PipelineService,
     private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -532,6 +650,10 @@ export class DashboardComponent implements OnInit {
       this.executionRunId = s.run_id || '';
       this.cdr.markForCheck();
     });
+    this.pipelineSvc.getHistory().subscribe((h) => {
+      this.recentHistory = h.slice(0, 5);
+      this.cdr.markForCheck();
+    });
   }
 
   statusIcon(status: string): string {
@@ -549,5 +671,74 @@ export class DashboardComponent implements OnInit {
       default:
         return 'radio_button_unchecked';
     }
+  }
+
+  hasCompletedPhases(): boolean {
+    return !!this.pipeline?.phases.some((p) => p.status === 'completed');
+  }
+
+  resetPhase(phaseId: string): void {
+    this.pipelineSvc.previewReset([phaseId]).subscribe({
+      next: (preview: ResetPreview) => {
+        const msg =
+          `Reset ${preview.phases_to_reset.length} phase(s):\n` +
+          preview.phases_to_reset.join(', ') +
+          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
+        if (confirm(msg)) {
+          this.pipelineSvc.executeReset([phaseId]).subscribe({
+            next: (result) => {
+              this.snackBar.open(
+                `Reset ${result.reset_phases.length} phase(s), deleted ${result.deleted_count} file(s)`,
+                'OK',
+                { duration: 4000 },
+              );
+              this.refreshAll();
+            },
+            error: (err) => {
+              this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
+            },
+          });
+        }
+      },
+    });
+  }
+
+  resetAll(): void {
+    this.pipelineSvc.previewReset(
+      this.pipeline?.phases.filter((p) => p.status === 'completed').map((p) => p.id) || [],
+    ).subscribe({
+      next: (preview: ResetPreview) => {
+        const msg =
+          `Reset ALL completed phases:\n` +
+          preview.phases_to_reset.join(', ') +
+          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
+        if (confirm(msg)) {
+          this.pipelineSvc.resetAll().subscribe({
+            next: (result) => {
+              this.snackBar.open(
+                `Reset all phases, deleted ${result.deleted_count} file(s)`,
+                'OK',
+                { duration: 4000 },
+              );
+              this.refreshAll();
+            },
+            error: (err) => {
+              this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
+            },
+          });
+        }
+      },
+    });
+  }
+
+  private refreshAll(): void {
+    this.api.getPipelineStatus().subscribe((p) => {
+      this.pipeline = p;
+      this.cdr.markForCheck();
+    });
+    this.pipelineSvc.getHistory().subscribe((h) => {
+      this.recentHistory = h.slice(0, 5);
+      this.cdr.markForCheck();
+    });
   }
 }

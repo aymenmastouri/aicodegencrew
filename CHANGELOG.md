@@ -10,6 +10,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+**Pipeline Reset & Run History**
+- Full pipeline reset with per-phase and reset-all support
+- Cascade propagation: resetting a phase automatically resets all dependent phases (e.g., Phase 1 → Phase 2-5)
+- Archive before delete: outputs are backed up to `knowledge/archive/reset_YYYYMMDD_HHMMSS/` before deletion
+- Persistent run history via append-only JSONL (`logs/run_history.jsonl`) — replaces overwritten `run_report.json`
+- Legacy fallback: history endpoint reads from `run_report.json` + archive when JSONL is empty
+- Reset preview endpoint (dry-run) shows affected phases and files before execution
+- Safety: reset blocked (409) while pipeline is running
+- Backend: `reset` router with 3 endpoints (`/api/reset/preview`, `/api/reset/execute`, `/api/reset/all`)
+- Backend: `history_service` (JSONL append/read) and `reset_service` (cascade/archive/delete)
+- Frontend: Reset buttons on Phases page (per-phase + "Reset All" in header) with confirm dialog showing cascade preview
+- Frontend: Run/Reset type column in Run History table with colored chips (blue=Run, red=Reset)
+- 31 backend unit tests covering history, reset, cascade, schemas, and router endpoints
+- Updated Playwright e2e specs for phases and run-pipeline pages
+
 **Developer Experience: Reports Page Rewrite**
 - Structured plan viewer with affected components table, implementation steps, test strategy, collapsible security/validation/error/architecture sections
 - Code diff viewer with per-file expandable unified diffs (green/red/blue line coloring), action chips (created/modified/deleted), language badges
@@ -86,7 +101,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Cancel running pipeline (SIGTERM → SIGKILL fallback)
 - Docker Compose deployment with nginx reverse proxy
 - SSE-specific nginx config (proxy_buffering off, 1h timeout)
-- 8 REST API routers: phases, knowledge, metrics, reports, logs, diagrams, pipeline, env
+- 8 REST API routers: phases, knowledge, metrics, reports, logs, diagrams, pipeline, env (expanded to 11 in 0.3.0)
 
 ---
 

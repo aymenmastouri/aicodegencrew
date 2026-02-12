@@ -39,4 +39,8 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/collectors/collectors.component').then((m) => m.CollectorsComponent),
   },
+  {
+    path: 'history',
+    loadComponent: () => import('./pages/history/history.component').then((m) => m.HistoryComponent),
+  },
 ];

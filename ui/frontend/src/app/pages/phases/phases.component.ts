@@ -9,8 +9,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../services/api.service';
+import { PipelineService, ResetPreview } from '../../services/pipeline.service';
 
 @Component({
   selector: 'app-phases',
@@ -25,6 +27,7 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
     MatExpansionModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
   ],
   template: `
     <div class="page-container">
@@ -44,6 +47,12 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
               <mat-icon>settings_suggest</mat-icon>
               Phase Configuration
             </mat-card-title>
+            <span class="spacer"></span>
+            <button mat-stroked-button color="warn" [disabled]="!hasCompletedPhases()" (click)="resetAll()"
+              matTooltip="Reset all completed phases">
+              <mat-icon>restart_alt</mat-icon>
+              Reset All
+            </button>
           </mat-card-header>
           <mat-card-content>
             <table mat-table [dataSource]="phases" class="phase-table">
@@ -82,6 +91,12 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
                 <td mat-cell *matCellDef="let p">
                   <button mat-icon-button color="primary" (click)="runPhase(p.id)" matTooltip="Run this phase">
                     <mat-icon>play_arrow</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn"
+                    [disabled]="getPhaseStatus(p.id) !== 'completed'"
+                    (click)="resetPhase(p.id)"
+                    matTooltip="Reset this phase">
+                    <mat-icon>restart_alt</mat-icon>
                   </button>
                 </td>
               </ng-container>
@@ -168,6 +183,13 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
       .preset-action {
         margin-top: 16px;
       }
+      .spacer {
+        flex: 1;
+      }
+      mat-card-header {
+        display: flex;
+        align-items: center;
+      }
     `,
   ],
 })
@@ -180,8 +202,10 @@ export class PhasesComponent implements OnInit {
 
   constructor(
     private api: ApiService,
+    private pipelineService: PipelineService,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -218,5 +242,71 @@ export class PhasesComponent implements OnInit {
 
   runPhase(phaseId: string): void {
     this.router.navigate(['/run'], { queryParams: { phase: phaseId } });
+  }
+
+  hasCompletedPhases(): boolean {
+    if (!this.pipeline) return false;
+    return this.pipeline.phases.some((p) => p.status === 'completed');
+  }
+
+  resetPhase(phaseId: string): void {
+    this.pipelineService.previewReset([phaseId]).subscribe({
+      next: (preview: ResetPreview) => {
+        const msg =
+          `Reset ${preview.phases_to_reset.length} phase(s):\n` +
+          preview.phases_to_reset.join(', ') +
+          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
+        if (confirm(msg)) {
+          this.pipelineService.executeReset([phaseId]).subscribe({
+            next: (result) => {
+              this.snackBar.open(
+                `Reset ${result.reset_phases.length} phase(s), deleted ${result.deleted_count} file(s)`,
+                'OK',
+                { duration: 4000 },
+              );
+              this.refreshStatus();
+            },
+            error: (err) => {
+              this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
+            },
+          });
+        }
+      },
+    });
+  }
+
+  resetAll(): void {
+    this.pipelineService.previewReset(
+      this.pipeline?.phases.filter((p) => p.status === 'completed').map((p) => p.id) || [],
+    ).subscribe({
+      next: (preview: ResetPreview) => {
+        const msg =
+          `Reset ALL completed phases:\n` +
+          preview.phases_to_reset.join(', ') +
+          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
+        if (confirm(msg)) {
+          this.pipelineService.resetAll().subscribe({
+            next: (result) => {
+              this.snackBar.open(
+                `Reset all phases, deleted ${result.deleted_count} file(s)`,
+                'OK',
+                { duration: 4000 },
+              );
+              this.refreshStatus();
+            },
+            error: (err) => {
+              this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
+            },
+          });
+        }
+      },
+    });
+  }
+
+  private refreshStatus(): void {
+    this.api.getPipelineStatus().subscribe((p) => {
+      this.pipeline = p;
+      this.cdr.markForCheck();
+    });
   }
 }
