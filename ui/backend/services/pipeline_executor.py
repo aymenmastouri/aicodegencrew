@@ -66,8 +66,14 @@ class PipelineExecutor:
             run_id = uuid.uuid4().hex[:8]
             now = datetime.now(UTC).isoformat()
 
-            # Build command
-            cmd = [sys.executable, "-m", "aicodegencrew", "run"]
+            # Write temp .env with overrides if needed
+            env_path = settings.env_file
+            if env_overrides:
+                env_path = settings.project_root / ".env.run"
+                self._write_env_with_overrides(env_overrides, env_path)
+
+            # Build command — --env is a global arg, must come BEFORE the subcommand
+            cmd = [sys.executable, "-m", "aicodegencrew", "--env", str(env_path), "run"]
             phase_list: list[str] = []
 
             if preset:
@@ -93,14 +99,6 @@ class PipelineExecutor:
                 else:
                     # No matching preset — use full_pipeline as fallback
                     cmd.extend(["--preset", "full_pipeline"])
-
-            # Write temp .env with overrides if needed
-            env_path = settings.env_file
-            if env_overrides:
-                env_path = settings.project_root / ".env.run"
-                self._write_env_with_overrides(env_overrides, env_path)
-
-            cmd.extend(["--env", str(env_path)])
 
             self.current_run = RunInfo(
                 run_id=run_id,
