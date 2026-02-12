@@ -2234,4 +2234,4 @@ docker-compose -f ui/docker-compose.ui.yml up --build
 
 Proprietary — Capgemini. See [LICENSE](../LICENSE) for details.
 
-Developed by **Aymen Mastouri** (Capgemini).
+© Capgemini. All rights reserved

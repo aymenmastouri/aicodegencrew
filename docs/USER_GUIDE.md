@@ -2,8 +2,6 @@
 
 **Version 0.3.0 | Capgemini Proprietary**
 
-Developed by **Aymen Mastouri** (Capgemini)
-
 ---
 
 ## Table of Contents
@@ -47,7 +45,7 @@ AICodeGenCrew is an enterprise-grade AI-powered platform for Software Developmen
 - **Development Plans**: Actionable implementation plans derived from JIRA tickets, requirements documents, and application logs
 - **Code Generation**: Automated code changes from development plans, committed to isolated git branches with security scanning
 - **Code Intelligence**: Comprehensive analysis of software components, dependencies, design patterns, and quality metrics
-- **Web Dashboard**: Interactive SDLC Dashboard with 9 pages — pipeline execution, file upload, structured plan viewer, code diff viewer, git branch management, document rendering (JSON/Markdown/AsciiDoc/HTML/Confluence), and live monitoring
+- **Web Dashboard**: Interactive SDLC Dashboard with 10 pages — pipeline execution, file upload, structured plan viewer, code diff viewer, git branch management, pipeline reset with cascade, persistent run history, document rendering (JSON/Markdown/AsciiDoc/HTML/Confluence), and live monitoring
 
 **Data Security**: All processing occurs entirely on-premises. No source code or data is transmitted outside your corporate network.
 
@@ -68,6 +66,8 @@ Additionally, a **web-based SDLC Dashboard** (Angular 21 + FastAPI) provides:
 - **Input Files**: Drag-and-drop upload for JIRA exports, requirements, logs, and reference materials
 - **Structured Reports**: Plan viewer with components table, code diff viewer with colored diffs, git branch management
 - **Knowledge Explorer**: Browse and render generated artifacts (JSON, Markdown, AsciiDoc, HTML, Confluence wiki, DrawIO)
+- **Pipeline Reset**: Per-phase and full reset with dependency cascade, archive before delete, confirm dialog
+- **Persistent History**: Append-only JSONL run history with Run/Reset type tracking
 - **Live Monitoring**: Real-time log streaming via SSE, phase progress timeline, run history
 
 ---
@@ -468,7 +468,8 @@ your-workspace/              ← Your chosen directory
 │   ├── logs/                ← Application logs (LOGS_DIR)
 │   └── reference/           ← Mockups, diagrams (REFERENCE_DIR)
 ├── knowledge/               ← Tool outputs (auto-created)
-│   ├── run_report.json      ← Status of last run
+│   ├── run_report.json      ← Status of last run (legacy)
+│   ├── archive/             ← Reset archives (timestamped backups)
 │   ├── architecture/
 │   │   ├── architecture_facts.json    ← Phase 1 output
 │   │   ├── analyzed_architecture.json ← Phase 2 output
@@ -485,7 +486,8 @@ your-workspace/              ← Your chosen directory
 ├── logs/                    ← Execution logs (auto-created)
 │   ├── current.log          ← Latest run
 │   ├── errors.log           ← Error messages only
-│   └── metrics.jsonl        ← Metrics for analysis
+│   ├── metrics.jsonl        ← Metrics for analysis
+│   └── run_history.jsonl    ← Persistent run history (append-only)
 └── .cache/                  ← ChromaDB index (auto-created)
     └── .chroma/             ← Vector database
 ```
@@ -899,16 +901,25 @@ knowledge/development/
 - For security review: `security_considerations`
 - For framework upgrades: `upgrade_plan.migration_sequence`
 
-### Run Report
+### Run Report & History
 
-After every pipeline run, `knowledge/run_report.json` is generated with:
+After every pipeline run, an entry is appended to `logs/run_history.jsonl` (append-only). Each entry includes:
 - **run_id**: Unique identifier for this run
-- **status**: `success` or `failed`
-- **phases**: Per-phase status, duration, and output files
-- **environment**: Repo path, index mode, output base directory
-- **output_summary**: Paths to log file and metrics file
+- **status**: `completed`, `failed`, or `reset`
+- **trigger**: `pipeline` (normal run) or `reset` (phase reset)
+- **phases**: Which phases were executed or reset
+- **started_at** / **completed_at**: ISO timestamps
+- **duration_seconds**: Total execution time
 
-This file is always written — even on failure — so you have a persistent record of what happened.
+The legacy `knowledge/run_report.json` is still written per run. If `run_history.jsonl` doesn't exist yet, the history endpoint falls back to reading `run_report.json` and archived reports.
+
+**Pipeline Reset**: You can reset individual phases or the entire pipeline from the Phases page. Resetting a phase:
+1. **Cascades** to all dependent phases (e.g., resetting Phase 1 also resets Phases 2-5)
+2. **Archives** existing outputs to `knowledge/archive/reset_YYYYMMDD_HHMMSS/`
+3. **Deletes** phase output files and recreates empty directories
+4. **Logs** the reset event to `run_history.jsonl`
+
+Reset is blocked while a pipeline is running (returns 409 Conflict).
 
 ### Code Generation Reports (Phase 5)
 
@@ -1201,6 +1212,21 @@ Each phase depends on the previous. Run all phases in order:
 aicodegencrew run --preset planning_only
 ```
 
+### "I want to re-run a phase from scratch"
+
+Use the **Reset** feature in the Dashboard:
+1. Go to **Phases** page
+2. Click the reset icon next to the phase you want to re-run
+3. Confirm the cascade reset (dependent phases will also be reset)
+4. Re-run the phase
+
+Or via API:
+```bash
+curl -X POST http://localhost:8001/api/reset/execute \
+  -H "Content-Type: application/json" \
+  -d '{"phase_ids": ["phase2_architecture_analysis"]}'
+```
+
 ### Docker: "Permission denied" on volumes
 
 Ensure the mounted directories exist and have correct permissions:
@@ -1247,9 +1273,9 @@ Open **http://localhost** in your browser.
 | Page | What It Does |
 |------|-------------|
 | **Dashboard** | Hero section with system health, phase status cards (color-coded), active pipeline banner, quick links |
-| **Run Pipeline** | Select preset or custom phases, edit .env overrides, click Run. Live SSE log streaming. Phase timeline with durations. Cancel support. Input file summary. |
+| **Run Pipeline** | Select preset or custom phases, edit .env overrides, click Run. Live SSE log streaming. Phase timeline with durations. Cancel support. Input file summary. Run history with Run/Reset type column. |
 | **Input Files** | Drag-and-drop upload for 4 categories (tasks, requirements, logs, reference). Extension validation. Auto-configures `.env` paths. |
-| **Phases** | Phase table with "Run" buttons, preset accordion with metadata (icon, description). |
+| **Phases** | Phase table with "Run" and "Reset" buttons per phase, "Reset All" button in header, preset accordion with metadata (icon, description). Reset includes cascade preview and archive. |
 | **Knowledge** | Multi-tab browser (Arc42, C4, Knowledge Base, Containers, Dev Plans). Renders JSON (syntax-highlighted), Markdown, AsciiDoc, HTML, Confluence wiki, DrawIO metadata. Source/rendered toggle. |
 | **Reports** | **3 tabs:** (1) Structured plan viewer with components table, implementation steps, test strategy, collapsible security/validation sections. (2) Codegen reports with per-file diff viewer (green/red/blue line coloring). (3) Git branch list (`codegen/*`) with file count, delete action. |
 | **Metrics** | Event table with type filtering, run ID tracking. |
@@ -1263,7 +1289,22 @@ Open **http://localhost** in your browser.
 4. Click **Run Pipeline**
 5. Watch the **Live Output** panel — logs stream in real-time via SSE
 6. The **Phase Timeline** shows progress for each phase (pending → running → completed/failed)
-7. After completion, the run appears in the **Run History** table at the bottom
+7. After completion, the run appears in the **Run History** table at the bottom (with a "Run" type chip)
+
+### Resetting Phases
+
+To reset completed phases and start fresh:
+
+1. Navigate to **Phases** page
+2. Click the **reset icon** (restart_alt) next to a completed phase, or click **Reset All** in the header
+3. A **confirm dialog** shows which phases will be reset (cascade) and how many files will be archived/deleted
+4. Confirm to execute the reset
+5. A **snackbar** confirms the number of phases reset and files deleted
+6. Phase status returns to "ready"
+
+**Cascade behavior**: Resetting an early phase (e.g., Phase 1) automatically resets all dependent phases (Phase 2-5). This ensures data consistency.
+
+**Safety**: All outputs are archived to `knowledge/archive/` before deletion. Reset is blocked while a pipeline is running.
 
 ### Environment Configuration
 
@@ -1309,4 +1350,4 @@ A: Yes. Place all XML files in your `TASK_INPUT_DIR` folder (configured in `.env
 
 *Capgemini Proprietary - Internal Use Only*
 
-*Developed by Aymen Mastouri*
+*© Capgemini. All rights reserved*

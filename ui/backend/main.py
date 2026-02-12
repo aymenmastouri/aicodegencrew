@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .config import settings
-from .routers import collectors, diagrams, env, inputs, knowledge, logs, metrics, phases, pipeline, reports
+from .routers import collectors, diagrams, env, inputs, knowledge, logs, metrics, phases, pipeline, reports, reset
 from .schemas import HealthResponse
 
 app = FastAPI(
@@ -48,6 +48,7 @@ app.include_router(pipeline.router)
 app.include_router(env.router)
 app.include_router(inputs.router)
 app.include_router(collectors.router)
+app.include_router(reset.router)
 
 
 @app.get("/api/health", response_model=HealthResponse)

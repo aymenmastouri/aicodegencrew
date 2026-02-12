@@ -86,4 +86,34 @@ test.describe('Run Pipeline', () => {
     // Display name is "Facts Extraction" now
     await expect(select).toContainText('Facts Extraction', { timeout: 10_000 });
   });
+
+  // --- History Trigger Column Tests ---
+
+  test('should include Type column header in history table', async ({ page }) => {
+    const historyCard = page.locator('mat-card:has-text("Run History")');
+    await expect(historyCard).toBeVisible({ timeout: 5_000 });
+    // If there is a history table, check for Type column
+    const table = historyCard.locator('.history-table');
+    const tableExists = await table.isVisible().catch(() => false);
+    if (tableExists) {
+      await expect(table.locator('th:has-text("Type")')).toBeVisible();
+    }
+  });
+
+  test('should show trigger chips for history entries', async ({ page }) => {
+    const historyCard = page.locator('mat-card:has-text("Run History")');
+    await expect(historyCard).toBeVisible({ timeout: 5_000 });
+    const table = historyCard.locator('.history-table');
+    const tableExists = await table.isVisible().catch(() => false);
+    if (tableExists) {
+      // Should have at least one trigger chip (Run or Reset)
+      const triggerChips = table.locator('.trigger-chip');
+      const count = await triggerChips.count();
+      if (count > 0) {
+        const firstChip = triggerChips.first();
+        const text = await firstChip.textContent();
+        expect(text?.trim()).toMatch(/Run|Reset/);
+      }
+    }
+  });
 });

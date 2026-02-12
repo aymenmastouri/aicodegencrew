@@ -273,11 +273,37 @@ class PipelineExecutor:
                         self._exit_code,
                         self.state,
                     )
+
+            # Append to JSONL run history
+            self._append_history_entry()
+
         except Exception as exc:
             logger.error("Monitor thread error: %s", exc)
             with self._state_lock:
                 if self.state == "running":
                     self.state = "failed"
+            self._append_history_entry()
+
+    def _append_history_entry(self) -> None:
+        """Append a run entry to the JSONL history."""
+        if not self.current_run:
+            return
+        try:
+            from .history_service import append_run_to_history
+
+            duration = round(time.monotonic() - self._started_at, 1) if self._started_at else None
+            append_run_to_history({
+                "run_id": self.current_run.run_id,
+                "status": self.state,
+                "trigger": "pipeline",
+                "preset": self.current_run.preset,
+                "phases": self.current_run.phases,
+                "started_at": self.current_run.started_at,
+                "completed_at": datetime.now(UTC).isoformat(),
+                "duration_seconds": duration,
+            })
+        except Exception as exc:
+            logger.warning("Failed to write history entry: %s", exc)
 
     def _read_phase_progress(self) -> list[dict]:
         """Read phase progress from metrics.jsonl tail."""

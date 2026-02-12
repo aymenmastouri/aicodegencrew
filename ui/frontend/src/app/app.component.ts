@@ -26,12 +26,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       <button mat-icon-button (click)="sidenav.toggle()" matTooltip="Toggle menu">
         <mat-icon class="text-white">menu</mat-icon>
       </button>
-      <span class="brand font-medium ml-3">
-        <span class="text-cg-vibrant font-bold">AI</span><span class="text-white">CodeGen</span
-        ><span class="text-cg-vibrant">Crew</span>
-      </span>
+      <a routerLink="/dashboard" class="brand-link">
+        <span class="brand font-medium ml-3">
+          <span class="text-cg-vibrant font-bold">AI</span><span class="text-white">CodeGen</span
+          ><span class="text-cg-vibrant">Crew</span>
+        </span>
+      </a>
       <span class="flex-1"></span>
       <span class="toolbar-badge">SDLC Dashboard</span>
+      <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="toolbar-logo" />
     </mat-toolbar>
 
     <mat-sidenav-container class="sidenav-container">
@@ -51,6 +54,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             }
           </div>
           <div class="sidenav-footer">
+            <div class="footer-brand">
+              <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="" class="footer-logo" />
+              <span class="footer-legal">&copy; Capgemini. All rights reserved</span>
+            </div>
             <div class="version-badge">
               <mat-icon class="version-icon">code</mat-icon>
               <span>v0.3.0</span>
@@ -75,12 +82,20 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         font-size: 18px;
         letter-spacing: -0.3px;
       }
+      .brand-link {
+        text-decoration: none;
+      }
       .toolbar-badge {
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 1.2px;
         opacity: 0.6;
         font-weight: 500;
+      }
+      .toolbar-logo {
+        height: 22px;
+        margin-left: 12px;
+        opacity: 0.85;
       }
       .sidenav-container {
         height: calc(100vh - 56px);
@@ -118,6 +133,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         margin: 1px 8px;
         border-radius: 8px;
       }
+      .nav-section ::ng-deep .mdc-list-item__primary-text {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
       .nav-section ::ng-deep .mat-mdc-list-item .mat-icon {
         color: rgba(255, 255, 255, 0.5);
         font-size: 20px;
@@ -140,6 +158,20 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       .sidenav-footer {
         padding: 12px 16px;
         border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .footer-logo {
+        height: 18px;
+        opacity: 0.5;
+      }
+      .footer-legal {
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.35);
       }
       .version-badge {
         display: flex;
@@ -184,6 +216,7 @@ export class AppComponent {
       items: [
         { route: '/metrics', icon: 'monitoring', label: 'Metrics' },
         { route: '/logs', icon: 'receipt_long', label: 'Logs' },
+        { route: '/history', icon: 'history', label: 'History' },
       ],
     },
   ];

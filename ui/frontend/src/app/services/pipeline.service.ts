@@ -38,8 +38,39 @@ export interface RunHistoryEntry {
   preset?: string;
   phases: string[];
   started_at?: string;
+  completed_at?: string;
   duration?: string;
+  duration_seconds?: number;
+  trigger?: string; // "pipeline" | "reset"
   phase_results: Record<string, unknown>[];
+}
+
+export interface RunDetail {
+  run_id: string;
+  status: string;
+  preset?: string;
+  phases: string[];
+  started_at?: string;
+  completed_at?: string;
+  duration?: string;
+  duration_seconds?: number;
+  trigger: string;
+  phase_results: any[];
+  metrics_events: any[];
+  environment: Record<string, any>;
+}
+
+export interface ResetPreview {
+  phases_to_reset: string[];
+  files_to_delete: string[];
+  archive_path: string | null;
+}
+
+export interface ResetResult {
+  reset_phases: string[];
+  deleted_count: number;
+  archive_path: string | null;
+  timestamp: string;
 }
 
 export interface EnvVariable {
@@ -79,6 +110,30 @@ export class PipelineService {
 
   getHistory(): Observable<RunHistoryEntry[]> {
     return this.http.get<RunHistoryEntry[]>(`${this.base}/pipeline/history`);
+  }
+
+  getRunDetail(runId: string): Observable<RunDetail> {
+    return this.http.get<RunDetail>(`${this.base}/pipeline/history/${runId}`);
+  }
+
+  // Reset
+  previewReset(phaseIds: string[], cascade = true): Observable<ResetPreview> {
+    return this.http.post<ResetPreview>(`${this.base}/reset/preview`, {
+      phase_ids: phaseIds,
+      cascade,
+    });
+  }
+
+  executeReset(phaseIds: string[], cascade = true, archive = true): Observable<ResetResult> {
+    return this.http.post<ResetResult>(`${this.base}/reset/execute`, {
+      phase_ids: phaseIds,
+      cascade,
+      archive,
+    });
+  }
+
+  resetAll(): Observable<ResetResult> {
+    return this.http.post<ResetResult>(`${this.base}/reset/all`, {});
   }
 
   // SSE stream

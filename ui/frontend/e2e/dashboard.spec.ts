@@ -82,4 +82,64 @@ test.describe('Dashboard', () => {
     await page.waitForURL('**/run');
     expect(page.url()).toContain('/run');
   });
+
+  // --- Reset & History Tests ---
+
+  test('should show Reset All button in pipeline phases header', async ({ page }) => {
+    await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
+    const resetAllBtn = page.locator('button:has-text("Reset All")');
+    await expect(resetAllBtn).toBeVisible();
+  });
+
+  test('should show reset mini-buttons on completed phase cards', async ({ page }) => {
+    await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
+    const completedCards = page.locator('.phase-completed');
+    const count = await completedCards.count();
+    if (count > 0) {
+      // Each completed card should have a reset mini-button
+      const resetBtns = page.locator('.phase-completed .reset-mini');
+      await expect(resetBtns).toHaveCount(count);
+    }
+  });
+
+  test('should show Recent Activity section with history entries', async ({ page }) => {
+    const activitySection = page.locator('.activity-list');
+    // May or may not have entries depending on state
+    const visible = await activitySection.isVisible().catch(() => false);
+    if (visible) {
+      const rows = page.locator('.activity-row');
+      const count = await rows.count();
+      expect(count).toBeGreaterThan(0);
+      expect(count).toBeLessThanOrEqual(5);
+    }
+  });
+
+  test('should show trigger chips in recent activity', async ({ page }) => {
+    const activitySection = page.locator('.activity-list');
+    const visible = await activitySection.isVisible().catch(() => false);
+    if (visible) {
+      const triggerChips = page.locator('.activity-row .trigger-chip');
+      if ((await triggerChips.count()) > 0) {
+        const text = await triggerChips.first().textContent();
+        expect(text?.trim()).toMatch(/Run|Reset/);
+      }
+    }
+  });
+
+  test('should show "View all history" link pointing to /history', async ({ page }) => {
+    const activitySection = page.locator('.activity-list');
+    const visible = await activitySection.isVisible().catch(() => false);
+    if (visible) {
+      const link = page.locator('.activity-more');
+      await expect(link).toBeVisible();
+      await expect(link).toContainText('View all history');
+      const href = await link.getAttribute('href');
+      expect(href).toContain('/history');
+    }
+  });
+
+  test('should show Capgemini logo in hero section', async ({ page }) => {
+    const heroLogo = page.locator('.hero-logo');
+    await expect(heroLogo).toBeVisible();
+  });
 });

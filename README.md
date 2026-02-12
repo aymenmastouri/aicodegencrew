@@ -77,9 +77,9 @@ The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 2
 | Page | Purpose |
 |------|---------|
 | **Dashboard** | System health, pipeline status with phase cards, active run banner, quick links |
-| **Run Pipeline** | Execute presets or custom phases, edit env vars, live SSE log streaming, input file summary |
+| **Run Pipeline** | Execute presets or custom phases, edit env vars, live SSE log streaming, input file summary, run history with type column (Run/Reset) |
 | **Input Files** | Drag-and-drop upload for tasks, requirements, logs, reference materials. Auto-configures `.env` |
-| **Phases** | Phase configuration, dependencies, run individual phases |
+| **Phases** | Phase configuration, dependencies, run/reset individual phases, Reset All button |
 | **Knowledge** | Multi-tab file browser with rendered previews (JSON, Markdown, AsciiDoc, HTML, Confluence, DrawIO) |
 | **Reports** | 3-tab view: structured plan viewer (overview metrics, migration sequence, component chips), code diff viewer (colored diffs), git branch management |
 | **Metrics** | Explore `metrics.jsonl` events with filters |
@@ -90,11 +90,13 @@ The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 2
 - **Structured plan viewer** — overview card with complexity/effort/risk metrics, implementation steps, parsed component chips, full upgrade migration sequence with severity badges and per-step affected files, test strategy, collapsible security/validation/error handling details, rendered JIRA context
 - **Code diff viewer** — per-file expandable diffs with green/red line coloring, action chips (created/modified/deleted), language badges
 - **Git branch management** — list `codegen/*` branches with file count, report links, and delete action
+- **Pipeline reset** — per-phase and full pipeline reset with cascade propagation, archive before delete, confirm dialog with cascade preview
+- **Persistent run history** — append-only JSONL (`logs/run_history.jsonl`) with Run/Reset type tracking, legacy `run_report.json` fallback
 - **Document rendering** — JSON syntax highlighting, Markdown, AsciiDoc, HTML, Confluence wiki
 - Real-time log streaming via Server-Sent Events (SSE)
 - Environment configuration editing before each run
 - Phase-level progress timeline with durations
-- Run history with status tracking
+- Run history with Run/Reset type column, status tracking
 - Pipeline cancellation (SIGTERM with SIGKILL fallback)
 - Subprocess isolation — pipeline crash won't crash the Dashboard
 
@@ -234,11 +236,13 @@ Output: `knowledge/development/{task_id}_plan.json` with affected components, im
 │   ├── architecture/        # Phase 1-3: facts, analysis, C4, arc42
 │   ├── development/         # Phase 4: task plans
 │   ├── codegen/             # Phase 5: generation reports
-│   └── run_report.json      # Pipeline run summary
+│   ├── run_report.json      # Pipeline run summary (legacy)
+│   └── archive/             # Reset archives (timestamped backups)
 ├── architecture-docs/       # Phase 3 export (Markdown + Confluence + AsciiDoc + HTML)
 └── logs/
     ├── current.log
-    └── metrics.jsonl        # Structured metrics
+    ├── metrics.jsonl        # Structured metrics
+    └── run_history.jsonl    # Persistent run history (append-only)
 ```
 
 ---
@@ -292,7 +296,7 @@ pytest tests/ --ignore=tests/e2e    # Unit + integration only
 aicodegencrew/
 ├── ui/                          # SDLC Dashboard (primary interface)
 │   ├── frontend/                #   Angular 21 SPA (9 pages, Material + Tailwind)
-│   ├── backend/                 #   FastAPI (10 routers, SSE streaming, file upload)
+│   ├── backend/                 #   FastAPI (11 routers, SSE streaming, file upload, reset)
 │   └── docker-compose.ui.yml
 ├── src/aicodegencrew/
 │   ├── cli.py                   # CLI entry point
@@ -314,11 +318,9 @@ aicodegencrew/
 
 **Copyright 2024-2026 Capgemini** — Proprietary and confidential.
 
-Developed by **Aymen Mastouri** (Capgemini).
-
 ---
 
 <p align="center">
   Built with <a href="https://crewai.com/">CrewAI</a> &middot; Powered by local LLMs &middot; Made for enterprise<br>
-  <sub>Developed by Aymen Mastouri</sub>
+  <sub>&copy; Capgemini. All rights reserved</sub>
 </p>

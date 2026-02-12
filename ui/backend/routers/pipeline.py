@@ -12,6 +12,7 @@ from fastapi.responses import StreamingResponse
 
 from ..schemas import (
     ExecutionStatus,
+    RunDetail,
     RunHistoryEntry,
     RunRequest,
     RunResponse,
@@ -98,6 +99,19 @@ async def pipeline_stream():
 
 
 @router.get("/history", response_model=list[RunHistoryEntry])
-def pipeline_history():
-    """Get run history from run_report.json."""
-    return executor.get_history()
+def pipeline_history(limit: int = 50):
+    """Get run history from JSONL (with legacy fallback)."""
+    from ..services.history_service import get_run_history
+
+    return get_run_history(limit=limit)
+
+
+@router.get("/history/{run_id}", response_model=RunDetail)
+def pipeline_history_detail(run_id: str):
+    """Get detailed outcome for a specific run, including phase results and metrics."""
+    from ..services.history_service import get_run_detail
+
+    detail = get_run_detail(run_id)
+    if detail is None:
+        raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
+    return detail

@@ -146,8 +146,50 @@ class RunHistoryEntry(BaseModel):
     preset: str | None = None
     phases: list[str] = []
     started_at: str | None = None
+    completed_at: str | None = None
     duration: str | None = None
+    duration_seconds: float | None = None
+    trigger: str = "pipeline"  # "pipeline" | "reset"
     phase_results: list[dict[str, Any]] = []
+
+
+class RunDetail(BaseModel):
+    """Full run detail with outcome data."""
+
+    run_id: str
+    status: str
+    preset: str | None = None
+    phases: list[str] = []
+    started_at: str | None = None
+    completed_at: str | None = None
+    duration: str | None = None
+    duration_seconds: float | None = None
+    trigger: str = "pipeline"
+    phase_results: list[dict[str, Any]] = []
+    metrics_events: list[dict[str, Any]] = []
+    environment: dict[str, Any] = {}
+
+
+# --- Pipeline Reset ---
+
+
+class ResetRequest(BaseModel):
+    phase_ids: list[str]
+    cascade: bool = True
+    archive: bool = True
+
+
+class ResetPreview(BaseModel):
+    phases_to_reset: list[str]
+    files_to_delete: list[str]
+    archive_path: str | None = None
+
+
+class ResetResult(BaseModel):
+    reset_phases: list[str]
+    deleted_count: int
+    archive_path: str | None = None
+    timestamp: str
 
 
 # --- Environment Config ---
