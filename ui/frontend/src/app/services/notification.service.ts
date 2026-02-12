@@ -9,6 +9,11 @@ export type PipelineState = 'idle' | 'running' | 'completed' | 'failed' | 'cance
 export interface PipelineNotification {
   state: PipelineState;
   runId: string;
+  progressPercent: number;
+  completedPhases: number;
+  totalPhases: number;
+  elapsedSeconds: number;
+  etaSeconds: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -16,6 +21,11 @@ export class NotificationService implements OnDestroy {
   private state$ = new BehaviorSubject<PipelineNotification>({
     state: 'idle',
     runId: '',
+    progressPercent: 0,
+    completedPhases: 0,
+    totalPhases: 0,
+    elapsedSeconds: 0,
+    etaSeconds: null,
   });
 
   readonly notification$ = this.state$.asObservable();
@@ -23,6 +33,7 @@ export class NotificationService implements OnDestroy {
   private pollSub: Subscription | null = null;
   private fadeTimer: ReturnType<typeof setTimeout> | null = null;
   private previousState: PipelineState = 'idle';
+  private pollInterval = 5000;
 
   constructor(
     private pipelineSvc: PipelineService,
@@ -49,16 +60,43 @@ export class NotificationService implements OnDestroy {
   }
 
   dismiss(): void {
-    this.state$.next({ state: 'idle', runId: '' });
+    this.state$.next({
+      state: 'idle',
+      runId: '',
+      progressPercent: 0,
+      completedPhases: 0,
+      totalPhases: 0,
+      elapsedSeconds: 0,
+      etaSeconds: null,
+    });
   }
 
   private startPolling(): void {
-    // timer(0, 5000) = immediate first call, then every 5s
-    this.pollSub = timer(0, 5000)
+    this.restartPoll(5000);
+  }
+
+  private restartPoll(interval: number): void {
+    if (interval === this.pollInterval && this.pollSub) return;
+    this.pollInterval = interval;
+    this.pollSub?.unsubscribe();
+
+    this.pollSub = timer(0, interval)
       .pipe(
         switchMap(() =>
           this.pipelineSvc.getStatus().pipe(
-            catchError(() => of({ state: 'idle', run_id: undefined, phases: [], phase_progress: [] })),
+            catchError(() =>
+              of({
+                state: 'idle',
+                run_id: undefined,
+                phases: [] as string[],
+                phase_progress: [],
+                progress_percent: 0,
+                completed_phase_count: 0,
+                total_phase_count: 0,
+                elapsed_seconds: 0,
+                eta_seconds: undefined,
+              }),
+            ),
           ),
         ),
       )
@@ -66,6 +104,13 @@ export class NotificationService implements OnDestroy {
         next: (status) => {
           const newState = (status.state || 'idle') as PipelineState;
           const runId = status.run_id || '';
+
+          // Adjust poll frequency: 3s when running, 5s otherwise
+          const targetInterval = newState === 'running' ? 3000 : 5000;
+          if (targetInterval !== this.pollInterval) {
+            this.restartPoll(targetInterval);
+            return; // restartPoll re-subscribes, so we return
+          }
 
           // Detect transitions
           if (this.previousState === 'running' && newState === 'completed') {
@@ -82,11 +127,19 @@ export class NotificationService implements OnDestroy {
           if (this.fadeTimer) clearTimeout(this.fadeTimer);
           if (newState === 'completed') {
             this.fadeTimer = setTimeout(() => {
-              this.state$.next({ state: 'idle', runId: '' });
+              this.dismiss();
             }, 10000);
           }
 
-          this.state$.next({ state: newState, runId });
+          this.state$.next({
+            state: newState,
+            runId,
+            progressPercent: status.progress_percent ?? 0,
+            completedPhases: status.completed_phase_count ?? 0,
+            totalPhases: status.total_phase_count ?? 0,
+            elapsedSeconds: status.elapsed_seconds ?? 0,
+            etaSeconds: status.eta_seconds ?? null,
+          });
         },
       });
   }

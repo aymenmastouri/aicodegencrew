@@ -16,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Subscription } from 'rxjs';
 
 import { ApiService, PresetInfo, PhaseInfo } from '../../services/api.service';
@@ -25,6 +26,7 @@ import {
   RunHistoryEntry,
   EnvVariable,
   SSEEvent,
+  PhaseProgress,
 } from '../../services/pipeline.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
 
@@ -48,6 +50,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
     MatTableModule,
     MatTabsModule,
     MatTooltipModule,
+    ScrollingModule,
     RouterLink,
   ],
   template: `
@@ -179,7 +182,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
         }
       </mat-expansion-panel>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons + Progress Bar -->
       <div class="action-bar">
         <button
           mat-flat-button
@@ -195,11 +198,90 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
           Cancel
         </button>
         @if (status?.state === 'running') {
-          <mat-progress-bar mode="indeterminate" class="run-progress"></mat-progress-bar>
+          <div class="progress-section">
+            <mat-progress-bar
+              [mode]="status?.progress_percent != null ? 'determinate' : 'indeterminate'"
+              [value]="status?.progress_percent || 0"
+              class="run-progress">
+            </mat-progress-bar>
+            <span class="progress-label">
+              {{ status?.completed_phase_count || 0 }}/{{ status?.total_phase_count || 0 }} phases
+              <span class="progress-pct">{{ status?.progress_percent | number:'1.0-0' }}%</span>
+            </span>
+          </div>
         }
       </div>
 
-      <!-- Live Status -->
+      <!-- Live Metrics Bar -->
+      @if (status?.state === 'running' && status?.live_metrics) {
+        <div class="metrics-bar">
+          <div class="stat-item">
+            <mat-icon>timer</mat-icon>
+            <span class="stat-value">{{ formatDuration(status!.elapsed_seconds || 0) }}</span>
+            <span class="stat-label">Elapsed</span>
+          </div>
+          <div class="stat-item">
+            <mat-icon>token</mat-icon>
+            <span class="stat-value">{{ (status!.live_metrics!.total_tokens | number) || '0' }}</span>
+            <span class="stat-label">Tokens</span>
+          </div>
+          <div class="stat-item">
+            <mat-icon>groups</mat-icon>
+            <span class="stat-value">{{ status!.live_metrics!.crew_completions }}</span>
+            <span class="stat-label">Crews</span>
+          </div>
+          @if (status?.eta_seconds != null && status!.eta_seconds! > 0) {
+            <div class="stat-item stat-eta">
+              <mat-icon>schedule</mat-icon>
+              <span class="stat-value">~{{ formatDuration(status!.eta_seconds!) }}</span>
+              <span class="stat-label">ETA</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Celebration Banner -->
+      @if (showCelebration && celebrationType) {
+        <div class="celebration-banner" [class]="'celebration-' + celebrationType"
+             [@.disabled]="false">
+          @if (celebrationType === 'success') {
+            <div class="celebration-content">
+              <mat-icon class="celebration-icon">celebration</mat-icon>
+              <div class="celebration-text">
+                <span class="celebration-title">Pipeline Completed Successfully</span>
+                <span class="celebration-sub">
+                  {{ status?.completed_phase_count || 0 }} phases completed in {{ formatDuration(status?.elapsed_seconds || 0) }}
+                </span>
+              </div>
+              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <div class="confetti-wrap">
+              @for (i of confettiDots; track i) {
+                <span class="confetti-dot" [style.left.%]="i * 12 + 5"
+                      [style.animation-delay.ms]="i * 250"></span>
+              }
+            </div>
+          } @else {
+            <div class="celebration-content">
+              <mat-icon class="celebration-icon">error_outline</mat-icon>
+              <div class="celebration-text">
+                <span class="celebration-title">Pipeline Failed</span>
+                <span class="celebration-sub">
+                  Check the logs below for details
+                  <a routerLink="/logs" class="logs-link">Open Logs</a>
+                </span>
+              </div>
+              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Live Status + Enhanced Phase Stepper -->
       @if (status && status.state !== 'idle') {
         <mat-card class="status-card" [class]="'state-' + status.state">
           <mat-card-header>
@@ -214,23 +296,58 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
               @if (status.elapsed_seconds) {
                 | Elapsed: {{ formatDuration(status.elapsed_seconds) }}
               }
+              @if (status.eta_seconds != null && status.eta_seconds > 0) {
+                | ETA: ~{{ formatDuration(status.eta_seconds) }}
+              }
             </mat-card-subtitle>
           </mat-card-header>
 
-          <!-- Phase Progress -->
+          <!-- Enhanced Phase Stepper -->
           @if (status.phase_progress.length > 0) {
             <mat-card-content>
-              <div class="phase-timeline">
-                @for (pp of status.phase_progress; track pp.phase_id) {
-                  <div class="phase-step" [class]="'step-' + pp.status">
-                    <mat-icon class="step-icon">{{ phaseStepIcon(pp.status) }}</mat-icon>
-                    <div class="step-info">
-                      <span class="step-name">{{ pp.name || pp.phase_id }}</span>
-                      @if (pp.duration_seconds) {
-                        <span class="step-duration">{{ pp.duration_seconds | number: '1.1-1' }}s</span>
+              <div class="stepper-track">
+                @for (pp of status.phase_progress; track pp.phase_id; let i = $index; let last = $last) {
+                  <div class="stepper-step" [class]="'step-' + pp.status">
+                    <div class="step-circle">
+                      @if (pp.status === 'completed') {
+                        <mat-icon class="step-check">check</mat-icon>
+                      } @else if (pp.status === 'running') {
+                        <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
+                      } @else if (pp.status === 'failed') {
+                        <mat-icon class="step-fail">close</mat-icon>
+                      } @else {
+                        <span class="step-num">{{ i + 1 }}</span>
                       }
                     </div>
+                    <div class="step-label">{{ pp.name || pp.phase_id }}</div>
+                    @if (pp.status === 'completed' && pp.duration_seconds) {
+                      <div class="step-time">{{ formatDuration(pp.duration_seconds) }}</div>
+                    }
+                    @if (pp.status === 'running') {
+                      <div class="step-time step-time-active">running</div>
+                    }
+                    <!-- Sub-phase chips -->
+                    @if (pp.status === 'running' && pp.sub_phases?.length) {
+                      <div class="sub-phase-chips">
+                        @for (sp of pp.sub_phases; track sp.name) {
+                          <span class="sub-chip" [class]="'sub-' + sp.status">
+                            <mat-icon class="sub-icon">
+                              {{ sp.status === 'completed' ? 'check' : 'sync' }}
+                            </mat-icon>
+                            {{ sp.name }}
+                            @if (sp.total_tokens) {
+                              <span class="sub-tokens">{{ sp.total_tokens | number }}</span>
+                            }
+                          </span>
+                        }
+                      </div>
+                    }
                   </div>
+                  @if (!last) {
+                    <div class="stepper-line" [class.line-done]="pp.status === 'completed'"
+                         [class.line-active]="pp.status === 'running'">
+                    </div>
+                  }
                 }
               </div>
             </mat-card-content>
@@ -238,29 +355,37 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
         </mat-card>
       }
 
-      <!-- Live Log Output -->
+      <!-- Live Log Output with Virtual Scroll -->
       @if (logLines.length > 0) {
         <mat-card class="log-card">
           <mat-card-header>
             <mat-card-title class="log-title">
               <mat-icon>receipt_long</mat-icon>
               Live Output
-              <span class="log-count">{{ logLines.length }} lines</span>
+              <span class="log-count">{{ filteredLogLines.length }} lines</span>
             </mat-card-title>
             <span class="spacer"></span>
+            <mat-form-field appearance="outline" class="log-search-field">
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput placeholder="Filter logs..." [(ngModel)]="logSearch"
+                     (ngModelChange)="filterLogs()" />
+            </mat-form-field>
+            <button mat-icon-button (click)="autoScroll = !autoScroll"
+                    [matTooltip]="autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'"
+                    [class.active-toggle]="autoScroll">
+              <mat-icon>{{ autoScroll ? 'vertical_align_bottom' : 'pause' }}</mat-icon>
+            </button>
             <button mat-icon-button (click)="scrollToTop()" matTooltip="Scroll to top">
               <mat-icon>vertical_align_top</mat-icon>
             </button>
           </mat-card-header>
           <mat-card-content>
-            <div class="log-viewer" #logViewer>
-              @for (line of logLines; track $index) {
-                <div class="log-line" [class]="getLogLevel(line)">
-                  <span class="log-num">{{ $index + 1 }}</span
-                  >{{ line }}
-                </div>
-              }
-            </div>
+            <cdk-virtual-scroll-viewport itemSize="22" class="log-viewport" #logViewport>
+              <div *cdkVirtualFor="let line of filteredLogLines; let i = index"
+                   class="log-line" [class]="getLogLevel(line)">
+                <span class="log-num">{{ i + 1 }}</span>{{ line }}
+              </div>
+            </cdk-virtual-scroll-viewport>
           </mat-card-content>
         </mat-card>
       }
@@ -335,275 +460,286 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
   `,
   styles: [
     `
-      .config-card {
-        margin-bottom: 16px;
-      }
-      .tab-content {
-        padding: 16px 0;
-      }
-      .full-width {
-        width: 100%;
-      }
+      .config-card { margin-bottom: 16px; }
+      .tab-content { padding: 16px 0; }
+      .full-width { width: 100%; }
       .phase-chips {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 8px;
+        display: flex; align-items: center; gap: 8px;
+        flex-wrap: wrap; margin-top: 8px;
       }
-      .chips-label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--cg-gray-500);
-      }
-      .phase-checkboxes {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .phase-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-      }
-      .phase-id {
-        color: var(--cg-gray-500);
-        font-size: 12px;
-      }
-      .input-summary-card {
-        margin-bottom: 16px;
-      }
+      .chips-label { font-size: 13px; font-weight: 500; color: var(--cg-gray-500); }
+      .phase-checkboxes { display: flex; flex-direction: column; gap: 8px; }
+      .phase-label { display: inline-flex; align-items: center; gap: 4px; }
+      .phase-id { color: var(--cg-gray-500); font-size: 12px; }
+      .input-summary-card { margin-bottom: 16px; }
       .input-icon {
         background: rgba(0, 112, 173, 0.08);
         color: var(--cg-blue) !important;
         border-radius: 10px !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
+        display: flex !important; align-items: center; justify-content: center;
       }
-      .input-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 12px;
-      }
+      .input-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
       .input-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        border-radius: 8px;
-        background: var(--cg-gray-100);
-        font-size: 12px;
-        color: var(--cg-gray-500);
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 4px 10px; border-radius: 8px;
+        background: var(--cg-gray-100); font-size: 12px; color: var(--cg-gray-500);
       }
-      .input-chip .mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-      }
+      .input-chip .mat-icon { font-size: 16px; width: 16px; height: 16px; }
       .input-chip.has-files {
-        background: rgba(18, 171, 219, 0.1);
-        color: var(--cg-blue);
-        font-weight: 500;
+        background: rgba(18, 171, 219, 0.1); color: var(--cg-blue); font-weight: 500;
       }
       .chip-count {
-        min-width: 18px;
-        height: 18px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 9px;
-        background: rgba(0, 0, 0, 0.06);
-        font-size: 11px;
-        font-weight: 600;
+        min-width: 18px; height: 18px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 9px; background: rgba(0, 0, 0, 0.06);
+        font-size: 11px; font-weight: 600;
       }
-      .input-chip.has-files .chip-count {
-        background: var(--cg-vibrant);
-        color: #fff;
-      }
-      .manage-btn {
-        font-size: 13px;
-      }
-      .manage-btn .mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        margin-right: 4px;
-      }
-      .env-panel {
-        margin-bottom: 16px;
-      }
+      .input-chip.has-files .chip-count { background: var(--cg-vibrant); color: #fff; }
+      .manage-btn { font-size: 13px; }
+      .manage-btn .mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
+      .env-panel { margin-bottom: 16px; }
       .env-group-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--cg-blue);
-        margin: 16px 0 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-size: 13px; font-weight: 600; color: var(--cg-blue);
+        margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.5px;
       }
       .env-fields {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 8px;
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px;
       }
-      .env-field {
-        width: 100%;
-      }
+      .env-field { width: 100%; }
+
+      /* Action bar + determinate progress */
       .action-bar {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 16px 0;
+        display: flex; align-items: center; gap: 12px; margin: 16px 0; flex-wrap: wrap;
       }
-      .run-progress {
-        flex: 1;
+      .progress-section {
+        flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 200px;
       }
-
-      .status-card {
-        margin-bottom: 16px;
+      .run-progress { width: 100%; }
+      .run-progress ::ng-deep .mdc-linear-progress__bar-inner {
+        border-color: var(--cg-vibrant) !important;
       }
-      .state-completed {
-        border-left: 4px solid var(--cg-success);
+      .progress-label {
+        font-size: 12px; color: var(--cg-gray-500);
+        display: flex; align-items: center; gap: 8px;
       }
-      .state-failed {
-        border-left: 4px solid var(--cg-error);
-      }
-      .state-running {
-        border-left: 4px solid var(--cg-blue);
-      }
-      .state-cancelled {
-        border-left: 4px solid var(--cg-warn);
-      }
-      .state-icon-completed {
-        color: var(--cg-success);
-      }
-      .state-icon-failed {
-        color: var(--cg-error);
-      }
-      .state-icon-running {
-        color: var(--cg-blue);
-      }
-      .state-icon-cancelled {
-        color: var(--cg-warn);
+      .progress-pct {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-weight: 600; color: var(--cg-blue);
       }
 
-      .phase-timeline {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        padding: 16px 0;
+      /* Live Metrics Bar */
+      .metrics-bar {
+        display: flex; gap: 16px; flex-wrap: wrap;
+        padding: 10px 16px; margin-bottom: 16px;
+        background: #fff; border-radius: 10px;
+        border: 1px solid var(--cg-gray-100);
       }
-      .phase-step {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        border-radius: 10px;
-        background: var(--cg-gray-100);
+      .stat-item {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 13px; color: var(--cg-gray-600);
       }
-      .step-running {
-        background: rgba(0, 112, 173, 0.08);
+      .stat-item .mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--cg-blue); }
+      .stat-value {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-weight: 600; color: var(--cg-gray-900);
       }
-      .step-completed {
-        background: rgba(40, 167, 69, 0.08);
+      .stat-label { font-size: 11px; color: var(--cg-gray-400); }
+      .stat-eta .mat-icon { color: var(--cg-vibrant); }
+      .stat-eta .stat-value { color: var(--cg-vibrant); }
+
+      /* Celebration Banner */
+      .celebration-banner {
+        border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
+        position: relative; overflow: hidden;
+        animation: slide-in 0.4s ease-out;
       }
-      .step-failed {
-        background: rgba(220, 53, 69, 0.08);
+      .celebration-success {
+        background: linear-gradient(135deg, var(--cg-success, #28a745) 0%, #20c997 100%);
+        color: #fff;
       }
-      .step-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
+      .celebration-failure {
+        background: linear-gradient(135deg, var(--cg-error, #dc3545) 0%, #e85d75 100%);
+        color: #fff;
       }
-      .step-info {
-        display: flex;
-        flex-direction: column;
+      .celebration-content {
+        display: flex; align-items: center; gap: 12px; position: relative; z-index: 1;
       }
-      .step-name {
-        font-size: 13px;
-        font-weight: 500;
+      .celebration-icon { font-size: 32px; width: 32px; height: 32px; }
+      .celebration-text { display: flex; flex-direction: column; flex: 1; }
+      .celebration-title { font-size: 16px; font-weight: 600; }
+      .celebration-sub { font-size: 13px; opacity: 0.9; }
+      .celebration-close { color: rgba(255, 255, 255, 0.7) !important; }
+      .logs-link { color: #fff; text-decoration: underline; margin-left: 6px; }
+      @keyframes slide-in {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
       }
-      .step-duration {
-        font-size: 11px;
-        color: var(--cg-gray-500);
+      .confetti-wrap {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none; overflow: hidden;
+      }
+      .confetti-dot {
+        position: absolute; top: -8px;
+        width: 6px; height: 6px; border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        animation: confetti-float 2s ease-in forwards;
+      }
+      .confetti-dot:nth-child(odd) { background: rgba(18, 171, 219, 0.5); width: 5px; height: 5px; }
+      .confetti-dot:nth-child(3n) { background: rgba(255, 193, 7, 0.5); width: 7px; height: 7px; }
+      @keyframes confetti-float {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
       }
 
-      .log-card {
-        margin-bottom: 16px;
+      /* Status Card */
+      .status-card { margin-bottom: 16px; }
+      .state-completed { border-left: 4px solid var(--cg-success); }
+      .state-failed { border-left: 4px solid var(--cg-error); }
+      .state-running { border-left: 4px solid var(--cg-blue); }
+      .state-cancelled { border-left: 4px solid var(--cg-warn); }
+      .state-icon-completed { color: var(--cg-success); }
+      .state-icon-failed { color: var(--cg-error); }
+      .state-icon-running { color: var(--cg-blue); }
+      .state-icon-cancelled { color: var(--cg-warn); }
+
+      /* Enhanced Stepper */
+      .stepper-track {
+        display: flex; align-items: flex-start;
+        overflow-x: auto; padding: 8px 0 12px;
       }
-      .log-card mat-card-header {
-        display: flex;
-        align-items: center;
+      .stepper-step {
+        display: flex; flex-direction: column; align-items: center;
+        flex-shrink: 0; min-width: 100px;
       }
-      .log-title {
-        display: flex !important;
-        align-items: center;
-        gap: 8px;
+      .step-circle {
+        width: 42px; height: 42px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--cg-gray-50, #f8f9fa);
+        border: 2.5px solid var(--cg-gray-200);
+        position: relative; z-index: 1; transition: all 0.3s ease;
       }
-      .log-count {
-        font-size: 12px;
-        color: var(--cg-gray-500);
-        font-weight: 400;
+      .step-num {
+        font-size: 13px; font-weight: 600; color: var(--cg-gray-400);
       }
-      .spacer {
-        flex: 1;
+      /* Running */
+      .step-running .step-circle {
+        background: rgba(0, 112, 173, 0.08); border-color: var(--cg-blue);
+        box-shadow: 0 0 0 5px rgba(0, 112, 173, 0.1);
+        animation: pulse-ring 2s ease-in-out infinite;
       }
-      .log-viewer {
+      @keyframes pulse-ring {
+        0%, 100% { box-shadow: 0 0 0 5px rgba(0, 112, 173, 0.1); }
+        50% { box-shadow: 0 0 0 10px rgba(0, 112, 173, 0.04); }
+      }
+      .step-spinner ::ng-deep circle { stroke: var(--cg-blue) !important; }
+      /* Completed */
+      .step-completed .step-circle {
+        background: var(--cg-success, #28a745); border-color: var(--cg-success, #28a745);
+      }
+      .step-check { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Failed */
+      .step-failed .step-circle {
+        background: var(--cg-error, #dc3545); border-color: var(--cg-error, #dc3545);
+      }
+      .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Labels */
+      .step-label {
+        margin-top: 8px; font-size: 11px; font-weight: 500;
+        color: var(--cg-gray-500); text-align: center;
+        max-width: 110px; line-height: 1.3;
+      }
+      .step-running .step-label { color: var(--cg-blue); font-weight: 600; }
+      .step-completed .step-label { color: var(--cg-success); }
+      .step-failed .step-label { color: var(--cg-error); }
+      /* Duration */
+      .step-time {
+        margin-top: 3px; font-size: 10px;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--cg-gray-400);
+      }
+      .step-time-active { color: var(--cg-blue); font-weight: 600; }
+      /* Connector Lines */
+      .stepper-line {
+        flex: 1; min-width: 24px; height: 3px;
+        background: var(--cg-gray-200); border-radius: 2px;
+        margin-top: 21px; position: relative; overflow: hidden;
+      }
+      .line-done { background: var(--cg-success, #28a745); }
+      .line-active { background: var(--cg-gray-200); }
+      .line-active::after {
+        content: ''; position: absolute; top: 0; left: 0;
+        height: 100%; width: 40%;
+        background: linear-gradient(90deg, var(--cg-blue), rgba(0, 112, 173, 0.2));
+        border-radius: 2px; animation: line-sweep 1.5s ease-in-out infinite;
+      }
+      @keyframes line-sweep {
+        0% { left: -40%; }
+        100% { left: 100%; }
+      }
+
+      /* Sub-phase chips */
+      .sub-phase-chips {
+        display: flex; flex-wrap: wrap; gap: 4px;
+        margin-top: 6px; max-width: 160px; justify-content: center;
+      }
+      .sub-chip {
+        display: inline-flex; align-items: center; gap: 3px;
+        padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 500;
+        background: rgba(0, 112, 173, 0.08); color: var(--cg-blue);
+      }
+      .sub-completed { background: rgba(40, 167, 69, 0.08); color: var(--cg-success); }
+      .sub-failed { background: rgba(220, 53, 69, 0.08); color: var(--cg-error); }
+      .sub-icon { font-size: 12px; width: 12px; height: 12px; }
+      .sub-tokens {
+        font-family: monospace; font-size: 9px; opacity: 0.7;
+      }
+
+      /* Log Viewer with Virtual Scroll */
+      .log-card { margin-bottom: 16px; }
+      .log-card mat-card-header { display: flex; align-items: center; }
+      .log-title { display: flex !important; align-items: center; gap: 8px; }
+      .log-count { font-size: 12px; color: var(--cg-gray-500); font-weight: 400; }
+      .spacer { flex: 1; }
+      .log-search-field {
+        width: 180px; margin: 0 8px;
+      }
+      .log-search-field ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
+      .log-search-field ::ng-deep .mdc-text-field { height: 36px !important; }
+      .log-search-field ::ng-deep .mat-mdc-form-field-infix { padding: 4px 0 !important; min-height: unset; }
+      .log-search-field ::ng-deep input { font-size: 12px; }
+      .log-search-field ::ng-deep .mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--cg-gray-400); margin-right: 4px; }
+      .active-toggle { color: var(--cg-vibrant) !important; }
+      .log-viewport {
+        height: 500px;
         background: var(--cg-dark);
         color: #d4d4d4;
         font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
         font-size: 12px;
-        padding: 12px;
         border-radius: 8px;
-        max-height: 500px;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-break: break-all;
       }
       .log-line {
-        line-height: 1.6;
+        height: 22px; line-height: 22px;
+        padding: 0 12px; white-space: pre; overflow: hidden; text-overflow: ellipsis;
       }
       .log-num {
-        display: inline-block;
-        width: 36px;
-        text-align: right;
-        margin-right: 12px;
-        color: rgba(255, 255, 255, 0.2);
-        user-select: none;
+        display: inline-block; width: 36px; text-align: right;
+        margin-right: 12px; color: rgba(255, 255, 255, 0.2); user-select: none;
       }
-      .log-error {
-        color: #f48771;
-      }
-      .log-warning {
-        color: #cca700;
-      }
-      .log-info {
-        color: #89d185;
-      }
+      .log-error { color: #f48771; }
+      .log-warning { color: #cca700; }
+      .log-info { color: #89d185; }
 
-      .history-card {
-        margin-bottom: 24px;
-      }
-      .history-table {
-        width: 100%;
-      }
-      .history-table tr.mat-mdc-row:hover {
-        background: rgba(0, 112, 173, 0.03);
-      }
-      .small-chip {
-        font-size: 11px;
-      }
-      .trigger-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-      }
+      /* History */
+      .history-card { margin-bottom: 24px; }
+      .history-table { width: 100%; }
+      .history-table tr.mat-mdc-row:hover { background: rgba(0, 112, 173, 0.03); }
+      .small-chip { font-size: 11px; }
+      .trigger-icon { font-size: 16px; width: 16px; height: 16px; }
     `,
   ],
 })
 export class RunPipelineComponent implements OnInit, OnDestroy {
-  @ViewChild('logViewer') logViewerRef?: ElementRef;
+  @ViewChild('logViewport') logViewportRef?: any;
 
   // Config
   presets: PresetInfo[] = [];
@@ -624,8 +760,17 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   // Execution
   status: ExecutionStatus | null = null;
   logLines: string[] = [];
+  filteredLogLines: string[] = [];
+  logSearch = '';
+  autoScroll = true;
   history: RunHistoryEntry[] = [];
   historyColumns = ['started_at', 'trigger', 'run_id', 'preset', 'phases', 'status', 'duration'];
+
+  // Celebration
+  showCelebration = false;
+  celebrationType: 'success' | 'failure' | null = null;
+  confettiDots = [0, 1, 2, 3, 4, 5, 6, 7];
+  private celebrationTimer?: ReturnType<typeof setTimeout>;
 
   private sseSub?: Subscription;
   private statusInterval?: ReturnType<typeof setInterval>;
@@ -688,6 +833,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.sseSub?.unsubscribe();
     if (this.statusInterval) clearInterval(this.statusInterval);
+    if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
   }
 
   getPresetPhases(): string[] {
@@ -728,6 +874,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     }
 
     this.logLines = [];
+    this.filteredLogLines = [];
+    this.showCelebration = false;
+    this.celebrationType = null;
     this.pipeline.startPipeline(request).subscribe({
       next: () => {
         this.connectSSE();
@@ -735,6 +884,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
       error: (err) => {
         const msg = err?.error?.detail || 'Failed to start pipeline';
         this.logLines = [`ERROR: ${msg}`];
+        this.filteredLogLines = this.logLines;
         this.cdr.markForCheck();
       },
     });
@@ -748,6 +898,33 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     });
   }
 
+  filterLogs(): void {
+    if (!this.logSearch) {
+      this.filteredLogLines = this.logLines;
+    } else {
+      const q = this.logSearch.toLowerCase();
+      this.filteredLogLines = this.logLines.filter((l) => l.toLowerCase().includes(q));
+    }
+  }
+
+  dismissCelebration(): void {
+    this.showCelebration = false;
+    this.celebrationType = null;
+    if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
+  }
+
+  private triggerCelebration(type: 'success' | 'failure'): void {
+    this.celebrationType = type;
+    this.showCelebration = true;
+    this.cdr.markForCheck();
+
+    this.celebrationTimer = setTimeout(() => {
+      this.showCelebration = false;
+      this.celebrationType = null;
+      this.cdr.markForCheck();
+    }, 8000);
+  }
+
   private connectSSE(): void {
     this.sseSub?.unsubscribe();
 
@@ -755,13 +932,16 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
       next: (event: SSEEvent) => {
         if (event.type === 'log_line') {
           this.logLines = [...this.logLines, event.data as string];
-          this.scrollToBottom();
+          this.filterLogs();
+          if (this.autoScroll) this.scrollToBottom();
         }
         if (event.type === 'status') {
           this.status = event.data as ExecutionStatus;
         }
         if (event.type === 'pipeline_complete') {
           this.status = event.data as ExecutionStatus;
+          const finalState = this.status?.state || 'completed';
+          this.triggerCelebration(finalState === 'failed' ? 'failure' : 'success');
           this.pipeline.getHistory().subscribe((h) => {
             this.history = h;
             this.cdr.markForCheck();
@@ -788,41 +968,27 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
   private scrollToBottom(): void {
     setTimeout(() => {
-      const el = this.logViewerRef?.nativeElement;
-      if (el) el.scrollTop = el.scrollHeight;
+      const viewport = this.logViewportRef;
+      if (viewport) {
+        viewport.scrollTo({ bottom: 0 });
+      }
     }, 50);
   }
 
   scrollToTop(): void {
-    const el = this.logViewerRef?.nativeElement;
-    if (el) el.scrollTop = 0;
+    const viewport = this.logViewportRef;
+    if (viewport) {
+      viewport.scrollTo({ top: 0 });
+    }
   }
 
   stateIcon(state: string): string {
     switch (state) {
-      case 'completed':
-        return 'check_circle';
-      case 'failed':
-        return 'error';
-      case 'running':
-        return 'sync';
-      case 'cancelled':
-        return 'cancel';
-      default:
-        return 'radio_button_unchecked';
-    }
-  }
-
-  phaseStepIcon(status: string): string {
-    switch (status) {
-      case 'completed':
-        return 'check_circle';
-      case 'failed':
-        return 'error';
-      case 'running':
-        return 'sync';
-      default:
-        return 'radio_button_unchecked';
+      case 'completed': return 'check_circle';
+      case 'failed': return 'error';
+      case 'running': return 'sync';
+      case 'cancelled': return 'cancel';
+      default: return 'radio_button_unchecked';
     }
   }
 
@@ -836,7 +1002,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   getLogLevel(line: string): string {
     if (line.includes('ERROR') || line.includes('Error')) return 'log-error';
     if (line.includes('WARNING') || line.includes('Warn')) return 'log-warning';
-    if (line.includes('INFO') || line.includes('✓')) return 'log-info';
+    if (line.includes('INFO') || line.includes('\u2713')) return 'log-info';
     return '';
   }
 }

@@ -122,12 +122,27 @@ class RunResponse(BaseModel):
     message: str
 
 
+class SubPhaseProgress(BaseModel):
+    name: str
+    status: str = "completed"  # completed | failed
+    duration_seconds: float | None = None
+    total_tokens: int = 0
+    tasks: list[str] = []
+
+
+class LiveMetrics(BaseModel):
+    total_tokens: int = 0
+    crew_completions: int = 0
+
+
 class PhaseProgress(BaseModel):
     phase_id: str
     name: str
     status: str = "pending"  # pending | running | completed | failed
     started_at: str | None = None
     duration_seconds: float | None = None
+    sub_phases: list[SubPhaseProgress] = []
+    total_tokens: int = 0
 
 
 class ExecutionStatus(BaseModel):
@@ -138,6 +153,11 @@ class ExecutionStatus(BaseModel):
     started_at: str | None = None
     elapsed_seconds: float | None = None
     phase_progress: list[PhaseProgress] = []
+    progress_percent: float = 0
+    completed_phase_count: int = 0
+    total_phase_count: int = 0
+    eta_seconds: float | None = None
+    live_metrics: LiveMetrics | None = None
 
 
 class RunHistoryEntry(BaseModel):

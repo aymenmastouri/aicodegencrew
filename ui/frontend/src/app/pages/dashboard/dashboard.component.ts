@@ -8,11 +8,13 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 
 import { ApiService, PipelineStatus, HealthResponse, SetupStatus } from '../../services/api.service';
 import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,6 +29,7 @@ import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, Reset
     MatButtonModule,
     MatSnackBarModule,
     MatTooltipModule,
+    MatDialogModule,
     RouterLink,
   ],
   template: `
@@ -871,6 +874,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private pipelineSvc: PipelineService,
     private cdr: ChangeDetectorRef,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -937,11 +941,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   resetPhase(phaseId: string): void {
     this.pipelineSvc.previewReset([phaseId]).subscribe({
       next: (preview: ResetPreview) => {
-        const msg =
-          `Reset ${preview.phases_to_reset.length} phase(s):\n` +
-          preview.phases_to_reset.join(', ') +
-          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
-        if (confirm(msg)) {
+        const ref = this.dialog.open(ConfirmDialogComponent, {
+          width: '480px',
+          data: {
+            title: 'Reset Phase',
+            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
+            details: preview.phases_to_reset,
+            type: 'warn',
+            icon: 'restart_alt',
+            confirmLabel: 'Reset',
+          } as ConfirmDialogData,
+        });
+        ref.afterClosed().subscribe((confirmed) => {
+          if (!confirmed) return;
           this.pipelineSvc.executeReset([phaseId]).subscribe({
             next: (result) => {
               this.snackBar.open(
@@ -955,7 +967,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
               this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
             },
           });
-        }
+        });
       },
     });
   }
@@ -965,11 +977,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.pipeline?.phases.filter((p) => p.status === 'completed').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
-        const msg =
-          `Reset ALL completed phases:\n` +
-          preview.phases_to_reset.join(', ') +
-          `\n\n${preview.files_to_delete.length} file(s) will be archived and deleted.`;
-        if (confirm(msg)) {
+        const ref = this.dialog.open(ConfirmDialogComponent, {
+          width: '480px',
+          data: {
+            title: 'Reset All Phases',
+            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
+            details: preview.phases_to_reset,
+            type: 'warn',
+            icon: 'restart_alt',
+            confirmLabel: 'Reset All',
+          } as ConfirmDialogData,
+        });
+        ref.afterClosed().subscribe((confirmed) => {
+          if (!confirmed) return;
           this.pipelineSvc.resetAll().subscribe({
             next: (result) => {
               this.snackBar.open(
@@ -983,7 +1003,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
               this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
             },
           });
-        }
+        });
       },
     });
   }
