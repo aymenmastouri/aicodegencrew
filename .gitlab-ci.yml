@@ -143,22 +143,20 @@ playwright-e2e:
   allow_failure: true
   before_script:
     - apt-get update -qq && apt-get install -y -qq python3-pip python3-venv > /dev/null
-    - python3 -m venv .venv
-    - source .venv/bin/activate
+    - python3 -m venv $CI_PROJECT_DIR/.venv
+    - source $CI_PROJECT_DIR/.venv/bin/activate
     - pip install --upgrade pip
     - pip install -e ".[dev]"
-    - cd ui/frontend
-    - npm ci --prefer-offline
+    - cd $CI_PROJECT_DIR/ui/frontend && npm ci --prefer-offline
   script:
-    - cd ui/frontend
+    - cd $CI_PROJECT_DIR/ui/frontend
     # Serve the pre-built Angular dist
     - npx http-server dist/dashboard/browser -p 4200 --silent &
     # Start backend
-    - cd ../../
-    - source .venv/bin/activate
-    - python -m uvicorn ui.backend.main:app --host 0.0.0.0 --port 8001 &
+    - source $CI_PROJECT_DIR/.venv/bin/activate
+    - python -m uvicorn ui.backend.main:app --host 0.0.0.0 --port 8001 --app-dir $CI_PROJECT_DIR &
     - sleep 5
-    - cd ui/frontend
+    - cd $CI_PROJECT_DIR/ui/frontend
     - npx playwright test --reporter=list,junit
   artifacts:
     when: always
