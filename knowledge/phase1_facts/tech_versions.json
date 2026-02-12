@@ -1,0 +1,50 @@
+[
+  {
+    "technology": "Gradle",
+    "version": "8.2.1",
+    "category": "build_tool",
+    "source_file": "import-schema\\gradle\\wrapper\\gradle-wrapper.properties"
+  },
+  {
+    "technology": "TypeScript",
+    "version": "4",
+    "category": "language",
+    "source_file": "e2e-xnp\\package.json"
+  },
+  {
+    "technology": "Playwright",
+    "version": "1",
+    "category": "library",
+    "source_file": "e2e-xnp\\package.json"
+  },
+  {
+    "technology": "Angular",
+    "version": "18",
+    "category": "framework",
+    "source_file": "frontend\\package.json"
+  },
+  {
+    "technology": "Angular CLI",
+    "version": "18",
+    "category": "build_tool",
+    "source_file": "frontend\\package.json"
+  },
+  {
+    "technology": "RxJS",
+    "version": "7",
+    "category": "library",
+    "source_file": "frontend\\package.json"
+  },
+  {
+    "technology": "Webpack",
+    "version": "5",
+    "category": "build_tool",
+    "source_file": "frontend\\package.json"
+  },
+  {
+    "technology": "Karma",
+    "version": "6",
+    "category": "library",
+    "source_file": "frontend\\package.json"
+  }
+]
