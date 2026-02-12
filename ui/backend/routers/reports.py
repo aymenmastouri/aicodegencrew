@@ -1,14 +1,15 @@
 """Reports API routes (development plans + codegen reports + branches)."""
 
-from fastapi import APIRouter, HTTPException, Path as PathParam
+from fastapi import APIRouter, HTTPException
+from fastapi import Path as PathParam
 
+from ..schemas import BranchList, ReportList
 from ..services.report_reader import (
     delete_codegen_branch,
     list_codegen_branches,
     list_reports,
     read_report,
 )
-from ..schemas import BranchList, ReportList
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 

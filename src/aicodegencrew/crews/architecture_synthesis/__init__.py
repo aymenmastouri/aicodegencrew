@@ -8,11 +8,10 @@
 # arc42 Tasks (Reverse Engineering): Introduction -> Strategy -> Blocks -> Runtime
 # =============================================================================
 
-from .crew import ArchitectureSynthesisCrew
 from .base_crew import MiniCrewBase
+from .crew import ArchitectureSynthesisCrew
 
 __all__ = [
     "ArchitectureSynthesisCrew",
     "MiniCrewBase",
 ]
-

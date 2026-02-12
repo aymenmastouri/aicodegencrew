@@ -1,8 +1,11 @@
 """Tests for file filtering utilities."""
 
-import pytest
 from pathlib import Path
-from aicodegencrew.shared.utils.file_filters import should_include_file, collect_files, DEFAULT_INCLUDE_PATTERNS, DEFAULT_EXCLUDE_PATTERNS
+
+from aicodegencrew.shared.utils.file_filters import (
+    collect_files,
+    should_include_file,
+)
 
 
 def test_should_include_java_file():
@@ -45,11 +48,7 @@ def test_custom_include_pattern():
 def test_custom_exclude_pattern():
     """Test custom exclude patterns."""
     path = Path("src/temp/file.java")
-    assert should_include_file(
-        path,
-        include_patterns=["**/*.java"],
-        exclude_patterns=["**/temp/**"]
-    ) is False
+    assert should_include_file(path, include_patterns=["**/*.java"], exclude_patterns=["**/temp/**"]) is False
 
 
 def test_collect_files_empty_directory(tmp_path):
@@ -64,9 +63,9 @@ def test_collect_files_with_java_files(tmp_path):
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "Test.java").write_text("public class Test {}")
     (tmp_path / "src" / "Test.class").write_text("binary")
-    
+
     files = collect_files(tmp_path)
-    
+
     # Should find .java but not .class
     assert len(files) == 1
     assert files[0].name == "Test.java"
@@ -77,12 +76,12 @@ def test_collect_files_respects_exclude_patterns(tmp_path):
     # Create test structure
     (tmp_path / "src").mkdir()
     (tmp_path / "target").mkdir()
-    
+
     (tmp_path / "src" / "Main.java").write_text("class Main {}")
     (tmp_path / "target" / "Main.class").write_text("binary")
-    
+
     files = collect_files(tmp_path)
-    
+
     # Should only find the .java file, not .class in target
     assert len(files) == 1
     assert files[0].name == "Main.java"

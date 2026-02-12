@@ -23,8 +23,7 @@ ArchitectureCrew = ArchitectureSynthesisCrew
 
 __all__ = [
     "ArchitectureAnalysisCrew",  # Phase 2 (standard)
-    "MapReduceAnalysisCrew",     # Phase 2 (scalable for large repos)
-    "ArchitectureSynthesisCrew",  # Phase 3
     "ArchitectureCrew",  # Deprecated alias
+    "ArchitectureSynthesisCrew",  # Phase 3
+    "MapReduceAnalysisCrew",  # Phase 2 (scalable for large repos)
 ]
-

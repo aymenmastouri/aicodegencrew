@@ -70,7 +70,7 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
                 <ng-container matColumnDef="timestamp">
                   <th mat-header-cell *matHeaderCellDef>Time</th>
                   <td mat-cell *matCellDef="let e" class="mono">
-                    {{ e.timestamp | slice:11:19 }}
+                    {{ e.timestamp | slice: 11 : 19 }}
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="event">
@@ -86,7 +86,7 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
                   </td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
               </table>
             }
           </mat-card-content>
@@ -99,59 +99,85 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
       }
     </div>
   `,
-  styles: [`
-    .stats-bar {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 16px;
-      background: #fff;
-      border-radius: 10px;
-      font-size: 14px;
-      color: var(--cg-gray-500);
-    }
-    .stat-item .mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--cg-blue); }
-    .stat-item strong { color: var(--cg-gray-900); }
-    .filter-item { padding: 4px 16px; }
-    .filter-field { margin: 0; }
-    .metrics-table { width: 100%; }
-    .event-badge {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 600;
-      font-family: monospace;
-      background: var(--cg-gray-100);
-      color: var(--cg-gray-900);
-    }
-    .event-start { background: rgba(0,112,173,0.1); color: var(--cg-blue); }
-    .event-complete { background: rgba(40,167,69,0.1); color: var(--cg-success); }
-    .event-failed { background: rgba(220,53,69,0.1); color: var(--cg-error); }
-    .data-cell {
-      max-width: 500px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 12px;
-    }
-    .empty-inline {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 24px 16px;
-      color: var(--cg-gray-500);
-      font-size: 14px;
-    }
-    .empty-inline .mat-icon { color: var(--cg-gray-200); }
-  `],
+  styles: [
+    `
+      .stats-bar {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        background: #fff;
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--cg-gray-500);
+      }
+      .stat-item .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-blue);
+      }
+      .stat-item strong {
+        color: var(--cg-gray-900);
+      }
+      .filter-item {
+        padding: 4px 16px;
+      }
+      .filter-field {
+        margin: 0;
+      }
+      .metrics-table {
+        width: 100%;
+      }
+      .event-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: monospace;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-900);
+      }
+      .event-start {
+        background: rgba(0, 112, 173, 0.1);
+        color: var(--cg-blue);
+      }
+      .event-complete {
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--cg-success);
+      }
+      .event-failed {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--cg-error);
+      }
+      .data-cell {
+        max-width: 500px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+      }
+      .empty-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 24px 16px;
+        color: var(--cg-gray-500);
+        font-size: 14px;
+      }
+      .empty-inline .mat-icon {
+        color: var(--cg-gray-200);
+      }
+    `,
+  ],
 })
 export class MetricsComponent implements OnInit {
   summary: MetricsSummary | null = null;
@@ -160,7 +186,10 @@ export class MetricsComponent implements OnInit {
   displayedColumns = ['timestamp', 'event', 'data'];
   loading = true;
 
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private api: ApiService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadMetrics();
@@ -170,15 +199,18 @@ export class MetricsComponent implements OnInit {
     this.loading = true;
     this.cdr.markForCheck();
     this.api.getMetrics(500, this.selectedEvent || undefined).subscribe({
-      next: s => {
+      next: (s) => {
         this.summary = s;
         if (!this.eventTypes.length) {
-          this.eventTypes = [...new Set(s.events.map(e => e.event))].sort();
+          this.eventTypes = [...new Set(s.events.map((e) => e.event))].sort();
         }
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => { this.loading = false; this.cdr.markForCheck(); },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 

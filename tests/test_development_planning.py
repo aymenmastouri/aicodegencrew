@@ -2,7 +2,7 @@
 
 All stages tested here are deterministic — no LLM or ChromaDB needed.
 """
-import json
+
 import sys
 from pathlib import Path
 
@@ -11,9 +11,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from aicodegencrew.pipelines.development_planning.schemas import (
-    TaskInput,
     ComponentMatch,
     ImplementationPlan,
+    TaskInput,
     ValidationResult,
 )
 
@@ -174,6 +174,7 @@ def _make_plan(**overrides) -> ImplementationPlan:
 # Schema validation tests
 # ---------------------------------------------------------------------------
 
+
 class TestSchemas:
     def test_task_input_defaults(self):
         task = TaskInput(
@@ -193,7 +194,10 @@ class TestSchemas:
 
     def test_component_match_score_range(self):
         cm = ComponentMatch(
-            id="c1", name="Svc", stereotype="service", layer="app",
+            id="c1",
+            name="Svc",
+            stereotype="service",
+            layer="app",
             relevance_score=0.85,
         )
         assert 0 <= cm.relevance_score <= 1
@@ -216,6 +220,7 @@ class TestSchemas:
 # ---------------------------------------------------------------------------
 # Stage 1: Input Parser tests
 # ---------------------------------------------------------------------------
+
 
 class TestInputParser:
     def test_parse_text_file(self, tmp_path):
@@ -302,9 +307,12 @@ class TestInputParser:
 # Stage 2: Component Discovery tests (no ChromaDB)
 # ---------------------------------------------------------------------------
 
+
 class TestComponentDiscovery:
     def test_name_matching(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
         scores = stage._name_matching("UserService authentication login")
@@ -313,7 +321,9 @@ class TestComponentDiscovery:
         assert scores["comp.user_service"] > 0
 
     def test_package_matching(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
         scores = stage._package_matching(["user", "auth"])
@@ -322,7 +332,9 @@ class TestComponentDiscovery:
         assert len(scores) > 0
 
     def test_stereotype_matching_controller(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
         scores = stage._stereotype_matching("REST endpoint API controller")
@@ -331,7 +343,9 @@ class TestComponentDiscovery:
         assert scores["comp.auth_controller"] > 0
 
     def test_combine_scores(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
         combined = stage._combine_scores(
@@ -346,7 +360,9 @@ class TestComponentDiscovery:
         assert combined["comp.user_service"] > 0.5
 
     def test_find_interfaces(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
         interfaces = stage._find_interfaces(["comp.auth_controller"])
@@ -355,7 +371,9 @@ class TestComponentDiscovery:
         assert interfaces[0].path == "/api/users"
 
     def test_find_dependencies(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
         deps = stage._find_dependencies(["comp.user_service"])
@@ -364,7 +382,9 @@ class TestComponentDiscovery:
         assert len(deps) >= 1
 
     def test_change_type_inference(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
 
@@ -373,7 +393,9 @@ class TestComponentDiscovery:
         assert stage._infer_change_type("update user validation") == "modify"
 
     def test_run_without_chromadb(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import ComponentDiscoveryStage
+        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+            ComponentDiscoveryStage,
+        )
 
         stage = ComponentDiscoveryStage(facts=SAMPLE_FACTS, chroma_dir=None)
         task = _make_task(summary="Fix UserService validation", labels=["user"])
@@ -388,6 +410,7 @@ class TestComponentDiscovery:
 # ---------------------------------------------------------------------------
 # Stage 3: Pattern Matcher tests
 # ---------------------------------------------------------------------------
+
 
 class TestPatternMatcher:
     def test_match_test_patterns(self):
@@ -454,8 +477,13 @@ class TestPatternMatcher:
         stage = PatternMatcherStage(facts=SAMPLE_FACTS)
         task = _make_task()
         components = [
-            {"id": "comp.user_service", "name": "UserService", "stereotype": "service",
-             "layer": "application", "file_path": "com/example/user/UserService.java"},
+            {
+                "id": "comp.user_service",
+                "name": "UserService",
+                "stereotype": "service",
+                "layer": "application",
+                "file_path": "com/example/user/UserService.java",
+            },
         ]
 
         result = stage.run(task, components, top_k=3)
@@ -469,6 +497,7 @@ class TestPatternMatcher:
 # ---------------------------------------------------------------------------
 # Stage 5: Validator tests
 # ---------------------------------------------------------------------------
+
 
 class TestValidator:
     def test_valid_plan(self):
@@ -541,6 +570,7 @@ class TestValidator:
 # ---------------------------------------------------------------------------
 # Pipeline integration tests (task sorting)
 # ---------------------------------------------------------------------------
+
 
 class TestPipelineSorting:
     def test_sort_by_priority(self):

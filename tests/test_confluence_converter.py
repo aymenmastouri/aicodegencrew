@@ -1,4 +1,5 @@
 """Tests for the DocumentConverter (MD -> Confluence/AsciiDoc/HTML)."""
+
 import sys
 from pathlib import Path
 
@@ -7,11 +8,11 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from aicodegencrew.shared.utils.confluence_converter import (
-    DocumentConverter,
     ARC42_CHAPTERS,
-    _parse_markdown,
-    _generate_arc42_toc,
     BlockType,
+    DocumentConverter,
+    _generate_arc42_toc,
+    _parse_markdown,
 )
 
 # ---------------------------------------------------------------------------
@@ -64,6 +65,7 @@ def converter():
 # ---------------------------------------------------------------------------
 # Parser tests
 # ---------------------------------------------------------------------------
+
 
 class TestParser:
     def test_parse_heading(self):
@@ -125,6 +127,7 @@ class TestParser:
 # ---------------------------------------------------------------------------
 # Confluence tests
 # ---------------------------------------------------------------------------
+
 
 class TestConfluence:
     def test_heading(self, converter):
@@ -201,6 +204,7 @@ class TestConfluence:
 # AsciiDoc tests
 # ---------------------------------------------------------------------------
 
+
 class TestAsciidoc:
     def test_heading(self, converter):
         result = converter.to_asciidoc("# Title")
@@ -264,6 +268,7 @@ class TestAsciidoc:
 # HTML tests
 # ---------------------------------------------------------------------------
 
+
 class TestHTML:
     def test_basic_html(self, converter):
         result = converter.to_html("# Hello World")
@@ -295,6 +300,7 @@ class TestHTML:
 # ---------------------------------------------------------------------------
 # File conversion tests
 # ---------------------------------------------------------------------------
+
 
 class TestFileConversion:
     def test_convert_file(self, converter, tmp_path):
@@ -361,6 +367,7 @@ class TestFileConversion:
 # Arc42 template tests
 # ---------------------------------------------------------------------------
 
+
 class TestArc42Template:
     def test_chapters_have_12_entries(self):
         assert len(ARC42_CHAPTERS["en"]) == 12
@@ -397,6 +404,7 @@ class TestArc42Template:
 # ---------------------------------------------------------------------------
 # Edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestEdgeCases:
     def test_empty_markdown(self, converter):

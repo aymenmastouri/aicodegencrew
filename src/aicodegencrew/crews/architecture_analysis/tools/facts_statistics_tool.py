@@ -9,11 +9,11 @@ This prevents token overflow while giving complete picture.
 """
 
 import json
-from pathlib import Path
-from typing import Type, Dict, Any, Optional
 from collections import Counter
-from pydantic import BaseModel, Field
+from pathlib import Path
+
 from crewai.tools import BaseTool
+from pydantic import BaseModel, Field
 
 from ....shared.utils.logger import setup_logger
 
@@ -22,24 +22,22 @@ logger = setup_logger(__name__)
 
 class FactsStatisticsInput(BaseModel):
     """Input schema for FactsStatisticsTool."""
-    include_samples: bool = Field(
-        default=False,
-        description="Include 3 sample items per category for context"
-    )
+
+    include_samples: bool = Field(default=False, description="Include 3 sample items per category for context")
 
 
 class FactsStatisticsTool(BaseTool):
     """
     Tool for getting architecture facts statistics WITHOUT loading all data.
-    
+
     Use this FIRST to understand the scale of the repository:
     - Total components, relations, interfaces
     - Breakdown by stereotype
     - Breakdown by container
-    
+
     Then use targeted queries with filters.
     """
-    
+
     name: str = "get_facts_statistics"
     description: str = (
         "Get statistics about architecture facts WITHOUT loading all data. "
@@ -47,24 +45,24 @@ class FactsStatisticsTool(BaseTool):
         "Returns: total counts, stereotype breakdown, container breakdown. "
         "For 100k+ component repos, this is essential before querying."
     )
-    args_schema: Type[BaseModel] = FactsStatisticsInput
-    
+    args_schema: type[BaseModel] = FactsStatisticsInput
+
     # Configuration
     facts_path: str = "knowledge/architecture/architecture_facts.json"
-    
+
     def __init__(self, facts_path: str = None, **kwargs):
         """Initialize with optional facts path override."""
         super().__init__(**kwargs)
         if facts_path:
             self.facts_path = facts_path
-    
+
     def _run(self, include_samples: bool = False) -> str:
         """
         Get statistics about architecture facts.
-        
+
         Args:
             include_samples: Include 3 sample items per category
-            
+
         Returns:
             JSON string with statistics
         """
@@ -72,30 +70,24 @@ class FactsStatisticsTool(BaseTool):
             path = Path(self.facts_path)
             if not path.exists():
                 return json.dumps({"error": f"Facts file not found: {path}"})
-            
-            with open(path, 'r', encoding='utf-8') as f:
+
+            with open(path, encoding="utf-8") as f:
                 facts = json.load(f)
-            
+
             components = facts.get("components", [])
             relations = facts.get("relations", [])
             interfaces = facts.get("interfaces", [])
             containers = facts.get("containers", [])
-            
+
             # Stereotype breakdown
-            stereotype_counts = Counter(
-                c.get("stereotype", "unknown") for c in components
-            )
-            
+            stereotype_counts = Counter(c.get("stereotype", "unknown") for c in components)
+
             # Container breakdown
-            container_counts = Counter(
-                c.get("container", "unknown") for c in components
-            )
-            
+            container_counts = Counter(c.get("container", "unknown") for c in components)
+
             # Relation type breakdown
-            relation_type_counts = Counter(
-                r.get("type", "unknown") for r in relations
-            )
-            
+            relation_type_counts = Counter(r.get("type", "unknown") for r in relations)
+
             stats = {
                 "repository_scale": self._classify_scale(len(components)),
                 "totals": {
@@ -109,25 +101,21 @@ class FactsStatisticsTool(BaseTool):
                 "relations_by_type": dict(relation_type_counts.most_common(10)),
                 "recommendation": self._get_query_recommendation(len(components)),
             }
-            
+
             if include_samples:
                 stats["samples"] = {
-                    "components": [
-                        {"name": c.get("name"), "stereotype": c.get("stereotype")}
-                        for c in components[:3]
-                    ],
+                    "components": [{"name": c.get("name"), "stereotype": c.get("stereotype")} for c in components[:3]],
                     "relations": [
-                        {"from": r.get("from"), "to": r.get("to"), "type": r.get("type")}
-                        for r in relations[:3]
+                        {"from": r.get("from"), "to": r.get("to"), "type": r.get("type")} for r in relations[:3]
                     ],
                 }
-            
+
             return json.dumps(stats, indent=2, ensure_ascii=False)
-            
+
         except Exception as e:
             logger.error(f"Statistics error: {e}")
             return json.dumps({"error": str(e)})
-    
+
     def _classify_scale(self, component_count: int) -> str:
         """Classify repository scale."""
         if component_count < 100:
@@ -138,7 +126,7 @@ class FactsStatisticsTool(BaseTool):
             return "large (1000-10000 components)"
         else:
             return f"enterprise ({component_count:,} components)"
-    
+
     def _get_query_recommendation(self, component_count: int) -> str:
         """Recommend query strategy based on scale."""
         if component_count < 500:

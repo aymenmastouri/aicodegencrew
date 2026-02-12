@@ -12,20 +12,24 @@ import re
 import sys
 import time
 from dataclasses import dataclass
-from types import ModuleType
-from unittest.mock import MagicMock, patch
+from typing import TYPE_CHECKING
+from unittest.mock import patch
+
+if TYPE_CHECKING:
+    from aicodegencrew.shared.utils.tool_guardrails import ToolCallTracker
 
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Fixtures & helpers
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def _reset_step_tracker_singleton():
     """Reset StepTracker singleton between tests so each test is isolated."""
     from aicodegencrew.shared.utils.logger import StepTracker
+
     old = StepTracker._instance
     StepTracker._instance = None
     yield
@@ -40,7 +44,6 @@ def fresh_logger(tmp_path, monkeypatch):
     monkey-patch the module-level ``logger`` so that ``log_metric()`` writes
     to our temporary metrics file instead of the real one.
     """
-    import sys
 
     mod = sys.modules["aicodegencrew.shared.utils.logger"]
     metrics_file = tmp_path / "metrics.jsonl"
@@ -157,11 +160,11 @@ class TestStepTracker:
     @pytest.mark.parametrize(
         "current, total, expected_hashes",
         [
-            (0, 100, 0),      # 0%  -> 0 hashes
-            (5, 100, 1),      # 5%  -> 1 hash
-            (25, 100, 5),     # 25% -> 5 hashes
-            (50, 100, 10),    # 50% -> 10 hashes
-            (100, 100, 20),   # 100% -> 20 hashes
+            (0, 100, 0),  # 0%  -> 0 hashes
+            (5, 100, 1),  # 5%  -> 1 hash
+            (25, 100, 5),  # 25% -> 5 hashes
+            (50, 100, 10),  # 50% -> 10 hashes
+            (100, 100, 20),  # 100% -> 20 hashes
         ],
     )
     def test_progress_bar_rendering(self, current, total, expected_hashes):
@@ -219,7 +222,7 @@ class TestLogMetric:
     """log_metric() should write JSON lines to the metrics file."""
 
     def test_writes_json_to_metrics_file(self, fresh_logger):
-        from aicodegencrew.shared.utils.logger import log_metric, RUN_ID
+        from aicodegencrew.shared.utils.logger import RUN_ID, log_metric
 
         lg, tmp_path = fresh_logger
         metrics_file = tmp_path / "metrics.jsonl"
@@ -231,9 +234,7 @@ class TestLogMetric:
             h.flush()
 
         assert metrics_file.exists(), "metrics.jsonl was not created"
-        lines = [
-            l for l in metrics_file.read_text(encoding="utf-8").splitlines() if l.strip()
-        ]
+        lines = [ln for ln in metrics_file.read_text(encoding="utf-8").splitlines() if ln.strip()]
         assert len(lines) >= 1
 
         # The last line should be our event
@@ -254,9 +255,7 @@ class TestLogMetric:
         for h in lg.handlers:
             h.flush()
 
-        line = [
-            l for l in metrics_file.read_text(encoding="utf-8").splitlines() if l.strip()
-        ][-1]
+        line = [ln for ln in metrics_file.read_text(encoding="utf-8").splitlines() if ln.strip()][-1]
         entry = json.loads(line)
         assert "ts" in entry
         assert "level" in entry
@@ -283,9 +282,9 @@ class TestTokenBudgetDefaults:
 
     def test_tool_max_chars_calculation(self):
         from aicodegencrew.shared.utils.token_budget import (
+            CHARS_PER_TOKEN,
             MAX_LLM_INPUT_TOKENS,
             TOOL_BUDGET_RATIO,
-            CHARS_PER_TOKEN,
             TOOL_MAX_CHARS,
         )
 
@@ -296,16 +295,16 @@ class TestTokenBudgetDefaults:
 
     def test_get_max_response_chars(self):
         from aicodegencrew.shared.utils.token_budget import (
-            get_max_response_chars,
             TOOL_MAX_CHARS,
+            get_max_response_chars,
         )
 
         assert get_max_response_chars() == TOOL_MAX_CHARS
 
     def test_get_rag_max_chars(self):
         from aicodegencrew.shared.utils.token_budget import (
-            get_rag_max_chars,
             TOOL_MAX_CHARS,
+            get_rag_max_chars,
         )
 
         expected = int(TOOL_MAX_CHARS * 0.75)
@@ -351,7 +350,6 @@ class TestTruncateResponse:
     def test_default_max_chars_uses_tool_max(self):
         from aicodegencrew.shared.utils.token_budget import (
             truncate_response,
-            TOOL_MAX_CHARS,
         )
 
         short = "x" * 10
@@ -368,6 +366,7 @@ class TestTruncateResponse:
 @dataclass
 class _FakeContext:
     """Mimics the CrewAI hook context object."""
+
     tool_name: str
     tool_input: dict | None = None
 
@@ -375,9 +374,10 @@ class _FakeContext:
 class TestToolCallTracker:
     """Tests for ToolCallTracker logic (hook mocked, no CrewAI runtime)."""
 
-    def _make_tracker(self, **kwargs) -> "ToolCallTracker":
+    def _make_tracker(self, **kwargs) -> ToolCallTracker:
         """Create a tracker without installing into CrewAI."""
         from aicodegencrew.shared.utils.tool_guardrails import ToolCallTracker
+
         return ToolCallTracker(**kwargs)
 
     # -- _make_key determinism ------------------------------------------------
@@ -517,9 +517,7 @@ class TestInstallUninstallGuardrails:
     """Test the install/uninstall convenience functions with mocked CrewAI hooks."""
 
     def test_install_returns_tracker(self):
-        with patch(
-            "aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook"
-        ) as mock_register:
+        with patch("aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook") as mock_register:
             from aicodegencrew.shared.utils.tool_guardrails import install_guardrails
 
             tracker = install_guardrails(max_identical=5, max_total=50)
@@ -529,11 +527,10 @@ class TestInstallUninstallGuardrails:
             mock_register.assert_called_once()
 
     def test_uninstall_calls_unregister(self):
-        with patch(
-            "aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook"
-        ), patch(
-            "aicodegencrew.shared.utils.tool_guardrails.unregister_before_tool_call_hook"
-        ) as mock_unregister:
+        with (
+            patch("aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook"),
+            patch("aicodegencrew.shared.utils.tool_guardrails.unregister_before_tool_call_hook") as mock_unregister,
+        ):
             from aicodegencrew.shared.utils.tool_guardrails import (
                 install_guardrails,
                 uninstall_guardrails,
@@ -551,10 +548,9 @@ class TestInstallUninstallGuardrails:
 
     def test_stats_on_uninstall(self, capsys):
         """After some calls, uninstall should log stats (total, unique, duplicates)."""
-        with patch(
-            "aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook"
-        ), patch(
-            "aicodegencrew.shared.utils.tool_guardrails.unregister_before_tool_call_hook"
+        with (
+            patch("aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook"),
+            patch("aicodegencrew.shared.utils.tool_guardrails.unregister_before_tool_call_hook"),
         ):
             from aicodegencrew.shared.utils.tool_guardrails import (
                 install_guardrails,
@@ -576,10 +572,9 @@ class TestInstallUninstallGuardrails:
 
     def test_double_uninstall_is_safe(self):
         """Calling uninstall twice should not raise."""
-        with patch(
-            "aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook"
-        ), patch(
-            "aicodegencrew.shared.utils.tool_guardrails.unregister_before_tool_call_hook"
+        with (
+            patch("aicodegencrew.shared.utils.tool_guardrails.register_before_tool_call_hook"),
+            patch("aicodegencrew.shared.utils.tool_guardrails.unregister_before_tool_call_hook"),
         ):
             from aicodegencrew.shared.utils.tool_guardrails import (
                 install_guardrails,

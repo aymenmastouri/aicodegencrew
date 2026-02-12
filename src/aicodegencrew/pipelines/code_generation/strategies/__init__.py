@@ -1,10 +1,10 @@
 """Code generation strategies per task type."""
 
 from .base import BaseStrategy
-from .upgrade_strategy import UpgradeStrategy
-from .feature_strategy import FeatureStrategy
 from .bugfix_strategy import BugfixStrategy
+from .feature_strategy import FeatureStrategy
 from .refactoring_strategy import RefactoringStrategy
+from .upgrade_strategy import UpgradeStrategy
 
 STRATEGY_MAP = {
     "upgrade": UpgradeStrategy,
@@ -14,10 +14,10 @@ STRATEGY_MAP = {
 }
 
 __all__ = [
-    "BaseStrategy",
-    "UpgradeStrategy",
-    "FeatureStrategy",
-    "BugfixStrategy",
-    "RefactoringStrategy",
     "STRATEGY_MAP",
+    "BaseStrategy",
+    "BugfixStrategy",
+    "FeatureStrategy",
+    "RefactoringStrategy",
+    "UpgradeStrategy",
 ]

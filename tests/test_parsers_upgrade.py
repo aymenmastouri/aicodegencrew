@@ -12,33 +12,29 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aicodegencrew.pipelines.development_planning.parsers.xml_parser import (
-    parse_xml,
-)
 from aicodegencrew.pipelines.development_planning.parsers.text_parser import (
     parse_text,
 )
-from aicodegencrew.pipelines.development_planning.upgrade_rules.engine import (
-    UpgradeRulesEngine,
-    _RULE_REGISTRY,
-)
-from aicodegencrew.pipelines.development_planning.upgrade_rules.base import (
-    UpgradeRuleSet,
-    UpgradeRule,
-    CodePattern,
-    UpgradeSeverity,
-    UpgradeCategory,
+from aicodegencrew.pipelines.development_planning.parsers.xml_parser import (
+    parse_xml,
 )
 from aicodegencrew.pipelines.development_planning.upgrade_rules.angular import (
     ANGULAR_UPGRADE_RULES,
 )
-from aicodegencrew.pipelines.development_planning.upgrade_rules.spring import (
-    SPRING_UPGRADE_RULES,
+from aicodegencrew.pipelines.development_planning.upgrade_rules.base import (
+    UpgradeCategory,
+    UpgradeRuleSet,
+    UpgradeSeverity,
+)
+from aicodegencrew.pipelines.development_planning.upgrade_rules.engine import (
+    UpgradeRulesEngine,
 )
 from aicodegencrew.pipelines.development_planning.upgrade_rules.java import (
     JAVA_UPGRADE_RULES,
 )
-
+from aicodegencrew.pipelines.development_planning.upgrade_rules.spring import (
+    SPRING_UPGRADE_RULES,
+)
 
 # ===========================================================================
 # Sample XML Fixtures
@@ -132,6 +128,7 @@ SINGLE_TASK_XML = """\
 # ===========================================================================
 # XML Parser Tests
 # ===========================================================================
+
 
 class TestXmlParserJiraRss:
     """Tests for parse_xml() with JIRA RSS XML format."""
@@ -387,6 +384,7 @@ class TestXmlParserErrors:
 # Text Parser Tests
 # ===========================================================================
 
+
 class TestTextParserBasic:
     """Tests for parse_text() basic functionality."""
 
@@ -508,18 +506,18 @@ class TestTextParserErrorExtraction:
 
     def test_error_context_3_lines_before_and_after(self, tmp_path):
         lines = [
-            "line 1 ok",        # 0
-            "line 2 ok",        # 1
-            "line 3 ok",        # 2
-            "line 4 ok",        # 3
-            "line 5 ok",        # 4
-            "line 6 ok",        # 5
-            "ERROR: crash!",    # 6  -> context = lines[3..10) = lines 3-9
-            "line 8 ok",        # 7
-            "line 9 ok",        # 8
-            "line 10 ok",       # 9
-            "line 11 ok",       # 10
-            "line 12 ok",       # 11
+            "line 1 ok",  # 0
+            "line 2 ok",  # 1
+            "line 3 ok",  # 2
+            "line 4 ok",  # 3
+            "line 5 ok",  # 4
+            "line 6 ok",  # 5
+            "ERROR: crash!",  # 6  -> context = lines[3..10) = lines 3-9
+            "line 8 ok",  # 7
+            "line 9 ok",  # 8
+            "line 10 ok",  # 9
+            "line 11 ok",  # 10
+            "line 12 ok",  # 11
         ]
         log_file = tmp_path / "app.log"
         log_file.write_text("\n".join(lines), encoding="utf-8")
@@ -529,11 +527,11 @@ class TestTextParserErrorExtraction:
         ctx = result["errors"][0]["context"]
 
         # 3 lines before (lines 3,4,5) + error line (6) + 3 lines after (7,8,9)
-        assert "line 4 ok" in ctx   # 3 lines before
+        assert "line 4 ok" in ctx  # 3 lines before
         assert "line 5 ok" in ctx
         assert "line 6 ok" in ctx
         assert "ERROR: crash!" in ctx
-        assert "line 8 ok" in ctx   # 3 lines after
+        assert "line 8 ok" in ctx  # 3 lines after
         assert "line 9 ok" in ctx
         assert "line 10 ok" in ctx
 
@@ -567,6 +565,7 @@ class TestTextParserErrorExtraction:
 # ===========================================================================
 # Upgrade Rules Engine Tests
 # ===========================================================================
+
 
 @pytest.fixture
 def simple_facts():
@@ -655,9 +654,9 @@ class TestDetectTargetVersion:
     """Tests for _detect_target_version()."""
 
     def test_extracts_version_from_angular_19(self, engine):
-        result = engine._detect_target_version("angular 19 migration")
+        engine._detect_target_version("angular 19 migration")
         # "19" does not match the named patterns directly; check with "to 19"
-        result2 = engine._detect_target_version("upgrade to angular 19")
+        engine._detect_target_version("upgrade to angular 19")
         # pattern: "to v?(\d+)" matches "to angular" -- need "to 19" or "version 19"
         # Actually "version 19" would match. Let's use explicit patterns.
         result3 = engine._detect_target_version("angular version 19")
@@ -801,6 +800,7 @@ class TestGetApplicableRules:
 # Declarative Rule Data Tests
 # ===========================================================================
 
+
 class TestAngularRules:
     """Tests for ANGULAR_UPGRADE_RULES declarative data."""
 
@@ -810,14 +810,15 @@ class TestAngularRules:
     def test_each_rule_set_has_nonempty_rules(self):
         for rule_set in ANGULAR_UPGRADE_RULES:
             assert isinstance(rule_set, UpgradeRuleSet)
-            assert len(rule_set.rules) > 0, f"Empty rules in {rule_set.framework} {rule_set.from_version}->{rule_set.to_version}"
+            assert len(rule_set.rules) > 0, (
+                f"Empty rules in {rule_set.framework} {rule_set.from_version}->{rule_set.to_version}"
+            )
 
     def test_rule_ids_unique_within_rule_set(self):
         for rule_set in ANGULAR_UPGRADE_RULES:
             ids = [r.id for r in rule_set.rules]
             assert len(ids) == len(set(ids)), (
-                f"Duplicate IDs in {rule_set.framework} "
-                f"{rule_set.from_version}->{rule_set.to_version}: {ids}"
+                f"Duplicate IDs in {rule_set.framework} {rule_set.from_version}->{rule_set.to_version}: {ids}"
             )
 
     def test_detection_patterns_have_valid_regex(self):
@@ -827,15 +828,12 @@ class TestAngularRules:
                     try:
                         re.compile(pattern.regex)
                     except re.error as e:
-                        pytest.fail(
-                            f"Invalid regex in {rule.id}/{pattern.name}: "
-                            f"{pattern.regex!r} -> {e}"
-                        )
+                        pytest.fail(f"Invalid regex in {rule.id}/{pattern.name}: {pattern.regex!r} -> {e}")
 
     def test_all_rules_have_required_fields(self):
         for rule_set in ANGULAR_UPGRADE_RULES:
             for rule in rule_set.rules:
-                assert rule.id, f"Missing id in Angular rule"
+                assert rule.id, "Missing id in Angular rule"
                 assert rule.title, f"Missing title in {rule.id}"
                 assert rule.description, f"Missing description in {rule.id}"
                 assert isinstance(rule.severity, UpgradeSeverity), f"Bad severity in {rule.id}"
@@ -856,14 +854,15 @@ class TestSpringRules:
     def test_each_rule_set_has_nonempty_rules(self):
         for rule_set in SPRING_UPGRADE_RULES:
             assert isinstance(rule_set, UpgradeRuleSet)
-            assert len(rule_set.rules) > 0, f"Empty rules in {rule_set.framework} {rule_set.from_version}->{rule_set.to_version}"
+            assert len(rule_set.rules) > 0, (
+                f"Empty rules in {rule_set.framework} {rule_set.from_version}->{rule_set.to_version}"
+            )
 
     def test_rule_ids_unique_within_rule_set(self):
         for rule_set in SPRING_UPGRADE_RULES:
             ids = [r.id for r in rule_set.rules]
             assert len(ids) == len(set(ids)), (
-                f"Duplicate IDs in {rule_set.framework} "
-                f"{rule_set.from_version}->{rule_set.to_version}: {ids}"
+                f"Duplicate IDs in {rule_set.framework} {rule_set.from_version}->{rule_set.to_version}: {ids}"
             )
 
     def test_detection_patterns_have_valid_regex(self):
@@ -873,15 +872,12 @@ class TestSpringRules:
                     try:
                         re.compile(pattern.regex)
                     except re.error as e:
-                        pytest.fail(
-                            f"Invalid regex in {rule.id}/{pattern.name}: "
-                            f"{pattern.regex!r} -> {e}"
-                        )
+                        pytest.fail(f"Invalid regex in {rule.id}/{pattern.name}: {pattern.regex!r} -> {e}")
 
     def test_all_rules_have_required_fields(self):
         for rule_set in SPRING_UPGRADE_RULES:
             for rule in rule_set.rules:
-                assert rule.id, f"Missing id in Spring rule"
+                assert rule.id, "Missing id in Spring rule"
                 assert rule.title, f"Missing title in {rule.id}"
                 assert rule.description, f"Missing description in {rule.id}"
                 assert isinstance(rule.severity, UpgradeSeverity), f"Bad severity in {rule.id}"
@@ -916,15 +912,12 @@ class TestJavaRules:
                 try:
                     re.compile(pattern.regex)
                 except re.error as e:
-                    pytest.fail(
-                        f"Invalid regex in {rule.id}/{pattern.name}: "
-                        f"{pattern.regex!r} -> {e}"
-                    )
+                    pytest.fail(f"Invalid regex in {rule.id}/{pattern.name}: {pattern.regex!r} -> {e}")
 
     def test_all_rules_have_required_fields(self):
         rule_set = JAVA_UPGRADE_RULES[0]
         for rule in rule_set.rules:
-            assert rule.id, f"Missing id in Java rule"
+            assert rule.id, "Missing id in Java rule"
             assert rule.title, f"Missing title in {rule.id}"
             assert rule.description, f"Missing description in {rule.id}"
             assert isinstance(rule.severity, UpgradeSeverity), f"Bad severity in {rule.id}"
@@ -945,6 +938,7 @@ class TestJavaRules:
 # Cross-framework uniqueness check
 # ===========================================================================
 
+
 class TestCrossFrameworkRuleIds:
     """Verify rule IDs are globally unique across all frameworks."""
 
@@ -957,7 +951,7 @@ class TestCrossFrameworkRuleIds:
         duplicates = [rid for rid in all_ids if all_ids.count(rid) > 1]
         # Some rule IDs may legitimately appear in multiple rule sets
         # (e.g., cross-version rules). Check for truly unexpected duplicates.
-        unique_duplicates = set(duplicates)
+        set(duplicates)
         # This is informational -- Angular signal rules span 18->20
         # If duplicates exist, they should be within the SAME framework's cross-version sets.
         assert len(all_ids) > 0, "No rules found at all"

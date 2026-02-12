@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, Query
 
-from ..services.metrics_reader import read_metrics
 from ..schemas import MetricsSummary
+from ..services.metrics_reader import read_metrics
 
 router = APIRouter(prefix="/api/metrics", tags=["metrics"])
 

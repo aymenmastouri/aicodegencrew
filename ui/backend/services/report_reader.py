@@ -29,7 +29,7 @@ def read_report(report_type: str, task_id: str) -> dict:
     if not path.exists():
         raise FileNotFoundError(f"Not found: {path.name}")
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -58,7 +58,7 @@ def list_codegen_branches() -> BranchList:
         name = line.strip().lstrip("* ")
         if not name.startswith("codegen/"):
             continue
-        task_id = name[len("codegen/"):]
+        task_id = name[len("codegen/") :]
 
         # Count files changed vs main
         file_count = 0
@@ -109,9 +109,7 @@ def delete_codegen_branch(task_id: str) -> dict:
         timeout=10,
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Failed to delete branch {branch_name}: {result.stderr.strip()}"
-        )
+        raise RuntimeError(f"Failed to delete branch {branch_name}: {result.stderr.strip()}")
 
     return {"status": "deleted", "branch": branch_name}
 
@@ -123,7 +121,7 @@ def _read_json_dir(directory: Path, pattern: str) -> list[dict]:
     results = []
     for path in sorted(directory.glob(pattern)):
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
                 data["_file"] = path.name
                 results.append(data)

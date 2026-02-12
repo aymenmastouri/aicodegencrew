@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import os
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -58,9 +57,9 @@ def _safe_filename(filename: str) -> str:
     # Take only the basename
     name = Path(filename).name
     # Remove any remaining path separators or null bytes
-    name = re.sub(r'[/\\:\x00]', '', name)
+    name = re.sub(r"[/\\:\x00]", "", name)
     # Collapse multiple dots (prevent hidden files on unix)
-    name = re.sub(r'^\.+', '', name)
+    name = re.sub(r"^\.+", "", name)
     if not name:
         raise ValueError("Invalid filename")
     return name
@@ -192,12 +191,14 @@ def list_category_files(category: str) -> list[dict[str, Any]]:
     for f in sorted(target_dir.iterdir()):
         if f.is_file() and f.suffix.lower() in accepted:
             stat = f.stat()
-            files.append({
-                "filename": f.name,
-                "size_bytes": stat.st_size,
-                "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
-                "extension": f.suffix.lower(),
-            })
+            files.append(
+                {
+                    "filename": f.name,
+                    "size_bytes": stat.st_size,
+                    "modified": datetime.fromtimestamp(stat.st_mtime, tz=UTC).isoformat(),
+                    "extension": f.suffix.lower(),
+                }
+            )
 
     return files
 
@@ -242,12 +243,14 @@ def get_categories_metadata() -> list[dict[str, Any]]:
     """Return category metadata (labels, accepted extensions) for frontend rendering."""
     result = []
     for category, meta in CATEGORIES.items():
-        result.append({
-            "id": category,
-            "label": meta["label"],
-            "description": meta["description"],
-            "icon": meta["icon"],
-            "env_key": meta["env_key"],
-            "accepted_extensions": sorted(meta["accepted_extensions"]),
-        })
+        result.append(
+            {
+                "id": category,
+                "label": meta["label"],
+                "description": meta["description"],
+                "icon": meta["icon"],
+                "env_key": meta["env_key"],
+                "accepted_extensions": sorted(meta["accepted_extensions"]),
+            }
+        )
     return result

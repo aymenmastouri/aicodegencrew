@@ -10,11 +10,12 @@ This crew analyzes ONE container with 4 AI agents (same as ArchitectureAnalysisC
 Used by MapReduceAnalysisCrew for parallel container analysis.
 Each container gets its own full analysis - results merged in REDUCE phase.
 """
+
 import json
-import os
 from pathlib import Path
-from typing import Dict, Any, List
-from crewai import Agent, Task, Crew, Process
+from typing import Any
+
+from crewai import Agent, Crew, Process, Task
 from crewai.tools import BaseTool
 
 from ...shared.utils.logger import logger
@@ -22,18 +23,20 @@ from ...shared.utils.logger import logger
 
 class ContainerFactsTool(BaseTool):
     """Query facts for a specific container."""
-    
+
     name: str = "container_facts"
-    description: str = "Get components, relations, interfaces for this container. Use this FIRST to understand the container."
-    
-    container_facts: Dict[str, Any] = {}
-    
+    description: str = (
+        "Get components, relations, interfaces for this container. Use this FIRST to understand the container."
+    )
+
+    container_facts: dict[str, Any] = {}
+
     def _run(self, query: str = "") -> str:
         """Return container facts summary."""
         comps = self.container_facts.get("components", [])
         rels = self.container_facts.get("relations", [])
         ifaces = self.container_facts.get("interfaces", [])
-        
+
         # Build summary
         lines = [
             f"=== CONTAINER: {self.container_facts.get('container', 'unknown')} ===",
@@ -43,21 +46,21 @@ class ContainerFactsTool(BaseTool):
             "",
             "== COMPONENTS BY STEREOTYPE ==",
         ]
-        
+
         # Group by stereotype
-        by_stereo: Dict[str, List[str]] = {}
+        by_stereo: dict[str, list[str]] = {}
         for c in comps:
             stereo = c.get("stereotype", "unknown")
             name = c.get("name", "?")
             by_stereo.setdefault(stereo, []).append(name)
-        
+
         for stereo, names in sorted(by_stereo.items()):
             lines.append(f"\n{stereo.upper()} ({len(names)}):")
             for n in names[:15]:
                 lines.append(f"  - {n}")
             if len(names) > 15:
                 lines.append(f"  ... and {len(names) - 15} more")
-        
+
         # Show relations
         if rels:
             lines.append("\n== KEY RELATIONS ==")
@@ -68,7 +71,7 @@ class ContainerFactsTool(BaseTool):
                 lines.append(f"  {from_name} --{rel_type}--> {to_name}")
             if len(rels) > 15:
                 lines.append(f"  ... and {len(rels) - 15} more")
-        
+
         # Show interfaces
         if ifaces:
             lines.append("\n== INTERFACES ==")
@@ -78,44 +81,44 @@ class ContainerFactsTool(BaseTool):
                 lines.append(f"  {method} {path}")
             if len(ifaces) > 15:
                 lines.append(f"  ... and {len(ifaces) - 15} more")
-        
+
         return "\n".join(lines)
 
 
 class ContainerAnalysisCrew:
     """
     Full Crew for analyzing a single container with 4 LLM agents.
-    
+
     Same structure as ArchitectureAnalysisCrew but focused on one container:
     1. Tech Architect - patterns, layers, technologies
     2. Functional Analyst - domain concepts, capabilities
     3. Quality Analyst - coupling, cohesion, debt
     4. Synthesis Lead - merges into container analysis
     """
-    
+
     def __init__(
         self,
         container_name: str,
-        container_facts: Dict[str, Any],
+        container_facts: dict[str, Any],
         output_dir: Path,
     ):
         self.container_name = container_name
         self.container_facts = container_facts
         self.output_dir = Path(output_dir)
-        
+
         # Tool with container-specific facts
         self._facts_tool = ContainerFactsTool()
         self._facts_tool.container_facts = container_facts
-    
-    def run(self) -> Dict[str, Any]:
+
+    def run(self) -> dict[str, Any]:
         """Run full 4-agent container analysis."""
         logger.info(f"[ContainerCrew] Analyzing: {self.container_name} with 4 agents")
-        
+
         comp_count = len(self.container_facts.get("components", []))
         if comp_count == 0:
             logger.info(f"[ContainerCrew] {self.container_name}: No components, skipping")
             return self._empty_analysis()
-        
+
         # === AGENT 1: Tech Architect ===
         tech_agent = Agent(
             role="Technical Architect",
@@ -125,7 +128,7 @@ class ContainerAnalysisCrew:
             verbose=False,
             allow_delegation=False,
         )
-        
+
         # === AGENT 2: Functional Analyst ===
         func_agent = Agent(
             role="Functional Analyst",
@@ -135,17 +138,17 @@ class ContainerAnalysisCrew:
             verbose=False,
             allow_delegation=False,
         )
-        
+
         # === AGENT 3: Quality Analyst ===
         quality_agent = Agent(
-            role="Quality Analyst", 
+            role="Quality Analyst",
             goal=f"Assess architecture quality of container '{self.container_name}'",
             backstory="Expert in software quality, code metrics, technical debt, and architecture anti-patterns.",
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
         )
-        
+
         # === AGENT 4: Synthesis Lead ===
         synthesis_agent = Agent(
             role="Synthesis Lead",
@@ -154,7 +157,7 @@ class ContainerAnalysisCrew:
             verbose=False,
             allow_delegation=False,
         )
-        
+
         # === TASKS ===
         tech_task = Task(
             description=f"""Analyze technical architecture of container '{self.container_name}'.
@@ -177,7 +180,7 @@ Output as JSON:
             expected_output="JSON with pattern, layers, technologies",
             agent=tech_agent,
         )
-        
+
         func_task = Task(
             description=f"""Analyze functional domain of container '{self.container_name}'.
 
@@ -199,7 +202,7 @@ Output as JSON:
             expected_output="JSON with domain analysis",
             agent=func_agent,
         )
-        
+
         quality_task = Task(
             description=f"""Assess architecture quality of container '{self.container_name}'.
 
@@ -224,7 +227,7 @@ Output as JSON:
             expected_output="JSON with quality assessment",
             agent=quality_agent,
         )
-        
+
         synthesis_task = Task(
             description=f"""Synthesize all analyses for container '{self.container_name}'.
 
@@ -244,7 +247,7 @@ Create final container analysis JSON:
             agent=synthesis_agent,
             context=[tech_task, func_task, quality_task],
         )
-        
+
         # Run crew
         crew = Crew(
             agents=[tech_agent, func_agent, quality_agent, synthesis_agent],
@@ -252,15 +255,13 @@ Create final container analysis JSON:
             process=Process.sequential,
             verbose=False,
         )
-        
+
         try:
-            result = crew.kickoff()
-            
+            crew.kickoff()
+
             # Parse synthesis result
-            synthesis_output = self._parse_json_output(
-                synthesis_task.output.raw if synthesis_task.output else "{}"
-            )
-            
+            synthesis_output = self._parse_json_output(synthesis_task.output.raw if synthesis_task.output else "{}")
+
             # Build final analysis
             analysis = {
                 "container": self.container_name,
@@ -268,15 +269,15 @@ Create final container analysis JSON:
                 "relation_count": len(self.container_facts.get("relations", [])),
                 "interface_count": len(self.container_facts.get("interfaces", [])),
                 "summary": synthesis_output.get("summary", f"Analysis of {self.container_name}"),
-                "technical": synthesis_output.get("technical", self._parse_json_output(
-                    tech_task.output.raw if tech_task.output else "{}"
-                )),
-                "functional": synthesis_output.get("functional", self._parse_json_output(
-                    func_task.output.raw if func_task.output else "{}"
-                )),
-                "quality": synthesis_output.get("quality", self._parse_json_output(
-                    quality_task.output.raw if quality_task.output else "{}"
-                )),
+                "technical": synthesis_output.get(
+                    "technical", self._parse_json_output(tech_task.output.raw if tech_task.output else "{}")
+                ),
+                "functional": synthesis_output.get(
+                    "functional", self._parse_json_output(func_task.output.raw if func_task.output else "{}")
+                ),
+                "quality": synthesis_output.get(
+                    "quality", self._parse_json_output(quality_task.output.raw if quality_task.output else "{}")
+                ),
                 "overall_assessment": synthesis_output.get("overall_assessment", ""),
                 "top_recommendations": synthesis_output.get("top_recommendations", []),
                 "analysis": {
@@ -288,20 +289,20 @@ Create final container analysis JSON:
                     "total_interfaces": len(self.container_facts.get("interfaces", [])),
                 },
             }
-            
+
             # Save result
             output_file = self.output_dir / f"container_{self.container_name}.json"
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(analysis, f, indent=2, ensure_ascii=False)
-            
+
             logger.info(f"[ContainerCrew] {self.container_name}: {comp_count} components analyzed by 4 agents")
             return analysis
-            
+
         except Exception as e:
             logger.error(f"[ContainerCrew] {self.container_name} failed: {e}")
             return self._fallback_analysis()
-    
-    def _empty_analysis(self) -> Dict[str, Any]:
+
+    def _empty_analysis(self) -> dict[str, Any]:
         """Return empty analysis for containers with no components."""
         return {
             "container": self.container_name,
@@ -321,16 +322,16 @@ Create final container analysis JSON:
                 "total_interfaces": 0,
             },
         }
-    
-    def _count_stereotypes(self) -> Dict[str, int]:
+
+    def _count_stereotypes(self) -> dict[str, int]:
         """Count components by stereotype."""
-        counts: Dict[str, int] = {}
+        counts: dict[str, int] = {}
         for c in self.container_facts.get("components", []):
             stereo = c.get("stereotype", "unknown")
             counts[stereo] = counts.get(stereo, 0) + 1
         return counts
-    
-    def _parse_json_output(self, text: str) -> Dict[str, Any]:
+
+    def _parse_json_output(self, text: str) -> dict[str, Any]:
         """Extract JSON from agent output."""
         try:
             # Find JSON in output
@@ -341,18 +342,18 @@ Create final container analysis JSON:
         except:
             pass
         return {}
-    
-    def _fallback_analysis(self) -> Dict[str, Any]:
+
+    def _fallback_analysis(self) -> dict[str, Any]:
         """Deterministic fallback if LLM fails."""
         stereotypes = self._count_stereotypes()
         comp_count = len(self.container_facts.get("components", []))
-        
+
         # Detect pattern
         has_controllers = stereotypes.get("controller", 0) > 0
         has_services = stereotypes.get("service", 0) > 0
         has_repos = stereotypes.get("repository", 0) > 0
         has_components = stereotypes.get("component", 0) > 0
-        
+
         if has_controllers and has_services and has_repos:
             pattern = "Layered"
             layers = ["Controller", "Service", "Repository"]
@@ -365,7 +366,7 @@ Create final container analysis JSON:
         else:
             pattern = "Unknown"
             layers = list(stereotypes.keys())[:3]
-        
+
         return {
             "container": self.container_name,
             "component_count": comp_count,

@@ -2,8 +2,9 @@
 
 import os
 import time
+
 import requests
-from typing import List, Dict, Any
+
 from .logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -11,7 +12,7 @@ logger = setup_logger(__name__)
 
 class OllamaClient:
     """Client for Ollama HTTP API."""
-    
+
     def __init__(
         self,
         base_url: str = None,
@@ -20,7 +21,7 @@ class OllamaClient:
         max_retries: int = None,
     ):
         """Initialize Ollama client.
-        
+
         Args:
             base_url: Ollama API base URL
             model: Embedding model name
@@ -39,19 +40,19 @@ class OllamaClient:
         # On Windows/corporate setups, env proxies can cause localhost requests to hang.
         # We explicitly ignore proxy env vars for Ollama (local service).
         self._session.trust_env = False
-        
+
         # Remove trailing slash
         self.base_url = self.base_url.rstrip("/")
-    
-    def embed_text(self, text: str) -> List[float]:
+
+    def embed_text(self, text: str) -> list[float]:
         """Generate embedding for text.
-        
+
         Args:
             text: Text to embed
-            
+
         Returns:
             Embedding vector as list of floats
-            
+
         Raises:
             RuntimeError: If embedding generation fails after retries
         """
@@ -69,11 +70,11 @@ class OllamaClient:
             # Avoid some keep-alive edge cases on Windows/proxy layers.
             "Connection": "close",
         }
-        
+
         for attempt in range(self.max_retries):
             # Reuse a configured session (trust_env=False) to avoid proxy surprises.
             session = self._session
-            
+
             try:
                 response = session.post(
                     url,
@@ -81,65 +82,64 @@ class OllamaClient:
                     headers=headers,
                     timeout=timeout,
                 )
-                
+
                 # Special handling for 500 errors (Ollama overloaded)
                 if response.status_code >= 500:
-                    logger.warning(f"Ollama server error {response.status_code} (attempt {attempt + 1}/{self.max_retries}). Server might be overloaded.")
+                    logger.warning(
+                        f"Ollama server error {response.status_code} (attempt {attempt + 1}/{self.max_retries}). Server might be overloaded."
+                    )
                     # Escalating backoff for server errors: 5s, 10s, 20s...
-                    sleep_time = min(30.0, 5.0 * (2 ** attempt))
+                    sleep_time = min(30.0, 5.0 * (2**attempt))
                     time.sleep(sleep_time)
-                    response.raise_for_status() # Trigger exception to retry loop
-                
+                    response.raise_for_status()  # Trigger exception to retry loop
+
                 response.raise_for_status()
-                
+
                 data = response.json()
                 # Ollama /api/embed returns "embeddings" array (plural)
                 embeddings = data.get("embeddings", [])
-                
-                if not embeddings or not embeddings[0]:
-                    raise ValueError(f"Empty embedding returned from Ollama API")
-                
-                return embeddings[0]  # Return first embedding
-                
-            except requests.exceptions.RequestException as e:
-                status = None
-                try:
-                    status = response.status_code  # type: ignore[name-defined]
-                except Exception:
-                    status = None
 
-                logger.warning(
-                    f"Ollama API request failed (attempt {attempt + 1}/{self.max_retries}): {e}"
-                )
+                if not embeddings or not embeddings[0]:
+                    raise ValueError("Empty embedding returned from Ollama API")
+
+                return embeddings[0]  # Return first embedding
+
+            except requests.exceptions.RequestException as e:
+                try:
+                    pass  # type: ignore[name-defined]
+                except Exception:
+                    pass
+
+                logger.warning(f"Ollama API request failed (attempt {attempt + 1}/{self.max_retries}): {e}")
 
                 if attempt < self.max_retries - 1:
                     # General backoff for connection errors etc.
-                    sleep_time = min(10.0, 2.0 * (2 ** attempt))
+                    sleep_time = min(10.0, 2.0 * (2**attempt))
                     time.sleep(sleep_time)
                 else:
                     raise RuntimeError(f"Failed to generate embedding after {self.max_retries} attempts: {e}")
-    
-    def embed_batch(self, texts: List[str]) -> List[List[float]]:
+
+    def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings for multiple texts in ONE request (Production Best Practice).
-        
+
         Batch API provides 10-50x performance improvement over individual requests:
         - Single HTTP round-trip for multiple texts
         - Ollama can optimize GPU batch processing
         - Reduced connection overhead
         - Better throughput under load
-        
+
         Args:
             texts: List of texts to embed (recommended: 10-100 texts per batch)
-            
+
         Returns:
             List of embedding vectors (same order as input)
-            
+
         Raises:
             RuntimeError: If embedding generation fails after retries
         """
         if not texts:
             return []
-        
+
         url = f"{self.base_url}/api/embed"
         payload = {
             "model": self.model,
@@ -151,11 +151,11 @@ class OllamaClient:
         per_text_timeout = 0.5
         read_timeout = base_timeout + (len(texts) * per_text_timeout)
         timeout = (5, read_timeout)
-        
+
         headers = {
             "Connection": "close",
         }
-        
+
         for attempt in range(self.max_retries):
             try:
                 response = self._session.post(
@@ -164,33 +164,32 @@ class OllamaClient:
                     headers=headers,
                     timeout=timeout,
                 )
-                
+
                 # Handle server errors with exponential backoff
                 if response.status_code >= 500:
                     logger.warning(
                         f"Ollama batch error {response.status_code} "
                         f"(attempt {attempt + 1}/{self.max_retries}, batch_size={len(texts)})"
                     )
-                    sleep_time = min(30.0, 5.0 * (2 ** attempt))
+                    sleep_time = min(30.0, 5.0 * (2**attempt))
                     time.sleep(sleep_time)
                     response.raise_for_status()
-                
+
                 response.raise_for_status()
                 data = response.json()
                 embeddings = data.get("embeddings", [])
-                
+
                 # Validation
                 if not embeddings:
                     raise ValueError("Empty embeddings array returned from Ollama API")
-                    
+
                 if len(embeddings) != len(texts):
                     raise ValueError(
-                        f"Expected {len(texts)} embeddings, got {len(embeddings)}. "
-                        f"Possible batch size limit exceeded."
+                        f"Expected {len(texts)} embeddings, got {len(embeddings)}. Possible batch size limit exceeded."
                     )
-                
+
                 return embeddings
-                
+
             except requests.exceptions.Timeout as e:
                 logger.warning(
                     f"Batch timeout (attempt {attempt + 1}/{self.max_retries}, "
@@ -203,27 +202,24 @@ class OllamaClient:
                     time.sleep(2)
                 else:
                     raise RuntimeError(
-                        f"Batch embedding timed out after {self.max_retries} attempts. "
-                        f"Try reducing EMBED_BATCH_SIZE."
+                        f"Batch embedding timed out after {self.max_retries} attempts. Try reducing EMBED_BATCH_SIZE."
                     )
-                    
+
             except requests.exceptions.RequestException as e:
                 logger.warning(
                     f"Ollama batch request failed (attempt {attempt + 1}/{self.max_retries}, "
                     f"batch_size={len(texts)}): {e}"
                 )
-                
+
                 if attempt < self.max_retries - 1:
-                    sleep_time = min(10.0, 2.0 * (2 ** attempt))
+                    sleep_time = min(10.0, 2.0 * (2**attempt))
                     time.sleep(sleep_time)
                 else:
-                    raise RuntimeError(
-                        f"Failed to generate batch embeddings after {self.max_retries} attempts: {e}"
-                    )
-    
+                    raise RuntimeError(f"Failed to generate batch embeddings after {self.max_retries} attempts: {e}")
+
     def health_check(self) -> bool:
         """Check if Ollama API is accessible.
-        
+
         Returns:
             True if API is healthy
         """

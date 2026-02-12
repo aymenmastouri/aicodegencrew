@@ -12,17 +12,17 @@ LLM Calls: 1 per affected file
 
 import time
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any
 
+from ...shared.utils.logger import log_metric, setup_logger, step_done, step_start
+from .schemas import CodegenReport
 from .stages import (
-    PlanReaderStage,
-    ContextCollectorStage,
     CodeGeneratorStage,
     CodeValidatorStage,
+    ContextCollectorStage,
     OutputWriterStage,
+    PlanReaderStage,
 )
-from .schemas import CodegenReport
-from ...shared.utils.logger import setup_logger, log_metric, step_start, step_done
 
 logger = setup_logger(__name__)
 
@@ -42,7 +42,7 @@ class CodeGenerationPipeline:
     def __init__(
         self,
         repo_path: str,
-        task_id: Optional[str] = None,
+        task_id: str | None = None,
         plans_dir: str = "knowledge/development",
         facts_path: str = "knowledge/architecture/architecture_facts.json",
         report_dir: str = "knowledge/codegen",
@@ -58,11 +58,11 @@ class CodeGenerationPipeline:
         # Ensure output dir exists
         self.report_dir.mkdir(parents=True, exist_ok=True)
 
-    def kickoff(self, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
+    def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """Execute pipeline (Orchestrator-compatible interface)."""
         return self.run()
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         """
         Run code generation pipeline.
 
@@ -90,7 +90,7 @@ class CodeGenerationPipeline:
 
         return self._run_all()
 
-    def _run_all(self) -> Dict[str, Any]:
+    def _run_all(self) -> dict[str, Any]:
         """Process all plan files in plans_dir."""
         start_time = time.time()
 
@@ -98,7 +98,12 @@ class CodeGenerationPipeline:
         plan_files = sorted(self.plans_dir.glob("*_plan.json"))
         if not plan_files:
             logger.warning(f"[Phase5] No plan files found in {self.plans_dir}")
-            return {"status": "skipped", "phase": "phase5_code_generation", "message": "No plan files found", "reports": []}
+            return {
+                "status": "skipped",
+                "phase": "phase5_code_generation",
+                "message": "No plan files found",
+                "reports": [],
+            }
 
         logger.info("=" * 80)
         logger.info(f"[Phase5] Code Generation Pipeline - {len(plan_files)} plans")
@@ -127,10 +132,7 @@ class CodeGenerationPipeline:
         total_duration = time.time() - start_time
 
         logger.info("=" * 80)
-        logger.info(
-            f"[Phase5] Complete: {succeeded} succeeded, {failed} failed, "
-            f"{total_duration:.2f}s"
-        )
+        logger.info(f"[Phase5] Complete: {succeeded} succeeded, {failed} failed, {total_duration:.2f}s")
         logger.info("=" * 80)
 
         log_metric(
@@ -158,7 +160,7 @@ class CodeGenerationPipeline:
     def _run_single(
         self,
         task_id: str,
-        plan_path: Optional[str] = None,
+        plan_path: str | None = None,
     ) -> CodegenReport:
         """Run the full pipeline (Stages 1-5) for a single task."""
         start_time = time.time()

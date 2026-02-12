@@ -9,19 +9,17 @@ Duration: 1-3 seconds (pure algorithms)
 NO LLM REQUIRED
 """
 
-from typing import List, Dict, Any
-import re
+from typing import Any
 
+from ....shared.utils.logger import setup_logger
 from ..schemas import (
-    TaskInput,
-    ComponentMatch,
-    TestPattern,
-    SecurityPattern,
-    ValidationPattern,
     ErrorHandlingPattern,
+    SecurityPattern,
+    TaskInput,
+    TestPattern,
+    ValidationPattern,
     WorkflowContext,
 )
-from ....shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -51,9 +49,9 @@ class PatternMatcherStage:
     def run(
         self,
         task: TaskInput,
-        components: List[Dict[str, Any]],
+        components: list[dict[str, Any]],
         top_k: int = 5,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Match all pattern types.
 
@@ -72,35 +70,19 @@ class PatternMatcherStage:
         entity_names = [c["name"] for c in components if c["stereotype"] == "entity"]
 
         # Match test patterns (TF-IDF)
-        test_patterns = self._match_test_patterns(
-            task.description,
-            component_names,
-            top_k=top_k
-        )
+        test_patterns = self._match_test_patterns(task.description, component_names, top_k=top_k)
 
         # Match security patterns (rule-based)
-        security_patterns = self._match_security_patterns(
-            component_paths,
-            top_k=top_k
-        )
+        security_patterns = self._match_security_patterns(component_paths, top_k=top_k)
 
         # Match validation patterns (rule-based)
-        validation_patterns = self._match_validation_patterns(
-            entity_names,
-            top_k=top_k
-        )
+        validation_patterns = self._match_validation_patterns(entity_names, top_k=top_k)
 
         # Match error handling patterns (rule-based)
-        error_patterns = self._match_error_patterns(
-            task.description,
-            top_k=top_k
-        )
+        error_patterns = self._match_error_patterns(task.description, top_k=top_k)
 
         # Match workflow context (rule-based)
-        workflow_context = self._match_workflows(
-            component_names,
-            top_k=top_k
-        )
+        workflow_context = self._match_workflows(component_names, top_k=top_k)
 
         # Match upgrade patterns (if upgrade task)
         upgrade_assessment = {}
@@ -113,8 +95,11 @@ class PatternMatcherStage:
             f"{len(validation_patterns)} validation patterns, "
             f"{len(error_patterns)} error patterns, "
             f"{len(workflow_context)} workflows"
-            + (f", upgrade: {upgrade_assessment.get('summary', {}).get('total_rules_triggered', 0)} rules"
-               if upgrade_assessment else "")
+            + (
+                f", upgrade: {upgrade_assessment.get('summary', {}).get('total_rules_triggered', 0)} rules"
+                if upgrade_assessment
+                else ""
+            )
         )
 
         return {
@@ -129,17 +114,17 @@ class PatternMatcherStage:
     def _match_test_patterns(
         self,
         task_description: str,
-        component_names: List[str],
+        component_names: list[str],
         top_k: int = 5,
-    ) -> List[TestPattern]:
+    ) -> list[TestPattern]:
         """Match test patterns using TF-IDF similarity."""
         if not self.tests:
             return []
 
         try:
+            import numpy as np
             from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.metrics.pairwise import cosine_similarity
-            import numpy as np
         except ImportError:
             logger.warning("[Stage3] scikit-learn not installed, using simple matching")
             return self._simple_test_matching(task_description, component_names, top_k)
@@ -172,7 +157,7 @@ class PatternMatcherStage:
         corpus.extend(test_texts)
 
         # TF-IDF
-        vectorizer = TfidfVectorizer(stop_words='english', max_features=100)
+        vectorizer = TfidfVectorizer(stop_words="english", max_features=100)
         tfidf_matrix = vectorizer.fit_transform(corpus)
 
         # Cosine similarity
@@ -208,9 +193,9 @@ class PatternMatcherStage:
     def _simple_test_matching(
         self,
         task_description: str,
-        component_names: List[str],
+        component_names: list[str],
         top_k: int,
-    ) -> List[TestPattern]:
+    ) -> list[TestPattern]:
         """Simple keyword-based test matching (fallback)."""
         results = []
 
@@ -241,9 +226,9 @@ class PatternMatcherStage:
 
     def _match_security_patterns(
         self,
-        component_paths: List[str],
+        component_paths: list[str],
         top_k: int = 5,
-    ) -> List[SecurityPattern]:
+    ) -> list[SecurityPattern]:
         """Match security patterns by file path."""
         if not self.security_details:
             return []
@@ -267,9 +252,7 @@ class PatternMatcherStage:
                                 class_name=sec.get("class_name", ""),
                                 pattern_name=sec.get("name", ""),
                                 file_path=sec_path,
-                                recommendation=self._generate_security_recommendation(
-                                    sec.get("security_type", "")
-                                ),
+                                recommendation=self._generate_security_recommendation(sec.get("security_type", "")),
                             )
                         )
                         break
@@ -283,9 +266,7 @@ class PatternMatcherStage:
                         class_name=sec.get("class_name", ""),
                         pattern_name=sec.get("name", ""),
                         file_path=sec.get("file_path", ""),
-                        recommendation=self._generate_security_recommendation(
-                            sec.get("security_type", "")
-                        ),
+                        recommendation=self._generate_security_recommendation(sec.get("security_type", "")),
                     )
                 )
 
@@ -293,9 +274,9 @@ class PatternMatcherStage:
 
     def _match_validation_patterns(
         self,
-        entity_names: List[str],
+        entity_names: list[str],
         top_k: int = 5,
-    ) -> List[ValidationPattern]:
+    ) -> list[ValidationPattern]:
         """Match validation patterns by entity names."""
         if not self.validations:
             return []
@@ -350,7 +331,7 @@ class PatternMatcherStage:
         self,
         task_description: str,
         top_k: int = 5,
-    ) -> List[ErrorHandlingPattern]:
+    ) -> list[ErrorHandlingPattern]:
         """Match error handling patterns."""
         if not self.error_handling:
             return []
@@ -380,10 +361,7 @@ class PatternMatcherStage:
                         exception_class=exception_class,
                         handler_method=err.get("handler_method"),
                         pattern_name=err.get("name", ""),
-                        recommendation=self._generate_error_recommendation(
-                            handling_type,
-                            exception_class
-                        ),
+                        recommendation=self._generate_error_recommendation(handling_type, exception_class),
                     )
                 )
 
@@ -397,8 +375,7 @@ class PatternMatcherStage:
                         handler_method=err.get("handler_method"),
                         pattern_name=err.get("name", ""),
                         recommendation=self._generate_error_recommendation(
-                            err.get("handling_type", ""),
-                            err.get("exception_class", "")
+                            err.get("handling_type", ""), err.get("exception_class", "")
                         ),
                     )
                 )
@@ -407,9 +384,9 @@ class PatternMatcherStage:
 
     def _match_workflows(
         self,
-        component_names: List[str],
+        component_names: list[str],
         top_k: int = 5,
-    ) -> List[WorkflowContext]:
+    ) -> list[WorkflowContext]:
         """Match business workflows."""
         if not self.workflows:
             return []
@@ -490,7 +467,8 @@ class PatternMatcherStage:
             )
 
             context = engine.detect_upgrade_context(
-                task.description, task.labels,
+                task.description,
+                task.labels,
             )
             if not context:
                 logger.warning("[Stage3] Could not detect upgrade context")

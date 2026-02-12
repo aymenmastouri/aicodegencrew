@@ -5,53 +5,119 @@ Only indexes code/documentation files based on RAG config.
 Dynamically reads .gitignore rules for exclusion.
 """
 
+import fnmatch
 import os
 from pathlib import Path
-from typing import List, Set, Optional
-import fnmatch
-
 
 # Global code & doc extensions (like Continue plugin RAG config)
 # ALL production code - batch embeddings make this fast!
 # SQL excluded - too large
 INDEXABLE_EXTENSIONS = {
-    ".py", ".java", ".kt", ".xml", ".properties", ".yml", ".yaml",
-    ".md", ".ts", ".tsx", ".html", ".scss", ".css", ".json",
-    ".gradle", ".toml", ".js", ".jsx", ".go", ".rs", ".cs",
-    ".cpp", ".c", ".h", ".hpp", ".sh", ".bash",
-    ".feature", ".sql"
+    ".py",
+    ".java",
+    ".kt",
+    ".xml",
+    ".properties",
+    ".yml",
+    ".yaml",
+    ".md",
+    ".ts",
+    ".tsx",
+    ".html",
+    ".scss",
+    ".css",
+    ".json",
+    ".gradle",
+    ".toml",
+    ".js",
+    ".jsx",
+    ".go",
+    ".rs",
+    ".cs",
+    ".cpp",
+    ".c",
+    ".h",
+    ".hpp",
+    ".sh",
+    ".bash",
+    ".feature",
+    ".sql",
 }
 
 # Directories to skip (faster than pattern matching)
 # Only skip build outputs, dependencies, cache - NOT source code!
 SKIP_DIRS = {
-    ".git", ".venv", "venv", "node_modules", "dist", "build", "target",
-    ".idea", "__pycache__", ".pytest_cache", ".mypy_cache", ".gradle",
-    ".maven", "coverage", "test-results", "reports", ".next", ".nuxt",
-    ".vscode", ".continue", ".cache", ".chroma", ".chroma_db", "vendor",
-    "packages", "site-packages", ".eggs", "eggs", ".renv", ".env",
-    "cypress", ".angular", "out", ".tox", "htmlcov", ".m2"
+    ".git",
+    ".venv",
+    "venv",
+    "node_modules",
+    "dist",
+    "build",
+    "target",
+    ".idea",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".gradle",
+    ".maven",
+    "coverage",
+    "test-results",
+    "reports",
+    ".next",
+    ".nuxt",
+    ".vscode",
+    ".continue",
+    ".cache",
+    ".chroma",
+    ".chroma_db",
+    "vendor",
+    "packages",
+    "site-packages",
+    ".eggs",
+    "eggs",
+    ".renv",
+    ".env",
+    "cypress",
+    ".angular",
+    "out",
+    ".tox",
+    "htmlcov",
+    ".m2",
 }
 
 # Special files to always include
 SPECIAL_FILES = {
-    "dockerfile", "docker-compose.yml", "docker-compose.yaml",
-    "chart.yaml", "pom.xml", "angular.json", "tsconfig.json",
-    "package.json", "setup.py", "requirements.txt", ".gitignore",
-    "makefile", "gradle.properties"
+    "dockerfile",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+    "chart.yaml",
+    "pom.xml",
+    "angular.json",
+    "tsconfig.json",
+    "package.json",
+    "setup.py",
+    "requirements.txt",
+    ".gitignore",
+    "makefile",
+    "gradle.properties",
 }
 
 # Backwards-compatible defaults used by tests and callers that rely on glob patterns.
 # Note: the current implementation is extension-driven for speed, but we still expose
 # these pattern lists and accept overrides in `should_include_file`.
 DEFAULT_INCLUDE_PATTERNS = [f"**/*{ext}" for ext in sorted(INDEXABLE_EXTENSIONS)]
-DEFAULT_EXCLUDE_PATTERNS = (
-    [f"**/{d}/**" for d in sorted(SKIP_DIRS)]
-    + ["**/*.class", "**/*.jar", "**/*.war", "**/*.zip", "**/*.exe", "**/*.dll", "**/*.so"]
-)
+DEFAULT_EXCLUDE_PATTERNS = [f"**/{d}/**" for d in sorted(SKIP_DIRS)] + [
+    "**/*.class",
+    "**/*.jar",
+    "**/*.war",
+    "**/*.zip",
+    "**/*.exe",
+    "**/*.dll",
+    "**/*.so",
+]
 
 
-def _env_csv_set(name: str) -> Set[str]:
+def _env_csv_set(name: str) -> set[str]:
     """Read a comma-separated env var into a normalized lowercase set."""
     raw = os.getenv(name, "").strip()
     if not raw:
@@ -59,7 +125,7 @@ def _env_csv_set(name: str) -> Set[str]:
     return {item.strip().lower() for item in raw.split(",") if item.strip()}
 
 
-def _get_indexable_extensions() -> Set[str]:
+def _get_indexable_extensions() -> set[str]:
     """Return indexable extensions, optionally overridden via env.
 
     Env:
@@ -75,7 +141,7 @@ def _get_indexable_extensions() -> Set[str]:
     return INDEXABLE_EXTENSIONS
 
 
-def _get_skip_dirs() -> Set[str]:
+def _get_skip_dirs() -> set[str]:
     """Return skip dirs, optionally extended via env.
 
     Env:
@@ -87,8 +153,8 @@ def _get_skip_dirs() -> Set[str]:
 
 def should_include_file(
     file_path: Path,
-    include_patterns: Optional[List[str]] = None,
-    exclude_patterns: Optional[List[str]] = None,
+    include_patterns: list[str] | None = None,
+    exclude_patterns: list[str] | None = None,
 ) -> bool:
     """Return True if a file should be indexed.
 
@@ -113,10 +179,7 @@ def should_include_file(
             return False
 
     if include_patterns is not None:
-        return any(
-            fnmatch.fnmatch(path_posix, pat) or fnmatch.fnmatch(file_path.name, pat)
-            for pat in include_patterns
-        )
+        return any(fnmatch.fnmatch(path_posix, pat) or fnmatch.fnmatch(file_path.name, pat) for pat in include_patterns)
 
     # 3) Extension/special-file rules (fast, env-overridable)
     file_name = file_path.name.lower()
@@ -126,100 +189,100 @@ def should_include_file(
     return file_path.suffix.lower() in _get_indexable_extensions()
 
 
-def _load_gitignore_patterns(root_path: Path) -> Set[str]:
+def _load_gitignore_patterns(root_path: Path) -> set[str]:
     """Load patterns from .gitignore file if exists.
-    
+
     Returns set of patterns to exclude (directories and files).
     """
     gitignore_path = root_path / ".gitignore"
     patterns = set()
-    
+
     if not gitignore_path.exists():
         return patterns
-    
+
     try:
-        with open(gitignore_path, 'r', encoding='utf-8') as f:
+        with open(gitignore_path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 # Skip comments and empty lines
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
                 # Remove leading slash
-                if line.startswith('/'):
+                if line.startswith("/"):
                     line = line[1:]
                 # Remove trailing slash for directories
-                if line.endswith('/'):
+                if line.endswith("/"):
                     line = line[:-1]
                 patterns.add(line)
     except Exception:
         pass  # Silently ignore gitignore read errors
-    
+
     return patterns
 
 
-def _should_skip_by_gitignore(path_str: str, gitignore_patterns: Set[str]) -> bool:
+def _should_skip_by_gitignore(path_str: str, gitignore_patterns: set[str]) -> bool:
     """Check if path matches any gitignore pattern."""
     if not gitignore_patterns:
         return False
-    
+
     # Get just the directory/file name
     name = os.path.basename(path_str)
-    
+
     # Check exact matches and wildcard patterns
     for pattern in gitignore_patterns:
         if fnmatch.fnmatch(name, pattern):
             return True
         # Also check full relative path for patterns with /
-        if '/' in pattern and fnmatch.fnmatch(path_str, pattern):
+        if "/" in pattern and fnmatch.fnmatch(path_str, pattern):
             return True
-    
+
     return False
 
 
 def collect_files(
     root_path: Path,
-    include_patterns: List[str] = None,
-    exclude_patterns: List[str] = None,
+    include_patterns: list[str] = None,
+    exclude_patterns: list[str] = None,
     max_depth: int = None,
-) -> List[Path]:
+) -> list[Path]:
     """Fast file collection using os.walk() instead of pathlib recursion.
-    
+
     Indexes only code/doc files (like Continue plugin), skips all
     binary/cache/node_modules directories.
     ALSO reads .gitignore and applies those exclusion rules dynamically.
-    
+
     Based on RAG config: generic, no backend/frontend split.
-    
+
     Args:
         root_path: Root directory to scan
         include_patterns: Ignored (uses INDEXABLE_EXTENSIONS)
         exclude_patterns: Ignored (uses SKIP_DIRS + .gitignore)
         max_depth: Maximum directory depth (None for unlimited)
-        
+
     Returns:
         List of matching file paths
     """
     if not root_path.exists():
         return []
-    
+
     # Load .gitignore patterns dynamically
     gitignore_patterns = _load_gitignore_patterns(root_path)
     skip_dirs = _get_skip_dirs()
-    
-    collected: List[Path] = []
+
+    collected: list[Path] = []
     root_str = str(root_path)
-    
+
     # Use os.walk for speed (avoids pathlib.relative_to() overhead)
     for dirpath, dirnames, filenames in os.walk(root_str, topdown=True, onerror=None):
         # Track depth
-        depth = dirpath[len(root_str):].count(os.sep)
+        depth = dirpath[len(root_str) :].count(os.sep)
         if max_depth is not None and depth > max_depth:
             dirnames.clear()  # Don't descend further
             continue
-        
+
         # Get relative path for gitignore matching
-        rel_path = dirpath[len(root_str):].lstrip(os.sep)
-        
+        rel_path = dirpath[len(root_str) :].lstrip(os.sep)
+
         # Prune directories in-place (modifying dirnames stops walk from descending)
         # Check both SKIP_DIRS and gitignore patterns
         filtered_dirs = []
@@ -232,21 +295,20 @@ def collect_files(
                 continue
             filtered_dirs.append(d)
         dirnames[:] = filtered_dirs
-        
+
         # Check files
         for filename in filenames:
             filepath = Path(dirpath) / filename
-            
+
             # Check extension/special files first
             if not should_include_file(filepath):
                 continue
-            
+
             # Check gitignore patterns
             file_rel = os.path.join(rel_path, filename) if rel_path else filename
             if _should_skip_by_gitignore(file_rel, gitignore_patterns):
                 continue
-            
-            collected.append(filepath)
-    
-    return sorted(collected)
 
+            collected.append(filepath)
+
+    return sorted(collected)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from ..schemas import EnvUpdate, EnvVariable
-from ..services.env_manager import get_env_schema, read_env, write_env
+from ..services.env_manager import get_env_schema, write_env
 
 router = APIRouter(prefix="/api/env", tags=["environment"])
 

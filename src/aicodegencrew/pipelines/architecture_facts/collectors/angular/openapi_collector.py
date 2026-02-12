@@ -11,14 +11,14 @@ Output feeds -> interfaces.json (API endpoints from spec)
              -> components.json (generated API clients)
 """
 
-import re
 import json
-import yaml
+import re
 from pathlib import Path
-from typing import Dict, List, Optional, Any
 
-from ..base import DimensionCollector, CollectorOutput, RawComponent, RawInterface
+import yaml
+
 from .....shared.utils.logger import logger
+from ..base import CollectorOutput, DimensionCollector, RawComponent, RawInterface
 
 
 class OpenAPICollector(DimensionCollector):
@@ -33,23 +33,29 @@ class OpenAPICollector(DimensionCollector):
     DIMENSION = "openapi"
 
     # Skip directories
-    SKIP_DIRS = {'node_modules', 'dist', 'build', '.git', 'coverage'}
+    SKIP_DIRS = {"node_modules", "dist", "build", ".git", "coverage"}
 
     # OpenAPI spec file patterns
     SPEC_PATTERNS = [
-        "openapi.yaml", "openapi.yml", "openapi.json",
-        "swagger.yaml", "swagger.yml", "swagger.json",
-        "api-spec.yaml", "api-spec.json",
-        "api.yaml", "api.json",
+        "openapi.yaml",
+        "openapi.yml",
+        "openapi.json",
+        "swagger.yaml",
+        "swagger.yml",
+        "swagger.json",
+        "api-spec.yaml",
+        "api-spec.json",
+        "api.yaml",
+        "api.json",
     ]
 
     # Generated client patterns
-    GENERATED_DIRS = ['generated', 'api', 'openapi', 'swagger', 'client']
+    GENERATED_DIRS = ["generated", "api", "openapi", "swagger", "client"]
 
     def __init__(self, repo_path: Path, container_id: str = "frontend"):
         super().__init__(repo_path)
         self.container_id = container_id
-        self._specs_found: List[Dict] = []
+        self._specs_found: list[dict] = []
 
     def collect(self) -> CollectorOutput:
         """Collect OpenAPI/Swagger facts."""
@@ -81,11 +87,11 @@ class OpenAPICollector(DimensionCollector):
     def _parse_spec_file(self, file_path: Path):
         """Parse an OpenAPI/Swagger spec file."""
         try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
             # Parse based on extension
-            if file_path.suffix in ('.yaml', '.yml'):
+            if file_path.suffix in (".yaml", ".yml"):
                 spec = yaml.safe_load(content)
             else:
                 spec = json.loads(content)
@@ -94,9 +100,9 @@ class OpenAPICollector(DimensionCollector):
                 return
 
             # Determine spec version
-            openapi_version = spec.get('openapi', spec.get('swagger', 'unknown'))
-            api_title = spec.get('info', {}).get('title', file_path.stem)
-            api_version = spec.get('info', {}).get('version', '')
+            openapi_version = spec.get("openapi", spec.get("swagger", "unknown"))
+            api_title = spec.get("info", {}).get("title", file_path.stem)
+            api_version = spec.get("info", {}).get("version", "")
 
             logger.info(f"[OpenAPICollector] Parsing: {rel_path} (OpenAPI {openapi_version})")
 
@@ -122,29 +128,26 @@ class OpenAPICollector(DimensionCollector):
             spec_component.metadata["title"] = api_title
 
             spec_component.add_evidence(
-                path=rel_path,
-                line_start=1,
-                line_end=20,
-                reason=f"OpenAPI Spec: {api_title} v{api_version}"
+                path=rel_path, line_start=1, line_end=20, reason=f"OpenAPI Spec: {api_title} v{api_version}"
             )
             self.output.add_fact(spec_component)
 
             # Extract endpoints from paths
-            paths = spec.get('paths', {})
+            paths = spec.get("paths", {})
             for path, operations in paths.items():
                 if not isinstance(operations, dict):
                     continue
 
                 for method, operation in operations.items():
-                    if method.lower() not in ('get', 'post', 'put', 'delete', 'patch', 'options', 'head'):
+                    if method.lower() not in ("get", "post", "put", "delete", "patch", "options", "head"):
                         continue
 
                     if not isinstance(operation, dict):
                         continue
 
-                    operation_id = operation.get('operationId', f"{method}_{path}")
-                    summary = operation.get('summary', '')
-                    tags = operation.get('tags', [])
+                    operation_id = operation.get("operationId", f"{method}_{path}")
+                    summary = operation.get("summary", "")
+                    tags = operation.get("tags", [])
 
                     interface = RawInterface(
                         name=f"{method.upper()} {path}",
@@ -163,10 +166,7 @@ class OpenAPICollector(DimensionCollector):
                         interface.metadata["tags"] = tags
 
                     interface.add_evidence(
-                        path=rel_path,
-                        line_start=1,
-                        line_end=10,
-                        reason=f"OpenAPI endpoint: {method.upper()} {path}"
+                        path=rel_path, line_start=1, line_end=10, reason=f"OpenAPI endpoint: {method.upper()} {path}"
                     )
 
                     self.output.add_fact(interface)
@@ -184,9 +184,9 @@ class OpenAPICollector(DimensionCollector):
         """Find generated API client services."""
         # Look for common generated client patterns
         patterns = [
-            ("*.service.ts", r'@Injectable.*?\n.*?class\s+(\w+Service)'),
-            ("*.api.ts", r'class\s+(\w+Api)'),
-            ("*Api.ts", r'class\s+(\w+Api)'),
+            ("*.service.ts", r"@Injectable.*?\n.*?class\s+(\w+Service)"),
+            ("*.api.ts", r"class\s+(\w+Api)"),
+            ("*Api.ts", r"class\s+(\w+Api)"),
         ]
 
         # Search in generated directories
@@ -202,19 +202,22 @@ class OpenAPICollector(DimensionCollector):
     def _process_generated_client(self, file_path: Path, class_regex: str):
         """Process a generated API client file."""
         try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
             # Check if it looks like generated code
-            is_generated = any(marker in content for marker in [
-                'AUTO GENERATED',
-                'auto-generated',
-                'Do not edit',
-                'Generated by',
-                'openapi-generator',
-                'swagger-codegen',
-                'ng-openapi-gen',
-            ])
+            is_generated = any(
+                marker in content
+                for marker in [
+                    "AUTO GENERATED",
+                    "auto-generated",
+                    "Do not edit",
+                    "Generated by",
+                    "openapi-generator",
+                    "swagger-codegen",
+                    "ng-openapi-gen",
+                ]
+            )
 
             if not is_generated:
                 return
@@ -245,12 +248,7 @@ class OpenAPICollector(DimensionCollector):
             if api_paths:
                 client.metadata["api_paths"] = api_paths[:20]  # Limit
 
-            client.add_evidence(
-                path=rel_path,
-                line_start=1,
-                line_end=30,
-                reason=f"Generated API client: {class_name}"
-            )
+            client.add_evidence(path=rel_path, line_start=1, line_end=30, reason=f"Generated API client: {class_name}")
 
             self.output.add_fact(client)
             logger.debug(f"[OpenAPICollector] Found generated client: {class_name}")

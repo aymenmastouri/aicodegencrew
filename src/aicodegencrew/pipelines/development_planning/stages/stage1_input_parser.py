@@ -7,12 +7,10 @@ and normalizes to TaskInput schema.
 Duration: <1 second (deterministic)
 """
 
-import json
 from pathlib import Path
-from typing import Dict, Any
 
-from ..schemas import TaskInput
 from ....shared.utils.logger import setup_logger
+from ..schemas import TaskInput
 
 logger = setup_logger(__name__)
 
@@ -34,12 +32,13 @@ class InputParserStage:
     def _check_parsers(self) -> bool:
         """Check if parser modules are available."""
         try:
-            from ..parsers import (
-                parse_xml,
+            from ..parsers import (  # noqa: F401
                 parse_docx,
                 parse_excel,
                 parse_text,
+                parse_xml,
             )
+
             return True
         except ImportError as e:
             logger.warning(f"Parser modules not available: {e}")
@@ -68,19 +67,16 @@ class InputParserStage:
         # Auto-detect format by extension
         extension = file_path.suffix.lower()
 
-        if extension == '.xml':
+        if extension == ".xml":
             task = self._parse_xml(file_path)
-        elif extension == '.docx':
+        elif extension == ".docx":
             task = self._parse_docx(file_path)
-        elif extension in ['.xlsx', '.xls']:
+        elif extension in [".xlsx", ".xls"]:
             task = self._parse_excel(file_path)
-        elif extension in ['.txt', '.log']:
+        elif extension in [".txt", ".log"]:
             task = self._parse_text(file_path)
         else:
-            raise ValueError(
-                f"Unsupported file format: {extension}. "
-                f"Supported: .xml, .docx, .xlsx, .xls, .txt, .log"
-            )
+            raise ValueError(f"Unsupported file format: {extension}. Supported: .xml, .docx, .xlsx, .xls, .txt, .log")
 
         task = self._detect_task_type(task)
         logger.info(f"[Stage1] Parsed task: {task.task_id} - {task.summary} (type={task.task_type})")
@@ -97,9 +93,14 @@ class InputParserStage:
         # Check ONLY summary/title to avoid false positives from comments
         summary_lower = task.summary.lower()
         exclusion_patterns = [
-            "sass compiler", "sass migration", "scss migration",
-            "builder migration", "build tool migration", "webpack migration",
-            "migration des sass", "sass import deprecation",
+            "sass compiler",
+            "sass migration",
+            "scss migration",
+            "builder migration",
+            "build tool migration",
+            "webpack migration",
+            "migration des sass",
+            "sass import deprecation",
         ]
         is_build_tool_migration = any(pat in summary_lower for pat in exclusion_patterns)
 
@@ -110,18 +111,37 @@ class InputParserStage:
         # Strong: framework-specific upgrade patterns (weight=3)
         framework_upgrade_patterns = [
             # Angular
-            "angular upgrade", "upgrade angular", "angular update", "update angular",
-            "ng update", "angular migration", "migrate angular",
+            "angular upgrade",
+            "upgrade angular",
+            "angular update",
+            "update angular",
+            "ng update",
+            "angular migration",
+            "migrate angular",
             # Spring
-            "spring boot upgrade", "upgrade spring", "spring migration",
-            "spring boot update", "spring security upgrade",
+            "spring boot upgrade",
+            "upgrade spring",
+            "spring migration",
+            "spring boot update",
+            "spring security upgrade",
             # Java
-            "java upgrade", "upgrade java", "jdk upgrade", "upgrade jdk",
-            "java 17", "java 21", "java 25", "openjdk upgrade",
+            "java upgrade",
+            "upgrade java",
+            "jdk upgrade",
+            "upgrade jdk",
+            "java 17",
+            "java 21",
+            "java 25",
+            "openjdk upgrade",
             # Playwright
-            "playwright upgrade", "upgrade playwright", "playwright update",
+            "playwright upgrade",
+            "upgrade playwright",
+            "playwright update",
             # React / Vue
-            "react upgrade", "upgrade react", "vue upgrade", "upgrade vue",
+            "react upgrade",
+            "upgrade react",
+            "vue upgrade",
+            "upgrade vue",
         ]
         for pat in framework_upgrade_patterns:
             if pat in combined:
@@ -129,9 +149,14 @@ class InputParserStage:
 
         # Medium: version upgrade intent (weight=2)
         version_intent_patterns = [
-            "version bump", "breaking changes", "upgrade to v",
-            "upgrade von", "upgrade auf", "migration guide",
-            "ng update", "update guide",
+            "version bump",
+            "breaking changes",
+            "upgrade to v",
+            "upgrade von",
+            "upgrade auf",
+            "migration guide",
+            "ng update",
+            "update guide",
         ]
         for pat in version_intent_patterns:
             if pat in combined:
@@ -139,11 +164,23 @@ class InputParserStage:
 
         # Weak: generic upgrade words - only count if combined (weight=1)
         has_upgrade_verb = any(w in combined for w in ["upgrade", "migrate", "migration"])
-        has_framework = any(w in combined for w in [
-            "angular", "spring", "react", "vue", "typescript",
-            "@angular", "spring-boot", "spring boot",
-            "playwright", "java ", "jdk", "openjdk",
-        ])
+        has_framework = any(
+            w in combined
+            for w in [
+                "angular",
+                "spring",
+                "react",
+                "vue",
+                "typescript",
+                "@angular",
+                "spring-boot",
+                "spring boot",
+                "playwright",
+                "java ",
+                "jdk",
+                "openjdk",
+            ]
+        )
         if has_upgrade_verb and has_framework:
             upgrade_score += 2
         elif has_upgrade_verb:
@@ -156,7 +193,7 @@ class InputParserStage:
             logger.info(f"[Stage1] Upgrade detected (score={upgrade_score})")
         elif is_build_tool_migration:
             task.task_type = "refactoring"
-            logger.info(f"[Stage1] Build-tool migration detected (not version upgrade)")
+            logger.info("[Stage1] Build-tool migration detected (not version upgrade)")
         elif any(kw in text for kw in ["fix", "bug", "error", "crash", "regression", "defect"]):
             task.task_type = "bugfix"
         elif any(kw in text for kw in ["refactor", "clean up", "technical debt", "restructure"]):
@@ -205,7 +242,7 @@ class InputParserStage:
         # Combine sections into description
         sections = result.get("sections", [])
         description = "\n\n".join(
-            f"## {s['title']}\n" + "\n".join(s['content'])
+            f"## {s['title']}\n" + "\n".join(s["content"])
             for s in sections[:5]  # First 5 sections
         )
 
@@ -234,7 +271,7 @@ class InputParserStage:
         if not sheets:
             raise ValueError("No sheets found in Excel file")
 
-        first_sheet = list(sheets.values())[0]
+        first_sheet = next(iter(sheets.values()))
         data = first_sheet.get("data", [])
 
         if not data:
@@ -279,19 +316,13 @@ class InputParserStage:
         if errors:
             # Build description from errors
             summary = f"Fix errors in {file_path.name}"
-            description = "\n\n".join(
-                f"Error: {e['message']}\nContext: {e.get('context', '')}"
-                for e in errors[:5]
-            )
+            description = "\n\n".join(f"Error: {e['message']}\nContext: {e.get('context', '')}" for e in errors[:5])
         elif log_entries:
             summary = f"Investigate logs from {file_path.name}"
-            description = "\n".join(
-                f"[{e.get('level', 'INFO')}] {e.get('message', '')}"
-                for e in log_entries[:10]
-            )
+            description = "\n".join(f"[{e.get('level', 'INFO')}] {e.get('message', '')}" for e in log_entries[:10])
         else:
             summary = f"Task from {file_path.name}"
-            description = file_path.read_text(encoding='utf-8')[:1000]
+            description = file_path.read_text(encoding="utf-8")[:1000]
 
         return TaskInput(
             task_id=task_id,

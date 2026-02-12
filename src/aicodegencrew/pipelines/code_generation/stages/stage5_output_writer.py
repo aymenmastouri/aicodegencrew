@@ -16,10 +16,9 @@ import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
 
-from ..schemas import GeneratedFile, ValidationResult, CodegenReport
 from ....shared.utils.logger import setup_logger
+from ..schemas import CodegenReport, GeneratedFile, ValidationResult
 
 logger = setup_logger(__name__)
 
@@ -40,7 +39,7 @@ class OutputWriterStage:
     def run(
         self,
         task_id: str,
-        generated_files: List[GeneratedFile],
+        generated_files: list[GeneratedFile],
         validation: ValidationResult,
         duration_seconds: float = 0.0,
         llm_calls: int = 0,
@@ -67,8 +66,7 @@ class OutputWriterStage:
         # Check failure threshold
         if len(generated_files) > 0 and failed_count / len(generated_files) > 0.5:
             logger.error(
-                f"[Stage5] >50% files failed ({failed_count}/{len(generated_files)}), "
-                f"aborting code generation"
+                f"[Stage5] >50% files failed ({failed_count}/{len(generated_files)}), aborting code generation"
             )
             return self._build_report(
                 task_id=task_id,
@@ -109,10 +107,7 @@ class OutputWriterStage:
             )
 
         if not self._is_clean_working_tree():
-            logger.error(
-                "[Stage5] Target repo has uncommitted changes. "
-                "Please commit or stash changes first."
-            )
+            logger.error("[Stage5] Target repo has uncommitted changes. Please commit or stash changes first.")
             return self._build_report(
                 task_id=task_id,
                 status="failed",
@@ -192,7 +187,7 @@ class OutputWriterStage:
         result = self._git("status", "--porcelain")
         return result is not None and result.strip() == ""
 
-    def _create_branch(self, task_id: str) -> Optional[str]:
+    def _create_branch(self, task_id: str) -> str | None:
         """Create a new branch for codegen output."""
         branch_name = f"codegen/{task_id}"
 
@@ -253,11 +248,11 @@ class OutputWriterStage:
             self._git("checkout", original)
             logger.info(f"[Stage5] Switched back to: {original}")
 
-    def _git(self, *args: str) -> Optional[str]:
+    def _git(self, *args: str) -> str | None:
         """Run a git command in the target repo. Returns stdout or None on error."""
         try:
             result = subprocess.run(
-                ["git"] + list(args),
+                ["git", *list(args)],
                 cwd=str(self.repo_path),
                 capture_output=True,
                 text=True,
@@ -318,13 +313,11 @@ class OutputWriterStage:
 
     @staticmethod
     def _filter_valid_files(
-        generated_files: List[GeneratedFile],
+        generated_files: list[GeneratedFile],
         validation: ValidationResult,
-    ) -> List[GeneratedFile]:
+    ) -> list[GeneratedFile]:
         """Filter to only valid files based on validation results."""
-        invalid_paths = {
-            r.file_path for r in validation.file_results if not r.is_valid
-        }
+        invalid_paths = {r.file_path for r in validation.file_results if not r.is_valid}
         return [gf for gf in generated_files if gf.file_path not in invalid_paths]
 
     @staticmethod
@@ -332,7 +325,7 @@ class OutputWriterStage:
         task_id: str,
         status: str = "failed",
         branch_name: str = "",
-        generated_files: List[GeneratedFile] = None,
+        generated_files: list[GeneratedFile] = None,
         validation: ValidationResult = None,
         files_changed: int = 0,
         files_created: int = 0,
@@ -346,9 +339,7 @@ class OutputWriterStage:
         validation_errors = []
         if validation:
             for r in validation.file_results:
-                validation_errors.extend(
-                    f"{r.file_path}: {e}" for e in r.errors
-                )
+                validation_errors.extend(f"{r.file_path}: {e}" for e in r.errors)
 
         return CodegenReport(
             task_id=task_id,

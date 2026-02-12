@@ -1,12 +1,18 @@
 import { defineConfig } from '@playwright/test';
 
+const isCI = !!process.env['CI'];
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,
-  retries: 1,
-  reporter: [['html', { open: 'never' }], ['list']],
+  retries: isCI ? 2 : 1,
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    ...(isCI ? [['junit', { outputFile: 'test-results/e2e-junit.xml' }] as const] : []),
+  ],
   use: {
     baseURL: 'http://localhost:4200',
     headless: true,

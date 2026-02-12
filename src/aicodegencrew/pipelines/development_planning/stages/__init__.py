@@ -7,8 +7,8 @@ from .stage4_plan_generator import PlanGeneratorStage
 from .stage5_validator import ValidatorStage
 
 __all__ = [
-    "InputParserStage",
     "ComponentDiscoveryStage",
+    "InputParserStage",
     "PatternMatcherStage",
     "PlanGeneratorStage",
     "ValidatorStage",

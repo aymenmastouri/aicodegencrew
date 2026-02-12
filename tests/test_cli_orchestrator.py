@@ -6,20 +6,18 @@ Uses pytest fixtures: tmp_path, monkeypatch, and unittest.mock.
 
 import argparse
 import json
-import shutil
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
 
-from aicodegencrew.cli import Config, clean_knowledge, create_parser, _resolve_phases_to_run
+from aicodegencrew.cli import Config, _resolve_phases_to_run, clean_knowledge, create_parser
 from aicodegencrew.orchestrator import (
-    PipelineResult,
     PhaseResult,
+    PipelineResult,
     SDLCOrchestrator,
 )
-
 
 # =============================================================================
 # Fixtures
@@ -108,6 +106,7 @@ def orchestrator(config_yaml: Path) -> SDLCOrchestrator:
 # CLI: create_parser()
 # =============================================================================
 
+
 class TestCreateParser:
     """Tests for create_parser()."""
 
@@ -124,6 +123,7 @@ class TestCreateParser:
 # CLI: Argument parsing
 # =============================================================================
 
+
 class TestArgumentParsing:
     """Tests for parsing various CLI commands."""
 
@@ -136,9 +136,7 @@ class TestArgumentParsing:
 
     def test_run_with_explicit_phases(self):
         parser = create_parser()
-        args = parser.parse_args(
-            ["run", "--phases", "phase0_indexing", "phase1_architecture_facts"]
-        )
+        args = parser.parse_args(["run", "--phases", "phase0_indexing", "phase1_architecture_facts"])
         assert args.command == "run"
         assert args.phases == ["phase0_indexing", "phase1_architecture_facts"]
         assert args.preset is None
@@ -219,6 +217,7 @@ class TestArgumentParsing:
 # CLI: Config.from_env()
 # =============================================================================
 
+
 class TestConfigFromEnv:
     """Tests for Config.from_env()."""
 
@@ -294,6 +293,7 @@ class TestConfigFromEnv:
 # CLI: _resolve_phases_to_run()
 # =============================================================================
 
+
 class TestResolvePhasesToRun:
     """Tests for _resolve_phases_to_run()."""
 
@@ -349,6 +349,7 @@ class TestResolvePhasesToRun:
 # =============================================================================
 # CLI: clean_knowledge()
 # =============================================================================
+
 
 class TestCleanKnowledge:
     """Tests for clean_knowledge()."""
@@ -440,6 +441,7 @@ class TestCleanKnowledge:
 # Orchestrator: SDLCOrchestrator initialization
 # =============================================================================
 
+
 class TestOrchestratorInit:
     """Tests for SDLCOrchestrator construction and config loading."""
 
@@ -468,6 +470,7 @@ class TestOrchestratorInit:
 # Orchestrator: register()
 # =============================================================================
 
+
 class TestOrchestratorRegister:
     """Tests for register() and register_phase()."""
 
@@ -484,9 +487,7 @@ class TestOrchestratorRegister:
     def test_chaining_multiple_registers(self, orchestrator):
         mock_a = MagicMock()
         mock_b = MagicMock()
-        orchestrator.register("phase0_indexing", mock_a).register(
-            "phase1_architecture_facts", mock_b
-        )
+        orchestrator.register("phase0_indexing", mock_a).register("phase1_architecture_facts", mock_b)
         assert "phase0_indexing" in orchestrator.phases
         assert "phase1_architecture_facts" in orchestrator.phases
 
@@ -500,6 +501,7 @@ class TestOrchestratorRegister:
 # =============================================================================
 # Orchestrator: get_presets()
 # =============================================================================
+
 
 class TestOrchestratorGetPresets:
     """Tests for get_presets()."""
@@ -520,6 +522,7 @@ class TestOrchestratorGetPresets:
 # =============================================================================
 # Orchestrator: get_preset_phases()
 # =============================================================================
+
 
 class TestOrchestratorGetPresetPhases:
     """Tests for get_preset_phases()."""
@@ -552,6 +555,7 @@ class TestOrchestratorGetPresetPhases:
 # =============================================================================
 # Orchestrator: get_enabled_phases()
 # =============================================================================
+
 
 class TestOrchestratorGetEnabledPhases:
     """Tests for get_enabled_phases()."""
@@ -592,6 +596,7 @@ class TestOrchestratorGetEnabledPhases:
 # Orchestrator: is_phase_enabled()
 # =============================================================================
 
+
 class TestOrchestratorIsPhaseEnabled:
     """Tests for is_phase_enabled()."""
 
@@ -622,6 +627,7 @@ class TestOrchestratorIsPhaseEnabled:
 # =============================================================================
 # Orchestrator: _outputs_exist()
 # =============================================================================
+
 
 class TestOutputsExist:
     """Tests for _outputs_exist()."""
@@ -676,6 +682,7 @@ class TestOutputsExist:
 # Orchestrator: PhaseResult dataclass
 # =============================================================================
 
+
 class TestPhaseResult:
     """Tests for PhaseResult serialization and helpers."""
 
@@ -727,6 +734,7 @@ class TestPhaseResult:
 # =============================================================================
 # Orchestrator: PipelineResult dataclass
 # =============================================================================
+
 
 class TestPipelineResult:
     """Tests for PipelineResult serialization."""
@@ -786,6 +794,7 @@ class TestPipelineResult:
 # Orchestrator: context property (backward compatibility)
 # =============================================================================
 
+
 class TestOrchestratorContext:
     """Tests for the backward-compat context property."""
 
@@ -811,6 +820,7 @@ class TestOrchestratorContext:
 # Orchestrator: get_phase_config()
 # =============================================================================
 
+
 class TestOrchestratorGetPhaseConfig:
     """Tests for get_phase_config()."""
 
@@ -828,6 +838,7 @@ class TestOrchestratorGetPhaseConfig:
 # =============================================================================
 # Integration: Orchestrator uses real config file from project
 # =============================================================================
+
 
 class TestOrchestratorWithRealConfig:
     """Verify the orchestrator works against the actual project config."""
@@ -874,6 +885,7 @@ class TestOrchestratorWithRealConfig:
 # Orchestrator: run() with mocked executables
 # =============================================================================
 
+
 class TestOrchestratorRun:
     """Tests for the run() method with mock executables (no LLM)."""
 
@@ -891,8 +903,7 @@ class TestOrchestratorRun:
         orchestrator.register("phase0_indexing", mock_pipeline)
 
         # Patch archive_knowledge and _git_commit_after_phase to avoid side effects
-        with patch.object(orchestrator, "archive_knowledge"), \
-             patch.object(orchestrator, "_git_commit_after_phase"):
+        with patch.object(orchestrator, "archive_knowledge"), patch.object(orchestrator, "_git_commit_after_phase"):
             result = orchestrator.run(phases=["phase0_indexing"])
 
         assert result.status == "success"
@@ -909,9 +920,11 @@ class TestOrchestratorRun:
         orchestrator.register("phase0_indexing", failing)
         orchestrator.register("phase1_architecture_facts", succeeding)
 
-        with patch.object(orchestrator, "archive_knowledge"), \
-             patch.object(orchestrator, "_git_commit_after_phase"), \
-             patch.object(orchestrator, "_check_dependencies", return_value=True):
+        with (
+            patch.object(orchestrator, "archive_knowledge"),
+            patch.object(orchestrator, "_git_commit_after_phase"),
+            patch.object(orchestrator, "_check_dependencies", return_value=True),
+        ):
             result = orchestrator.run(
                 phases=["phase0_indexing", "phase1_architecture_facts"],
                 stop_on_error=True,

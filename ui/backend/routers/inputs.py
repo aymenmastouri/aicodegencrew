@@ -5,14 +5,14 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, UploadFile
 
 from ..services.input_manager import (
+    CATEGORIES,
+    MAX_FILE_SIZE,
     delete_input_file,
     get_categories_metadata,
     get_category_summary,
     list_all_inputs,
     list_category_files,
     save_uploaded_file,
-    CATEGORIES,
-    MAX_FILE_SIZE,
 )
 
 router = APIRouter(prefix="/api/inputs", tags=["inputs"])

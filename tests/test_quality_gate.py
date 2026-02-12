@@ -1,11 +1,11 @@
 """Tests for quality gate tool."""
 
-import pytest
 import json
-import tempfile
-from pathlib import Path
+
+import pytest
+
+from aicodegencrew.shared.models.analysis_schema import ArchitectureAnalysis, Evidence, ProjectUnit, Technology
 from aicodegencrew.shared.tools.quality_gate_tool import QualityGateTool
-from aicodegencrew.shared.models.analysis_schema import ArchitectureAnalysis, Evidence, Technology, ProjectUnit
 
 
 @pytest.fixture
@@ -26,13 +26,7 @@ def valid_analysis():
             Technology(
                 name="Java",
                 category="backend",
-                evidence=[
-                    Evidence(
-                        file_path="src/Main.java",
-                        chunk_id="test_001",
-                        snippet="public class Main"
-                    )
-                ]
+                evidence=[Evidence(file_path="src/Main.java", chunk_id="test_001", snippet="public class Main")],
             )
         ],
         project_units=[
@@ -42,15 +36,13 @@ def valid_analysis():
                 root_path="backend/",
                 evidence=[
                     Evidence(
-                        file_path="backend/pom.xml",
-                        chunk_id="test_002",
-                        snippet="<artifactId>backend</artifactId>"
+                        file_path="backend/pom.xml", chunk_id="test_002", snippet="<artifactId>backend</artifactId>"
                     )
-                ]
+                ],
             )
         ],
         recommendations=["Implement API documentation"],
-        metadata={"evidence_count": 10}
+        metadata={"evidence_count": 10},
     )
 
 
@@ -60,15 +52,11 @@ def test_quality_gate_valid_analysis(quality_tool, valid_analysis, tmp_path):
     analysis_path = tmp_path / "analyze.json"
     with open(analysis_path, "w") as f:
         json.dump(valid_analysis.model_dump(), f)
-    
+
     # Run quality gate
     output_path = tmp_path / "quality-report.md"
-    result = quality_tool._run(
-        analysis_path=str(analysis_path),
-        output_path=str(output_path),
-        min_evidence_count=1
-    )
-    
+    result = quality_tool._run(analysis_path=str(analysis_path), output_path=str(output_path), min_evidence_count=1)
+
     assert result["success"] is True
     assert result["overall_status"] == "PASS"
     assert result["passed"] > 0
@@ -81,18 +69,14 @@ def test_quality_gate_missing_evidence(quality_tool, valid_analysis, tmp_path):
     # Remove evidence from technology
     analysis_dict = valid_analysis.model_dump()
     analysis_dict["technologies"][0]["evidence"] = []
-    
+
     analysis_path = tmp_path / "analyze.json"
     with open(analysis_path, "w") as f:
         json.dump(analysis_dict, f)
-    
+
     output_path = tmp_path / "quality-report.md"
-    result = quality_tool._run(
-        analysis_path=str(analysis_path),
-        output_path=str(output_path),
-        min_evidence_count=1
-    )
-    
+    result = quality_tool._run(analysis_path=str(analysis_path), output_path=str(output_path), min_evidence_count=1)
+
     assert result["success"] is True
     assert result["overall_status"] == "FAIL"
     assert result["failed"] > 0
@@ -109,20 +93,16 @@ def test_quality_gate_missing_required_fields(quality_tool, tmp_path):
         "technologies": [],
         "project_units": [],
         "recommendations": [],
-        "metadata": {}
+        "metadata": {},
     }
-    
+
     analysis_path = tmp_path / "analyze.json"
     with open(analysis_path, "w") as f:
         json.dump(analysis_dict, f)
-    
+
     output_path = tmp_path / "quality-report.md"
-    result = quality_tool._run(
-        analysis_path=str(analysis_path),
-        output_path=str(output_path),
-        min_evidence_count=1
-    )
-    
+    result = quality_tool._run(analysis_path=str(analysis_path), output_path=str(output_path), min_evidence_count=1)
+
     assert result["success"] is True
     assert result["overall_status"] == "FAIL"
 
@@ -137,19 +117,16 @@ def test_quality_gate_no_technologies(quality_tool, tmp_path):
         "technologies": [],  # No technologies
         "project_units": [],
         "recommendations": [],
-        "metadata": {}
+        "metadata": {},
     }
-    
+
     analysis_path = tmp_path / "analyze.json"
     with open(analysis_path, "w") as f:
         json.dump(analysis_dict, f)
-    
+
     output_path = tmp_path / "quality-report.md"
-    result = quality_tool._run(
-        analysis_path=str(analysis_path),
-        output_path=str(output_path)
-    )
-    
+    result = quality_tool._run(analysis_path=str(analysis_path), output_path=str(output_path))
+
     assert result["success"] is True
     # Should fail because no technologies detected
     checks = result["checks"]
@@ -163,13 +140,10 @@ def test_quality_gate_invalid_json(quality_tool, tmp_path):
     analysis_path = tmp_path / "analyze.json"
     with open(analysis_path, "w") as f:
         f.write("invalid json content")
-    
+
     output_path = tmp_path / "quality-report.md"
-    result = quality_tool._run(
-        analysis_path=str(analysis_path),
-        output_path=str(output_path)
-    )
-    
+    result = quality_tool._run(analysis_path=str(analysis_path), output_path=str(output_path))
+
     assert result["success"] is False
     assert "error" in result
 
@@ -179,15 +153,12 @@ def test_quality_gate_report_format(quality_tool, valid_analysis, tmp_path):
     analysis_path = tmp_path / "analyze.json"
     with open(analysis_path, "w") as f:
         json.dump(valid_analysis.model_dump(), f)
-    
+
     output_path = tmp_path / "quality-report.md"
-    result = quality_tool._run(
-        analysis_path=str(analysis_path),
-        output_path=str(output_path)
-    )
-    
+    result = quality_tool._run(analysis_path=str(analysis_path), output_path=str(output_path))
+
     assert result["success"] is True
-    
+
     # Check report content
     report_content = output_path.read_text(encoding="utf-8")
     assert "# Quality Gate Report" in report_content

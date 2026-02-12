@@ -5,8 +5,8 @@ Tests realistic user workflows: fresh run, preset resolution, error recovery,
 phase validation chains, and multi-format export. All tests run WITHOUT
 LLM or network access.
 """
+
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 # =============================================================================
 # Helpers: mock Java/Angular mini-repo
 # =============================================================================
+
 
 def _create_mini_java_repo(root: Path) -> Path:
     """Create a minimal Spring Boot + Angular repo for testing.
@@ -109,10 +110,12 @@ dependencies {
     )
 
     (root / "frontend" / "package.json").write_text(
-        json.dumps({
-            "name": "frontend",
-            "dependencies": {"@angular/core": "^17.0.0"},
-        }),
+        json.dumps(
+            {
+                "name": "frontend",
+                "dependencies": {"@angular/core": "^17.0.0"},
+            }
+        ),
         encoding="utf-8",
     )
 
@@ -138,6 +141,7 @@ export class UserService {
 # =============================================================================
 # Scenario 1: Fresh first run
 # =============================================================================
+
 
 class TestScenario1FreshFirstRun:
     """Clean output dir -> run facts pipeline on mock repo -> verify outputs exist."""
@@ -169,9 +173,7 @@ class TestScenario1FreshFirstRun:
         assert (output_dir / "containers.json").exists()
 
         # Verify content quality
-        facts_data = json.loads(
-            (output_dir / "architecture_facts.json").read_text(encoding="utf-8")
-        )
+        facts_data = json.loads((output_dir / "architecture_facts.json").read_text(encoding="utf-8"))
 
         assert "system" in facts_data
         assert "components" in facts_data
@@ -193,9 +195,7 @@ class TestScenario1FreshFirstRun:
         )
         pipeline.kickoff()
 
-        comps = json.loads(
-            (output_dir / "components.json").read_text(encoding="utf-8")
-        )
+        comps = json.loads((output_dir / "components.json").read_text(encoding="utf-8"))
 
         names = [c["name"] for c in comps]
         stereotypes = [c.get("stereotype", "") for c in comps]
@@ -223,9 +223,7 @@ class TestScenario1FreshFirstRun:
         )
         pipeline.kickoff()
 
-        containers = json.loads(
-            (output_dir / "containers.json").read_text(encoding="utf-8")
-        )
+        containers = json.loads((output_dir / "containers.json").read_text(encoding="utf-8"))
 
         technologies = [c.get("technology", "") for c in containers]
 
@@ -251,6 +249,7 @@ class TestScenario1FreshFirstRun:
 # =============================================================================
 # Scenario 2: Preset resolution
 # =============================================================================
+
 
 class TestScenario2PresetResolution:
     """Verify presets resolve to the correct phase lists."""
@@ -339,14 +338,17 @@ class TestScenario2PresetResolution:
                 current_order = orchestrator.get_phase_config(enabled[i]).get("order", 999)
                 next_order = orchestrator.get_phase_config(enabled[i + 1]).get("order", 999)
                 assert current_order <= next_order, (
-                    f"{enabled[i]} (order={current_order}) should come before "
-                    f"{enabled[i + 1]} (order={next_order})"
+                    f"{enabled[i]} (order={current_order}) should come before {enabled[i + 1]} (order={next_order})"
                 )
 
     def test_phase_dependencies_declared(self, orchestrator):
         """Every phase (except phase0) declares dependencies."""
-        for phase_id in ["phase1_architecture_facts", "phase2_architecture_analysis",
-                         "phase3_architecture_synthesis", "phase4_development_planning"]:
+        for phase_id in [
+            "phase1_architecture_facts",
+            "phase2_architecture_analysis",
+            "phase3_architecture_synthesis",
+            "phase4_development_planning",
+        ]:
             config = orchestrator.get_phase_config(phase_id)
             deps = config.get("dependencies", [])
             assert len(deps) >= 1, f"{phase_id} should have at least 1 dependency"
@@ -355,6 +357,7 @@ class TestScenario2PresetResolution:
 # =============================================================================
 # Scenario 3: Error recovery
 # =============================================================================
+
 
 class TestScenario3ErrorRecovery:
     """Missing prerequisite files, invalid JSON, graceful degradation."""
@@ -365,9 +368,7 @@ class TestScenario3ErrorRecovery:
             ArchitectureSynthesisCrew,
         )
 
-        crew = ArchitectureSynthesisCrew(
-            facts_path=str(tmp_path / "missing" / "architecture_facts.json")
-        )
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "missing" / "architecture_facts.json"))
 
         with pytest.raises(FileNotFoundError) as exc_info:
             crew._validate_prerequisites()
@@ -378,18 +379,13 @@ class TestScenario3ErrorRecovery:
 
     def test_invalid_json_in_facts(self, tmp_path):
         """Validator catches invalid JSON in architecture_facts.json."""
-        from aicodegencrew.shared.validation import PhaseOutputValidator
 
         arch_dir = tmp_path / "knowledge" / "architecture"
         arch_dir.mkdir(parents=True)
 
         # Write invalid JSON
-        (arch_dir / "architecture_facts.json").write_text(
-            "{not valid json", encoding="utf-8"
-        )
-        (arch_dir / "evidence_map.json").write_text(
-            '{"valid": true}', encoding="utf-8"
-        )
+        (arch_dir / "architecture_facts.json").write_text("{not valid json", encoding="utf-8")
+        (arch_dir / "evidence_map.json").write_text('{"valid": true}', encoding="utf-8")
 
         # The validator uses hardcoded paths, so we need to test differently.
         # Instead, test that _load_json handles it gracefully.
@@ -400,7 +396,7 @@ class TestScenario3ErrorRecovery:
 
     def test_empty_output_file_detected(self, tmp_path, monkeypatch):
         """Validator detects empty output files."""
-        from aicodegencrew.shared.validation import PhaseOutputValidator, PHASE_OUTPUT_SPECS
+        from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
         # Verify spec says files must exist
         spec = PHASE_OUTPUT_SPECS.get("phase1_architecture_facts", {})
@@ -486,6 +482,7 @@ class TestScenario3ErrorRecovery:
 # =============================================================================
 # Scenario 4: Phase output validation chain
 # =============================================================================
+
 
 class TestScenario4PhaseOutputValidation:
     """Phase 0 output -> Phase 1 can validate, Phase 1 output -> Phase 2 can validate."""
@@ -584,14 +581,10 @@ class TestScenario4PhaseOutputValidation:
             "endpoint_flows": [],
         }
 
-        (arch_dir / "architecture_facts.json").write_text(
-            json.dumps(facts), encoding="utf-8"
-        )
+        (arch_dir / "architecture_facts.json").write_text(json.dumps(facts), encoding="utf-8")
 
         evidence = {"ev_001": {"path": "Svc.java", "lines": "1-10", "reason": "test"}}
-        (arch_dir / "evidence_map.json").write_text(
-            json.dumps(evidence), encoding="utf-8"
-        )
+        (arch_dir / "evidence_map.json").write_text(json.dumps(evidence), encoding="utf-8")
 
         validator = PhaseOutputValidator()
         errors = validator.validate_phase("phase1_architecture_facts")
@@ -622,9 +615,7 @@ class TestScenario4PhaseOutputValidation:
             "endpoint_flows": [],
         }
 
-        (arch_dir / "architecture_facts.json").write_text(
-            json.dumps(facts), encoding="utf-8"
-        )
+        (arch_dir / "architecture_facts.json").write_text(json.dumps(facts), encoding="utf-8")
         (arch_dir / "evidence_map.json").write_text(
             '{"ev_001": {"path": "x", "lines": "1-1", "reason": "r"}}',
             encoding="utf-8",
@@ -638,6 +629,7 @@ class TestScenario4PhaseOutputValidation:
 # =============================================================================
 # Scenario 5: Multi-format export
 # =============================================================================
+
 
 class TestScenario5MultiFormatExport:
     """DocumentConverter generates 3 formats per file, arc42 ToC, German support."""
@@ -704,12 +696,8 @@ End of document.
         # Create multiple files in subdirectories
         c4_dir = tmp_path / "c4"
         c4_dir.mkdir()
-        (c4_dir / "c4-context.md").write_text(
-            "# Context\n\nSystem context.\n", encoding="utf-8"
-        )
-        (c4_dir / "c4-container.md").write_text(
-            "# Container\n\nContainer view.\n", encoding="utf-8"
-        )
+        (c4_dir / "c4-context.md").write_text("# Context\n\nSystem context.\n", encoding="utf-8")
+        (c4_dir / "c4-container.md").write_text("# Container\n\nContainer view.\n", encoding="utf-8")
 
         converter = DocumentConverter()
         total = converter.convert_directory(tmp_path)
@@ -731,9 +719,7 @@ End of document.
         arc42_dir.mkdir()
 
         for num in ["01", "02", "03", "04", "05"]:
-            (arc42_dir / f"{num}-chapter.md").write_text(
-                f"# Chapter {num}\n\nContent.\n", encoding="utf-8"
-            )
+            (arc42_dir / f"{num}-chapter.md").write_text(f"# Chapter {num}\n\nContent.\n", encoding="utf-8")
 
         converter = DocumentConverter()
         converter.convert_directory(tmp_path, lang="en")
@@ -757,15 +743,13 @@ End of document.
     def test_german_language_titles(self, tmp_path):
         """German arc42 ToC uses Architekturdokumentation title."""
         from aicodegencrew.shared.utils.confluence_converter import (
-            DocumentConverter,
             ARC42_CHAPTERS,
+            DocumentConverter,
         )
 
         arc42_dir = tmp_path / "arc42"
         arc42_dir.mkdir()
-        (arc42_dir / "01-einfuehrung.md").write_text(
-            "# Einleitung\n\nContent.\n", encoding="utf-8"
-        )
+        (arc42_dir / "01-einfuehrung.md").write_text("# Einleitung\n\nContent.\n", encoding="utf-8")
 
         converter = DocumentConverter()
         converter.convert_directory(tmp_path, lang="de")
@@ -909,6 +893,7 @@ End of document.
 # Cross-cutting: collector base classes and raw facts
 # =============================================================================
 
+
 class TestCollectorBaseClasses:
     """Tests for collector base functionality used across all phases."""
 
@@ -1012,9 +997,7 @@ class TestCollectorBaseClasses:
         collector = ComponentCollector(repo_path=tmp_path, containers=containers)
 
         # Should correctly filter by technology
-        spring_containers = collector._get_containers_by_technologies(
-            {"Spring Boot", "Java/Gradle", "Java/Maven"}
-        )
+        spring_containers = collector._get_containers_by_technologies({"Spring Boot", "Java/Gradle", "Java/Maven"})
         assert len(spring_containers) == 1
         assert spring_containers[0]["name"] == "backend"
 
@@ -1026,6 +1009,7 @@ class TestCollectorBaseClasses:
 # =============================================================================
 # Orchestrator data flow
 # =============================================================================
+
 
 class TestOrchestratorDataFlow:
     """Tests for orchestrator register/run flow without actual phase execution."""
@@ -1077,7 +1061,7 @@ class TestOrchestratorDataFlow:
 
     def test_pipeline_result_structure(self):
         """PipelineResult.to_dict has expected structure."""
-        from aicodegencrew.orchestrator import PipelineResult, PhaseResult
+        from aicodegencrew.orchestrator import PhaseResult, PipelineResult
 
         result = PipelineResult(
             status="success",
@@ -1132,14 +1116,15 @@ class TestOrchestratorDataFlow:
 # Scenario 6: Run Report Export
 # =============================================================================
 
+
 class TestScenario6RunReport:
     """Tests for run_report.json export to knowledge/ directory."""
 
     def test_export_run_report_creates_file(self, tmp_path, monkeypatch):
         """_export_run_report writes a valid JSON file."""
         monkeypatch.chdir(tmp_path)
-        from aicodegencrew.orchestrator import PipelineResult, PhaseResult
-        from aicodegencrew.cli import _export_run_report, Config
+        from aicodegencrew.cli import Config, _export_run_report
+        from aicodegencrew.orchestrator import PhaseResult, PipelineResult
 
         result = PipelineResult(
             status="success",
@@ -1179,8 +1164,8 @@ class TestScenario6RunReport:
     def test_export_run_report_on_failure(self, tmp_path, monkeypatch):
         """_export_run_report also works for failed pipelines."""
         monkeypatch.chdir(tmp_path)
-        from aicodegencrew.orchestrator import PipelineResult, PhaseResult
-        from aicodegencrew.cli import _export_run_report, Config
+        from aicodegencrew.cli import Config, _export_run_report
+        from aicodegencrew.orchestrator import PhaseResult, PipelineResult
 
         result = PipelineResult(
             status="failed",
@@ -1202,7 +1187,9 @@ class TestScenario6RunReport:
             git_branch="",
         )
 
-        report_path = _export_run_report(result, config, {"phase0_indexing", "phase1_architecture_facts", "phase2_architecture_analysis"})
+        report_path = _export_run_report(
+            result, config, {"phase0_indexing", "phase1_architecture_facts", "phase2_architecture_analysis"}
+        )
 
         report = json.loads(report_path.read_text(encoding="utf-8"))
         assert report["status"] == "failed"
@@ -1212,16 +1199,23 @@ class TestScenario6RunReport:
     def test_export_run_report_planned_phases_sorted(self, tmp_path, monkeypatch):
         """planned_phases appear sorted in the report."""
         monkeypatch.chdir(tmp_path)
+        from aicodegencrew.cli import Config, _export_run_report
         from aicodegencrew.orchestrator import PipelineResult
-        from aicodegencrew.cli import _export_run_report, Config
 
         result = PipelineResult(status="success", message="ok", total_duration="0:00:01")
         config = Config(
-            repo_path=Path("."), index_mode="auto", config_path=None,
-            clean=False, no_clean=False, git_repo_url="", git_branch="",
+            repo_path=Path("."),
+            index_mode="auto",
+            config_path=None,
+            clean=False,
+            no_clean=False,
+            git_repo_url="",
+            git_branch="",
         )
 
-        _export_run_report(result, config, {"phase2_architecture_analysis", "phase0_indexing", "phase1_architecture_facts"})
+        _export_run_report(
+            result, config, {"phase2_architecture_analysis", "phase0_indexing", "phase1_architecture_facts"}
+        )
 
         report = json.loads((tmp_path / "knowledge" / "run_report.json").read_text(encoding="utf-8"))
         assert report["planned_phases"] == [

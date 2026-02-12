@@ -15,6 +15,7 @@ Usage:
     finally:
         uninstall_guardrails(tracker)
 """
+
 import json
 import logging
 
@@ -86,8 +87,7 @@ class ToolCallTracker:
         self.calls.append(key)
         if len(self.calls) % 5 == 0:
             logger.info(
-                f"[GUARDRAIL] Tool call #{len(self.calls)}: {tool_name} "
-                f"(budget: {len(self.calls)}/{self.max_total})"
+                f"[GUARDRAIL] Tool call #{len(self.calls)}: {tool_name} (budget: {len(self.calls)}/{self.max_total})"
             )
         return None  # Allow
 
@@ -95,10 +95,7 @@ class ToolCallTracker:
         """Register the before_tool_call hook with CrewAI."""
         self._hook_ref = self._before_hook
         register_before_tool_call_hook(self._hook_ref)
-        logger.info(
-            f"[GUARDRAIL] Installed (max_identical={self.max_identical}, "
-            f"max_total={self.max_total})"
-        )
+        logger.info(f"[GUARDRAIL] Installed (max_identical={self.max_identical}, max_total={self.max_total})")
 
     def uninstall(self) -> None:
         """Unregister the hook (prevents cross-crew leaking)."""
@@ -107,15 +104,12 @@ class ToolCallTracker:
             total = len(self.calls)
             unique = len(set(self.calls))
             logger.info(
-                f"[GUARDRAIL] Uninstalled. Stats: {total} total calls, "
-                f"{unique} unique, {total - unique} duplicates"
+                f"[GUARDRAIL] Uninstalled. Stats: {total} total calls, {unique} unique, {total - unique} duplicates"
             )
             self._hook_ref = None
 
 
-def install_guardrails(
-    max_identical: int = 3, max_total: int = 25
-) -> ToolCallTracker:
+def install_guardrails(max_identical: int = 3, max_total: int = 25) -> ToolCallTracker:
     """Create and install a ToolCallTracker for a crew execution.
 
     Args:
@@ -125,9 +119,7 @@ def install_guardrails(
     Returns:
         The tracker instance (pass to uninstall_guardrails).
     """
-    tracker = ToolCallTracker(
-        max_identical=max_identical, max_total=max_total
-    )
+    tracker = ToolCallTracker(max_identical=max_identical, max_total=max_total)
     tracker.install()
     return tracker
 

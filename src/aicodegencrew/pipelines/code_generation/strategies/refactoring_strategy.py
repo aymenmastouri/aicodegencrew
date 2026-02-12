@@ -1,7 +1,7 @@
 """Strategy for code restructuring/refactoring."""
 
+from ..schemas import CodegenPlanInput, FileContext
 from .base import BaseStrategy
-from ..schemas import FileContext, CodegenPlanInput
 
 
 class RefactoringStrategy(BaseStrategy):

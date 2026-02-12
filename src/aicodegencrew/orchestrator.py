@@ -11,25 +11,26 @@ Design Principles:
 - Dependency Injection: Phases are registered, not hardcoded
 """
 
-import yaml
 import shutil
 import subprocess
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Protocol
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Protocol
 
-from .shared.utils.logger import logger, log_metric
+import yaml
 
+from .shared.utils.logger import log_metric, logger
 
 # =============================================================================
 # PROTOCOLS (Interfaces)
 # =============================================================================
 
+
 class PhaseExecutable(Protocol):
     """Interface for executable phases (Pipeline or Crew)."""
-    
-    def kickoff(self, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
+
+    def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """Execute the phase and return results."""
         ...
 
@@ -38,19 +39,21 @@ class PhaseExecutable(Protocol):
 # DATA CLASSES
 # =============================================================================
 
+
 @dataclass
 class PhaseResult:
     """Result of a single phase execution."""
+
     phase_id: str
     status: str  # 'success', 'failed', 'skipped'
     message: str = ""
     output: Any = None
     duration_seconds: float = 0.0
-    
+
     def is_success(self) -> bool:
         return self.status == "success"
-    
-    def to_dict(self) -> Dict[str, Any]:
+
+    def to_dict(self) -> dict[str, Any]:
         return {
             "phase": self.phase_id,
             "status": self.status,
@@ -62,12 +65,13 @@ class PhaseResult:
 @dataclass
 class PipelineResult:
     """Result of entire pipeline execution."""
+
     status: str  # 'success', 'failed'
     message: str
-    phases: List[PhaseResult] = field(default_factory=list)
+    phases: list[PhaseResult] = field(default_factory=list)
     total_duration: str = ""
-    
-    def to_dict(self) -> Dict[str, Any]:
+
+    def to_dict(self) -> dict[str, Any]:
         return {
             "status": self.status,
             "message": self.message,
@@ -80,144 +84,135 @@ class PipelineResult:
 # ORCHESTRATOR
 # =============================================================================
 
+
 class SDLCOrchestrator:
     """
     Orchestrates SDLC phase execution.
-    
+
     Usage:
         orchestrator = SDLCOrchestrator()
         orchestrator.register("phase0_indexing", IndexingPipeline(...))
         orchestrator.register("phase1_architecture_facts", ArchFactsPipeline(...))
         orchestrator.register("phase2_architecture_analysis", AnalysisCrew(...))
-        
+
         result = orchestrator.run(preset="architecture_workflow")
     """
-    
-    def __init__(self, config_path: Optional[str] = None):
+
+    def __init__(self, config_path: str | None = None):
         """Initialize with optional config path."""
         self.config_path = config_path or self._default_config_path()
         self.config = self._load_config()
-        self.phases: Dict[str, PhaseExecutable] = {}
-        self.results: Dict[str, PhaseResult] = {}
-        self._start_time: Optional[datetime] = None
-        
-        logger.info(f"[Orchestrator] Initialized")
-    
+        self.phases: dict[str, PhaseExecutable] = {}
+        self.results: dict[str, PhaseResult] = {}
+        self._start_time: datetime | None = None
+
+        logger.info("[Orchestrator] Initialized")
+
     # -------------------------------------------------------------------------
     # PUBLIC API
     # -------------------------------------------------------------------------
-    
+
     def register(self, phase_id: str, executable: PhaseExecutable) -> "SDLCOrchestrator":
         """
         Register a phase for execution.
-        
+
         Args:
             phase_id: Unique phase identifier (e.g., "phase0_indexing")
             executable: Pipeline or Crew instance with kickoff() method
-            
+
         Returns:
             self (for chaining)
         """
         self.phases[phase_id] = executable
         logger.debug(f"[Orchestrator] Registered: {phase_id}")
         return self
-    
+
     # Backward compatibility alias
     def register_phase(self, phase_id: str, executable: PhaseExecutable) -> "SDLCOrchestrator":
         """Alias for register() for backward compatibility."""
         return self.register(phase_id, executable)
-    
+
     def run(
-        self, 
-        preset: Optional[str] = None, 
-        phases: Optional[List[str]] = None,
-        stop_on_error: bool = True
+        self, preset: str | None = None, phases: list[str] | None = None, stop_on_error: bool = True
     ) -> PipelineResult:
         """
         Execute the SDLC pipeline.
-        
+
         Args:
             preset: Named preset from config (e.g., "architecture_workflow")
             phases: Explicit list of phases to run (overrides preset)
             stop_on_error: Stop execution on first failure
-            
+
         Returns:
             PipelineResult with status and phase details
         """
         self._start_time = datetime.now()
         self.results.clear()
-        
+
         # Determine phases to run
         phases_to_run = self._resolve_phases(preset, phases)
-        
+
         if not phases_to_run:
             return PipelineResult(
                 status="failed",
                 message="No phases to run",
             )
-        
+
         logger.info("=" * 60)
         logger.info(f"[Orchestrator] Starting pipeline: {phases_to_run}")
         logger.info("=" * 60)
-        
+
         # Execute phases sequentially
         for phase_id in phases_to_run:
             result = self._execute_phase(phase_id)
             self.results[phase_id] = result
-            
+
             if not result.is_success() and stop_on_error:
                 return self._build_result("failed", f"Phase {phase_id} failed: {result.message}")
-        
+
         return self._build_result("success", "Pipeline completed successfully")
-    
-    def get_presets(self) -> List[str]:
+
+    def get_presets(self) -> list[str]:
         """Get available preset names."""
         return list(self.config.get("presets", {}).keys())
-    
-    def get_phase_config(self, phase_id: str) -> Dict[str, Any]:
+
+    def get_phase_config(self, phase_id: str) -> dict[str, Any]:
         """Get configuration for a specific phase."""
         return self.config.get("phases", {}).get(phase_id, {})
-    
+
     def is_phase_enabled(self, phase_id: str) -> bool:
         """Check if a phase is enabled in configuration."""
         return self.get_phase_config(phase_id).get("enabled", False)
-    
-    def get_enabled_phases(self) -> List[str]:
+
+    def get_enabled_phases(self) -> list[str]:
         """Get enabled phases sorted by order."""
         return self._get_enabled_phases()
-    
-    def get_preset_phases(self, preset_name: str) -> List[str]:
+
+    def get_preset_phases(self, preset_name: str) -> list[str]:
         """Get phases for a preset execution mode."""
         value = self.config.get("presets", {}).get(preset_name, [])
         if isinstance(value, dict):
             return value.get("phases", [])
         return value
-    
+
     # -------------------------------------------------------------------------
     # CONTEXT (Backward Compatibility)
     # -------------------------------------------------------------------------
-    
+
     @property
-    def context(self) -> Dict[str, Any]:
+    def context(self) -> dict[str, Any]:
         """Backward compatibility: return context-like structure."""
         return {
-            "phases": {
-                pid: {"status": r.status, "output": r.output}
-                for pid, r in self.results.items()
-            },
+            "phases": {pid: {"status": r.status, "output": r.output} for pid, r in self.results.items()},
             "knowledge": {},
             "shared": {},
         }
-    
+
     # -------------------------------------------------------------------------
     # PRIVATE METHODS
     # -------------------------------------------------------------------------
-    
-    def _resolve_phases(
-        self, 
-        preset: Optional[str], 
-        explicit_phases: Optional[List[str]]
-    ) -> List[str]:
+
+    def _resolve_phases(self, preset: str | None, explicit_phases: list[str] | None) -> list[str]:
         """Resolve which phases to run."""
         if explicit_phases:
             phases = explicit_phases
@@ -229,7 +224,7 @@ class SDLCOrchestrator:
         else:
             # Default: return enabled phases in order
             phases = self._get_enabled_phases()
-        
+
         # Filter out unregistered phases (e.g., phase0 when INDEX_MODE=off)
         filtered = []
         for phase_id in phases:
@@ -237,24 +232,20 @@ class SDLCOrchestrator:
                 filtered.append(phase_id)
             else:
                 logger.info(f"[Orchestrator] Skipping unregistered phase: {phase_id}")
-        
+
         return filtered
-    
-    def _get_enabled_phases(self) -> List[str]:
+
+    def _get_enabled_phases(self) -> list[str]:
         """Get enabled phases sorted by order."""
         phases_config = self.config.get("phases", {})
-        enabled = [
-            (cfg.get("order", 999), pid)
-            for pid, cfg in phases_config.items()
-            if cfg.get("enabled", False)
-        ]
+        enabled = [(cfg.get("order", 999), pid) for pid, cfg in phases_config.items() if cfg.get("enabled", False)]
         enabled.sort(key=lambda x: x[0])
         return [pid for _, pid in enabled]
-    
+
     def _execute_phase(self, phase_id: str) -> PhaseResult:
         """Execute a single phase."""
         start = datetime.now()
-        
+
         # Check if registered
         if phase_id not in self.phases:
             logger.warning(f"[Orchestrator] Phase not registered: {phase_id}")
@@ -263,7 +254,7 @@ class SDLCOrchestrator:
                 status="skipped",
                 message="Not registered",
             )
-        
+
         # Check dependencies
         if not self._check_dependencies(phase_id):
             return PhaseResult(
@@ -271,41 +262,45 @@ class SDLCOrchestrator:
                 status="failed",
                 message="Dependencies not met",
             )
-        
+
         # Archive knowledge before starting (for rollback capability)
-        if phase_id.startswith("phase1") or phase_id.startswith("phase2") or phase_id.startswith("phase3") or phase_id.startswith("phase4") or phase_id.startswith("phase5"):
+        if (
+            phase_id.startswith("phase1")
+            or phase_id.startswith("phase2")
+            or phase_id.startswith("phase3")
+            or phase_id.startswith("phase4")
+            or phase_id.startswith("phase5")
+        ):
             self.archive_knowledge(label=f"before_{phase_id}")
-        
+
         # Execute
         logger.info(f"\n{'=' * 60}")
         logger.info(f"[Phase] {phase_id} - Starting")
         logger.info(f"{'=' * 60}")
-        
+
         log_metric("phase_start", phase_id=phase_id)
 
         try:
             executable = self.phases[phase_id]
             config = self.get_phase_config(phase_id).get("config", {})
-            
+
             # Build inputs
             inputs = {
                 "config": config,
-                "previous_results": {
-                    pid: r.output for pid, r in self.results.items() if r.is_success()
-                },
+                "previous_results": {pid: r.output for pid, r in self.results.items() if r.is_success()},
             }
-            
+
             # Handle different execution styles
             output = self._invoke_executable(executable, inputs)
-            
+
             duration = (datetime.now() - start).total_seconds()
-            
+
             logger.info(f"[Phase] {phase_id} - Completed in {duration:.2f}s")
             log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status="success")
 
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
-            
+
             return PhaseResult(
                 phase_id=phase_id,
                 status="success",
@@ -313,7 +308,7 @@ class SDLCOrchestrator:
                 output=output,
                 duration_seconds=duration,
             )
-            
+
         except Exception as e:
             duration = (datetime.now() - start).total_seconds()
             logger.error(f"[Phase] {phase_id} - Failed: {e}", exc_info=True)
@@ -325,15 +320,15 @@ class SDLCOrchestrator:
                 message=str(e),
                 duration_seconds=duration,
             )
-    
-    def _invoke_executable(self, executable: PhaseExecutable, inputs: Dict[str, Any]) -> Any:
+
+    def _invoke_executable(self, executable: PhaseExecutable, inputs: dict[str, Any]) -> Any:
         """
         Invoke an executable via the unified kickoff() interface.
 
         All phases implement kickoff(inputs) -> Dict[str, Any].
         """
         return executable.kickoff(inputs)
-    
+
     def _check_dependencies(self, phase_id: str) -> bool:
         """Check if phase dependencies are satisfied (existence + validation)."""
         from .shared.validation import PhaseOutputValidator
@@ -364,10 +359,11 @@ class SDLCOrchestrator:
             return False
 
         return True
-    
+
     def _outputs_exist(self, phase_id: str) -> bool:
         """Check if phase outputs exist from previous run."""
         from .shared.utils.logger import OUTPUT_BASE_DIR
+
         base = OUTPUT_BASE_DIR
         output_files = {
             "phase0_indexing": [base / ".cache" / ".chroma"],
@@ -393,7 +389,7 @@ class SDLCOrchestrator:
         if not expected:
             return False
         return all(p.exists() for p in expected)
-    
+
     def _build_result(self, status: str, message: str) -> PipelineResult:
         """Build final pipeline result."""
         total_duration = ""
@@ -422,11 +418,11 @@ class SDLCOrchestrator:
             phases=list(self.results.values()),
             total_duration=total_duration,
         )
-    
-    def _load_config(self) -> Dict[str, Any]:
+
+    def _load_config(self) -> dict[str, Any]:
         """Load configuration from YAML."""
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
         except FileNotFoundError:
             logger.warning(f"[Orchestrator] Config not found: {self.config_path}")
@@ -434,12 +430,12 @@ class SDLCOrchestrator:
         except Exception as e:
             logger.error(f"[Orchestrator] Config load error: {e}")
             return self._default_config()
-    
+
     def _default_config_path(self) -> str:
         """Get default config path."""
         return str(Path(__file__).parent.parent.parent / "config" / "phases_config.yaml")
-    
-    def _default_config(self) -> Dict[str, Any]:
+
+    def _default_config(self) -> dict[str, Any]:
         """Return minimal default config."""
         return {
             "phases": {
@@ -449,18 +445,18 @@ class SDLCOrchestrator:
                 "indexing_only": ["phase0_indexing"],
             },
         }
-    
+
     # -------------------------------------------------------------------------
     # ARCHIVE & GIT OPERATIONS
     # -------------------------------------------------------------------------
-    
+
     def archive_knowledge(self, label: str = "manual") -> Path:
         """
         Archive the entire knowledge/ directory as knowledge-{timestamp}/.
-        
+
         Args:
             label: Label for the archive (e.g., 'manual', 'phase1', 'phase2')
-            
+
         Returns:
             Path to the archive directory
         """
@@ -468,23 +464,23 @@ class SDLCOrchestrator:
         if not knowledge_dir.exists():
             logger.warning("[Orchestrator] knowledge/ directory does not exist")
             return None
-        
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         archive_dir = Path(f"knowledge-{timestamp}")
-        
+
         # Copy entire knowledge directory
         shutil.copytree(knowledge_dir, archive_dir, dirs_exist_ok=True)
-        
+
         logger.info(f"[Orchestrator] Knowledge archived to: {archive_dir}")
         return archive_dir
-    
+
     def _git_commit_after_phase(self, phase_id: str) -> bool:
         """
         Auto-commit knowledge/ after successful phase.
-        
+
         Args:
             phase_id: The completed phase ID
-            
+
         Returns:
             True if commit successful, False otherwise
         """
@@ -498,14 +494,14 @@ class SDLCOrchestrator:
             if result.returncode != 0:
                 logger.debug("[Orchestrator] Not a git repository, skipping commit")
                 return False
-            
+
             # Stage knowledge/ directory
             subprocess.run(
                 ["git", "add", "knowledge/"],
                 capture_output=True,
                 check=True,
             )
-            
+
             # Check if there are staged changes
             result = subprocess.run(
                 ["git", "diff", "--cached", "--quiet"],
@@ -514,20 +510,20 @@ class SDLCOrchestrator:
             if result.returncode == 0:
                 logger.debug("[Orchestrator] No changes to commit")
                 return True
-            
+
             # Commit with descriptive message
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             commit_msg = f"[aicodegencrew] {phase_id} completed - {timestamp}"
-            
+
             subprocess.run(
                 ["git", "commit", "-m", commit_msg],
                 capture_output=True,
                 check=True,
             )
-            
+
             logger.info(f"[Orchestrator] Git commit: {commit_msg}")
             return True
-            
+
         except subprocess.CalledProcessError as e:
             logger.warning(f"[Orchestrator] Git commit failed: {e}")
             return False

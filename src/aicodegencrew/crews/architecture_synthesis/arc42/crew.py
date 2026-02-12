@@ -15,12 +15,13 @@ Chapters 5, 6, and 8 are split into sub-crews for maximum output quality:
 Each Mini-Crew starts with a fresh LLM context window.
 Data is passed via template variables (summaries), not inter-task context.
 """
+
 import logging
 from pathlib import Path
 
 from crewai import Task
 
-from ..base_crew import MiniCrewBase, TOOL_INSTRUCTION
+from ..base_crew import TOOL_INSTRUCTION, MiniCrewBase
 from ..tools import ChunkedWriterTool
 
 logger = logging.getLogger(__name__)
@@ -68,15 +69,15 @@ ARC42_AGENT_CONFIG = {
         "- SEAGuide.txt: Query via seaguide_query tool for documentation standards\n"
         "\n"
         "## TOOL USAGE (use these tools actively!)\n"
-        "1. seaguide_query(query=\"arc42 building block view\") - Get Arc42 patterns from SEAGuide\n"
-        "2. seaguide_query(query=\"runtime view sequence\") - Get runtime documentation patterns\n"
-        "3. list_components_by_stereotype(stereotype=\"controller\") - Get component lists\n"
-        "4. query_architecture_facts(category=\"containers\") - Get container details\n"
+        '1. seaguide_query(query="arc42 building block view") - Get Arc42 patterns from SEAGuide\n'
+        '2. seaguide_query(query="runtime view sequence") - Get runtime documentation patterns\n'
+        '3. list_components_by_stereotype(stereotype="controller") - Get component lists\n'
+        '4. query_architecture_facts(category="containers") - Get container details\n'
         "5. doc_writer(path, content) - Write documentation files\n"
         "\n"
         "IMPORTANT: Before writing each chapter, query SEAGuide for the relevant pattern!\n"
         "Example: Before writing Chapter 5 (Building Blocks), run:\n"
-        "  seaguide_query(query=\"building block view patterns\")\n"
+        '  seaguide_query(query="building block view patterns")\n'
         "\n"
         "## YOUR APPROACH\n"
         "1. seaguide_query for relevant documentation patterns FIRST\n"
@@ -89,7 +90,7 @@ ARC42_AGENT_CONFIG = {
         "- Use tables for structured data (components, decisions, risks)\n"
         "- Include text-based diagrams where appropriate\n"
         "- Reference specific component names from facts\n"
-        "- Never use placeholder text like \"[to be determined]\"\n"
+        '- Never use placeholder text like "[to be determined]"\n'
         "- Document rationale (WHY decisions were made)\n"
         "- Include quality scenarios with measurable targets\n"
         "- Write in professional English\n"
@@ -107,7 +108,9 @@ ARC42_AGENT_CONFIG = {
 # TASK DESCRIPTIONS - Python constants instead of tasks.yaml
 # =============================================================================
 
-CH01_INTRODUCTION = TOOL_INSTRUCTION + """
+CH01_INTRODUCTION = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 1: Introduction and Goals (8-12 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -141,8 +144,11 @@ Summary data:
 Write to file: arc42/01-introduction.md using doc_writer tool.
 Write 8-12 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH02_CONSTRAINTS = TOOL_INSTRUCTION + """
+CH02_CONSTRAINTS = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 2: Architecture Constraints (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -173,8 +179,11 @@ Summary data:
 Write to file: arc42/02-constraints.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH03_CONTEXT = TOOL_INSTRUCTION + """
+CH03_CONTEXT = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 3: System Scope and Context (8-12 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -207,8 +216,11 @@ Summary data:
 Write to file: arc42/03-context.md using doc_writer tool.
 Write 8-12 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH04_SOLUTION_STRATEGY = TOOL_INSTRUCTION + """
+CH04_SOLUTION_STRATEGY = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 4: Solution Strategy (8-12 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -240,12 +252,15 @@ Summary data:
 Write to file: arc42/04-solution-strategy.md using doc_writer tool.
 Write 8-12 pages with REAL data from tools. No placeholders.
 """
+)
 
 # Chapter 5 is split into 4 sub-crews to avoid truncation.
 # Each sub-crew writes to a separate part-file. After all complete,
 # Arc42Crew.run() merges them into the final 05-building-blocks.md.
 
-CH05_PART1_OVERVIEW = TOOL_INSTRUCTION + """
+CH05_PART1_OVERVIEW = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 5 PART 1: Overview and System Whitebox (6-8 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -277,8 +292,11 @@ Summary data:
 Write to file: arc42/05-part1-overview.md using doc_writer tool.
 Write 6-8 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH05_PART2_CONTROLLERS = TOOL_INSTRUCTION + """
+CH05_PART2_CONTROLLERS = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 5 PART 2: Presentation Layer / Controllers (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -306,8 +324,11 @@ Summary data:
 Write to file: arc42/05-part2-controllers.md using doc_writer tool.
 Write 8-10 pages with REAL data. COMPLETE controller inventory. No placeholders.
 """
+)
 
-CH05_PART3_SERVICES = TOOL_INSTRUCTION + """
+CH05_PART3_SERVICES = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 5 PART 3: Business Layer / Services (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -337,8 +358,11 @@ Summary data:
 Write to file: arc42/05-part3-services.md using doc_writer tool.
 Write 8-10 pages with REAL data. COMPLETE service inventory. No placeholders.
 """
+)
 
-CH05_PART4_DOMAIN = TOOL_INSTRUCTION + """
+CH05_PART4_DOMAIN = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -371,8 +395,11 @@ Summary data:
 Write to file: arc42/05-part4-domain.md using doc_writer tool.
 Write 8-10 pages with REAL data. COMPLETE inventories. No placeholders.
 """
+)
 
-CH06_PART1_API_FLOWS = TOOL_INSTRUCTION + """
+CH06_PART1_API_FLOWS = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 6 Part 1: API Runtime Flows (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -410,8 +437,11 @@ Write to file: arc42/06-part1-api-flows.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 Include text-based sequence diagrams for EACH flow showing exact component names.
 """
+)
 
-CH06_PART2_BUSINESS_FLOWS = TOOL_INSTRUCTION + """
+CH06_PART2_BUSINESS_FLOWS = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 6 Part 2: Business Process Flows (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -450,8 +480,11 @@ Write to file: arc42/06-part2-business-flows.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 Include text-based sequence diagrams showing exact component names from facts.
 """
+)
 
-CH07_DEPLOYMENT = TOOL_INSTRUCTION + """
+CH07_DEPLOYMENT = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 7: Deployment View (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -490,8 +523,11 @@ Summary data:
 Write to file: arc42/07-deployment.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH08_PART1_TECHNICAL = TOOL_INSTRUCTION + """
+CH08_PART1_TECHNICAL = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 8 Part 1: Technical Crosscutting Concepts (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -538,8 +574,11 @@ Summary data:
 Write to file: arc42/08-part1-technical.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH08_PART2_PATTERNS = TOOL_INSTRUCTION + """
+CH08_PART2_PATTERNS = (
+    TOOL_INSTRUCTION
+    + """
 Create arc42 Chapter 8 Part 2: Architecture Patterns and Conventions (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -588,8 +627,11 @@ Summary data:
 Write to file: arc42/08-part2-patterns.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH09_DECISIONS = TOOL_INSTRUCTION + """
+CH09_DECISIONS = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 9: Architecture Decisions (8-12 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -616,8 +658,11 @@ Summary data:
 Write to file: arc42/09-decisions.md using doc_writer tool.
 Write 8-12 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH10_QUALITY = TOOL_INSTRUCTION + """
+CH10_QUALITY = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 10: Quality Requirements (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -647,8 +692,11 @@ Summary data:
 Write to file: arc42/10-quality.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH11_RISKS = TOOL_INSTRUCTION + """
+CH11_RISKS = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 11: Risks and Technical Debt (8-10 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -680,8 +728,11 @@ Summary data:
 Write to file: arc42/11-risks.md using doc_writer tool.
 Write 8-10 pages with REAL data from tools. No placeholders.
 """
+)
 
-CH12_GLOSSARY = TOOL_INSTRUCTION + """
+CH12_GLOSSARY = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE arc42 Chapter 12: Glossary (6-8 pages).
 
 ## REQUIRED SECTIONS (do NOT skip any):
@@ -714,6 +765,7 @@ Summary data:
 Write to file: arc42/12-glossary.md using doc_writer tool.
 Write 6-8 pages. Include ALL domain-specific terms from the system. No placeholders.
 """
+)
 
 QUALITY_GATE_DESCRIPTION = """
 Quality review of all arc42 chapters.
@@ -788,9 +840,7 @@ class Arc42Crew(MiniCrewBase):
         interfaces = facts.get("interfaces", [])
         relations = facts.get("relations", [])
 
-        tech_stack = sorted(
-            {c.get("technology", "Unknown") for c in containers if c.get("technology")}
-        )
+        tech_stack = sorted({c.get("technology", "Unknown") for c in containers if c.get("technology")})
 
         by_stereotype: dict[str, int] = {}
         for comp in components:
@@ -803,7 +853,7 @@ class Arc42Crew(MiniCrewBase):
 
 ARCHITECTURE (from Phase 2 analysis):
 - Primary Style: {arch_style}
-- Patterns: {', '.join([p.get('name', str(p)) if isinstance(p, dict) else str(p) for p in patterns]) if patterns else 'Use tools to discover'}
+- Patterns: {", ".join([p.get("name", str(p)) if isinstance(p, dict) else str(p) for p in patterns]) if patterns else "Use tools to discover"}
 
 STATISTICS (from Phase 1 facts):
 - Containers: {len(containers)}
@@ -812,27 +862,28 @@ STATISTICS (from Phase 1 facts):
 - Relations: {len(relations)}
 
 TECHNOLOGIES:
-{chr(10).join([f'- {t}' for t in tech_stack]) if tech_stack else '- Use tools to discover'}
+{chr(10).join([f"- {t}" for t in tech_stack]) if tech_stack else "- Use tools to discover"}
 
 COMPONENT COUNTS BY STEREOTYPE:
-{chr(10).join([f'- {k}: {v}' for k, v in sorted(by_stereotype.items())]) if by_stereotype else '- Use tools to discover'}
+{chr(10).join([f"- {k}: {v}" for k, v in sorted(by_stereotype.items())]) if by_stereotype else "- Use tools to discover"}
 
 IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_components_by_stereotype) to get REAL data!"""
 
-        container_lines = [
-            f"- {c.get('name', '?')}: {c.get('technology', '?')}"
-            for c in containers
-        ]
+        container_lines = [f"- {c.get('name', '?')}: {c.get('technology', '?')}" for c in containers]
 
         containers_summary = f"""CONTAINERS:
-{chr(10).join(container_lines) if container_lines else '- Use query_architecture_facts to discover'}"""
+{chr(10).join(container_lines) if container_lines else "- Use query_architecture_facts to discover"}"""
 
-        components_summary = (
-            "Use list_components_by_stereotype tool to query components by type."
+        components_summary = "Use list_components_by_stereotype tool to query components by type."
+        interfaces_summary = (
+            f"Total interfaces: {len(interfaces)}. Use query_architecture_facts with category='interfaces' for details."
         )
-        interfaces_summary = f"Total interfaces: {len(interfaces)}. Use query_architecture_facts with category='interfaces' for details."
-        relations_summary = f"Total relations: {len(relations)}. Use query_architecture_facts with category='relations' for details."
-        building_blocks_data = "Use list_components_by_stereotype for each layer (controller, service, repository, entity)."
+        relations_summary = (
+            f"Total relations: {len(relations)}. Use query_architecture_facts with category='relations' for details."
+        )
+        building_blocks_data = (
+            "Use list_components_by_stereotype for each layer (controller, service, repository, entity)."
+        )
 
         return {
             "system_name": system_name,
@@ -878,9 +929,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
             merged = "\n".join(merged_lines)
             target = base / "05-building-blocks.md"
             target.write_text(merged, encoding="utf-8")
-            logger.info(
-                f"[Arc42] Merged building-blocks: {len(merged)} chars -> {target}"
-            )
+            logger.info(f"[Arc42] Merged building-blocks: {len(merged)} chars -> {target}")
 
     # -------------------------------------------------------------------------
     # MERGE RUNTIME VIEW
@@ -914,9 +963,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
             merged = "\n".join(merged_lines)
             target = base / "06-runtime-view.md"
             target.write_text(merged, encoding="utf-8")
-            logger.info(
-                f"[Arc42] Merged runtime-view: {len(merged)} chars -> {target}"
-            )
+            logger.info(f"[Arc42] Merged runtime-view: {len(merged)} chars -> {target}")
 
     # -------------------------------------------------------------------------
     # MERGE CROSSCUTTING
@@ -950,9 +997,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
             merged = "\n".join(merged_lines)
             target = base / "08-crosscutting.md"
             target.write_text(merged, encoding="utf-8")
-            logger.info(
-                f"[Arc42] Merged crosscutting: {len(merged)} chars -> {target}"
-            )
+            logger.info(f"[Arc42] Merged crosscutting: {len(merged)} chars -> {target}")
 
     # -------------------------------------------------------------------------
     # PUBLIC API
@@ -975,57 +1020,125 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
         # LLM context. The on-prem model frequently fails on the 2nd task
         # in a crew (writes ch03 but not ch04, etc.).
         mini_crews: list[tuple[str, list[tuple[str, str]], list[str]]] = [
-            ("introduction", [
-                (CH01_INTRODUCTION, "Complete arc42 Introduction chapter (8-12 pages)"),
-            ], ["arc42/01-introduction.md"]),
-            ("constraints", [
-                (CH02_CONSTRAINTS, "Complete arc42 Constraints chapter (8-10 pages)"),
-            ], ["arc42/02-constraints.md"]),
-            ("context", [
-                (CH03_CONTEXT, "Complete arc42 Context chapter (8-12 pages)"),
-            ], ["arc42/03-context.md"]),
-            ("solution-strategy", [
-                (CH04_SOLUTION_STRATEGY, "Complete arc42 Solution Strategy chapter (8-12 pages)"),
-            ], ["arc42/04-solution-strategy.md"]),
-            ("building-blocks-overview", [
-                (CH05_PART1_OVERVIEW, "Building Blocks overview and system whitebox (6-8 pages)"),
-            ], ["arc42/05-part1-overview.md"]),
-            ("building-blocks-controllers", [
-                (CH05_PART2_CONTROLLERS, "Building Blocks presentation layer (8-10 pages)"),
-            ], ["arc42/05-part2-controllers.md"]),
-            ("building-blocks-services", [
-                (CH05_PART3_SERVICES, "Building Blocks business layer (8-10 pages)"),
-            ], ["arc42/05-part3-services.md"]),
-            ("building-blocks-domain", [
-                (CH05_PART4_DOMAIN, "Building Blocks domain and persistence (8-10 pages)"),
-            ], ["arc42/05-part4-domain.md"]),
-            ("runtime-view-api-flows", [
-                (CH06_PART1_API_FLOWS, "Arc42 Runtime View Part 1: API flows (8-10 pages)"),
-            ], ["arc42/06-part1-api-flows.md"]),
-            ("runtime-view-business-flows", [
-                (CH06_PART2_BUSINESS_FLOWS, "Arc42 Runtime View Part 2: Business flows (8-10 pages)"),
-            ], ["arc42/06-part2-business-flows.md"]),
-            ("deployment", [
-                (CH07_DEPLOYMENT, "Complete arc42 Deployment View chapter (8-10 pages)"),
-            ], ["arc42/07-deployment.md"]),
-            ("crosscutting-technical", [
-                (CH08_PART1_TECHNICAL, "Arc42 Crosscutting Part 1: Technical concepts (8-10 pages)"),
-            ], ["arc42/08-part1-technical.md"]),
-            ("crosscutting-patterns", [
-                (CH08_PART2_PATTERNS, "Arc42 Crosscutting Part 2: Patterns (8-10 pages)"),
-            ], ["arc42/08-part2-patterns.md"]),
-            ("decisions", [
-                (CH09_DECISIONS, "Complete arc42 Decisions chapter (8-12 pages)"),
-            ], ["arc42/09-decisions.md"]),
-            ("quality", [
-                (CH10_QUALITY, "Complete arc42 Quality chapter (8-10 pages)"),
-            ], ["arc42/10-quality.md"]),
-            ("risks", [
-                (CH11_RISKS, "Complete arc42 Risks chapter (8-10 pages)"),
-            ], ["arc42/11-risks.md"]),
-            ("glossary", [
-                (CH12_GLOSSARY, "Complete arc42 Glossary (6-8 pages)"),
-            ], ["arc42/12-glossary.md"]),
+            (
+                "introduction",
+                [
+                    (CH01_INTRODUCTION, "Complete arc42 Introduction chapter (8-12 pages)"),
+                ],
+                ["arc42/01-introduction.md"],
+            ),
+            (
+                "constraints",
+                [
+                    (CH02_CONSTRAINTS, "Complete arc42 Constraints chapter (8-10 pages)"),
+                ],
+                ["arc42/02-constraints.md"],
+            ),
+            (
+                "context",
+                [
+                    (CH03_CONTEXT, "Complete arc42 Context chapter (8-12 pages)"),
+                ],
+                ["arc42/03-context.md"],
+            ),
+            (
+                "solution-strategy",
+                [
+                    (CH04_SOLUTION_STRATEGY, "Complete arc42 Solution Strategy chapter (8-12 pages)"),
+                ],
+                ["arc42/04-solution-strategy.md"],
+            ),
+            (
+                "building-blocks-overview",
+                [
+                    (CH05_PART1_OVERVIEW, "Building Blocks overview and system whitebox (6-8 pages)"),
+                ],
+                ["arc42/05-part1-overview.md"],
+            ),
+            (
+                "building-blocks-controllers",
+                [
+                    (CH05_PART2_CONTROLLERS, "Building Blocks presentation layer (8-10 pages)"),
+                ],
+                ["arc42/05-part2-controllers.md"],
+            ),
+            (
+                "building-blocks-services",
+                [
+                    (CH05_PART3_SERVICES, "Building Blocks business layer (8-10 pages)"),
+                ],
+                ["arc42/05-part3-services.md"],
+            ),
+            (
+                "building-blocks-domain",
+                [
+                    (CH05_PART4_DOMAIN, "Building Blocks domain and persistence (8-10 pages)"),
+                ],
+                ["arc42/05-part4-domain.md"],
+            ),
+            (
+                "runtime-view-api-flows",
+                [
+                    (CH06_PART1_API_FLOWS, "Arc42 Runtime View Part 1: API flows (8-10 pages)"),
+                ],
+                ["arc42/06-part1-api-flows.md"],
+            ),
+            (
+                "runtime-view-business-flows",
+                [
+                    (CH06_PART2_BUSINESS_FLOWS, "Arc42 Runtime View Part 2: Business flows (8-10 pages)"),
+                ],
+                ["arc42/06-part2-business-flows.md"],
+            ),
+            (
+                "deployment",
+                [
+                    (CH07_DEPLOYMENT, "Complete arc42 Deployment View chapter (8-10 pages)"),
+                ],
+                ["arc42/07-deployment.md"],
+            ),
+            (
+                "crosscutting-technical",
+                [
+                    (CH08_PART1_TECHNICAL, "Arc42 Crosscutting Part 1: Technical concepts (8-10 pages)"),
+                ],
+                ["arc42/08-part1-technical.md"],
+            ),
+            (
+                "crosscutting-patterns",
+                [
+                    (CH08_PART2_PATTERNS, "Arc42 Crosscutting Part 2: Patterns (8-10 pages)"),
+                ],
+                ["arc42/08-part2-patterns.md"],
+            ),
+            (
+                "decisions",
+                [
+                    (CH09_DECISIONS, "Complete arc42 Decisions chapter (8-12 pages)"),
+                ],
+                ["arc42/09-decisions.md"],
+            ),
+            (
+                "quality",
+                [
+                    (CH10_QUALITY, "Complete arc42 Quality chapter (8-10 pages)"),
+                ],
+                ["arc42/10-quality.md"],
+            ),
+            (
+                "risks",
+                [
+                    (CH11_RISKS, "Complete arc42 Risks chapter (8-10 pages)"),
+                ],
+                ["arc42/11-risks.md"],
+            ),
+            (
+                "glossary",
+                [
+                    (CH12_GLOSSARY, "Complete arc42 Glossary (6-8 pages)"),
+                ],
+                ["arc42/12-glossary.md"],
+            ),
         ]
 
         # Get template data for filling {system_summary} placeholders
@@ -1053,13 +1166,16 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
         if not self.should_skip("quality-gate", completed):
             try:
                 agent = self._create_agent()
-                self._run_mini_crew("quality-gate", [
-                    Task(
-                        description=QUALITY_GATE_DESCRIPTION,
-                        expected_output="Arc42 Quality report written to quality/arc42-report.md",
-                        agent=agent,
-                    ),
-                ])
+                self._run_mini_crew(
+                    "quality-gate",
+                    [
+                        Task(
+                            description=QUALITY_GATE_DESCRIPTION,
+                            expected_output="Arc42 Quality report written to quality/arc42-report.md",
+                            agent=agent,
+                        ),
+                    ],
+                )
             except Exception as e:
                 logger.error(f"[Arc42] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")

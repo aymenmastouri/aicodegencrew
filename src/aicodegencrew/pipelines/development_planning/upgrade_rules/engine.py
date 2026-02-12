@@ -6,15 +6,15 @@ Duration: 3-8 seconds (deterministic).
 """
 
 import re
-from typing import List, Dict, Any, Optional
+from typing import Any
 
-from .base import UpgradeRuleSet, UpgradeImpact, UpgradeSeverity
-from .scanner import UpgradeCodeScanner
 from ....shared.utils.logger import setup_logger
+from .base import UpgradeImpact, UpgradeRuleSet, UpgradeSeverity
+from .scanner import UpgradeCodeScanner
 
 logger = setup_logger(__name__)
 
-_RULE_REGISTRY: Dict[str, list] = {}
+_RULE_REGISTRY: dict[str, list] = {}
 
 
 def register_rules(framework: str, rule_sets: list):
@@ -33,8 +33,10 @@ class UpgradeRulesEngine:
         self._auto_register_rules()
 
     def detect_upgrade_context(
-        self, task_description: str, task_labels: List[str],
-    ) -> Optional[Dict[str, Any]]:
+        self,
+        task_description: str,
+        task_labels: list[str],
+    ) -> dict[str, Any] | None:
         """
         Detect upgrade context (framework + versions).
 
@@ -58,10 +60,7 @@ class UpgradeRulesEngine:
         current_version = self._detect_current_version(framework)
         target_version = self._detect_target_version(text)
 
-        logger.info(
-            f"[UpgradeEngine] Detected: {framework} "
-            f"{current_version} -> {target_version}"
-        )
+        logger.info(f"[UpgradeEngine] Detected: {framework} {current_version} -> {target_version}")
 
         return {
             "framework": framework,
@@ -71,16 +70,21 @@ class UpgradeRulesEngine:
         }
 
     def get_applicable_rules(
-        self, framework: str, current_version: str, target_version: str,
-    ) -> List[UpgradeRuleSet]:
+        self,
+        framework: str,
+        current_version: str,
+        target_version: str,
+    ) -> list[UpgradeRuleSet]:
         """Get rule sets applicable for version range."""
         all_rules = _RULE_REGISTRY.get(framework.lower(), [])
 
         applicable = []
         for rule_set in all_rules:
             if self._version_in_range(
-                rule_set.from_version, rule_set.to_version,
-                current_version, target_version,
+                rule_set.from_version,
+                rule_set.to_version,
+                current_version,
+                target_version,
             ):
                 applicable.append(rule_set)
 
@@ -90,7 +94,7 @@ class UpgradeRulesEngine:
         )
         return applicable
 
-    def scan_and_assess(self, rule_sets: List[UpgradeRuleSet]) -> Dict[str, Any]:
+    def scan_and_assess(self, rule_sets: list[UpgradeRuleSet]) -> dict[str, Any]:
         """Scan codebase and produce impact assessment."""
         if not self.repo_path:
             logger.warning("[UpgradeEngine] No repo_path, returning rules without scan")
@@ -136,12 +140,8 @@ class UpgradeRulesEngine:
                 "total_affected_files": total_files,
                 "estimated_effort_minutes": total_effort,
                 "estimated_effort_hours": round(total_effort / 60, 1),
-                "breaking_changes": len([
-                    i for i in active if i.rule.severity == UpgradeSeverity.BREAKING
-                ]),
-                "deprecated_apis": len([
-                    i for i in active if i.rule.severity == UpgradeSeverity.DEPRECATED
-                ]),
+                "breaking_changes": len([i for i in active if i.rule.severity == UpgradeSeverity.BREAKING]),
+                "deprecated_apis": len([i for i in active if i.rule.severity == UpgradeSeverity.DEPRECATED]),
             },
             "migration_sequence": [
                 {
@@ -157,9 +157,7 @@ class UpgradeRulesEngine:
                 }
                 for idx, i in enumerate(active)
             ],
-            "verification_commands": list(set(
-                cmd for rs in rule_sets for cmd in rs.verification_commands
-            )),
+            "verification_commands": list(set(cmd for rs in rule_sets for cmd in rs.verification_commands)),
         }
 
     # -- Private helpers --
@@ -169,9 +167,9 @@ class UpgradeRulesEngine:
         """Auto-register all framework rules (lazy, once per process)."""
         if not _RULE_REGISTRY:
             from .angular import ANGULAR_UPGRADE_RULES
-            from .spring import SPRING_UPGRADE_RULES
             from .java import JAVA_UPGRADE_RULES
             from .playwright import PLAYWRIGHT_UPGRADE_RULES
+            from .spring import SPRING_UPGRADE_RULES
 
             register_rules("angular", ANGULAR_UPGRADE_RULES)
             register_rules("spring", SPRING_UPGRADE_RULES)
@@ -179,11 +177,10 @@ class UpgradeRulesEngine:
             register_rules("playwright", PLAYWRIGHT_UPGRADE_RULES)
 
             logger.info(
-                f"[UpgradeEngine] Registered {len(_RULE_REGISTRY)} frameworks: "
-                f"{', '.join(_RULE_REGISTRY.keys())}"
+                f"[UpgradeEngine] Registered {len(_RULE_REGISTRY)} frameworks: {', '.join(_RULE_REGISTRY.keys())}"
             )
 
-    def _impact_to_dict(self, impact: UpgradeImpact) -> Dict:
+    def _impact_to_dict(self, impact: UpgradeImpact) -> dict:
         return {
             "rule_id": impact.rule.id,
             "title": impact.rule.title,
@@ -197,7 +194,7 @@ class UpgradeRulesEngine:
             "schematic": impact.rule.schematic,
         }
 
-    def _detect_framework(self, text: str) -> Optional[str]:
+    def _detect_framework(self, text: str) -> str | None:
         """Detect framework from task text. Returns registered framework name or None."""
         framework_keywords = {
             "angular": ["angular", "ng update", "ng-", "@angular"],
@@ -261,18 +258,21 @@ class UpgradeRulesEngine:
 
     @staticmethod
     def _version_in_range(
-        rule_from: str, rule_to: str, current: str, target: str,
+        rule_from: str,
+        rule_to: str,
+        current: str,
+        target: str,
     ) -> bool:
         try:
             rf = int(rule_from)
-            rt = int(rule_to)
+            int(rule_to)
             cv = int(current.split(".")[0]) if current != "unknown" else 0
             tv = int(target.split(".")[0]) if target not in ("unknown", "latest") else 999
             return rf >= cv and rf <= tv
         except (ValueError, IndexError):
             return True
 
-    def _rules_only_assessment(self, rule_sets: List[UpgradeRuleSet]) -> Dict:
+    def _rules_only_assessment(self, rule_sets: list[UpgradeRuleSet]) -> dict:
         all_rules = [r for rs in rule_sets for r in rs.rules]
         return {
             "is_upgrade": True,
@@ -292,7 +292,5 @@ class UpgradeRulesEngine:
                 }
                 for idx, r in enumerate(all_rules)
             ],
-            "verification_commands": list(set(
-                cmd for rs in rule_sets for cmd in rs.verification_commands
-            )),
+            "verification_commands": list(set(cmd for rs in rule_sets for cmd in rs.verification_commands)),
         }

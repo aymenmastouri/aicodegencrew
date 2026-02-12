@@ -164,9 +164,7 @@ export class ApiService {
   }
 
   getLogs(filename = 'aicodegencrew.log', tail = 200): Observable<LogResponse> {
-    const params = new HttpParams()
-      .set('filename', filename)
-      .set('tail', tail.toString());
+    const params = new HttpParams().set('filename', filename).set('tail', tail.toString());
     return this.http.get<LogResponse>(`${this.base}/logs`, { params });
   }
 

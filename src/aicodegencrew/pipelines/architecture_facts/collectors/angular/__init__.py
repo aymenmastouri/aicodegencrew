@@ -10,16 +10,16 @@ Each collector extracts ONE specific aspect of Angular applications:
 - OpenAPICollector: OpenAPI/Swagger specifications and generated clients
 """
 
-from .module_collector import AngularModuleCollector
 from .component_collector import AngularComponentCollector
+from .module_collector import AngularModuleCollector
+from .openapi_collector import OpenAPICollector
 from .routing_collector import AngularRoutingCollector
 from .service_collector import AngularServiceCollector
 from .state_collector import AngularStateCollector
-from .openapi_collector import OpenAPICollector
 
 __all__ = [
-    "AngularModuleCollector",
     "AngularComponentCollector",
+    "AngularModuleCollector",
     "AngularRoutingCollector",
     "AngularServiceCollector",
     "AngularStateCollector",

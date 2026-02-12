@@ -10,31 +10,28 @@ All tests run WITHOUT LLM or ChromaDB.
 """
 
 import json
-import os
-import pytest
-from pathlib import Path
 
-from aicodegencrew.shared.validation import PhaseOutputValidator, PHASE_OUTPUT_SPECS
-from aicodegencrew.pipelines.architecture_facts.model_builder import (
-    ArchitectureModelBuilder,
-    ArchitectureModel,
-    CanonicalIdGenerator,
-    LayerClassifier,
-    ArchitectureLayer,
-    CanonicalComponent,
-    CanonicalContainer,
-)
+import pytest
+
 from aicodegencrew.pipelines.architecture_facts.collectors.fact_adapter import (
     CollectedComponent,
+    CollectedEvidence,
     CollectedInterface,
     CollectedRelation,
-    CollectedEvidence,
 )
-
+from aicodegencrew.pipelines.architecture_facts.model_builder import (
+    ArchitectureLayer,
+    ArchitectureModel,
+    ArchitectureModelBuilder,
+    CanonicalIdGenerator,
+    LayerClassifier,
+)
+from aicodegencrew.shared.validation import PhaseOutputValidator
 
 # =============================================================================
 # Fixtures: Validation
 # =============================================================================
+
 
 @pytest.fixture
 def validator():
@@ -116,6 +113,7 @@ def _valid_analysis_json():
 # =============================================================================
 # Fixtures: Model Builder
 # =============================================================================
+
 
 @pytest.fixture
 def builder():
@@ -205,8 +203,8 @@ def _make_relation(
 # Tests: PhaseOutputValidator Instantiation
 # =============================================================================
 
-class TestPhaseOutputValidatorInstantiation:
 
+class TestPhaseOutputValidatorInstantiation:
     def test_instantiation(self):
         """PhaseOutputValidator() creates a valid instance."""
         v = PhaseOutputValidator()
@@ -224,8 +222,8 @@ class TestPhaseOutputValidatorInstantiation:
 # Tests: Phase 0 Validation (Indexing)
 # =============================================================================
 
-class TestPhase0Validation:
 
+class TestPhase0Validation:
     def test_missing_chroma_dir_returns_errors(self, validator, tmp_path, monkeypatch):
         """validate_phase('phase0_indexing') with missing .chroma dir returns errors."""
         monkeypatch.chdir(tmp_path)
@@ -261,8 +259,8 @@ class TestPhase0Validation:
 # Tests: Phase 1 Validation (Architecture Facts)
 # =============================================================================
 
-class TestPhase1Validation:
 
+class TestPhase1Validation:
     def test_missing_json_returns_errors(self, validator, tmp_path, monkeypatch):
         """validate_phase('phase1_architecture_facts') with missing JSON files returns errors."""
         monkeypatch.chdir(tmp_path)
@@ -346,9 +344,7 @@ class TestPhase1Validation:
         assert len(errors) >= 1
         assert any("Too few" in e for e in errors)
 
-    def test_zero_components_with_containers_returns_component_error(
-        self, validator, tmp_path, monkeypatch
-    ):
+    def test_zero_components_with_containers_returns_component_error(self, validator, tmp_path, monkeypatch):
         """Facts with containers but 0 components should fail min_components."""
         monkeypatch.chdir(tmp_path)
         arch_dir = tmp_path / "knowledge" / "architecture"
@@ -374,8 +370,8 @@ class TestPhase1Validation:
 # Tests: Phase 2 Validation (Architecture Analysis)
 # =============================================================================
 
-class TestPhase2Validation:
 
+class TestPhase2Validation:
     def test_missing_keys_returns_errors(self, validator, tmp_path, monkeypatch):
         """validate_phase('phase2_architecture_analysis') with missing required keys returns errors."""
         monkeypatch.chdir(tmp_path)
@@ -423,8 +419,8 @@ class TestPhase2Validation:
 # Tests: Phase 3 Validation (Architecture Synthesis)
 # =============================================================================
 
-class TestPhase3Validation:
 
+class TestPhase3Validation:
     def test_missing_md_files_returns_errors(self, validator, tmp_path, monkeypatch):
         """validate_phase('phase3_architecture_synthesis') with missing .md files returns errors."""
         monkeypatch.chdir(tmp_path)
@@ -475,11 +471,9 @@ class TestPhase3Validation:
 # Tests: Dependency Validation
 # =============================================================================
 
-class TestDependencyValidation:
 
-    def test_validate_dependency_calls_validate_phase_for_upstream(
-        self, validator, tmp_path, monkeypatch
-    ):
+class TestDependencyValidation:
+    def test_validate_dependency_calls_validate_phase_for_upstream(self, validator, tmp_path, monkeypatch):
         """validate_dependency() should validate upstream phase outputs.
 
         Since validate_dependency imports SDLCOrchestrator (which may need config),
@@ -527,9 +521,7 @@ class TestDependencyValidation:
                     all_errors.extend(f"  - {e}" for e in errors)
             return all_errors
 
-        validator._mock_validate_dependency = lambda pid, mo: _mock_validate_dependency(
-            validator, pid, mo
-        )
+        validator._mock_validate_dependency = lambda pid, mo: _mock_validate_dependency(validator, pid, mo)
 
         # Call the mocked version directly to test the logic
         errors = _mock_validate_dependency(validator, "phase2_architecture_analysis", MockOrchestrator())
@@ -547,8 +539,8 @@ class TestDependencyValidation:
 # Tests: CanonicalIdGenerator
 # =============================================================================
 
-class TestCanonicalIdGenerator:
 
+class TestCanonicalIdGenerator:
     def test_for_component_generates_stable_id(self):
         """for_component() produces a hierarchical component.container.module.name ID."""
         cid = CanonicalIdGenerator.for_component(
@@ -653,8 +645,8 @@ class TestCanonicalIdGenerator:
 # Tests: LayerClassifier
 # =============================================================================
 
-class TestLayerClassifier:
 
+class TestLayerClassifier:
     def test_controller_returns_presentation(self):
         assert LayerClassifier.classify("controller") == ArchitectureLayer.PRESENTATION
 
@@ -713,20 +705,28 @@ class TestLayerClassifier:
 # Tests: Component Deduplication
 # =============================================================================
 
-class TestComponentDeduplication:
 
+class TestComponentDeduplication:
     def test_dedup_by_container_name_key(self, builder):
         """Two components with same container:name should merge into one."""
         ev1 = _make_evidence("ev1", path="src/A.java", line_start=1, line_end=10)
         ev2 = _make_evidence("ev2", path="src/B.java", line_start=20, line_end=30)
 
         comp1 = _make_component(
-            "c1", "UserService", container="backend", stereotype="service",
-            file_path="src/A.java", evidence_ids=["ev1"],
+            "c1",
+            "UserService",
+            container="backend",
+            stereotype="service",
+            file_path="src/A.java",
+            evidence_ids=["ev1"],
         )
         comp2 = _make_component(
-            "c2", "UserService", container="backend", stereotype="service",
-            file_path="src/B.java", evidence_ids=["ev2"],
+            "c2",
+            "UserService",
+            container="backend",
+            stereotype="service",
+            file_path="src/B.java",
+            evidence_ids=["ev2"],
         )
 
         builder.add_collector_output(
@@ -741,7 +741,7 @@ class TestComponentDeduplication:
         assert len(model.components) == 1
 
         # The surviving component should have both file paths
-        comp = list(model.components.values())[0]
+        comp = next(iter(model.components.values()))
         assert len(comp.file_paths) == 2
         assert "src/A.java" in comp.file_paths
         assert "src/B.java" in comp.file_paths
@@ -781,8 +781,8 @@ class TestComponentDeduplication:
 # Tests: ArchitectureModelBuilder.build()
 # =============================================================================
 
-class TestBuild:
 
+class TestBuild:
     def test_builder_initialization(self):
         """ArchitectureModelBuilder(system_name) should set system_name."""
         b = ArchitectureModelBuilder(system_name="MyApp")
@@ -800,13 +800,15 @@ class TestBuild:
         """build() wires containers and components with correct counts."""
         # Add a container
         builder.add_containers(
-            containers=[{
-                "name": "backend",
-                "technology": "Spring Boot",
-                "category": "application",
-                "root_path": "backend/",
-                "type": "application",
-            }],
+            containers=[
+                {
+                    "name": "backend",
+                    "technology": "Spring Boot",
+                    "category": "application",
+                    "root_path": "backend/",
+                    "type": "application",
+                }
+            ],
             evidence={},
         )
 
@@ -816,18 +818,27 @@ class TestBuild:
         ev3 = _make_evidence("ev3", path="src/UserRepo.java")
 
         controller = _make_component(
-            "c1", "UserController", container="backend",
-            stereotype="controller", file_path="src/UserController.java",
+            "c1",
+            "UserController",
+            container="backend",
+            stereotype="controller",
+            file_path="src/UserController.java",
             evidence_ids=["ev1"],
         )
         service = _make_component(
-            "c2", "UserService", container="backend",
-            stereotype="service", file_path="src/UserService.java",
+            "c2",
+            "UserService",
+            container="backend",
+            stereotype="service",
+            file_path="src/UserService.java",
             evidence_ids=["ev2"],
         )
         repo = _make_component(
-            "c3", "UserRepository", container="backend",
-            stereotype="repository", file_path="src/UserRepo.java",
+            "c3",
+            "UserRepository",
+            container="backend",
+            stereotype="repository",
+            file_path="src/UserRepo.java",
             evidence_ids=["ev3"],
         )
 
@@ -847,8 +858,12 @@ class TestBuild:
     def test_build_with_interfaces(self, builder):
         """build() normalizes interfaces."""
         iface = _make_interface(
-            "iface1", "getUsers", container="backend",
-            interface_type="rest", endpoint="/api/users", method="GET",
+            "iface1",
+            "getUsers",
+            container="backend",
+            interface_type="rest",
+            endpoint="/api/users",
+            method="GET",
         )
 
         builder.add_collector_output(
@@ -913,8 +928,8 @@ class TestBuild:
 # Tests: ArchitectureModel.get_statistics()
 # =============================================================================
 
-class TestGetStatistics:
 
+class TestGetStatistics:
     def test_get_statistics_aggregates_by_layer(self, builder):
         """get_statistics() groups component counts by layer."""
         comps = [
@@ -1021,8 +1036,8 @@ class TestGetStatistics:
 # Tests: ArchitectureModel query methods
 # =============================================================================
 
-class TestArchitectureModelQueries:
 
+class TestArchitectureModelQueries:
     def _build_sample_model(self):
         """Build a model with known components for querying."""
         builder = ArchitectureModelBuilder(system_name="QueryTest")
@@ -1106,8 +1121,8 @@ class TestArchitectureModelQueries:
 # Tests: Evidence normalization
 # =============================================================================
 
-class TestEvidenceNormalization:
 
+class TestEvidenceNormalization:
     def test_evidence_ids_are_remapped(self, builder):
         """Component evidence IDs should be mapped to canonical ev.HASH format."""
         ev = _make_evidence("ev_old_1", path="src/Foo.java", line_start=5, line_end=15)
@@ -1128,8 +1143,11 @@ class TestEvidenceNormalization:
     def test_evidence_preserves_path_and_reason(self, builder):
         """Normalized evidence retains original path and reason."""
         ev = _make_evidence(
-            "ev_orig", path="src/main/Service.java",
-            line_start=100, line_end=150, reason="@Service annotation",
+            "ev_orig",
+            path="src/main/Service.java",
+            line_start=100,
+            line_end=150,
+            reason="@Service annotation",
         )
 
         builder.add_collector_output(
@@ -1141,7 +1159,7 @@ class TestEvidenceNormalization:
 
         model = builder.build()
         assert len(model.evidence) == 1
-        ev_data = list(model.evidence.values())[0]
+        ev_data = next(iter(model.evidence.values()))
         assert ev_data["path"] == "src/main/Service.java"
         assert ev_data["reason"] == "@Service annotation"
         assert ev_data["lines"] == "100-150"
@@ -1151,8 +1169,8 @@ class TestEvidenceNormalization:
 # Tests: Edge cases
 # =============================================================================
 
-class TestEdgeCases:
 
+class TestEdgeCases:
     def test_component_with_empty_module(self, builder):
         """Component with empty module uses 'core' as default in ID."""
         comp = _make_component("c1", "MyComp", module="")
@@ -1163,7 +1181,7 @@ class TestEdgeCases:
             evidence={},
         )
         model = builder.build()
-        comp_obj = list(model.components.values())[0]
+        comp_obj = next(iter(model.components.values()))
         assert "core" in comp_obj.id  # Module defaults to "core"
 
     def test_self_referencing_relation_skipped(self, builder):
@@ -1208,7 +1226,7 @@ class TestEdgeCases:
             evidence={},
         )
         model = builder.build()
-        comp_obj = list(model.components.values())[0]
+        comp_obj = next(iter(model.components.values()))
         d = comp_obj.to_dict()
         assert "id" in d
         assert "name" in d
@@ -1223,16 +1241,18 @@ class TestEdgeCases:
     def test_canonical_container_to_dict(self, builder):
         """CanonicalContainer.to_dict() includes all expected keys."""
         builder.add_containers(
-            containers=[{
-                "name": "backend",
-                "technology": "Spring Boot",
-                "category": "application",
-                "root_path": "backend/",
-            }],
+            containers=[
+                {
+                    "name": "backend",
+                    "technology": "Spring Boot",
+                    "category": "application",
+                    "root_path": "backend/",
+                }
+            ],
             evidence={},
         )
         model = builder.build()
-        container_obj = list(model.containers.values())[0]
+        container_obj = next(iter(model.containers.values()))
         d = container_obj.to_dict()
         assert "id" in d
         assert "name" in d

@@ -73,7 +73,7 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
                 <th mat-header-cell *matHeaderCellDef>Dependencies</th>
                 <td mat-cell *matCellDef="let p">
                   @for (dep of p.dependencies; track dep) {
-                    <mat-chip class="dep-chip">{{ dep | slice:0:20 }}</mat-chip>
+                    <mat-chip class="dep-chip">{{ dep | slice: 0 : 20 }}</mat-chip>
                   }
                 </td>
               </ng-container>
@@ -86,7 +86,7 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
             </table>
           </mat-card-content>
         </mat-card>
@@ -122,46 +122,54 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
       }
     </div>
   `,
-  styles: [`
-    .section-card-title {
-      display: flex !important;
-      align-items: center;
-      gap: 8px;
-    }
-    .phase-table { width: 100%; }
-    .phase-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 26px;
-      height: 26px;
-      border-radius: 6px;
-      background: var(--cg-gray-100);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--cg-gray-500);
-    }
-    .dep-chip { font-size: 11px; }
-    .section-title {
-      margin-top: 32px;
-      margin-bottom: 16px;
-      font-weight: 400;
-      font-size: 20px;
-    }
-    .preset-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      margin-right: 8px;
-      color: var(--cg-blue);
-    }
-    .preset-desc {
-      font-size: 13px;
-      color: var(--cg-gray-500);
-      margin: 0 0 12px;
-    }
-    .preset-action { margin-top: 16px; }
-  `],
+  styles: [
+    `
+      .section-card-title {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+      }
+      .phase-table {
+        width: 100%;
+      }
+      .phase-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: var(--cg-gray-100);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--cg-gray-500);
+      }
+      .dep-chip {
+        font-size: 11px;
+      }
+      .section-title {
+        margin-top: 32px;
+        margin-bottom: 16px;
+        font-weight: 400;
+        font-size: 20px;
+      }
+      .preset-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+        color: var(--cg-blue);
+      }
+      .preset-desc {
+        font-size: 13px;
+        color: var(--cg-gray-500);
+        margin: 0 0 12px;
+      }
+      .preset-action {
+        margin-top: 16px;
+      }
+    `,
+  ],
 })
 export class PhasesComponent implements OnInit {
   phases: PhaseInfo[] = [];
@@ -170,20 +178,37 @@ export class PhasesComponent implements OnInit {
   displayedColumns = ['order', 'id', 'name', 'status', 'dependencies', 'actions'];
   loading = true;
 
-  constructor(private api: ApiService, private router: Router, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.api.getPhases().subscribe({
-      next: p => { this.phases = p; this.loading = false; this.cdr.markForCheck(); },
-      error: () => { this.loading = false; this.cdr.markForCheck(); },
+      next: (p) => {
+        this.phases = p;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
-    this.api.getPresets().subscribe(p => { this.presets = p; this.cdr.markForCheck(); });
-    this.api.getPipelineStatus().subscribe(p => { this.pipeline = p; this.cdr.markForCheck(); });
+    this.api.getPresets().subscribe((p) => {
+      this.presets = p;
+      this.cdr.markForCheck();
+    });
+    this.api.getPipelineStatus().subscribe((p) => {
+      this.pipeline = p;
+      this.cdr.markForCheck();
+    });
   }
 
   getPhaseStatus(phaseId: string): string {
     if (!this.pipeline) return 'idle';
-    const phase = this.pipeline.phases.find(p => p.id === phaseId);
+    const phase = this.pipeline.phases.find((p) => p.id === phaseId);
     return phase?.status || 'idle';
   }
 

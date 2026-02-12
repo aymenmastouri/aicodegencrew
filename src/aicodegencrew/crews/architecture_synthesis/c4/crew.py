@@ -10,11 +10,12 @@ Architecture Fix:
 Each Mini-Crew starts with a fresh LLM context window.
 Data is passed via template variables (summaries), not inter-task context.
 """
+
 import logging
 
 from crewai import Task
 
-from ..base_crew import MiniCrewBase, TOOL_INSTRUCTION
+from ..base_crew import TOOL_INSTRUCTION, MiniCrewBase
 
 logger = logging.getLogger(__name__)
 
@@ -77,9 +78,9 @@ C4_AGENT_CONFIG = {
         "- SEAGuide.txt: Query via seaguide_query tool for C4 documentation patterns\n"
         "\n"
         "## TOOL USAGE\n"
-        "1. seaguide_query(query=\"C4 context diagram\") - Get C4 documentation patterns\n"
-        "2. list_components_by_stereotype(stereotype=\"controller\") - Get component lists\n"
-        "3. query_architecture_facts(category=\"containers\") - Get container details\n"
+        '1. seaguide_query(query="C4 context diagram") - Get C4 documentation patterns\n'
+        '2. list_components_by_stereotype(stereotype="controller") - Get component lists\n'
+        '3. query_architecture_facts(category="containers") - Get container details\n'
         "4. drawio_generator(...) - Create DrawIO diagrams\n"
         "5. doc_writer(path, content) - Write documentation files\n"
         "\n"
@@ -106,7 +107,9 @@ C4_AGENT_CONFIG = {
 # TASK DESCRIPTIONS - Python constants instead of tasks.yaml
 # =============================================================================
 
-CONTEXT_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
+CONTEXT_DOC_DESCRIPTION = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE C4 Level 1: System Context document.
 
 ## EXECUTION EXAMPLE (follow this pattern):
@@ -171,6 +174,7 @@ See: c4-context.drawio
 
 Write 6-8 pages with REAL data from tools. No placeholders.
 """
+)
 
 CONTEXT_DIAGRAM_DESCRIPTION = """
 Create a C4 Context DrawIO DIAGRAM.
@@ -199,7 +203,9 @@ Use get_statistics() and get_architecture_summary() MCP tools to get real system
 Create nodes and edges based on REAL facts, not generic placeholders.
 """
 
-CONTAINER_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
+CONTAINER_DOC_DESCRIPTION = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE C4 Level 2: Container Diagram document.
 
 ## EXECUTION EXAMPLE (follow this pattern):
@@ -259,6 +265,7 @@ See: c4-container.drawio
 
 Write 6-8 pages with REAL data from tools. No placeholders.
 """
+)
 
 CONTAINER_DIAGRAM_DESCRIPTION = """
 Create a C4 Container DrawIO DIAGRAM.
@@ -289,7 +296,9 @@ CONNECTIONS:
 Use query_architecture_facts(category="containers") to get REAL container data.
 """
 
-COMPONENT_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
+COMPONENT_DOC_DESCRIPTION = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE C4 Level 3: Component Diagram document.
 
 ## EXECUTION EXAMPLE (follow this pattern):
@@ -369,6 +378,7 @@ See: c4-component.drawio
 
 Write 6-8 pages with REAL data from tools. No placeholders.
 """
+)
 
 COMPONENT_DIAGRAM_DESCRIPTION = """
 Create a C4 Component DrawIO DIAGRAM.
@@ -399,7 +409,9 @@ CONNECTIONS:
 Use get_statistics() to get REAL component counts for each layer.
 """
 
-DEPLOYMENT_DOC_DESCRIPTION = TOOL_INSTRUCTION + """
+DEPLOYMENT_DOC_DESCRIPTION = (
+    TOOL_INSTRUCTION
+    + """
 Create the COMPLETE C4 Level 4: Deployment Diagram document.
 
 ## EXECUTION EXAMPLE (follow this pattern):
@@ -463,6 +475,7 @@ See: c4-deployment.drawio
 
 Write 4-6 pages with REAL data from tools. No placeholders.
 """
+)
 
 DEPLOYMENT_DIAGRAM_DESCRIPTION = """
 Create a C4 Deployment DrawIO DIAGRAM.
@@ -552,15 +565,11 @@ class C4Crew(MiniCrewBase):
         system_name = system_info.get("name", "Unknown System")
 
         arch_info = analysis.get("architecture", {})
-        style_name = arch_info.get("primary_style") or facts.get(
-            "architecture_style", {}
-        ).get("primary_style", "UNKNOWN")
-        layers = arch_info.get("layers") or facts.get("architecture_style", {}).get(
-            "layers", []
+        style_name = arch_info.get("primary_style") or facts.get("architecture_style", {}).get(
+            "primary_style", "UNKNOWN"
         )
-        patterns = analysis.get("patterns", []) or facts.get(
-            "architecture_style", {}
-        ).get("patterns", [])
+        layers = arch_info.get("layers") or facts.get("architecture_style", {}).get("layers", [])
+        patterns = analysis.get("patterns", []) or facts.get("architecture_style", {}).get("patterns", [])
 
         containers = facts.get("containers", [])
         components = facts.get("components", [])
@@ -568,24 +577,20 @@ class C4Crew(MiniCrewBase):
         relations = facts.get("relations", [])
 
         # System summary
-        tech_stack = sorted(
-            {c.get("technology", "Unknown") for c in containers if c.get("technology")}
-        )
+        tech_stack = sorted({c.get("technology", "Unknown") for c in containers if c.get("technology")})
         container_list_lines = []
         for c in containers:
             cid = c.get("id", "?")
             cname = c.get("name", "?")
             ctype = c.get("type", "UNKNOWN")
             ctech = c.get("technology", "UNKNOWN")
-            container_list_lines.append(
-                f"- {cid}: {cname} | type={ctype} | tech={ctech}"
-            )
+            container_list_lines.append(f"- {cid}: {cname} | type={ctype} | tech={ctech}")
 
         system_summary = f"""SYSTEM: {system_name}
-DOMAIN: {system_info.get('domain', 'UNKNOWN')}
+DOMAIN: {system_info.get("domain", "UNKNOWN")}
 ARCHITECTURE STYLE: {style_name}
-LAYERS: {', '.join(layers) if layers else 'UNKNOWN'}
-PATTERNS: {', '.join(str(p) for p in patterns) if patterns else 'UNKNOWN'}
+LAYERS: {", ".join(layers) if layers else "UNKNOWN"}
+PATTERNS: {", ".join(str(p) for p in patterns) if patterns else "UNKNOWN"}
 
 STATISTICS:
 - Containers: {len(containers)}
@@ -593,10 +598,10 @@ STATISTICS:
 - Interfaces: {len(interfaces)}
 - Relations: {len(relations)}
 
-TECHNOLOGY: {', '.join(tech_stack) if tech_stack else 'UNKNOWN'}
+TECHNOLOGY: {", ".join(tech_stack) if tech_stack else "UNKNOWN"}
 
 CONTAINERS:
-{chr(10).join(container_list_lines) if container_list_lines else '- NONE'}"""
+{chr(10).join(container_list_lines) if container_list_lines else "- NONE"}"""
 
         # Container details
         container_details = []
@@ -611,7 +616,7 @@ CONTAINERS:
         containers_summary = f"""CONTAINER DETAILS
 Total: {len(containers)} containers
 
-{''.join(container_details)}"""
+{"".join(container_details)}"""
 
         # Component statistics
         by_stereotype: dict[str, list] = {}
@@ -631,7 +636,7 @@ Total: {len(containers)} containers
         components_summary = f"""COMPONENT ANALYSIS
 Total: {len(components)} components
 
-{chr(10).join(component_sections) if component_sections else 'UNKNOWN'}"""
+{chr(10).join(component_sections) if component_sections else "UNKNOWN"}"""
 
         # Interface summary
         by_method: dict[str, int] = {}
@@ -640,7 +645,7 @@ Total: {len(components)} components
             by_method[method] = by_method.get(method, 0) + 1
 
         interfaces_summary = f"""REST API: {len(interfaces)} endpoints
-By method: {', '.join(f'{m}:{c}' for m, c in sorted(by_method.items()))}"""
+By method: {", ".join(f"{m}:{c}" for m, c in sorted(by_method.items()))}"""
 
         # Relations summary
         rel_by_type: dict[str, int] = {}
@@ -649,7 +654,7 @@ By method: {', '.join(f'{m}:{c}' for m, c in sorted(by_method.items()))}"""
             rel_by_type[rtype] = rel_by_type.get(rtype, 0) + 1
 
         relations_summary = f"""DEPENDENCIES: {len(relations)} relations
-By type: {', '.join(f'{t}:{c}' for t, c in sorted(rel_by_type.items()))}"""
+By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
 
         return {
             "system_summary": self.escape_braces(system_summary),
@@ -674,18 +679,38 @@ By type: {', '.join(f'{t}:{c}' for t, c in sorted(rel_by_type.items()))}"""
         results = []
 
         mini_crews = [
-            ("context", CONTEXT_DOC_DESCRIPTION, "Complete C4 Context document (6-8 pages)",
-             CONTEXT_DIAGRAM_DESCRIPTION, "C4 Context DrawIO diagram created",
-             ["c4/c4-context.md", "c4/c4-context.drawio"]),
-            ("container", CONTAINER_DOC_DESCRIPTION, "Complete C4 Container document (6-8 pages)",
-             CONTAINER_DIAGRAM_DESCRIPTION, "C4 Container DrawIO diagram created",
-             ["c4/c4-container.md", "c4/c4-container.drawio"]),
-            ("component", COMPONENT_DOC_DESCRIPTION, "Complete C4 Component document (6-8 pages)",
-             COMPONENT_DIAGRAM_DESCRIPTION, "C4 Component DrawIO diagram created",
-             ["c4/c4-component.md", "c4/c4-component.drawio"]),
-            ("deployment", DEPLOYMENT_DOC_DESCRIPTION, "Complete C4 Deployment document (4-6 pages)",
-             DEPLOYMENT_DIAGRAM_DESCRIPTION, "C4 Deployment DrawIO diagram created",
-             ["c4/c4-deployment.md", "c4/c4-deployment.drawio"]),
+            (
+                "context",
+                CONTEXT_DOC_DESCRIPTION,
+                "Complete C4 Context document (6-8 pages)",
+                CONTEXT_DIAGRAM_DESCRIPTION,
+                "C4 Context DrawIO diagram created",
+                ["c4/c4-context.md", "c4/c4-context.drawio"],
+            ),
+            (
+                "container",
+                CONTAINER_DOC_DESCRIPTION,
+                "Complete C4 Container document (6-8 pages)",
+                CONTAINER_DIAGRAM_DESCRIPTION,
+                "C4 Container DrawIO diagram created",
+                ["c4/c4-container.md", "c4/c4-container.drawio"],
+            ),
+            (
+                "component",
+                COMPONENT_DOC_DESCRIPTION,
+                "Complete C4 Component document (6-8 pages)",
+                COMPONENT_DIAGRAM_DESCRIPTION,
+                "C4 Component DrawIO diagram created",
+                ["c4/c4-component.md", "c4/c4-component.drawio"],
+            ),
+            (
+                "deployment",
+                DEPLOYMENT_DOC_DESCRIPTION,
+                "Complete C4 Deployment document (4-6 pages)",
+                DEPLOYMENT_DIAGRAM_DESCRIPTION,
+                "C4 Deployment DrawIO diagram created",
+                ["c4/c4-deployment.md", "c4/c4-deployment.drawio"],
+            ),
         ]
 
         # Get template data for filling {system_summary} placeholders
@@ -695,10 +720,16 @@ By type: {', '.join(f'{t}:{c}' for t, c in sorted(rel_by_type.items()))}"""
             if not self.should_skip(name, completed):
                 try:
                     agent = self._create_agent()
-                    self._run_mini_crew(name, [
-                        Task(description=doc_desc.format(**template_data), expected_output=doc_output, agent=agent),
-                        Task(description=diag_desc.format(**template_data), expected_output=diag_output, agent=agent),
-                    ], expected_files=expected_files)
+                    self._run_mini_crew(
+                        name,
+                        [
+                            Task(description=doc_desc.format(**template_data), expected_output=doc_output, agent=agent),
+                            Task(
+                                description=diag_desc.format(**template_data), expected_output=diag_output, agent=agent
+                            ),
+                        ],
+                        expected_files=expected_files,
+                    )
                 except Exception as e:
                     logger.error(f"[C4] Mini-crew {name} failed, continuing: {e}")
             results.append(f"{name.title()}: Done")
@@ -707,13 +738,16 @@ By type: {', '.join(f'{t}:{c}' for t, c in sorted(rel_by_type.items()))}"""
         if not self.should_skip("quality", completed):
             try:
                 agent = self._create_agent()
-                self._run_mini_crew("quality", [
-                    Task(
-                        description=QUALITY_GATE_DESCRIPTION,
-                        expected_output="C4 Quality report written to quality/c4-report.md",
-                        agent=agent,
-                    ),
-                ])
+                self._run_mini_crew(
+                    "quality",
+                    [
+                        Task(
+                            description=QUALITY_GATE_DESCRIPTION,
+                            expected_output="C4 Quality report written to quality/c4-report.md",
+                            agent=agent,
+                        ),
+                    ],
+                )
             except Exception as e:
                 logger.error(f"[C4] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")

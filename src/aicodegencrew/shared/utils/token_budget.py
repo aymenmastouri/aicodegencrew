@@ -33,42 +33,46 @@ MAX_SNIPPET_LENGTH = 1500  # Code snippet per RAG result
 # For smaller responses (RAG with many results)
 RAG_MAX_RESPONSE_CHARS = int(TOOL_MAX_CHARS * 0.75)  # ~24000 chars
 
+
 def get_max_response_chars() -> int:
     """Get max response chars based on LLM config."""
     return TOOL_MAX_CHARS
+
 
 def get_rag_max_chars() -> int:
     """Get max chars for RAG responses."""
     return RAG_MAX_RESPONSE_CHARS
 
+
 def truncate_response(output: str, max_chars: int = None, hint: str = "") -> str:
     """Truncate response if too large.
-    
+
     Args:
         output: The string to truncate
         max_chars: Max chars (defaults to TOOL_MAX_CHARS)
         hint: Hint message for user
-    
+
     Returns:
         Truncated string with marker if needed
     """
     max_chars = max_chars or TOOL_MAX_CHARS
-    
+
     if len(output) <= max_chars:
         return output
-    
+
     truncated = output[:max_chars]
     marker = f"\n... [TRUNCATED at {max_chars} chars"
     if hint:
         marker += f" - {hint}"
     marker += "]"
-    
+
     return truncated + marker
 
 
 # Log config on import
 if __name__ != "__main__":
     import logging
+
     logger = logging.getLogger(__name__)
     logger.debug(
         f"Token Budget: {MAX_LLM_INPUT_TOKENS} input tokens, "

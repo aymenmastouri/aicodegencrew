@@ -4,10 +4,10 @@ Text Parser for plain text and log files.
 
 import re
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any
 
 
-def parse_text(file_path: Path) -> Dict[str, Any]:
+def parse_text(file_path: Path) -> dict[str, Any]:
     """
     Parse text or log file.
 
@@ -17,35 +17,35 @@ def parse_text(file_path: Path) -> Dict[str, Any]:
     Returns:
         Dictionary with content, log entries, errors
     """
-    content = file_path.read_text(encoding='utf-8')
+    content = file_path.read_text(encoding="utf-8")
 
     result = {
-        'content': content,
-        'log_entries': [],
-        'errors': [],
-        'lines': content.splitlines(),
+        "content": content,
+        "log_entries": [],
+        "errors": [],
+        "lines": content.splitlines(),
     }
 
     # Try to parse as log file
-    if file_path.suffix in ['.log', '.txt']:
-        result['log_entries'] = _parse_log_entries(content)
-        result['errors'] = _extract_errors(content)
+    if file_path.suffix in [".log", ".txt"]:
+        result["log_entries"] = _parse_log_entries(content)
+        result["errors"] = _extract_errors(content)
 
     return result
 
 
-def _parse_log_entries(content: str) -> List[Dict[str, Any]]:
+def _parse_log_entries(content: str) -> list[dict[str, Any]]:
     """Parse log entries from text."""
     entries = []
 
     # Common log patterns
     patterns = [
         # [LEVEL] message
-        r'\[(\w+)\]\s*(.+)',
+        r"\[(\w+)\]\s*(.+)",
         # YYYY-MM-DD HH:MM:SS LEVEL message
-        r'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(\w+)\s+(.+)',
+        r"(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+(\w+)\s+(.+)",
         # Level: message
-        r'(\w+):\s*(.+)',
+        r"(\w+):\s*(.+)",
     ]
 
     for line in content.splitlines():
@@ -58,27 +58,31 @@ def _parse_log_entries(content: str) -> List[Dict[str, Any]]:
             if match:
                 groups = match.groups()
                 if len(groups) == 2:
-                    entries.append({
-                        'level': groups[0],
-                        'message': groups[1],
-                    })
+                    entries.append(
+                        {
+                            "level": groups[0],
+                            "message": groups[1],
+                        }
+                    )
                 elif len(groups) == 3:
-                    entries.append({
-                        'timestamp': groups[0],
-                        'level': groups[1],
-                        'message': groups[2],
-                    })
+                    entries.append(
+                        {
+                            "timestamp": groups[0],
+                            "level": groups[1],
+                            "message": groups[2],
+                        }
+                    )
                 break
 
     return entries
 
 
-def _extract_errors(content: str) -> List[Dict[str, Any]]:
+def _extract_errors(content: str) -> list[dict[str, Any]]:
     """Extract error information from text."""
     errors = []
 
     # Error patterns
-    error_keywords = ['error', 'exception', 'failed', 'failure']
+    error_keywords = ["error", "exception", "failed", "failure"]
 
     lines = content.splitlines()
     for i, line in enumerate(lines):
@@ -89,12 +93,14 @@ def _extract_errors(content: str) -> List[Dict[str, Any]]:
             # Extract context (3 lines before and after)
             start = max(0, i - 3)
             end = min(len(lines), i + 4)
-            context = '\n'.join(lines[start:end])
+            context = "\n".join(lines[start:end])
 
-            errors.append({
-                'message': line.strip(),
-                'line_number': i + 1,
-                'context': context,
-            })
+            errors.append(
+                {
+                    "message": line.strip(),
+                    "line_number": i + 1,
+                    "context": context,
+                }
+            )
 
     return errors

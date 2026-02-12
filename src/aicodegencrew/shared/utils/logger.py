@@ -73,86 +73,87 @@ def configure_output_dir(base: str | Path) -> None:
 # Step Tracker - Track execution steps with timing
 # =============================================================================
 
+
 @dataclass
 class StepTracker:
     """Track execution steps with timing and status."""
-    
+
     _steps: dict[str, float] = field(default_factory=dict)
     _current: str | None = None
     _logger: logging.Logger | None = None
-    
+
     # Class-level singleton
-    _instance: ClassVar["StepTracker | None"] = None
-    
+    _instance: ClassVar[StepTracker | None] = None
+
     @classmethod
-    def get(cls) -> "StepTracker":
+    def get(cls) -> StepTracker:
         """Get singleton instance."""
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
-    
+
     def set_logger(self, logger: logging.Logger) -> None:
         """Set the logger to use."""
         self._logger = logger
-    
+
     def start(self, name: str, message: str = "") -> None:
         """Start a step."""
         self._current = name
         self._steps[name] = time.time()
-        
+
         line = f"====== {name} ======"
         if self._logger:
             self._logger.info("")
             self._logger.info(f"[STEP] {line}")
             if message:
                 self._logger.info(f"       {message}")
-    
+
     def done(self, name: str | None = None, message: str = "") -> float:
         """Complete a step successfully. Returns duration in seconds."""
         step = name or self._current
         if not step:
             return 0.0
-        
+
         start_time = self._steps.pop(step, time.time())
         duration = time.time() - start_time
-        
+
         line = f"====== {step} ======"
         if self._logger:
             self._logger.info(f"[DONE] {line} ({duration:.1f}s)")
             if message:
                 self._logger.info(f"       {message}")
-        
+
         self._current = None
         return duration
-    
+
     def fail(self, name: str | None = None, error: str = "") -> float:
         """Mark a step as failed. Returns duration in seconds."""
         step = name or self._current
         if not step:
             return 0.0
-        
+
         start_time = self._steps.pop(step, time.time())
         duration = time.time() - start_time
-        
+
         line = f"====== {step} ======"
         if self._logger:
             self._logger.error(f"[FAIL] {line} ({duration:.1f}s)")
             if error:
                 self._logger.error(f"       {error}")
-        
+
         self._current = None
         return duration
-    
+
     def info(self, message: str) -> None:
         """Log info within current step."""
         if self._logger:
             self._logger.info(f"       {message}")
-    
+
     def warn(self, message: str) -> None:
         """Log warning within current step."""
         if self._logger:
             self._logger.warning(f"       [WARN] {message}")
-    
+
     def progress(self, current: int, total: int, item: str = "") -> None:
         """Log progress within current step."""
         pct = (current / total * 100) if total > 0 else 0
@@ -167,6 +168,7 @@ class StepTracker:
 # =============================================================================
 # JSON Formatter for structured logs (metrics.jsonl)
 # =============================================================================
+
 
 class JsonFormatter(logging.Formatter):
     """Outputs log records as single-line JSON objects."""
@@ -189,32 +191,33 @@ class JsonFormatter(logging.Formatter):
 # Archive Management
 # =============================================================================
 
+
 def archive_current_log() -> None:
     """Archive current.log if it exists and is not locked."""
     if not CURRENT_LOG.exists():
         return
-    
+
     # Check if log has content
     try:
         if CURRENT_LOG.stat().st_size == 0:
             return
     except OSError:
         return
-    
+
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     # Create archive filename with timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     archive_name = f"{timestamp}_session.log"
     archive_path = ARCHIVE_DIR / archive_name
-    
+
     # Try to copy (not move) - safer on Windows with locked files
     try:
         shutil.copy2(CURRENT_LOG, archive_path)
     except (PermissionError, OSError):
         # File is locked, skip archiving this time
         return
-    
+
     # Cleanup old archives (keep MAX_ARCHIVE_FILES)
     try:
         archives = sorted(ARCHIVE_DIR.glob("*_session.log"), reverse=True)
@@ -241,7 +244,7 @@ def cleanup_old_archives() -> int:
     """Remove old archive files. Returns number of files removed."""
     if not ARCHIVE_DIR.exists():
         return 0
-    
+
     archives = sorted(ARCHIVE_DIR.glob("*_session.log"), reverse=True)
     removed = 0
     for old_archive in archives[MAX_ARCHIVE_FILES:]:
@@ -259,39 +262,39 @@ _initialized = False
 
 def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> logging.Logger:
     """Setup logger with archiving and step support.
-    
+
     Args:
         name: Logger name
         level: Log level (default: from LOG_LEVEL env or INFO)
-    
+
     Returns:
         Configured logger
     """
     global _initialized
-    
+
     if level is None:
         level = os.getenv("LOG_LEVEL", "INFO")
-    
+
     log_level = getattr(logging, level.upper(), logging.INFO)
-    
+
     # Return existing logger if already set up
     logger = logging.getLogger(name)
     if logger.handlers:
         return logger
-    
+
     logger.setLevel(logging.DEBUG)
-    
+
     # Only do full setup once (for main logger)
     if not _initialized and name == "aicodegencrew":
         _initialized = True
-        
+
         # Create directories
         LOG_DIR.mkdir(parents=True, exist_ok=True)
-        
+
         # Archive previous session and large metrics
         archive_current_log()
         _archive_metrics()
-        
+
         # ==========================================================================
         # Console Handler - Clean, readable format
         # Skip console logging if MCP_STDIO_MODE is set (corrupts JSON-RPC)
@@ -300,61 +303,57 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             # Use UTF-8 encoding for Windows console to handle emojis
             if sys.platform == "win32":
                 import io
-                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-            
+
+                sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+                sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
             console = logging.StreamHandler(sys.stdout)
             console.setLevel(log_level)
-            console.setFormatter(logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S'
-            ))
+            console.setFormatter(
+                logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+            )
             logger.addHandler(console)
-        
+
         # ==========================================================================
         # Session Log - current.log (overwritten each run, detailed)
         # ==========================================================================
         try:
-            session = logging.FileHandler(CURRENT_LOG, mode='w', encoding='utf-8')
+            session = logging.FileHandler(CURRENT_LOG, mode="w", encoding="utf-8")
             session.setLevel(logging.DEBUG)
-            session.setFormatter(logging.Formatter(
-                '%(asctime)s.%(msecs)03d | %(levelname)-5s | %(message)s',
-                datefmt='%H:%M:%S'
-            ))
+            session.setFormatter(
+                logging.Formatter("%(asctime)s.%(msecs)03d | %(levelname)-5s | %(message)s", datefmt="%H:%M:%S")
+            )
             # Unbuffered for real-time viewing
             session.stream.reconfigure(write_through=True)
             logger.addHandler(session)
         except Exception as e:
             print(f"[WARN] Could not create session log: {e}")
-        
+
         # ==========================================================================
         # Error Log - errors.log (persistent, rotating)
         # ==========================================================================
         try:
             errors = RotatingFileHandler(
-                ERRORS_LOG,
-                maxBytes=MAX_ERROR_SIZE,
-                backupCount=MAX_ERROR_BACKUPS,
-                encoding='utf-8'
+                ERRORS_LOG, maxBytes=MAX_ERROR_SIZE, backupCount=MAX_ERROR_BACKUPS, encoding="utf-8"
             )
             errors.setLevel(logging.ERROR)
-            errors.setFormatter(logging.Formatter(
-                '%(asctime)s | %(name)s | %(funcName)s:%(lineno)d\n'
-                '  %(message)s\n',
-                datefmt='%Y-%m-%d %H:%M:%S'
-            ))
+            errors.setFormatter(
+                logging.Formatter(
+                    "%(asctime)s | %(name)s | %(funcName)s:%(lineno)d\n  %(message)s\n", datefmt="%Y-%m-%d %H:%M:%S"
+                )
+            )
             logger.addHandler(errors)
         except Exception as e:
             print(f"[WARN] Could not create error log: {e}")
-        
+
         # ==========================================================================
         # Metrics Log - metrics.jsonl (structured JSON, one line per event)
         # ==========================================================================
         try:
-            metrics = logging.FileHandler(METRICS_LOG, mode='a', encoding='utf-8')
+            metrics = logging.FileHandler(METRICS_LOG, mode="a", encoding="utf-8")
             metrics.setLevel(logging.INFO)
             metrics.setFormatter(JsonFormatter())
-            metrics.addFilter(lambda r: hasattr(r, 'metric_data'))
+            metrics.addFilter(lambda r: hasattr(r, "metric_data"))
             logger.addHandler(metrics)
         except Exception as e:
             print(f"[WARN] Could not create metrics log: {e}")
@@ -363,7 +362,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
 
         # Connect step tracker
         StepTracker.get().set_logger(logger)
-        
+
         # Log session start
         logger.info("=" * 60)
         logger.info(f"SESSION START: {datetime.now().isoformat()} | run_id={RUN_ID}")
@@ -372,13 +371,14 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
     else:
         # For sub-loggers, just inherit from parent
         logger.propagate = True
-    
+
     return logger
 
 
 # =============================================================================
 # Convenience Functions
 # =============================================================================
+
 
 def step_start(name: str, message: str = "") -> None:
     """Start a named step."""
@@ -433,7 +433,13 @@ def log_metric(event: str, **data) -> None:
         log_metric("phase_complete", phase="phase3", files_created=8)
     """
     record = logger.makeRecord(
-        logger.name, logging.INFO, "", 0, event, (), None,
+        logger.name,
+        logging.INFO,
+        "",
+        0,
+        event,
+        (),
+        None,
     )
     record.metric_data = {"event": event, "run_id": RUN_ID, **data}
     logger.handle(record)
@@ -449,6 +455,7 @@ logger = setup_logger()
 # =============================================================================
 # Session End Hook
 # =============================================================================
+
 
 def _log_session_end() -> None:
     """Log session end on program exit.

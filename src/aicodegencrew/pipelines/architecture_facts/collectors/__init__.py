@@ -38,116 +38,115 @@ Database Specialists:
 """
 
 # Base - import with error handling for incremental development
-from .base import (
-    DimensionCollector,
-    CollectorOutput,
-    RawFact,
-    RawComponent,
-    RawInterface,
-    RawContainer,
-    RawEntity,
-    RawRuntimeFact,
-    RawInfraFact,
-    RelationHint,
-    RawEvidence,
-)
-
-# Core Collectors
-from .system_collector import SystemCollector
-from .container_collector import ContainerCollector
-from .component_collector import ComponentCollector
-from .interface_collector import InterfaceCollector
-from .data_model_collector import DataModelCollector
-from .runtime_collector import RuntimeCollector
-from .infrastructure_collector import InfrastructureCollector
-from .evidence_collector import EvidenceCollector
-from .dependency_collector import DependencyCollector
-
-# Spring Specialists
-from .spring import (
-    SpringRestCollector,
-    SpringServiceCollector,
-    SpringRepositoryCollector,
-    SpringConfigCollector,
-    SpringSecurityCollector,
-)
-
 # Angular Specialists
 from .angular import (
-    AngularModuleCollector,
     AngularComponentCollector,
+    AngularModuleCollector,
     AngularRoutingCollector,
     AngularServiceCollector,
     AngularStateCollector,
 )
+from .base import (
+    CollectorOutput,
+    DimensionCollector,
+    RawComponent,
+    RawContainer,
+    RawEntity,
+    RawEvidence,
+    RawFact,
+    RawInfraFact,
+    RawInterface,
+    RawRuntimeFact,
+    RelationHint,
+)
+from .component_collector import ComponentCollector
+from .container_collector import ContainerCollector
+from .data_model_collector import DataModelCollector
 
 # Database Specialists
 from .database import (
-    OracleTableCollector,
-    OracleSchemaCollector,
-    OracleViewCollector,
-    OracleProcedureCollector,
     MigrationCollector,
+    OracleProcedureCollector,
+    OracleSchemaCollector,
+    OracleTableCollector,
+    OracleViewCollector,
 )
+from .dependency_collector import DependencyCollector
+from .evidence_collector import EvidenceCollector
 
-# Cross-cutting Collectors
-from .workflow_collector import WorkflowCollector
-from .techstack_version_collector import TechStackVersionCollector
+# Adapter
+from .fact_adapter import DimensionResultsAdapter, FactAdapter
+from .infrastructure_collector import InfrastructureCollector
+from .interface_collector import InterfaceCollector
 
 # Orchestrator
 from .orchestrator import CollectorOrchestrator, DimensionResults
+from .runtime_collector import RuntimeCollector
 
-# Adapter
-from .fact_adapter import FactAdapter, DimensionResultsAdapter
+# Spring Specialists
+from .spring import (
+    SpringConfigCollector,
+    SpringRepositoryCollector,
+    SpringRestCollector,
+    SpringSecurityCollector,
+    SpringServiceCollector,
+)
+
+# Core Collectors
+from .system_collector import SystemCollector
+from .techstack_version_collector import TechStackVersionCollector
+
+# Cross-cutting Collectors
+from .workflow_collector import WorkflowCollector
 
 __all__ = [
-    # Base
-    "DimensionCollector",
-    "CollectorOutput",
-    "RawFact",
-    "RawComponent",
-    "RawInterface",
-    "RawContainer",
-    "RawEntity",
-    "RawRuntimeFact",
-    "RawInfraFact",
-    "RelationHint",
-    "RawEvidence",
-    # Core
-    "SystemCollector",
-    "ContainerCollector",
-    "ComponentCollector",
-    "InterfaceCollector",
-    "DataModelCollector",
-    "RuntimeCollector",
-    "InfrastructureCollector",
-    "EvidenceCollector",
-    "DependencyCollector",
-    # Spring
-    "SpringRestCollector",
-    "SpringServiceCollector",
-    "SpringRepositoryCollector",
-    "SpringConfigCollector",
-    "SpringSecurityCollector",
+    "AngularComponentCollector",
     # Angular
     "AngularModuleCollector",
-    "AngularComponentCollector",
     "AngularRoutingCollector",
     "AngularServiceCollector",
     "AngularStateCollector",
-    # Database
-    "OracleTableCollector",
-    "OracleSchemaCollector",
-    "OracleViewCollector",
-    "OracleProcedureCollector",
-    "MigrationCollector",
-    # Cross-cutting
-    "WorkflowCollector",
-    "TechStackVersionCollector",
     # Orchestrator
     "CollectorOrchestrator",
+    "CollectorOutput",
+    "ComponentCollector",
+    "ContainerCollector",
+    "DataModelCollector",
+    "DependencyCollector",
+    # Base
+    "DimensionCollector",
     "DimensionResults",
+    "DimensionResultsAdapter",
+    "EvidenceCollector",
     # Adapter
     "FactAdapter",
-    "DimensionResultsAdapter",
+    "InfrastructureCollector",
+    "InterfaceCollector",
+    "MigrationCollector",
+    "OracleProcedureCollector",
+    "OracleSchemaCollector",
+    # Database
+    "OracleTableCollector",
+    "OracleViewCollector",
+    "RawComponent",
+    "RawContainer",
+    "RawEntity",
+    "RawEvidence",
+    "RawFact",
+    "RawInfraFact",
+    "RawInterface",
+    "RawRuntimeFact",
+    "RelationHint",
+    "RuntimeCollector",
+    "SpringConfigCollector",
+    "SpringRepositoryCollector",
+    # Spring
+    "SpringRestCollector",
+    "SpringSecurityCollector",
+    "SpringServiceCollector",
+    # Core
+    "SystemCollector",
+    "TechStackVersionCollector",
+    # Cross-cutting
+    "WorkflowCollector",
 ]

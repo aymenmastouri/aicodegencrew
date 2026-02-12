@@ -17,42 +17,43 @@ Mini-Crew Layout:
   4. quality_analysis (quality_analyst)  -> 4 tasks
   5. synthesis        (synthesis_lead)   -> 1 task
 """
+
 import json
 import os
 import time
 from pathlib import Path
-from typing import Dict, Any, Set, List
+from typing import Any
 
-from crewai import Agent, Crew, LLM, Task, Process
+from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 from crewai_tools import FileWriterTool
 
-from .tools import FactsStatisticsTool, FactsQueryTool, RAGQueryTool, StereotypeListTool, PartialResultsTool
-from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 from ...shared.utils.logger import setup_logger
+from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
+from .tools import FactsQueryTool, FactsStatisticsTool, PartialResultsTool, RAGQueryTool, StereotypeListTool
 
 # MCP server script path (project root)
 _MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
 
 # Import Pydantic schemas for output validation
 from ...shared.models import (
-    MacroArchitectureOutput,
-    BackendPatternOutput,
-    FrontendPatternOutput,
-    ArchitectureQualityOutput,
-    DomainModelOutput,
-    BusinessCapabilitiesOutput,
-    BoundedContextsOutput,
-    StateMachinesOutput,
-    WorkflowEnginesOutput,
-    SagaPatternsOutput,
-    RuntimeScenariosOutput,
-    ApiDesignOutput,
-    ComplexityOutput,
-    TechnicalDebtOutput,
-    SecurityOutput,
-    OperationalReadinessOutput,
     AnalyzedArchitecture,
+    ApiDesignOutput,
+    ArchitectureQualityOutput,
+    BackendPatternOutput,
+    BoundedContextsOutput,
+    BusinessCapabilitiesOutput,
+    ComplexityOutput,
+    DomainModelOutput,
+    FrontendPatternOutput,
+    MacroArchitectureOutput,
+    OperationalReadinessOutput,
+    RuntimeScenariosOutput,
+    SagaPatternsOutput,
+    SecurityOutput,
+    StateMachinesOutput,
+    TechnicalDebtOutput,
+    WorkflowEnginesOutput,
 )
 
 logger = setup_logger(__name__)
@@ -93,7 +94,7 @@ AGENT_CONFIGS = {
             "You are a senior functional analyst who bridges business and technology. "
             "You specialize in Domain-Driven Design (DDD) and identifying bounded "
             "contexts from code structure. You group entities and services by naming "
-            'prefix to discover domain areas (e.g., OrderService + OrderEntity = '
+            "prefix to discover domain areas (e.g., OrderService + OrderEntity = "
             '"Order Management" domain). You detect state machines from enum types '
             "and status fields, workflow engines from BPMN/Camunda patterns. You always "
             "start with get_facts_statistics() for overview. Tools return max 50 results - "
@@ -612,58 +613,67 @@ partial results or marked as "NOT_ANALYZED"."""
 # =============================================================================
 
 TECH_ANALYSIS_TASKS = [
-    (ANALYZE_MACRO_ARCHITECTURE_DESC, ANALYZE_MACRO_ARCHITECTURE_OUTPUT,
-     MacroArchitectureOutput, "01_macro_architecture.json"),
-    (ANALYZE_BACKEND_PATTERN_DESC, ANALYZE_BACKEND_PATTERN_OUTPUT,
-     BackendPatternOutput, "02_backend_pattern.json"),
-    (ANALYZE_FRONTEND_PATTERN_DESC, ANALYZE_FRONTEND_PATTERN_OUTPUT,
-     FrontendPatternOutput, "03_frontend_pattern.json"),
-    (ANALYZE_ARCHITECTURE_QUALITY_DESC, ANALYZE_ARCHITECTURE_QUALITY_OUTPUT,
-     ArchitectureQualityOutput, "04_architecture_quality.json"),
+    (
+        ANALYZE_MACRO_ARCHITECTURE_DESC,
+        ANALYZE_MACRO_ARCHITECTURE_OUTPUT,
+        MacroArchitectureOutput,
+        "01_macro_architecture.json",
+    ),
+    (ANALYZE_BACKEND_PATTERN_DESC, ANALYZE_BACKEND_PATTERN_OUTPUT, BackendPatternOutput, "02_backend_pattern.json"),
+    (ANALYZE_FRONTEND_PATTERN_DESC, ANALYZE_FRONTEND_PATTERN_OUTPUT, FrontendPatternOutput, "03_frontend_pattern.json"),
+    (
+        ANALYZE_ARCHITECTURE_QUALITY_DESC,
+        ANALYZE_ARCHITECTURE_QUALITY_OUTPUT,
+        ArchitectureQualityOutput,
+        "04_architecture_quality.json",
+    ),
 ]
 
 DOMAIN_ANALYSIS_TASKS = [
-    (ANALYZE_DOMAIN_MODEL_DESC, ANALYZE_DOMAIN_MODEL_OUTPUT,
-     DomainModelOutput, "05_domain_model.json"),
-    (ANALYZE_BUSINESS_CAPABILITIES_DESC, ANALYZE_BUSINESS_CAPABILITIES_OUTPUT,
-     BusinessCapabilitiesOutput, "06_business_capabilities.json"),
-    (ANALYZE_BOUNDED_CONTEXTS_DESC, ANALYZE_BOUNDED_CONTEXTS_OUTPUT,
-     BoundedContextsOutput, "07_bounded_contexts.json"),
-    (ANALYZE_STATE_MACHINES_DESC, ANALYZE_STATE_MACHINES_OUTPUT,
-     StateMachinesOutput, "08_state_machines.json"),
+    (ANALYZE_DOMAIN_MODEL_DESC, ANALYZE_DOMAIN_MODEL_OUTPUT, DomainModelOutput, "05_domain_model.json"),
+    (
+        ANALYZE_BUSINESS_CAPABILITIES_DESC,
+        ANALYZE_BUSINESS_CAPABILITIES_OUTPUT,
+        BusinessCapabilitiesOutput,
+        "06_business_capabilities.json",
+    ),
+    (ANALYZE_BOUNDED_CONTEXTS_DESC, ANALYZE_BOUNDED_CONTEXTS_OUTPUT, BoundedContextsOutput, "07_bounded_contexts.json"),
+    (ANALYZE_STATE_MACHINES_DESC, ANALYZE_STATE_MACHINES_OUTPUT, StateMachinesOutput, "08_state_machines.json"),
 ]
 
 WORKFLOW_ANALYSIS_TASKS = [
-    (ANALYZE_WORKFLOW_ENGINES_DESC, ANALYZE_WORKFLOW_ENGINES_OUTPUT,
-     WorkflowEnginesOutput, "09_workflow_engines.json"),
-    (ANALYZE_SAGA_PATTERNS_DESC, ANALYZE_SAGA_PATTERNS_OUTPUT,
-     SagaPatternsOutput, "10_saga_patterns.json"),
-    (ANALYZE_RUNTIME_SCENARIOS_DESC, ANALYZE_RUNTIME_SCENARIOS_OUTPUT,
-     RuntimeScenariosOutput, "11_runtime_scenarios.json"),
-    (ANALYZE_API_DESIGN_DESC, ANALYZE_API_DESIGN_OUTPUT,
-     ApiDesignOutput, "12_api_design.json"),
+    (ANALYZE_WORKFLOW_ENGINES_DESC, ANALYZE_WORKFLOW_ENGINES_OUTPUT, WorkflowEnginesOutput, "09_workflow_engines.json"),
+    (ANALYZE_SAGA_PATTERNS_DESC, ANALYZE_SAGA_PATTERNS_OUTPUT, SagaPatternsOutput, "10_saga_patterns.json"),
+    (
+        ANALYZE_RUNTIME_SCENARIOS_DESC,
+        ANALYZE_RUNTIME_SCENARIOS_OUTPUT,
+        RuntimeScenariosOutput,
+        "11_runtime_scenarios.json",
+    ),
+    (ANALYZE_API_DESIGN_DESC, ANALYZE_API_DESIGN_OUTPUT, ApiDesignOutput, "12_api_design.json"),
 ]
 
 QUALITY_ANALYSIS_TASKS = [
-    (ANALYZE_COMPLEXITY_DESC, ANALYZE_COMPLEXITY_OUTPUT,
-     ComplexityOutput, "13_complexity.json"),
-    (ANALYZE_TECHNICAL_DEBT_DESC, ANALYZE_TECHNICAL_DEBT_OUTPUT,
-     TechnicalDebtOutput, "14_technical_debt.json"),
-    (ANALYZE_SECURITY_DESC, ANALYZE_SECURITY_OUTPUT,
-     SecurityOutput, "15_security.json"),
-    (ANALYZE_OPERATIONAL_READINESS_DESC, ANALYZE_OPERATIONAL_READINESS_OUTPUT,
-     OperationalReadinessOutput, "16_operational_readiness.json"),
+    (ANALYZE_COMPLEXITY_DESC, ANALYZE_COMPLEXITY_OUTPUT, ComplexityOutput, "13_complexity.json"),
+    (ANALYZE_TECHNICAL_DEBT_DESC, ANALYZE_TECHNICAL_DEBT_OUTPUT, TechnicalDebtOutput, "14_technical_debt.json"),
+    (ANALYZE_SECURITY_DESC, ANALYZE_SECURITY_OUTPUT, SecurityOutput, "15_security.json"),
+    (
+        ANALYZE_OPERATIONAL_READINESS_DESC,
+        ANALYZE_OPERATIONAL_READINESS_OUTPUT,
+        OperationalReadinessOutput,
+        "16_operational_readiness.json",
+    ),
 ]
 
 SYNTHESIS_TASKS = [
-    (SYNTHESIZE_ARCHITECTURE_DESC, SYNTHESIZE_ARCHITECTURE_OUTPUT,
-     AnalyzedArchitecture, "analyzed_architecture.json"),
+    (SYNTHESIZE_ARCHITECTURE_DESC, SYNTHESIZE_ARCHITECTURE_OUTPUT, AnalyzedArchitecture, "analyzed_architecture.json"),
 ]
 
 
 # =============================================================================
 # CREW CLASS
 # =============================================================================
+
 
 class ArchitectureAnalysisCrew:
     """
@@ -770,25 +780,27 @@ class ArchitectureAnalysisCrew:
 
     def _build_tasks(
         self,
-        task_defs: List[tuple],
+        task_defs: list[tuple],
         agent: Agent,
         output_dir: Path,
-    ) -> List[Task]:
+    ) -> list[Task]:
         """Build Task objects from task definitions."""
         tasks = []
         for desc, expected, pydantic_model, filename in task_defs:
-            tasks.append(Task(
-                description=desc,
-                expected_output=expected,
-                agent=agent,
-                context=[],
-                output_pydantic=pydantic_model,
-                output_file=str(output_dir / filename),
-                human_input=False,
-            ))
+            tasks.append(
+                Task(
+                    description=desc,
+                    expected_output=expected,
+                    agent=agent,
+                    context=[],
+                    output_pydantic=pydantic_model,
+                    output_file=str(output_dir / filename),
+                    human_input=False,
+                )
+            )
         return tasks
 
-    def _run_mini_crew(self, name: str, tasks: List[Task]) -> str:
+    def _run_mini_crew(self, name: str, tasks: list[Task]) -> str:
         """Run a mini-crew with fresh context, retry on transient errors."""
         max_retries = int(os.getenv("CREW_MAX_RETRIES", "2"))
         logger.info(f"[Phase2] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
@@ -814,8 +826,9 @@ class ArchitectureAnalysisCrew:
                 # Log success metric
                 try:
                     from ...shared.utils.logger import log_metric
-                    tokens = getattr(result, 'token_usage', {})
-                    total_tokens = tokens.get('total_tokens', 0) if isinstance(tokens, dict) else 0
+
+                    tokens = getattr(result, "token_usage", {})
+                    total_tokens = tokens.get("total_tokens", 0) if isinstance(tokens, dict) else 0
                     log_metric(
                         "mini_crew_complete",
                         crew_type="Phase2",
@@ -861,6 +874,7 @@ class ArchitectureAnalysisCrew:
                 if tracker and tracker.calls:
                     try:
                         from ...shared.utils.logger import log_metric as _log_metric
+
                         _log_metric(
                             "guardrail_summary",
                             crew_name=name,
@@ -885,19 +899,15 @@ class ArchitectureAnalysisCrew:
         }
         return mapping.get(crew_name, "tech_architect")
 
-    def _log_crew_failure(
-        self, name: str, tasks: List[Task], error: Exception, start_time: float
-    ) -> None:
+    def _log_crew_failure(self, name: str, tasks: list[Task], error: Exception, start_time: float) -> None:
         """Log failure metric and error details."""
         duration = time.time() - start_time
         error_type = type(error).__name__
         error_msg = str(error)[:500]
-        logger.error(
-            f"[Phase2] Failed Mini-Crew: {name} "
-            f"({duration:.1f}s, {error_type}): {error_msg}"
-        )
+        logger.error(f"[Phase2] Failed Mini-Crew: {name} ({duration:.1f}s, {error_type}): {error_msg}")
         try:
             from ...shared.utils.logger import log_metric
+
             log_metric(
                 "mini_crew_failed",
                 crew_type="Phase2",
@@ -914,7 +924,7 @@ class ArchitectureAnalysisCrew:
     # CHECKPOINT
     # =========================================================================
 
-    def _load_checkpoint(self) -> Set[str]:
+    def _load_checkpoint(self) -> set[str]:
         """Load completed mini-crew names from checkpoint."""
         if not self._checkpoint_file.exists():
             return set()
@@ -922,10 +932,7 @@ class ArchitectureAnalysisCrew:
             data = json.loads(self._checkpoint_file.read_text(encoding="utf-8"))
             completed = set(data.get("completed_crews", []))
             if completed:
-                logger.info(
-                    f"[Phase2] Resuming: {len(completed)} mini-crews already completed: "
-                    f"{sorted(completed)}"
-                )
+                logger.info(f"[Phase2] Resuming: {len(completed)} mini-crews already completed: {sorted(completed)}")
             return completed
         except Exception:
             return set()
@@ -935,9 +942,7 @@ class ArchitectureAnalysisCrew:
         completed = self._load_checkpoint()
         completed.add(crew_name)
         data = {"completed_crews": sorted(completed)}
-        self._checkpoint_file.write_text(
-            json.dumps(data, indent=2), encoding="utf-8"
-        )
+        self._checkpoint_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
         logger.debug(f"[Phase2] Checkpoint saved: {crew_name}")
 
     # =========================================================================
@@ -961,7 +966,7 @@ class ArchitectureAnalysisCrew:
             missing_files.append(str(self.facts_path))
         else:
             try:
-                with open(self.facts_path, 'r', encoding='utf-8') as f:
+                with open(self.facts_path, encoding="utf-8") as f:
                     facts_data = json.load(f)
                 if not isinstance(facts_data, dict) or "components" not in facts_data:
                     logger.error(f"   [INVALID] {self.facts_path}: missing 'components' key")
@@ -1061,9 +1066,9 @@ class ArchitectureAnalysisCrew:
     def _format_json_file(json_file: Path) -> None:
         """Format a JSON file with pretty-print."""
         try:
-            with open(json_file, 'r', encoding='utf-8') as f:
+            with open(json_file, encoding="utf-8") as f:
                 data = json.load(f)
-            with open(json_file, 'w', encoding='utf-8') as f:
+            with open(json_file, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             logger.info(f"   [OK] Formatted: {json_file.name}")
         except Exception as e:
@@ -1073,7 +1078,7 @@ class ArchitectureAnalysisCrew:
     # MAIN EXECUTION
     # =========================================================================
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> dict[str, Any]:
         """Execute all 5 mini-crews sequentially with checkpoint resume."""
         completed = self._load_checkpoint()
         is_resume = len(completed) > 0
@@ -1127,6 +1132,6 @@ class ArchitectureAnalysisCrew:
             "result": output_path,
         }
 
-    def kickoff(self, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
+    def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """Execute crew - compatible with orchestrator interface."""
         return self.run()

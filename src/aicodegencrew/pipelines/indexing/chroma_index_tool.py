@@ -9,17 +9,19 @@ Best Practices:
 
 import os
 from pathlib import Path
-from typing import Type, List, Dict, Any, Optional
-from pydantic import BaseModel, Field
-from crewai.tools import BaseTool
+from typing import Any
+
 import chromadb
 from chromadb.config import Settings
+from crewai.tools import BaseTool
+from pydantic import BaseModel, Field
+
 from ...shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 
 
-def _normalize_where(where: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+def _normalize_where(where: dict[str, Any] | None) -> dict[str, Any]:
     """Normalize a metadata filter to Chroma's expected shape.
 
     Some Chroma versions require the top-level `where` dict to contain exactly one
@@ -42,7 +44,7 @@ def _normalize_where(where: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     return {"$and": [{k: v} for k, v in where.items()]}
 
 
-def _normalize_include(include: Optional[List[str]]) -> List[str]:
+def _normalize_include(include: list[str] | None) -> list[str]:
     """Normalize `include` for Chroma `collection.get()`.
 
     Chroma expects include items like: documents, embeddings, metadatas, uris, data.
@@ -56,17 +58,18 @@ def _normalize_include(include: Optional[List[str]]) -> List[str]:
 
 class ChromaIndexInput(BaseModel):
     """Input schema for ChromaIndexTool."""
+
     operation: str = Field(..., description="Operation: 'upsert', 'query', 'get', 'delete', or 'count'")
-    chunks: List[Dict[str, Any]] = Field(default_factory=list, description="Chunks to upsert")
-    embeddings: List[List[float]] = Field(default_factory=list, description="Embeddings for chunks")
+    chunks: list[dict[str, Any]] = Field(default_factory=list, description="Chunks to upsert")
+    embeddings: list[list[float]] = Field(default_factory=list, description="Embeddings for chunks")
     query_text: str = Field(default="", description="Query text for search")
-    query_embedding: List[float] = Field(default_factory=list, description="Query embedding")
+    query_embedding: list[float] = Field(default_factory=list, description="Query embedding")
     top_k: int = Field(default=10, description="Number of results to return")
     collection_name: str = Field(default="repo_docs", description="Collection name")
-    collection_metadata: Dict[str, Any] = Field(default_factory=dict, description="Collection metadata")
-    where: Dict[str, Any] = Field(default_factory=dict, description="Metadata filter for get/delete")
+    collection_metadata: dict[str, Any] = Field(default_factory=dict, description="Collection metadata")
+    where: dict[str, Any] = Field(default_factory=dict, description="Metadata filter for get/delete")
     limit: int = Field(default=0, description="Max number of items to return for get (0 = no limit)")
-    include: List[str] = Field(default_factory=list, description="Fields to include for get (e.g. ['ids','metadatas'])")
+    include: list[str] = Field(default_factory=list, description="Fields to include for get (e.g. ['ids','metadatas'])")
 
 
 class ChromaIndexTool(BaseTool):
@@ -75,54 +78,54 @@ class ChromaIndexTool(BaseTool):
         "Manages ChromaDB persistent vector store with upsert, query, and count operations. "
         "Optimized for large-scale document retrieval with batch processing support."
     )
-    args_schema: Type[BaseModel] = ChromaIndexInput
+    args_schema: type[BaseModel] = ChromaIndexInput
 
     # Optional override used by tests and power users.
-    chroma_dir: Optional[str] = None
-    
+    chroma_dir: str | None = None
+
     # Performance tuning
     max_retries: int = 3
     retry_delay: float = 1.0
-    
+
     def _get_client(self):
         """Lazy initialization of ChromaDB client.
-        
+
         Best Practice: Lazy initialization reduces startup time and memory usage.
         Client is created only when first needed.
         """
-        if not hasattr(self, '_client'):
+        if not hasattr(self, "_client"):
             chroma_dir = self.chroma_dir or os.getenv("CHROMA_DIR", "./.chroma_db")
             Path(chroma_dir).mkdir(parents=True, exist_ok=True)
-            
+
             logger.info(f"Initializing ChromaDB client at: {chroma_dir}")
-            
+
             self._client = chromadb.PersistentClient(
                 path=chroma_dir,
                 settings=Settings(
                     anonymized_telemetry=False,
                     allow_reset=True,
-                )
+                ),
             )
-            
+
             logger.info("ChromaDB client initialized")
         return self._client
-    
+
     def _run(
         self,
         operation: str,
-        chunks: List[Dict[str, Any]] = None,
-        embeddings: List[List[float]] = None,
+        chunks: list[dict[str, Any]] = None,
+        embeddings: list[list[float]] = None,
         query_text: str = "",
-        query_embedding: List[float] = None,
+        query_embedding: list[float] = None,
         top_k: int = 10,
         collection_name: str = "repo_docs",
-        collection_metadata: Dict[str, Any] = None,
-        where: Dict[str, Any] = None,
+        collection_metadata: dict[str, Any] = None,
+        where: dict[str, Any] = None,
         limit: int = 0,
-        include: List[str] = None,
-    ) -> Dict[str, Any]:
+        include: list[str] = None,
+    ) -> dict[str, Any]:
         """Execute ChromaDB operation.
-        
+
         Args:
             operation: 'upsert', 'query', or 'count'
             chunks: Chunks to upsert
@@ -132,7 +135,7 @@ class ChromaIndexTool(BaseTool):
             top_k: Number of results
             collection_name: Collection name
             collection_metadata: Metadata to store with collection
-            
+
         Returns:
             Operation result dictionary
         """
@@ -151,22 +154,22 @@ class ChromaIndexTool(BaseTool):
                 "success": False,
                 "error": f"Unknown operation: {operation}",
             }
-    
+
     def _upsert(
         self,
-        chunks: List[Dict[str, Any]],
-        embeddings: List[List[float]],
+        chunks: list[dict[str, Any]],
+        embeddings: list[list[float]],
         collection_name: str,
-        collection_metadata: Dict[str, Any] = None,
-    ) -> Dict[str, Any]:
+        collection_metadata: dict[str, Any] = None,
+    ) -> dict[str, Any]:
         """Upsert chunks into collection.
-        
+
         Args:
             chunks: List of chunk dictionaries
             embeddings: List of embedding vectors
             collection_name: Collection name
             collection_metadata: Metadata to store with collection
-            
+
         Returns:
             Result dictionary
         """
@@ -183,17 +186,14 @@ class ChromaIndexTool(BaseTool):
                 "success": False,
                 "error": f"Mismatch: {len(chunks)} chunks vs {len(embeddings)} embeddings (expected aligned list)",
             }
-        
+
         try:
             # Prepare collection metadata
             metadata = {"description": "Repository documentation chunks"}
             if collection_metadata:
                 metadata.update(collection_metadata)
-            
-            collection = self._get_client().get_or_create_collection(
-                name=collection_name,
-                metadata=metadata
-            )
+
+            collection = self._get_client().get_or_create_collection(name=collection_name, metadata=metadata)
 
             # Best-effort: ensure metadata updates even if collection already existed.
             try:
@@ -201,42 +201,44 @@ class ChromaIndexTool(BaseTool):
                     collection.modify(metadata=metadata)
             except Exception as e:
                 logger.debug(f"Could not update collection metadata via modify(): {e}")
-            
+
             # Prepare data for upsert
             ids = []
             texts = []
             metadatas = []
             valid_embeddings = []
-            
-            for chunk, embedding in zip(chunks, embeddings):
+
+            for chunk, embedding in zip(chunks, embeddings, strict=False):
                 # Skip if embedding failed (None)
                 if embedding is None:
                     continue
-                
+
                 chunk_id = chunk.get("chunk_id", "")
                 text = chunk.get("text", "")
-                
+
                 if not chunk_id or not text:
                     continue
-                
+
                 ids.append(chunk_id)
                 texts.append(text)
-                metadatas.append({
-                    "file_path": chunk.get("file_path", ""),
-                    "file_hash": chunk.get("file_hash", ""),
-                    "repo_path": chunk.get("repo_path", ""),
-                    "chunk_index": chunk.get("chunk_index", 0),
-                    "start_char": chunk.get("start_char", 0),
-                    "end_char": chunk.get("end_char", 0),
-                })
+                metadatas.append(
+                    {
+                        "file_path": chunk.get("file_path", ""),
+                        "file_hash": chunk.get("file_hash", ""),
+                        "repo_path": chunk.get("repo_path", ""),
+                        "chunk_index": chunk.get("chunk_index", 0),
+                        "start_char": chunk.get("start_char", 0),
+                        "end_char": chunk.get("end_char", 0),
+                    }
+                )
                 valid_embeddings.append(embedding)
-            
+
             if not ids:
                 return {
                     "success": False,
                     "error": "No valid chunks to upsert",
                 }
-            
+
             # Upsert to ChromaDB
             collection.upsert(
                 ids=ids,
@@ -244,37 +246,37 @@ class ChromaIndexTool(BaseTool):
                 embeddings=valid_embeddings,
                 metadatas=metadatas,
             )
-            
+
             logger.info(f"Upserted {len(ids)} chunks to collection '{collection_name}'")
-            
+
             return {
                 "success": True,
                 "upserted_count": len(ids),
                 "collection_name": collection_name,
             }
-        
+
         except Exception as e:
             logger.error(f"Error upserting to ChromaDB: {e}")
             return {
                 "success": False,
                 "error": str(e),
             }
-    
+
     def _query(
         self,
         query_text: str,
-        query_embedding: List[float],
+        query_embedding: list[float],
         top_k: int,
         collection_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Query collection for similar chunks.
-        
+
         Args:
             query_text: Query text
             query_embedding: Query embedding vector
             top_k: Number of results
             collection_name: Collection name
-            
+
         Returns:
             Query results dictionary
         """
@@ -283,7 +285,7 @@ class ChromaIndexTool(BaseTool):
                 "success": False,
                 "error": "No query embedding provided",
             }
-        
+
         try:
             client = self._get_client()
             collections = client.list_collections()
@@ -291,32 +293,34 @@ class ChromaIndexTool(BaseTool):
                 return {"success": True, "results": [], "count": 0}
 
             collection = client.get_collection(name=collection_name)
-            
+
             results = collection.query(
                 query_embeddings=[query_embedding],
                 n_results=top_k,
             )
-            
+
             # Format results
             formatted_results = []
-            
+
             if results["ids"] and len(results["ids"]) > 0:
                 for i in range(len(results["ids"][0])):
-                    formatted_results.append({
-                        "chunk_id": results["ids"][0][i],
-                        "text": results["documents"][0][i] if results["documents"] else "",
-                        "metadata": results["metadatas"][0][i] if results["metadatas"] else {},
-                        "distance": results["distances"][0][i] if results.get("distances") else 0.0,
-                    })
-            
+                    formatted_results.append(
+                        {
+                            "chunk_id": results["ids"][0][i],
+                            "text": results["documents"][0][i] if results["documents"] else "",
+                            "metadata": results["metadatas"][0][i] if results["metadatas"] else {},
+                            "distance": results["distances"][0][i] if results.get("distances") else 0.0,
+                        }
+                    )
+
             logger.info(f"Retrieved {len(formatted_results)} results for query")
-            
+
             return {
                 "success": True,
                 "results": formatted_results,
                 "count": len(formatted_results),
             }
-        
+
         except Exception as e:
             logger.error(f"Error querying ChromaDB: {e}")
             return {
@@ -327,10 +331,10 @@ class ChromaIndexTool(BaseTool):
     def _get(
         self,
         collection_name: str,
-        where: Dict[str, Any],
+        where: dict[str, Any],
         limit: int = 0,
-        include: List[str] = None,
-    ) -> Dict[str, Any]:
+        include: list[str] = None,
+    ) -> dict[str, Any]:
         """Get documents by metadata filter.
 
         This is used for incremental indexing checks (e.g., file_path+file_hash).
@@ -344,7 +348,7 @@ class ChromaIndexTool(BaseTool):
 
             collection = client.get_collection(name=collection_name)
 
-            get_kwargs: Dict[str, Any] = {"where": _normalize_where(where)}
+            get_kwargs: dict[str, Any] = {"where": _normalize_where(where)}
             if include:
                 get_kwargs["include"] = include
             if limit and limit > 0:
@@ -368,8 +372,8 @@ class ChromaIndexTool(BaseTool):
     def _delete(
         self,
         collection_name: str,
-        where: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        where: dict[str, Any],
+    ) -> dict[str, Any]:
         """Delete documents by metadata filter (best-effort)."""
         try:
             client = self._get_client()
@@ -386,26 +390,26 @@ class ChromaIndexTool(BaseTool):
         except Exception as e:
             logger.error(f"Delete failed: {e}")
             return {"success": False, "error": str(e), "deleted": 0, "exists": False}
-    
+
     def _count(
         self,
         collection_name: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get document count in collection.
-        
+
         Args:
             collection_name: Collection name
-            
+
         Returns:
             Result dictionary with count
         """
         try:
             client = self._get_client()
-            
+
             # Check if collection exists
             collections = client.list_collections()
             collection_names = [c.name for c in collections]
-            
+
             if collection_name not in collection_names:
                 logger.info(f"Collection '{collection_name}' does not exist")
                 return {
@@ -413,17 +417,17 @@ class ChromaIndexTool(BaseTool):
                     "count": 0,
                     "exists": False,
                 }
-            
+
             collection = client.get_collection(name=collection_name)
             count = collection.count()
-            
+
             logger.info(f"Collection '{collection_name}' has {count} documents")
             return {
                 "success": True,
                 "count": count,
                 "exists": True,
             }
-            
+
         except Exception as e:
             logger.error(f"Count failed: {e}")
             return {
@@ -432,13 +436,13 @@ class ChromaIndexTool(BaseTool):
                 "count": 0,
                 "exists": False,
             }
-    
-    def _get_collection_metadata(self, collection_name: str) -> Dict[str, Any]:
+
+    def _get_collection_metadata(self, collection_name: str) -> dict[str, Any]:
         """Get metadata stored with collection.
-        
+
         Args:
             collection_name: Collection name
-            
+
         Returns:
             Metadata dictionary (empty if collection doesn't exist)
         """
@@ -446,13 +450,13 @@ class ChromaIndexTool(BaseTool):
             client = self._get_client()
             collections = client.list_collections()
             collection_names = [c.name for c in collections]
-            
+
             if collection_name not in collection_names:
                 return {}
-            
+
             collection = client.get_collection(name=collection_name)
             return collection.metadata or {}
-            
+
         except Exception as e:
             logger.error(f"Failed to get collection metadata: {e}")
             return {}

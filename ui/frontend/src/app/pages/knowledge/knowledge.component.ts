@@ -83,8 +83,7 @@ interface FileCategory {
                 } @else {
                   <div class="file-grid">
                     @for (file of cat.files; track file.path) {
-                      <div class="file-card" [class.file-active]="selectedFile === file"
-                           (click)="viewFile(file)">
+                      <div class="file-card" [class.file-active]="selectedFile === file" (click)="viewFile(file)">
                         <div class="file-card-top">
                           <mat-icon class="fc-icon" [class]="'type-' + file.type">
                             {{ fileIcon(file.type) }}
@@ -153,214 +152,304 @@ interface FileCategory {
       }
     </div>
   `,
-  styles: [`
-    /* Stats */
-    .stats-bar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      background: #fff;
-      border-radius: 10px;
-      font-size: 13px;
-      color: var(--cg-gray-500);
-    }
-    .stat-item .mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--cg-blue); }
-    .stat-item strong { color: var(--cg-gray-900); }
-    .stat-json .mat-icon { color: var(--cg-vibrant); }
-    .stat-md .mat-icon { color: var(--cg-blue); }
-    .stat-drawio .mat-icon { color: var(--cg-success); }
-    .stat-html .mat-icon { color: #e44d26; }
+  styles: [
+    `
+      /* Stats */
+      .stats-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: #fff;
+        border-radius: 10px;
+        font-size: 13px;
+        color: var(--cg-gray-500);
+      }
+      .stat-item .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--cg-blue);
+      }
+      .stat-item strong {
+        color: var(--cg-gray-900);
+      }
+      .stat-json .mat-icon {
+        color: var(--cg-vibrant);
+      }
+      .stat-md .mat-icon {
+        color: var(--cg-blue);
+      }
+      .stat-drawio .mat-icon {
+        color: var(--cg-success);
+      }
+      .stat-html .mat-icon {
+        color: #e44d26;
+      }
 
-    /* Tabs */
-    .tab-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 6px;
-    }
-    .tab-count {
-      margin-left: 6px;
-      background: var(--cg-gray-100);
-      color: var(--cg-gray-500);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 1px 7px;
-      border-radius: 10px;
-    }
-    .tab-body { padding: 16px 0; }
+      /* Tabs */
+      .tab-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+      }
+      .tab-count {
+        margin-left: 6px;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-500);
+        font-size: 11px;
+        font-weight: 600;
+        padding: 1px 7px;
+        border-radius: 10px;
+      }
+      .tab-body {
+        padding: 16px 0;
+      }
 
-    /* File Grid */
-    .file-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 10px;
-    }
-    .file-card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 14px;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .file-card:hover {
-      border-color: rgba(0,112,173,0.15);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .file-active {
-      border-color: var(--cg-blue) !important;
-      box-shadow: 0 0 0 1px var(--cg-blue) !important;
-    }
-    .file-card-top {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .fc-icon { font-size: 22px; width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px; }
-    .type-json { color: var(--cg-vibrant); }
-    .type-md { color: var(--cg-blue); }
-    .type-drawio { color: var(--cg-success); }
-    .type-html { color: #e44d26; }
-    .type-adoc { color: #a0522d; }
-    .type-confluence { color: #0052cc; }
-    .type-other { color: var(--cg-gray-500); }
-    .fc-meta { min-width: 0; flex: 1; }
-    .fc-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--cg-gray-900);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .fc-path {
-      font-size: 11px;
-      color: var(--cg-gray-500);
-      font-family: monospace;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .file-card-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .fc-badge {
-      display: inline-block;
-      padding: 1px 8px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-    .badge-json { background: rgba(18,171,219,0.1); color: var(--cg-vibrant); }
-    .badge-md { background: rgba(0,112,173,0.1); color: var(--cg-blue); }
-    .badge-drawio { background: rgba(40,167,69,0.1); color: var(--cg-success); }
-    .badge-html { background: rgba(228,77,38,0.1); color: #e44d26; }
-    .badge-adoc { background: rgba(160,82,45,0.1); color: #a0522d; }
-    .badge-confluence { background: rgba(0,82,204,0.1); color: #0052cc; }
-    .badge-other { background: var(--cg-gray-100); color: var(--cg-gray-500); }
-    .fc-size { font-size: 11px; color: var(--cg-gray-500); }
+      /* File Grid */
+      .file-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 10px;
+      }
+      .file-card {
+        background: #fff;
+        border-radius: 10px;
+        padding: 14px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+      .file-card:hover {
+        border-color: rgba(0, 112, 173, 0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+      .file-active {
+        border-color: var(--cg-blue) !important;
+        box-shadow: 0 0 0 1px var(--cg-blue) !important;
+      }
+      .file-card-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .fc-icon {
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .type-json {
+        color: var(--cg-vibrant);
+      }
+      .type-md {
+        color: var(--cg-blue);
+      }
+      .type-drawio {
+        color: var(--cg-success);
+      }
+      .type-html {
+        color: #e44d26;
+      }
+      .type-adoc {
+        color: #a0522d;
+      }
+      .type-confluence {
+        color: #0052cc;
+      }
+      .type-other {
+        color: var(--cg-gray-500);
+      }
+      .fc-meta {
+        min-width: 0;
+        flex: 1;
+      }
+      .fc-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--cg-gray-900);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .fc-path {
+        font-size: 11px;
+        color: var(--cg-gray-500);
+        font-family: monospace;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file-card-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .fc-badge {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .badge-json {
+        background: rgba(18, 171, 219, 0.1);
+        color: var(--cg-vibrant);
+      }
+      .badge-md {
+        background: rgba(0, 112, 173, 0.1);
+        color: var(--cg-blue);
+      }
+      .badge-drawio {
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--cg-success);
+      }
+      .badge-html {
+        background: rgba(228, 77, 38, 0.1);
+        color: #e44d26;
+      }
+      .badge-adoc {
+        background: rgba(160, 82, 45, 0.1);
+        color: #a0522d;
+      }
+      .badge-confluence {
+        background: rgba(0, 82, 204, 0.1);
+        color: #0052cc;
+      }
+      .badge-other {
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-500);
+      }
+      .fc-size {
+        font-size: 11px;
+        color: var(--cg-gray-500);
+      }
 
-    /* Viewer Panel */
-    .viewer-panel {
-      margin-top: 20px;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    .viewer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 20px;
-      background: var(--cg-gray-50);
-      border-bottom: 1px solid var(--cg-gray-100);
-    }
-    .viewer-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      font-weight: 500;
-    }
-    .viewer-badge {
-      padding: 1px 8px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-    .viewer-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .mode-btn {
-      font-size: 12px !important;
-      line-height: 28px !important;
-      padding: 0 10px !important;
-    }
-    .mode-btn .mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
-    .viewer-body {
-      max-height: 70vh;
-      overflow: auto;
-    }
+      /* Viewer Panel */
+      .viewer-panel {
+        margin-top: 20px;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      .viewer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 20px;
+        background: var(--cg-gray-50);
+        border-bottom: 1px solid var(--cg-gray-100);
+      }
+      .viewer-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .viewer-badge {
+        padding: 1px 8px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .viewer-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .mode-btn {
+        font-size: 12px !important;
+        line-height: 28px !important;
+        padding: 0 10px !important;
+      }
+      .mode-btn .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+      }
+      .viewer-body {
+        max-height: 70vh;
+        overflow: auto;
+      }
 
-    /* Source Code */
-    .source-content {
-      margin: 0;
-      background: var(--cg-dark);
-      color: #eeffff;
-      padding: 20px;
-      white-space: pre-wrap;
-      word-break: break-all;
-      font-size: 12px;
-      line-height: 1.7;
-      min-height: 200px;
-    }
+      /* Source Code */
+      .source-content {
+        margin: 0;
+        background: var(--cg-dark);
+        color: #eeffff;
+        padding: 20px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        font-size: 12px;
+        line-height: 1.7;
+        min-height: 200px;
+      }
 
-    /* Rendered Markdown */
-    .rendered-content {
-      padding: 24px 32px;
-      font-size: 14px;
-      line-height: 1.7;
-      color: var(--cg-gray-900);
-    }
+      /* Rendered Markdown */
+      .rendered-content {
+        padding: 24px 32px;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--cg-gray-900);
+      }
 
-    /* DrawIO info */
-    .drawio-info {
-      text-align: center;
-      padding: 32px 24px;
-    }
-    .drawio-icon-large { margin-bottom: 16px; }
-    .drawio-info h3 { font-size: 18px; margin: 0 0 8px; }
-    .drawio-meta { font-size: 13px; color: var(--cg-gray-500); margin: 0 0 8px; }
-    .drawio-hint { font-size: 13px; color: var(--cg-gray-500); margin: 0 0 16px; }
-    .drawio-preview { text-align: left; }
+      /* DrawIO info */
+      .drawio-info {
+        text-align: center;
+        padding: 32px 24px;
+      }
+      .drawio-icon-large {
+        margin-bottom: 16px;
+      }
+      .drawio-info h3 {
+        font-size: 18px;
+        margin: 0 0 8px;
+      }
+      .drawio-meta {
+        font-size: 13px;
+        color: var(--cg-gray-500);
+        margin: 0 0 8px;
+      }
+      .drawio-hint {
+        font-size: 13px;
+        color: var(--cg-gray-500);
+        margin: 0 0 16px;
+      }
+      .drawio-preview {
+        text-align: left;
+      }
 
-    /* Empty inline */
-    .empty-inline {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 32px 16px;
-      color: var(--cg-gray-500);
-      font-size: 14px;
-    }
-    .empty-inline .mat-icon { color: var(--cg-gray-200); }
-  `],
+      /* Empty inline */
+      .empty-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 32px 16px;
+        color: var(--cg-gray-500);
+        font-size: 14px;
+      }
+      .empty-inline .mat-icon {
+        color: var(--cg-gray-200);
+      }
+    `,
+  ],
 })
 export class KnowledgeComponent implements OnInit {
   summary: KnowledgeSummary | null = null;
@@ -381,42 +470,70 @@ export class KnowledgeComponent implements OnInit {
 
   ngOnInit(): void {
     this.api.getKnowledgeFiles().subscribe({
-      next: s => {
+      next: (s) => {
         this.summary = s;
         this.buildCategories(s.files);
         this.buildTypeCounts(s.files);
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => { this.loading = false; this.cdr.markForCheck(); },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 
   private buildCategories(files: KnowledgeFile[]): void {
-    const arc42 = files.filter(f => f.path.includes('arc42'));
-    const c4 = files.filter(f => f.path.includes('c4\\') || f.path.includes('c4/'));
-    const containerAnalysis = files.filter(f => f.path.includes('container_analysis'));
-    const devPlans = files.filter(f => f.path.includes('development'));
-    const facts = files.filter(f =>
-      f.type === 'json' &&
-      !f.path.includes('container_analysis') &&
-      !f.path.includes('development') &&
-      !f.path.includes('test_run') &&
-      (f.path.startsWith('architecture\\') || f.path.startsWith('architecture/'))
+    const arc42 = files.filter((f) => f.path.includes('arc42'));
+    const c4 = files.filter((f) => f.path.includes('c4\\') || f.path.includes('c4/'));
+    const containerAnalysis = files.filter((f) => f.path.includes('container_analysis'));
+    const devPlans = files.filter((f) => f.path.includes('development'));
+    const facts = files.filter(
+      (f) =>
+        f.type === 'json' &&
+        !f.path.includes('container_analysis') &&
+        !f.path.includes('development') &&
+        !f.path.includes('test_run') &&
+        (f.path.startsWith('architecture\\') || f.path.startsWith('architecture/')),
     );
-    const other = files.filter(f =>
-      !arc42.includes(f) && !c4.includes(f) && !containerAnalysis.includes(f) &&
-      !devPlans.includes(f) && !facts.includes(f)
+    const other = files.filter(
+      (f) =>
+        !arc42.includes(f) &&
+        !c4.includes(f) &&
+        !containerAnalysis.includes(f) &&
+        !devPlans.includes(f) &&
+        !facts.includes(f),
     );
 
     this.categories = [
-      { label: 'Arc42 Docs', icon: 'menu_book', description: 'Architecture documentation (arc42 template)', files: this.sortArc42(arc42) },
-      { label: 'C4 Model', icon: 'account_tree', description: 'C4 architecture model (context, container, component, deployment)', files: c4 },
-      { label: 'Knowledge Base', icon: 'data_object', description: 'Architecture facts, components, relations, patterns', files: facts },
-      { label: 'Containers', icon: 'dns', description: 'Per-container analysis (backend, frontend, e2e, import, jsApi)', files: containerAnalysis },
+      {
+        label: 'Arc42 Docs',
+        icon: 'menu_book',
+        description: 'Architecture documentation (arc42 template)',
+        files: this.sortArc42(arc42),
+      },
+      {
+        label: 'C4 Model',
+        icon: 'account_tree',
+        description: 'C4 architecture model (context, container, component, deployment)',
+        files: c4,
+      },
+      {
+        label: 'Knowledge Base',
+        icon: 'data_object',
+        description: 'Architecture facts, components, relations, patterns',
+        files: facts,
+      },
+      {
+        label: 'Containers',
+        icon: 'dns',
+        description: 'Per-container analysis (backend, frontend, e2e, import, jsApi)',
+        files: containerAnalysis,
+      },
       { label: 'Dev Plans', icon: 'assignment', description: 'Generated development plans', files: devPlans },
       { label: 'Other', icon: 'folder', description: 'Other knowledge files', files: other },
-    ].filter(c => c.files.length > 0);
+    ].filter((c) => c.files.length > 0);
   }
 
   private sortArc42(files: KnowledgeFile[]): KnowledgeFile[] {
@@ -434,8 +551,13 @@ export class KnowledgeComponent implements OnInit {
       counts.set(f.type, (counts.get(f.type) || 0) + 1);
     }
     const labels: Record<string, string> = {
-      json: 'JSON', md: 'Markdown', drawio: 'DrawIO',
-      html: 'HTML', adoc: 'AsciiDoc', confluence: 'Wiki', other: 'Other',
+      json: 'JSON',
+      md: 'Markdown',
+      drawio: 'DrawIO',
+      html: 'HTML',
+      adoc: 'AsciiDoc',
+      confluence: 'Wiki',
+      other: 'Other',
     };
     this.typeCounts = [...counts.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -480,9 +602,7 @@ export class KnowledgeComponent implements OnInit {
       this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(text);
     } else if (file.type === 'json') {
       const highlighted = this.highlightJson(text);
-      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(
-        `<pre class="json-viewer">${highlighted}</pre>`
-      );
+      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(`<pre class="json-viewer">${highlighted}</pre>`);
     } else if (file.type === 'adoc') {
       // Simple AsciiDoc rendering (headings, bold, links, code)
       const html = this.renderAsciidoc(text);
@@ -500,7 +620,9 @@ export class KnowledgeComponent implements OnInit {
 
   private highlightJson(json: string): string {
     return json
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
       .replace(/"([^"\\]*(\\.[^"\\]*)*)"\s*:/g, '<span class="json-key">"$1"</span>:')
       .replace(/:\s*"([^"\\]*(\\.[^"\\]*)*)"/g, ': <span class="json-string">"$1"</span>')
       .replace(/:\s*(\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
@@ -514,8 +636,10 @@ export class KnowledgeComponent implements OnInit {
 
   private renderAsciidoc(text: string): string {
     // Simple AsciiDoc to HTML conversion
-    let html = text
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
       // Headers: = Title, == Section, === Subsection
       .replace(/^={4}\s+(.+)$/gm, '<h4>$1</h4>')
       .replace(/^={3}\s+(.+)$/gm, '<h3>$1</h3>')
@@ -528,12 +652,15 @@ export class KnowledgeComponent implements OnInit {
       // Code: `text`
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       // Links: link:url[label]
-      .replace(/link:([^\[]+)\[([^\]]+)\]/g, '<a href="$1">$2</a>')
+      .replace(/link:([^[]+)\[([^\]]+)\]/g, '<a href="$1">$2</a>')
       // Lists: * item
       .replace(/^\*\s+(.+)$/gm, '<li>$1</li>')
       // Tables: |cell|cell|
       .replace(/^\|(.+)\|$/gm, (match, content) => {
-        const cells = content.split('|').map((c: string) => `<td>${c.trim()}</td>`).join('');
+        const cells = content
+          .split('|')
+          .map((c: string) => `<td>${c.trim()}</td>`)
+          .join('');
         return `<tr>${cells}</tr>`;
       })
       // Paragraphs
@@ -575,7 +702,10 @@ export class KnowledgeComponent implements OnInit {
           html += '</code></pre>';
           inCode = false;
         } else {
-          if (inTable) { html += '</tbody></table>'; inTable = false; }
+          if (inTable) {
+            html += '</tbody></table>';
+            inTable = false;
+          }
           html += '<pre class="json-viewer"><code>';
           inCode = true;
         }
@@ -588,7 +718,10 @@ export class KnowledgeComponent implements OnInit {
 
       // Horizontal rule: ----
       if (trimmed === '----') {
-        if (inTable) { html += '</tbody></table>'; inTable = false; }
+        if (inTable) {
+          html += '</tbody></table>';
+          inTable = false;
+        }
         html += '<hr>';
         continue;
       }
@@ -596,31 +729,49 @@ export class KnowledgeComponent implements OnInit {
       // Headers: h1. to h6.
       const hm = trimmed.match(/^h([1-6])\.\s+(.+)$/);
       if (hm) {
-        if (inTable) { html += '</tbody></table>'; inTable = false; }
+        if (inTable) {
+          html += '</tbody></table>';
+          inTable = false;
+        }
         html += `<h${hm[1]}>${this.cfInline(this.escHtml(hm[2]))}</h${hm[1]}>`;
         continue;
       }
 
       // Table header row: ||col||col||
       if (/^\|\|.+\|\|$/.test(trimmed)) {
-        if (!inTable) { html += '<table><tbody>'; inTable = true; }
-        const cells = trimmed.slice(2, -2).split('||')
-          .map(c => `<th>${this.cfInline(this.escHtml(c.trim()))}</th>`).join('');
+        if (!inTable) {
+          html += '<table><tbody>';
+          inTable = true;
+        }
+        const cells = trimmed
+          .slice(2, -2)
+          .split('||')
+          .map((c) => `<th>${this.cfInline(this.escHtml(c.trim()))}</th>`)
+          .join('');
         html += `<tr>${cells}</tr>`;
         continue;
       }
 
       // Table data row: |col|col|  (not starting with ||)
       if (/^\|[^|].+\|$/.test(trimmed)) {
-        if (!inTable) { html += '<table><tbody>'; inTable = true; }
-        const cells = trimmed.slice(1, -1).split('|')
-          .map(c => `<td>${this.cfInline(this.escHtml(c.trim()))}</td>`).join('');
+        if (!inTable) {
+          html += '<table><tbody>';
+          inTable = true;
+        }
+        const cells = trimmed
+          .slice(1, -1)
+          .split('|')
+          .map((c) => `<td>${this.cfInline(this.escHtml(c.trim()))}</td>`)
+          .join('');
         html += `<tr>${cells}</tr>`;
         continue;
       }
 
       // End table if the line is not a table row
-      if (inTable) { html += '</tbody></table>'; inTable = false; }
+      if (inTable) {
+        html += '</tbody></table>';
+        inTable = false;
+      }
 
       // Unordered list: * item
       if (/^\*\s+/.test(trimmed)) {
@@ -635,7 +786,9 @@ export class KnowledgeComponent implements OnInit {
       }
 
       // Empty line
-      if (trimmed === '') { continue; }
+      if (trimmed === '') {
+        continue;
+      }
 
       // Regular paragraph
       html += `<p>${this.cfInline(this.escHtml(trimmed))}</p>`;
@@ -668,13 +821,20 @@ export class KnowledgeComponent implements OnInit {
 
   fileIcon(type: string): string {
     switch (type) {
-      case 'json': return 'data_object';
-      case 'md': return 'article';
-      case 'drawio': return 'architecture';
-      case 'html': return 'web';
-      case 'adoc': return 'description';
-      case 'confluence': return 'edit_document';
-      default: return 'insert_drive_file';
+      case 'json':
+        return 'data_object';
+      case 'md':
+        return 'article';
+      case 'drawio':
+        return 'architecture';
+      case 'html':
+        return 'web';
+      case 'adoc':
+        return 'description';
+      case 'confluence':
+        return 'edit_document';
+      default:
+        return 'insert_drive_file';
     }
   }
 
@@ -685,6 +845,6 @@ export class KnowledgeComponent implements OnInit {
   }
 
   countByType(type: string): number {
-    return this.summary?.files.filter(f => f.type === type).length || 0;
+    return this.summary?.files.filter((f) => f.type === type).length || 0;
   }
 }

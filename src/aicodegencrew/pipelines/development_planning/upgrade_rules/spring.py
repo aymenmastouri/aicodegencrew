@@ -6,10 +6,12 @@ Scans for patterns in any Spring Boot project.
 """
 
 from .base import (
-    UpgradeRule, UpgradeRuleSet, CodePattern,
-    UpgradeSeverity, UpgradeCategory,
+    CodePattern,
+    UpgradeCategory,
+    UpgradeRule,
+    UpgradeRuleSet,
+    UpgradeSeverity,
 )
-
 
 # =============================================================================
 # Spring Boot 3.1 -> 3.2
@@ -33,7 +35,8 @@ SPRING_31_TO_32 = UpgradeRuleSet(
             ),
             severity=UpgradeSeverity.RECOMMENDED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="3.1", to_version="3.2",
+            from_version="3.1",
+            to_version="3.2",
             detection_patterns=[
                 CodePattern(
                     name="resttemplate_usage",
@@ -55,12 +58,12 @@ SPRING_31_TO_32 = UpgradeRuleSet(
             id="spring32-virtual-threads",
             title="Virtual Threads support (Java 21+)",
             description=(
-                "Spring Boot 3.2 supports Java 21 virtual threads. "
-                "Enable with spring.threads.virtual.enabled=true."
+                "Spring Boot 3.2 supports Java 21 virtual threads. Enable with spring.threads.virtual.enabled=true."
             ),
             severity=UpgradeSeverity.OPTIONAL,
             category=UpgradeCategory.MIGRATION,
-            from_version="3.1", to_version="3.2",
+            from_version="3.1",
+            to_version="3.2",
             detection_patterns=[
                 CodePattern(
                     name="thread_pool_config",
@@ -84,7 +87,8 @@ SPRING_31_TO_32 = UpgradeRuleSet(
             description="Spring 3.2 refactors observability. Some Micrometer APIs changed.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.API_CHANGE,
-            from_version="3.1", to_version="3.2",
+            from_version="3.1",
+            to_version="3.2",
             detection_patterns=[
                 CodePattern(
                     name="micrometer_timer",
@@ -124,7 +128,8 @@ SPRING_32_TO_33 = UpgradeRuleSet(
             description="Spring 3.3 adds CDS support for faster startup. Optional optimization.",
             severity=UpgradeSeverity.OPTIONAL,
             category=UpgradeCategory.BUILD_CONFIG,
-            from_version="3.2", to_version="3.3",
+            from_version="3.2",
+            to_version="3.3",
             detection_patterns=[
                 CodePattern(
                     name="spring_main_class",
@@ -149,7 +154,8 @@ SPRING_32_TO_33 = UpgradeRuleSet(
             ),
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.MIGRATION,
-            from_version="3.2", to_version="3.3",
+            from_version="3.2",
+            to_version="3.3",
             detection_patterns=[
                 CodePattern(
                     name="deprecated_properties",
@@ -195,7 +201,8 @@ SPRING_33_TO_34 = UpgradeRuleSet(
             description="Spring 3.4 adds structured logging (JSON format). Optional migration.",
             severity=UpgradeSeverity.OPTIONAL,
             category=UpgradeCategory.MIGRATION,
-            from_version="3.3", to_version="3.4",
+            from_version="3.3",
+            to_version="3.4",
             detection_patterns=[
                 CodePattern(
                     name="logback_config",
@@ -224,7 +231,8 @@ SPRING_33_TO_34 = UpgradeRuleSet(
             description="MockMvc now uses AssertJ assertions. Some test patterns may need updates.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.TEST_RUNNER,
-            from_version="3.3", to_version="3.4",
+            from_version="3.3",
+            to_version="3.4",
             detection_patterns=[
                 CodePattern(
                     name="mockmvc_usage",
@@ -247,7 +255,8 @@ SPRING_33_TO_34 = UpgradeRuleSet(
             description="Spring Boot 3.4 supports Flyway 10. Check migration script compatibility.",
             severity=UpgradeSeverity.DEPRECATED,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="3.3", to_version="3.4",
+            from_version="3.3",
+            to_version="3.4",
             detection_patterns=[
                 CodePattern(
                     name="flyway_dependency",
@@ -303,7 +312,8 @@ SPRING_JAKARTA_MIGRATION = UpgradeRuleSet(
             ),
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.MIGRATION,
-            from_version="2", to_version="3",
+            from_version="2",
+            to_version="3",
             detection_patterns=[
                 CodePattern(
                     name="javax_servlet",
@@ -354,7 +364,8 @@ SPRING_JAKARTA_MIGRATION = UpgradeRuleSet(
             description="Spring Boot 3.x requires Java 17+.",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.DEPENDENCY,
-            from_version="2", to_version="3",
+            from_version="2",
+            to_version="3",
             detection_patterns=[
                 CodePattern(
                     name="java_source_compat_gradle",
@@ -381,12 +392,12 @@ SPRING_JAKARTA_MIGRATION = UpgradeRuleSet(
             id="spring3-deprecated-websecurityconfigureradapter",
             title="WebSecurityConfigurerAdapter removed",
             description=(
-                "WebSecurityConfigurerAdapter was removed in Spring Security 6. "
-                "Use SecurityFilterChain @Bean instead."
+                "WebSecurityConfigurerAdapter was removed in Spring Security 6. Use SecurityFilterChain @Bean instead."
             ),
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.API_CHANGE,
-            from_version="2", to_version="3",
+            from_version="2",
+            to_version="3",
             detection_patterns=[
                 CodePattern(
                     name="websecurity_adapter",
@@ -411,7 +422,8 @@ SPRING_JAKARTA_MIGRATION = UpgradeRuleSet(
             description="antMatchers/mvcMatchers removed in Spring Security 6. Use requestMatchers().",
             severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.API_CHANGE,
-            from_version="2", to_version="3",
+            from_version="2",
+            to_version="3",
             detection_patterns=[
                 CodePattern(
                     name="antmatchers",

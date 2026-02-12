@@ -1,7 +1,6 @@
 """Service for reading metrics.jsonl."""
 
 import json
-from pathlib import Path
 
 from ..config import settings
 from ..schemas import MetricEvent, MetricsSummary
@@ -16,7 +15,7 @@ def read_metrics(limit: int = 200, event_filter: str | None = None) -> MetricsSu
     events: list[MetricEvent] = []
     run_ids: set[str] = set()
 
-    with open(metrics_file, "r", encoding="utf-8") as f:
+    with open(metrics_file, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -35,9 +34,7 @@ def read_metrics(limit: int = 200, event_filter: str | None = None) -> MetricsSu
             if event_filter and event_name != event_filter:
                 continue
 
-            events.append(
-                MetricEvent(timestamp=timestamp, event=event_name, data=data)
-            )
+            events.append(MetricEvent(timestamp=timestamp, event=event_name, data=data))
 
     # Return most recent events first, up to limit
     events.reverse()

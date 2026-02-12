@@ -6,10 +6,9 @@ across test_development_planning.py and test_code_generation.py.
 """
 
 import json
-import pytest
-from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
 
 # =============================================================================
 # Shared Sample Data
@@ -30,9 +29,7 @@ SAMPLE_FACTS = {
             "package": "com.example.user",
             "container": "container.backend",
             "file_path": "src/main/java/com/example/user/UserService.java",
-            "file_paths": [
-                "src/main/java/com/example/user/UserService.java"
-            ],
+            "file_paths": ["src/main/java/com/example/user/UserService.java"],
         },
         {
             "id": "comp.auth_controller",
@@ -42,9 +39,7 @@ SAMPLE_FACTS = {
             "package": "com.example.auth",
             "container": "container.backend",
             "file_path": "src/main/java/com/example/auth/AuthController.java",
-            "file_paths": [
-                "src/main/java/com/example/auth/AuthController.java"
-            ],
+            "file_paths": ["src/main/java/com/example/auth/AuthController.java"],
         },
         {
             "id": "comp.user_repo",
@@ -54,9 +49,7 @@ SAMPLE_FACTS = {
             "package": "com.example.user",
             "container": "container.backend",
             "file_path": "src/main/java/com/example/user/UserRepository.java",
-            "file_paths": [
-                "src/main/java/com/example/user/UserRepository.java"
-            ],
+            "file_paths": ["src/main/java/com/example/user/UserRepository.java"],
         },
         {
             "id": "comp.user_entity",
@@ -66,9 +59,7 @@ SAMPLE_FACTS = {
             "package": "com.example.user",
             "container": "container.backend",
             "file_path": "src/main/java/com/example/user/User.java",
-            "file_paths": [
-                "src/main/java/com/example/user/User.java"
-            ],
+            "file_paths": ["src/main/java/com/example/user/User.java"],
         },
     ],
     "interfaces": [

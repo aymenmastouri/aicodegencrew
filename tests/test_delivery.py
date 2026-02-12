@@ -34,6 +34,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _read_text(path: Path) -> str:
     """Read a file as UTF-8 text."""
     return path.read_text(encoding="utf-8")
@@ -52,6 +53,7 @@ def _load_pyproject() -> dict:
 # 1. Version Management  (scripts/build_release.py)
 # ============================================================================
 
+
 class TestVersionManagement:
     """Tests for get_version() and bump_version() in build_release.py."""
 
@@ -61,6 +63,7 @@ class TestVersionManagement:
         if "build_release" in sys.modules:
             del sys.modules["build_release"]
         import build_release
+
         return build_release
 
     def test_get_version_parses_from_pyproject(self):
@@ -68,9 +71,7 @@ class TestVersionManagement:
         br = self._import_build_release()
         version = br.get_version()
         # Must be a valid semver-ish string
-        assert re.match(r"^\d+\.\d+\.\d+$", version), (
-            f"get_version() returned '{version}', expected X.Y.Z format"
-        )
+        assert re.match(r"^\d+\.\d+\.\d+$", version), f"get_version() returned '{version}', expected X.Y.Z format"
 
     def test_bump_version_patch(self):
         """bump_version('0.1.0', 'patch') should return '0.1.1'."""
@@ -113,6 +114,7 @@ class TestVersionManagement:
 # 2. Package Structure  (pyproject.toml)
 # ============================================================================
 
+
 class TestPackageStructure:
     """Tests for pyproject.toml validity and required fields."""
 
@@ -150,15 +152,13 @@ class TestPackageStructure:
             "ollama",
         ]
         for dep in required_deps:
-            assert dep in self.content.lower(), (
-                f"Required dependency '{dep}' not found in pyproject.toml"
-            )
+            assert dep in self.content.lower(), f"Required dependency '{dep}' not found in pyproject.toml"
 
     def test_pyproject_has_parsers_optional_deps(self):
         """pyproject.toml must have a 'parsers' optional dependency group."""
-        assert re.search(r'^\[project\.optional-dependencies\]', self.content, re.MULTILINE)
+        assert re.search(r"^\[project\.optional-dependencies\]", self.content, re.MULTILINE)
         # Check for parsers group
-        assert re.search(r'^parsers\s*=\s*\[', self.content, re.MULTILINE), (
+        assert re.search(r"^parsers\s*=\s*\[", self.content, re.MULTILINE), (
             "'parsers' optional dependency group not found"
         )
 
@@ -186,6 +186,7 @@ class TestPackageStructure:
 # 3. Delivery Artifacts
 # ============================================================================
 
+
 class TestDeliveryArtifacts:
     """Tests for delivery files: .env.example, docker-compose, Dockerfile, config."""
 
@@ -207,11 +208,18 @@ class TestDeliveryArtifacts:
                 # Must contain placeholder text, not a real key
                 value = line_stripped.split("=", 1)[1].strip() if "=" in line_stripped else ""
                 assert "sk-" not in value, "Real OpenAI key found in .env.example!"
-                assert value in (
-                    "your-api-key-here", "", "changeme", "your_api_key_here",
-                ) or "your" in value.lower() or "placeholder" in value.lower() or "here" in value.lower(), (
-                    f"OPENAI_API_KEY value '{value}' looks like a real key"
-                )
+                assert (
+                    value
+                    in (
+                        "your-api-key-here",
+                        "",
+                        "changeme",
+                        "your_api_key_here",
+                    )
+                    or "your" in value.lower()
+                    or "placeholder" in value.lower()
+                    or "here" in value.lower()
+                ), f"OPENAI_API_KEY value '{value}' looks like a real key"
 
     def test_env_example_has_documented_env_vars(self):
         """.env.example must have all core documented environment variables."""
@@ -233,9 +241,7 @@ class TestDeliveryArtifacts:
             "LLM_CONTEXT_WINDOW",
         ]
         for var in required_vars:
-            assert var in content, (
-                f"Environment variable '{var}' not found in .env.example"
-            )
+            assert var in content, f"Environment variable '{var}' not found in .env.example"
 
     # --- docker-compose.yml ---
 
@@ -254,32 +260,26 @@ class TestDeliveryArtifacts:
         content = _read_text(PROJECT_ROOT / "docker-compose.yml")
         data = yaml.safe_load(content)
         assert "services" in data, "No 'services' key in docker-compose.yml"
-        assert "aicodegencrew" in data["services"], (
-            "No 'aicodegencrew' service defined"
-        )
+        assert "aicodegencrew" in data["services"], "No 'aicodegencrew' service defined"
 
     def test_docker_compose_mounts_required_volumes(self):
         """docker-compose.yml must mount .env, repo, knowledge, and cache volumes."""
         content = _read_text(PROJECT_ROOT / "docker-compose.yml")
         # Check for key volume patterns (raw text since YAML anchors can vary)
         required_volume_patterns = [
-            ".env",           # Configuration mount
-            "/repo",          # Target repository
-            "knowledge",      # Output directory
-            ".cache",         # ChromaDB cache
+            ".env",  # Configuration mount
+            "/repo",  # Target repository
+            "knowledge",  # Output directory
+            ".cache",  # ChromaDB cache
         ]
         for pattern in required_volume_patterns:
-            assert pattern in content, (
-                f"Volume mount pattern '{pattern}' not found in docker-compose.yml"
-            )
+            assert pattern in content, f"Volume mount pattern '{pattern}' not found in docker-compose.yml"
 
     # --- Dockerfile ---
 
     def test_dockerfile_exists(self):
         """Dockerfile must exist at project root."""
-        assert (PROJECT_ROOT / "Dockerfile").exists(), (
-            "Dockerfile not found at project root"
-        )
+        assert (PROJECT_ROOT / "Dockerfile").exists(), "Dockerfile not found at project root"
 
     # --- config/phases_config.yaml ---
 
@@ -317,9 +317,7 @@ class TestDeliveryArtifacts:
             "phase3_architecture_synthesis",
         ]
         for phase_name in required_phases:
-            assert phase_name in phases, (
-                f"Phase '{phase_name}' not found in phases_config.yaml"
-            )
+            assert phase_name in phases, f"Phase '{phase_name}' not found in phases_config.yaml"
 
     def test_phases_config_phase_structure(self):
         """Each phase in phases_config.yaml must have name, type, and order."""
@@ -341,22 +339,19 @@ class TestDeliveryArtifacts:
         """If dist/release exists, install.bat must be present."""
         release_dir = PROJECT_ROOT / "dist" / "release"
         if release_dir.exists():
-            assert (release_dir / "install.bat").exists(), (
-                "install.bat not found in dist/release/"
-            )
+            assert (release_dir / "install.bat").exists(), "install.bat not found in dist/release/"
 
     def test_install_sh_in_release_if_built(self):
         """If dist/release exists, install.sh must be present."""
         release_dir = PROJECT_ROOT / "dist" / "release"
         if release_dir.exists():
-            assert (release_dir / "install.sh").exists(), (
-                "install.sh not found in dist/release/"
-            )
+            assert (release_dir / "install.sh").exists(), "install.sh not found in dist/release/"
 
 
 # ============================================================================
 # 4. Documentation Completeness
 # ============================================================================
+
 
 class TestDocumentationCompleteness:
     """Tests that required documentation files exist and are substantive."""
@@ -368,9 +363,7 @@ class TestDocumentationCompleteness:
     def test_readme_is_substantive(self):
         """README.md must be >1000 characters."""
         content = _read_text(PROJECT_ROOT / "README.md")
-        assert len(content) > 1000, (
-            f"README.md is only {len(content)} chars, expected >1000"
-        )
+        assert len(content) > 1000, f"README.md is only {len(content)} chars, expected >1000"
 
     def test_user_guide_exists(self):
         """docs/USER_GUIDE.md must exist."""
@@ -396,9 +389,7 @@ class TestDocumentationCompleteness:
         for section in expected_sections:
             # Match "## N. Section" or "## Section" patterns
             pattern = rf"##\s+(\d+\.\s+)?{re.escape(section)}"
-            assert re.search(pattern, content, re.IGNORECASE), (
-                f"Section '{section}' not found in USER_GUIDE.md"
-            )
+            assert re.search(pattern, content, re.IGNORECASE), f"Section '{section}' not found in USER_GUIDE.md"
 
     def test_delivery_guide_exists(self):
         """docs/DELIVERY_GUIDE.md must exist."""
@@ -411,14 +402,13 @@ class TestDocumentationCompleteness:
     def test_changelog_has_version_entry(self):
         """CHANGELOG.md must have at least one version entry."""
         content = _read_text(PROJECT_ROOT / "CHANGELOG.md")
-        assert re.search(r"##\s+\[\d+\.\d+\.\d+\]", content), (
-            "CHANGELOG.md has no version entry (## [X.Y.Z])"
-        )
+        assert re.search(r"##\s+\[\d+\.\d+\.\d+\]", content), "CHANGELOG.md has no version entry (## [X.Y.Z])"
 
 
 # ============================================================================
 # 5. Code Quality
 # ============================================================================
+
 
 class TestCodeQuality:
     """Tests for code hygiene: no print(), no hardcoded keys, __init__.py coverage."""
@@ -481,11 +471,11 @@ class TestCodeQuality:
                     continue
 
                 # Track if we are inside a method named print_* (diagnostic methods)
-                if re.match(r'def\s+print_\w+', stripped):
+                if re.match(r"def\s+print_\w+", stripped):
                     in_print_method = True
                     continue
                 # Reset when we encounter a new def/class at same or lower indent
-                if in_print_method and re.match(r'(def |class )', stripped):
+                if in_print_method and re.match(r"(def |class )", stripped):
                     in_print_method = False
 
                 if in_print_method:
@@ -498,10 +488,8 @@ class TestCodeQuality:
                 if stripped.startswith(('"""', "'''", '"', "'", "- ")):
                     continue
                 # Detect bare print( calls
-                if re.search(r'\bprint\s*\(', stripped):
-                    violations.append(
-                        f"{py_file.relative_to(PROJECT_ROOT)}:{i}: {stripped[:100]}"
-                    )
+                if re.search(r"\bprint\s*\(", stripped):
+                    violations.append(f"{py_file.relative_to(PROJECT_ROOT)}:{i}: {stripped[:100]}")
 
         # Core library modules (crews, pipelines, shared) should have zero print().
         # We allow none -- any print() outside of CLI/main/scripts/logger/print_methods
@@ -509,8 +497,7 @@ class TestCodeQuality:
         assert not violations, (
             f"Found {len(violations)} print() statements in production code "
             f"(excluding cli.py, __main__.py, logger.py, __main__ guards, "
-            f"print_* methods):\n"
-            + "\n".join(violations)
+            f"print_* methods):\n" + "\n".join(violations)
         )
 
     # --- No hardcoded API keys ---
@@ -518,10 +505,10 @@ class TestCodeQuality:
     def test_no_hardcoded_api_keys_in_source(self):
         """Source code must not contain hardcoded API keys."""
         dangerous_patterns = [
-            r'sk-[a-zA-Z0-9]{20,}',           # OpenAI-style keys
-            r'api_key\s*=\s*"[^"]{20,}"',      # Generic long key assignment
-            r'OPENAI_API_KEY\s*=\s*"sk-',      # Explicit OpenAI key
-            r'Bearer\s+sk-[a-zA-Z0-9]{20,}',   # Bearer token with key
+            r"sk-[a-zA-Z0-9]{20,}",  # OpenAI-style keys
+            r'api_key\s*=\s*"[^"]{20,}"',  # Generic long key assignment
+            r'OPENAI_API_KEY\s*=\s*"sk-',  # Explicit OpenAI key
+            r"Bearer\s+sk-[a-zA-Z0-9]{20,}",  # Bearer token with key
         ]
         violations = []
         for py_file in self._get_production_py_files():
@@ -533,15 +520,9 @@ class TestCodeQuality:
             for pattern in dangerous_patterns:
                 matches = re.findall(pattern, source)
                 if matches:
-                    violations.append(
-                        f"{py_file.relative_to(PROJECT_ROOT)}: "
-                        f"matches pattern '{pattern}'"
-                    )
+                    violations.append(f"{py_file.relative_to(PROJECT_ROOT)}: matches pattern '{pattern}'")
 
-        assert not violations, (
-            f"Hardcoded API keys found in source code:\n"
-            + "\n".join(violations)
-        )
+        assert not violations, "Hardcoded API keys found in source code:\n" + "\n".join(violations)
 
     # --- __init__.py coverage ---
 
@@ -564,9 +545,8 @@ class TestCodeQuality:
         missing_strs = [str(m.relative_to(PROJECT_ROOT)) for m in missing]
         # Deduplicate
         missing_strs = sorted(set(missing_strs))
-        assert not missing_strs, (
-            f"Missing __init__.py in {len(missing_strs)} package directories:\n"
-            + "\n".join(missing_strs)
+        assert not missing_strs, f"Missing __init__.py in {len(missing_strs)} package directories:\n" + "\n".join(
+            missing_strs
         )
 
     # --- No syntax errors ---
@@ -579,19 +559,15 @@ class TestCodeQuality:
                 source = py_file.read_bytes()
                 ast.parse(source, filename=str(py_file))
             except SyntaxError as e:
-                errors.append(
-                    f"{py_file.relative_to(PROJECT_ROOT)}:{e.lineno}: {e.msg}"
-                )
+                errors.append(f"{py_file.relative_to(PROJECT_ROOT)}:{e.lineno}: {e.msg}")
 
-        assert not errors, (
-            f"Syntax errors found in {len(errors)} files:\n"
-            + "\n".join(errors)
-        )
+        assert not errors, f"Syntax errors found in {len(errors)} files:\n" + "\n".join(errors)
 
 
 # ============================================================================
 # 6. Gitignore
 # ============================================================================
+
 
 class TestGitignore:
     """Tests that .gitignore contains critical entries."""
@@ -617,51 +593,40 @@ class TestGitignore:
 
     def test_cache_is_in_gitignore(self):
         """.cache/ must be in .gitignore."""
-        assert any(
-            entry in (".cache/", ".cache") for entry in self.entries
-        ), ".cache/ not found in .gitignore"
+        assert any(entry in (".cache/", ".cache") for entry in self.entries), ".cache/ not found in .gitignore"
 
     def test_pycache_is_in_gitignore(self):
         """__pycache__/ must be in .gitignore."""
-        assert any(
-            "__pycache__" in entry for entry in self.entries
-        ), "__pycache__/ not found in .gitignore"
+        assert any("__pycache__" in entry for entry in self.entries), "__pycache__/ not found in .gitignore"
 
     def test_dist_is_in_gitignore(self):
         """dist/ (build artifacts) must be in .gitignore."""
-        assert any(
-            entry in ("dist/", "dist") for entry in self.entries
-        ), "dist/ not found in .gitignore"
+        assert any(entry in ("dist/", "dist") for entry in self.entries), "dist/ not found in .gitignore"
 
     def test_env_example_is_not_ignored(self):
         """.env.example must NOT be ignored (negation pattern should exist)."""
-        assert "!.env.example" in self.entries, (
-            ".env.example is not excluded from .env* ignore pattern"
-        )
+        assert "!.env.example" in self.entries, ".env.example is not excluded from .env* ignore pattern"
 
     def test_knowledge_archive_is_ignored(self):
         """knowledge/architecture/archive/ should be in .gitignore."""
-        assert any(
-            "archive" in entry and "knowledge" in entry
-            for entry in self.entries
-        ), "knowledge/architecture/archive/ not found in .gitignore"
+        assert any("archive" in entry and "knowledge" in entry for entry in self.entries), (
+            "knowledge/architecture/archive/ not found in .gitignore"
+        )
 
     def test_checkpoint_files_are_ignored(self):
         """Checkpoint files (.checkpoint_*.json) should be in .gitignore."""
-        assert any(
-            ".checkpoint_" in entry or "checkpoint" in entry.lower()
-            for entry in self.entries
-        ), "Checkpoint files not found in .gitignore"
+        assert any(".checkpoint_" in entry or "checkpoint" in entry.lower() for entry in self.entries), (
+            "Checkpoint files not found in .gitignore"
+        )
 
     def test_venv_is_in_gitignore(self):
         """Virtual environment directories must be in .gitignore."""
-        assert any(
-            entry in (".venv/", "venv/", ".venv", "venv")
-            for entry in self.entries
-        ), "Virtual environment directory not found in .gitignore"
+        assert any(entry in (".venv/", "venv/", ".venv", "venv") for entry in self.entries), (
+            "Virtual environment directory not found in .gitignore"
+        )
 
     def test_logs_dir_is_in_gitignore(self):
         """logs/ directory must be in .gitignore."""
-        assert any(
-            entry in ("logs/", "logs") for entry in self.entries
-        ), "logs/ not found in .gitignore"
+        assert any(entry in ("logs/", "logs", "/logs/", "/logs") for entry in self.entries), (
+            "logs/ not found in .gitignore"
+        )

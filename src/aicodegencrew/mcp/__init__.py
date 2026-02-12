@@ -7,7 +7,7 @@ Solves the token limit problem by providing targeted queries instead of
 dumping entire codebase into context.
 """
 
-from .server import create_server, run_server
 from .knowledge_tools import KnowledgeTools
+from .server import create_server, run_server
 
-__all__ = ["create_server", "run_server", "KnowledgeTools"]
+__all__ = ["KnowledgeTools", "create_server", "run_server"]
