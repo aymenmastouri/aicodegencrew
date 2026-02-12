@@ -252,34 +252,7 @@ const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
   `,
   styles: [
     `
-      .page-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 24px;
-      }
-      .page-icon {
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
-        color: var(--cg-blue);
-      }
-      .page-title {
-        font-size: 22px;
-        font-weight: 500;
-        margin: 0;
-        color: var(--cg-gray-900);
-      }
-      .page-subtitle {
-        font-size: 13px;
-        color: var(--cg-gray-500);
-        margin: 2px 0 0;
-      }
-      .loading-center {
-        display: flex;
-        justify-content: center;
-        padding: 48px 0;
-      }
+      /* Uses global .page-header, .page-icon, .page-title, .page-subtitle, .loading-center */
       .settings-tabs {
         background: #fff;
         border-radius: 12px;

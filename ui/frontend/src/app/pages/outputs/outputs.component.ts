@@ -123,35 +123,6 @@ import { ApiService, KnowledgeSummary, KnowledgeFile } from '../../services/api.
   `,
   styles: [
     `
-      .page-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 20px;
-      }
-      .page-icon {
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
-        color: var(--cg-blue);
-      }
-      .page-title {
-        font-size: 22px;
-        font-weight: 500;
-        margin: 0;
-        color: var(--cg-gray-900);
-      }
-      .page-subtitle {
-        font-size: 13px;
-        color: var(--cg-gray-500);
-        margin: 2px 0 0;
-      }
-      .loading-center {
-        display: flex;
-        justify-content: center;
-        padding: 48px 0;
-      }
-
       /* Filters */
       .filter-bar {
         display: flex;

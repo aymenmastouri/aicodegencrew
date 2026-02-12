@@ -52,10 +52,13 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>rocket_launch</mat-icon>
-        Run Pipeline
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">rocket_launch</mat-icon>
+        <div>
+          <h1 class="page-title">Run Pipeline</h1>
+          <p class="page-subtitle">Configure and execute pipeline phases with presets or custom selection</p>
+        </div>
+      </div>
 
       <!-- Run Mode Selector -->
       <mat-card class="config-card">
@@ -579,52 +582,22 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
         color: #89d185;
       }
 
-      .section-card-title {
-        display: flex !important;
-        align-items: center;
-        gap: 8px;
-      }
       .history-card {
         margin-bottom: 24px;
       }
       .history-table {
         width: 100%;
       }
-      .empty-inline {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 24px 16px;
-        color: var(--cg-gray-500);
-        font-size: 14px;
-      }
-      .empty-inline .mat-icon {
-        color: var(--cg-gray-200);
+      .history-table tr.mat-mdc-row:hover {
+        background: rgba(0, 112, 173, 0.03);
       }
       .small-chip {
         font-size: 11px;
-      }
-      .trigger-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
       }
       .trigger-icon {
         font-size: 16px;
         width: 16px;
         height: 16px;
-      }
-      .trigger-run {
-        background: rgba(0, 112, 173, 0.1);
-        color: var(--cg-blue);
-      }
-      .trigger-reset {
-        background: rgba(220, 53, 69, 0.1);
-        color: var(--cg-error, #dc3545);
       }
     `,
   ],

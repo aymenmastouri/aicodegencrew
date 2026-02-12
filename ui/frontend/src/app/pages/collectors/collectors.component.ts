@@ -32,14 +32,17 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>hub</mat-icon>
-        Collectors
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">hub</mat-icon>
+        <div>
+          <h1 class="page-title">Collectors</h1>
+          <p class="page-subtitle">View and manage architecture fact collectors</p>
+        </div>
+      </div>
 
       @if (loading) {
         <div class="loading-center">
-          <mat-spinner diameter="48"></mat-spinner>
+          <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else {
         <!-- Stats Bar -->
@@ -193,62 +196,6 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
   `,
   styles: [
     `
-      .page-container {
-        padding: 24px 32px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      .page-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--cg-navy);
-        margin-bottom: 20px;
-      }
-      .page-title mat-icon {
-        color: var(--cg-vibrant);
-      }
-      .loading-center {
-        display: flex;
-        justify-content: center;
-        padding: 48px 0;
-      }
-
-      /* Stats Bar */
-      .stats-bar {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-      }
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: white;
-        padding: 12px 20px;
-        border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-        min-width: 150px;
-      }
-      .stat-item mat-icon {
-        color: var(--cg-vibrant);
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-      .stat-value {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--cg-navy);
-      }
-      .stat-label {
-        font-size: 12px;
-        color: #888;
-      }
-
       /* Table */
       .table-card {
         overflow: hidden;
@@ -260,7 +207,7 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
         cursor: pointer;
       }
       .collector-row:hover {
-        background: rgba(18, 171, 219, 0.04);
+        background: rgba(0, 112, 173, 0.03);
       }
       .expanded-row {
         background: rgba(18, 171, 219, 0.06) !important;
@@ -274,10 +221,10 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: #e8e8e8;
+        background: var(--cg-gray-200);
         font-size: 12px;
         font-weight: 700;
-        color: #555;
+        color: var(--cg-gray-500);
       }
       .step-core {
         background: var(--cg-vibrant);
@@ -292,7 +239,7 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
       }
       .collector-desc {
         font-size: 11px;
-        color: #888;
+        color: var(--cg-gray-400);
         margin-top: 2px;
       }
 
@@ -318,8 +265,8 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
         color: var(--cg-vibrant);
       }
       .chip-optional {
-        background: #f0f0f0;
-        color: #888;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-400);
       }
       .dimension-chip {
         background: rgba(18, 171, 219, 0.08);
@@ -333,7 +280,7 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
         color: var(--cg-navy);
       }
       .no-data {
-        color: #ccc;
+        color: var(--cg-gray-300);
       }
 
       /* Output preview */
@@ -343,8 +290,8 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
       .output-json {
         max-height: 500px;
         overflow: auto;
-        background: #1a1f36;
-        color: #a5d6ff;
+        background: var(--cg-dark);
+        color: #eeffff;
         padding: 16px;
         border-radius: 8px;
         font-size: 12px;

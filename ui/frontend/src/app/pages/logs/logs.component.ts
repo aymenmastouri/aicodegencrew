@@ -25,10 +25,13 @@ import { ApiService, LogResponse } from '../../services/api.service';
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>receipt_long</mat-icon>
-        Logs
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">receipt_long</mat-icon>
+        <div>
+          <h1 class="page-title">Logs</h1>
+          <p class="page-subtitle">View pipeline execution logs and debug output</p>
+        </div>
+      </div>
 
       <mat-card class="toolbar-card">
         <mat-card-content class="toolbar">
@@ -51,7 +54,7 @@ import { ApiService, LogResponse } from '../../services/api.service';
 
       @if (loading) {
         <div class="loading-center">
-          <mat-spinner diameter="40"></mat-spinner>
+          <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else if (logResponse) {
         <mat-card>
@@ -89,7 +92,7 @@ import { ApiService, LogResponse } from '../../services/api.service';
         font-size: 13px;
       }
       .log-viewer {
-        max-height: 600px;
+        max-height: calc(100vh - 320px);
         overflow: auto;
         background: var(--cg-dark);
         padding: 12px;

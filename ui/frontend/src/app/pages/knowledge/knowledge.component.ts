@@ -36,14 +36,17 @@ interface FileCategory {
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>psychology</mat-icon>
-        Knowledge Explorer
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">psychology</mat-icon>
+        <div>
+          <h1 class="page-title">Knowledge Explorer</h1>
+          <p class="page-subtitle">Browse architecture facts, analysis results, and generated documentation</p>
+        </div>
+      </div>
 
       @if (loading) {
         <div class="loading-center">
-          <mat-spinner diameter="40"></mat-spinner>
+          <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else if (summary) {
         <!-- Stats Bar -->
@@ -154,32 +157,7 @@ interface FileCategory {
   `,
   styles: [
     `
-      /* Stats */
-      .stats-bar {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-      }
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        background: #fff;
-        border-radius: 10px;
-        font-size: 13px;
-        color: var(--cg-gray-500);
-      }
-      .stat-item .mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-        color: var(--cg-blue);
-      }
-      .stat-item strong {
-        color: var(--cg-gray-900);
-      }
+      /* Type-specific stat icon colors */
       .stat-json .mat-icon {
         color: var(--cg-vibrant);
       }
@@ -436,18 +414,6 @@ interface FileCategory {
         text-align: left;
       }
 
-      /* Empty inline */
-      .empty-inline {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 32px 16px;
-        color: var(--cg-gray-500);
-        font-size: 14px;
-      }
-      .empty-inline .mat-icon {
-        color: var(--cg-gray-200);
-      }
     `,
   ],
 })

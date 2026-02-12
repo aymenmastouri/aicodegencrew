@@ -40,10 +40,13 @@ interface CategoryView {
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>upload_file</mat-icon>
-        Input Files
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">upload_file</mat-icon>
+        <div>
+          <h1 class="page-title">Input Files</h1>
+          <p class="page-subtitle">Upload and manage task files, requirements, and reference documents</p>
+        </div>
+      </div>
 
       <!-- Stats Bar -->
       <div class="stats-bar">
@@ -161,36 +164,6 @@ interface CategoryView {
   `,
   styles: [
     `
-      .stats-bar {
-        display: flex;
-        gap: 16px;
-        flex-wrap: wrap;
-        margin-bottom: 24px;
-      }
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        background: #fff;
-        border-radius: 10px;
-        border: 1px solid var(--cg-gray-100);
-      }
-      .stat-item .mat-icon {
-        color: var(--cg-blue);
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-      .stat-value {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--cg-navy);
-      }
-      .stat-label {
-        font-size: 12px;
-        color: var(--cg-gray-500);
-      }
       .categories-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));

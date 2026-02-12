@@ -60,7 +60,10 @@ import { NotificationService } from './services/notification.service';
         }
       }
 
-      <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="toolbar-logo" />
+      <div class="toolbar-brand">
+        <span class="toolbar-tagline">Make it real</span>
+        <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="Capgemini" class="toolbar-logo" />
+      </div>
     </mat-toolbar>
 
     <mat-sidenav-container class="sidenav-container">
@@ -125,9 +128,20 @@ import { NotificationService } from './services/notification.service';
         color: rgba(255, 255, 255, 0.35);
         font-weight: 500;
       }
+      .toolbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
       .toolbar-logo {
-        height: 20px;
-        opacity: 0.6;
+        height: 24px;
+      }
+      .toolbar-tagline {
+        font-size: 11px;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.45);
+        letter-spacing: 0.5px;
+        white-space: nowrap;
       }
 
       /* Status Indicator */

@@ -146,7 +146,12 @@ $cg-theme: mat.m2-define-light-theme(
   --cg-gray-50: #f8f9fa;
   --cg-gray-100: #e9ecef;
   --cg-gray-200: #dee2e6;
+  --cg-gray-300: #ced4da;
+  --cg-gray-400: #adb5bd;
   --cg-gray-500: #6c757d;
+  --cg-gray-600: #495057;
+  --cg-gray-700: #3d4852;
+  --cg-gray-800: #343a40;
   --cg-gray-900: #212529;
   --cg-success: #28a745;
   --cg-error: #dc3545;
@@ -181,12 +186,24 @@ body {
   padding: 24px;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.page-header .page-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  color: var(--cg-blue);
+}
 .page-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 24px;
-  font-weight: 400;
+  margin: 0 0 4px;
+  font-weight: 500;
   font-size: 22px;
   color: var(--cg-gray-900);
 }
@@ -195,6 +212,45 @@ body {
   font-size: 26px;
   width: 26px;
   height: 26px;
+}
+.page-subtitle {
+  font-size: 13px;
+  color: var(--cg-gray-500);
+  margin: 0;
+}
+
+// Stats bar (shared across metrics, collectors, inputs)
+.stats-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.stats-bar .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--cg-gray-500);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.stats-bar .stat-item .mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--cg-blue);
+}
+.stats-bar .stat-item strong,
+.stats-bar .stat-value {
+  font-weight: 700;
+  color: var(--cg-gray-900);
+}
+.stats-bar .stat-label {
+  font-size: 12px;
+  color: var(--cg-gray-500);
 }
 
 .card-grid {
@@ -522,4 +578,58 @@ body {
 .action-deleted {
   background: rgba(220, 53, 69, 0.1);
   color: var(--cg-error);
+}
+
+// ---------------------------------------------------------------------------
+// Shared utility classes
+// ---------------------------------------------------------------------------
+.flex-1 {
+  flex: 1;
+}
+
+.empty-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px;
+  color: var(--cg-gray-500);
+  font-size: 14px;
+}
+.empty-inline .mat-icon {
+  color: var(--cg-gray-200);
+}
+
+.section-card-title {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+// Trigger chips (run/reset type indicators)
+.trigger-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.trigger-run {
+  background: rgba(0, 112, 173, 0.1);
+  color: var(--cg-blue);
+}
+.trigger-reset {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--cg-error);
+}
+
+// Status chip size variants
+.status-chip.status-lg {
+  padding: 4px 14px;
+  font-size: 14px;
+}
+.status-chip.status-sm {
+  padding: 1px 8px;
+  font-size: 11px;
 }
