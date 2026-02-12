@@ -840,6 +840,10 @@ class TestOrchestratorGetPhaseConfig:
 # =============================================================================
 
 
+@pytest.mark.skipif(
+    not Path(r"c:\projects\aicodegencrew\config\phases_config.yaml").exists(),
+    reason="Real config file not available (CI environment)",
+)
 class TestOrchestratorWithRealConfig:
     """Verify the orchestrator works against the actual project config."""
 
