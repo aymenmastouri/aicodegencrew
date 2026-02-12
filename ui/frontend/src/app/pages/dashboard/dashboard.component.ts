@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,9 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
+import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 
 import { ApiService, PipelineStatus, HealthResponse, SetupStatus } from '../../services/api.service';
-import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
+import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -103,25 +104,73 @@ import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/p
         </button>
       }
 
-      <!-- Active Pipeline Banner -->
-      @if (executionState && executionState !== 'idle') {
-        <a class="active-banner" [class]="'banner-' + executionState" routerLink="/run">
-          <div class="banner-left">
-            <mat-icon class="banner-icon">
-              {{ executionState === 'running' ? 'sync' : executionState === 'completed' ? 'check_circle' : 'error' }}
-            </mat-icon>
-            <div>
-              <div class="banner-title">Pipeline {{ executionState | titlecase }}</div>
-              @if (executionRunId) {
-                <div class="banner-sub">{{ executionRunId }}</div>
+      <!-- Live Pipeline Stepper -->
+      @if (phaseProgress.length > 0) {
+        <div class="stepper-card" [class]="'stepper-' + executionState">
+          <div class="stepper-header">
+            <div class="stepper-left">
+              <mat-icon class="stepper-hicon">
+                {{ executionState === 'running' ? 'play_circle' : executionState === 'completed' ? 'check_circle' : executionState === 'failed' ? 'error' : 'schedule' }}
+              </mat-icon>
+              <div>
+                <div class="stepper-title">
+                  @if (executionState === 'running') {
+                    Pipeline Running
+                  } @else if (executionState === 'completed') {
+                    Pipeline Completed
+                  } @else if (executionState === 'failed') {
+                    Pipeline Failed
+                  } @else {
+                    Last Run
+                  }
+                </div>
+                @if (executionRunId) {
+                  <div class="stepper-run-id">{{ executionRunId }}</div>
+                }
+              </div>
+            </div>
+            <div class="stepper-right">
+              @if (executionState === 'running') {
+                <div class="stepper-elapsed">
+                  <mat-icon class="elapsed-icon">timer</mat-icon>
+                  {{ formatElapsed(executionElapsed) }}
+                </div>
               }
+              <a routerLink="/run" class="stepper-link" matTooltip="Go to Run Pipeline">
+                <mat-icon>chevron_right</mat-icon>
+              </a>
             </div>
           </div>
-          @if (executionState === 'running') {
-            <mat-progress-bar mode="indeterminate" class="banner-progress"></mat-progress-bar>
-          }
-          <mat-icon class="banner-arrow">chevron_right</mat-icon>
-        </a>
+          <div class="stepper-track">
+            @for (step of phaseProgress; track step.phase_id; let i = $index; let last = $last) {
+              <div class="stepper-step" [class]="'step-' + step.status">
+                <div class="step-circle">
+                  @if (step.status === 'completed') {
+                    <mat-icon class="step-check">check</mat-icon>
+                  } @else if (step.status === 'running') {
+                    <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
+                  } @else if (step.status === 'failed') {
+                    <mat-icon class="step-fail">close</mat-icon>
+                  } @else {
+                    <span class="step-num">{{ i + 1 }}</span>
+                  }
+                </div>
+                <div class="step-label">{{ step.name }}</div>
+                @if (step.status === 'completed' && step.duration_seconds) {
+                  <div class="step-time">{{ formatDuration(step.duration_seconds) }}</div>
+                }
+                @if (step.status === 'running') {
+                  <div class="step-time step-time-active">{{ formatDuration(step.duration_seconds) }}</div>
+                }
+              </div>
+              @if (!last) {
+                <div class="stepper-line" [class.line-done]="step.status === 'completed'"
+                     [class.line-active]="step.status === 'running'">
+                </div>
+              }
+            }
+          </div>
+        </div>
       }
 
       <!-- Pipeline Phases -->
@@ -267,34 +316,200 @@ import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/p
       .dot-ok { background: var(--cg-success); }
       .dot-error { background: var(--cg-error); }
 
-      /* Banner */
-      .active-banner {
+      /* Live Pipeline Stepper */
+      .stepper-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        border: 1px solid var(--cg-gray-100, #f0f0f0);
+        overflow: hidden;
+      }
+      .stepper-running {
+        border-color: rgba(0, 112, 173, 0.2);
+        background: linear-gradient(135deg, #fff 0%, rgba(0, 112, 173, 0.02) 100%);
+      }
+      .stepper-completed { border-color: rgba(40, 167, 69, 0.2); }
+      .stepper-failed { border-color: rgba(220, 53, 69, 0.2); }
+      .stepper-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .stepper-left {
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 12px 18px;
-        border-radius: 10px;
-        margin-bottom: 24px;
-        cursor: pointer;
-        text-decoration: none;
-        color: inherit;
-        transition: transform 0.15s;
+        gap: 10px;
       }
-      .active-banner:hover { transform: translateY(-1px); }
-      .banner-running { background: rgba(0, 112, 173, 0.06); border: 1px solid rgba(0, 112, 173, 0.15); }
-      .banner-completed { background: rgba(40, 167, 69, 0.06); border: 1px solid rgba(40, 167, 69, 0.15); }
-      .banner-failed { background: rgba(220, 53, 69, 0.06); border: 1px solid rgba(220, 53, 69, 0.15); }
-      .banner-cancelled { background: rgba(255, 193, 7, 0.06); border: 1px solid rgba(255, 193, 7, 0.15); }
-      .banner-left { display: flex; align-items: center; gap: 10px; }
-      .banner-icon { font-size: 24px; width: 24px; height: 24px; }
-      .banner-running .banner-icon { color: var(--cg-blue); animation: spin 1.5s linear infinite; }
-      .banner-completed .banner-icon { color: var(--cg-success); }
-      .banner-failed .banner-icon { color: var(--cg-error); }
-      @keyframes spin { to { transform: rotate(360deg); } }
-      .banner-title { font-weight: 500; font-size: 14px; }
-      .banner-sub { font-size: 11px; color: var(--cg-gray-500); font-family: monospace; }
-      .banner-progress { flex: 1; max-width: 180px; }
-      .banner-arrow { margin-left: auto; color: var(--cg-gray-300); font-size: 20px; }
+      .stepper-hicon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+      .stepper-running .stepper-hicon {
+        color: var(--cg-blue);
+        animation: pulse-stepper-icon 1.5s ease-in-out infinite;
+      }
+      .stepper-completed .stepper-hicon { color: var(--cg-success); }
+      .stepper-failed .stepper-hicon { color: var(--cg-error); }
+      @keyframes pulse-stepper-icon {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      .stepper-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--cg-gray-900);
+      }
+      .stepper-run-id {
+        font-size: 11px;
+        font-family: monospace;
+        color: var(--cg-gray-400);
+        margin-top: 1px;
+      }
+      .stepper-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .stepper-elapsed {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--cg-blue);
+        background: rgba(0, 112, 173, 0.08);
+        padding: 4px 12px;
+        border-radius: 8px;
+      }
+      .elapsed-icon { font-size: 16px; width: 16px; height: 16px; }
+      .stepper-link {
+        color: var(--cg-gray-300);
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+      }
+      .stepper-link:hover { color: var(--cg-blue); }
+
+      /* Stepper Track */
+      .stepper-track {
+        display: flex;
+        align-items: flex-start;
+        overflow-x: auto;
+        padding: 4px 0 8px;
+      }
+      .stepper-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        min-width: 90px;
+      }
+      .step-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--cg-gray-50, #f8f9fa);
+        border: 2.5px solid var(--cg-gray-200);
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+      }
+      .step-num {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--cg-gray-400);
+      }
+      /* Running */
+      .step-running .step-circle {
+        background: rgba(0, 112, 173, 0.08);
+        border-color: var(--cg-blue);
+        box-shadow: 0 0 0 5px rgba(0, 112, 173, 0.1);
+        animation: pulse-ring 2s ease-in-out infinite;
+      }
+      @keyframes pulse-ring {
+        0%, 100% { box-shadow: 0 0 0 5px rgba(0, 112, 173, 0.1); }
+        50% { box-shadow: 0 0 0 10px rgba(0, 112, 173, 0.04); }
+      }
+      .step-spinner ::ng-deep circle { stroke: var(--cg-blue) !important; }
+      /* Completed */
+      .step-completed .step-circle {
+        background: var(--cg-success, #28a745);
+        border-color: var(--cg-success, #28a745);
+      }
+      .step-check { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Failed */
+      .step-failed .step-circle {
+        background: var(--cg-error, #dc3545);
+        border-color: var(--cg-error, #dc3545);
+      }
+      .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Skipped */
+      .step-skipped .step-circle {
+        background: var(--cg-gray-100);
+        border-color: var(--cg-gray-200);
+        opacity: 0.5;
+      }
+      /* Labels */
+      .step-label {
+        margin-top: 8px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--cg-gray-500);
+        text-align: center;
+        max-width: 110px;
+        line-height: 1.3;
+      }
+      .step-running .step-label { color: var(--cg-blue); font-weight: 600; }
+      .step-completed .step-label { color: var(--cg-success); }
+      .step-failed .step-label { color: var(--cg-error); }
+      /* Duration */
+      .step-time {
+        margin-top: 3px;
+        font-size: 10px;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--cg-gray-400);
+      }
+      .step-time-active {
+        color: var(--cg-blue);
+        font-weight: 600;
+      }
+      /* Connector Lines */
+      .stepper-line {
+        flex: 1;
+        min-width: 24px;
+        height: 3px;
+        background: var(--cg-gray-200);
+        border-radius: 2px;
+        margin-top: 19px;
+        position: relative;
+        overflow: hidden;
+      }
+      .line-done { background: var(--cg-success, #28a745); }
+      .line-active {
+        background: var(--cg-gray-200);
+      }
+      .line-active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 40%;
+        background: linear-gradient(90deg, var(--cg-blue), rgba(0, 112, 173, 0.2));
+        border-radius: 2px;
+        animation: line-sweep 1.5s ease-in-out infinite;
+      }
+      @keyframes line-sweep {
+        0% { left: -40%; }
+        100% { left: 100%; }
+      }
 
       /* Section Header */
       .section-header {
@@ -607,7 +822,7 @@ import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/p
     `,
   ],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   health: HealthResponse | null = null;
   pipeline: PipelineStatus | null = null;
   loading = true;
@@ -615,6 +830,11 @@ export class DashboardComponent implements OnInit {
 
   executionState: string = 'idle';
   executionRunId: string = '';
+  phaseProgress: PhaseProgress[] = [];
+  executionElapsed = 0;
+
+  private statusSub?: Subscription;
+  private timerSub?: Subscription;
 
   // Onboarding
   setupStatus: SetupStatus | null = null;
@@ -671,11 +891,7 @@ export class DashboardComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
-    this.pipelineSvc.getStatus().subscribe((s) => {
-      this.executionState = s.state;
-      this.executionRunId = s.run_id || '';
-      this.cdr.markForCheck();
-    });
+    this.pollStatus();
     this.pipelineSvc.getHistory().subscribe((h) => {
       this.recentHistory = h.slice(0, 5);
       this.cdr.markForCheck();
@@ -774,6 +990,79 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.stopLiveUpdates();
+  }
+
+  formatElapsed(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return m > 0 ? `${m}m ${s}s` : `${s}s`;
+  }
+
+  formatDuration(seconds?: number): string {
+    if (!seconds) return '0s';
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
+  }
+
+  private pollStatus(): void {
+    this.pipelineSvc.getStatus().subscribe({
+      next: (s) => {
+        this.updateExecution(s);
+        if (s.state === 'running') {
+          this.startLiveUpdates();
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  private startLiveUpdates(): void {
+    this.stopLiveUpdates();
+
+    // Poll status every 3 seconds
+    this.statusSub = timer(3000, 3000).pipe(
+      switchMap(() => this.pipelineSvc.getStatus()),
+      catchError(() => of(null)),
+    ).subscribe((s) => {
+      if (!s) return;
+      this.updateExecution(s);
+      if (s.state !== 'running') {
+        this.stopLiveUpdates();
+      }
+    });
+
+    // Tick elapsed every second (local interpolation between polls)
+    this.timerSub = timer(1000, 1000).subscribe(() => {
+      if (this.executionState === 'running') {
+        this.executionElapsed++;
+        const running = this.phaseProgress.find((p) => p.status === 'running');
+        if (running) {
+          running.duration_seconds = (running.duration_seconds || 0) + 1;
+        }
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private stopLiveUpdates(): void {
+    this.statusSub?.unsubscribe();
+    this.timerSub?.unsubscribe();
+    this.statusSub = undefined;
+    this.timerSub = undefined;
+  }
+
+  private updateExecution(s: ExecutionStatus): void {
+    this.executionState = s.state;
+    this.executionRunId = s.run_id || '';
+    this.phaseProgress = s.phase_progress || [];
+    if (s.elapsed_seconds != null) {
+      this.executionElapsed = Math.round(s.elapsed_seconds);
+    }
+    this.cdr.markForCheck();
+  }
+
   private refreshAll(): void {
     this.api.getPipelineStatus().subscribe((p) => {
       this.pipeline = p;
@@ -783,5 +1072,6 @@ export class DashboardComponent implements OnInit {
       this.recentHistory = h.slice(0, 5);
       this.cdr.markForCheck();
     });
+    this.pollStatus();
   }
 }
