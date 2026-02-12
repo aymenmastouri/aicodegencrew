@@ -178,3 +178,37 @@ class BranchInfo(BaseModel):
 class BranchList(BaseModel):
     branches: list[BranchInfo] = []
     repo_path: str = ""
+
+
+# --- Collectors ---
+
+
+class CollectorInfo(BaseModel):
+    id: str
+    name: str
+    description: str
+    dimension: str
+    category: str  # "core" | "optional"
+    step: int
+    output_file: str
+    can_disable: bool
+    enabled: bool = True
+    fact_count: int | None = None
+    last_modified: str | None = None
+
+
+class CollectorListResponse(BaseModel):
+    collectors: list[CollectorInfo]
+    total: int
+    enabled_count: int
+
+
+class CollectorToggleRequest(BaseModel):
+    enabled: bool
+
+
+class CollectorOutput(BaseModel):
+    collector_id: str
+    data: Any
+    fact_count: int
+    file_size_bytes: int
