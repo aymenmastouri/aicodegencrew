@@ -136,7 +136,7 @@ python-build:
 # ---------------------------------------------------------------------------
 playwright-e2e:
   stage: e2e
-  image: mcr.microsoft.com/playwright:v1.50.0-noble
+  image: mcr.microsoft.com/playwright:v1.58.2-noble
   needs:
     - job: angular-build
       artifacts: true
