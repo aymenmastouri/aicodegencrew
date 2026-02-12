@@ -34,6 +34,7 @@ export class NotificationService implements OnDestroy {
   private fadeTimer: ReturnType<typeof setTimeout> | null = null;
   private previousState: PipelineState = 'idle';
   private pollInterval = 5000;
+  private dismissedRunId: string | null = null;
 
   constructor(
     private pipelineSvc: PipelineService,
@@ -60,6 +61,11 @@ export class NotificationService implements OnDestroy {
   }
 
   dismiss(): void {
+    // Remember which run was dismissed so polling doesn't resurrect it
+    const current = this.state$.value;
+    if (current.runId) {
+      this.dismissedRunId = current.runId;
+    }
     this.state$.next({
       state: 'idle',
       runId: '',
@@ -105,6 +111,16 @@ export class NotificationService implements OnDestroy {
           const newState = (status.state || 'idle') as PipelineState;
           const runId = status.run_id || '';
 
+          // Clear dismissed flag when a new run starts
+          if (newState === 'running' && runId !== this.dismissedRunId) {
+            this.dismissedRunId = null;
+          }
+
+          // Skip terminal states for dismissed runs
+          if (this.dismissedRunId && runId === this.dismissedRunId && newState !== 'running') {
+            return;
+          }
+
           // Adjust poll frequency: 3s when running, 5s otherwise
           const targetInterval = newState === 'running' ? 3000 : 5000;
           if (targetInterval !== this.pollInterval) {
@@ -123,12 +139,12 @@ export class NotificationService implements OnDestroy {
 
           this.previousState = newState;
 
-          // Auto-fade completed state after 10s
+          // Auto-fade terminal states
           if (this.fadeTimer) clearTimeout(this.fadeTimer);
           if (newState === 'completed') {
-            this.fadeTimer = setTimeout(() => {
-              this.dismiss();
-            }, 10000);
+            this.fadeTimer = setTimeout(() => this.dismiss(), 10000);
+          } else if (newState === 'failed') {
+            this.fadeTimer = setTimeout(() => this.dismiss(), 30000);
           }
 
           this.state$.next({

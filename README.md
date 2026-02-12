@@ -32,17 +32,19 @@ ollama pull all-minilm:latest && ollama serve     # embeddings
 
 ### 2. Launch the Dashboard
 
-Open **two terminals** in the project root:
-
 ```bash
-# Terminal 1 — Backend (FastAPI)
-uvicorn ui.backend.main:app --reload --port 8001
-
-# Terminal 2 — Frontend (Angular, includes proxy to backend)
-cd ui/frontend && npm install && npm start
+npm install          # one-time: installs concurrently
+npm run dev          # starts backend :8001 + frontend :4200 together
 ```
 
 Open **http://localhost:4200** — the SDLC Dashboard is ready.
+
+To stop both servers: `Ctrl+C` or from another terminal:
+```bash
+npm run stop
+```
+
+> **Manual start** (if needed): `npm run dev:backend` and `npm run dev:frontend` in separate terminals.
 
 ### 3. Upload Input Files
 
@@ -178,10 +180,10 @@ Copy `.env.example` to `.env` and configure. Key variables:
 
 | Preset | Phases | Use Case |
 |--------|--------|----------|
-| `planning_only` | 0, 1, 2, 4 | Development planning (most common) |
+| `planning_only` | 0, 1, 2, 3, 4 | Development planning (most common) |
 | `architecture_workflow` | 0 – 3 | C4 + arc42 documentation |
 | `architecture_full` | 0 – 4 | Architecture + planning |
-| `codegen_only` | 0, 1, 2, 4, 5 | Planning + code generation |
+| `codegen_only` | 0, 1, 2, 3, 4, 5 | Planning + code generation |
 | `facts_only` | 0, 1 | Deterministic facts (no LLM) |
 | `full_pipeline` | 0 – 7 | All phases end-to-end |
 
@@ -238,8 +240,7 @@ Output: `knowledge/phase4_planning/{task_id}_plan.json` with affected components
 │   ├── phase2_analysis/     # Phase 2: analyzed_architecture.json
 │   ├── phase3_synthesis/    # Phase 3: c4/, arc42/ (C4 diagrams + arc42 chapters)
 │   ├── phase4_planning/     # Phase 4: {task_id}_plan.json
-│   ├── phase5_codegen/      # Phase 5: {task_id}_report.json
-│   └── run_report.json      # Pipeline run summary
+│   └── phase5_codegen/      # Phase 5: {task_id}_report.json
 ├── architecture-docs/       # Phase 3 export (Markdown + Confluence + AsciiDoc + HTML)
 └── logs/
     ├── current.log

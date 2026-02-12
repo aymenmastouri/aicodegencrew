@@ -172,7 +172,7 @@ class PipelineExecutor:
             # Keep last elapsed
             elapsed = round(time.monotonic() - self._started_at, 1)
 
-        phase_progress = self._read_phase_progress()
+        phase_progress = self._read_phase_progress() if self.state in ("running", "completed", "failed") else []
 
         # Compute progress percent
         total = len(self.current_run.phases) if self.current_run else 0
@@ -348,29 +348,51 @@ class PipelineExecutor:
             with open(metrics_file, encoding="utf-8") as f:
                 lines = f.readlines()
 
-            # Only look at recent lines (last 300 to cover sub-phases)
-            for line in lines[-300:]:
+            recent = lines[-500:]
+
+            # Detect the most recent run_id to filter out old runs
+            current_run_id = None
+            for line in reversed(recent):
+                try:
+                    ev = json.loads(line.strip())
+                    data = ev.get("data", {})
+                    evt = data.get("event") or ev.get("msg", "")
+                    if evt == "phase_start" and data.get("run_id"):
+                        current_run_id = data["run_id"]
+                        break
+                except (json.JSONDecodeError, KeyError):
+                    continue
+
+            for line in recent:
                 try:
                     event = json.loads(line.strip())
                 except json.JSONDecodeError:
                     continue
 
-                event_name = event.get("event", "")
                 data = event.get("data", {})
+                event_name = data.get("event") or event.get("msg", "")
+
+                # Filter to current run only
+                if current_run_id and data.get("run_id") and data["run_id"] != current_run_id:
+                    continue
 
                 if event_name == "phase_start":
-                    phase_id = data.get("phase", "")
+                    phase_id = data.get("phase") or data.get("phase_id", "")
+                    if not phase_id:
+                        continue
                     progress[phase_id] = {
                         "phase_id": phase_id,
                         "name": data.get("name", phase_id),
                         "status": "running",
-                        "started_at": event.get("timestamp"),
+                        "started_at": event.get("ts"),
                         "duration_seconds": None,
                         "sub_phases": [],
                         "total_tokens": 0,
                     }
                 elif event_name == "phase_complete":
-                    phase_id = data.get("phase", "")
+                    phase_id = data.get("phase") or data.get("phase_id", "")
+                    if not phase_id:
+                        continue
                     if phase_id in progress:
                         progress[phase_id]["status"] = "completed"
                         progress[phase_id]["duration_seconds"] = data.get("duration_seconds")
@@ -385,7 +407,9 @@ class PipelineExecutor:
                             "total_tokens": 0,
                         }
                 elif event_name == "phase_failed":
-                    phase_id = data.get("phase", "")
+                    phase_id = data.get("phase") or data.get("phase_id", "")
+                    if not phase_id:
+                        continue
                     if phase_id in progress:
                         progress[phase_id]["status"] = "failed"
                     else:
@@ -442,8 +466,9 @@ class PipelineExecutor:
                 except json.JSONDecodeError:
                     continue
 
-                if event.get("event") == "mini_crew_complete":
-                    data = event.get("data", {})
+                data = event.get("data", {})
+                evt = data.get("event") or event.get("msg", "")
+                if evt == "mini_crew_complete":
                     total_tokens += data.get("total_tokens", 0) or data.get("tokens", 0) or 0
                     crew_completions += 1
         except Exception as exc:
