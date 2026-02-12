@@ -7,27 +7,33 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatCardModule } from '@angular/material/card';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSelectModule } from '@angular/material/select';
 import { HttpClient } from '@angular/common/http';
 
 import { PipelineService, EnvVariable } from '../../services/pipeline.service';
 import { ApiService, PresetInfo } from '../../services/api.service';
-
-interface TabDef {
-  label: string;
-  icon: string;
-  keys: string[];
-}
 
 interface PhaseToggle {
   id: string;
   name: string;
   enabled: boolean;
 }
+
+/** Map backend group names to our tab names */
+const GROUP_TO_TAB: Record<string, string> = {
+  Repository: 'general',
+  Output: 'general',
+  LLM: 'llm',
+  Embeddings: 'llm',
+  Indexing: 'indexing',
+  'Phase Control': 'advanced',
+  Logging: 'advanced',
+  General: 'general',
+};
+
+const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
 
 @Component({
   selector: 'app-settings',
@@ -41,11 +47,9 @@ interface PhaseToggle {
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
-    MatCardModule,
     MatSlideToggleModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatSelectModule,
   ],
   template: `
     <div class="page-container">
@@ -68,29 +72,31 @@ interface PhaseToggle {
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">folder</mat-icon> General
             </ng-template>
-            <div class="tab-content">
-              <div class="tab-description">Repository and output configuration</div>
-              @for (v of getTabVars('general'); track v.name) {
-                <mat-form-field appearance="outline" class="field-full">
-                  <mat-label>
-                    {{ v.name }}
-                    @if (v.required) { <span class="required">*</span> }
-                  </mat-label>
-                  <input matInput [(ngModel)]="v.value" [placeholder]="v.description" />
-                  @if (v.description) {
-                    <mat-hint>{{ v.description }}</mat-hint>
-                  }
-                </mat-form-field>
-              }
-              <div class="tab-actions">
-                <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
-                  <mat-icon>restart_alt</mat-icon> Reset to defaults
-                </button>
-                <button mat-flat-button color="primary" (click)="saveTab('general')" [disabled]="saving">
-                  <mat-icon>save</mat-icon> Save
-                </button>
+            <ng-template matTabContent>
+              <div class="tab-content">
+                <div class="tab-description">Repository path, output directories, and general settings</div>
+                @for (v of getTabVars('general'); track v.name) {
+                  <mat-form-field appearance="outline" class="field-full">
+                    <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
+                    <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    @if (v.description) {
+                      <mat-hint>{{ v.description }}</mat-hint>
+                    }
+                  </mat-form-field>
+                }
+                @if (getTabVars('general').length === 0) {
+                  <div class="empty-tab">No variables found for this tab.</div>
+                }
+                <div class="tab-actions">
+                  <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
+                    <mat-icon>restart_alt</mat-icon> Reset to defaults
+                  </button>
+                  <button mat-flat-button color="primary" (click)="saveTab('general')" [disabled]="saving">
+                    <mat-icon>save</mat-icon> Save
+                  </button>
+                </div>
               </div>
-            </div>
+            </ng-template>
           </mat-tab>
 
           <!-- LLM Tab -->
@@ -98,38 +104,38 @@ interface PhaseToggle {
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">smart_toy</mat-icon> LLM
             </ng-template>
-            <div class="tab-content">
-              <div class="tab-description">Language model provider and API configuration</div>
-              @for (v of getTabVars('llm'); track v.name) {
-                <mat-form-field appearance="outline" class="field-full">
-                  <mat-label>
-                    {{ v.name }}
-                    @if (v.required) { <span class="required">*</span> }
-                  </mat-label>
-                  <input matInput [(ngModel)]="v.value"
-                    [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
-                    [placeholder]="v.description" />
-                  @if (isSecret(v.name)) {
-                    <ng-container matSuffix>
-                      <button mat-icon-button (click)="showSecrets[v.name] = !showSecrets[v.name]">
+            <ng-template matTabContent>
+              <div class="tab-content">
+                <div class="tab-description">Language model provider, API keys, embeddings, and token limits</div>
+                @for (v of getTabVars('llm'); track v.name) {
+                  <mat-form-field appearance="outline" class="field-full">
+                    <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
+                    <input matInput [(ngModel)]="v.value"
+                      [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
+                      [placeholder]="v.description || ''" />
+                    @if (isSecret(v.name)) {
+                      <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
                         <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
                       </button>
-                    </ng-container>
-                  }
-                  @if (v.description) {
-                    <mat-hint>{{ v.description }}</mat-hint>
-                  }
-                </mat-form-field>
-              }
-              <div class="tab-actions">
-                <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
-                  <mat-icon>restart_alt</mat-icon> Reset to defaults
-                </button>
-                <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving">
-                  <mat-icon>save</mat-icon> Save
-                </button>
+                    }
+                    @if (v.description) {
+                      <mat-hint>{{ v.description }}</mat-hint>
+                    }
+                  </mat-form-field>
+                }
+                @if (getTabVars('llm').length === 0) {
+                  <div class="empty-tab">No variables found for this tab.</div>
+                }
+                <div class="tab-actions">
+                  <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
+                    <mat-icon>restart_alt</mat-icon> Reset to defaults
+                  </button>
+                  <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving">
+                    <mat-icon>save</mat-icon> Save
+                  </button>
+                </div>
               </div>
-            </div>
+            </ng-template>
           </mat-tab>
 
           <!-- Indexing Tab -->
@@ -137,26 +143,31 @@ interface PhaseToggle {
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">manage_search</mat-icon> Indexing
             </ng-template>
-            <div class="tab-content">
-              <div class="tab-description">Index mode, ChromaDB, chunking, and embedding settings</div>
-              @for (v of getTabVars('indexing'); track v.name) {
-                <mat-form-field appearance="outline" class="field-full">
-                  <mat-label>{{ v.name }}</mat-label>
-                  <input matInput [(ngModel)]="v.value" [placeholder]="v.description" />
-                  @if (v.description) {
-                    <mat-hint>{{ v.description }}</mat-hint>
-                  }
-                </mat-form-field>
-              }
-              <div class="tab-actions">
-                <button mat-stroked-button (click)="resetTab('indexing')" class="btn-reset">
-                  <mat-icon>restart_alt</mat-icon> Reset to defaults
-                </button>
-                <button mat-flat-button color="primary" (click)="saveTab('indexing')" [disabled]="saving">
-                  <mat-icon>save</mat-icon> Save
-                </button>
+            <ng-template matTabContent>
+              <div class="tab-content">
+                <div class="tab-description">Index mode, ChromaDB, chunking, and RAG settings</div>
+                @for (v of getTabVars('indexing'); track v.name) {
+                  <mat-form-field appearance="outline" class="field-full">
+                    <mat-label>{{ v.name }}</mat-label>
+                    <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    @if (v.description) {
+                      <mat-hint>{{ v.description }}</mat-hint>
+                    }
+                  </mat-form-field>
+                }
+                @if (getTabVars('indexing').length === 0) {
+                  <div class="empty-tab">No variables found for this tab.</div>
+                }
+                <div class="tab-actions">
+                  <button mat-stroked-button (click)="resetTab('indexing')" class="btn-reset">
+                    <mat-icon>restart_alt</mat-icon> Reset to defaults
+                  </button>
+                  <button mat-flat-button color="primary" (click)="saveTab('indexing')" [disabled]="saving">
+                    <mat-icon>save</mat-icon> Save
+                  </button>
+                </div>
               </div>
-            </div>
+            </ng-template>
           </mat-tab>
 
           <!-- Phases Tab -->
@@ -164,38 +175,44 @@ interface PhaseToggle {
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">account_tree</mat-icon> Phases
             </ng-template>
-            <div class="tab-content">
-              <div class="tab-description">Enable or disable pipeline phases. Available presets are shown below.</div>
+            <ng-template matTabContent>
+              <div class="tab-content">
+                <div class="tab-description">Enable or disable pipeline phases. Available presets are shown below.</div>
 
-              <div class="phase-section-label">Phase Toggles</div>
-              <div class="phase-toggle-grid">
-                @for (p of phaseToggles; track p.id) {
-                  <div class="phase-toggle-card">
-                    <div class="phase-toggle-info">
-                      <span class="phase-toggle-name">{{ p.name }}</span>
-                      <span class="phase-toggle-id">{{ p.id }}</span>
-                    </div>
-                    <mat-slide-toggle [(ngModel)]="p.enabled" color="primary"></mat-slide-toggle>
+                @if (phaseToggles.length > 0) {
+                  <div class="phase-section-label">Phase Toggles</div>
+                  <div class="phase-toggle-grid">
+                    @for (p of phaseToggles; track p.id) {
+                      <div class="phase-toggle-card">
+                        <div class="phase-toggle-info">
+                          <span class="phase-toggle-name">{{ p.name }}</span>
+                          <span class="phase-toggle-id">{{ p.id }}</span>
+                        </div>
+                        <mat-slide-toggle [(ngModel)]="p.enabled" color="primary"></mat-slide-toggle>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="empty-tab">No phases loaded.</div>
+                }
+
+                @if (presets.length > 0) {
+                  <div class="phase-section-label">Presets</div>
+                  <div class="preset-grid">
+                    @for (preset of presets; track preset.name) {
+                      <div class="preset-card">
+                        <mat-icon class="preset-icon">{{ preset.icon }}</mat-icon>
+                        <div class="preset-info">
+                          <div class="preset-name">{{ preset.display_name || preset.name }}</div>
+                          <div class="preset-desc">{{ preset.description }}</div>
+                          <div class="preset-phases">{{ preset.phases.join(', ') }}</div>
+                        </div>
+                      </div>
+                    }
                   </div>
                 }
               </div>
-
-              @if (presets.length > 0) {
-                <div class="phase-section-label">Presets</div>
-                <div class="preset-grid">
-                  @for (preset of presets; track preset.name) {
-                    <div class="preset-card">
-                      <mat-icon class="preset-icon">{{ preset.icon }}</mat-icon>
-                      <div class="preset-info">
-                        <div class="preset-name">{{ preset.display_name || preset.name }}</div>
-                        <div class="preset-desc">{{ preset.description }}</div>
-                        <div class="preset-phases">{{ preset.phases.join(', ') }}</div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              }
-            </div>
+            </ng-template>
           </mat-tab>
 
           <!-- Advanced Tab -->
@@ -203,26 +220,31 @@ interface PhaseToggle {
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">tune</mat-icon> Advanced
             </ng-template>
-            <div class="tab-content">
-              <div class="tab-description">Logging, tracing, skip flags, and directory overrides</div>
-              @for (v of getTabVars('advanced'); track v.name) {
-                <mat-form-field appearance="outline" class="field-full">
-                  <mat-label>{{ v.name }}</mat-label>
-                  <input matInput [(ngModel)]="v.value" [placeholder]="v.description" />
-                  @if (v.description) {
-                    <mat-hint>{{ v.description }}</mat-hint>
-                  }
-                </mat-form-field>
-              }
-              <div class="tab-actions">
-                <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
-                  <mat-icon>restart_alt</mat-icon> Reset to defaults
-                </button>
-                <button mat-flat-button color="primary" (click)="saveTab('advanced')" [disabled]="saving">
-                  <mat-icon>save</mat-icon> Save
-                </button>
+            <ng-template matTabContent>
+              <div class="tab-content">
+                <div class="tab-description">Logging, tracing, skip flags, and directory overrides</div>
+                @for (v of getTabVars('advanced'); track v.name) {
+                  <mat-form-field appearance="outline" class="field-full">
+                    <mat-label>{{ v.name }}</mat-label>
+                    <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    @if (v.description) {
+                      <mat-hint>{{ v.description }}</mat-hint>
+                    }
+                  </mat-form-field>
+                }
+                @if (getTabVars('advanced').length === 0) {
+                  <div class="empty-tab">No variables found for this tab.</div>
+                }
+                <div class="tab-actions">
+                  <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
+                    <mat-icon>restart_alt</mat-icon> Reset to defaults
+                  </button>
+                  <button mat-flat-button color="primary" (click)="saveTab('advanced')" [disabled]="saving">
+                    <mat-icon>save</mat-icon> Save
+                  </button>
+                </div>
               </div>
-            </div>
+            </ng-template>
           </mat-tab>
         </mat-tab-group>
       }
@@ -282,9 +304,11 @@ interface PhaseToggle {
         width: 100%;
         margin-bottom: 4px;
       }
-      .required {
-        color: var(--cg-error, #dc3545);
-        font-weight: 700;
+      .empty-tab {
+        text-align: center;
+        padding: 32px 0;
+        color: var(--cg-gray-400);
+        font-size: 13px;
       }
       .tab-actions {
         display: flex;
@@ -390,15 +414,6 @@ export class SettingsComponent implements OnInit {
   phaseToggles: PhaseToggle[] = [];
   presets: PresetInfo[] = [];
 
-  private tabKeyMap: Record<string, string[]> = {
-    general: ['PROJECT_PATH', 'GIT_REPO_URL', 'GIT_BRANCH', 'INCLUDE_SUBMODULES', 'OUTPUT_BASE_DIR', 'DOCS_OUTPUT_DIR', 'ARC42_LANGUAGE'],
-    llm: ['LLM_PROVIDER', 'MODEL', 'API_BASE', 'OPENAI_API_KEY', 'MAX_LLM_RETRIES', 'MAX_LLM_TIMEOUT'],
-    indexing: ['INDEX_MODE', 'CHROMA_', 'CHUNK_', 'MAX_FILE_', 'MAX_RAG_', 'OLLAMA_', 'EMBED_'],
-    advanced: ['LOG_LEVEL', 'CREWAI_TRACING', 'SKIP_', 'TASK_INPUT_DIR', 'REQUIREMENTS_DIR', 'LOGS_DIR', 'REFERENCE_DIR'],
-  };
-
-  private secretKeys = new Set(['OPENAI_API_KEY']);
-
   constructor(
     private pipelineSvc: PipelineService,
     private api: ApiService,
@@ -446,15 +461,16 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  /** Use the backend group field to sort variables into tabs */
   getTabVars(tab: string): EnvVariable[] {
-    const prefixes = this.tabKeyMap[tab] || [];
-    return this.allVars.filter((v) =>
-      prefixes.some((p) => v.name === p || v.name.startsWith(p)),
-    );
+    return this.allVars.filter((v) => {
+      const mappedTab = GROUP_TO_TAB[v.group] || 'general';
+      return mappedTab === tab;
+    });
   }
 
   isSecret(name: string): boolean {
-    return this.secretKeys.has(name);
+    return SECRET_KEYS.has(name);
   }
 
   saveTab(tab: string): void {
@@ -464,7 +480,6 @@ export class SettingsComponent implements OnInit {
       values[v.name] = v.value;
     }
 
-    // Validate required fields
     const missing = vars.filter((v) => v.required && !v.value.trim());
     if (missing.length > 0) {
       this.snackBar.open(
@@ -478,12 +493,12 @@ export class SettingsComponent implements OnInit {
     this.saving = true;
     this.pipelineSvc.updateEnv(values).subscribe({
       next: () => {
-        this.snackBar.open('Settings saved successfully', 'OK', { duration: 3000 });
+        this.snackBar.open('Settings saved', 'OK', { duration: 3000 });
         this.saving = false;
         this.cdr.markForCheck();
       },
       error: () => {
-        this.snackBar.open('Failed to save settings', 'OK', { duration: 4000 });
+        this.snackBar.open('Failed to save', 'OK', { duration: 4000 });
         this.saving = false;
         this.cdr.markForCheck();
       },
@@ -492,11 +507,13 @@ export class SettingsComponent implements OnInit {
 
   resetTab(tab: string): void {
     const vars = this.getTabVars(tab);
+    let count = 0;
     for (const v of vars) {
       if (this.defaults[v.name] !== undefined) {
         v.value = this.defaults[v.name];
+        count++;
       }
     }
-    this.snackBar.open('Reset to default values (not saved yet)', 'OK', { duration: 3000 });
+    this.snackBar.open(`Reset ${count} field(s) to defaults (not saved yet)`, 'OK', { duration: 3000 });
   }
 }

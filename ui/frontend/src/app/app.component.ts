@@ -80,9 +80,8 @@ import { NotificationService } from './services/notification.service';
             }
           </div>
           <div class="sidenav-footer">
-            <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="footer-logo" />
             <div class="footer-row">
-              <span class="footer-legal">&copy; Capgemini</span>
+              <span class="footer-legal">&copy; 2026 Capgemini</span>
               <span class="footer-sep"></span>
               <span class="footer-version">v0.3.0</span>
             </div>
@@ -248,11 +247,6 @@ import { NotificationService } from './services/notification.service';
       .sidenav-footer {
         padding: 16px 20px;
         border-top: 1px solid rgba(255, 255, 255, 0.06);
-      }
-      .footer-logo {
-        height: 20px;
-        opacity: 0.35;
-        margin-bottom: 10px;
       }
       .footer-row {
         display: flex;
