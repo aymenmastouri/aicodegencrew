@@ -296,6 +296,7 @@ presets:
       - phase0_indexing
       - phase1_architecture_facts
       - phase2_architecture_analysis
+      - phase3_architecture_synthesis
       - phase4_development_planning
 
   codegen_only:
@@ -306,6 +307,7 @@ presets:
       - phase0_indexing
       - phase1_architecture_facts
       - phase2_architecture_analysis
+      - phase3_architecture_synthesis
       - phase4_development_planning
       - phase5_code_generation
 

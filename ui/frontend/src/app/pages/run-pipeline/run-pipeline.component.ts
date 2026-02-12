@@ -940,7 +940,11 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         if (event.type === 'pipeline_complete') {
           this.status = event.data as ExecutionStatus;
           const finalState = this.status?.state || 'completed';
-          this.triggerCelebration(finalState === 'failed' ? 'failure' : 'success');
+          if (finalState === 'cancelled') {
+            // No celebration for cancelled runs
+          } else {
+            this.triggerCelebration(finalState === 'failed' ? 'failure' : 'success');
+          }
           this.pipeline.getHistory().subscribe((h) => {
             this.history = h;
             this.cdr.markForCheck();

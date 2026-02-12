@@ -64,7 +64,7 @@ class IndexingConfig:
         return cls(
             repo_path=resolved_path,
             index_mode=index_mode or os.getenv("INDEX_MODE", "auto"),
-            chroma_dir=chroma_dir or os.getenv("CHROMA_DIR", None),
+            chroma_dir=chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing"),
             collection_name=os.getenv("COLLECTION_NAME", "repo_docs"),
             include_submodules=True,
             batch_size=int(os.getenv("INDEX_BATCH_SIZE", "50")),
@@ -182,7 +182,7 @@ class IndexingState:
 
 
 def _get_index_lock_path(chroma_dir: str | None = None) -> Path:
-    d = chroma_dir or os.getenv("CHROMA_DIR", "./.chroma_db")
+    d = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing")
     return Path(d).resolve() / ".index.lock"
 
 
@@ -357,9 +357,9 @@ class IndexingPipeline:
         self.repo_path = self.config.repo_path
         self.metrics = IndexingMetrics()
 
-        # Resolve cache dir (sibling of chroma dir for state persistence)
-        chroma_resolved = Path(self.config.chroma_dir or os.getenv("CHROMA_DIR", "./.chroma_db")).resolve()
-        self._cache_dir = chroma_resolved.parent
+        # Resolve chroma dir — state file lives inside it
+        chroma_resolved = Path(self.config.chroma_dir or "knowledge/phase0_indexing").resolve()
+        self._cache_dir = chroma_resolved
         self._chroma_dir_resolved = str(chroma_resolved)
 
         # Lazy tool singletons
