@@ -380,13 +380,16 @@ export class OutputsComponent implements OnInit {
     });
   }
 
-  /** Extract the first subdirectory from the file path as group label */
+  /** Extract the first subdirectory from the file path, humanize as label */
   getPhaseLabel(file: KnowledgeFile): string {
     const path = file.path.replace(/\\/g, '/');
-    // Remove leading "knowledge/" if present, then take first segment
     const withoutPrefix = path.replace(/^knowledge\/?/i, '');
     const firstSegment = withoutPrefix.split('/')[0] || '';
-    return firstSegment || 'root';
+    if (!firstSegment) return 'Root';
+    // Humanize: replace _ and - with spaces, title case
+    return firstSegment
+      .replace(/[_-]/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   getFileIcon(file: KnowledgeFile): string {
