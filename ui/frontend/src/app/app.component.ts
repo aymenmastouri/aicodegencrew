@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -7,10 +8,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+import { NotificationService } from './services/notification.service';
+
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
+    CommonModule,
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
@@ -27,13 +31,35 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         <mat-icon class="text-white">menu</mat-icon>
       </button>
       <a routerLink="/dashboard" class="brand-link">
-        <span class="brand font-medium ml-3">
-          <span class="text-cg-vibrant font-bold">AI</span><span class="text-white">CodeGen</span
-          ><span class="text-cg-vibrant">Crew</span>
+        <span class="brand">
+          <span class="brand-ai">AI</span>CodeGen<span class="brand-ai">Crew</span>
         </span>
+        <span class="brand-sub">SDLC Dashboard</span>
       </a>
       <span class="flex-1"></span>
-      <span class="toolbar-badge">SDLC Dashboard</span>
+
+      <!-- Pipeline Status Indicator -->
+      @if (notifSvc.notification$ | async; as notif) {
+        @if (notif.state === 'running') {
+          <div class="status-indicator status-running" matTooltip="Pipeline is running">
+            <span class="status-dot-pulse"></span>
+            <span class="status-text">Running...</span>
+          </div>
+        }
+        @if (notif.state === 'completed') {
+          <div class="status-indicator status-completed" matTooltip="Pipeline completed">
+            <span class="status-dot-static dot-green"></span>
+            <span class="status-text">Done</span>
+          </div>
+        }
+        @if (notif.state === 'failed') {
+          <button class="status-indicator status-failed" (click)="notifSvc.dismiss()" matTooltip="Click to dismiss">
+            <span class="status-dot-static dot-red"></span>
+            <span class="status-text">Failed</span>
+          </button>
+        }
+      }
+
       <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="toolbar-logo" />
     </mat-toolbar>
 
@@ -54,13 +80,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             }
           </div>
           <div class="sidenav-footer">
-            <div class="footer-brand">
-              <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="" class="footer-logo" />
-              <span class="footer-legal">&copy; Capgemini. All rights reserved</span>
-            </div>
-            <div class="version-badge">
-              <mat-icon class="version-icon">code</mat-icon>
-              <span>v0.3.0</span>
+            <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="footer-logo" />
+            <div class="footer-row">
+              <span class="footer-legal">&copy; Capgemini</span>
+              <span class="footer-sep"></span>
+              <span class="footer-version">v0.3.0</span>
             </div>
           </div>
         </div>
@@ -78,25 +102,91 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         color: #fff !important;
         height: 56px;
       }
-      .brand {
-        font-size: 18px;
-        letter-spacing: -0.3px;
-      }
       .brand-link {
         text-decoration: none;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-left: 12px;
       }
-      .toolbar-badge {
-        font-size: 11px;
+      .brand {
+        font-size: 17px;
+        font-weight: 500;
+        color: #fff;
+        letter-spacing: -0.3px;
+      }
+      .brand-ai {
+        color: var(--cg-vibrant);
+        font-weight: 700;
+      }
+      .brand-sub {
+        font-size: 10px;
         text-transform: uppercase;
-        letter-spacing: 1.2px;
-        opacity: 0.6;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.35);
         font-weight: 500;
       }
       .toolbar-logo {
-        height: 22px;
-        margin-left: 12px;
-        opacity: 0.85;
+        height: 20px;
+        opacity: 0.6;
       }
+
+      /* Status Indicator */
+      .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 16px;
+        margin-right: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        border: none;
+        cursor: default;
+        background: transparent;
+      }
+      .status-running {
+        background: rgba(0, 112, 173, 0.15);
+        color: var(--cg-vibrant);
+      }
+      .status-completed {
+        background: rgba(40, 167, 69, 0.15);
+        color: var(--cg-success, #28a745);
+      }
+      .status-failed {
+        background: rgba(220, 53, 69, 0.15);
+        color: var(--cg-error, #dc3545);
+        cursor: pointer;
+      }
+      .status-failed:hover {
+        background: rgba(220, 53, 69, 0.25);
+      }
+      .status-text {
+        font-size: 12px;
+      }
+
+      /* Pulsing dot */
+      .status-dot-pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--cg-vibrant);
+        animation: pulse-dot 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
+      }
+
+      /* Static dots */
+      .status-dot-static {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .dot-green { background: var(--cg-success, #28a745); }
+      .dot-red { background: var(--cg-error, #dc3545); }
+
       .sidenav-container {
         height: calc(100vh - 56px);
       }
@@ -156,35 +246,32 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         color: var(--cg-vibrant) !important;
       }
       .sidenav-footer {
-        padding: 12px 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
       }
-      .footer-brand {
+      .footer-logo {
+        height: 20px;
+        opacity: 0.35;
+        margin-bottom: 10px;
+      }
+      .footer-row {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 8px;
-      }
-      .footer-logo {
-        height: 18px;
-        opacity: 0.5;
       }
       .footer-legal {
-        font-size: 9px;
-        color: rgba(255, 255, 255, 0.35);
-      }
-      .version-badge {
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        font-size: 10px;
         color: rgba(255, 255, 255, 0.3);
-        font-size: 11px;
-        font-family: monospace;
       }
-      .version-icon {
-        font-size: 14px;
-        width: 14px;
-        height: 14px;
+      .footer-sep {
+        width: 3px; height: 3px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .footer-version {
+        font-size: 10px;
+        font-family: monospace;
+        color: rgba(255, 255, 255, 0.25);
       }
       .content-area {
         background: var(--cg-gray-50);
@@ -193,6 +280,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   ],
 })
 export class AppComponent {
+  constructor(public notifSvc: NotificationService) {}
+
   navGroups = [
     {
       label: 'Operations',
@@ -201,6 +290,7 @@ export class AppComponent {
         { route: '/run', icon: 'rocket_launch', label: 'Run Pipeline' },
         { route: '/inputs', icon: 'upload_file', label: 'Input Files' },
         { route: '/collectors', icon: 'hub', label: 'Collectors' },
+        { route: '/settings', icon: 'settings', label: 'Settings' },
       ],
     },
     {
@@ -209,6 +299,7 @@ export class AppComponent {
         { route: '/phases', icon: 'account_tree', label: 'Phases' },
         { route: '/knowledge', icon: 'psychology', label: 'Knowledge' },
         { route: '/reports', icon: 'summarize', label: 'Reports' },
+        { route: '/outputs', icon: 'code', label: 'Outputs' },
       ],
     },
     {
