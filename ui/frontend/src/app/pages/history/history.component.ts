@@ -11,7 +11,8 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 
-import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipeline.service';
+import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../../services/pipeline.service';
+import { humanizePhaseId } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-history',
@@ -56,6 +57,46 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
         <span class="flex-1"></span>
         <input class="search-input" placeholder="Search by run ID..." [value]="searchTerm" (input)="onSearch($event)" />
       </div>
+
+      <!-- Stats Summary Bar -->
+      @if (stats) {
+        <div class="stats-bar">
+          <div class="stat-item">
+            <mat-icon>play_arrow</mat-icon>
+            <strong>{{ stats.total_runs }}</strong> runs
+          </div>
+          <div class="stat-item">
+            <mat-icon>restart_alt</mat-icon>
+            <strong>{{ stats.total_resets }}</strong> resets
+          </div>
+          <div class="stat-item">
+            <mat-icon>check_circle</mat-icon>
+            <strong class="success-text">{{ stats.success_rate }}%</strong> success rate
+          </div>
+          <div class="stat-item">
+            <mat-icon>timer</mat-icon>
+            <strong>{{ formatDurationShort(stats.avg_duration_seconds) }}</strong> avg duration
+          </div>
+          @if (stats.total_tokens > 0) {
+            <div class="stat-item">
+              <mat-icon>token</mat-icon>
+              <strong>{{ formatNumber(stats.total_tokens) }}</strong> total tokens
+            </div>
+          }
+          @if (stats.total_deleted_files > 0) {
+            <div class="stat-item">
+              <mat-icon>delete_sweep</mat-icon>
+              <strong>{{ stats.total_deleted_files }}</strong> files cleaned
+            </div>
+          }
+          @if (stats.most_used_preset) {
+            <div class="stat-item">
+              <mat-icon>playlist_play</mat-icon>
+              <strong>{{ stats.most_used_preset }}</strong>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Loading -->
       @if (loading) {
@@ -110,7 +151,11 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
             <ng-container matColumnDef="phases">
               <th mat-header-cell *matHeaderCellDef>Phases</th>
               <td mat-cell *matCellDef="let row">
-                <span class="phase-count">{{ row.phases.length }} phase{{ row.phases.length !== 1 ? 's' : '' }}</span>
+                <div class="phase-chips-inline">
+                  @for (ph of row.phases; track ph) {
+                    <span class="phase-chip-sm" [matTooltip]="humanize(ph)">{{ shortPhase(ph) }}</span>
+                  }
+                </div>
               </td>
             </ng-container>
 
@@ -134,7 +179,21 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
             <ng-container matColumnDef="duration">
               <th mat-header-cell *matHeaderCellDef>Duration</th>
               <td mat-cell *matCellDef="let row">
-                {{ row.duration || '—' }}
+                <div>
+                  {{ row.duration_seconds ? formatDurationShort(row.duration_seconds) : (row.duration || '—') }}
+                </div>
+                @if (row.trigger === 'reset' && row.deleted_count) {
+                  <span class="deleted-badge">
+                    <mat-icon class="micro-icon">delete_sweep</mat-icon>
+                    {{ row.deleted_count }} files
+                  </span>
+                }
+                @if (row.trigger !== 'reset' && row.total_tokens) {
+                  <span class="token-badge">
+                    <mat-icon class="micro-icon">token</mat-icon>
+                    {{ formatNumber(row.total_tokens) }}
+                  </span>
+                }
               </td>
             </ng-container>
 
@@ -206,7 +265,7 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
                         </div>
                         <div class="tl-content">
                           <div class="tl-header">
-                            <span class="tl-name">{{ phase['phase_id'] || phase['name'] || 'Phase ' + $index }}</span>
+                            <span class="tl-name">{{ phase['name'] || humanize(phase['phase_id']) || 'Phase ' + $index }}</span>
                             <span class="status-chip status-sm" [class]="'status-' + (phase['status'] || 'unknown')">
                               {{ phase['status'] || 'unknown' }}
                             </span>
@@ -368,9 +427,47 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
         font-size: 12px;
         color: var(--cg-gray-500);
       }
-      .phase-count {
-        font-size: 13px;
-        color: var(--cg-gray-500);
+      /* Phase chips inline */
+      .phase-chips-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .phase-chip-sm {
+        display: inline-block;
+        padding: 1px 7px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 500;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-600);
+        white-space: nowrap;
+      }
+      /* Deleted badge */
+      .deleted-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 11px;
+        color: var(--cg-error, #dc3545);
+        opacity: 0.75;
+      }
+      /* Token badge */
+      .token-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 11px;
+        color: var(--cg-gray-400);
+      }
+      .micro-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+      }
+      /* Success text */
+      .success-text {
+        color: var(--cg-success, #28a745);
       }
 
       /* Chip icon size */
@@ -610,6 +707,8 @@ export class HistoryComponent implements OnInit, OnDestroy {
     { value: 'failed', label: 'Failed', icon: 'error', count: null as number | null },
   ];
 
+  stats: HistoryStats | null = null;
+
   selectedRun: RunHistoryEntry | null = null;
   detail: RunDetail | null = null;
   detailLoading = false;
@@ -623,9 +722,17 @@ export class HistoryComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
   ) {}
 
+  humanize(phaseId: string): string {
+    return humanizePhaseId(phaseId);
+  }
+
   ngOnInit(): void {
     this.loadHistory();
-    this.refreshTimer = setInterval(() => this.loadHistory(), 30000);
+    this.loadStats();
+    this.refreshTimer = setInterval(() => {
+      this.loadHistory();
+      this.loadStats();
+    }, 30000);
   }
 
   ngOnDestroy(): void {
@@ -654,6 +761,54 @@ export class HistoryComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  loadStats(): void {
+    this.pipelineSvc.getHistoryStats().subscribe({
+      next: (s) => {
+        this.stats = s;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Stats are non-critical, fail silently
+      },
+    });
+  }
+
+  formatDurationShort(seconds: number): string {
+    if (!seconds) return '0s';
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    return s > 0 ? `${m}m ${s}s` : `${m}m`;
+  }
+
+  formatNumber(n: number): string {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+    return `${n}`;
+  }
+
+  shortPhase(phaseId: string): string {
+    const SHORT: Record<string, string> = {
+      phase0_indexing: 'Index',
+      phase1_architecture_facts: 'Facts',
+      phase2_architecture_analysis: 'Analysis',
+      phase3_architecture_synthesis: 'Synthesis',
+      phase4_development_planning: 'Planning',
+      phase5_code_generation: 'CodeGen',
+      phase6_test_generation: 'TestGen',
+      phase7_review_deploy: 'Deploy',
+      indexing: 'Index',
+      facts_extraction: 'Facts',
+      deep_analysis: 'Analysis',
+      synthesis: 'Synthesis',
+      planning: 'Planning',
+      code_generation: 'CodeGen',
+      test_generation: 'TestGen',
+      review_deploy: 'Deploy',
+    };
+    return SHORT[phaseId] || phaseId.replace(/^phase\d+_/, '').replace(/_/g, ' ').slice(0, 10);
   }
 
   setFilter(value: string): void {

@@ -31,7 +31,7 @@ phases:
   # Type:      Pipeline (no AI, only embeddings)
   # Location:  pipelines/indexing/indexing_pipeline.py
   # Control:   INDEX_MODE in .env (off/auto/force/smart)
-  # Output:    .cache/.chroma (ChromaDB vector store)
+  # Output:    knowledge/phase0_indexing (ChromaDB vector store)
   # =========================================================================
   phase0_indexing:
     enabled: true
@@ -48,8 +48,8 @@ phases:
   # =========================================================================
   # Type:      Pipeline (deterministic extraction, no AI)
   # Location:  pipelines/architecture_facts/
-  # Output:    knowledge/architecture/architecture_facts.json
-  #            knowledge/architecture/evidence_map.json
+  # Output:    knowledge/phase1_facts/architecture_facts.json
+  #            knowledge/phase1_facts/evidence_map.json
   # 
   # This is the SINGLE SOURCE OF TRUTH for architecture.
   # Everything not in architecture_facts.json must NOT be written by Phase 2.
@@ -63,7 +63,7 @@ phases:
     order: 1
     dependencies: [phase0_indexing]
     config:
-      output_dir: "./knowledge/architecture"
+      output_dir: "./knowledge/phase1_facts"
 
   # =========================================================================
   # CREW: Phase 2 - Architecture Analysis
@@ -71,7 +71,7 @@ phases:
   # Type:      Crew (AI Agents - 4 specialized analysts)
   # Location:  crews/architecture_analysis/
   # Input:     architecture_facts.json + evidence_map.json + ChromaDB
-  # Output:    knowledge/architecture/analyzed_architecture.json
+  # Output:    knowledge/phase2_analysis/analyzed_architecture.json
   # 
   # AGENTS:
   # 1. Technical Architect: Styles, patterns, tech stack, layers
@@ -88,7 +88,7 @@ phases:
     order: 2
     dependencies: [phase1_architecture_facts]
     config:
-      output_dir: "./knowledge/architecture"
+      output_dir: "./knowledge/phase2_analysis"
       temperature: 0.2
       max_iterations: 15
       verbose: true
@@ -99,10 +99,10 @@ phases:
   # Type:      Crew (AI Agents)
   # Location:  crews/architecture_synthesis/
   # Input:     architecture_facts.json + analyzed_architecture.json + ChromaDB
-  # Output:    knowledge/architecture/c4/
-  #            knowledge/architecture/arc42/
-  #            knowledge/architecture/runtime/
-  #            knowledge/architecture/evidence/
+  # Output:    knowledge/phase3_synthesis/c4/
+  #            knowledge/phase3_synthesis/arc42/
+  #            knowledge/phase3_synthesis/runtime/
+  #            knowledge/phase3_synthesis/evidence/
   # 
   # RULES:
   # - Only synthesize what is in architecture_facts.json
@@ -119,7 +119,7 @@ phases:
     order: 3
     dependencies: [phase2_architecture_analysis]
     config:
-      output_dir: "./knowledge/architecture"
+      output_dir: "./knowledge/phase3_synthesis"
       temperature: 0.2
       max_iterations: 15
       verbose: true
@@ -147,7 +147,7 @@ phases:
   #   - analyzed_architecture.json (Phase 2)
   #   - ChromaDB (Phase 0, semantic search)
   #
-  # Output: knowledge/development/{task_id}_plan.json
+  # Output: knowledge/phase4_planning/{task_id}_plan.json
   #   - affected_components (from ChromaDB RAG + scoring)
   #   - implementation_steps
   #   - test_strategy (from 925 test patterns, TF-IDF similarity)
@@ -166,7 +166,7 @@ phases:
     order: 4
     dependencies: [phase2_architecture_analysis]
     config:
-      output_dir: "./knowledge/development"
+      output_dir: "./knowledge/phase4_planning"
       input_dirs:
         tasks: "./inputs/tasks"
         requirements: "./inputs/requirements"
@@ -185,9 +185,9 @@ phases:
   #   Stage 4: Code Validator (deterministic, 1-3s)
   #   Stage 5: Output Writer (git + file I/O, 2-5s)
   #
-  # Input:     knowledge/development/{task_id}_plan.json (Phase 4)
+  # Input:     knowledge/phase4_planning/{task_id}_plan.json (Phase 4)
   # Output:    Git branch codegen/{task_id} in target repo
-  #            knowledge/codegen/{task_id}_report.json
+  #            knowledge/phase5_codegen/{task_id}_report.json
   # =========================================================================
   phase5_code_generation:
     enabled: true
@@ -198,7 +198,7 @@ phases:
     order: 5
     dependencies: [phase4_development_planning]
     config:
-      output_dir: "./knowledge/codegen"
+      output_dir: "./knowledge/phase5_codegen"
 
   # =========================================================================
   # CREW: Phase 6 - Test Generation (PLANNED)
@@ -219,7 +219,7 @@ phases:
     order: 6
     dependencies: [phase5_code_generation]
     config:
-      output_dir: "./knowledge/testing"
+      output_dir: "./knowledge/phase6_testing"
 
   # =========================================================================
   # PIPELINE: Phase 7 - Review + Deploy (PLANNED)
@@ -240,7 +240,7 @@ phases:
     order: 7
     dependencies: [phase6_test_generation]
     config:
-      output_dir: "./knowledge/deployment"
+      output_dir: "./knowledge/phase7_deployment"
 
 # =============================================================================
 # Execution Settings

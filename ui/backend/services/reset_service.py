@@ -1,4 +1,4 @@
-"""Pipeline reset service — archive + delete phase outputs with cascade."""
+"""Pipeline reset service — delete phase outputs with cascade."""
 
 from __future__ import annotations
 
@@ -11,48 +11,9 @@ import yaml
 
 from ..config import settings
 from .history_service import append_run_to_history
+from .phase_outputs import PHASE_OUTPUTS, get_cleanup_targets
 
 logger = logging.getLogger(__name__)
-
-# Phase -> primary output path used for status detection (matches phase_runner.py)
-OUTPUT_MAP: dict[str, str] = {
-    "phase0_indexing": ".cache/.chroma",
-    "phase1_architecture_facts": "knowledge/architecture/architecture_facts.json",
-    "phase2_architecture_analysis": "knowledge/architecture/analyzed_architecture.json",
-    "phase3_architecture_synthesis": "knowledge/architecture/c4/c4-context.md",
-    "phase4_development_planning": "knowledge/development",
-    "phase5_code_generation": "knowledge/codegen",
-}
-
-# Phase -> all paths to delete on reset
-CLEANUP_TARGETS: dict[str, list[str]] = {
-    "phase0_indexing": [
-        ".cache/.chroma",
-        ".cache",
-    ],
-    "phase1_architecture_facts": [
-        "knowledge/architecture/architecture_facts.json",
-        "knowledge/architecture/evidence_map.json",
-    ],
-    "phase2_architecture_analysis": [
-        "knowledge/architecture/analyzed_architecture.json",
-        ".checkpoint_analysis.json",
-    ],
-    "phase3_architecture_synthesis": [
-        "knowledge/architecture/c4",
-        "knowledge/architecture/arc42",
-        "knowledge/architecture/runtime",
-        "knowledge/architecture/evidence",
-        ".checkpoint_c4.json",
-        ".checkpoint_arc42.json",
-    ],
-    "phase4_development_planning": [
-        "knowledge/development",
-    ],
-    "phase5_code_generation": [
-        "knowledge/codegen",
-    ],
-}
 
 
 def _load_dependencies() -> dict[str, list[str]]:
@@ -97,7 +58,7 @@ def compute_cascade(phase_ids: list[str]) -> list[str]:
 
 def _resolve_paths(phase_id: str) -> list[Path]:
     """Return absolute paths for a phase's cleanup targets."""
-    targets = CLEANUP_TARGETS.get(phase_id, [])
+    targets = get_cleanup_targets(phase_id)
     paths: list[Path] = []
     for rel in targets:
         p = settings.project_root / rel
@@ -120,26 +81,20 @@ def preview_reset(
             else:
                 files.append(str(p))
 
-    ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-    archive_path = str(settings.knowledge_dir / "archive" / f"reset_{ts}")
-
     return {
         "phases_to_reset": phases_to_reset,
         "files_to_delete": files,
-        "archive_path": archive_path,
     }
 
 
 def execute_reset(
     phase_ids: list[str],
     cascade: bool = True,
-    archive: bool = True,
 ) -> dict:
-    """Execute reset: archive, delete, recreate empty dirs, log event."""
+    """Execute reset: delete phase outputs, recreate empty dirs, log event."""
     phases_to_reset = compute_cascade(phase_ids) if cascade else list(phase_ids)
 
     ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-    archive_dir = settings.knowledge_dir / "archive" / f"reset_{ts}" if archive else None
     deleted_count = 0
 
     for pid in phases_to_reset:
@@ -148,20 +103,6 @@ def execute_reset(
             if not p.exists():
                 continue
 
-            # Archive
-            if archive_dir:
-                archive_dir.mkdir(parents=True, exist_ok=True)
-                dest = archive_dir / pid / p.relative_to(settings.project_root)
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                try:
-                    if p.is_dir():
-                        shutil.copytree(p, dest, dirs_exist_ok=True)
-                    else:
-                        shutil.copy2(p, dest)
-                except OSError as exc:
-                    logger.warning("Archive failed for %s: %s", p, exc)
-
-            # Delete
             try:
                 if p.is_dir():
                     count = sum(1 for _ in p.rglob("*") if _.is_file())
@@ -175,7 +116,7 @@ def execute_reset(
 
     # Recreate empty dirs for directory-based phases
     for pid in phases_to_reset:
-        for rel in CLEANUP_TARGETS.get(pid, []):
+        for rel in get_cleanup_targets(pid):
             p = settings.project_root / rel
             if not p.suffix and not p.exists():
                 p.mkdir(parents=True, exist_ok=True)
@@ -192,12 +133,10 @@ def execute_reset(
         "completed_at": result_ts,
         "duration_seconds": 0,
         "deleted_count": deleted_count,
-        "archive_path": str(archive_dir) if archive_dir else None,
     })
 
     return {
         "reset_phases": phases_to_reset,
         "deleted_count": deleted_count,
-        "archive_path": str(archive_dir) if archive_dir else None,
         "timestamp": result_ts,
     }

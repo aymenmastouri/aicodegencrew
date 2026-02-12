@@ -4,6 +4,7 @@ import yaml
 
 from ..config import settings
 from ..schemas import PhaseInfo, PhaseStatus, PipelineStatus, PresetInfo
+from .phase_outputs import check_phase_output_exists
 
 
 def _load_phases_config() -> dict:
@@ -26,6 +27,7 @@ def get_phases() -> list[PhaseInfo]:
                 order=phase_cfg.get("order", 99),
                 enabled=phase_cfg.get("enabled", False),
                 required=phase_cfg.get("required", False),
+                type=phase_cfg.get("type", "pipeline"),
                 dependencies=phase_cfg.get("dependencies", []),
             )
         )
@@ -55,25 +57,19 @@ def get_presets() -> list[PresetInfo]:
 
 
 def get_pipeline_status() -> PipelineStatus:
-    """Get current pipeline status based on output files."""
+    """Get current pipeline status based on output files.
+
+    Uses the shared PHASE_OUTPUTS config (phase_outputs.py) as single
+    source of truth for output detection — same paths used by reset.
+    """
     config = _load_phases_config()
     statuses = []
-
-    output_checks = {
-        "phase0_indexing": ".cache/.chroma",
-        "phase1_architecture_facts": "knowledge/architecture/architecture_facts.json",
-        "phase2_architecture_analysis": "knowledge/architecture/analyzed_architecture.json",
-        "phase3_architecture_synthesis": "knowledge/architecture/c4/c4-context.md",
-        "phase4_development_planning": "knowledge/development",
-        "phase5_code_generation": "knowledge/codegen",
-    }
 
     for phase_id, phase_cfg in sorted(
         config.get("phases", {}).items(),
         key=lambda x: x[1].get("order", 99),
     ):
-        output_path = settings.project_root / output_checks.get(phase_id, "")
-        output_exists = output_path.exists() if output_checks.get(phase_id) else False
+        output_exists = check_phase_output_exists(phase_id, settings.project_root)
         enabled = phase_cfg.get("enabled", False)
 
         if output_exists:

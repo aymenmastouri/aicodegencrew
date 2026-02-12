@@ -137,44 +137,28 @@ def clean_knowledge(phase: str = "all") -> None:
 
     cleaned: list[str] = []
 
-    # Phase 1: Architecture
-    if phase in ("all", "phase1"):
-        arch_dir = knowledge_dir / "architecture"
-        if arch_dir.exists():
-            for f in arch_dir.glob("*.json"):
-                f.unlink()
-                cleaned.append(str(f))
-            for f in arch_dir.glob("*.md"):
-                if f.name != "README.md":
-                    f.unlink()
-                    cleaned.append(str(f))
-            for subdir in ("analysis", "quality", "adr", "confluence", "html"):
-                sub_path = arch_dir / subdir
-                if sub_path.exists():
-                    shutil.rmtree(sub_path)
-                    cleaned.append(str(sub_path))
+    phase_dirs = {
+        "phase1": "phase1_facts",
+        "phase2": "phase2_analysis",
+        "phase3": "phase3_synthesis",
+        "phase4": "phase4_planning",
+        "phase5": "phase5_codegen",
+    }
 
-    # Phase 2: Analysis
-    if phase in ("all", "phase2"):
-        analysis_dir = knowledge_dir / "analysis"
-        if analysis_dir.exists():
-            shutil.rmtree(analysis_dir)
-            cleaned.append(str(analysis_dir))
-
-    # Phase 3: Development
-    if phase in ("all", "phase3"):
-        dev_dir = knowledge_dir / "development"
-        if dev_dir.exists():
-            shutil.rmtree(dev_dir)
-            cleaned.append(str(dev_dir))
+    if phase == "all":
+        for subdir in phase_dirs.values():
+            target = knowledge_dir / subdir
+            if target.exists():
+                shutil.rmtree(target)
+                cleaned.append(str(target))
+    elif phase in phase_dirs:
+        target = knowledge_dir / phase_dirs[phase]
+        if target.exists():
+            shutil.rmtree(target)
+            cleaned.append(str(target))
 
     if cleaned:
         logger.info(f"[CLEAN] Removed {len(cleaned)} items")
-
-    # Recreate structure
-    (knowledge_dir / "architecture" / "quality").mkdir(parents=True, exist_ok=True)
-    (knowledge_dir / "analysis").mkdir(parents=True, exist_ok=True)
-    (knowledge_dir / "development").mkdir(parents=True, exist_ok=True)
 
 
 # =============================================================================
@@ -240,7 +224,7 @@ def cmd_index(config: Config) -> int:
     from .pipelines.indexing import ensure_repo_indexed
 
     repo_path = _resolve_repo_path(config)
-    chroma_dir = Path(os.getenv("CHROMA_DIR", ".cache/.chroma"))
+    chroma_dir = Path(os.getenv("CHROMA_DIR", "knowledge/phase0_indexing"))
 
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")
@@ -339,14 +323,14 @@ def _export_run_report(
             str(base / "knowledge" / "architecture" / "analyzed_architecture.json"),
         ],
         "phase3_architecture_synthesis": [
-            str(base / "knowledge" / "architecture" / "c4"),
-            str(base / "knowledge" / "architecture" / "arc42"),
+            str(base / "knowledge" / "phase3_synthesis" / "c4"),
+            str(base / "knowledge" / "phase3_synthesis" / "arc42"),
         ],
         "phase4_development_planning": [
-            str(base / "knowledge" / "development"),
+            str(base / "knowledge" / "phase4_planning"),
         ],
         "phase5_code_generation": [
-            str(base / "knowledge" / "codegen"),
+            str(base / "knowledge" / "phase5_codegen"),
         ],
     }
 
@@ -399,7 +383,7 @@ def _export_architecture_docs():
     from .shared.utils.logger import OUTPUT_BASE_DIR
 
     docs_dir = os.getenv("DOCS_OUTPUT_DIR", str(OUTPUT_BASE_DIR / "architecture-docs"))
-    source = OUTPUT_BASE_DIR / "knowledge" / "architecture"
+    source = OUTPUT_BASE_DIR / "knowledge" / "phase3_synthesis"
     target = Path(docs_dir)
 
     # Only copy the deliverable subdirectories (c4, arc42)
@@ -448,8 +432,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # Convenience: all output paths relative to output_base
     knowledge_dir = base / "knowledge"
-    arch_dir = knowledge_dir / "architecture"
-    dev_dir = knowledge_dir / "development"
+    phase1_dir = knowledge_dir / "phase1_facts"
+    phase2_dir = knowledge_dir / "phase2_analysis"
+    phase4_dir = knowledge_dir / "phase4_planning"
 
     # Clean if requested
     if config.clean:
@@ -484,7 +469,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             clean_knowledge("phase1")
         facts_pipeline = ArchitectureFactsPipeline(
             repo_path=str(repo_path),
-            output_dir=str(arch_dir),
+            output_dir=str(phase1_dir),
         )
         orchestrator.register_phase("phase1_architecture_facts", facts_pipeline)
 
@@ -492,7 +477,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     if "phase2_architecture_analysis" in planned_phases:
         from .crews.architecture_analysis import MapReduceAnalysisCrew
 
-        analysis_crew = MapReduceAnalysisCrew(facts_path=str(arch_dir / "architecture_facts.json"))
+        analysis_crew = MapReduceAnalysisCrew(facts_path=str(phase1_dir / "architecture_facts.json"))
         orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
 
     # --- Phase 3: Architecture Synthesis ---
@@ -500,7 +485,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         logger.info("[CONFIG] SKIP_SYNTHESIS=true -> Skipping Phase 3")
         orchestrator.config["phases"]["phase3_architecture_synthesis"]["enabled"] = False
     elif "phase3_architecture_synthesis" in planned_phases:
-        synthesis_crew = ArchitectureSynthesisCrew(facts_path=str(arch_dir / "architecture_facts.json"))
+        synthesis_crew = ArchitectureSynthesisCrew(facts_path=str(phase1_dir / "architecture_facts.json"))
         orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
 
     # --- Phase 4: Development Planning (Hybrid Pipeline) ---
@@ -527,8 +512,8 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         # Filter out directories and hidden files
         input_files = [f for f in input_files if f.is_file() and not f.name.startswith(".")]
 
-        facts_path = str(arch_dir / "architecture_facts.json")
-        analyzed_path = str(arch_dir / "analyzed_architecture.json")
+        facts_path = str(phase1_dir / "architecture_facts.json")
+        analyzed_path = str(phase2_dir / "analyzed_architecture.json")
 
         # Collect supplementary files from REQUIREMENTS_DIR, LOGS_DIR, REFERENCE_DIR
         supplementary_files = {}
@@ -551,7 +536,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
                 input_files=[str(f) for f in input_files],
                 facts_path=facts_path,
                 analyzed_path=analyzed_path,
-                output_dir=str(dev_dir),
+                output_dir=str(phase4_dir),
                 repo_path=os.getenv("PROJECT_PATH"),
                 supplementary_files=supplementary_files,
             )
@@ -569,9 +554,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         codegen_pipeline = CodeGenerationPipeline(
             repo_path=str(repo_path),
             task_id=codegen_task,
-            plans_dir=str(dev_dir),
-            facts_path=str(arch_dir / "architecture_facts.json"),
-            report_dir=str(knowledge_dir / "codegen"),
+            plans_dir=str(phase4_dir),
+            facts_path=str(phase1_dir / "architecture_facts.json"),
+            report_dir=str(knowledge_dir / "phase5_codegen"),
             dry_run=codegen_dry_run,
         )
         orchestrator.register_phase("phase5_code_generation", codegen_pipeline)

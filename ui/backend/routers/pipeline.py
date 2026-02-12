@@ -12,6 +12,7 @@ from fastapi.responses import StreamingResponse
 
 from ..schemas import (
     ExecutionStatus,
+    HistoryStats,
     RunDetail,
     RunHistoryEntry,
     RunRequest,
@@ -104,6 +105,14 @@ def pipeline_history(limit: int = 50):
     from ..services.history_service import get_run_history
 
     return get_run_history(limit=limit)
+
+
+@router.get("/history/stats", response_model=HistoryStats)
+def pipeline_history_stats():
+    """Get aggregated operational stats across all run history."""
+    from ..services.history_service import get_history_stats
+
+    return get_history_stats()
 
 
 @router.get("/history/{run_id}", response_model=RunDetail)

@@ -14,7 +14,6 @@ services:
       - ../src:/app/src:ro
       - ../.env:/app/.env
       - ../.env.example:/app/.env.example:ro
-      - ../.cache:/app/.cache
     environment:
       - AICODEGENCREW_ROOT=/app
       - DASHBOARD_CORS_ORIGINS=http://localhost:4200,http://localhost:80

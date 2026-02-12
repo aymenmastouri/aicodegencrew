@@ -11,7 +11,6 @@ Design Principles:
 - Dependency Injection: Phases are registered, not hardcoded
 """
 
-import shutil
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -263,16 +262,6 @@ class SDLCOrchestrator:
                 message="Dependencies not met",
             )
 
-        # Archive knowledge before starting (for rollback capability)
-        if (
-            phase_id.startswith("phase1")
-            or phase_id.startswith("phase2")
-            or phase_id.startswith("phase3")
-            or phase_id.startswith("phase4")
-            or phase_id.startswith("phase5")
-        ):
-            self.archive_knowledge(label=f"before_{phase_id}")
-
         # Execute
         logger.info(f"\n{'=' * 60}")
         logger.info(f"[Phase] {phase_id} - Starting")
@@ -366,22 +355,22 @@ class SDLCOrchestrator:
 
         base = OUTPUT_BASE_DIR
         output_files = {
-            "phase0_indexing": [base / ".cache" / ".chroma"],
+            "phase0_indexing": [base / "knowledge" / "phase0_indexing"],
             "phase1_architecture_facts": [
-                base / "knowledge" / "architecture" / "architecture_facts.json",
-                base / "knowledge" / "architecture" / "evidence_map.json",
+                base / "knowledge" / "phase1_facts" / "architecture_facts.json",
+                base / "knowledge" / "phase1_facts" / "evidence_map.json",
             ],
             "phase2_architecture_analysis": [
-                base / "knowledge" / "architecture" / "analyzed_architecture.json",
+                base / "knowledge" / "phase2_analysis" / "analyzed_architecture.json",
             ],
             "phase3_architecture_synthesis": [
-                base / "knowledge" / "architecture" / "c4" / "c4-context.md",
+                base / "knowledge" / "phase3_synthesis" / "c4" / "c4-context.md",
             ],
             "phase4_development_planning": [
-                base / "knowledge" / "development",
+                base / "knowledge" / "phase4_planning",
             ],
             "phase5_code_generation": [
-                base / "knowledge" / "codegen",
+                base / "knowledge" / "phase5_codegen",
             ],
         }
 
@@ -447,32 +436,8 @@ class SDLCOrchestrator:
         }
 
     # -------------------------------------------------------------------------
-    # ARCHIVE & GIT OPERATIONS
+    # GIT OPERATIONS
     # -------------------------------------------------------------------------
-
-    def archive_knowledge(self, label: str = "manual") -> Path:
-        """
-        Archive the entire knowledge/ directory as knowledge-{timestamp}/.
-
-        Args:
-            label: Label for the archive (e.g., 'manual', 'phase1', 'phase2')
-
-        Returns:
-            Path to the archive directory
-        """
-        knowledge_dir = Path("knowledge")
-        if not knowledge_dir.exists():
-            logger.warning("[Orchestrator] knowledge/ directory does not exist")
-            return None
-
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        archive_dir = Path(f"knowledge-{timestamp}")
-
-        # Copy entire knowledge directory
-        shutil.copytree(knowledge_dir, archive_dir, dirs_exist_ok=True)
-
-        logger.info(f"[Orchestrator] Knowledge archived to: {archive_dir}")
-        return archive_dir
 
     def _git_commit_after_phase(self, phase_id: str) -> bool:
         """

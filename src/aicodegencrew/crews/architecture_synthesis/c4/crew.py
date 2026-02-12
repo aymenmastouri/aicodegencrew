@@ -508,10 +508,10 @@ QUALITY_GATE_DESCRIPTION = """
 Quality review of all C4 documents.
 
 READ all C4 files using safe_file_read tool and validate:
-1. knowledge/architecture/c4/c4-context.md
-2. knowledge/architecture/c4/c4-container.md
-3. knowledge/architecture/c4/c4-component.md
-4. knowledge/architecture/c4/c4-deployment.md
+1. knowledge/phase3_synthesis/c4/c4-context.md
+2. knowledge/phase3_synthesis/c4/c4-container.md
+3. knowledge/phase3_synthesis/c4/c4-component.md
+4. knowledge/phase3_synthesis/c4/c4-deployment.md
 
 Validate:
 - All 4 levels complete

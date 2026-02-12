@@ -24,7 +24,7 @@ logger = setup_logger(__name__)
 class DocQualityGateInput(BaseModel):
     """Input schema for DocQualityGateTool."""
 
-    docs_dir: str = Field(..., description="Directory containing generated docs (e.g., knowledge/architecture/arc42)")
+    docs_dir: str = Field(..., description="Directory containing generated docs (e.g., knowledge/phase3_synthesis/arc42)")
     facts_path: str = Field(..., description="Path to architecture_facts.json")
     output_path: str = Field(..., description="Path to save quality report")
     min_evidence_coverage: float = Field(default=0.30, description="Minimum evidence ID coverage (0.0-1.0)")

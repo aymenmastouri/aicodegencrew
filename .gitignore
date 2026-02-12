@@ -154,13 +154,20 @@ architecture-docs/
 # Knowledge backup folders (timestamped runs)
 knowledge-*/
 
-# Knowledge runtime outputs
-knowledge/architecture/evidence/
-knowledge/architecture/archive/
-knowledge/architecture/.checkpoint_*.json
-knowledge/development/*.json
-knowledge/codegen/*.json
+# Knowledge runtime outputs (per-phase isolation)
+knowledge/phase0_indexing/
+knowledge/phase1_facts/
+knowledge/phase2_analysis/
+knowledge/phase3_synthesis/
+knowledge/phase4_planning/
+knowledge/phase5_codegen/
+knowledge/phase6_testing/
+knowledge/phase7_deployment/
 knowledge/run_report.json
+
+# Legacy paths (should not be created)
+knowledge/architecture/
+knowledge/archive/
 
 # Reports (regenerated)
 reports/*.md
@@ -169,6 +176,5 @@ reports/*.md
 # KEEP EMPTY DIRECTORIES
 # =============================================================================
 !knowledge/.gitkeep
-!knowledge/architecture/.gitkeep
 !reports/.gitkeep
 !logs/.gitkeep

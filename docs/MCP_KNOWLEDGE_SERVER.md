@@ -170,7 +170,7 @@ Response:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `AICODEGENCREW_KNOWLEDGE_PATH` | Path to knowledge directory | `./knowledge/architecture` |
+| `AICODEGENCREW_KNOWLEDGE_PATH` | Path to knowledge directory | `./knowledge/phase1_facts` |
 
 ### Claude Desktop Config
 
@@ -217,7 +217,7 @@ Add to `claude_desktop_config.json`:
 ┌─────────────────────────────────────────────────────────────────┐
 │  Phase 1 Knowledge Base (JSON)                                  │
 │                                                                 │
-│  knowledge/architecture/                                        │
+│  knowledge/phase1_facts/                                        │
 │  ├── components.json    (951+ components)                       │
 │  ├── relations.json     (190 relations)                         │
 │  ├── interfaces.json    (226 endpoints/routes)                  │
@@ -262,7 +262,7 @@ python -m aicodegencrew.mcp.server 2>&1 | head -20
 
 ```bash
 # Ensure knowledge directory exists
-ls knowledge/architecture/
+ls knowledge/phase1_facts/
 
 # Run Phase 1 first
 python -m aicodegencrew run --phases phase1_architecture_facts

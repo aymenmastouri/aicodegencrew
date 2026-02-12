@@ -43,9 +43,9 @@ class CodeGenerationPipeline:
         self,
         repo_path: str,
         task_id: str | None = None,
-        plans_dir: str = "knowledge/development",
-        facts_path: str = "knowledge/architecture/architecture_facts.json",
-        report_dir: str = "knowledge/codegen",
+        plans_dir: str = "knowledge/phase4_planning",
+        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
+        report_dir: str = "knowledge/phase5_codegen",
         dry_run: bool = False,
     ):
         self.repo_path = str(repo_path)

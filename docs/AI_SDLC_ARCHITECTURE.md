@@ -470,7 +470,7 @@ src/aicodegencrew/
 | Type | Pipeline (deterministic) |
 | Module | `pipelines/indexing/indexing_pipeline.py` |
 | LLM Requirement | None (embeddings only) |
-| Output | `.cache/.chroma` (ChromaDB) + `.cache/.indexing_state.json` |
+| Output | `knowledge/phase0_indexing/` (ChromaDB) + `knowledge/phase0_indexing/.indexing_state.json` |
 | Dependency | None |
 | Status | Implemented |
 
@@ -493,8 +493,8 @@ src/aicodegencrew/
 | Type | Pipeline (deterministic, **NO LLM!**) |
 | Module | `pipelines/architecture_facts/` |
 | LLM Requirement | **NONE** |
-| Output | `knowledge/architecture/architecture_facts.json` |
-|        | `knowledge/architecture/evidence_map.json` |
+| Output | `knowledge/phase1_facts/architecture_facts.json` |
+|        | `knowledge/phase1_facts/evidence_map.json` |
 | Dependency | Phase 0 |
 
 #### Purpose
@@ -716,7 +716,7 @@ ModelBuilder.build()                   → CanonicalModel (normalized, deduplica
 | Config | Python constants (no YAML) |
 | LLM Requirement | Yes |
 | Input | `architecture_facts.json` + ChromaDB Index |
-| Output | `knowledge/architecture/analyzed_architecture.json` |
+| Output | `knowledge/phase2_analysis/analyzed_architecture.json` |
 | Checkpoint | `.checkpoint_analysis.json` (resume on failure) |
 | Dependency | Phase 0 (Index) + Phase 1 (Facts) |
 | Status | Implemented |
@@ -840,9 +840,9 @@ AGENT_CONFIGS = {
 | LLM Requirement | Yes |
 | Input | `architecture_facts.json` (Phase 1) + `analyzed_architecture.json` (Phase 2) |
 | Input (optional) | ChromaDB Index (via MCP server) |
-| Output | `knowledge/architecture/c4/` (DrawIO + Markdown) |
-|        | `knowledge/architecture/arc42/` (Markdown) |
-|        | `knowledge/architecture/quality/` (Reports) |
+| Output | `knowledge/phase3_synthesis/c4/` (DrawIO + Markdown) |
+|        | `knowledge/phase3_synthesis/arc42/` (Markdown) |
+|        | `knowledge/phase3_synthesis/quality/` (Reports) |
 | Dependency | Phase 1 + Phase 2 (validated by `PhaseOutputValidator`) |
 | Status | Implemented |
 
@@ -968,37 +968,50 @@ providing token-efficient access to architecture facts without loading full JSON
 #### Output Structure
 
 ```
-knowledge/architecture/
-    architecture_facts.json     # From Phase 1
-    evidence_map.json           # From Phase 1
-    analyzed_architecture.json  # From Phase 2
-    .checkpoint_c4.json         # Resume checkpoint (temporary)
-    .checkpoint_arc42.json      # Resume checkpoint (temporary)
-    c4/
-        c4-context.md           # Level 1 (6-8 pages)
-        c4-context.drawio
-        c4-container.md         # Level 2 (6-8 pages)
-        c4-container.drawio
-        c4-component.md         # Level 3 (6-8 pages)
-        c4-component.drawio
-        c4-deployment.md        # Level 4 (4-6 pages)
-        c4-deployment.drawio
-    arc42/
-        01-introduction.md      # Chapter 1 (8-10 pages)
-        02-constraints.md       # Chapter 2 (6-8 pages)
-        03-context.md           # Chapter 3 (8-10 pages)
-        04-solution-strategy.md # Chapter 4 (8-10 pages)
-        05-building-blocks.md   # Chapter 5 (20-25 pages, largest)
-        06-runtime-view.md      # Chapter 6 (8-10 pages)
-        07-deployment.md        # Chapter 7 (6-8 pages)
-        08-crosscutting.md      # Chapter 8 (8-10 pages)
-        09-decisions.md         # Chapter 9 (8 pages)
-        10-quality.md           # Chapter 10 (6 pages)
-        11-risks.md             # Chapter 11 (6 pages)
-        12-glossary.md          # Chapter 12 (4 pages)
-    quality/
-        c4-report.md            # C4 quality gate report
-        arc42-report.md         # Arc42 quality gate report
+knowledge/
+├── phase0_indexing/                # ChromaDB vector store
+│   ├── chroma.sqlite3             # ChromaDB database
+│   └── .indexing_state.json       # Persistent indexing state
+├── phase1_facts/                  # Architecture facts (Phase 1)
+│   ├── architecture_facts.json
+│   └── evidence_map.json
+├── phase2_analysis/               # Architecture analysis (Phase 2)
+│   └── analyzed_architecture.json
+├── phase3_synthesis/              # Documentation synthesis (Phase 3)
+│   ├── .checkpoint_c4.json        # Resume checkpoint (temporary)
+│   ├── .checkpoint_arc42.json     # Resume checkpoint (temporary)
+│   ├── c4/
+│   │   ├── c4-context.md          # Level 1 (6-8 pages)
+│   │   ├── c4-context.drawio
+│   │   ├── c4-container.md        # Level 2 (6-8 pages)
+│   │   ├── c4-container.drawio
+│   │   ├── c4-component.md        # Level 3 (6-8 pages)
+│   │   ├── c4-component.drawio
+│   │   ├── c4-deployment.md       # Level 4 (4-6 pages)
+│   │   └── c4-deployment.drawio
+│   ├── arc42/
+│   │   ├── 01-introduction.md     # Chapter 1 (8-10 pages)
+│   │   ├── 02-constraints.md      # Chapter 2 (6-8 pages)
+│   │   ├── 03-context.md          # Chapter 3 (8-10 pages)
+│   │   ├── 04-solution-strategy.md # Chapter 4 (8-10 pages)
+│   │   ├── 05-building-blocks.md  # Chapter 5 (20-25 pages, largest)
+│   │   ├── 06-runtime-view.md     # Chapter 6 (8-10 pages)
+│   │   ├── 07-deployment.md       # Chapter 7 (6-8 pages)
+│   │   ├── 08-crosscutting.md     # Chapter 8 (8-10 pages)
+│   │   ├── 09-decisions.md        # Chapter 9 (8 pages)
+│   │   ├── 10-quality.md          # Chapter 10 (6 pages)
+│   │   ├── 11-risks.md            # Chapter 11 (6 pages)
+│   │   └── 12-glossary.md         # Chapter 12 (4 pages)
+│   └── quality/
+│       ├── c4-report.md           # C4 quality gate report
+│       └── arc42-report.md        # Arc42 quality gate report
+├── phase4_planning/               # Development plans (Phase 4)
+│   └── {task_id}_plan.json        # 1 per task
+├── phase5_codegen/                # Code generation reports (Phase 5)
+│   └── {task_id}_report.json      # 1 per task
+├── phase6_testing/                # (planned)
+├── phase7_deployment/             # (planned)
+└── run_report.json
 ```
 
 #### Rules (MUST FOLLOW!)
@@ -1031,7 +1044,7 @@ knowledge/architecture/
 | | `architecture_facts.json` (Phase 1, all 17 keys) |
 | | `analyzed_architecture.json` (Phase 2) |
 | | ChromaDB (Phase 0, semantic search) |
-| Output | `knowledge/development/{task_id}_plan.json` (1 per task) |
+| Output | `knowledge/phase4_planning/{task_id}_plan.json` (1 per task) |
 | Dependency | Phase 0 (Indexing), Phase 1 (Facts), Phase 2 (Analysis) |
 | Status | **IMPLEMENTED** |
 
@@ -1114,8 +1127,8 @@ Sorted:
   2. BNUVZ-12568 [Major] type=upgrade is_child=1  ← child second
 
 Output:
-  knowledge/development/BNUVZ-12529_plan.json
-  knowledge/development/BNUVZ-12568_plan.json
+  knowledge/phase4_planning/BNUVZ-12529_plan.json
+  knowledge/phase4_planning/BNUVZ-12568_plan.json
 ```
 
 #### Stage 1: Input Parsers (IMPLEMENTED)
@@ -1428,11 +1441,11 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 | Type | Pipeline (Hybrid: Deterministic + 1 LLM Call per file) |
 | Module | `pipelines/code_generation/` |
 | LLM Requirement | Yes (Stage 3 only, 1 call per affected file) |
-| Input | `knowledge/development/{task_id}_plan.json` (Phase 4) |
+| Input | `knowledge/phase4_planning/{task_id}_plan.json` (Phase 4) |
 | | Target repository source code (`PROJECT_PATH`) |
 | | `architecture_facts.json` (Phase 1, for file path resolution) |
 | Output | Git branch `codegen/{task_id}` in target repo |
-| | `knowledge/codegen/{task_id}_report.json` |
+| | `knowledge/phase5_codegen/{task_id}_report.json` |
 | Dependency | Phase 4 (Development Planning) |
 | Status | **IMPLEMENTED** |
 
@@ -1468,7 +1481,7 @@ Stage 5: Output Writer (Git + File I/O, 2-5s) - IMPLEMENTED
   └─ Safety: abort if working tree dirty, never push, never touch main
   └─ Create branch codegen/{task_id}, write files, commit, switch back
   └─ >50% failure threshold → abort entire task
-  └─ Write JSON report to knowledge/codegen/
+  └─ Write JSON report to knowledge/phase5_codegen/
 
 Total: 30s-5min depending on file count
 ```
@@ -1657,7 +1670,7 @@ Embeddings utilize local Ollama exclusively, independent of LLM provider configu
 | Mode | Description |
 |------|-------------|
 | `off` | Skip indexing; utilize existing index |
-| `auto` | Conditional indexing based on change detection (default). Persistent state (`.cache/.indexing_state.json`) survives ChromaDB deletion — warns instead of silently re-indexing |
+| `auto` | Conditional indexing based on change detection (default). Persistent state (`knowledge/phase0_indexing/.indexing_state.json`) survives ChromaDB deletion — warns instead of silently re-indexing |
 | `force` | Clear ChromaDB directory and perform complete re-indexing |
 | `smart` | Incremental update — per-file hash check against ChromaDB, only re-embeds changed files |
 
@@ -1759,11 +1772,8 @@ python -m aicodegencrew run --phases phase3_architecture_synthesis
 ```
 logs/
 ├── current.log          # Active session (overwritten each run)
-├── metrics.jsonl         # Structured JSON metrics (append-only, archived at 1MB)
-├── archive/             # Archived sessions + old metrics (max 20 session logs)
-│   ├── 2026-02-07_23-40-28_session.log
-│   ├── 2026-02-07_23-40-28_metrics.jsonl
-│   └── ...
+├── metrics.jsonl         # Structured JSON metrics (append-only)
+├── run_history.jsonl     # Pipeline run history (append-only)
 └── errors.log           # Persistent errors (rotating, 5MB x 3)
 ```
 
@@ -1840,8 +1850,7 @@ Agent step and task callbacks (`crew_callbacks.py`) route through `logger`:
 | Feature | Description |
 |---------|-------------|
 | **Run Correlation** | `RUN_ID` (uuid4[:8]) on every metric event |
-| **Session Archive** | Auto-archives `current.log` to `archive/` on startup |
-| **Metrics Archival** | Auto-archives `metrics.jsonl` at 1MB on startup |
+| **Run History** | Append-only `run_history.jsonl` tracking all pipeline runs and resets |
 | **Step Tracking** | Automatic timing per step |
 | **Progress Bar** | Visual progress with `step_progress()` |
 | **Structured Metrics** | JSON events in `metrics.jsonl` via `log_metric()` |

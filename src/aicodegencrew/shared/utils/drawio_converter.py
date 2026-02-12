@@ -14,7 +14,7 @@ Usage:
     convert_drawio_file("path/to/file.drawio")
 
     # Or convert all files in a directory:
-    convert_all_drawio_files("knowledge/architecture")
+    convert_all_drawio_files("knowledge/phase3_synthesis")
 """
 
 import base64

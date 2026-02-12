@@ -25,7 +25,7 @@ class ChunkedWriteInput(BaseModel):
     """Input schema for ChunkedWriterTool."""
 
     file_path: str = Field(
-        ..., description="Path to the output file (e.g., 'knowledge/architecture/arc42/05-building-blocks.md')"
+        ..., description="Path to the output file (e.g., 'knowledge/phase3_synthesis/arc42/05-building-blocks.md')"
     )
     section_title: str = Field(..., description="Title of the section to write (e.g., '## 5.2.1 Controllers')")
     content: str = Field(..., description="Content for this section (markdown formatted)")
@@ -90,10 +90,12 @@ class ChunkedWriterTool(BaseTool):
         """
         try:
             # Base directory for architecture docs (same as doc_writer)
-            base_dir = Path("knowledge/architecture")
+            base_dir = Path("knowledge/phase3_synthesis")
 
             # Strip base_dir prefix if agent already included it (prevents double-nesting)
-            clean_path = file_path.replace("knowledge/architecture/", "").replace("knowledge\\architecture\\", "")
+            clean_path = file_path.replace("knowledge/phase3_synthesis/", "").replace("knowledge\\phase3_synthesis\\", "")
+            # Also strip legacy path if agent uses old convention
+            clean_path = clean_path.replace("knowledge/architecture/", "").replace("knowledge\\architecture\\", "")
             path = base_dir / clean_path
 
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -253,7 +255,7 @@ class StereotypeListTool(BaseTool):
     )
     args_schema: type[BaseModel] = ComponentListInput
 
-    facts_path: str = "knowledge/architecture/architecture_facts.json"
+    facts_path: str = "knowledge/phase1_facts/architecture_facts.json"
     _facts_cache: dict[str, Any] | None = None
 
     def __init__(self, facts_path: str = None, **kwargs):

@@ -28,14 +28,10 @@ services:
       - ./.env:/app/.env:ro
       # Task input files from TASK_INPUT_DIR (read-only)
       - ${TASK_INPUT_DIR}:/app/inputs/tasks:ro
-      # Internal output: all phases (architecture facts, analysis, synthesis)
-      - ./knowledge/architecture:/app/knowledge/architecture
-      # Internal output: development plans
-      - ./knowledge/development:/app/knowledge/development
+      # All phase outputs (single mount for entire knowledge directory)
+      - ./knowledge:/app/knowledge
       # Export: Phase 3 architecture docs (C4 + Arc42) for the architect
       - ${DOCS_OUTPUT_DIR:-./architecture-docs}:/app/architecture-docs
-      # ChromaDB vector store cache
-      - ./.cache:/app/.cache
       # Target repository to analyze (read-only)
       - ${PROJECT_PATH:-.}:/repo:ro
     environment:

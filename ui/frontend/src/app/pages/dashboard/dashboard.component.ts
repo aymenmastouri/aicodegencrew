@@ -15,6 +15,7 @@ import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 import { ApiService, PipelineStatus, HealthResponse, SetupStatus } from '../../services/api.service';
 import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { humanizePhaseId } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -232,7 +233,11 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-
                 {{ entry.trigger === 'reset' ? 'Reset' : 'Run' }}
               </span>
               <span class="activity-id">{{ entry.run_id }}</span>
-              <span class="activity-phases">{{ entry.phases.length }} phase{{ entry.phases.length !== 1 ? 's' : '' }}</span>
+              <span class="activity-phases">
+                @for (ph of entry.phases; track ph) {
+                  <span class="act-phase-chip" [matTooltip]="humanizePhase(ph)">{{ shortPhase(ph) }}</span>
+                }
+              </span>
               <span class="flex-1"></span>
               <span class="status-dot sm" [class]="'dot-' + entry.status"></span>
               <span class="activity-status">{{ entry.status }}</span>
@@ -664,7 +669,17 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-
       .at-pipeline, .at-run { color: var(--cg-blue); }
       .at-reset { color: var(--cg-error, #dc3545); }
       .activity-id { font-family: monospace; font-size: 11px; color: var(--cg-gray-400); }
-      .activity-phases { font-size: 12px; color: var(--cg-gray-400); }
+      .activity-phases { font-size: 12px; color: var(--cg-gray-400); display: flex; gap: 3px; flex-wrap: wrap; }
+      .act-phase-chip {
+        display: inline-block;
+        padding: 0 6px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 500;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-600);
+        white-space: nowrap;
+      }
       .activity-status { font-size: 12px; color: var(--cg-gray-500); text-transform: capitalize; }
       .activity-time { font-size: 11px; color: var(--cg-gray-400); white-space: nowrap; }
 
@@ -938,15 +953,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return !!this.pipeline?.phases.some((p) => p.status === 'completed');
   }
 
+  private phaseDisplayName(phaseId: string): string {
+    const phase = this.pipeline?.phases.find((p) => p.id === phaseId);
+    return phase?.name || humanizePhaseId(phaseId);
+  }
+
   resetPhase(phaseId: string): void {
     this.pipelineSvc.previewReset([phaseId]).subscribe({
       next: (preview: ResetPreview) => {
+        const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
           width: '480px',
           data: {
             title: 'Reset Phase',
-            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
-            details: preview.phases_to_reset,
+            message: `The following phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
+            details: names,
             type: 'warn',
             icon: 'restart_alt',
             confirmLabel: 'Reset',
@@ -974,15 +995,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   resetAll(): void {
     this.pipelineSvc.previewReset(
-      this.pipeline?.phases.filter((p) => p.status === 'completed').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'phase0_indexing').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
+        const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
           width: '480px',
           data: {
-            title: 'Reset All Phases',
-            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
-            details: preview.phases_to_reset,
+            title: 'Reset All Phases (excluding Indexing)',
+            message: `The following ${names.length} phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
+            details: names,
             type: 'warn',
             icon: 'restart_alt',
             confirmLabel: 'Reset All',
@@ -1016,6 +1038,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return m > 0 ? `${m}m ${s}s` : `${s}s`;
+  }
+
+  shortPhase(phaseId: string): string {
+    const SHORT: Record<string, string> = {
+      phase0_indexing: 'Index',
+      phase1_architecture_facts: 'Facts',
+      phase2_architecture_analysis: 'Analysis',
+      phase3_architecture_synthesis: 'Synthesis',
+      phase4_development_planning: 'Planning',
+      phase5_code_generation: 'CodeGen',
+      phase6_test_generation: 'TestGen',
+      phase7_review_deploy: 'Deploy',
+      indexing: 'Index',
+      facts_extraction: 'Facts',
+      deep_analysis: 'Analysis',
+      synthesis: 'Synthesis',
+      planning: 'Planning',
+      code_generation: 'CodeGen',
+      test_generation: 'TestGen',
+      review_deploy: 'Deploy',
+    };
+    return SHORT[phaseId] || phaseId.replace(/^phase\d+_/, '').replace(/_/g, ' ').slice(0, 10);
+  }
+
+  humanizePhase(phaseId: string): string {
+    return humanizePhaseId(phaseId);
   }
 
   formatDuration(seconds?: number): string {

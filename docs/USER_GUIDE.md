@@ -66,7 +66,7 @@ Additionally, a **web-based SDLC Dashboard** (Angular 21 + FastAPI) provides:
 - **Input Files**: Drag-and-drop upload for JIRA exports, requirements, logs, and reference materials
 - **Structured Reports**: Plan viewer with components table, code diff viewer with colored diffs, git branch management
 - **Knowledge Explorer**: Browse and render generated artifacts (JSON, Markdown, AsciiDoc, HTML, Confluence wiki, DrawIO)
-- **Pipeline Reset**: Per-phase and full reset with dependency cascade, archive before delete, confirm dialog
+- **Pipeline Reset**: Per-phase and full reset with dependency cascade, confirm dialog
 - **Persistent History**: Append-only JSONL run history with Run/Reset type tracking
 - **Live Monitoring**: Real-time log streaming via SSE, phase progress timeline, run history
 
@@ -374,7 +374,7 @@ docker volume rm aicodegencrew_data
 
 **What gets removed:**
 - Python package: `pip uninstall` removes the tool
-- Data folders: `.cache`, `knowledge`, `logs` must be deleted manually
+- Data folders: `knowledge`, `logs`, `.cache` must be deleted manually
 - Configuration: `.env` file stays (delete manually if needed)
 - Your repository: NEVER touched (stays safe)
 
@@ -469,14 +469,19 @@ your-workspace/              ← Your chosen directory
 │   └── reference/           ← Mockups, diagrams (REFERENCE_DIR)
 ├── knowledge/               ← Tool outputs (auto-created)
 │   ├── run_report.json      ← Status of last run (legacy)
-│   ├── archive/             ← Reset archives (timestamped backups)
-│   ├── architecture/
+│   ├── phase0_indexing/     ← Phase 0: Vector database (ChromaDB index)
+│   ├── phase1_facts/
 │   │   ├── architecture_facts.json    ← Phase 1 output
-│   │   ├── analyzed_architecture.json ← Phase 2 output
+│   │   └── evidence_map.json          ← Phase 1 evidence map
+│   ├── phase2_analysis/
+│   │   └── analyzed_architecture.json ← Phase 2 output
+│   ├── phase3_synthesis/
 │   │   ├── c4/              ← Phase 3 C4 diagrams
 │   │   └── arc42/           ← Phase 3 arc42 chapters
-│   └── development/
-│       └── ${TASK_ID}_plan.json ← Phase 4 development plan (one per task)
+│   ├── phase4_planning/
+│   │   └── ${TASK_ID}_plan.json ← Phase 4 development plan (one per task)
+│   └── phase5_codegen/
+│       └── ${TASK_ID}_report.json ← Phase 5 code generation report
 ├── architecture-docs/       ← Multi-format exports (if Phase 3 run)
 │   ├── c4/
 │   │   ├── c4-context.confluence
@@ -488,8 +493,8 @@ your-workspace/              ← Your chosen directory
 │   ├── errors.log           ← Error messages only
 │   ├── metrics.jsonl        ← Metrics for analysis
 │   └── run_history.jsonl    ← Persistent run history (append-only)
-└── .cache/                  ← ChromaDB index (auto-created)
-    └── .chroma/             ← Vector database
+└── .cache/                  ← Legacy cache directory (auto-created)
+    └── .indexing_state.json ← Index fingerprint tracking
 ```
 
 ### What Stays SEPARATE
@@ -554,25 +559,25 @@ C:\work\my-project\
 ```bash
 aicodegencrew plan
 ```
-Output: `knowledge/development/{TASK_ID}_plan.json`
+Output: `knowledge/phase4_planning/{TASK_ID}_plan.json`
 
 **Use Case 2: "I need C4 diagrams for architecture review"**
 ```bash
 aicodegencrew run --preset architecture_workflow
 ```
-Output: `knowledge/architecture/c4/*.md` + `*.drawio`
+Output: `knowledge/phase3_synthesis/c4/*.md` + `*.drawio`
 
 **Use Case 3: "I have plans, need generated code"**
 ```bash
 aicodegencrew codegen
 ```
-Output: Git branch `codegen/{task_id}` in target repo + `knowledge/codegen/{task_id}_report.json`
+Output: Git branch `codegen/{task_id}` in target repo + `knowledge/phase5_codegen/{task_id}_report.json`
 
 **Use Case 4: "I want component list without waiting for LLM"**
 ```bash
 aicodegencrew run --preset facts_only
 ```
-Output: `knowledge/architecture/architecture_facts.json` (3 min, no LLM)
+Output: `knowledge/phase1_facts/architecture_facts.json` (3 min, no LLM)
 
 See Section 11 (Quick Start) for detailed command examples
 
@@ -592,7 +597,7 @@ See Section 11 (Quick Start) for detailed command examples
    aicodegencrew plan
    ```
 
-This runs Phases 0+1+2+4 and generates a development plan in `knowledge/development/`.
+This runs Phases 0+1+2+4 and generates a development plan in `knowledge/phase4_planning/`.
 
 ### With Custom `.env` Location
 
@@ -655,7 +660,7 @@ aicodegencrew codegen --dry-run
 aicodegencrew codegen --index-mode off
 ```
 
-Phase 5 reads plans from `knowledge/development/`, generates code using a strategy pattern (feature/bugfix/upgrade/refactoring), validates syntax and security, and commits to a `codegen/{task_id}` git branch in the target repository.
+Phase 5 reads plans from `knowledge/phase4_planning/`, generates code using a strategy pattern (feature/bugfix/upgrade/refactoring), validates syntax and security, and commits to a `codegen/{task_id}` git branch in the target repository.
 
 **Safety:** Dry-run mode previews all changes without writing files. The tool never pushes to remote and never modifies main/develop branches.
 
@@ -733,7 +738,7 @@ aicodegencrew plan --index-mode smart
 aicodegencrew plan --index-mode force
 ```
 
-**Pro Tip:** Check `.cache/.indexing_state.json` to see last index date.
+**Pro Tip:** Check `knowledge/phase0_indexing/.indexing_state.json` to see last index date.
 
 ---
 
@@ -834,7 +839,7 @@ Place multiple XML files in your `TASK_INPUT_DIR` folder. The tool processes the
 
 ### Development Plans (Phase 4)
 
-Output: `knowledge/development/{TASK_ID}_plan.json`
+Output: `knowledge/phase4_planning/{TASK_ID}_plan.json`
 
 Each plan contains:
 - **affected_components**: Components impacted by the change
@@ -856,10 +861,10 @@ Each plan contains:
 
 #### Understanding the JSON Structure
 
-After running `aicodegencrew plan`, you'll find development plans in `knowledge/development/`:
+After running `aicodegencrew plan`, you'll find development plans in `knowledge/phase4_planning/`:
 
 ```
-knowledge/development/
+knowledge/phase4_planning/
 ├── ${TASK_ID}_plan.json    ← One file per task (e.g., PROJ-123_plan.json)
 ├── ${TASK_ID}_plan.json    ← Multiple tasks = multiple files
 └── ...
@@ -915,15 +920,14 @@ The legacy `knowledge/run_report.json` is still written per run. If `run_history
 
 **Pipeline Reset**: You can reset individual phases or the entire pipeline from the Phases page. Resetting a phase:
 1. **Cascades** to all dependent phases (e.g., resetting Phase 1 also resets Phases 2-5)
-2. **Archives** existing outputs to `knowledge/archive/reset_YYYYMMDD_HHMMSS/`
-3. **Deletes** phase output files and recreates empty directories
-4. **Logs** the reset event to `run_history.jsonl`
+2. **Deletes** phase output files and recreates empty directories
+3. **Logs** the reset event to `run_history.jsonl`
 
 Reset is blocked while a pipeline is running (returns 409 Conflict).
 
 ### Code Generation Reports (Phase 5)
 
-Output: `knowledge/codegen/{TASK_ID}_report.json`
+Output: `knowledge/phase5_codegen/{TASK_ID}_report.json`
 
 Code changes are committed to a **git branch** (`codegen/{task_id}`) in the target repository. The report tracks:
 
@@ -947,22 +951,26 @@ Code changes are committed to a **git branch** (`codegen/{task_id}`) in the targ
 
 ### Architecture Documentation (Phase 3)
 
-Internal output (always): `knowledge/architecture/`
+Internal output (always): `knowledge/` (organized by phase)
 
 ```
-knowledge/architecture/
-├── architecture_facts.json       # Phase 1: Raw facts (internal)
-├── analyzed_architecture.json    # Phase 2: AI analysis (internal)
-├── c4/                           # C4 Model (for architect)
-│   ├── c4-context.md + .drawio
-│   ├── c4-container.md + .drawio
-│   ├── c4-component.md + .drawio
-│   └── c4-deployment.md + .drawio
-└── arc42/                        # arc42 Chapters (for architect)
-    ├── 01-introduction.md
-    ├── 02-constraints.md
-    ├── ... (12 chapters total)
-    └── 12-glossary.md
+knowledge/
+├── phase1_facts/
+│   ├── architecture_facts.json   # Phase 1: Raw facts (internal)
+│   └── evidence_map.json         # Phase 1: Evidence map (internal)
+├── phase2_analysis/
+│   └── analyzed_architecture.json # Phase 2: AI analysis (internal)
+└── phase3_synthesis/
+    ├── c4/                        # C4 Model (for architect)
+    │   ├── c4-context.md + .drawio
+    │   ├── c4-container.md + .drawio
+    │   ├── c4-component.md + .drawio
+    │   └── c4-deployment.md + .drawio
+    └── arc42/                     # arc42 Chapters (for architect)
+        ├── 01-introduction.md
+        ├── 02-constraints.md
+        ├── ... (12 chapters total)
+        └── 12-glossary.md
 ```
 
 ### Exporting Architecture Docs
@@ -1075,9 +1083,8 @@ Create a working directory with this structure:
 my-workspace/
 ├── .env                  # Your configuration (set TASK_INPUT_DIR, PROJECT_PATH)
 ├── docker-compose.yml    # Provided with the tool
-├── knowledge/            # Internal output (auto-created)
-├── architecture-docs/    # Phase 3 export for architect (auto-created)
-└── .cache/               # ChromaDB cache (auto-created)
+├── knowledge/            # Internal output, per-phase subdirectories (auto-created)
+└── architecture-docs/    # Phase 3 export for architect (auto-created)
 ```
 
 Your `.env` points to your **external** folders:
@@ -1103,7 +1110,6 @@ docker run --network host \
   -v C:\projects\inputs:/app/inputs/tasks:ro \
   -v .\knowledge:/app/knowledge \
   -v .\architecture-docs:/app/architecture-docs \
-  -v .\.cache:/app/.cache \
   -e PROJECT_PATH=/repo \
   -e TASK_INPUT_DIR=/app/inputs/tasks \
   -e DOCS_OUTPUT_DIR=/app/architecture-docs \
@@ -1231,7 +1237,7 @@ curl -X POST http://localhost:8001/api/reset/execute \
 
 Ensure the mounted directories exist and have correct permissions:
 ```bash
-mkdir -p knowledge .cache architecture-docs
+mkdir -p knowledge architecture-docs
 ```
 
 ### Slow indexing (>30 min)
@@ -1275,7 +1281,7 @@ Open **http://localhost** in your browser.
 | **Dashboard** | Hero section with system health, phase status cards (color-coded), active pipeline banner, quick links |
 | **Run Pipeline** | Select preset or custom phases, edit .env overrides, click Run. Live SSE log streaming. Phase timeline with durations. Cancel support. Input file summary. Run history with Run/Reset type column. |
 | **Input Files** | Drag-and-drop upload for 4 categories (tasks, requirements, logs, reference). Extension validation. Auto-configures `.env` paths. |
-| **Phases** | Phase table with "Run" and "Reset" buttons per phase, "Reset All" button in header, preset accordion with metadata (icon, description). Reset includes cascade preview and archive. |
+| **Phases** | Phase table with "Run" and "Reset" buttons per phase, "Reset All" button in header, preset accordion with metadata (icon, description). Reset includes cascade preview. |
 | **Knowledge** | Multi-tab browser (Arc42, C4, Knowledge Base, Containers, Dev Plans). Renders JSON (syntax-highlighted), Markdown, AsciiDoc, HTML, Confluence wiki, DrawIO metadata. Source/rendered toggle. |
 | **Reports** | **3 tabs:** (1) Structured plan viewer with components table, implementation steps, test strategy, collapsible security/validation sections. (2) Codegen reports with per-file diff viewer (green/red/blue line coloring). (3) Git branch list (`codegen/*`) with file count, delete action. |
 | **Metrics** | Event table with type filtering, run ID tracking. |
@@ -1297,14 +1303,14 @@ To reset completed phases and start fresh:
 
 1. Navigate to **Phases** page
 2. Click the **reset icon** (restart_alt) next to a completed phase, or click **Reset All** in the header
-3. A **confirm dialog** shows which phases will be reset (cascade) and how many files will be archived/deleted
+3. A **confirm dialog** shows which phases will be reset (cascade) and how many files will be deleted
 4. Confirm to execute the reset
 5. A **snackbar** confirms the number of phases reset and files deleted
 6. Phase status returns to "ready"
 
 **Cascade behavior**: Resetting an early phase (e.g., Phase 1) automatically resets all dependent phases (Phase 2-5). This ensures data consistency.
 
-**Safety**: All outputs are archived to `knowledge/archive/` before deletion. Reset is blocked while a pipeline is running.
+**Safety**: Reset is blocked while a pipeline is running.
 
 ### Environment Configuration
 

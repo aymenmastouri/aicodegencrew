@@ -245,17 +245,6 @@ class PipelineExecutor:
             except (json.JSONDecodeError, KeyError) as exc:
                 logger.warning("Failed to parse run_report.json: %s", exc)
 
-        # Check for archived reports in knowledge archive
-        archive_dir = settings.knowledge_dir / "archive"
-        if archive_dir.exists():
-            for report_file in sorted(archive_dir.glob("run_report*.json"), reverse=True):
-                try:
-                    with open(report_file, encoding="utf-8") as f:
-                        data = json.load(f)
-                    reports.append(self._format_history_entry(data))
-                except (json.JSONDecodeError, KeyError):
-                    continue
-
         return reports[:20]  # Last 20 runs
 
     def _format_history_entry(self, data: dict) -> dict:
