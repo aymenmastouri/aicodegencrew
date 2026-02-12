@@ -19,13 +19,13 @@ test.describe('App Shell', () => {
     await expect(page.locator('.nav-group-label').nth(2)).toContainText('Monitor');
   });
 
-  test('should render all 9 nav items', async ({ page }) => {
+  test('should render all 12 nav items', async ({ page }) => {
     const navItems = page.locator('mat-nav-list a[mat-list-item]');
-    await expect(navItems).toHaveCount(9);
+    await expect(navItems).toHaveCount(12);
   });
 
   test('should show version badge in sidenav footer', async ({ page }) => {
-    await expect(page.locator('.version-badge')).toContainText('v0.3.0');
+    await expect(page.locator('.footer-version')).toContainText('v0.3.0');
   });
 
   test('should highlight active nav item', async ({ page }) => {
@@ -40,11 +40,14 @@ test.describe('App Shell', () => {
       { label: 'Run Pipeline', url: '/run' },
       { label: 'Input Files', url: '/inputs' },
       { label: 'Collectors', url: '/collectors' },
+      { label: 'Settings', url: '/settings' },
       { label: 'Phases', url: '/phases' },
       { label: 'Knowledge', url: '/knowledge' },
       { label: 'Reports', url: '/reports' },
+      { label: 'Outputs', url: '/outputs' },
       { label: 'Metrics', url: '/metrics' },
       { label: 'Logs', url: '/logs' },
+      { label: 'History', url: '/history' },
       { label: 'Dashboard', url: '/dashboard' },
     ];
 

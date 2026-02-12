@@ -118,6 +118,13 @@ export interface CollectorListResponse {
   enabled_count: number;
 }
 
+export interface SetupStatus {
+  repo_configured: boolean;
+  llm_configured: boolean;
+  has_input_files: boolean;
+  has_run_history: boolean;
+}
+
 export interface CollectorOutput {
   collector_id: string;
   data: unknown;
@@ -134,6 +141,11 @@ export class ApiService {
   // Health
   health(): Observable<HealthResponse> {
     return this.http.get<HealthResponse>(`${this.base}/health`);
+  }
+
+  // Setup status (onboarding)
+  getSetupStatus(): Observable<SetupStatus> {
+    return this.http.get<SetupStatus>(`${this.base}/health/setup-status`);
   }
 
   // Phases
