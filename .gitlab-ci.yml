@@ -155,8 +155,7 @@ playwright-e2e:
     # Serve the pre-built Angular dist
     - http-server dist/dashboard/browser -p 4200 --silent &
     # Start backend
-    - source $CI_PROJECT_DIR/.venv/bin/activate
-    - cd $CI_PROJECT_DIR && python -m uvicorn ui.backend.main:app --host 0.0.0.0 --port 8001 &
+    - cd $CI_PROJECT_DIR && source .venv/bin/activate && python -m uvicorn ui.backend.main:app --host 0.0.0.0 --port 8001 &
     - sleep 3
     # Verify servers are up before running tests
     - curl -sf http://localhost:4200/ > /dev/null || { echo "Frontend not reachable"; exit 1; }
