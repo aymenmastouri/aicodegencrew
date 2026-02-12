@@ -34,4 +34,9 @@ export const routes: Routes = [
     path: 'logs',
     loadComponent: () => import('./pages/logs/logs.component').then((m) => m.LogsComponent),
   },
+  {
+    path: 'collectors',
+    loadComponent: () =>
+      import('./pages/collectors/collectors.component').then((m) => m.CollectorsComponent),
+  },
 ];

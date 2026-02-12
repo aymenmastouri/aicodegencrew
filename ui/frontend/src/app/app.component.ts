@@ -168,6 +168,7 @@ export class AppComponent {
         { route: '/dashboard', icon: 'space_dashboard', label: 'Dashboard' },
         { route: '/run', icon: 'rocket_launch', label: 'Run Pipeline' },
         { route: '/inputs', icon: 'upload_file', label: 'Input Files' },
+        { route: '/collectors', icon: 'hub', label: 'Collectors' },
       ],
     },
     {

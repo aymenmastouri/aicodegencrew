@@ -98,6 +98,33 @@ export interface HealthResponse {
   phases_config_exists: boolean;
 }
 
+export interface CollectorInfo {
+  id: string;
+  name: string;
+  description: string;
+  dimension: string;
+  category: string;
+  step: number;
+  output_file: string;
+  can_disable: boolean;
+  enabled: boolean;
+  fact_count: number | null;
+  last_modified: string | null;
+}
+
+export interface CollectorListResponse {
+  collectors: CollectorInfo[];
+  total: number;
+  enabled_count: number;
+}
+
+export interface CollectorOutput {
+  collector_id: string;
+  data: unknown;
+  fact_count: number;
+  file_size_bytes: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private base = '/api';
@@ -171,5 +198,18 @@ export class ApiService {
   // Diagrams
   getDiagrams(): Observable<{ diagrams: DiagramInfo[] }> {
     return this.http.get<{ diagrams: DiagramInfo[] }>(`${this.base}/diagrams`);
+  }
+
+  // Collectors
+  getCollectors(): Observable<CollectorListResponse> {
+    return this.http.get<CollectorListResponse>(`${this.base}/collectors`);
+  }
+
+  toggleCollector(id: string, enabled: boolean): Observable<CollectorInfo> {
+    return this.http.put<CollectorInfo>(`${this.base}/collectors/${id}/toggle`, { enabled });
+  }
+
+  getCollectorOutput(id: string): Observable<CollectorOutput> {
+    return this.http.get<CollectorOutput>(`${this.base}/collectors/${id}/output`);
   }
 }

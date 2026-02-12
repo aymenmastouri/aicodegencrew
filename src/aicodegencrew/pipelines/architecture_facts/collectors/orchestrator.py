@@ -216,9 +216,20 @@ class CollectorOrchestrator:
 
         return result
 
-    def run_all(self) -> DimensionResults:
+    def _is_enabled(self, collector_id: str, collector_config: dict[str, bool] | None) -> bool:
+        """Check if a collector is enabled in the config."""
+        if collector_config is None:
+            return True
+        return collector_config.get(collector_id, True)
+
+    def run_all(self, collector_config: dict[str, bool] | None = None) -> DimensionResults:
         """
         Run all collectors and return aggregated results.
+
+        Args:
+            collector_config: Optional dict mapping collector_id -> enabled.
+                If None, all collectors run. Core collectors (steps 1-3, 15)
+                always run regardless of config.
 
         Order matters:
         1. System - gets system name
@@ -234,63 +245,96 @@ class CollectorOrchestrator:
         """
         logger.info("[CollectorOrchestrator] Starting architecture extraction...")
 
-        # 1. System facts
+        # 1. System facts (core — always runs)
         logger.info("[CollectorOrchestrator] Step 1/15: System facts...")
         self._run_system_collector()
 
-        # 2. Container detection
+        # 2. Container detection (core — always runs)
         logger.info("[CollectorOrchestrator] Step 2/15: Container detection...")
         self._run_container_collector()
 
-        # 3. Component extraction (includes specialists)
+        # 3. Component extraction (core — always runs)
         logger.info("[CollectorOrchestrator] Step 3/15: Component extraction...")
         self._run_component_collector()
 
         # 4. Interface extraction
-        logger.info("[CollectorOrchestrator] Step 4/15: Interface extraction...")
-        self._run_interface_collector()
+        if self._is_enabled("interfaces", collector_config):
+            logger.info("[CollectorOrchestrator] Step 4/15: Interface extraction...")
+            self._run_interface_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 4/15: Skipping interfaces (disabled)")
 
         # 5. Data model extraction
-        logger.info("[CollectorOrchestrator] Step 5/15: Data model extraction...")
-        self._run_data_model_collector()
+        if self._is_enabled("data_model", collector_config):
+            logger.info("[CollectorOrchestrator] Step 5/15: Data model extraction...")
+            self._run_data_model_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 5/15: Skipping data_model (disabled)")
 
         # 6. Runtime extraction
-        logger.info("[CollectorOrchestrator] Step 6/15: Runtime extraction...")
-        self._run_runtime_collector()
+        if self._is_enabled("runtime", collector_config):
+            logger.info("[CollectorOrchestrator] Step 6/15: Runtime extraction...")
+            self._run_runtime_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 6/15: Skipping runtime (disabled)")
 
         # 7. Infrastructure extraction
-        logger.info("[CollectorOrchestrator] Step 7/15: Infrastructure extraction...")
-        self._run_infrastructure_collector()
+        if self._is_enabled("infrastructure", collector_config):
+            logger.info("[CollectorOrchestrator] Step 7/15: Infrastructure extraction...")
+            self._run_infrastructure_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 7/15: Skipping infrastructure (disabled)")
 
         # 8. Dependencies extraction
-        logger.info("[CollectorOrchestrator] Step 8/15: Dependencies extraction...")
-        self._run_dependency_collector()
+        if self._is_enabled("dependencies", collector_config):
+            logger.info("[CollectorOrchestrator] Step 8/15: Dependencies extraction...")
+            self._run_dependency_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 8/15: Skipping dependencies (disabled)")
 
         # 9. Workflows extraction
-        logger.info("[CollectorOrchestrator] Step 9/15: Workflows extraction...")
-        self._run_workflow_collector()
+        if self._is_enabled("workflows", collector_config):
+            logger.info("[CollectorOrchestrator] Step 9/15: Workflows extraction...")
+            self._run_workflow_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 9/15: Skipping workflows (disabled)")
 
         # 10. Technology versions extraction
-        logger.info("[CollectorOrchestrator] Step 10/15: Technology versions extraction...")
-        self._run_techstack_version_collector()
+        if self._is_enabled("tech_versions", collector_config):
+            logger.info("[CollectorOrchestrator] Step 10/15: Technology versions extraction...")
+            self._run_techstack_version_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 10/15: Skipping tech_versions (disabled)")
 
         # 11. Security details extraction
-        logger.info("[CollectorOrchestrator] Step 11/15: Security details extraction...")
-        self._run_security_detail_collector()
+        if self._is_enabled("security_details", collector_config):
+            logger.info("[CollectorOrchestrator] Step 11/15: Security details extraction...")
+            self._run_security_detail_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 11/15: Skipping security_details (disabled)")
 
         # 12. Validation rules extraction
-        logger.info("[CollectorOrchestrator] Step 12/15: Validation rules extraction...")
-        self._run_validation_collector()
+        if self._is_enabled("validation", collector_config):
+            logger.info("[CollectorOrchestrator] Step 12/15: Validation rules extraction...")
+            self._run_validation_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 12/15: Skipping validation (disabled)")
 
         # 13. Tests extraction
-        logger.info("[CollectorOrchestrator] Step 13/15: Tests extraction...")
-        self._run_test_collector()
+        if self._is_enabled("tests", collector_config):
+            logger.info("[CollectorOrchestrator] Step 13/15: Tests extraction...")
+            self._run_test_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 13/15: Skipping tests (disabled)")
 
         # 14. Error handling extraction
-        logger.info("[CollectorOrchestrator] Step 14/15: Error handling extraction...")
-        self._run_error_handling_collector()
+        if self._is_enabled("error_handling", collector_config):
+            logger.info("[CollectorOrchestrator] Step 14/15: Error handling extraction...")
+            self._run_error_handling_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 14/15: Skipping error_handling (disabled)")
 
-        # 15. Evidence aggregation
+        # 15. Evidence aggregation (core — always runs)
         logger.info("[CollectorOrchestrator] Step 15/15: Evidence aggregation...")
         self._aggregate_evidence()
 
