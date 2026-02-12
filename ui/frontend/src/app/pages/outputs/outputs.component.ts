@@ -194,11 +194,12 @@ import { ApiService, KnowledgeSummary, KnowledgeFile } from '../../services/api.
         border-radius: 8px;
         cursor: pointer;
         transition: background 0.12s;
+        border-left: 3px solid transparent;
       }
       .file-item:hover { background: var(--cg-gray-50, #f8f9fa); }
       .file-selected {
         background: rgba(18, 171, 219, 0.08) !important;
-        border-left: 3px solid var(--cg-vibrant);
+        border-left-color: var(--cg-vibrant);
       }
       .file-type-icon {
         font-size: 20px;
@@ -379,21 +380,23 @@ export class OutputsComponent implements OnInit {
     });
   }
 
+  /** Extract the first subdirectory from the file path as group label */
   getPhaseLabel(file: KnowledgeFile): string {
     const path = file.path.replace(/\\/g, '/');
-    if (path.includes('development/')) return 'Phase 4 - Planning';
-    if (path.includes('codegen/') || path.includes('code_generation/')) return 'Phase 5 - CodeGen';
-    if (path.includes('analysis/')) return 'Phase 2 - Analysis';
-    if (path.includes('synthesis/')) return 'Phase 3 - Synthesis';
-    if (path.includes('facts/') || path.includes('indexing/')) return 'Phase 0-1 - Facts';
-    return 'Other';
+    // Remove leading "knowledge/" if present, then take first segment
+    const withoutPrefix = path.replace(/^knowledge\/?/i, '');
+    const firstSegment = withoutPrefix.split('/')[0] || '';
+    return firstSegment || 'root';
   }
 
   getFileIcon(file: KnowledgeFile): string {
-    if (file.type === 'json') return 'data_object';
-    if (file.type === 'md') return 'description';
-    if (file.name.endsWith('.py') || file.name.endsWith('.ts') || file.name.endsWith('.java')) return 'code';
-    return 'insert_drive_file';
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    switch (ext) {
+      case 'json': return 'data_object';
+      case 'md': return 'description';
+      case 'drawio': return 'schema';
+      default: return 'insert_drive_file';
+    }
   }
 
   formatSize(bytes: number): string {

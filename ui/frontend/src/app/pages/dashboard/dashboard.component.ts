@@ -57,23 +57,29 @@ import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/p
       </div>
 
       <!-- Getting Started -->
-      @if (setupStatus && !onboardingDismissed && !allSetupComplete()) {
-        <div class="onboarding-card">
+      @if (setupStatus && !onboardingDismissed) {
+        <div class="onboarding-card" [class.onboarding-complete]="allSetupComplete()">
           <div class="onboarding-header">
             <div>
-              <div class="onboarding-title">Getting Started</div>
-              <div class="onboarding-sub">Complete these steps to run your first pipeline</div>
+              @if (allSetupComplete()) {
+                <div class="onboarding-title onboarding-done-title">All set! You're ready to go.</div>
+              } @else {
+                <div class="onboarding-title">Getting Started</div>
+                <div class="onboarding-sub">Complete these steps to run your first pipeline</div>
+              }
             </div>
             <button class="dismiss-btn" (click)="dismissOnboarding()" matTooltip="Dismiss">
               <mat-icon>close</mat-icon>
             </button>
           </div>
-          <div class="onboarding-progress">
-            <div class="progress-track">
-              <div class="progress-fill" [style.width.%]="setupProgress()"></div>
+          @if (!allSetupComplete()) {
+            <div class="onboarding-progress">
+              <div class="progress-track">
+                <div class="progress-fill" [style.width.%]="setupProgress()"></div>
+              </div>
+              <span class="progress-label">{{ setupCompleteCount() }} of 4 complete</span>
             </div>
-            <span class="progress-label">{{ setupCompleteCount() }} of 4 complete</span>
-          </div>
+          }
           <div class="onboarding-steps">
             @for (step of setupSteps; track step.label; let i = $index) {
               <a class="onboarding-step" [class.step-done]="step.check()" [routerLink]="step.link">
@@ -90,6 +96,11 @@ import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/p
             }
           </div>
         </div>
+      }
+      @if (onboardingDismissed && !allSetupComplete()) {
+        <button class="show-wizard-btn" (click)="showOnboarding()">
+          <mat-icon>checklist</mat-icon> Show setup guide
+        </button>
       }
 
       <!-- Active Pipeline Banner -->
@@ -571,6 +582,28 @@ import { PipelineService, RunHistoryEntry, ResetPreview } from '../../services/p
         font-size: 16px; width: 16px; height: 16px;
         color: var(--cg-gray-300);
       }
+      .onboarding-complete {
+        border-color: rgba(40, 167, 69, 0.2);
+        background: rgba(40, 167, 69, 0.03);
+      }
+      .onboarding-done-title {
+        color: var(--cg-success, #28a745);
+      }
+      .show-wizard-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+        background: none;
+        color: var(--cg-blue);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0;
+        margin-bottom: 16px;
+      }
+      .show-wizard-btn:hover { text-decoration: underline; }
+      .show-wizard-btn .mat-icon { font-size: 16px; width: 16px; height: 16px; }
     `,
   ],
 })
@@ -648,14 +681,17 @@ export class DashboardComponent implements OnInit {
       this.cdr.markForCheck();
     });
 
-    if (!this.onboardingDismissed) {
-      this.api.getSetupStatus().subscribe({
-        next: (s) => {
-          this.setupStatus = s;
-          this.cdr.markForCheck();
-        },
-      });
-    }
+    this.api.getSetupStatus().subscribe({
+      next: (s) => {
+        this.setupStatus = s;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Show wizard with all-false defaults so user can still see it
+        this.setupStatus = { repo_configured: false, llm_configured: false, has_input_files: false, has_run_history: false };
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   setupCompleteCount(): number {
@@ -673,6 +709,11 @@ export class DashboardComponent implements OnInit {
   dismissOnboarding(): void {
     this.onboardingDismissed = true;
     localStorage.setItem('onboarding_dismissed', 'true');
+  }
+
+  showOnboarding(): void {
+    this.onboardingDismissed = false;
+    localStorage.removeItem('onboarding_dismissed');
   }
 
   hasCompletedPhases(): boolean {

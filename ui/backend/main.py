@@ -66,17 +66,27 @@ def setup_status():
     """Check onboarding setup completeness."""
     from .services.env_manager import read_env
 
-    env_vals = read_env()
+    try:
+        env_vals = read_env()
+    except Exception:
+        env_vals = {}
+
     project_path = env_vals.get("PROJECT_PATH", "")
     repo_configured = bool(project_path) and Path(project_path).is_dir()
     llm_configured = all(env_vals.get(k) for k in ("LLM_PROVIDER", "MODEL", "API_BASE"))
 
-    # Check for input files
+    # Check for input files in configured task input dir
     task_input_dir = settings.project_root / env_vals.get("TASK_INPUT_DIR", "task_inputs")
-    has_input_files = task_input_dir.is_dir() and any(task_input_dir.iterdir()) if task_input_dir.is_dir() else False
+    try:
+        has_input_files = task_input_dir.is_dir() and any(task_input_dir.iterdir())
+    except Exception:
+        has_input_files = False
 
     # Check run history
-    has_run_history = settings.run_history.exists() and settings.run_history.stat().st_size > 0
+    try:
+        has_run_history = settings.run_history.exists() and settings.run_history.stat().st_size > 0
+    except Exception:
+        has_run_history = False
 
     return {
         "repo_configured": repo_configured,

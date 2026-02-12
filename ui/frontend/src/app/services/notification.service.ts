@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, timer, of } from 'rxjs';
+import { switchMap, catchError } from 'rxjs/operators';
 import { PipelineService } from './pipeline.service';
 
 export type PipelineState = 'idle' | 'running' | 'completed' | 'failed' | 'cancelled';
@@ -9,7 +9,6 @@ export type PipelineState = 'idle' | 'running' | 'completed' | 'failed' | 'cance
 export interface PipelineNotification {
   state: PipelineState;
   runId: string;
-  fadingOut: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,7 +16,6 @@ export class NotificationService implements OnDestroy {
   private state$ = new BehaviorSubject<PipelineNotification>({
     state: 'idle',
     runId: '',
-    fadingOut: false,
   });
 
   readonly notification$ = this.state$.asObservable();
@@ -39,11 +37,11 @@ export class NotificationService implements OnDestroy {
   }
 
   success(msg: string): void {
-    this.snackBar.open(msg, 'OK', { duration: 4000, panelClass: 'snack-success' });
+    this.snackBar.open(msg, 'OK', { duration: 4000 });
   }
 
   error(msg: string): void {
-    this.snackBar.open(msg, 'OK', { duration: 6000, panelClass: 'snack-error' });
+    this.snackBar.open(msg, 'OK', { duration: 6000 });
   }
 
   info(msg: string): void {
@@ -51,12 +49,19 @@ export class NotificationService implements OnDestroy {
   }
 
   dismiss(): void {
-    this.state$.next({ state: 'idle', runId: '', fadingOut: false });
+    this.state$.next({ state: 'idle', runId: '' });
   }
 
   private startPolling(): void {
-    this.pollSub = interval(5000)
-      .pipe(switchMap(() => this.pipelineSvc.getStatus()))
+    // timer(0, 5000) = immediate first call, then every 5s
+    this.pollSub = timer(0, 5000)
+      .pipe(
+        switchMap(() =>
+          this.pipelineSvc.getStatus().pipe(
+            catchError(() => of({ state: 'idle', run_id: undefined, phases: [], phase_progress: [] })),
+          ),
+        ),
+      )
       .subscribe({
         next: (status) => {
           const newState = (status.state || 'idle') as PipelineState;
@@ -77,11 +82,11 @@ export class NotificationService implements OnDestroy {
           if (this.fadeTimer) clearTimeout(this.fadeTimer);
           if (newState === 'completed') {
             this.fadeTimer = setTimeout(() => {
-              this.state$.next({ state: 'idle', runId: '', fadingOut: false });
+              this.state$.next({ state: 'idle', runId: '' });
             }, 10000);
           }
 
-          this.state$.next({ state: newState, runId, fadingOut: false });
+          this.state$.next({ state: newState, runId });
         },
       });
   }
@@ -89,7 +94,7 @@ export class NotificationService implements OnDestroy {
   private sendBrowserNotification(title: string, body: string): void {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission === 'granted') {
-      new Notification(title, { body, icon: 'assets/logos/Capgemini_Primary-logo_Capgemini-white.png' });
+      new Notification(title, { body });
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission().then((perm) => {
         if (perm === 'granted') {

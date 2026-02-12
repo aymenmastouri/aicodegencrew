@@ -159,7 +159,7 @@ phases:
   # =========================================================================
   phase4_development_planning:
     enabled: true
-    name: "Development Planning (Hybrid Pipeline)"
+    name: "Development Planning"
     description: "Fast, evidence-based implementation plans using hybrid architecture"
     type: pipeline
     required: false
@@ -191,7 +191,7 @@ phases:
   # =========================================================================
   phase5_code_generation:
     enabled: true
-    name: "Code Generation (Hybrid Pipeline)"
+    name: "Code Generation"
     description: "Generate code from Phase 4 plans using hybrid architecture"
     type: pipeline
     required: false
