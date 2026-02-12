@@ -29,6 +29,7 @@ import {
   PhaseProgress,
 } from '../../services/pipeline.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
+import { humanizePhaseId } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-run-pipeline',
@@ -90,7 +91,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                   <div class="phase-chips">
                     <span class="chips-label">Phases:</span>
                     @for (phase of getPresetPhases(); track phase) {
-                      <mat-chip>{{ phase }}</mat-chip>
+                      <mat-chip>{{ humanize(phase) }}</mat-chip>
                     }
                   </div>
                 }
@@ -108,7 +109,6 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                     >
                       <span class="phase-label">
                         <strong>{{ phase.order }}.</strong> {{ phase.name }}
-                        <span class="phase-id">({{ phase.id }})</span>
                       </span>
                     </mat-checkbox>
                   }
@@ -319,7 +319,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                         <span class="step-num">{{ i + 1 }}</span>
                       }
                     </div>
-                    <div class="step-label">{{ pp.name || pp.phase_id }}</div>
+                    <div class="step-label">{{ pp.name || humanize(pp.phase_id) }}</div>
                     @if (pp.status === 'completed' && pp.duration_seconds) {
                       <div class="step-time">{{ formatDuration(pp.duration_seconds) }}</div>
                     }
@@ -436,7 +436,7 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
                 <th mat-header-cell *matHeaderCellDef>Phases</th>
                 <td mat-cell *matCellDef="let r">
                   @for (p of r.phases; track p) {
-                    <mat-chip class="small-chip">{{ p | slice: 0 : 20 }}</mat-chip>
+                    <mat-chip class="small-chip">{{ humanize(p) }}</mat-chip>
                   }
                 </td>
               </ng-container>
@@ -470,7 +470,6 @@ import { InputsService, InputsSummary } from '../../services/inputs.service';
       .chips-label { font-size: 13px; font-weight: 500; color: var(--cg-gray-500); }
       .phase-checkboxes { display: flex; flex-direction: column; gap: 8px; }
       .phase-label { display: inline-flex; align-items: center; gap: 4px; }
-      .phase-id { color: var(--cg-gray-500); font-size: 12px; }
       .input-summary-card { margin-bottom: 16px; }
       .input-icon {
         background: rgba(0, 112, 173, 0.08);
@@ -990,6 +989,10 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
       case 'cancelled': return 'cancel';
       default: return 'radio_button_unchecked';
     }
+  }
+
+  humanize(phaseId: string): string {
+    return humanizePhaseId(phaseId);
   }
 
   formatDuration(seconds: number): string {

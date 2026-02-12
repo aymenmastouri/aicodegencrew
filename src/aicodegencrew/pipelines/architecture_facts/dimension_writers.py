@@ -548,7 +548,7 @@ class CanonicalModelWriter:
     Writes all dimension files from a canonical architecture model.
 
     Output:
-        knowledge/architecture/
+        knowledge/phase1_facts/
         +-- system.json
         +-- containers.json
         +-- components.json

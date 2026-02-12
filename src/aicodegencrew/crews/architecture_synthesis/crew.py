@@ -36,11 +36,11 @@ class ArchitectureSynthesisCrew:
     - ChromaDB Index: Semantic search (optional)
     """
 
-    def __init__(self, facts_path: str = "knowledge/architecture/architecture_facts.json"):
+    def __init__(self, facts_path: str = "knowledge/phase1_facts/architecture_facts.json"):
         """Initialize orchestrator with architecture facts path."""
         self.facts_path = Path(facts_path)
         self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        self.analyzed_path = self.facts_path.parent / "analyzed_architecture.json"
+        self.analyzed_path = Path("knowledge/phase2_analysis/analyzed_architecture.json")
         self.c4_crew = None
         self.arc42_crew = None
         # Note: Validation happens at kickoff(), not here (allows Phase 1+2 to run first)
@@ -92,31 +92,23 @@ class ArchitectureSynthesisCrew:
         logger.info("   [OK] All prerequisites satisfied!")
         logger.info("")
 
-    def _archive_and_clean_old_outputs(self) -> None:
-        """Archive and clean old Phase 3 outputs before new run."""
+    def _clean_old_outputs(self) -> None:
+        """Delete old Phase 3 outputs before new run."""
         import shutil
-        from datetime import datetime
 
-        output_dir = self.facts_path.parent
+        output_dir = Path("knowledge/phase3_synthesis")
 
-        # Directories to archive
         output_dirs = ["c4", "arc42", "quality"]
-        existing_dirs = [d for d in output_dirs if (output_dir / d).exists() and any((output_dir / d).iterdir())]
+        deleted = 0
+        for dirname in output_dirs:
+            d = output_dir / dirname
+            if d.exists() and any(d.iterdir()):
+                shutil.rmtree(d)
+                d.mkdir(exist_ok=True)
+                deleted += 1
 
-        if existing_dirs:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            archive_dir = output_dir / "archive" / f"run_{timestamp}"
-            archive_dir.mkdir(parents=True, exist_ok=True)
-
-            for dirname in existing_dirs:
-                src = output_dir / dirname
-                dst = archive_dir / dirname
-                shutil.copytree(src, dst, dirs_exist_ok=True)
-                shutil.rmtree(src)
-                src.mkdir(exist_ok=True)  # Recreate empty dir
-                logger.info(f"   [ARCHIVED+CLEANED] {dirname}/")
-
-            logger.info(f"   [OK] {len(existing_dirs)} directories archived to: {archive_dir}")
+        if deleted:
+            logger.info(f"   [OK] {deleted} directories cleaned")
         else:
             logger.info("   [OK] No old outputs to clean (first run)")
 
@@ -135,15 +127,16 @@ class ArchitectureSynthesisCrew:
 
         # Only archive on fresh run. When resuming (checkpoint exists),
         # keep existing files — skipped crews depend on them still being there.
-        c4_checkpoint = self.facts_path.parent / ".checkpoint_c4.json"
-        arc42_checkpoint = self.facts_path.parent / ".checkpoint_arc42.json"
+        synthesis_dir = Path("knowledge/phase3_synthesis")
+        c4_checkpoint = synthesis_dir / ".checkpoint_c4.json"
+        arc42_checkpoint = synthesis_dir / ".checkpoint_arc42.json"
         is_resume = c4_checkpoint.exists() or arc42_checkpoint.exists()
 
         if is_resume:
             logger.info("[Phase3] Resuming from checkpoint — keeping existing outputs")
         else:
-            logger.info("[Phase3] Fresh run — archive and clean old outputs...")
-            self._archive_and_clean_old_outputs()
+            logger.info("[Phase3] Fresh run — cleaning old outputs...")
+            self._clean_old_outputs()
 
         results = []
 

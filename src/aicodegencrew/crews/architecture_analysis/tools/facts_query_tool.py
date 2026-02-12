@@ -102,7 +102,7 @@ class FactsQueryTool(BaseTool):
     args_schema: type[BaseModel] = FactsQueryInput
 
     # Configuration - base directory for dimension files
-    facts_dir: str = "knowledge/architecture"
+    facts_dir: str = "knowledge/phase1_facts"
 
     # Cache per dimension (lazy loading)
     _dimension_cache: dict[str, Any] = {}

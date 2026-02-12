@@ -15,6 +15,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../services/api.service';
 import { PipelineService, ResetPreview } from '../../services/pipeline.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { humanizePhaseId } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-phases',
@@ -69,8 +70,10 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-
                 </td>
               </ng-container>
               <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef>Phase ID</th>
-                <td mat-cell *matCellDef="let p" class="mono">{{ p.id }}</td>
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let p">
+                  <span class="phase-type">{{ p.type || 'pipeline' }}</span>
+                </td>
               </ng-container>
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -88,7 +91,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-
                 <th mat-header-cell *matHeaderCellDef>Dependencies</th>
                 <td mat-cell *matCellDef="let p">
                   @for (dep of p.dependencies; track dep) {
-                    <mat-chip class="dep-chip">{{ dep | slice: 0 : 20 }}</mat-chip>
+                    <mat-chip class="dep-chip">{{ humanize(dep) }}</mat-chip>
                   }
                 </td>
               </ng-container>
@@ -128,7 +131,7 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-
               }
               <mat-chip-set>
                 @for (phase of preset.phases; track phase) {
-                  <mat-chip>{{ phase }}</mat-chip>
+                  <mat-chip>{{ humanize(phase) }}</mat-chip>
                 }
               </mat-chip-set>
               <div class="preset-action">
@@ -162,6 +165,16 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-
         font-size: 12px;
         font-weight: 600;
         color: var(--cg-gray-500);
+      }
+      .phase-type {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: capitalize;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-600);
       }
       .dep-chip {
         font-size: 11px;
@@ -235,6 +248,10 @@ export class PhasesComponent implements OnInit {
     });
   }
 
+  humanize(phaseId: string): string {
+    return humanizePhaseId(phaseId);
+  }
+
   getPhaseStatus(phaseId: string): string {
     if (!this.pipeline) return 'idle';
     const phase = this.pipeline.phases.find((p) => p.id === phaseId);
@@ -254,15 +271,21 @@ export class PhasesComponent implements OnInit {
     return this.pipeline.phases.some((p) => p.status === 'completed');
   }
 
+  private phaseDisplayName(phaseId: string): string {
+    const phase = this.phases.find((p) => p.id === phaseId);
+    return phase?.name || humanizePhaseId(phaseId);
+  }
+
   resetPhase(phaseId: string): void {
     this.pipelineService.previewReset([phaseId]).subscribe({
       next: (preview: ResetPreview) => {
+        const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
           width: '480px',
           data: {
             title: 'Reset Phase',
-            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
-            details: preview.phases_to_reset,
+            message: `The following phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
+            details: names,
             type: 'warn',
             icon: 'restart_alt',
             confirmLabel: 'Reset',
@@ -290,15 +313,16 @@ export class PhasesComponent implements OnInit {
 
   resetAll(): void {
     this.pipelineService.previewReset(
-      this.pipeline?.phases.filter((p) => p.status === 'completed').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'phase0_indexing').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
+        const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
           width: '480px',
           data: {
-            title: 'Reset All Phases',
-            message: `${preview.files_to_delete.length} file(s) will be archived and deleted.`,
-            details: preview.phases_to_reset,
+            title: 'Reset All Phases (excluding Indexing)',
+            message: `The following ${names.length} phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
+            details: names,
             type: 'warn',
             icon: 'restart_alt',
             confirmLabel: 'Reset All',

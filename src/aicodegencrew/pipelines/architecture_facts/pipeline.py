@@ -14,8 +14,6 @@ Usage:
     result = pipeline.kickoff()
 """
 
-import shutil
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -34,15 +32,15 @@ class ArchitectureFactsPipeline:
     Deterministic extraction - NO LLM!
 
     Outputs (Dimension Files):
-    - knowledge/architecture/system.json
-    - knowledge/architecture/containers.json
-    - knowledge/architecture/components.json
-    - knowledge/architecture/interfaces.json
-    - knowledge/architecture/relations.json
-    - knowledge/architecture/data_model.json
-    - knowledge/architecture/runtime.json
-    - knowledge/architecture/infrastructure.json
-    - knowledge/architecture/evidence_map.json
+    - knowledge/phase1_facts/system.json
+    - knowledge/phase1_facts/containers.json
+    - knowledge/phase1_facts/components.json
+    - knowledge/phase1_facts/interfaces.json
+    - knowledge/phase1_facts/relations.json
+    - knowledge/phase1_facts/data_model.json
+    - knowledge/phase1_facts/runtime.json
+    - knowledge/phase1_facts/infrastructure.json
+    - knowledge/phase1_facts/evidence_map.json
     """
 
     def __init__(
@@ -55,10 +53,10 @@ class ArchitectureFactsPipeline:
 
         Args:
             repo_path: Path to the repository to analyze
-            output_dir: Output directory (defaults to knowledge/architecture)
+            output_dir: Output directory (defaults to knowledge/phase1_facts)
         """
         self.repo_path = Path(repo_path).resolve()
-        self.output_dir = Path(output_dir) if output_dir else Path("knowledge/architecture")
+        self.output_dir = Path(output_dir) if output_dir else Path("knowledge/phase1_facts")
 
         if not self.repo_path.exists():
             raise ValueError(f"Repository path does not exist: {self.repo_path}")
@@ -119,8 +117,8 @@ class ArchitectureFactsPipeline:
 
         return result
 
-    def _archive_and_clean_old_outputs(self) -> None:
-        """Archive and clean old Phase 1 outputs before new run."""
+    def _clean_old_outputs(self) -> None:
+        """Delete old Phase 1 outputs before new run."""
         output_files = [
             "architecture_facts.json",
             "evidence_map.json",
@@ -134,20 +132,15 @@ class ArchitectureFactsPipeline:
             "infrastructure.json",
         ]
 
-        existing_files = [f for f in output_files if (self.output_dir / f).exists()]
+        deleted = 0
+        for filename in output_files:
+            f = self.output_dir / filename
+            if f.exists():
+                f.unlink()
+                deleted += 1
 
-        if existing_files:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
-            archive_dir.mkdir(parents=True, exist_ok=True)
-
-            for filename in existing_files:
-                src = self.output_dir / filename
-                dst = archive_dir / filename
-                shutil.copy2(src, dst)
-                src.unlink()
-
-            logger.info(f"   [OK] {len(existing_files)} old files archived to: archive/run_{timestamp}")
+        if deleted:
+            logger.info(f"   [OK] {deleted} old files deleted")
         else:
             logger.info("   [OK] No old outputs to clean (first run)")
 
@@ -168,9 +161,9 @@ class ArchitectureFactsPipeline:
 
         log_metric("phase_start", phase="phase1_architecture_facts")
 
-        # Step 0: Archive and clean old outputs
-        logger.info("[Phase1] Step 0: Archive and clean old outputs...")
-        self._archive_and_clean_old_outputs()
+        # Step 0: Clean old outputs
+        logger.info("[Phase1] Step 0: Clean old outputs...")
+        self._clean_old_outputs()
 
         try:
             # Step 1: Run all collectors via orchestrator

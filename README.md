@@ -90,7 +90,7 @@ The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 2
 - **Structured plan viewer** — overview card with complexity/effort/risk metrics, implementation steps, parsed component chips, full upgrade migration sequence with severity badges and per-step affected files, test strategy, collapsible security/validation/error handling details, rendered JIRA context
 - **Code diff viewer** — per-file expandable diffs with green/red line coloring, action chips (created/modified/deleted), language badges
 - **Git branch management** — list `codegen/*` branches with file count, report links, and delete action
-- **Pipeline reset** — per-phase and full pipeline reset with cascade propagation, archive before delete, confirm dialog with cascade preview
+- **Pipeline reset** — per-phase and full pipeline reset with cascade propagation, confirm dialog with cascade preview
 - **Persistent run history** — append-only JSONL (`logs/run_history.jsonl`) with Run/Reset type tracking, legacy `run_report.json` fallback
 - **Document rendering** — JSON syntax highlighting, Markdown, AsciiDoc, HTML, Confluence wiki
 - Real-time log streaming via Server-Sent Events (SSE)
@@ -136,12 +136,12 @@ Phase 1: Facts           ->  Phase 3: Synthesis (C4)  ->  Phase 6: Test Gen (pla
 ### Data Flow
 
 ```
-Repository ─► Phase 0 ─► ChromaDB
-             Phase 1 ─► architecture_facts.json
-             Phase 2 ─► analyzed_architecture.json
-             Phase 3 ─► C4 docs + arc42 chapters + DrawIO
-             Phase 4 ─► task_plan.json
-             Phase 5 ─► Git branch codegen/{task_id} + report.json
+Repository ─► Phase 0 ─► knowledge/phase0_indexing/  (ChromaDB)
+             Phase 1 ─► knowledge/phase1_facts/      (architecture_facts.json)
+             Phase 2 ─► knowledge/phase2_analysis/    (analyzed_architecture.json)
+             Phase 3 ─► knowledge/phase3_synthesis/   (C4 + arc42 + DrawIO)
+             Phase 4 ─► knowledge/phase4_planning/    (task_plan.json)
+             Phase 5 ─► Git branch codegen/{task_id}  + knowledge/phase5_codegen/
 ```
 
 ---
@@ -224,7 +224,7 @@ Two ways to provide input files:
 | **Logs** | `.log` `.txt` `.xlsx` `.csv` | Application logs |
 | **Reference** | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` | Mockups, diagrams |
 
-Output: `knowledge/development/{task_id}_plan.json` with affected components, implementation steps, test/security/validation strategies.
+Output: `knowledge/phase4_planning/{task_id}_plan.json` with affected components, implementation steps, test/security/validation strategies.
 
 ---
 
@@ -233,11 +233,13 @@ Output: `knowledge/development/{task_id}_plan.json` with affected components, im
 ```
 <OUTPUT_BASE_DIR>/
 ├── knowledge/
-│   ├── architecture/        # Phase 1-3: facts, analysis, C4, arc42
-│   ├── development/         # Phase 4: task plans
-│   ├── codegen/             # Phase 5: generation reports
-│   ├── run_report.json      # Pipeline run summary (legacy)
-│   └── archive/             # Reset archives (timestamped backups)
+│   ├── phase0_indexing/     # Phase 0: ChromaDB vector store
+│   ├── phase1_facts/        # Phase 1: architecture_facts.json, evidence_map.json
+│   ├── phase2_analysis/     # Phase 2: analyzed_architecture.json
+│   ├── phase3_synthesis/    # Phase 3: c4/, arc42/ (C4 diagrams + arc42 chapters)
+│   ├── phase4_planning/     # Phase 4: {task_id}_plan.json
+│   ├── phase5_codegen/      # Phase 5: {task_id}_report.json
+│   └── run_report.json      # Pipeline run summary
 ├── architecture-docs/       # Phase 3 export (Markdown + Confluence + AsciiDoc + HTML)
 └── logs/
     ├── current.log

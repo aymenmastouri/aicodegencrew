@@ -23,8 +23,8 @@ class PlanReaderStage:
 
     def __init__(
         self,
-        plans_dir: str = "knowledge/development",
-        facts_path: str = "knowledge/architecture/architecture_facts.json",
+        plans_dir: str = "knowledge/phase4_planning",
+        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
     ):
         self.plans_dir = Path(plans_dir)
         self.facts_path = Path(facts_path)

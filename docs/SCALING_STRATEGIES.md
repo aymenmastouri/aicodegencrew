@@ -45,7 +45,7 @@ analyze_backend:
   tools: [query_facts, list_components_by_stereotype]
   context:
     container_filter: "backend"
-  output_file: knowledge/architecture/analysis_backend.json
+  output_file: knowledge/phase2_analysis/analysis_backend.json
 
 analyze_frontend:
   agent: container_analyst
@@ -53,7 +53,7 @@ analyze_frontend:
   tools: [query_facts, list_components_by_stereotype]
   context:
     container_filter: "frontend"
-  output_file: knowledge/architecture/analysis_frontend.json
+  output_file: knowledge/phase2_analysis/analysis_frontend.json
 
 analyze_database:
   agent: container_analyst
@@ -61,17 +61,17 @@ analyze_database:
   tools: [query_facts, list_components_by_stereotype]
   context:
     container_filter: "database"
-  output_file: knowledge/architecture/analysis_database.json
+  output_file: knowledge/phase2_analysis/analysis_database.json
 
 merge_container_analyses:
   agent: synthesis_analyst
   description: "Merge container analyses into unified architecture"
   context:
     input_files:
-      - knowledge/architecture/analysis_backend.json
-      - knowledge/architecture/analysis_frontend.json
-      - knowledge/architecture/analysis_database.json
-  output_file: knowledge/architecture/analyzed_architecture.json
+      - knowledge/phase2_analysis/analysis_backend.json
+      - knowledge/phase2_analysis/analysis_frontend.json
+      - knowledge/phase2_analysis/analysis_database.json
+  output_file: knowledge/phase2_analysis/analyzed_architecture.json
 ```
 
 **Advantages**:

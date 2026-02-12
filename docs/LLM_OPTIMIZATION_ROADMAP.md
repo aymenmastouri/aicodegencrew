@@ -188,7 +188,7 @@ Die Daten existieren bereits im Projekt:
 1. **Erfolgreiche Runs** (Positive Beispiele):
    - `logs/metrics.jsonl` — welche Mini-Crews erfolgreich liefen
    - CrewAI verbose logs — exakte Tool-Call-Sequenzen
-   - `knowledge/architecture/arc42/*.md` — erwartete Outputs
+   - `knowledge/phase3_synthesis/arc42/*.md` — erwartete Outputs
 
 2. **Gescheiterte Runs** (Negative Beispiele):
    - Runs wo Agent Content in Response schrieb statt doc_writer

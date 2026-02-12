@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException
 
 from ..schemas import ResetPreview, ResetRequest, ResetResult
 from ..services.pipeline_executor import executor
+from ..services.phase_outputs import PHASE_OUTPUTS
 from ..services.reset_service import execute_reset, preview_reset
 
 logger = logging.getLogger(__name__)
@@ -36,30 +37,22 @@ def reset_execute(request: ResetRequest):
     return execute_reset(
         phase_ids=request.phase_ids,
         cascade=request.cascade,
-        archive=request.archive,
     )
 
 
 @router.post("/all", response_model=ResetResult)
 def reset_all():
-    """Reset all phases (with cascade and archive)."""
+    """Reset all phases."""
     if executor.state == "running":
         raise HTTPException(
             status_code=409,
             detail="Cannot reset while pipeline is running",
         )
 
-    all_phases = [
-        "phase0_indexing",
-        "phase1_architecture_facts",
-        "phase2_architecture_analysis",
-        "phase3_architecture_synthesis",
-        "phase4_development_planning",
-        "phase5_code_generation",
-    ]
+    # Use all phases except indexing (single source of truth)
+    all_phases = [p for p in PHASE_OUTPUTS if p != "phase0_indexing"]
 
     return execute_reset(
         phase_ids=all_phases,
         cascade=False,  # Already listing all phases
-        archive=True,
     )

@@ -13,6 +13,7 @@ class PhaseInfo(BaseModel):
     order: int
     enabled: bool
     required: bool = False
+    type: str = "pipeline"
     dependencies: list[str] = []
 
 
@@ -171,6 +172,8 @@ class RunHistoryEntry(BaseModel):
     duration_seconds: float | None = None
     trigger: str = "pipeline"  # "pipeline" | "reset"
     phase_results: list[dict[str, Any]] = []
+    deleted_count: int | None = None
+    total_tokens: int | None = None
 
 
 class RunDetail(BaseModel):
@@ -190,25 +193,38 @@ class RunDetail(BaseModel):
     environment: dict[str, Any] = {}
 
 
+class HistoryStats(BaseModel):
+    """Aggregated operational stats across all run history."""
+
+    total_runs: int = 0
+    total_resets: int = 0
+    success_count: int = 0
+    failed_count: int = 0
+    success_rate: float = 0.0
+    avg_duration_seconds: float = 0.0
+    total_tokens: int = 0
+    total_deleted_files: int = 0
+    most_used_preset: str | None = None
+    last_run_at: str | None = None
+    phase_frequency: dict[str, int] = {}
+
+
 # --- Pipeline Reset ---
 
 
 class ResetRequest(BaseModel):
     phase_ids: list[str]
     cascade: bool = True
-    archive: bool = True
 
 
 class ResetPreview(BaseModel):
     phases_to_reset: list[str]
     files_to_delete: list[str]
-    archive_path: str | None = None
 
 
 class ResetResult(BaseModel):
     reset_phases: list[str]
     deleted_count: int
-    archive_path: str | None = None
     timestamp: str
 
 

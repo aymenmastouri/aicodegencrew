@@ -409,7 +409,7 @@ ARC42_LANGUAGE=de    # Deutsch (Default: en = Englisch)
 - Checkpoint-Dateien (`.checkpoint_*.json`)
 
 **Wo bleibt alles fur Testen?**
-Im Projekt selbst unter `knowledge/architecture/` — da liegt alles (inklusive JSON).
+Im Projekt selbst unter `knowledge/` — da liegt alles in den per-Phase Ordnern (`phase1_facts/`, `phase2_analysis/`, `phase3_synthesis/` etc.).
 `DOCS_OUTPUT_DIR` ist eine **Kopie** der Architekturdokumente, nicht ein Verschieben.
 
 ---

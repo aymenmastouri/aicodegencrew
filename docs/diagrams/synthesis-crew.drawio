@@ -169,7 +169,7 @@
         <mxCell id="c4-out-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;" vertex="1" parent="1">
           <mxGeometry x="130" y="675" width="30" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="c4-out-title" value="&lt;b&gt;C4 Model&lt;/b&gt;  &lt;font color=&quot;#666&quot;&gt;(knowledge/architecture/c4/)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#e65100;" vertex="1" parent="1">
+        <mxCell id="c4-out-title" value="&lt;b&gt;C4 Model&lt;/b&gt;  &lt;font color=&quot;#666&quot;&gt;(knowledge/phase3_synthesis/c4/)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#e65100;" vertex="1" parent="1">
           <mxGeometry x="160" y="675" width="230" height="25" as="geometry" />
         </mxCell>
         <mxCell id="c4-out-files" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;c4-context.md + .drawio&lt;br&gt;c4-container.md + .drawio&lt;br&gt;c4-component.md + .drawio&lt;br&gt;c4-deployment.md + .drawio&lt;br&gt;&lt;br&gt;&lt;b&gt;Features:&lt;/b&gt;&lt;br&gt;- 4 abstraction levels (C4 standard)&lt;br&gt;- Draw.io XML for editing&lt;br&gt;- Markdown descriptions&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;" vertex="1" parent="1">
@@ -183,7 +183,7 @@
         <mxCell id="arc42-out-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;" vertex="1" parent="1">
           <mxGeometry x="430" y="675" width="30" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="arc42-out-title" value="&lt;b&gt;Arc42 Docs&lt;/b&gt;  &lt;font color=&quot;#666&quot;&gt;(knowledge/architecture/arc42/)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#2e7d32;" vertex="1" parent="1">
+        <mxCell id="arc42-out-title" value="&lt;b&gt;Arc42 Docs&lt;/b&gt;  &lt;font color=&quot;#666&quot;&gt;(knowledge/phase3_synthesis/arc42/)&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#2e7d32;" vertex="1" parent="1">
           <mxGeometry x="460" y="675" width="300" height="25" as="geometry" />
         </mxCell>
         <mxCell id="arc42-out-files" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;01-introduction.md&lt;br&gt;02-constraints.md&lt;br&gt;03-context.md&lt;br&gt;04-solution-strategy.md&lt;br&gt;05-building-blocks.md (+ parts/)&lt;br&gt;06-runtime.md&lt;br&gt;07-deployment.md&lt;br&gt;08-concepts.md&lt;br&gt;09-architecture-decisions.md&lt;br&gt;10-quality.md&lt;br&gt;11-risks.md&lt;br&gt;12-glossary.md&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;" vertex="1" parent="1">

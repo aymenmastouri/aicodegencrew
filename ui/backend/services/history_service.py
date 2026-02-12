@@ -26,12 +26,8 @@ def append_run_to_history(entry: dict) -> None:
         logger.error("Failed to append to run history: %s", exc)
 
 
-def get_run_history(limit: int = 50, offset: int = 0) -> list[dict]:
-    """Read run history from JSONL, newest first.
-
-    Falls back to legacy ``run_report.json`` + archive when the JSONL
-    file doesn't exist or is empty.
-    """
+def _read_all_entries() -> list[dict]:
+    """Read all JSONL entries (with legacy fallback). Internal helper."""
     path = _history_path()
     entries: list[dict] = []
 
@@ -48,13 +44,126 @@ def get_run_history(limit: int = 50, offset: int = 0) -> list[dict]:
         except OSError as exc:
             logger.warning("Failed to read run history: %s", exc)
 
-    # Fallback to legacy run_report.json + archive when JSONL is empty
     if not entries:
         entries = _read_legacy_history()
+
+    return entries
+
+
+def get_run_history(limit: int = 50, offset: int = 0) -> list[dict]:
+    """Read run history from JSONL, newest first.
+
+    Falls back to legacy ``run_report.json`` + archive when the JSONL
+    file doesn't exist or is empty.
+    """
+    entries = _read_all_entries()
+
+    # Enrich with token totals
+    _enrich_tokens(entries)
 
     # Newest first
     entries.reverse()
     return entries[offset : offset + limit]
+
+
+def get_history_stats() -> dict:
+    """Compute aggregated operational stats across all run history."""
+    entries = _read_all_entries()
+    token_map = _aggregate_tokens()
+
+    runs = [e for e in entries if e.get("trigger") != "reset"]
+    resets = [e for e in entries if e.get("trigger") == "reset"]
+
+    success_count = sum(1 for r in runs if r.get("status") == "completed")
+    failed_count = sum(1 for r in runs if r.get("status") == "failed")
+    total_runs = len(runs)
+
+    # Average duration of completed runs
+    durations = [
+        r["duration_seconds"]
+        for r in runs
+        if r.get("status") == "completed" and r.get("duration_seconds")
+    ]
+    avg_duration = sum(durations) / len(durations) if durations else 0.0
+
+    # Total tokens from metrics
+    total_tokens = sum(token_map.values())
+
+    # Total deleted files from resets
+    total_deleted = sum(r.get("deleted_count", 0) or 0 for r in resets)
+
+    # Most used preset
+    preset_counts: dict[str, int] = {}
+    for r in runs:
+        p = r.get("preset")
+        if p:
+            preset_counts[p] = preset_counts.get(p, 0) + 1
+    most_used = max(preset_counts, key=preset_counts.get) if preset_counts else None  # type: ignore[arg-type]
+
+    # Last run timestamp
+    last_run = runs[-1].get("started_at") if runs else None
+
+    # Phase frequency
+    phase_freq: dict[str, int] = {}
+    for r in runs:
+        for ph in r.get("phases", []):
+            phase_freq[ph] = phase_freq.get(ph, 0) + 1
+
+    return {
+        "total_runs": total_runs,
+        "total_resets": len(resets),
+        "success_count": success_count,
+        "failed_count": failed_count,
+        "success_rate": round(success_count / total_runs * 100, 1) if total_runs else 0.0,
+        "avg_duration_seconds": round(avg_duration, 1),
+        "total_tokens": total_tokens,
+        "total_deleted_files": total_deleted,
+        "most_used_preset": most_used,
+        "last_run_at": last_run,
+        "phase_frequency": phase_freq,
+    }
+
+
+def _aggregate_tokens() -> dict[str, int]:
+    """Scan metrics.jsonl for mini_crew_complete events and sum tokens by run_id."""
+    metrics_path = settings.metrics_file
+    token_map: dict[str, int] = {}
+
+    if not metrics_path.exists():
+        return token_map
+
+    try:
+        with open(metrics_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    parsed = json.loads(line)
+                    if parsed.get("event") != "mini_crew_complete":
+                        continue
+                    data = parsed.get("data", {})
+                    run_id = data.get("run_id") or parsed.get("run_id")
+                    tokens = data.get("total_tokens", 0) or 0
+                    if run_id:
+                        token_map[run_id] = token_map.get(run_id, 0) + tokens
+                except json.JSONDecodeError:
+                    continue
+    except OSError as exc:
+        logger.warning("Failed to read metrics for token aggregation: %s", exc)
+
+    return token_map
+
+
+def _enrich_tokens(entries: list[dict]) -> None:
+    """Attach per-run token totals to history entries."""
+    token_map = _aggregate_tokens()
+    if not token_map:
+        return
+    for entry in entries:
+        rid = entry.get("run_id")
+        if rid and rid in token_map:
+            entry["total_tokens"] = token_map[rid]
 
 
 def get_run_detail(run_id: str) -> dict | None:
@@ -143,7 +252,7 @@ def _get_metrics_for_run(run_id: str) -> list[dict]:
 
 
 def _read_legacy_history() -> list[dict]:
-    """Read from run_report.json and knowledge/archive/run_report*.json."""
+    """Read from run_report.json (legacy fallback)."""
     entries: list[dict] = []
 
     if settings.run_report.exists():
@@ -153,16 +262,6 @@ def _read_legacy_history() -> list[dict]:
             entries.append(_format_legacy(data))
         except (json.JSONDecodeError, KeyError) as exc:
             logger.warning("Failed to parse run_report.json: %s", exc)
-
-    archive_dir = settings.knowledge_dir / "archive"
-    if archive_dir.exists():
-        for report_file in sorted(archive_dir.glob("run_report*.json"), reverse=True):
-            try:
-                with open(report_file, encoding="utf-8") as f:
-                    data = json.load(f)
-                entries.append(_format_legacy(data))
-            except (json.JSONDecodeError, KeyError):
-                continue
 
     return entries
 

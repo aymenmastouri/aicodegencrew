@@ -63,6 +63,22 @@ export interface RunHistoryEntry {
   duration_seconds?: number;
   trigger?: string; // "pipeline" | "reset"
   phase_results: Record<string, unknown>[];
+  deleted_count?: number;
+  total_tokens?: number;
+}
+
+export interface HistoryStats {
+  total_runs: number;
+  total_resets: number;
+  success_count: number;
+  failed_count: number;
+  success_rate: number;
+  avg_duration_seconds: number;
+  total_tokens: number;
+  total_deleted_files: number;
+  most_used_preset?: string;
+  last_run_at?: string;
+  phase_frequency: Record<string, number>;
 }
 
 export interface RunDetail {
@@ -83,13 +99,11 @@ export interface RunDetail {
 export interface ResetPreview {
   phases_to_reset: string[];
   files_to_delete: string[];
-  archive_path: string | null;
 }
 
 export interface ResetResult {
   reset_phases: string[];
   deleted_count: number;
-  archive_path: string | null;
   timestamp: string;
 }
 
@@ -132,6 +146,10 @@ export class PipelineService {
     return this.http.get<RunHistoryEntry[]>(`${this.base}/pipeline/history`);
   }
 
+  getHistoryStats(): Observable<HistoryStats> {
+    return this.http.get<HistoryStats>(`${this.base}/pipeline/history/stats`);
+  }
+
   getRunDetail(runId: string): Observable<RunDetail> {
     return this.http.get<RunDetail>(`${this.base}/pipeline/history/${runId}`);
   }
@@ -144,11 +162,10 @@ export class PipelineService {
     });
   }
 
-  executeReset(phaseIds: string[], cascade = true, archive = true): Observable<ResetResult> {
+  executeReset(phaseIds: string[], cascade = true): Observable<ResetResult> {
     return this.http.post<ResetResult>(`${this.base}/reset/execute`, {
       phase_ids: phaseIds,
       cascade,
-      archive,
     });
   }
 

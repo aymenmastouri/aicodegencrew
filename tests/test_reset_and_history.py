@@ -3,7 +3,7 @@ Tests for Pipeline Reset & Run History services.
 
 Covers:
 - history_service: append, read, legacy fallback, ordering
-- reset_service: cascade computation, preview, execute (archive + delete)
+- reset_service: cascade computation, preview, execute (delete)
 - reset router: preview, execute, reset-all, 409 on running
 - schemas: ResetRequest, ResetPreview, ResetResult, RunHistoryEntry
 """
@@ -24,25 +24,26 @@ import pytest
 @pytest.fixture()
 def tmp_project(tmp_path):
     """Create a temporary project structure mimicking the real layout."""
-    # Create dirs
-    (tmp_path / "knowledge" / "architecture").mkdir(parents=True)
-    (tmp_path / "knowledge" / "architecture" / "c4").mkdir()
-    (tmp_path / "knowledge" / "architecture" / "arc42").mkdir()
-    (tmp_path / "knowledge" / "development").mkdir(parents=True)
-    (tmp_path / "knowledge" / "codegen").mkdir(parents=True)
+    # Create per-phase dirs
+    (tmp_path / "knowledge" / "phase0_indexing").mkdir(parents=True)
+    (tmp_path / "knowledge" / "phase1_facts").mkdir(parents=True)
+    (tmp_path / "knowledge" / "phase2_analysis").mkdir(parents=True)
+    (tmp_path / "knowledge" / "phase3_synthesis" / "c4").mkdir(parents=True)
+    (tmp_path / "knowledge" / "phase3_synthesis" / "arc42").mkdir(parents=True)
+    (tmp_path / "knowledge" / "phase4_planning").mkdir(parents=True)
+    (tmp_path / "knowledge" / "phase5_codegen").mkdir(parents=True)
     (tmp_path / "logs").mkdir()
-    (tmp_path / ".cache" / ".chroma").mkdir(parents=True)
     (tmp_path / "config").mkdir()
 
     # Create sample output files
-    (tmp_path / "knowledge" / "architecture" / "architecture_facts.json").write_text('{"components": []}')
-    (tmp_path / "knowledge" / "architecture" / "evidence_map.json").write_text("{}")
-    (tmp_path / "knowledge" / "architecture" / "analyzed_architecture.json").write_text("{}")
-    (tmp_path / "knowledge" / "architecture" / "c4" / "c4-context.md").write_text("# C4")
-    (tmp_path / "knowledge" / "architecture" / "arc42" / "arc42.md").write_text("# Arc42")
-    (tmp_path / "knowledge" / "development" / "TASK-001_plan.json").write_text("{}")
-    (tmp_path / "knowledge" / "codegen" / "TASK-001_report.json").write_text("{}")
-    (tmp_path / ".cache" / ".chroma" / "index.bin").write_text("binary-data")
+    (tmp_path / "knowledge" / "phase0_indexing" / "index.bin").write_text("binary-data")
+    (tmp_path / "knowledge" / "phase1_facts" / "architecture_facts.json").write_text('{"components": []}')
+    (tmp_path / "knowledge" / "phase1_facts" / "evidence_map.json").write_text("{}")
+    (tmp_path / "knowledge" / "phase2_analysis" / "analyzed_architecture.json").write_text("{}")
+    (tmp_path / "knowledge" / "phase3_synthesis" / "c4" / "c4-context.md").write_text("# C4")
+    (tmp_path / "knowledge" / "phase3_synthesis" / "arc42" / "arc42.md").write_text("# Arc42")
+    (tmp_path / "knowledge" / "phase4_planning" / "TASK-001_plan.json").write_text("{}")
+    (tmp_path / "knowledge" / "phase5_codegen" / "TASK-001_report.json").write_text("{}")
 
     # Create phases_config.yaml
     (tmp_path / "config" / "phases_config.yaml").write_text(
@@ -249,7 +250,6 @@ class TestResetService:
         result = preview_reset(["phase1_architecture_facts"], cascade=False)
         assert "phase1_architecture_facts" in result["phases_to_reset"]
         assert any("architecture_facts.json" in f for f in result["files_to_delete"])
-        assert result["archive_path"] is not None
 
     def test_preview_with_cascade(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import preview_reset
@@ -263,38 +263,22 @@ class TestResetService:
         result = preview_reset(["phase1_architecture_facts"], cascade=False)
         assert result["phases_to_reset"] == ["phase1_architecture_facts"]
 
-    def test_execute_archives_and_deletes(self, mock_settings, tmp_project):
+    def test_execute_deletes_phase_dir(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        facts_file = tmp_project / "knowledge" / "architecture" / "architecture_facts.json"
-        assert facts_file.exists()
+        facts_dir = tmp_project / "knowledge" / "phase1_facts"
+        assert facts_dir.exists()
 
-        result = execute_reset(["phase1_architecture_facts"], cascade=False, archive=True)
+        result = execute_reset(["phase1_architecture_facts"], cascade=False)
 
-        # File deleted
-        assert not facts_file.exists()
-        # Archived
-        assert result["archive_path"] is not None
-        archive_dir = Path(result["archive_path"])
-        assert archive_dir.exists()
-        archived_files = list(archive_dir.rglob("architecture_facts.json"))
-        assert len(archived_files) == 1
-        # Counts
+        # Dir contents deleted
         assert result["deleted_count"] >= 1
         assert "phase1_architecture_facts" in result["reset_phases"]
-
-    def test_execute_no_archive(self, mock_settings, tmp_project):
-        from ui.backend.services.reset_service import execute_reset
-
-        facts_file = tmp_project / "knowledge" / "architecture" / "architecture_facts.json"
-        result = execute_reset(["phase1_architecture_facts"], cascade=False, archive=False)
-        assert not facts_file.exists()
-        assert result["archive_path"] is None
 
     def test_execute_with_cascade_deletes_dependents(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        result = execute_reset(["phase2_architecture_analysis"], cascade=True, archive=True)
+        result = execute_reset(["phase2_architecture_analysis"], cascade=True)
         # Should delete phase 2, 3, 4, 5 outputs
         assert "phase2_architecture_analysis" in result["reset_phases"]
         assert "phase3_architecture_synthesis" in result["reset_phases"]
@@ -302,22 +286,22 @@ class TestResetService:
         assert "phase5_code_generation" in result["reset_phases"]
 
         # Verify files are gone
-        assert not (tmp_project / "knowledge" / "architecture" / "analyzed_architecture.json").exists()
-        assert not (tmp_project / "knowledge" / "architecture" / "c4" / "c4-context.md").exists()
+        assert not (tmp_project / "knowledge" / "phase2_analysis" / "analyzed_architecture.json").exists()
+        assert not (tmp_project / "knowledge" / "phase3_synthesis" / "c4" / "c4-context.md").exists()
 
     def test_execute_recreates_empty_dirs(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        execute_reset(["phase4_development_planning"], cascade=False, archive=False)
+        execute_reset(["phase4_development_planning"], cascade=False)
         # Dir should be recreated empty
-        dev_dir = tmp_project / "knowledge" / "development"
-        assert dev_dir.exists()
-        assert list(dev_dir.iterdir()) == []
+        plan_dir = tmp_project / "knowledge" / "phase4_planning"
+        assert plan_dir.exists()
+        assert list(plan_dir.iterdir()) == []
 
     def test_execute_appends_to_history(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        execute_reset(["phase5_code_generation"], cascade=False, archive=True)
+        execute_reset(["phase5_code_generation"], cascade=False)
 
         history_path = tmp_project / "logs" / "run_history.jsonl"
         assert history_path.exists()
@@ -331,7 +315,7 @@ class TestResetService:
         from ui.backend.services.reset_service import execute_reset
 
         # Should not crash for a phase with no matching files
-        result = execute_reset(["phase99_fake"], cascade=False, archive=False)
+        result = execute_reset(["phase99_fake"], cascade=False)
         assert result["deleted_count"] == 0
 
 
@@ -348,14 +332,12 @@ class TestSchemas:
 
         req = ResetRequest(phase_ids=["phase1_architecture_facts"])
         assert req.cascade is True
-        assert req.archive is True
 
     def test_reset_request_override(self):
         from ui.backend.schemas import ResetRequest
 
-        req = ResetRequest(phase_ids=["phase1_architecture_facts"], cascade=False, archive=False)
+        req = ResetRequest(phase_ids=["phase1_architecture_facts"], cascade=False)
         assert req.cascade is False
-        assert req.archive is False
 
     def test_reset_preview_schema(self):
         from ui.backend.schemas import ResetPreview
@@ -363,10 +345,8 @@ class TestSchemas:
         preview = ResetPreview(
             phases_to_reset=["phase1", "phase2"],
             files_to_delete=["/a/b.json"],
-            archive_path="/archive/reset_123",
         )
         assert len(preview.phases_to_reset) == 2
-        assert preview.archive_path is not None
 
     def test_reset_result_schema(self):
         from ui.backend.schemas import ResetResult
@@ -374,7 +354,6 @@ class TestSchemas:
         result = ResetResult(
             reset_phases=["phase1"],
             deleted_count=5,
-            archive_path="/archive/reset_123",
             timestamp="2026-02-12T00:00:00",
         )
         assert result.deleted_count == 5

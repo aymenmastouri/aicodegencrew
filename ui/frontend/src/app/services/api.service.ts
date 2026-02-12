@@ -8,6 +8,7 @@ export interface PhaseInfo {
   order: number;
   enabled: boolean;
   required: boolean;
+  type: string;
   dependencies: string[];
 }
 

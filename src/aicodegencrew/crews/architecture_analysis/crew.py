@@ -689,14 +689,14 @@ class ArchitectureAnalysisCrew:
 
     def __init__(
         self,
-        facts_path: str = "knowledge/architecture/architecture_facts.json",
+        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
         chroma_dir: str = None,
-        output_dir: str = "knowledge/architecture",
+        output_dir: str = "knowledge/phase2_analysis",
     ):
         """Initialize crew with paths."""
         self.facts_path = Path(facts_path)
         self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", ".cache/.chroma")
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing")
         self.output_dir = Path(output_dir)
         self._analysis_dir = self.output_dir / "analysis"
         self._checkpoint_file = self.output_dir / ".checkpoint_analysis.json"
@@ -951,9 +951,6 @@ class ArchitectureAnalysisCrew:
 
     def _prepare_clean_run(self, is_resume: bool = False):
         """Validate prerequisites and optionally clean old outputs."""
-        import shutil
-        from datetime import datetime
-
         logger.info("")
         logger.info("[Phase2] Preparing run...")
 
@@ -1004,9 +1001,9 @@ class ArchitectureAnalysisCrew:
 
         logger.info("   [OK] All prerequisites satisfied!")
 
-        # Step 2: Archive and clean old outputs (skip on resume)
+        # Step 2: Clean old outputs (skip on resume)
         if not is_resume:
-            logger.info("[Phase2] Step 2: Archive and clean old outputs...")
+            logger.info("[Phase2] Step 2: Clean old outputs...")
 
             output_files = [
                 "analyzed_architecture.json",
@@ -1019,21 +1016,15 @@ class ArchitectureAnalysisCrew:
                 "temp_quality_analysis.json",
             ]
 
-            existing_files = [f for f in output_files if (self.output_dir / f).exists()]
+            deleted = 0
+            for filename in output_files:
+                f = self.output_dir / filename
+                if f.exists():
+                    f.unlink()
+                    deleted += 1
 
-            if existing_files:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                archive_dir = self.output_dir / "archive" / f"run_{timestamp}"
-                archive_dir.mkdir(parents=True, exist_ok=True)
-
-                for filename in existing_files:
-                    src = self.output_dir / filename
-                    dst = archive_dir / filename
-                    shutil.copy2(src, dst)
-                    src.unlink()
-                    logger.info(f"   [ARCHIVED+DELETED] {filename}")
-
-                logger.info(f"   [OK] {len(existing_files)} old files archived to: {archive_dir}")
+            if deleted:
+                logger.info(f"   [OK] {deleted} old files deleted")
             else:
                 logger.info("   [OK] No old outputs to clean (first run)")
 
@@ -1044,7 +1035,7 @@ class ArchitectureAnalysisCrew:
                     json_file.unlink()
                     logger.info(f"   [DELETED] {json_file.name}")
         else:
-            logger.info("[Phase2] Resuming — skipping archive/clean")
+            logger.info("[Phase2] Resuming — skipping clean")
 
         self._analysis_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"   [OK] Analysis directory ready: {self._analysis_dir}")
