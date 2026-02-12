@@ -233,7 +233,7 @@ phases:
   # =========================================================================
   phase7_review_deploy:
     enabled: false
-    name: "Review + Deploy"
+    name: "Review & Deploy"
     description: "Build validation, CI/CD integration, PR merge"
     type: pipeline
     required: false
@@ -280,7 +280,7 @@ presets:
 
   architecture_workflow:
     display_name: "Architecture Documentation"
-    description: "Generate full Arc42 + C4 architecture documentation"
+    description: "Generate full Arc42 & C4 architecture documentation"
     icon: "menu_book"
     phases:
       - phase0_indexing
@@ -300,7 +300,7 @@ presets:
 
   codegen_only:
     display_name: "Code Generation"
-    description: "Generate code from plans (Planning + Code Gen)"
+    description: "Generate code from plans (Planning & Code Gen)"
     icon: "code"
     phases:
       - phase0_indexing
@@ -310,8 +310,8 @@ presets:
       - phase5_code_generation
 
   architecture_full:
-    display_name: "Architecture + Planning"
-    description: "Full architecture docs + development planning"
+    display_name: "Architecture & Planning"
+    description: "Full architecture docs & development planning"
     icon: "architecture"
     phases:
       - phase0_indexing
