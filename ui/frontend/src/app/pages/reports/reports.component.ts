@@ -41,14 +41,17 @@ interface ParsedComponent {
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>summarize</mat-icon>
-        Reports
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">summarize</mat-icon>
+        <div>
+          <h1 class="page-title">Reports</h1>
+          <p class="page-subtitle">Development plans, codegen reports, and branch management</p>
+        </div>
+      </div>
 
       @if (loading) {
         <div class="loading-center">
-          <mat-spinner diameter="40"></mat-spinner>
+          <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else {
         <mat-tab-group (selectedTabChange)="onTabChange($event)">
@@ -626,7 +629,7 @@ interface ParsedComponent {
 
             @if (branchesLoading) {
               <div class="loading-center">
-                <mat-spinner diameter="32"></mat-spinner>
+                <mat-spinner diameter="36"></mat-spinner>
               </div>
             } @else if (branchesError) {
               <div class="empty-inline tab-empty">
@@ -707,16 +710,6 @@ interface ParsedComponent {
         border-radius: 8px;
         font-size: 12px;
         line-height: 1.6;
-      }
-      .empty-inline {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--cg-gray-500);
-        font-size: 14px;
-      }
-      .empty-inline .mat-icon {
-        color: var(--cg-gray-200);
       }
       .tab-empty {
         padding: 32px 16px;

@@ -105,13 +105,12 @@ import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, Reset
       }
 
       <!-- Live Pipeline Stepper -->
-      @if (phaseProgress.length > 0) {
+      @if (phaseProgress.length > 0 && executionState !== 'idle') {
         <div class="stepper-card" [class]="'stepper-' + executionState">
           <div class="stepper-header">
             <div class="stepper-left">
-              <mat-icon class="stepper-hicon">
-                {{ executionState === 'running' ? 'play_circle' : executionState === 'completed' ? 'check_circle' : executionState === 'failed' ? 'error' : 'schedule' }}
-              </mat-icon>
+              <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png"
+                   alt="" class="stepper-logo" [class]="'logo-' + executionState" />
               <div>
                 <div class="stepper-title">
                   @if (executionState === 'running') {
@@ -120,8 +119,6 @@ import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, Reset
                     Pipeline Completed
                   } @else if (executionState === 'failed') {
                     Pipeline Failed
-                  } @else {
-                    Last Run
                   }
                 </div>
                 @if (executionRunId) {
@@ -279,8 +276,8 @@ import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, Reset
         position: absolute;
         top: 20px;
         right: 24px;
-        height: 28px;
-        opacity: 0.3;
+        height: 32px;
+        opacity: 0.5;
       }
       .hero-title {
         font-size: 28px;
@@ -294,7 +291,7 @@ import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, Reset
         font-size: 14px;
         margin: 0;
       }
-      .hero-stats { display: flex; gap: 10px; flex-shrink: 0; }
+      .hero-stats { display: flex; gap: 10px; flex-shrink: 0; align-self: flex-end; }
       .stat-pill {
         display: flex;
         align-items: center;
@@ -342,20 +339,22 @@ import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, Reset
         align-items: center;
         gap: 10px;
       }
-      .stepper-hicon {
-        font-size: 24px;
-        width: 24px;
+      .stepper-logo {
         height: 24px;
+        width: auto;
+        border-radius: 4px;
+        padding: 4px;
+        background: var(--cg-navy);
       }
-      .stepper-running .stepper-hicon {
-        color: var(--cg-blue);
-        animation: pulse-stepper-icon 1.5s ease-in-out infinite;
+      .logo-running {
+        background: var(--cg-blue);
+        animation: pulse-stepper-logo 1.5s ease-in-out infinite;
       }
-      .stepper-completed .stepper-hicon { color: var(--cg-success); }
-      .stepper-failed .stepper-hicon { color: var(--cg-error); }
-      @keyframes pulse-stepper-icon {
+      .logo-completed { background: var(--cg-success, #28a745); }
+      .logo-failed { background: var(--cg-error, #dc3545); }
+      @keyframes pulse-stepper-logo {
         0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+        50% { opacity: 0.6; }
       }
       .stepper-title {
         font-size: 14px;
@@ -626,8 +625,7 @@ import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, Reset
       .reset-btn:hover { background: rgba(220, 53, 69, 0.1); color: var(--cg-error, #dc3545); }
       .reset-btn .mat-icon { font-size: 15px; width: 15px; height: 15px; }
 
-      /* Loading & Empty */
-      .loading-center { display: flex; justify-content: center; padding: 48px 0; }
+      /* Empty */
       .empty-state {
         text-align: center;
         padding: 40px 24px;
@@ -1056,7 +1054,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private updateExecution(s: ExecutionStatus): void {
     this.executionState = s.state;
     this.executionRunId = s.run_id || '';
-    this.phaseProgress = s.phase_progress || [];
+    // Only overwrite stepper data if the backend has real progress info
+    if (s.phase_progress && s.phase_progress.length > 0) {
+      this.phaseProgress = s.phase_progress;
+    }
     if (s.elapsed_seconds != null) {
       this.executionElapsed = Math.round(s.elapsed_seconds);
     }

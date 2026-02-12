@@ -31,10 +31,12 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
   template: `
     <div class="page-container">
       <div class="page-header">
+        <mat-icon class="page-icon">history</mat-icon>
         <div>
           <h1 class="page-title">Run History</h1>
           <p class="page-subtitle">Pipeline execution and reset history with detailed outcomes</p>
         </div>
+        <span class="flex-1"></span>
         <button mat-stroked-button color="primary" routerLink="/run">
           <mat-icon>rocket_launch</mat-icon> Run Pipeline
         </button>
@@ -58,7 +60,7 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
       <!-- Loading -->
       @if (loading) {
         <div class="loading-center">
-          <mat-spinner diameter="40"></mat-spinner>
+          <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else if (dataSource.data.length === 0) {
         <div class="empty-state">
@@ -283,23 +285,6 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
   `,
   styles: [
     `
-      .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 24px;
-      }
-      .page-title {
-        font-size: 24px;
-        font-weight: 400;
-        margin: 0 0 4px;
-      }
-      .page-subtitle {
-        font-size: 14px;
-        color: var(--cg-gray-500);
-        margin: 0;
-      }
-
       /* Filter Bar */
       .filter-bar {
         display: flex;
@@ -388,85 +373,11 @@ import { PipelineService, RunHistoryEntry, RunDetail } from '../../services/pipe
         color: var(--cg-gray-500);
       }
 
-      /* Chips */
-      .trigger-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-      }
+      /* Chip icon size */
       .chip-icon {
         font-size: 14px;
         width: 14px;
         height: 14px;
-      }
-      .trigger-run {
-        background: rgba(0, 112, 173, 0.1);
-        color: var(--cg-blue);
-      }
-      .trigger-reset {
-        background: rgba(220, 53, 69, 0.1);
-        color: var(--cg-error, #dc3545);
-      }
-      .status-chip {
-        display: inline-block;
-        padding: 2px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 500;
-        text-transform: capitalize;
-      }
-      .status-completed {
-        background: rgba(40, 167, 69, 0.1);
-        color: var(--cg-success, #28a745);
-      }
-      .status-failed {
-        background: rgba(220, 53, 69, 0.1);
-        color: var(--cg-error, #dc3545);
-      }
-      .status-running {
-        background: rgba(0, 112, 173, 0.1);
-        color: var(--cg-blue);
-      }
-      .status-cancelled {
-        background: rgba(255, 193, 7, 0.1);
-        color: #e0a800;
-      }
-      .status-lg {
-        padding: 4px 14px;
-        font-size: 14px;
-      }
-      .status-sm {
-        padding: 1px 8px;
-        font-size: 11px;
-      }
-
-      /* Loading / Empty */
-      .loading-center {
-        display: flex;
-        justify-content: center;
-        padding: 48px 0;
-      }
-      .empty-state {
-        text-align: center;
-        padding: 48px 24px;
-        background: #fff;
-        border-radius: 12px;
-        border: 2px dashed var(--cg-gray-200);
-      }
-      .empty-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        color: var(--cg-gray-200);
-        margin-bottom: 12px;
-      }
-      .empty-state p {
-        color: var(--cg-gray-500);
-        margin-bottom: 16px;
       }
 
       /* Detail Panel */

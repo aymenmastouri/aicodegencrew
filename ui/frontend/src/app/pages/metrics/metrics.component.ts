@@ -25,14 +25,17 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>monitoring</mat-icon>
-        Metrics
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">monitoring</mat-icon>
+        <div>
+          <h1 class="page-title">Metrics</h1>
+          <p class="page-subtitle">Pipeline execution events and performance data</p>
+        </div>
+      </div>
 
       @if (loading) {
         <div class="loading-center">
-          <mat-spinner diameter="40"></mat-spinner>
+          <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else if (summary) {
         <!-- Stats Bar -->
@@ -101,32 +104,6 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
   `,
   styles: [
     `
-      .stats-bar {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 16px;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 16px;
-        background: #fff;
-        border-radius: 10px;
-        font-size: 14px;
-        color: var(--cg-gray-500);
-      }
-      .stat-item .mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        color: var(--cg-blue);
-      }
-      .stat-item strong {
-        color: var(--cg-gray-900);
-      }
       .filter-item {
         padding: 4px 16px;
       }
@@ -135,6 +112,9 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
       }
       .metrics-table {
         width: 100%;
+      }
+      .metrics-table tr.mat-mdc-row:hover {
+        background: rgba(0, 112, 173, 0.03);
       }
       .event-badge {
         display: inline-block;
@@ -164,17 +144,6 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
         text-overflow: ellipsis;
         white-space: nowrap;
         font-size: 12px;
-      }
-      .empty-inline {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 24px 16px;
-        color: var(--cg-gray-500);
-        font-size: 14px;
-      }
-      .empty-inline .mat-icon {
-        color: var(--cg-gray-200);
       }
     `,
   ],

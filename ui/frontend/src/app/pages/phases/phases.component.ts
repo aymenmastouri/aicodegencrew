@@ -31,14 +31,17 @@ import { PipelineService, ResetPreview } from '../../services/pipeline.service';
   ],
   template: `
     <div class="page-container">
-      <h1 class="page-title">
-        <mat-icon>account_tree</mat-icon>
-        Phases
-      </h1>
+      <div class="page-header">
+        <mat-icon class="page-icon">account_tree</mat-icon>
+        <div>
+          <h1 class="page-title">Phases</h1>
+          <p class="page-subtitle">View and manage pipeline phase configuration and presets</p>
+        </div>
+      </div>
 
       @if (loading) {
         <div class="loading-center">
-          <mat-spinner diameter="40"></mat-spinner>
+          <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else {
         <mat-card>
@@ -139,13 +142,11 @@ import { PipelineService, ResetPreview } from '../../services/pipeline.service';
   `,
   styles: [
     `
-      .section-card-title {
-        display: flex !important;
-        align-items: center;
-        gap: 8px;
-      }
       .phase-table {
         width: 100%;
+      }
+      .phase-table tr.mat-mdc-row:hover {
+        background: rgba(0, 112, 173, 0.03);
       }
       .phase-num {
         display: inline-flex;
