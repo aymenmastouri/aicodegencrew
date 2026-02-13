@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 from ....shared.utils.logger import setup_logger
-from ..schemas import CodegenReport, GeneratedFile, ValidationResult
+from ..schemas import BuildVerificationResult, CodegenReport, GeneratedFile, ValidationResult
 
 logger = setup_logger(__name__)
 
@@ -44,6 +44,7 @@ class OutputWriterStage:
         duration_seconds: float = 0.0,
         llm_calls: int = 0,
         total_tokens: int = 0,
+        build_verification: BuildVerificationResult | None = None,
     ) -> CodegenReport:
         """
         Write files to target repo and generate report.
@@ -76,6 +77,7 @@ class OutputWriterStage:
                 duration_seconds=duration_seconds,
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
+                build_verification=build_verification,
             )
 
         if self.dry_run:
@@ -89,6 +91,7 @@ class OutputWriterStage:
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
                 dry_run=True,
+                build_verification=build_verification,
             )
             self._write_report(report)
             return report
@@ -104,6 +107,7 @@ class OutputWriterStage:
                 duration_seconds=duration_seconds,
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
+                build_verification=build_verification,
             )
 
         if not self._is_clean_working_tree():
@@ -116,6 +120,7 @@ class OutputWriterStage:
                 duration_seconds=duration_seconds,
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
+                build_verification=build_verification,
             )
 
         # Create branch
@@ -162,6 +167,7 @@ class OutputWriterStage:
             duration_seconds=duration_seconds,
             llm_calls=llm_calls,
             total_tokens=total_tokens,
+            build_verification=build_verification,
         )
 
         # Write report JSON
@@ -221,6 +227,7 @@ class OutputWriterStage:
         duration_seconds: float = 0.0,
         llm_calls: int = 0,
         total_tokens: int = 0,
+        build_verification: BuildVerificationResult | None = None,
     ) -> CodegenReport:
         """
         Write files and commit for a single task in cascade mode.
@@ -250,6 +257,7 @@ class OutputWriterStage:
                 duration_seconds=duration_seconds,
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
+                build_verification=build_verification,
             )
 
         if self.dry_run:
@@ -267,6 +275,7 @@ class OutputWriterStage:
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
                 dry_run=True,
+                build_verification=build_verification,
             )
             self._write_report(report)
             return report
@@ -303,6 +312,7 @@ class OutputWriterStage:
             duration_seconds=duration_seconds,
             llm_calls=llm_calls,
             total_tokens=total_tokens,
+            build_verification=build_verification,
         )
 
         self._write_report(report)
@@ -340,6 +350,7 @@ class OutputWriterStage:
         llm_calls: int = 0,
         total_tokens: int = 0,
         dry_run: bool = False,
+        build_verification: BuildVerificationResult | None = None,
     ) -> CodegenReport:
         """Build a CodegenReport with cascade fields populated."""
         validation_errors = []
@@ -360,6 +371,7 @@ class OutputWriterStage:
             llm_calls=llm_calls,
             total_tokens=total_tokens,
             dry_run=dry_run,
+            build_verification=build_verification,
             cascade_branch=cascade_branch,
             cascade_position=cascade_position,
             cascade_total=cascade_total,
@@ -526,6 +538,7 @@ class OutputWriterStage:
         llm_calls: int = 0,
         total_tokens: int = 0,
         dry_run: bool = False,
+        build_verification: BuildVerificationResult | None = None,
     ) -> CodegenReport:
         """Build a CodegenReport."""
         validation_errors = []
@@ -546,4 +559,5 @@ class OutputWriterStage:
             llm_calls=llm_calls,
             total_tokens=total_tokens,
             dry_run=dry_run,
+            build_verification=build_verification,
         )

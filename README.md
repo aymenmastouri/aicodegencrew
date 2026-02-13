@@ -131,7 +131,7 @@ Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
 | Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
 | Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
 | Plan | Hybrid | 4 deterministic stages + 1 LLM call (18-40s) |
-| Implement | Hybrid | Strategy pattern per task type, cascade multi-task on single branch |
+| Implement | Hybrid | 6 stages: strategy pattern per task type, build verification with self-healing, cascade multi-task on single branch |
 | Verify | - | Planned |
 | Deliver | - | Planned |
 
@@ -174,6 +174,8 @@ Copy `.env.example` to `.env` and configure. Key variables:
 | `MODEL` | LLM model identifier | `gpt-oss-120b` |
 | `API_BASE` | LLM API endpoint URL | `http://localhost:11434/v1` |
 | `INDEX_MODE` | `off` / `auto` / `smart` / `force` | `auto` |
+| `CODEGEN_BUILD_VERIFY` | Enable build verification after code gen | `true` |
+| `CODEGEN_BUILD_MAX_RETRIES` | Max self-healing attempts per container | `3` |
 
 > Full variable reference: [.env.example](.env.example)
 
@@ -308,7 +310,7 @@ aicodegencrew/
 │   ├── cli.py                   # CLI entry point
 │   ├── orchestrator.py          # Phase orchestration
 │   ├── crews/                   # AI Agent Workflows (Analyze + Document)
-│   ├── pipelines/               # Deterministic Pipelines (Discover, Extract, Plan, Implement)
+│   ├── pipelines/               # Hybrid Pipelines (Discover, Extract, Plan, Implement + Build Verify)
 │   ├── shared/                  # Validation, models, utilities
 │   └── mcp/                     # Model Context Protocol server
 ├── config/phases_config.yaml

@@ -17,6 +17,7 @@ from typing import Any
 from ...shared.utils.logger import log_metric, setup_logger, step_done, step_start
 from .schemas import CodegenReport
 from .stages import (
+    BuildVerifierStage,
     CodeGeneratorStage,
     CodeValidatorStage,
     ContextCollectorStage,
@@ -241,6 +242,17 @@ class CodeGenerationPipeline:
         validation = stage4.run(generated_files)
         step_done(f"Stage 4: Code Validator ({task_id})")
 
+        # Stage 4b: Build Verifier
+        step_start(f"Stage 4b: Build Verifier ({task_id})")
+        stage4b = BuildVerifierStage(
+            repo_path=self.repo_path,
+            dry_run=self.dry_run,
+        )
+        generated_files, build_result = stage4b.run(
+            generated_files, validation, plan_input, strategy
+        )
+        step_done(f"Stage 4b: Build Verifier ({task_id})")
+
         # Stage 5: Cascade write (no branch creation, no switchback)
         step_start(f"Stage 5: Cascade Write ({task_id})")
         task_duration = time.time() - task_start
@@ -253,8 +265,9 @@ class CodeGenerationPipeline:
             cascade_total=cascade_total,
             prior_task_ids=prior_task_ids,
             duration_seconds=task_duration,
-            llm_calls=stage3.total_calls,
-            total_tokens=stage3.total_tokens,
+            llm_calls=stage3.total_calls + stage4b.total_calls,
+            total_tokens=stage3.total_tokens + stage4b.total_tokens,
+            build_verification=build_result,
         )
         step_done(f"Stage 5: Cascade Write ({task_id})")
 
@@ -361,6 +374,32 @@ class CodeGenerationPipeline:
                 security_issues=len(validation.security_issues),
             )
 
+            # Stage 4b: Build Verifier
+            step_start(f"Stage 4b: Build Verifier ({task_id})")
+            stage4b_start = time.time()
+            stage4b = BuildVerifierStage(
+                repo_path=self.repo_path,
+                dry_run=self.dry_run,
+            )
+            generated_files, build_result = stage4b.run(
+                generated_files, validation, plan_input, strategy
+            )
+            stage4b_duration = time.time() - stage4b_start
+            step_done(f"Stage 4b: Build Verifier ({task_id})")
+
+            log_metric(
+                "stage_complete",
+                phase="implement",
+                stage="stage4b_build_verifier",
+                duration_seconds=stage4b_duration,
+                task_id=task_id,
+                all_passed=build_result.all_passed,
+                containers_built=build_result.total_containers_built,
+                containers_failed=build_result.total_containers_failed,
+                heal_attempts=build_result.total_heal_attempts,
+                skipped=build_result.skipped,
+            )
+
             # Stage 5: Output Writer
             step_start(f"Stage 5: Output Writer ({task_id})")
             stage5_start = time.time()
@@ -375,8 +414,9 @@ class CodeGenerationPipeline:
                 generated_files=generated_files,
                 validation=validation,
                 duration_seconds=total_duration,
-                llm_calls=stage3.total_calls,
-                total_tokens=stage3.total_tokens,
+                llm_calls=stage3.total_calls + stage4b.total_calls,
+                total_tokens=stage3.total_tokens + stage4b.total_tokens,
+                build_verification=build_result,
             )
             stage5_duration = time.time() - stage5_start
             step_done(f"Stage 5: Output Writer ({task_id})")

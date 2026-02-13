@@ -48,7 +48,7 @@ interface ParsedComponent {
         <mat-icon class="page-icon">summarize</mat-icon>
         <div>
           <h1 class="page-title">Reports</h1>
-          <p class="page-subtitle">Development plans, codegen reports, and branch management</p>
+          <p class="page-subtitle">Phase outputs, development plans, codegen reports, and branch management</p>
         </div>
       </div>
 
@@ -59,7 +59,121 @@ interface ParsedComponent {
       } @else {
         <mat-tab-group (selectedTabChange)="onTabChange($event)">
           <!-- ============================================================ -->
-          <!-- TAB 1: Development Plans                                     -->
+          <!-- TAB 1: Extract                                               -->
+          <!-- ============================================================ -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">biotech</mat-icon>
+              Extract ({{ reports?.extract_reports?.length || 0 }})
+            </ng-template>
+
+            @if (reports?.extract_reports?.length) {
+              <mat-accordion class="report-accordion" multi>
+                @for (file of reports!.extract_reports; track file['_file']) {
+                  <mat-expansion-panel (opened)="loadFileContent($any(file['_file']))">
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>
+                        <mat-icon class="panel-icon">data_object</mat-icon>
+                        <span class="mono">{{ file['_name'] }}</span>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    @if (fileLoading[$any(file['_file'])]) {
+                      <mat-spinner diameter="24"></mat-spinner>
+                    } @else if (fileContents[$any(file['_file'])]) {
+                      <pre class="code-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                    }
+                  </mat-expansion-panel>
+                }
+              </mat-accordion>
+            } @else {
+              <div class="empty-inline tab-empty">
+                <mat-icon>biotech</mat-icon>
+                <span>No extract outputs found. Run the Extract phase to generate architecture facts.</span>
+              </div>
+            }
+          </mat-tab>
+
+          <!-- ============================================================ -->
+          <!-- TAB 2: Analyze                                               -->
+          <!-- ============================================================ -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">analytics</mat-icon>
+              Analyze ({{ reports?.analyze_reports?.length || 0 }})
+            </ng-template>
+
+            @if (reports?.analyze_reports?.length) {
+              <mat-accordion class="report-accordion" multi>
+                @for (file of reports!.analyze_reports; track file['_file']) {
+                  <mat-expansion-panel (opened)="loadFileContent($any(file['_file']))">
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>
+                        <mat-icon class="panel-icon">data_object</mat-icon>
+                        <span class="mono">{{ file['_name'] }}</span>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    @if (fileLoading[$any(file['_file'])]) {
+                      <mat-spinner diameter="24"></mat-spinner>
+                    } @else if (fileContents[$any(file['_file'])]) {
+                      <pre class="code-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                    }
+                  </mat-expansion-panel>
+                }
+              </mat-accordion>
+            } @else {
+              <div class="empty-inline tab-empty">
+                <mat-icon>analytics</mat-icon>
+                <span>No analysis outputs found. Run the Analyze phase to generate architecture analysis.</span>
+              </div>
+            }
+          </mat-tab>
+
+          <!-- ============================================================ -->
+          <!-- TAB 3: Document                                              -->
+          <!-- ============================================================ -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">auto_stories</mat-icon>
+              Document ({{ reports?.document_reports?.length || 0 }})
+            </ng-template>
+
+            @if (reports?.document_reports?.length) {
+              <mat-accordion class="report-accordion" multi>
+                @for (file of reports!.document_reports; track file['_file']) {
+                  <mat-expansion-panel (opened)="loadFileContent($any(file['_file']))">
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>
+                        <mat-icon class="panel-icon">{{ file['_type'] === 'md' ? 'article' : 'data_object' }}</mat-icon>
+                        <span class="mono">{{ file['_name'] }}</span>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    @if (fileLoading[$any(file['_file'])]) {
+                      <mat-spinner diameter="24"></mat-spinner>
+                    } @else if (fileContents[$any(file['_file'])]) {
+                      <pre class="code-viewer doc-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                    }
+                  </mat-expansion-panel>
+                }
+              </mat-accordion>
+            } @else {
+              <div class="empty-inline tab-empty">
+                <mat-icon>auto_stories</mat-icon>
+                <span>No documentation found. Run the Document phase to generate architecture docs.</span>
+              </div>
+            }
+          </mat-tab>
+
+          <!-- ============================================================ -->
+          <!-- TAB 4: Development Plans                                     -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
@@ -717,6 +831,15 @@ interface ParsedComponent {
       .tab-empty {
         padding: 32px 16px;
       }
+      .doc-viewer {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .file-size-badge {
+        font-size: 11px;
+        color: var(--cg-gray-500);
+        font-family: monospace;
+      }
 
       /* Plan body layout */
       .plan-body,
@@ -1283,6 +1406,10 @@ export class ReportsComponent implements OnInit {
   showRawJson: Record<string, boolean> = {};
   expandedFiles: Record<string, boolean> = {};
 
+  /** Lazy-loaded file contents keyed by knowledge-relative path */
+  fileContents: Record<string, string> = {};
+  fileLoading: Record<string, boolean> = {};
+
   constructor(
     private api: ApiService,
     private cdr: ChangeDetectorRef,
@@ -1305,7 +1432,8 @@ export class ReportsComponent implements OnInit {
   }
 
   onTabChange(event: MatTabChangeEvent): void {
-    if (event.index === 2 && !this.branches) {
+    // Git Branches is the 6th tab (index 5)
+    if (event.index === 5 && !this.branches) {
       this.loadBranches();
     }
   }
@@ -1333,6 +1461,30 @@ export class ReportsComponent implements OnInit {
 
   toggleFile(fileKey: string): void {
     this.expandedFiles[fileKey] = !this.expandedFiles[fileKey];
+  }
+
+  /** Load file content on demand when a phase panel is opened */
+  loadFileContent(path: string): void {
+    if (this.fileContents[path] || this.fileLoading[path]) return;
+    this.fileLoading[path] = true;
+    this.api.getKnowledgeFile(path).subscribe({
+      next: (data) => {
+        this.fileContents[path] = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        this.fileLoading[path] = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.fileContents[path] = '(Failed to load file)';
+        this.fileLoading[path] = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  formatBytes(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
   }
 
   /** Parse component ID strings into structured objects */
@@ -1416,6 +1568,7 @@ export class ReportsComponent implements OnInit {
   }
 
   getLanguage(filePath: string): string {
+    if (!filePath) return '';
     const ext = filePath.split('.').pop()?.toLowerCase() || '';
     const map: Record<string, string> = {
       ts: 'TypeScript',
