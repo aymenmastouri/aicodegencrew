@@ -49,8 +49,8 @@ def reset_all():
             detail="Cannot reset while pipeline is running",
         )
 
-    # Use all phases except indexing (single source of truth)
-    all_phases = [p for p in PHASE_OUTPUTS if p != "phase0_indexing"]
+    # Use all phases except discover (single source of truth)
+    all_phases = [p for p in PHASE_OUTPUTS if p != "discover"]
 
     return execute_reset(
         phase_ids=all_phases,

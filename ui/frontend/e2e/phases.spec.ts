@@ -23,7 +23,7 @@ test.describe('Phases', () => {
   test('should show phase numbers, IDs, names, and status', async ({ page }) => {
     await expect(page.locator('.phase-table')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('.phase-num').first()).toBeVisible();
-    await expect(page.locator('td.mono:has-text("phase0_indexing")')).toBeVisible();
+    await expect(page.locator('td.mono:has-text("discover")')).toBeVisible();
     await expect(page.locator('td:has-text("Repository Indexing")')).toBeVisible();
     await expect(page.locator('.status-chip').first()).toBeVisible();
   });

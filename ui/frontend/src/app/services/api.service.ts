@@ -203,7 +203,7 @@ export class ApiService {
     return this.http.get<string[]>(`${this.base}/logs/files`);
   }
 
-  getLogs(filename = 'aicodegencrew.log', tail = 200): Observable<LogResponse> {
+  getLogs(filename = 'current.log', tail = 200): Observable<LogResponse> {
     const params = new HttpParams().set('filename', filename).set('tail', tail.toString());
     return this.http.get<LogResponse>(`${this.base}/logs`, { params });
   }

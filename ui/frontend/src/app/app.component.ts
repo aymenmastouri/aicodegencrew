@@ -34,9 +34,9 @@ import { NotificationService } from './services/notification.service';
       </button>
       <a routerLink="/dashboard" class="brand-link">
         <span class="brand">
-          <span class="brand-ai">AI</span>CodeGen<span class="brand-ai">Crew</span>
+          <span class="brand-ai">SDLC</span> Pilot
         </span>
-        <span class="brand-sub">SDLC Dashboard</span>
+        <span class="brand-sub">AI-Powered Development Lifecycle Automation</span>
       </a>
       <span class="flex-1"></span>
 

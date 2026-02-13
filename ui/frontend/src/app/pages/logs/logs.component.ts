@@ -128,7 +128,7 @@ import { ApiService, LogResponse } from '../../services/api.service';
 })
 export class LogsComponent implements OnInit {
   logFiles: string[] = [];
-  selectedFile = 'aicodegencrew.log';
+  selectedFile = 'current.log';
   logResponse: LogResponse | null = null;
   loading = true;
 

@@ -225,32 +225,32 @@ class TestPhaseOutputValidatorInstantiation:
 
 class TestPhase0Validation:
     def test_missing_chroma_dir_returns_errors(self, validator, tmp_path, monkeypatch):
-        """validate_phase('phase0_indexing') with missing .chroma dir returns errors."""
+        """validate_phase('discover') with missing discover dir returns errors."""
         monkeypatch.chdir(tmp_path)
-        # .cache/.chroma does NOT exist
-        errors = validator.validate_phase("phase0_indexing")
+        # knowledge/discover does NOT exist
+        errors = validator.validate_phase("discover")
         assert len(errors) >= 1
-        assert any(".chroma" in e for e in errors)
+        assert any("discover" in e for e in errors)
 
     def test_empty_chroma_file_returns_errors(self, validator, tmp_path, monkeypatch):
-        """An empty .chroma file (not a directory) should report as empty."""
+        """An empty discover file (not a directory) should report as empty."""
         monkeypatch.chdir(tmp_path)
-        cache_dir = tmp_path / ".cache"
-        cache_dir.mkdir()
-        chroma_file = cache_dir / ".chroma"
-        chroma_file.write_text("")  # Empty file (not dir)
-        errors = validator.validate_phase("phase0_indexing")
+        discover_dir = tmp_path / "knowledge"
+        discover_dir.mkdir()
+        discover_file = discover_dir / "discover"
+        discover_file.write_text("")  # Empty file (not dir)
+        errors = validator.validate_phase("discover")
         assert len(errors) >= 1
         assert any("Empty" in e or "Missing" in e for e in errors)
 
     def test_valid_chroma_dir_returns_no_errors(self, validator, tmp_path, monkeypatch):
-        """A real .chroma directory passes phase0 validation."""
+        """A real discover directory passes phase0 validation."""
         monkeypatch.chdir(tmp_path)
-        chroma_dir = tmp_path / ".cache" / ".chroma"
-        chroma_dir.mkdir(parents=True)
+        discover_dir = tmp_path / "knowledge" / "discover"
+        discover_dir.mkdir(parents=True)
         # Phase 0 spec only checks required_paths; a directory isn't a file,
         # so is_file() is False and the empty check is skipped.
-        errors = validator.validate_phase("phase0_indexing")
+        errors = validator.validate_phase("discover")
         # Directory exists -> no "Missing" error; not a file -> no "Empty" error
         assert errors == []
 
@@ -262,9 +262,9 @@ class TestPhase0Validation:
 
 class TestPhase1Validation:
     def test_missing_json_returns_errors(self, validator, tmp_path, monkeypatch):
-        """validate_phase('phase1_architecture_facts') with missing JSON files returns errors."""
+        """validate_phase('extract') with missing JSON files returns errors."""
         monkeypatch.chdir(tmp_path)
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert len(errors) >= 1
         assert any("architecture_facts.json" in e for e in errors)
 
@@ -272,7 +272,7 @@ class TestPhase1Validation:
         """Valid JSON that passes Pydantic schema should produce no errors."""
         monkeypatch.chdir(tmp_path)
         # Create directory structure
-        arch_dir = tmp_path / "knowledge" / "architecture"
+        arch_dir = tmp_path / "knowledge" / "extract"
         arch_dir.mkdir(parents=True)
 
         # Write valid facts JSON
@@ -283,13 +283,13 @@ class TestPhase1Validation:
         evidence_path = arch_dir / "evidence_map.json"
         evidence_path.write_text(json.dumps(_valid_evidence_json()), encoding="utf-8")
 
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert errors == [], f"Unexpected errors: {errors}"
 
     def test_invalid_json_content_returns_errors(self, validator, tmp_path, monkeypatch):
         """Malformed JSON (not valid JSON at all) returns parse error."""
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
+        arch_dir = tmp_path / "knowledge" / "extract"
         arch_dir.mkdir(parents=True)
 
         # Write invalid JSON
@@ -299,14 +299,14 @@ class TestPhase1Validation:
         evidence_path = arch_dir / "evidence_map.json"
         evidence_path.write_text(json.dumps(_valid_evidence_json()), encoding="utf-8")
 
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert len(errors) >= 1
         assert any("Invalid JSON" in e for e in errors)
 
     def test_schema_violation_returns_errors(self, validator, tmp_path, monkeypatch):
         """JSON that doesn't conform to ArchitectureFacts schema returns errors."""
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
+        arch_dir = tmp_path / "knowledge" / "extract"
         arch_dir.mkdir(parents=True)
 
         # Valid JSON but missing 'system' field (required by ArchitectureFacts)
@@ -317,14 +317,14 @@ class TestPhase1Validation:
         evidence_path = arch_dir / "evidence_map.json"
         evidence_path.write_text(json.dumps({}), encoding="utf-8")
 
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert len(errors) >= 1
         assert any("Schema validation failed" in e for e in errors)
 
     def test_zero_components_returns_error(self, validator, tmp_path, monkeypatch):
         """Facts with 0 components should fail the min_components check."""
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
+        arch_dir = tmp_path / "knowledge" / "extract"
         arch_dir.mkdir(parents=True)
 
         # Valid schema but no components and no containers
@@ -340,14 +340,14 @@ class TestPhase1Validation:
         evidence_path = arch_dir / "evidence_map.json"
         evidence_path.write_text(json.dumps(_valid_evidence_json()), encoding="utf-8")
 
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert len(errors) >= 1
         assert any("Too few" in e for e in errors)
 
     def test_zero_components_with_containers_returns_component_error(self, validator, tmp_path, monkeypatch):
         """Facts with containers but 0 components should fail min_components."""
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
+        arch_dir = tmp_path / "knowledge" / "extract"
         arch_dir.mkdir(parents=True)
 
         data = _valid_facts_json()
@@ -362,7 +362,7 @@ class TestPhase1Validation:
         evidence_path = arch_dir / "evidence_map.json"
         evidence_path.write_text(json.dumps(_valid_evidence_json()), encoding="utf-8")
 
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert any("Too few components" in e for e in errors)
 
 
@@ -373,17 +373,17 @@ class TestPhase1Validation:
 
 class TestPhase2Validation:
     def test_missing_keys_returns_errors(self, validator, tmp_path, monkeypatch):
-        """validate_phase('phase2_architecture_analysis') with missing required keys returns errors."""
+        """validate_phase('analyze') with missing required keys returns errors."""
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
+        analyze_dir = tmp_path / "knowledge" / "analyze"
+        analyze_dir.mkdir(parents=True)
 
         # JSON is valid but missing 'architecture' and 'patterns' keys
         incomplete_data = {"summary": "just a summary"}
-        analysis_path = arch_dir / "analyzed_architecture.json"
+        analysis_path = analyze_dir / "analyzed_architecture.json"
         analysis_path.write_text(json.dumps(incomplete_data), encoding="utf-8")
 
-        errors = validator.validate_phase("phase2_architecture_analysis")
+        errors = validator.validate_phase("analyze")
         assert len(errors) >= 1
         assert any("architecture" in e for e in errors)
         assert any("patterns" in e for e in errors)
@@ -391,26 +391,26 @@ class TestPhase2Validation:
     def test_valid_analysis_returns_no_errors(self, validator, tmp_path, monkeypatch):
         """Valid analysis JSON with all required keys should pass."""
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
+        analyze_dir = tmp_path / "knowledge" / "analyze"
+        analyze_dir.mkdir(parents=True)
 
-        analysis_path = arch_dir / "analyzed_architecture.json"
+        analysis_path = analyze_dir / "analyzed_architecture.json"
         analysis_path.write_text(json.dumps(_valid_analysis_json()), encoding="utf-8")
 
-        errors = validator.validate_phase("phase2_architecture_analysis")
+        errors = validator.validate_phase("analyze")
         assert errors == [], f"Unexpected errors: {errors}"
 
     def test_partial_keys_returns_specific_errors(self, validator, tmp_path, monkeypatch):
         """JSON with only 'architecture' but missing 'patterns' returns error for 'patterns'."""
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
+        analyze_dir = tmp_path / "knowledge" / "analyze"
+        analyze_dir.mkdir(parents=True)
 
         partial = {"architecture": {"style": "microservice"}}
-        analysis_path = arch_dir / "analyzed_architecture.json"
+        analysis_path = analyze_dir / "analyzed_architecture.json"
         analysis_path.write_text(json.dumps(partial), encoding="utf-8")
 
-        errors = validator.validate_phase("phase2_architecture_analysis")
+        errors = validator.validate_phase("analyze")
         assert len(errors) == 1
         assert "patterns" in errors[0]
 
@@ -422,16 +422,16 @@ class TestPhase2Validation:
 
 class TestPhase3Validation:
     def test_missing_md_files_returns_errors(self, validator, tmp_path, monkeypatch):
-        """validate_phase('phase3_architecture_synthesis') with missing .md files returns errors."""
+        """validate_phase('document') with missing .md files returns errors."""
         monkeypatch.chdir(tmp_path)
-        errors = validator.validate_phase("phase3_architecture_synthesis")
+        errors = validator.validate_phase("document")
         assert len(errors) >= 1
         assert any(".md" in e for e in errors)
 
     def test_too_small_files_returns_errors(self, validator, tmp_path, monkeypatch):
         """Files smaller than min_file_size (500 bytes) should produce errors."""
         monkeypatch.chdir(tmp_path)
-        c4_dir = tmp_path / "knowledge" / "architecture" / "c4"
+        c4_dir = tmp_path / "knowledge" / "document" / "c4"
         c4_dir.mkdir(parents=True)
 
         required = [
@@ -443,14 +443,14 @@ class TestPhase3Validation:
         for fname in required:
             (c4_dir / fname).write_text("# Short", encoding="utf-8")
 
-        errors = validator.validate_phase("phase3_architecture_synthesis")
+        errors = validator.validate_phase("document")
         assert len(errors) >= 1
         assert any("too small" in e.lower() or "Output too small" in e for e in errors)
 
     def test_valid_synthesis_files_returns_no_errors(self, validator, tmp_path, monkeypatch):
         """Sufficiently large .md files should pass phase3 validation."""
         monkeypatch.chdir(tmp_path)
-        c4_dir = tmp_path / "knowledge" / "architecture" / "c4"
+        c4_dir = tmp_path / "knowledge" / "document" / "c4"
         c4_dir.mkdir(parents=True)
 
         required = [
@@ -463,7 +463,7 @@ class TestPhase3Validation:
         for fname in required:
             (c4_dir / fname).write_text(big_content, encoding="utf-8")
 
-        errors = validator.validate_phase("phase3_architecture_synthesis")
+        errors = validator.validate_phase("document")
         assert errors == [], f"Unexpected errors: {errors}"
 
 
@@ -496,11 +496,11 @@ class TestDependencyValidation:
         class MockOrchestrator:
             def get_phase_config(self, phase_id):
                 return {
-                    "phase1_architecture_facts": {
-                        "dependencies": ["phase0_indexing"],
+                    "extract": {
+                        "dependencies": ["discover"],
                     },
-                    "phase2_architecture_analysis": {
-                        "dependencies": ["phase0_indexing", "phase1_architecture_facts"],
+                    "analyze": {
+                        "dependencies": ["discover", "extract"],
                     },
                 }.get(phase_id, {"dependencies": []})
 
@@ -524,15 +524,15 @@ class TestDependencyValidation:
         validator._mock_validate_dependency = lambda pid, mo: _mock_validate_dependency(validator, pid, mo)
 
         # Call the mocked version directly to test the logic
-        errors = _mock_validate_dependency(validator, "phase2_architecture_analysis", MockOrchestrator())
+        errors = _mock_validate_dependency(validator, "analyze", MockOrchestrator())
 
         # Should have validated both upstream phases
-        assert "phase0_indexing" in validated_phases
-        assert "phase1_architecture_facts" in validated_phases
+        assert "discover" in validated_phases
+        assert "extract" in validated_phases
         # Both phases have missing files, so errors should exist
         assert len(errors) >= 2
-        assert any("phase0_indexing" in e for e in errors)
-        assert any("phase1_architecture_facts" in e for e in errors)
+        assert any("discover" in e for e in errors)
+        assert any("extract" in e for e in errors)
 
 
 # =============================================================================

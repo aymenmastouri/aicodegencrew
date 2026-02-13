@@ -265,54 +265,55 @@ class TestScenario2PresetResolution:
 
         return SDLCOrchestrator(config_path=str(config_path))
 
-    def test_indexing_only_preset(self, orchestrator):
-        """indexing_only => [phase0_indexing]."""
-        phases = orchestrator.get_preset_phases("indexing_only")
-        assert phases == ["phase0_indexing"]
+    def test_index_preset(self, orchestrator):
+        """index => [discover]."""
+        phases = orchestrator.get_preset_phases("index")
+        assert phases == ["discover"]
 
-    def test_facts_only_preset(self, orchestrator):
-        """facts_only => [phase0_indexing, phase1_architecture_facts]."""
-        phases = orchestrator.get_preset_phases("facts_only")
-        assert phases == ["phase0_indexing", "phase1_architecture_facts"]
+    def test_scan_preset(self, orchestrator):
+        """scan => [discover, extract]."""
+        phases = orchestrator.get_preset_phases("scan")
+        assert phases == ["discover", "extract"]
 
-    def test_analysis_only_preset(self, orchestrator):
-        """analysis_only => [phase0..phase2]."""
-        phases = orchestrator.get_preset_phases("analysis_only")
+    def test_analyze_preset(self, orchestrator):
+        """analyze => [discover, extract, analyze]."""
+        phases = orchestrator.get_preset_phases("analyze")
         assert phases == [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
+            "discover",
+            "extract",
+            "analyze",
         ]
 
-    def test_architecture_workflow_preset(self, orchestrator):
-        """architecture_workflow => [phase0..phase3]."""
-        phases = orchestrator.get_preset_phases("architecture_workflow")
+    def test_document_preset(self, orchestrator):
+        """document => [phase0..phase3]."""
+        phases = orchestrator.get_preset_phases("document")
         assert phases == [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
+            "discover",
+            "extract",
+            "analyze",
+            "document",
         ]
 
-    def test_planning_only_preset(self, orchestrator):
-        """planning_only => [phase0, phase1, phase2, phase4]."""
-        phases = orchestrator.get_preset_phases("planning_only")
+    def test_plan_preset(self, orchestrator):
+        """plan => [discover, extract, analyze, document, plan]."""
+        phases = orchestrator.get_preset_phases("plan")
         assert phases == [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase4_development_planning",
+            "discover",
+            "extract",
+            "analyze",
+            "document",
+            "plan",
         ]
 
-    def test_architecture_full_preset(self, orchestrator):
-        """architecture_full => [phase0..phase4]."""
-        phases = orchestrator.get_preset_phases("architecture_full")
+    def test_architect_preset(self, orchestrator):
+        """architect => [phase0..phase4]."""
+        phases = orchestrator.get_preset_phases("architect")
         assert phases == [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
-            "phase4_development_planning",
+            "discover",
+            "extract",
+            "analyze",
+            "document",
+            "plan",
         ]
 
     def test_unknown_preset_returns_empty(self, orchestrator):
@@ -323,11 +324,11 @@ class TestScenario2PresetResolution:
     def test_get_presets_lists_all(self, orchestrator):
         """get_presets() returns all defined preset names."""
         presets = orchestrator.get_presets()
-        assert "indexing_only" in presets
-        assert "facts_only" in presets
-        assert "architecture_workflow" in presets
-        assert "architecture_full" in presets
-        assert "planning_only" in presets
+        assert "index" in presets
+        assert "scan" in presets
+        assert "document" in presets
+        assert "architect" in presets
+        assert "plan" in presets
 
     def test_phase_ordering(self, orchestrator):
         """Phases are ordered by their 'order' field."""
@@ -344,10 +345,10 @@ class TestScenario2PresetResolution:
     def test_phase_dependencies_declared(self, orchestrator):
         """Every phase (except phase0) declares dependencies."""
         for phase_id in [
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
-            "phase4_development_planning",
+            "extract",
+            "analyze",
+            "document",
+            "plan",
         ]:
             config = orchestrator.get_phase_config(phase_id)
             deps = config.get("dependencies", [])
@@ -380,7 +381,7 @@ class TestScenario3ErrorRecovery:
     def test_invalid_json_in_facts(self, tmp_path):
         """Validator catches invalid JSON in architecture_facts.json."""
 
-        arch_dir = tmp_path / "knowledge" / "architecture"
+        arch_dir = tmp_path / "knowledge" / "extract"
         arch_dir.mkdir(parents=True)
 
         # Write invalid JSON
@@ -399,7 +400,7 @@ class TestScenario3ErrorRecovery:
         from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
         # Verify spec says files must exist
-        spec = PHASE_OUTPUT_SPECS.get("phase1_architecture_facts", {})
+        spec = PHASE_OUTPUT_SPECS.get("extract", {})
         required = spec.get("required_paths", [])
         assert len(required) >= 2  # facts + evidence
 
@@ -427,7 +428,7 @@ class TestScenario3ErrorRecovery:
         orch = SDLCOrchestrator(config_path=str(config_path))
         # phase1 depends on phase0 output (.cache/.chroma)
         # Without it, dependency check should fail
-        result = orch._outputs_exist("phase1_architecture_facts")
+        result = orch._outputs_exist("extract")
         # Since we are in tmp_path, the output files don't exist
         # (the method checks absolute paths from CWD)
         # This verifies the method handles the situation
@@ -491,15 +492,15 @@ class TestScenario4PhaseOutputValidation:
         """Phase 0 has an output specification."""
         from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
-        assert "phase0_indexing" in PHASE_OUTPUT_SPECS
-        spec = PHASE_OUTPUT_SPECS["phase0_indexing"]
+        assert "discover" in PHASE_OUTPUT_SPECS
+        spec = PHASE_OUTPUT_SPECS["discover"]
         assert "required_paths" in spec
 
     def test_phase1_output_spec_exists(self):
         """Phase 1 has an output specification with schema validation."""
         from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
-        spec = PHASE_OUTPUT_SPECS["phase1_architecture_facts"]
+        spec = PHASE_OUTPUT_SPECS["extract"]
         assert "required_paths" in spec
         assert "schema" in spec
         assert spec["schema"] == "architecture_facts"
@@ -510,7 +511,7 @@ class TestScenario4PhaseOutputValidation:
         """Phase 2 has an output specification with required keys."""
         from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
-        spec = PHASE_OUTPUT_SPECS["phase2_architecture_analysis"]
+        spec = PHASE_OUTPUT_SPECS["analyze"]
         assert "required_paths" in spec
         assert "required_keys" in spec
         assert "architecture" in spec["required_keys"]
@@ -520,7 +521,7 @@ class TestScenario4PhaseOutputValidation:
         """Phase 3 has an output specification with min file size."""
         from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
-        spec = PHASE_OUTPUT_SPECS["phase3_architecture_synthesis"]
+        spec = PHASE_OUTPUT_SPECS["document"]
         assert "required_paths" in spec
         assert "min_file_size" in spec
         assert spec["min_file_size"] >= 100
@@ -541,7 +542,7 @@ class TestScenario4PhaseOutputValidation:
         monkeypatch.chdir(tmp_path)
 
         validator = PhaseOutputValidator()
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
 
         # Should report missing files
         assert len(errors) > 0
@@ -554,8 +555,8 @@ class TestScenario4PhaseOutputValidation:
         monkeypatch.chdir(tmp_path)
 
         # Create the expected directory structure
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        extract_dir.mkdir(parents=True)
 
         facts = {
             "system": {"id": "system", "name": "Test", "domain": "Testing"},
@@ -581,13 +582,13 @@ class TestScenario4PhaseOutputValidation:
             "endpoint_flows": [],
         }
 
-        (arch_dir / "architecture_facts.json").write_text(json.dumps(facts), encoding="utf-8")
+        (extract_dir / "architecture_facts.json").write_text(json.dumps(facts), encoding="utf-8")
 
         evidence = {"ev_001": {"path": "Svc.java", "lines": "1-10", "reason": "test"}}
-        (arch_dir / "evidence_map.json").write_text(json.dumps(evidence), encoding="utf-8")
+        (extract_dir / "evidence_map.json").write_text(json.dumps(evidence), encoding="utf-8")
 
         validator = PhaseOutputValidator()
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert errors == [], f"Unexpected errors: {errors}"
 
     def test_validator_detects_too_few_components(self, tmp_path, monkeypatch):
@@ -596,8 +597,8 @@ class TestScenario4PhaseOutputValidation:
 
         monkeypatch.chdir(tmp_path)
 
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        extract_dir.mkdir(parents=True)
 
         facts = {
             "system": {"id": "system", "name": "Test", "domain": "Testing"},
@@ -615,14 +616,14 @@ class TestScenario4PhaseOutputValidation:
             "endpoint_flows": [],
         }
 
-        (arch_dir / "architecture_facts.json").write_text(json.dumps(facts), encoding="utf-8")
-        (arch_dir / "evidence_map.json").write_text(
+        (extract_dir / "architecture_facts.json").write_text(json.dumps(facts), encoding="utf-8")
+        (extract_dir / "evidence_map.json").write_text(
             '{"ev_001": {"path": "x", "lines": "1-1", "reason": "r"}}',
             encoding="utf-8",
         )
 
         validator = PhaseOutputValidator()
-        errors = validator.validate_phase("phase1_architecture_facts")
+        errors = validator.validate_phase("extract")
         assert any("Too few components" in e for e in errors)
 
 
@@ -1029,12 +1030,12 @@ class TestOrchestratorDataFlow:
             def kickoff(self, inputs=None):
                 return {"status": "success"}
 
-        orch.register("phase0_indexing", MockPhase())
-        orch.register("phase1_architecture_facts", MockPhase())
+        orch.register("discover", MockPhase())
+        orch.register("extract", MockPhase())
 
-        resolved = orch._resolve_phases("facts_only", None)
-        assert "phase0_indexing" in resolved
-        assert "phase1_architecture_facts" in resolved
+        resolved = orch._resolve_phases("scan", None)
+        assert "discover" in resolved
+        assert "extract" in resolved
 
     def test_explicit_phases_override_preset(self, tmp_path):
         """Explicit phase list overrides preset."""
@@ -1050,14 +1051,14 @@ class TestOrchestratorDataFlow:
             def kickoff(self, inputs=None):
                 return {"status": "success"}
 
-        orch.register("phase0_indexing", MockPhase())
+        orch.register("discover", MockPhase())
 
         # Explicit list should override preset
         resolved = orch._resolve_phases(
-            "architecture_full",
-            ["phase0_indexing"],
+            "architect",
+            ["discover"],
         )
-        assert resolved == ["phase0_indexing"]
+        assert resolved == ["discover"]
 
     def test_pipeline_result_structure(self):
         """PipelineResult.to_dict has expected structure."""
@@ -1084,14 +1085,14 @@ class TestOrchestratorDataFlow:
         from aicodegencrew.orchestrator import PhaseResult
 
         result = PhaseResult(
-            phase_id="phase2_architecture_analysis",
+            phase_id="analyze",
             status="success",
             message="Completed",
             duration_seconds=42.5,
         )
 
         d = result.to_dict()
-        assert d["phase"] == "phase2_architecture_analysis"
+        assert d["phase"] == "analyze"
         assert d["status"] == "success"
         assert d["duration"] == "42.50s"
 
@@ -1130,8 +1131,8 @@ class TestScenario6RunReport:
             status="success",
             message="All phases completed",
             phases=[
-                PhaseResult(phase_id="phase0_indexing", status="success", duration_seconds=1.5),
-                PhaseResult(phase_id="phase1_architecture_facts", status="success", duration_seconds=10.2),
+                PhaseResult(phase_id="discover", status="success", duration_seconds=1.5),
+                PhaseResult(phase_id="extract", status="success", duration_seconds=10.2),
             ],
             total_duration="0:00:12",
         )
@@ -1145,7 +1146,7 @@ class TestScenario6RunReport:
             git_branch="",
         )
 
-        report_path = _export_run_report(result, config, {"phase0_indexing", "phase1_architecture_facts"})
+        report_path = _export_run_report(result, config, {"discover", "extract"})
 
         assert report_path is not None
         assert report_path.exists()
@@ -1154,7 +1155,7 @@ class TestScenario6RunReport:
         assert report["status"] == "success"
         assert report["run_id"]  # Non-empty
         assert len(report["phases"]) == 2
-        assert report["phases"][0]["phase"] == "phase0_indexing"
+        assert report["phases"][0]["phase"] == "discover"
         assert report["phases"][0]["duration_seconds"] == 1.5
         assert report["environment"]["repo_path"] == str(Path("/some/repo"))
         assert report["environment"]["index_mode"] == "auto"
@@ -1171,9 +1172,9 @@ class TestScenario6RunReport:
             status="failed",
             message="Phase 2 crashed",
             phases=[
-                PhaseResult(phase_id="phase0_indexing", status="success", duration_seconds=1.0),
-                PhaseResult(phase_id="phase1_architecture_facts", status="success", duration_seconds=8.0),
-                PhaseResult(phase_id="phase2_architecture_analysis", status="failed", message="LLM timeout"),
+                PhaseResult(phase_id="discover", status="success", duration_seconds=1.0),
+                PhaseResult(phase_id="extract", status="success", duration_seconds=8.0),
+                PhaseResult(phase_id="analyze", status="failed", message="LLM timeout"),
             ],
             total_duration="0:01:30",
         )
@@ -1188,7 +1189,7 @@ class TestScenario6RunReport:
         )
 
         report_path = _export_run_report(
-            result, config, {"phase0_indexing", "phase1_architecture_facts", "phase2_architecture_analysis"}
+            result, config, {"discover", "extract", "analyze"}
         )
 
         report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -1197,7 +1198,7 @@ class TestScenario6RunReport:
         assert report["phases"][2]["status"] == "failed"
 
     def test_export_run_report_planned_phases_sorted(self, tmp_path, monkeypatch):
-        """planned_phases appear sorted in the report."""
+        """planned_phases appear sorted alphabetically in the report."""
         monkeypatch.chdir(tmp_path)
         from aicodegencrew.cli import Config, _export_run_report
         from aicodegencrew.orchestrator import PipelineResult
@@ -1214,12 +1215,13 @@ class TestScenario6RunReport:
         )
 
         _export_run_report(
-            result, config, {"phase2_architecture_analysis", "phase0_indexing", "phase1_architecture_facts"}
+            result, config, {"analyze", "discover", "extract"}
         )
 
         report = json.loads((tmp_path / "knowledge" / "run_report.json").read_text(encoding="utf-8"))
+        # sorted() produces alphabetical order
         assert report["planned_phases"] == [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
+            "analyze",
+            "discover",
+            "extract",
         ]

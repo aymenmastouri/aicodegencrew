@@ -50,6 +50,7 @@ class PipelineExecutor:
         self._log_lock = threading.Lock()
         self._state_lock = threading.Lock()
         self._started_at: float | None = None
+        self._finished_at: float | None = None
         self._exit_code: int | None = None
 
     def start(
@@ -97,8 +98,8 @@ class PipelineExecutor:
                         cmd.extend(["--preset", p.name])
                         break
                 else:
-                    # No matching preset — use full_pipeline as fallback
-                    cmd.extend(["--preset", "full_pipeline"])
+                    # No matching preset — use full as fallback
+                    cmd.extend(["--preset", "full"])
 
             self.current_run = RunInfo(
                 run_id=run_id,
@@ -110,6 +111,7 @@ class PipelineExecutor:
             self._log_lines = []
             self._exit_code = None
             self._started_at = time.monotonic()
+            self._finished_at = None
 
             # Spawn subprocess
             try:
@@ -157,6 +159,7 @@ class PipelineExecutor:
                 except subprocess.TimeoutExpired:
                     self._process.kill()
                 self.state = "cancelled"
+                self._finished_at = time.monotonic()
                 logger.info("Pipeline cancelled: run_id=%s", self.current_run.run_id if self.current_run else "?")
                 return True
             except Exception as exc:
@@ -165,12 +168,19 @@ class PipelineExecutor:
 
     def get_status(self) -> dict:
         """Get current execution status."""
+        # Auto-reset to idle after 120s in a terminal state
+        if self.state in ("completed", "failed", "cancelled") and self._finished_at:
+            if time.monotonic() - self._finished_at > 120:
+                with self._state_lock:
+                    self.state = "idle"
+                    self._finished_at = None
+
         elapsed = None
         if self._started_at and self.state == "running":
             elapsed = round(time.monotonic() - self._started_at, 1)
         elif self._started_at and self.state in ("completed", "failed", "cancelled"):
-            # Keep last elapsed
-            elapsed = round(time.monotonic() - self._started_at, 1)
+            # Show elapsed since run started (not growing endlessly)
+            elapsed = round((self._finished_at or time.monotonic()) - self._started_at, 1)
 
         phase_progress = self._read_phase_progress() if self.state in ("running", "completed", "failed") else []
 
@@ -273,6 +283,7 @@ class PipelineExecutor:
             with self._state_lock:
                 if self.state == "running":
                     self.state = "completed" if self._exit_code == 0 else "failed"
+                    self._finished_at = time.monotonic()
                     logger.info(
                         "Pipeline finished: run_id=%s, exit_code=%d, state=%s",
                         self.current_run.run_id if self.current_run else "?",
@@ -288,6 +299,7 @@ class PipelineExecutor:
             with self._state_lock:
                 if self.state == "running":
                     self.state = "failed"
+                    self._finished_at = time.monotonic()
             self._append_history_entry()
 
     def _append_history_entry(self) -> None:
@@ -314,25 +326,25 @@ class PipelineExecutor:
     # Mapping from crew_type in metrics to parent phase_id
     _CREW_PHASE_MAP: dict[str, str] = {
         # Phase 1 (Facts)
-        "architecture_collector": "facts_extraction",
-        "dependency_collector": "facts_extraction",
-        "quality_collector": "facts_extraction",
-        "security_collector": "facts_extraction",
-        "test_collector": "facts_extraction",
+        "architecture_collector": "extract",
+        "dependency_collector": "extract",
+        "quality_collector": "extract",
+        "security_collector": "extract",
+        "test_collector": "extract",
         # Phase 2 (Analysis)
-        "architecture_analyzer": "deep_analysis",
-        "dependency_analyzer": "deep_analysis",
-        "quality_analyzer": "deep_analysis",
-        "impact_analyzer": "deep_analysis",
+        "architecture_analyzer": "analyze",
+        "dependency_analyzer": "analyze",
+        "quality_analyzer": "analyze",
+        "impact_analyzer": "analyze",
         # Phase 3 (Synthesis)
-        "synthesis_crew": "synthesis",
-        "cross_cutting_crew": "synthesis",
-        "recommendation_crew": "synthesis",
+        "synthesis_crew": "document",
+        "cross_cutting_crew": "document",
+        "recommendation_crew": "document",
         # Phase 4 (Planning)
-        "planning_crew": "planning",
+        "planning_crew": "plan",
         # Phase 5 (CodeGen)
-        "code_generation_crew": "code_generation",
-        "code_validation_crew": "code_generation",
+        "code_generation_crew": "implement",
+        "code_validation_crew": "implement",
     }
 
     def _read_phase_progress(self) -> list[dict]:

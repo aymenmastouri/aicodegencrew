@@ -25,64 +25,64 @@ from aicodegencrew.orchestrator import (
 
 MINIMAL_PHASES_CONFIG = {
     "phases": {
-        "phase0_indexing": {
+        "discover": {
             "enabled": True,
             "name": "Repository Indexing",
             "order": 0,
             "required": True,
         },
-        "phase1_architecture_facts": {
+        "extract": {
             "enabled": True,
             "name": "Architecture Facts Extraction",
             "order": 1,
             "required": True,
-            "dependencies": ["phase0_indexing"],
+            "dependencies": ["discover"],
         },
-        "phase2_architecture_analysis": {
+        "analyze": {
             "enabled": True,
             "name": "Architecture Analysis",
             "order": 2,
             "required": True,
-            "dependencies": ["phase1_architecture_facts"],
+            "dependencies": ["extract"],
         },
-        "phase3_architecture_synthesis": {
+        "document": {
             "enabled": True,
             "name": "Architecture Synthesis",
             "order": 3,
             "required": False,
-            "dependencies": ["phase2_architecture_analysis"],
+            "dependencies": ["analyze"],
         },
-        "phase4_development_planning": {
+        "plan": {
             "enabled": True,
             "name": "Development Planning",
             "order": 4,
             "required": False,
-            "dependencies": ["phase2_architecture_analysis"],
+            "dependencies": ["analyze"],
         },
     },
     "presets": {
-        "indexing_only": ["phase0_indexing"],
-        "facts_only": ["phase0_indexing", "phase1_architecture_facts"],
-        "analysis_only": [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
+        "index": ["discover"],
+        "scan": ["discover", "extract"],
+        "analyze": [
+            "discover",
+            "extract",
+            "analyze",
         ],
-        "architecture_workflow": [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
+        "document": [
+            "discover",
+            "extract",
+            "analyze",
+            "document",
         ],
-        "planning_only": [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase4_development_planning",
+        "plan": [
+            "discover",
+            "extract",
+            "analyze",
+            "plan",
         ],
     },
     "execution": {
-        "mode": "architecture_workflow",
+        "mode": "document",
         "stop_on_error": True,
     },
 }
@@ -129,27 +129,27 @@ class TestArgumentParsing:
 
     def test_run_with_preset(self):
         parser = create_parser()
-        args = parser.parse_args(["run", "--preset", "architecture_workflow"])
+        args = parser.parse_args(["run", "--preset", "document"])
         assert args.command == "run"
-        assert args.preset == "architecture_workflow"
+        assert args.preset == "document"
         assert args.phases is None
 
     def test_run_with_explicit_phases(self):
         parser = create_parser()
-        args = parser.parse_args(["run", "--phases", "phase0_indexing", "phase1_architecture_facts"])
+        args = parser.parse_args(["run", "--phases", "discover", "extract"])
         assert args.command == "run"
-        assert args.phases == ["phase0_indexing", "phase1_architecture_facts"]
+        assert args.phases == ["discover", "extract"]
         assert args.preset is None
 
     def test_run_with_clean_flag(self):
         parser = create_parser()
-        args = parser.parse_args(["run", "--clean", "--preset", "facts_only"])
+        args = parser.parse_args(["run", "--clean", "--preset", "scan"])
         assert args.clean is True
         assert args.no_clean is False
 
     def test_run_with_no_clean_flag(self):
         parser = create_parser()
-        args = parser.parse_args(["run", "--no-clean", "--preset", "facts_only"])
+        args = parser.parse_args(["run", "--no-clean", "--preset", "scan"])
         assert args.no_clean is True
         assert args.clean is False
 
@@ -159,7 +159,7 @@ class TestArgumentParsing:
         assert args.index_mode == "force"
 
     def test_plan_command(self):
-        """Parsing 'plan' produces correct args (shortcut for run --preset planning_only)."""
+        """Parsing 'plan' produces correct args (shortcut for run --preset plan)."""
         parser = create_parser()
         args = parser.parse_args(["plan"])
         assert args.command == "plan"
@@ -298,26 +298,26 @@ class TestResolvePhasesToRun:
     """Tests for _resolve_phases_to_run()."""
 
     def test_valid_preset_returns_correct_phases(self, orchestrator):
-        result = _resolve_phases_to_run(orchestrator, preset="architecture_workflow", phases=None)
+        result = _resolve_phases_to_run(orchestrator, preset="document", phases=None)
         assert result == {
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
+            "discover",
+            "extract",
+            "analyze",
+            "document",
         }
 
-    def test_indexing_only_preset(self, orchestrator):
-        result = _resolve_phases_to_run(orchestrator, preset="indexing_only", phases=None)
-        assert result == {"phase0_indexing"}
+    def test_index_preset(self, orchestrator):
+        result = _resolve_phases_to_run(orchestrator, preset="index", phases=None)
+        assert result == {"discover"}
 
     def test_explicit_phases_override_preset(self, orchestrator):
         result = _resolve_phases_to_run(
             orchestrator,
-            preset="architecture_workflow",
-            phases=["phase0_indexing"],
+            preset="document",
+            phases=["discover"],
         )
         # Explicit phases take precedence
-        assert result == {"phase0_indexing"}
+        assert result == {"discover"}
 
     def test_unknown_preset_raises_value_error(self, orchestrator):
         with pytest.raises(ValueError, match="Unknown preset"):
@@ -330,19 +330,19 @@ class TestResolvePhasesToRun:
     def test_no_preset_no_phases_returns_all_enabled(self, orchestrator):
         result = _resolve_phases_to_run(orchestrator, preset=None, phases=None)
         # All 5 phases in our minimal config are enabled
-        assert "phase0_indexing" in result
-        assert "phase1_architecture_facts" in result
-        assert "phase2_architecture_analysis" in result
-        assert "phase3_architecture_synthesis" in result
-        assert "phase4_development_planning" in result
+        assert "discover" in result
+        assert "extract" in result
+        assert "analyze" in result
+        assert "document" in result
+        assert "plan" in result
 
-    def test_planning_only_preset(self, orchestrator):
-        result = _resolve_phases_to_run(orchestrator, preset="planning_only", phases=None)
+    def test_plan_preset(self, orchestrator):
+        result = _resolve_phases_to_run(orchestrator, preset="plan", phases=None)
         assert result == {
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase4_development_planning",
+            "discover",
+            "extract",
+            "analyze",
+            "plan",
         }
 
 
@@ -354,87 +354,69 @@ class TestResolvePhasesToRun:
 class TestCleanKnowledge:
     """Tests for clean_knowledge()."""
 
-    def test_removes_phase1_artifacts(self, tmp_path, monkeypatch):
+    def test_removes_extract_artifacts(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
 
-        # Set up a fake knowledge directory
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
-        (arch_dir / "architecture_facts.json").write_text("{}")
-        (arch_dir / "evidence_map.json").write_text("{}")
-        (arch_dir / "some_file.md").write_text("# Doc")
-        (arch_dir / "README.md").write_text("# Readme")  # Should NOT be deleted
-        analysis_subdir = arch_dir / "analysis"
-        analysis_subdir.mkdir()
-        (analysis_subdir / "some_analysis.json").write_text("{}")
+        # Set up a fake knowledge/extract directory
+        extract_dir = tmp_path / "knowledge" / "extract"
+        extract_dir.mkdir(parents=True)
+        (extract_dir / "architecture_facts.json").write_text("{}")
+        (extract_dir / "evidence_map.json").write_text("{}")
+        (extract_dir / "some_file.md").write_text("# Doc")
 
-        clean_knowledge("phase1")
+        clean_knowledge("extract")
 
-        # JSON files should be removed
-        assert not (arch_dir / "architecture_facts.json").exists()
-        assert not (arch_dir / "evidence_map.json").exists()
-        # .md files removed except README.md
-        assert not (arch_dir / "some_file.md").exists()
-        assert (arch_dir / "README.md").exists()
-        # analysis subdir should be removed
-        assert not analysis_subdir.exists()
+        # Entire directory is removed
+        assert not extract_dir.exists()
 
-    def test_removes_phase2_artifacts(self, tmp_path, monkeypatch):
+    def test_removes_analyze_artifacts(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
 
-        analysis_dir = tmp_path / "knowledge" / "analysis"
-        analysis_dir.mkdir(parents=True)
-        (analysis_dir / "data.json").write_text("{}")
+        analyze_dir = tmp_path / "knowledge" / "analyze"
+        analyze_dir.mkdir(parents=True)
+        (analyze_dir / "analyzed_architecture.json").write_text("{}")
 
-        clean_knowledge("phase2")
+        clean_knowledge("analyze")
 
-        # The directory is removed and then recreated empty by clean_knowledge()
-        assert not (analysis_dir / "data.json").exists()
+        assert not analyze_dir.exists()
 
-    def test_removes_phase3_artifacts(self, tmp_path, monkeypatch):
+    def test_removes_document_artifacts(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
 
-        dev_dir = tmp_path / "knowledge" / "development"
-        dev_dir.mkdir(parents=True)
-        (dev_dir / "plan.json").write_text("{}")
+        doc_dir = tmp_path / "knowledge" / "document"
+        doc_dir.mkdir(parents=True)
+        (doc_dir / "c4").mkdir()
+        (doc_dir / "arc42").mkdir()
 
-        clean_knowledge("phase3")
+        clean_knowledge("document")
 
-        # The directory is removed and then recreated empty by clean_knowledge()
-        assert not (dev_dir / "plan.json").exists()
+        assert not doc_dir.exists()
 
     def test_clean_all(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
 
         # Create dirs for all phases
-        (tmp_path / "knowledge" / "architecture" / "analysis").mkdir(parents=True)
-        (tmp_path / "knowledge" / "analysis").mkdir(parents=True)
-        (tmp_path / "knowledge" / "development").mkdir(parents=True)
-        (tmp_path / "knowledge" / "architecture" / "facts.json").write_text("{}")
+        for name in ("extract", "analyze", "document", "plan", "implement"):
+            d = tmp_path / "knowledge" / name
+            d.mkdir(parents=True)
+            (d / "data.json").write_text("{}")
 
         clean_knowledge("all")
 
-        # Subdirs recreated but content removed
-        assert not (tmp_path / "knowledge" / "architecture" / "facts.json").exists()
-        # Structure is recreated
-        assert (tmp_path / "knowledge" / "architecture" / "quality").is_dir()
-        assert (tmp_path / "knowledge" / "analysis").is_dir()
-        assert (tmp_path / "knowledge" / "development").is_dir()
+        # All content removed
+        for name in ("extract", "analyze", "document", "plan", "implement"):
+            assert not (tmp_path / "knowledge" / name).exists()
 
     def test_noop_when_knowledge_dir_missing(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         # Should not raise even if knowledge/ does not exist
         clean_knowledge("all")
 
-    def test_recreates_directory_structure(self, tmp_path, monkeypatch):
+    def test_noop_for_unknown_phase(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "knowledge").mkdir()
-
-        clean_knowledge("all")
-
-        assert (tmp_path / "knowledge" / "architecture" / "quality").is_dir()
-        assert (tmp_path / "knowledge" / "analysis").is_dir()
-        assert (tmp_path / "knowledge" / "development").is_dir()
+        # Unknown phase key should be a no-op
+        clean_knowledge("nonexistent")
 
 
 # =============================================================================
@@ -449,14 +431,14 @@ class TestOrchestratorInit:
         orch = SDLCOrchestrator(config_path=str(config_yaml))
         assert "phases" in orch.config
         assert "presets" in orch.config
-        assert "phase0_indexing" in orch.config["phases"]
+        assert "discover" in orch.config["phases"]
 
     def test_missing_config_falls_back_to_default(self, tmp_path):
         missing = str(tmp_path / "nonexistent.yaml")
         orch = SDLCOrchestrator(config_path=missing)
         # Falls back to _default_config()
         assert "phases" in orch.config
-        assert "phase0_indexing" in orch.config["phases"]
+        assert "discover" in orch.config["phases"]
 
     def test_empty_yaml_falls_back_to_empty_dict(self, tmp_path):
         empty_cfg = tmp_path / "empty.yaml"
@@ -476,26 +458,26 @@ class TestOrchestratorRegister:
 
     def test_register_returns_self_for_chaining(self, orchestrator):
         mock_pipeline = MagicMock()
-        result = orchestrator.register("phase0_indexing", mock_pipeline)
+        result = orchestrator.register("discover", mock_pipeline)
         assert result is orchestrator
 
     def test_register_stores_executable(self, orchestrator):
         mock_pipeline = MagicMock()
-        orchestrator.register("phase0_indexing", mock_pipeline)
-        assert orchestrator.phases["phase0_indexing"] is mock_pipeline
+        orchestrator.register("discover", mock_pipeline)
+        assert orchestrator.phases["discover"] is mock_pipeline
 
     def test_chaining_multiple_registers(self, orchestrator):
         mock_a = MagicMock()
         mock_b = MagicMock()
-        orchestrator.register("phase0_indexing", mock_a).register("phase1_architecture_facts", mock_b)
-        assert "phase0_indexing" in orchestrator.phases
-        assert "phase1_architecture_facts" in orchestrator.phases
+        orchestrator.register("discover", mock_a).register("extract", mock_b)
+        assert "discover" in orchestrator.phases
+        assert "extract" in orchestrator.phases
 
     def test_register_phase_is_alias(self, orchestrator):
         mock_pipeline = MagicMock()
-        result = orchestrator.register_phase("phase0_indexing", mock_pipeline)
+        result = orchestrator.register_phase("discover", mock_pipeline)
         assert result is orchestrator
-        assert orchestrator.phases["phase0_indexing"] is mock_pipeline
+        assert orchestrator.phases["discover"] is mock_pipeline
 
 
 # =============================================================================
@@ -508,11 +490,11 @@ class TestOrchestratorGetPresets:
 
     def test_returns_known_presets(self, orchestrator):
         presets = orchestrator.get_presets()
-        assert "indexing_only" in presets
-        assert "facts_only" in presets
-        assert "analysis_only" in presets
-        assert "architecture_workflow" in presets
-        assert "planning_only" in presets
+        assert "index" in presets
+        assert "scan" in presets
+        assert "analyze" in presets
+        assert "document" in presets
+        assert "plan" in presets
 
     def test_returns_list(self, orchestrator):
         presets = orchestrator.get_presets()
@@ -527,29 +509,29 @@ class TestOrchestratorGetPresets:
 class TestOrchestratorGetPresetPhases:
     """Tests for get_preset_phases()."""
 
-    def test_architecture_workflow_returns_four_phases(self, orchestrator):
-        phases = orchestrator.get_preset_phases("architecture_workflow")
+    def test_document_returns_four_phases(self, orchestrator):
+        phases = orchestrator.get_preset_phases("document")
         assert len(phases) == 4
         assert phases == [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
+            "discover",
+            "extract",
+            "analyze",
+            "document",
         ]
 
-    def test_indexing_only_returns_one_phase(self, orchestrator):
-        phases = orchestrator.get_preset_phases("indexing_only")
-        assert phases == ["phase0_indexing"]
+    def test_index_returns_one_phase(self, orchestrator):
+        phases = orchestrator.get_preset_phases("index")
+        assert phases == ["discover"]
 
     def test_unknown_preset_returns_empty_list(self, orchestrator):
         phases = orchestrator.get_preset_phases("nonexistent")
         assert phases == []
 
-    def test_planning_only_returns_four_phases(self, orchestrator):
-        phases = orchestrator.get_preset_phases("planning_only")
+    def test_plan_returns_four_phases(self, orchestrator):
+        phases = orchestrator.get_preset_phases("plan")
         assert len(phases) == 4
-        assert "phase4_development_planning" in phases
-        assert "phase3_architecture_synthesis" not in phases
+        assert "plan" in phases
+        assert "document" not in phases
 
 
 # =============================================================================
@@ -565,11 +547,11 @@ class TestOrchestratorGetEnabledPhases:
         assert isinstance(enabled, list)
         # All 5 phases in our minimal config are enabled
         assert len(enabled) == 5
-        assert enabled[0] == "phase0_indexing"
-        assert enabled[1] == "phase1_architecture_facts"
-        assert enabled[2] == "phase2_architecture_analysis"
-        assert enabled[3] == "phase3_architecture_synthesis"
-        assert enabled[4] == "phase4_development_planning"
+        assert enabled[0] == "discover"
+        assert enabled[1] == "extract"
+        assert enabled[2] == "analyze"
+        assert enabled[3] == "document"
+        assert enabled[4] == "plan"
 
     def test_disabled_phases_excluded(self, tmp_path):
         config = MINIMAL_PHASES_CONFIG.copy()
@@ -577,8 +559,8 @@ class TestOrchestratorGetEnabledPhases:
             **MINIMAL_PHASES_CONFIG,
             "phases": {
                 **MINIMAL_PHASES_CONFIG["phases"],
-                "phase3_architecture_synthesis": {
-                    **MINIMAL_PHASES_CONFIG["phases"]["phase3_architecture_synthesis"],
+                "document": {
+                    **MINIMAL_PHASES_CONFIG["phases"]["document"],
                     "enabled": False,
                 },
             },
@@ -588,8 +570,8 @@ class TestOrchestratorGetEnabledPhases:
         orch = SDLCOrchestrator(config_path=str(cfg_file))
 
         enabled = orch.get_enabled_phases()
-        assert "phase3_architecture_synthesis" not in enabled
-        assert "phase0_indexing" in enabled
+        assert "document" not in enabled
+        assert "discover" in enabled
 
 
 # =============================================================================
@@ -601,7 +583,7 @@ class TestOrchestratorIsPhaseEnabled:
     """Tests for is_phase_enabled()."""
 
     def test_enabled_phase_returns_true(self, orchestrator):
-        assert orchestrator.is_phase_enabled("phase0_indexing") is True
+        assert orchestrator.is_phase_enabled("discover") is True
 
     def test_all_minimal_config_phases_enabled(self, orchestrator):
         for phase_id in MINIMAL_PHASES_CONFIG["phases"]:
@@ -613,7 +595,7 @@ class TestOrchestratorIsPhaseEnabled:
     def test_disabled_phase_returns_false(self, tmp_path):
         config = {
             "phases": {
-                "phase0_indexing": {"enabled": False, "order": 0},
+                "discover": {"enabled": False, "order": 0},
             },
             "presets": {},
         }
@@ -621,7 +603,7 @@ class TestOrchestratorIsPhaseEnabled:
         cfg_file.write_text(yaml.dump(config), encoding="utf-8")
         orch = SDLCOrchestrator(config_path=str(cfg_file))
 
-        assert orch.is_phase_enabled("phase0_indexing") is False
+        assert orch.is_phase_enabled("discover") is False
 
 
 # =============================================================================
@@ -635,43 +617,43 @@ class TestOutputsExist:
     def test_missing_files_returns_false(self, orchestrator, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         # No files exist under tmp_path
-        assert orchestrator._outputs_exist("phase1_architecture_facts") is False
+        assert orchestrator._outputs_exist("extract") is False
 
-    def test_phase0_requires_chroma_dir(self, orchestrator, tmp_path, monkeypatch):
+    def test_discover_requires_knowledge_dir(self, orchestrator, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        assert orchestrator._outputs_exist("phase0_indexing") is False
+        assert orchestrator._outputs_exist("discover") is False
 
-        (tmp_path / ".cache" / ".chroma").mkdir(parents=True)
-        assert orchestrator._outputs_exist("phase0_indexing") is True
+        (tmp_path / "knowledge" / "discover").mkdir(parents=True)
+        assert orchestrator._outputs_exist("discover") is True
 
-    def test_phase1_requires_both_files(self, orchestrator, tmp_path, monkeypatch):
+    def test_extract_requires_both_files(self, orchestrator, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
-        (arch_dir / "architecture_facts.json").write_text("{}")
+        extract_dir = tmp_path / "knowledge" / "extract"
+        extract_dir.mkdir(parents=True)
+        (extract_dir / "architecture_facts.json").write_text("{}")
         # Only one file -- still False
-        assert orchestrator._outputs_exist("phase1_architecture_facts") is False
+        assert orchestrator._outputs_exist("extract") is False
 
-        (arch_dir / "evidence_map.json").write_text("{}")
-        assert orchestrator._outputs_exist("phase1_architecture_facts") is True
+        (extract_dir / "evidence_map.json").write_text("{}")
+        assert orchestrator._outputs_exist("extract") is True
 
-    def test_phase2_requires_analyzed_json(self, orchestrator, tmp_path, monkeypatch):
+    def test_analyze_requires_analyzed_json(self, orchestrator, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        arch_dir = tmp_path / "knowledge" / "architecture"
-        arch_dir.mkdir(parents=True)
-        assert orchestrator._outputs_exist("phase2_architecture_analysis") is False
+        analyze_dir = tmp_path / "knowledge" / "analyze"
+        analyze_dir.mkdir(parents=True)
+        assert orchestrator._outputs_exist("analyze") is False
 
-        (arch_dir / "analyzed_architecture.json").write_text("{}")
-        assert orchestrator._outputs_exist("phase2_architecture_analysis") is True
+        (analyze_dir / "analyzed_architecture.json").write_text("{}")
+        assert orchestrator._outputs_exist("analyze") is True
 
-    def test_phase3_requires_c4_context_md(self, orchestrator, tmp_path, monkeypatch):
+    def test_document_requires_c4_context_md(self, orchestrator, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        c4_dir = tmp_path / "knowledge" / "architecture" / "c4"
+        c4_dir = tmp_path / "knowledge" / "document" / "c4"
         c4_dir.mkdir(parents=True)
-        assert orchestrator._outputs_exist("phase3_architecture_synthesis") is False
+        assert orchestrator._outputs_exist("document") is False
 
         (c4_dir / "c4-context.md").write_text("# C4 Context")
-        assert orchestrator._outputs_exist("phase3_architecture_synthesis") is True
+        assert orchestrator._outputs_exist("document") is True
 
     def test_unknown_phase_returns_false(self, orchestrator, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -696,13 +678,13 @@ class TestPhaseResult:
 
     def test_to_dict(self):
         r = PhaseResult(
-            phase_id="phase1_architecture_facts",
+            phase_id="extract",
             status="success",
             message="Completed",
             duration_seconds=12.345,
         )
         d = r.to_dict()
-        assert d["phase"] == "phase1_architecture_facts"
+        assert d["phase"] == "extract"
         assert d["status"] == "success"
         assert d["message"] == "Completed"
         assert d["duration"] == "12.35s"
@@ -805,15 +787,15 @@ class TestOrchestratorContext:
         assert ctx["shared"] == {}
 
     def test_context_populated_after_results(self, orchestrator):
-        orchestrator.results["phase0_indexing"] = PhaseResult(
-            phase_id="phase0_indexing",
+        orchestrator.results["discover"] = PhaseResult(
+            phase_id="discover",
             status="success",
             output={"indexed": 100},
         )
         ctx = orchestrator.context
-        assert "phase0_indexing" in ctx["phases"]
-        assert ctx["phases"]["phase0_indexing"]["status"] == "success"
-        assert ctx["phases"]["phase0_indexing"]["output"] == {"indexed": 100}
+        assert "discover" in ctx["phases"]
+        assert ctx["phases"]["discover"]["status"] == "success"
+        assert ctx["phases"]["discover"]["output"] == {"indexed": 100}
 
 
 # =============================================================================
@@ -825,7 +807,7 @@ class TestOrchestratorGetPhaseConfig:
     """Tests for get_phase_config()."""
 
     def test_returns_config_dict(self, orchestrator):
-        cfg = orchestrator.get_phase_config("phase0_indexing")
+        cfg = orchestrator.get_phase_config("discover")
         assert cfg["enabled"] is True
         assert cfg["name"] == "Repository Indexing"
         assert cfg["order"] == 0
@@ -855,25 +837,25 @@ class TestOrchestratorWithRealConfig:
 
     def test_real_config_loads_all_phases(self, real_orchestrator):
         phases = real_orchestrator.config.get("phases", {})
-        assert "phase0_indexing" in phases
-        assert "phase1_architecture_facts" in phases
-        assert "phase2_architecture_analysis" in phases
-        assert "phase3_architecture_synthesis" in phases
-        assert "phase4_development_planning" in phases
+        assert "discover" in phases
+        assert "extract" in phases
+        assert "analyze" in phases
+        assert "document" in phases
+        assert "plan" in phases
 
-    def test_real_config_architecture_workflow_has_4_phases(self, real_orchestrator):
-        phases = real_orchestrator.get_preset_phases("architecture_workflow")
+    def test_real_config_document_has_4_phases(self, real_orchestrator):
+        phases = real_orchestrator.get_preset_phases("document")
         assert len(phases) == 4
 
     def test_real_config_presets_match_expected(self, real_orchestrator):
         presets = real_orchestrator.get_presets()
-        assert "indexing_only" in presets
-        assert "facts_only" in presets
-        assert "analysis_only" in presets
-        assert "architecture_workflow" in presets
-        assert "planning_only" in presets
-        assert "architecture_full" in presets
-        assert "full_pipeline" in presets
+        assert "index" in presets
+        assert "scan" in presets
+        assert "analyze" in presets
+        assert "document" in presets
+        assert "plan" in presets
+        assert "architect" in presets
+        assert "full" in presets
 
     def test_real_config_enabled_phases_are_ordered(self, real_orchestrator):
         enabled = real_orchestrator.get_enabled_phases()
@@ -894,7 +876,7 @@ class TestOrchestratorRun:
     """Tests for the run() method with mock executables (no LLM)."""
 
     def test_run_with_no_registered_phases_returns_failed(self, orchestrator):
-        result = orchestrator.run(preset="indexing_only")
+        result = orchestrator.run(preset="index")
         assert result.status == "failed"
         assert "No phases to run" in result.message
 
@@ -904,11 +886,11 @@ class TestOrchestratorRun:
         mock_pipeline = MagicMock(spec=["kickoff"])
         mock_pipeline.kickoff.return_value = {"status": "ok"}
 
-        orchestrator.register("phase0_indexing", mock_pipeline)
+        orchestrator.register("discover", mock_pipeline)
 
-        # Patch archive_knowledge and _git_commit_after_phase to avoid side effects
-        with patch.object(orchestrator, "archive_knowledge"), patch.object(orchestrator, "_git_commit_after_phase"):
-            result = orchestrator.run(phases=["phase0_indexing"])
+        # Patch _git_commit_after_phase to avoid side effects
+        with patch.object(orchestrator, "_git_commit_after_phase"):
+            result = orchestrator.run(phases=["discover"])
 
         assert result.status == "success"
         mock_pipeline.kickoff.assert_called_once()
@@ -921,16 +903,15 @@ class TestOrchestratorRun:
         succeeding = MagicMock(spec=["kickoff"])
         succeeding.kickoff.return_value = {"status": "ok"}
 
-        orchestrator.register("phase0_indexing", failing)
-        orchestrator.register("phase1_architecture_facts", succeeding)
+        orchestrator.register("discover", failing)
+        orchestrator.register("extract", succeeding)
 
         with (
-            patch.object(orchestrator, "archive_knowledge"),
             patch.object(orchestrator, "_git_commit_after_phase"),
             patch.object(orchestrator, "_check_dependencies", return_value=True),
         ):
             result = orchestrator.run(
-                phases=["phase0_indexing", "phase1_architecture_facts"],
+                phases=["discover", "extract"],
                 stop_on_error=True,
             )
 

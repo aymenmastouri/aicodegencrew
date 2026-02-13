@@ -18,26 +18,26 @@ from aicodegencrew.orchestrator import (
 
 MINIMAL_PHASES_CONFIG = {
     "phases": {
-        "phase0_indexing": {
+        "discover": {
             "enabled": True,
             "name": "Repository Indexing",
             "order": 0,
             "required": True,
         },
-        "phase1_architecture_facts": {
+        "extract": {
             "enabled": True,
             "name": "Architecture Facts Extraction",
             "order": 1,
             "required": True,
-            "dependencies": ["phase0_indexing"],
+            "dependencies": ["discover"],
         },
     },
     "presets": {
-        "indexing_only": ["phase0_indexing"],
-        "facts_only": ["phase0_indexing", "phase1_architecture_facts"],
+        "index": ["discover"],
+        "scan": ["discover", "extract"],
     },
     "execution": {
-        "mode": "indexing_only",
+        "mode": "index",
         "stop_on_error": True,
     },
 }
@@ -181,11 +181,11 @@ class TestOrchestratorWithMockPhases:
 
     def test_register_and_run_single_phase(self, orchestrator):
         """Register a mock phase and run it via _execute_phase."""
-        mock_result = {"status": "completed", "phase": "phase0_indexing"}
+        mock_result = {"status": "completed", "phase": "discover"}
         phase = _MockPhase(mock_result)
 
-        orchestrator.register("phase0_indexing", phase)
-        result = orchestrator._execute_phase("phase0_indexing")
+        orchestrator.register("discover", phase)
+        result = orchestrator._execute_phase("discover")
 
         assert isinstance(result, PhaseResult)
         assert result.status == "success"
@@ -195,13 +195,13 @@ class TestOrchestratorWithMockPhases:
         phase = MagicMock()
         phase.kickoff.side_effect = ValueError("bad input")
 
-        orchestrator.register("phase0_indexing", phase)
-        result = orchestrator._execute_phase("phase0_indexing")
+        orchestrator.register("discover", phase)
+        result = orchestrator._execute_phase("discover")
 
         assert result.status == "failed"
         assert "bad input" in result.message
 
     def test_run_unregistered_phase_skipped(self, orchestrator):
         """Running an unregistered phase returns skipped."""
-        result = orchestrator._execute_phase("phase0_indexing")
+        result = orchestrator._execute_phase("discover")
         assert result.status == "skipped"

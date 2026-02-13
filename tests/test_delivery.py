@@ -233,8 +233,6 @@ class TestDeliveryArtifacts:
             "OLLAMA_BASE_URL",
             "EMBED_MODEL",
             "INDEX_MODE",
-            "CHROMA_DIR",
-            "OUTPUT_DIR",
             "LOG_LEVEL",
             "MAX_LLM_INPUT_TOKENS",
             "MAX_LLM_OUTPUT_TOKENS",
@@ -263,14 +261,14 @@ class TestDeliveryArtifacts:
         assert "aicodegencrew" in data["services"], "No 'aicodegencrew' service defined"
 
     def test_docker_compose_mounts_required_volumes(self):
-        """docker-compose.yml must mount .env, repo, knowledge, and cache volumes."""
+        """docker-compose.yml must mount .env, repo, and knowledge volumes."""
         content = _read_text(PROJECT_ROOT / "docker-compose.yml")
         # Check for key volume patterns (raw text since YAML anchors can vary)
+        # Note: .cache mount removed — ChromaDB now lives under knowledge/discover
         required_volume_patterns = [
             ".env",  # Configuration mount
             "/repo",  # Target repository
-            "knowledge",  # Output directory
-            ".cache",  # ChromaDB cache
+            "knowledge",  # Output directory (includes ChromaDB in knowledge/discover)
         ]
         for pattern in required_volume_patterns:
             assert pattern in content, f"Volume mount pattern '{pattern}' not found in docker-compose.yml"
@@ -311,10 +309,10 @@ class TestDeliveryArtifacts:
         data = yaml.safe_load(content)
         phases = data.get("phases", {})
         required_phases = [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
+            "discover",
+            "extract",
+            "analyze",
+            "document",
         ]
         for phase_name in required_phases:
             assert phase_name in phases, f"Phase '{phase_name}' not found in phases_config.yaml"

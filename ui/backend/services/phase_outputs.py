@@ -23,52 +23,52 @@ class PhaseOutputConfig(TypedDict):
 
 # ─── ALL PHASES: output config (phases 0–7) ────────────────────────────────
 PHASE_OUTPUTS: dict[str, PhaseOutputConfig] = {
-    "phase0_indexing": {
-        "primary_output": "knowledge/phase0_indexing",
+    "discover": {
+        "primary_output": "knowledge/discover",
         "cleanup_targets": [
-            "knowledge/phase0_indexing",
+            "knowledge/discover",
         ],
     },
-    "phase1_architecture_facts": {
-        "primary_output": "knowledge/phase1_facts/architecture_facts.json",
+    "extract": {
+        "primary_output": "knowledge/extract/architecture_facts.json",
         "cleanup_targets": [
-            "knowledge/phase1_facts",
+            "knowledge/extract",
         ],
     },
-    "phase2_architecture_analysis": {
-        "primary_output": "knowledge/phase2_analysis/analyzed_architecture.json",
+    "analyze": {
+        "primary_output": "knowledge/analyze/analyzed_architecture.json",
         "cleanup_targets": [
-            "knowledge/phase2_analysis",
+            "knowledge/analyze",
         ],
     },
-    "phase3_architecture_synthesis": {
-        "primary_output": "knowledge/phase3_synthesis/c4",
+    "document": {
+        "primary_output": "knowledge/document/c4",
         "cleanup_targets": [
-            "knowledge/phase3_synthesis",
+            "knowledge/document",
         ],
     },
-    "phase4_development_planning": {
-        "primary_output": "knowledge/phase4_planning",
+    "plan": {
+        "primary_output": "knowledge/plan",
         "cleanup_targets": [
-            "knowledge/phase4_planning",
+            "knowledge/plan",
         ],
     },
-    "phase5_code_generation": {
-        "primary_output": "knowledge/phase5_codegen",
+    "implement": {
+        "primary_output": "knowledge/implement",
         "cleanup_targets": [
-            "knowledge/phase5_codegen",
+            "knowledge/implement",
         ],
     },
-    "phase6_test_generation": {
-        "primary_output": "knowledge/phase6_testing",
+    "verify": {
+        "primary_output": "knowledge/verify",
         "cleanup_targets": [
-            "knowledge/phase6_testing",
+            "knowledge/verify",
         ],
     },
-    "phase7_review_deploy": {
-        "primary_output": "knowledge/phase7_deployment",
+    "deliver": {
+        "primary_output": "knowledge/deliver",
         "cleanup_targets": [
-            "knowledge/phase7_deployment",
+            "knowledge/deliver",
         ],
     },
 }

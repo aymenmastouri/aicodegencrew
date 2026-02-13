@@ -8,8 +8,8 @@ from ..config import settings
 from ..schemas import KnowledgeFile, KnowledgeSummary
 
 # Directories excluded from the Knowledge Explorer UI.
-# phase0_indexing contains ChromaDB binary data (not human-readable).
-_EXCLUDED_DIRS = {"phase0_indexing"}
+# discover contains ChromaDB binary data (not human-readable).
+_EXCLUDED_DIRS = {"discover"}
 
 # File types recognized for rendering.
 _FILE_TYPES = {
@@ -36,7 +36,7 @@ def _file_type(path: Path) -> str:
 def _is_excluded(path: Path, knowledge_dir: Path) -> bool:
     """Check if a file should be excluded from the Knowledge Explorer."""
     rel = path.relative_to(knowledge_dir)
-    # Exclude entire directories (e.g. phase0_indexing)
+    # Exclude entire directories (e.g. discover)
     if rel.parts and rel.parts[0] in _EXCLUDED_DIRS:
         return True
     # Exclude specific filenames

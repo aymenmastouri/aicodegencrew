@@ -16,7 +16,7 @@ def get_log_files() -> list[str]:
 
 @router.get("", response_model=LogResponse)
 def get_log(
-    filename: str = Query("aicodegencrew.log"),
+    filename: str = Query("current.log"),
     tail: int = Query(200, ge=1, le=5000),
 ):
     """Read the last N lines of a log file."""

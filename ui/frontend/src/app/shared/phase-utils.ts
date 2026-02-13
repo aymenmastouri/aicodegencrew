@@ -3,7 +3,16 @@
  * Source of truth: config/phases_config.yaml
  */
 const PHASE_DISPLAY_NAMES: Record<string, string> = {
-  // Long form (phases_config.yaml keys)
+  // New canonical IDs
+  discover: 'Discover',
+  extract: 'Extract',
+  analyze: 'Analyze',
+  document: 'Document',
+  plan: 'Plan',
+  implement: 'Implement',
+  verify: 'Verify',
+  deliver: 'Deliver',
+  // Legacy long form (backwards compat for historical data)
   phase0_indexing: 'Repository Indexing',
   phase1_architecture_facts: 'Architecture Facts Extraction',
   phase2_architecture_analysis: 'Architecture Analysis',
@@ -12,7 +21,7 @@ const PHASE_DISPLAY_NAMES: Record<string, string> = {
   phase5_code_generation: 'Code Generation',
   phase6_test_generation: 'Test Generation',
   phase7_review_deploy: 'Review & Deploy',
-  // Short form (used in pipeline executor / presets)
+  // Legacy short form (backwards compat for historical data)
   indexing: 'Repository Indexing',
   facts_extraction: 'Architecture Facts Extraction',
   deep_analysis: 'Architecture Analysis',

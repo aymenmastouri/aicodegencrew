@@ -791,6 +791,16 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   shortPhase(phaseId: string): string {
     const SHORT: Record<string, string> = {
+      // New canonical IDs
+      discover: 'Discover',
+      extract: 'Extract',
+      analyze: 'Analyze',
+      document: 'Document',
+      plan: 'Plan',
+      implement: 'Implement',
+      verify: 'Verify',
+      deliver: 'Deliver',
+      // Legacy long form (backwards compat)
       phase0_indexing: 'Index',
       phase1_architecture_facts: 'Facts',
       phase2_architecture_analysis: 'Analysis',
@@ -799,6 +809,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
       phase5_code_generation: 'CodeGen',
       phase6_test_generation: 'TestGen',
       phase7_review_deploy: 'Deploy',
+      // Legacy short form (backwards compat)
       indexing: 'Index',
       facts_extraction: 'Facts',
       deep_analysis: 'Analysis',
