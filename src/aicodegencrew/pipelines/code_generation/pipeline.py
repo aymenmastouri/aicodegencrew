@@ -91,10 +91,9 @@ class CodeGenerationPipeline:
         return self._run_all()
 
     def _run_all(self) -> dict[str, Any]:
-        """Process all plan files in plans_dir."""
+        """Process all plan files as a cascade on a single integration branch."""
         start_time = time.time()
 
-        # Find all plan files
         plan_files = sorted(self.plans_dir.glob("*_plan.json"))
         if not plan_files:
             logger.warning(f"[Phase5] No plan files found in {self.plans_dir}")
@@ -105,34 +104,66 @@ class CodeGenerationPipeline:
                 "reports": [],
             }
 
+        n = len(plan_files)
+
         logger.info("=" * 80)
-        logger.info(f"[Phase5] Code Generation Pipeline - {len(plan_files)} plans")
+        logger.info(f"[Phase5] Cascade mode: {n} plans on single integration branch")
         logger.info("=" * 80)
 
+        # 1. Setup: create ONE integration branch
+        writer = OutputWriterStage(
+            repo_path=self.repo_path,
+            report_dir=str(self.report_dir),
+            dry_run=self.dry_run,
+        )
+        cascade_branch = writer.setup_cascade_branch()
+        if not cascade_branch and not self.dry_run:
+            return {
+                "status": "failed",
+                "phase": "implement",
+                "message": "Could not create integration branch",
+                "reports": [],
+            }
+
+        # 2. Process each task sequentially — each sees prior changes
         reports = []
         succeeded = 0
         failed = 0
+        completed_task_ids: list[str] = []
 
         for i, plan_file in enumerate(plan_files, 1):
             task_id = plan_file.stem.replace("_plan", "")
-            logger.info(f"\n[Phase5] === Task {i}/{len(plan_files)}: {task_id} ===")
+            logger.info(f"\n[Phase5] === Cascade {i}/{n}: {task_id} ===")
 
             try:
-                report = self._run_single(task_id, plan_path=str(plan_file))
+                report = self._run_single_cascade(
+                    task_id=task_id,
+                    plan_path=str(plan_file),
+                    writer=writer,
+                    cascade_branch=cascade_branch or "",
+                    cascade_position=i,
+                    cascade_total=n,
+                    prior_task_ids=list(completed_task_ids),
+                )
                 reports.append(report.model_dump())
                 if report.status in ("success", "partial", "dry_run"):
                     succeeded += 1
+                    completed_task_ids.append(task_id)
                 else:
                     failed += 1
             except Exception as e:
-                logger.error(f"[Phase5] Task {task_id} failed: {e}")
+                logger.error(f"[Phase5] Cascade task {task_id} failed: {e}")
                 failed += 1
                 reports.append({"task_id": task_id, "status": "failed", "error": str(e)})
+
+        # 3. Teardown: switch back to original branch
+        writer.teardown_cascade()
 
         total_duration = time.time() - start_time
 
         logger.info("=" * 80)
-        logger.info(f"[Phase5] Complete: {succeeded} succeeded, {failed} failed, {total_duration:.2f}s")
+        logger.info(f"[Phase5] Cascade complete: {succeeded} succeeded, {failed} failed, {total_duration:.2f}s")
+        logger.info(f"[Phase5] Integration branch: {cascade_branch}")
         logger.info("=" * 80)
 
         log_metric(
@@ -140,7 +171,7 @@ class CodeGenerationPipeline:
             phase="implement",
             status="success" if failed == 0 else "partial",
             duration_seconds=total_duration,
-            tasks_total=len(plan_files),
+            tasks_total=n,
             tasks_succeeded=succeeded,
             tasks_failed=failed,
         )
@@ -148,14 +179,86 @@ class CodeGenerationPipeline:
         return {
             "status": "completed" if failed == 0 else "partial",
             "phase": "implement",
+            "cascade_branch": cascade_branch or "",
             "reports": reports,
             "metrics": {
-                "tasks_total": len(plan_files),
+                "tasks_total": n,
                 "tasks_succeeded": succeeded,
                 "tasks_failed": failed,
                 "duration_seconds": total_duration,
             },
         }
+
+    def _run_single_cascade(
+        self,
+        task_id: str,
+        plan_path: str,
+        writer: OutputWriterStage,
+        cascade_branch: str,
+        cascade_position: int,
+        cascade_total: int,
+        prior_task_ids: list[str],
+    ) -> CodegenReport:
+        """Run Stages 1-4 normally, then cascade-write via shared writer."""
+        task_start = time.time()
+
+        # Stage 1: Plan Reader
+        step_start(f"Stage 1: Plan Reader ({task_id})")
+        stage1 = PlanReaderStage(
+            plans_dir=str(self.plans_dir),
+            facts_path=str(self.facts_path),
+        )
+        plan_input, strategy = stage1.run(task_id=task_id, plan_path=plan_path)
+        step_done(f"Stage 1: Plan Reader ({task_id})")
+
+        # Stage 2: Context Collector — reads CURRENT disk state (includes prior changes!)
+        step_start(f"Stage 2: Context Collector ({task_id})")
+        stage2 = ContextCollectorStage(repo_path=self.repo_path)
+        context = stage2.run(plan_input)
+        step_done(f"Stage 2: Context Collector ({task_id})")
+
+        if context.total_files == 0:
+            logger.warning(f"[Phase5] No files to process for {task_id}")
+            return CodegenReport(
+                task_id=task_id,
+                status="failed",
+                cascade_branch=cascade_branch,
+                cascade_position=cascade_position,
+                cascade_total=cascade_total,
+                prior_task_ids=prior_task_ids,
+                duration_seconds=time.time() - task_start,
+            )
+
+        # Stage 3: Code Generator (LLM)
+        step_start(f"Stage 3: Code Generator ({task_id})")
+        stage3 = CodeGeneratorStage()
+        generated_files = stage3.run(plan_input, context, strategy)
+        step_done(f"Stage 3: Code Generator ({task_id})")
+
+        # Stage 4: Code Validator
+        step_start(f"Stage 4: Code Validator ({task_id})")
+        stage4 = CodeValidatorStage()
+        validation = stage4.run(generated_files)
+        step_done(f"Stage 4: Code Validator ({task_id})")
+
+        # Stage 5: Cascade write (no branch creation, no switchback)
+        step_start(f"Stage 5: Cascade Write ({task_id})")
+        task_duration = time.time() - task_start
+        report = writer.cascade_write_and_commit(
+            task_id=task_id,
+            generated_files=generated_files,
+            validation=validation,
+            cascade_branch=cascade_branch,
+            cascade_position=cascade_position,
+            cascade_total=cascade_total,
+            prior_task_ids=prior_task_ids,
+            duration_seconds=task_duration,
+            llm_calls=stage3.total_calls,
+            total_tokens=stage3.total_tokens,
+        )
+        step_done(f"Stage 5: Cascade Write ({task_id})")
+
+        return report
 
     def _run_single(
         self,

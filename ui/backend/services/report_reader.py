@@ -12,17 +12,17 @@ from ..schemas import BranchInfo, BranchList, ReportList
 
 def list_reports() -> ReportList:
     """List all development plans and codegen reports."""
-    plans = _read_json_dir(settings.knowledge_dir / "development", "*_plan.json")
-    reports = _read_json_dir(settings.knowledge_dir / "codegen", "*_report.json")
+    plans = _read_json_dir(settings.knowledge_dir / "plan", "*_plan.json")
+    reports = _read_json_dir(settings.knowledge_dir / "implement", "*_report.json")
     return ReportList(plans=plans, codegen_reports=reports)
 
 
 def read_report(report_type: str, task_id: str) -> dict:
     """Read a specific plan or report by task_id."""
     if report_type == "plan":
-        path = settings.knowledge_dir / "development" / f"{task_id}_plan.json"
+        path = settings.knowledge_dir / "plan" / f"{task_id}_plan.json"
     elif report_type == "report":
-        path = settings.knowledge_dir / "codegen" / f"{task_id}_report.json"
+        path = settings.knowledge_dir / "implement" / f"{task_id}_report.json"
     else:
         raise ValueError(f"Unknown report type: {report_type}")
 
@@ -76,7 +76,7 @@ def list_codegen_branches() -> BranchList:
             pass
 
         # Check if codegen report exists
-        report_path = settings.knowledge_dir / "codegen" / f"{task_id}_report.json"
+        report_path = settings.knowledge_dir / "implement" / f"{task_id}_report.json"
         has_report = report_path.exists()
 
         branches.append(

@@ -38,6 +38,7 @@ from .system_collector import SystemCollector
 from .techstack_version_collector import TechStackVersionCollector
 from .test_collector import TestCollector
 from .validation_collector import ValidationCollector
+from .build_system_collector import BuildSystemCollector
 from .workflow_collector import WorkflowCollector
 
 
@@ -90,6 +91,9 @@ class DimensionResults:
     # Error handling (exception handlers, advice, custom exceptions)
     error_handling: list[RawFact] = field(default_factory=list)
 
+    # Build system (Gradle, Maven, npm, Angular)
+    build_system: list[RawFact] = field(default_factory=list)
+
     # All relations (hints for model builder)
     relation_hints: list[dict] = field(default_factory=list)
 
@@ -115,6 +119,7 @@ class DimensionResults:
             "validation": len(self.validation),
             "tests": len(self.tests),
             "error_handling": len(self.error_handling),
+            "build_system_facts": len(self.build_system),
             "relation_hints": len(self.relation_hints),
             "evidence_items": len(self.evidence),
         }
@@ -204,6 +209,15 @@ class CollectorOrchestrator:
             "technology",
             "source_file",
             "category",
+            "build_tool",
+            "module_path",
+            "tasks",
+            "source_dirs",
+            "plugins",
+            "wrapper_path",
+            "parent_module",
+            "build_file",
+            "properties",
         ]:
             if hasattr(fact, attr):
                 val = getattr(fact, attr)
@@ -241,101 +255,110 @@ class CollectorOrchestrator:
         7. Infrastructure - docker/k8s/ci
         8. Dependencies - external libraries/packages
         9. Workflows - state machines/BPMN/NgRx
-        10. Evidence - final aggregation
+        10-14. Tech versions, security, validation, tests, error handling
+        15. Build system - Gradle/Maven/npm/Angular build files
+        16. Evidence - final aggregation
         """
         logger.info("[CollectorOrchestrator] Starting architecture extraction...")
 
         # 1. System facts (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 1/15: System facts...")
+        logger.info("[CollectorOrchestrator] Step 1/16: System facts...")
         self._run_system_collector()
 
         # 2. Container detection (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 2/15: Container detection...")
+        logger.info("[CollectorOrchestrator] Step 2/16: Container detection...")
         self._run_container_collector()
 
         # 3. Component extraction (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 3/15: Component extraction...")
+        logger.info("[CollectorOrchestrator] Step 3/16: Component extraction...")
         self._run_component_collector()
 
         # 4. Interface extraction
         if self._is_enabled("interfaces", collector_config):
-            logger.info("[CollectorOrchestrator] Step 4/15: Interface extraction...")
+            logger.info("[CollectorOrchestrator] Step 4/16: Interface extraction...")
             self._run_interface_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 4/15: Skipping interfaces (disabled)")
+            logger.info("[CollectorOrchestrator] Step 4/16: Skipping interfaces (disabled)")
 
         # 5. Data model extraction
         if self._is_enabled("data_model", collector_config):
-            logger.info("[CollectorOrchestrator] Step 5/15: Data model extraction...")
+            logger.info("[CollectorOrchestrator] Step 5/16: Data model extraction...")
             self._run_data_model_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 5/15: Skipping data_model (disabled)")
+            logger.info("[CollectorOrchestrator] Step 5/16: Skipping data_model (disabled)")
 
         # 6. Runtime extraction
         if self._is_enabled("runtime", collector_config):
-            logger.info("[CollectorOrchestrator] Step 6/15: Runtime extraction...")
+            logger.info("[CollectorOrchestrator] Step 6/16: Runtime extraction...")
             self._run_runtime_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 6/15: Skipping runtime (disabled)")
+            logger.info("[CollectorOrchestrator] Step 6/16: Skipping runtime (disabled)")
 
         # 7. Infrastructure extraction
         if self._is_enabled("infrastructure", collector_config):
-            logger.info("[CollectorOrchestrator] Step 7/15: Infrastructure extraction...")
+            logger.info("[CollectorOrchestrator] Step 7/16: Infrastructure extraction...")
             self._run_infrastructure_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 7/15: Skipping infrastructure (disabled)")
+            logger.info("[CollectorOrchestrator] Step 7/16: Skipping infrastructure (disabled)")
 
         # 8. Dependencies extraction
         if self._is_enabled("dependencies", collector_config):
-            logger.info("[CollectorOrchestrator] Step 8/15: Dependencies extraction...")
+            logger.info("[CollectorOrchestrator] Step 8/16: Dependencies extraction...")
             self._run_dependency_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 8/15: Skipping dependencies (disabled)")
+            logger.info("[CollectorOrchestrator] Step 8/16: Skipping dependencies (disabled)")
 
         # 9. Workflows extraction
         if self._is_enabled("workflows", collector_config):
-            logger.info("[CollectorOrchestrator] Step 9/15: Workflows extraction...")
+            logger.info("[CollectorOrchestrator] Step 9/16: Workflows extraction...")
             self._run_workflow_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 9/15: Skipping workflows (disabled)")
+            logger.info("[CollectorOrchestrator] Step 9/16: Skipping workflows (disabled)")
 
         # 10. Technology versions extraction
         if self._is_enabled("tech_versions", collector_config):
-            logger.info("[CollectorOrchestrator] Step 10/15: Technology versions extraction...")
+            logger.info("[CollectorOrchestrator] Step 10/16: Technology versions extraction...")
             self._run_techstack_version_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 10/15: Skipping tech_versions (disabled)")
+            logger.info("[CollectorOrchestrator] Step 10/16: Skipping tech_versions (disabled)")
 
         # 11. Security details extraction
         if self._is_enabled("security_details", collector_config):
-            logger.info("[CollectorOrchestrator] Step 11/15: Security details extraction...")
+            logger.info("[CollectorOrchestrator] Step 11/16: Security details extraction...")
             self._run_security_detail_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 11/15: Skipping security_details (disabled)")
+            logger.info("[CollectorOrchestrator] Step 11/16: Skipping security_details (disabled)")
 
         # 12. Validation rules extraction
         if self._is_enabled("validation", collector_config):
-            logger.info("[CollectorOrchestrator] Step 12/15: Validation rules extraction...")
+            logger.info("[CollectorOrchestrator] Step 12/16: Validation rules extraction...")
             self._run_validation_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 12/15: Skipping validation (disabled)")
+            logger.info("[CollectorOrchestrator] Step 12/16: Skipping validation (disabled)")
 
         # 13. Tests extraction
         if self._is_enabled("tests", collector_config):
-            logger.info("[CollectorOrchestrator] Step 13/15: Tests extraction...")
+            logger.info("[CollectorOrchestrator] Step 13/16: Tests extraction...")
             self._run_test_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 13/15: Skipping tests (disabled)")
+            logger.info("[CollectorOrchestrator] Step 13/16: Skipping tests (disabled)")
 
         # 14. Error handling extraction
         if self._is_enabled("error_handling", collector_config):
-            logger.info("[CollectorOrchestrator] Step 14/15: Error handling extraction...")
+            logger.info("[CollectorOrchestrator] Step 14/16: Error handling extraction...")
             self._run_error_handling_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 14/15: Skipping error_handling (disabled)")
+            logger.info("[CollectorOrchestrator] Step 14/16: Skipping error_handling (disabled)")
 
-        # 15. Evidence aggregation (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 15/15: Evidence aggregation...")
+        # 15. Build system extraction
+        if self._is_enabled("build_system", collector_config):
+            logger.info("[CollectorOrchestrator] Step 15/16: Build system extraction...")
+            self._run_build_system_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 15/16: Skipping build_system (disabled)")
+
+        # 16. Evidence aggregation (core — always runs)
+        logger.info("[CollectorOrchestrator] Step 16/16: Evidence aggregation...")
         self._aggregate_evidence()
 
         # Log statistics
@@ -692,6 +715,20 @@ class CollectorOrchestrator:
         error_out = [self._fact_to_dict(e) for e in self.results.error_handling]
         self._write_json("error_handling.json", error_out)
 
+    def _run_build_system_collector(self) -> None:
+        """Run BuildSystemCollector for Gradle, Maven, npm, Angular build files."""
+        collector = BuildSystemCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.build_system.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} build system facts")
+
+        build_out = [self._fact_to_dict(b) for b in self.results.build_system]
+        self._write_json("build_system.json", build_out)
+
     def _aggregate_evidence(self) -> None:
         """Build final evidence map."""
         self.results.evidence = self.evidence_collector.build_evidence_map()
@@ -751,6 +788,7 @@ class CollectorOrchestrator:
             "validation": [self._fact_to_dict(v) for v in self.results.validation],
             "tests": [self._fact_to_dict(t) for t in self.results.tests],
             "error_handling": [self._fact_to_dict(e) for e in self.results.error_handling],
+            "build_system": [self._fact_to_dict(b) for b in self.results.build_system],
             "evidence": {k: v.to_dict() if hasattr(v, "to_dict") else v for k, v in self.results.evidence.items()},
             "statistics": self.results.get_statistics(),
         }

@@ -15,7 +15,7 @@ _ENV_GROUPS = [
     ("Embeddings", ["OLLAMA_", "EMBED_", "NO_PROXY"]),
     ("Indexing", ["INDEX_", "CHROMA_", "CHUNK_", "MAX_FILE_", "MAX_RAG_"]),
     ("Phase Control", ["SKIP_", "TASK_INPUT_DIR", "REQUIREMENTS_DIR", "LOGS_DIR", "REFERENCE_DIR"]),
-    ("Output", ["OUTPUT_BASE_DIR", "DOCS_OUTPUT_DIR", "ARC42_LANGUAGE"]),
+    ("Output", ["DOCS_OUTPUT_DIR", "ARC42_LANGUAGE"]),
     ("Logging", ["LOG_LEVEL", "CREWAI_TRACING"]),
 ]
 

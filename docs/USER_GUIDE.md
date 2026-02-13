@@ -1,6 +1,6 @@
 # AICodeGenCrew - User Guide
 
-**Version 0.3.0 | Capgemini Proprietary**
+**Version 0.5.0 | Capgemini Proprietary**
 
 ---
 

@@ -1091,16 +1091,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.updateExecution(s);
         if (s.state === 'running') {
           this.startLiveUpdates();
+        } else {
+          this.startIdlePolling();
         }
       },
-      error: () => {},
+      error: () => {
+        this.startIdlePolling();
+      },
     });
   }
 
+  /** Slow polling (every 5s) while idle — detects pipeline starts from other pages. */
+  private startIdlePolling(): void {
+    this.stopLiveUpdates();
+
+    this.statusSub = timer(5000, 5000).pipe(
+      switchMap(() => this.pipelineSvc.getStatus()),
+      catchError(() => of(null)),
+    ).subscribe((s) => {
+      if (!s) return;
+      this.updateExecution(s);
+      if (s.state === 'running') {
+        this.startLiveUpdates();
+      }
+    });
+  }
+
+  /** Fast polling (every 3s) + elapsed ticker while pipeline is running. */
   private startLiveUpdates(): void {
     this.stopLiveUpdates();
 
-    // Poll status every 3 seconds
     this.statusSub = timer(3000, 3000).pipe(
       switchMap(() => this.pipelineSvc.getStatus()),
       catchError(() => of(null)),
@@ -1108,7 +1128,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (!s) return;
       this.updateExecution(s);
       if (s.state !== 'running') {
-        this.stopLiveUpdates();
+        this.startIdlePolling();
       }
     });
 

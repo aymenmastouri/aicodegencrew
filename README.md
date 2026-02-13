@@ -131,7 +131,7 @@ Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
 | Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
 | Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
 | Plan | Hybrid | 4 deterministic stages + 1 LLM call (18-40s) |
-| Implement | Hybrid | Strategy pattern per task type, git branch isolation |
+| Implement | Hybrid | Strategy pattern per task type, cascade multi-task on single branch |
 | Verify | - | Planned |
 | Deliver | - | Planned |
 
@@ -145,7 +145,7 @@ Repository ─► Discover   ─► knowledge/discover/    (ChromaDB)
              Analyze    ─► knowledge/analyze/     (analyzed_architecture.json)
              Document   ─► knowledge/document/    (C4 + arc42 + DrawIO)
              Plan       ─► knowledge/plan/        (task_plan.json)
-             Implement  ─► Git branch codegen/{task_id}  + knowledge/implement/
+             Implement  ─► Git branch codegen/batch-*  + knowledge/implement/
 ```
 
 ---
@@ -174,7 +174,6 @@ Copy `.env.example` to `.env` and configure. Key variables:
 | `MODEL` | LLM model identifier | `gpt-oss-120b` |
 | `API_BASE` | LLM API endpoint URL | `http://localhost:11434/v1` |
 | `INDEX_MODE` | `off` / `auto` / `smart` / `force` | `auto` |
-| `OUTPUT_BASE_DIR` | Base for all outputs | `.` |
 
 > Full variable reference: [.env.example](.env.example)
 
@@ -237,7 +236,7 @@ Output: `knowledge/plan/{task_id}_plan.json` with affected components, implement
 ## Output Artifacts
 
 ```
-<OUTPUT_BASE_DIR>/
+./
 ├── knowledge/
 │   ├── discover/            # Discover: ChromaDB vector store
 │   ├── extract/             # Extract: architecture_facts.json, evidence_map.json

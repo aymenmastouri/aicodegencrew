@@ -60,7 +60,6 @@ class Config:
     no_clean: bool
     git_repo_url: str
     git_branch: str
-    output_base: Path = Path(".")
     dry_run: bool = False
     task_id: str | None = None
 
@@ -81,9 +80,6 @@ class Config:
         git_url = overrides.get("git_repo_url") or os.getenv("GIT_REPO_URL", "")
         git_branch = overrides.get("git_branch") or os.getenv("GIT_BRANCH", "")
 
-        # Output base directory: where knowledge/, logs/, run_report.json go
-        output_base = overrides.get("output_base") or os.getenv("OUTPUT_BASE_DIR", ".")
-
         return cls(
             repo_path=Path(repo),
             index_mode=mode,
@@ -92,7 +88,6 @@ class Config:
             no_clean=overrides.get("no_clean", False),
             git_repo_url=git_url.strip(),
             git_branch=git_branch.strip(),
-            output_base=Path(output_base),
             dry_run=overrides.get("dry_run", False),
             task_id=overrides.get("task_id"),
         )
@@ -129,9 +124,7 @@ def setup_logging() -> None:
 
 def clean_knowledge(phase: str = "all") -> None:
     """Clean knowledge directory before running a phase."""
-    from .shared.utils.logger import OUTPUT_BASE_DIR
-
-    knowledge_dir = OUTPUT_BASE_DIR / "knowledge"
+    knowledge_dir = Path("knowledge")
     if not knowledge_dir.exists():
         return
 
@@ -307,7 +300,7 @@ def _export_run_report(
 
     from .shared.utils.logger import CURRENT_LOG, METRICS_LOG, RUN_ID
 
-    base = config.output_base.resolve()
+    base = Path(".").resolve()
     report_dir = base / "knowledge"
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / "run_report.json"
@@ -353,7 +346,6 @@ def _export_run_report(
         "environment": {
             "repo_path": str(config.repo_path),
             "index_mode": config.index_mode,
-            "output_base_dir": str(base),
             "git_repo_url": config.git_repo_url or None,
         },
         "phases": phases_detail,
@@ -380,10 +372,8 @@ def _export_architecture_docs():
     """
     import shutil
 
-    from .shared.utils.logger import OUTPUT_BASE_DIR
-
-    docs_dir = os.getenv("DOCS_OUTPUT_DIR", str(OUTPUT_BASE_DIR / "architecture-docs"))
-    source = OUTPUT_BASE_DIR / "knowledge" / "document"
+    docs_dir = os.getenv("DOCS_OUTPUT_DIR", "architecture-docs")
+    source = Path("knowledge") / "document"
     target = Path(docs_dir)
 
     # Only copy the deliverable subdirectories (c4, arc42)
@@ -420,18 +410,12 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     from .crews import ArchitectureSynthesisCrew
     from .orchestrator import SDLCOrchestrator
     from .pipelines import ArchitectureFactsPipeline, IndexingPipeline
-    from .shared.utils.logger import configure_output_dir
-
-    # Set output base directory BEFORE any file I/O
-    base = config.output_base.resolve()
-    configure_output_dir(base)
-    logger.info(f"[CONFIG] OUTPUT_BASE_DIR = {base}")
 
     # Resolve repo path (clone from Git URL if configured)
     repo_path = _resolve_repo_path(config)
 
-    # Convenience: all output paths relative to output_base
-    knowledge_dir = base / "knowledge"
+    # All output paths relative to CWD
+    knowledge_dir = Path("knowledge")
     phase1_dir = knowledge_dir / "extract"
     phase2_dir = knowledge_dir / "analyze"
     phase4_dir = knowledge_dir / "plan"

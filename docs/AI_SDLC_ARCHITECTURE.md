@@ -1443,7 +1443,7 @@ Plan Hybrid Pipeline uses **ALL** outputs from previous phases:
 | Input | `knowledge/plan/{task_id}_plan.json` (Plan) |
 | | Target repository source code (`PROJECT_PATH`) |
 | | `architecture_facts.json` (Extract, for file path resolution) |
-| Output | Git branch `codegen/{task_id}` in target repo |
+| Output | Git branch `codegen/batch-{timestamp}` (multi-task) or `codegen/{task_id}` (single) |
 | | `knowledge/implement/{task_id}_report.json` |
 | Dependency | Plan |
 | Status | **IMPLEMENTED** |
@@ -1478,11 +1478,19 @@ Stage 4: Code Validator (Deterministic, 1-3s) - IMPLEMENTED
 
 Stage 5: Output Writer (Git + File I/O, 2-5s) - IMPLEMENTED
   └─ Safety: abort if working tree dirty, never push, never touch main
-  └─ Create branch codegen/{task_id}, write files, commit, switch back
+  └─ Single task: branch codegen/{task_id}, write files, commit, switch back
+  └─ Multi-task cascade: single branch codegen/batch-{timestamp}, sequential commits
   └─ >50% failure threshold → abort entire task
   └─ Write JSON report to knowledge/implement/
 
 Total: 30s-5min depending on file count
+
+Cascade Mode (Multi-Task):
+  When multiple plan files exist, tasks are processed sequentially on ONE branch.
+  Each task sees cumulative file changes from all prior tasks.
+  └─ setup_cascade_branch() → codegen/batch-YYYYMMDD-HHMMSS
+  └─ cascade_write_and_commit() per task (no branch switching)
+  └─ teardown_cascade() → switch back to original branch
 ```
 
 #### Strategy Pattern
@@ -1500,7 +1508,7 @@ Total: 30s-5min depending on file count
 |---------|-------------|
 | **Dry-run mode** | `--dry-run` runs Stages 1-4 but skips file writes and git |
 | **Dirty tree check** | Aborts if target repo has uncommitted changes |
-| **Branch isolation** | Creates `codegen/{task_id}` branch, never touches main/develop |
+| **Branch isolation** | Single: `codegen/{task_id}`, Multi: `codegen/batch-{timestamp}`, never touches main/develop |
 | **No push** | Never pushes to remote — user reviews and pushes manually |
 | **Failure threshold** | Aborts if >50% of files fail generation/validation |
 | **Security scan** | Blocks hardcoded secrets, SQL injection, XSS, eval/exec |
@@ -2151,7 +2159,7 @@ Reads `.env.example` for variable descriptions, groups variables by category:
 | Embeddings | `OLLAMA_*`, `EMBED_*`, `NO_PROXY` |
 | Indexing | `INDEX_*`, `CHROMA_*`, `CHUNK_*`, `MAX_FILE_*`, `MAX_RAG_*` |
 | Phase Control | `SKIP_*`, `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` |
-| Output | `OUTPUT_BASE_DIR`, `DOCS_OUTPUT_DIR`, `ARC42_LANGUAGE` |
+| Output | `DOCS_OUTPUT_DIR`, `ARC42_LANGUAGE` |
 | Logging | `LOG_LEVEL`, `CREWAI_TRACING` |
 
 ### 15.5 Frontend Pages

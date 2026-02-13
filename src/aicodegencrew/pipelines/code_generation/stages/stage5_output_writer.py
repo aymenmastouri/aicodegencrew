@@ -175,6 +175,198 @@ class OutputWriterStage:
         return report
 
     # =========================================================================
+    # Cascade Mode — single integration branch for multiple tasks
+    # =========================================================================
+
+    def setup_cascade_branch(self) -> str | None:
+        """
+        Create a single integration branch for cascade processing.
+
+        Called ONCE before all tasks. Returns branch name or None on failure.
+        """
+        if self.dry_run:
+            branch = f"codegen/batch-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+            logger.info(f"[Stage5] DRY RUN — cascade branch would be: {branch}")
+            return branch
+
+        if not self._is_git_repo():
+            logger.error(f"[Stage5] {self.repo_path} is not a git repository")
+            return None
+
+        if not self._is_clean_working_tree():
+            logger.error("[Stage5] Target repo has uncommitted changes. Please commit or stash first.")
+            return None
+
+        # Save original branch
+        self._original_branch = (self._git("rev-parse", "--abbrev-ref", "HEAD") or "").strip()
+
+        branch = f"codegen/batch-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        result = self._git("checkout", "-b", branch)
+        if result is None:
+            logger.error(f"[Stage5] Failed to create cascade branch: {branch}")
+            return None
+
+        logger.info(f"[Stage5] Created cascade branch: {branch}")
+        return branch
+
+    def cascade_write_and_commit(
+        self,
+        task_id: str,
+        generated_files: list[GeneratedFile],
+        validation: ValidationResult,
+        cascade_branch: str,
+        cascade_position: int,
+        cascade_total: int,
+        prior_task_ids: list[str],
+        duration_seconds: float = 0.0,
+        llm_calls: int = 0,
+        total_tokens: int = 0,
+    ) -> CodegenReport:
+        """
+        Write files and commit for a single task in cascade mode.
+
+        Unlike run(), this does NOT create a branch or switch back afterwards.
+        The caller is responsible for branch setup/teardown via
+        setup_cascade_branch() and teardown_cascade().
+        """
+        valid_files = self._filter_valid_files(generated_files, validation)
+        failed_count = len(generated_files) - len(valid_files)
+
+        # Check failure threshold
+        if len(generated_files) > 0 and failed_count / len(generated_files) > 0.5:
+            logger.error(
+                f"[Stage5] >50% files failed ({failed_count}/{len(generated_files)}), "
+                f"skipping task {task_id} in cascade"
+            )
+            return self._build_cascade_report(
+                task_id=task_id,
+                status="failed",
+                cascade_branch=cascade_branch,
+                cascade_position=cascade_position,
+                cascade_total=cascade_total,
+                prior_task_ids=prior_task_ids,
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+            )
+
+        if self.dry_run:
+            logger.info(f"[Stage5] DRY RUN — cascade task {task_id}: skipping file writes")
+            report = self._build_cascade_report(
+                task_id=task_id,
+                status="dry_run",
+                cascade_branch=cascade_branch,
+                cascade_position=cascade_position,
+                cascade_total=cascade_total,
+                prior_task_ids=prior_task_ids,
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                dry_run=True,
+            )
+            self._write_report(report)
+            return report
+
+        # Write files (no branch creation, no clean-tree check — we're on the cascade branch)
+        files_changed = 0
+        files_created = 0
+        written_paths: list[str] = []
+        for gf in valid_files:
+            written = self._write_file(gf)
+            if written:
+                written_paths.append(gf.file_path)
+                if gf.action == "create":
+                    files_created += 1
+                else:
+                    files_changed += 1
+
+        # Commit with task-specific message (do NOT switch back)
+        self._git_commit(task_id, written_paths)
+
+        report = self._build_cascade_report(
+            task_id=task_id,
+            status="success" if failed_count == 0 else "partial",
+            branch_name=cascade_branch,
+            cascade_branch=cascade_branch,
+            cascade_position=cascade_position,
+            cascade_total=cascade_total,
+            prior_task_ids=prior_task_ids,
+            generated_files=generated_files,
+            validation=validation,
+            files_changed=files_changed,
+            files_created=files_created,
+            files_failed=failed_count,
+            duration_seconds=duration_seconds,
+            llm_calls=llm_calls,
+            total_tokens=total_tokens,
+        )
+
+        self._write_report(report)
+
+        logger.info(
+            f"[Stage5] Cascade {cascade_position}/{cascade_total}: {task_id} — "
+            f"changed={files_changed}, created={files_created}, failed={failed_count}"
+        )
+        return report
+
+    def teardown_cascade(self) -> None:
+        """Switch back to the original branch after cascade processing."""
+        original = getattr(self, "_original_branch", "")
+        if original and original != "HEAD":
+            self._git("checkout", original)
+            logger.info(f"[Stage5] Cascade complete — switched back to: {original}")
+        else:
+            logger.info("[Stage5] Cascade complete — no original branch to restore")
+
+    @staticmethod
+    def _build_cascade_report(
+        task_id: str,
+        status: str = "failed",
+        branch_name: str = "",
+        cascade_branch: str = "",
+        cascade_position: int = 0,
+        cascade_total: int = 0,
+        prior_task_ids: list[str] | None = None,
+        generated_files: list[GeneratedFile] | None = None,
+        validation: ValidationResult | None = None,
+        files_changed: int = 0,
+        files_created: int = 0,
+        files_failed: int = 0,
+        duration_seconds: float = 0.0,
+        llm_calls: int = 0,
+        total_tokens: int = 0,
+        dry_run: bool = False,
+    ) -> CodegenReport:
+        """Build a CodegenReport with cascade fields populated."""
+        validation_errors = []
+        if validation:
+            for r in validation.file_results:
+                validation_errors.extend(f"{r.file_path}: {e}" for e in r.errors)
+
+        return CodegenReport(
+            task_id=task_id,
+            branch_name=branch_name,
+            status=status,
+            files_changed=files_changed,
+            files_created=files_created,
+            files_failed=files_failed,
+            generated_files=generated_files or [],
+            validation_errors=validation_errors,
+            duration_seconds=duration_seconds,
+            llm_calls=llm_calls,
+            total_tokens=total_tokens,
+            dry_run=dry_run,
+            cascade_branch=cascade_branch,
+            cascade_position=cascade_position,
+            cascade_total=cascade_total,
+            prior_task_ids=prior_task_ids or [],
+        )
+
+    # =========================================================================
     # Git Operations
     # =========================================================================
 
@@ -183,8 +375,8 @@ class OutputWriterStage:
         return self._git("rev-parse", "--git-dir") is not None
 
     def _is_clean_working_tree(self) -> bool:
-        """Check if working tree has no uncommitted changes."""
-        result = self._git("status", "--porcelain")
+        """Check if working tree has no uncommitted changes (ignores untracked files)."""
+        result = self._git("status", "--porcelain", "-uno")
         return result is not None and result.strip() == ""
 
     def _create_branch(self, task_id: str) -> str | None:

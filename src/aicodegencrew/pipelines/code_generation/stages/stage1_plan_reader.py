@@ -153,32 +153,47 @@ class PlanReaderStage:
         return "feature"
 
     def _parse_components(self, raw_components: list) -> list[ComponentTarget]:
-        """Parse component dicts into ComponentTarget models.
+        """Parse component dicts or strings into ComponentTarget models.
 
-        Resolves missing file_path from architecture_facts.json when needed.
+        Handles two formats from Phase 4 plans:
+        - Dicts with id/name/file_path (rich format)
+        - Strings with component names (compact format, resolved via facts)
         """
         components = []
         for comp in raw_components:
-            if not isinstance(comp, dict):
-                continue
             try:
-                file_path = comp.get("file_path", "")
-
-                # Resolve from facts if file_path is missing
-                if not file_path:
-                    file_path = self._resolve_file_path(comp.get("id", ""), comp.get("name", ""))
-
-                components.append(
-                    ComponentTarget(
-                        id=comp.get("id", ""),
-                        name=comp.get("name", ""),
-                        file_path=file_path,
-                        stereotype=comp.get("stereotype", "unknown"),
-                        layer=comp.get("layer", "unknown"),
-                        change_type=comp.get("change_type", "modify"),
-                        relevance_score=float(comp.get("relevance_score", 0)),
+                if isinstance(comp, str):
+                    # Compact format: resolve name via architecture_facts.json
+                    file_path = self._resolve_file_path("", comp)
+                    if not file_path:
+                        logger.debug(f"[Stage1] Could not resolve file_path for component: {comp}")
+                        continue
+                    components.append(
+                        ComponentTarget(
+                            id="",
+                            name=comp,
+                            file_path=file_path,
+                            change_type="modify",
+                        )
                     )
-                )
+                elif isinstance(comp, dict):
+                    file_path = comp.get("file_path", "")
+
+                    # Resolve from facts if file_path is missing
+                    if not file_path:
+                        file_path = self._resolve_file_path(comp.get("id", ""), comp.get("name", ""))
+
+                    components.append(
+                        ComponentTarget(
+                            id=comp.get("id", ""),
+                            name=comp.get("name", ""),
+                            file_path=file_path,
+                            stereotype=comp.get("stereotype", "unknown"),
+                            layer=comp.get("layer", "unknown"),
+                            change_type=comp.get("change_type", "modify"),
+                            relevance_score=float(comp.get("relevance_score", 0)),
+                        )
+                    )
             except Exception:
                 continue
         return components
@@ -186,41 +201,57 @@ class PlanReaderStage:
     def _resolve_file_path(self, component_id: str, component_name: str) -> str:
         """Resolve a component's file path from architecture_facts.json.
 
+        File paths in facts are container-relative (e.g., src/app/app.module.ts
+        for a frontend component). This method prepends the container's root_path
+        to produce a repo-relative path (e.g., frontend/src/app/app.module.ts).
+
         Lookup order:
-        1. Exact component ID match → file_paths[0]
-        2. Component name match → file_paths[0]
+        1. Exact component ID match → container_root/file_paths[0]
+        2. Component name match → container_root/file_paths[0]
         3. Empty string (unresolved)
         """
         index = self._get_facts_index()
         if not index:
             return ""
 
+        def _full_path(entry: dict) -> str:
+            paths = entry.get("file_paths", [])
+            if not paths:
+                return ""
+            rel_path = paths[0]
+            container_root = self._container_roots.get(entry.get("container", ""), "")
+            if container_root:
+                return str(Path(container_root) / rel_path)
+            return rel_path
+
         # Try by ID
         entry = index.get(component_id)
         if entry:
-            paths = entry.get("file_paths", [])
-            if paths:
-                return paths[0]
+            fp = _full_path(entry)
+            if fp:
+                return fp
 
         # Try by name (case-insensitive)
         name_lower = component_name.lower()
         for comp in index.values():
             if comp.get("name", "").lower() == name_lower:
-                paths = comp.get("file_paths", [])
-                if paths:
-                    return paths[0]
+                fp = _full_path(comp)
+                if fp:
+                    return fp
 
         return ""
 
     def _get_facts_index(self) -> dict:
         """Lazy-load component index from architecture_facts.json.
 
+        Also builds container root_path lookup for path resolution.
         Returns dict keyed by component ID for O(1) lookup.
         """
         if self._facts_components is not None:
             return self._facts_components
 
         self._facts_components = {}
+        self._container_roots: dict[str, str] = {}
 
         if not self.facts_path.exists():
             logger.debug(f"[Stage1] Facts not found at {self.facts_path}, skipping file_path resolution")
@@ -229,11 +260,22 @@ class PlanReaderStage:
         try:
             with open(self.facts_path, encoding="utf-8") as f:
                 facts = json.load(f)
+
+            # Build container root_path index
+            for container in facts.get("containers", []):
+                cid = container.get("id", "")
+                root = container.get("root_path", "")
+                if cid and root:
+                    self._container_roots[cid] = root
+
             for comp in facts.get("components", []):
                 cid = comp.get("id", "")
                 if cid:
                     self._facts_components[cid] = comp
-            logger.debug(f"[Stage1] Loaded {len(self._facts_components)} components from facts")
+            logger.debug(
+                f"[Stage1] Loaded {len(self._facts_components)} components, "
+                f"{len(self._container_roots)} containers from facts"
+            )
         except Exception as e:
             logger.warning(f"[Stage1] Could not load facts: {e}")
 
