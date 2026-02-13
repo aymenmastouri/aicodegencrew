@@ -634,6 +634,7 @@ class CanonicalModelWriter:
             "validation": getattr(model, "validation", []),
             "tests": getattr(model, "tests", []),
             "error_handling": getattr(model, "error_handling", []),
+            "build_system": getattr(model, "build_system", []),
             "endpoint_flows": endpoint_flows or [],
             "evidence": list(model.evidence.values()),
         }

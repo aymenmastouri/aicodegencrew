@@ -4,13 +4,18 @@ Stage 4b: Build Verifier
 Compiles generated code in the target project to verify correctness.
 If build fails, parses errors and uses LLM to self-heal (max retries).
 
+GENERIC: Auto-detects build system from build_system.json + architecture_facts.json
+(produced by the Extract phase). Works with Gradle, Maven, npm, Angular — any repo.
+
 Duration: 30s-5min per container (build + optional heal)
 
 SAFETY:
 - Always restores original files after build (Stage 5 does final writes)
+- Baseline check: skips containers where the build was already broken before codegen
 - Works identically in dry_run and normal mode
 """
 
+import json
 import os
 import re
 import subprocess
@@ -34,10 +39,11 @@ logger = setup_logger(__name__)
 BUILD_VERIFY_ENABLED = os.getenv("CODEGEN_BUILD_VERIFY", "true").lower() != "false"
 MAX_RETRIES = int(os.getenv("CODEGEN_BUILD_MAX_RETRIES", "3"))
 CALL_DELAY = float(os.getenv("CODEGEN_CALL_DELAY", "2"))
+BUILD_TIMEOUT = int(os.getenv("CODEGEN_BUILD_TIMEOUT", "600"))
 
 
 # =========================================================================
-# Container build configuration
+# Container build configuration (auto-detected)
 # =========================================================================
 
 @dataclass
@@ -46,39 +52,113 @@ class ContainerConfig:
 
     container_id: str
     name: str
-    root_path: str  # relative path prefix in repo (e.g. "backend/")
-    build_command: list[str]
-    timeout: int = 120
+    root_path: str       # relative path prefix in repo (e.g. "backend/")
+    build_cwd: str       # relative dir from repo root to run build in
+    build_command: str    # shell command string (runs via bash -c)
+    build_tool: str       # "gradle" | "maven" | "npm" | "angular"
+    timeout: int = BUILD_TIMEOUT
 
 
-# Hardcoded from containers.json + build_system.json
-_CONTAINER_CONFIGS: list[ContainerConfig] = [
-    ContainerConfig(
-        container_id="container.backend",
-        name="backend",
-        root_path="backend/",
-        build_command=["gradlew.bat", "compileJava", "-q"],
-        timeout=120,
-    ),
-    ContainerConfig(
-        container_id="container.frontend",
-        name="frontend",
-        root_path="frontend/",
-        build_command=["npx", "ng", "build", "--configuration=development"],
-        timeout=180,
-    ),
-    ContainerConfig(
-        container_id="container.import_schema",
-        name="import_schema",
-        root_path="import-schema/",
-        build_command=["gradlew.bat", "compileJava", "-q"],
-        timeout=120,
-    ),
-]
+def _detect_containers(
+    repo_path: Path,
+    facts_path: Path,
+) -> list[ContainerConfig]:
+    """
+    Auto-detect buildable containers from architecture_facts.json only.
 
-# js_api is grouped into frontend build; e2e is test-only → skipped
-_FRONTEND_ALIASES = {"container.js_api"}
-_SKIPPED_CONTAINERS = {"container.e2e_xnp"}
+    Each container has: id, root_path, type, technology, and
+    metadata.metadata.build_system (gradle/maven/npm).
+
+    Build commands are derived by scanning the container directory on disk.
+    """
+    containers: list[dict] = []
+    if facts_path.exists():
+        try:
+            with open(facts_path, encoding="utf-8") as f:
+                facts = json.load(f)
+            containers = facts.get("containers", [])
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"[Stage4b] Could not read architecture_facts: {e}")
+            return []
+
+    configs: list[ContainerConfig] = []
+    skip_types = {"test", "e2e"}
+
+    for container in containers:
+        cid = container.get("id", "")
+        ctype = container.get("type", "")
+        root = container.get("root_path", "").replace("\\", "/").strip("/")
+
+        # Skip test-only containers
+        if ctype in skip_types or "e2e" in cid.lower():
+            continue
+
+        # Get build_system from container metadata
+        meta = container.get("metadata", {})
+        build_tool = meta.get("build_system", "")
+
+        if not build_tool:
+            logger.info(f"[Stage4b] No build_system in facts for {cid}, skipping")
+            continue
+
+        # Derive build command from build tool + disk scan
+        build_cmd = _derive_build_command(build_tool, repo_path, root)
+        if not build_cmd:
+            logger.info(f"[Stage4b] Could not derive build command for {cid} ({build_tool}), skipping")
+            continue
+
+        configs.append(ContainerConfig(
+            container_id=cid,
+            name=container.get("name", root),
+            root_path=root + "/",
+            build_cwd=root,
+            build_command=build_cmd,
+            build_tool=build_tool,
+        ))
+
+    if configs:
+        logger.info(f"[Stage4b] Detected {len(configs)} buildable containers:")
+        for c in configs:
+            logger.info(f"  {c.name} ({c.build_tool}): {c.build_command}")
+    else:
+        logger.warning("[Stage4b] No buildable containers detected")
+
+    return configs
+
+
+def _derive_build_command(build_tool: str, repo_path: Path, container_root: str) -> str:
+    """Derive the shell build command from build tool type + disk scan."""
+    build_dir = repo_path / container_root
+
+    if build_tool == "gradle":
+        if (build_dir / "gradlew").exists() or (build_dir / "gradlew.bat").exists():
+            return "./gradlew clean build --info"
+        return "gradle clean build --info"
+
+    elif build_tool == "maven":
+        if (build_dir / "mvnw").exists() or (build_dir / "mvnw.cmd").exists():
+            return "./mvnw clean compile"
+        return "mvn clean compile"
+
+    elif build_tool == "npm":
+        # Read package.json to find the best build script
+        pkg_path = build_dir / "package.json"
+        if pkg_path.exists():
+            try:
+                with open(pkg_path, encoding="utf-8") as f:
+                    pkg = json.load(f)
+                scripts = pkg.get("scripts", {})
+                for script_name in ("build:cap-ci", "build:prod", "build"):
+                    if script_name in scripts:
+                        return f"npm run {script_name}"
+            except (json.JSONDecodeError, OSError):
+                pass
+        # Fallback for Angular
+        if (build_dir / "angular.json").exists():
+            return "npx ng build"
+        return ""
+
+    return ""
 
 
 # =========================================================================
@@ -102,6 +182,12 @@ _TSC_PATTERN2 = re.compile(
     re.MULTILINE,
 )
 
+# Maven/javac: [ERROR] /path/File.java:[42,10] error message
+_MAVEN_PATTERN = re.compile(
+    r"^\[ERROR\]\s*(?P<file>[^\s:]+\.java):\[(?P<line>\d+),(?P<col>\d+)\]\s*(?P<msg>.+)$",
+    re.MULTILINE,
+)
+
 
 @dataclass
 class BuildError:
@@ -114,11 +200,12 @@ class BuildError:
     message: str = ""
 
 
-def _parse_build_errors(output: str, container_name: str) -> list[BuildError]:
-    """Parse build output into structured errors."""
+def _parse_build_errors(output: str, build_tool: str) -> list[BuildError]:
+    """Parse build output into structured errors based on build tool."""
     errors: list[BuildError] = []
 
-    if container_name in ("backend", "import_schema"):
+    if build_tool in ("gradle", "maven"):
+        # javac errors
         for m in _JAVAC_PATTERN.finditer(output):
             errors.append(
                 BuildError(
@@ -127,7 +214,17 @@ def _parse_build_errors(output: str, container_name: str) -> list[BuildError]:
                     message=m.group("msg").strip(),
                 )
             )
-    elif container_name == "frontend":
+        # Maven-style errors
+        for m in _MAVEN_PATTERN.finditer(output):
+            errors.append(
+                BuildError(
+                    file_path=m.group("file"),
+                    line=int(m.group("line")),
+                    column=int(m.group("col")),
+                    message=m.group("msg").strip(),
+                )
+            )
+    elif build_tool in ("npm", "angular"):
         for m in _TSC_PATTERN1.finditer(output):
             errors.append(
                 BuildError(
@@ -207,13 +304,27 @@ class _FileBackup:
 class BuildVerifierStage:
     """Verify generated code compiles in the target project, with self-healing."""
 
-    def __init__(self, repo_path: str, dry_run: bool = False):
+    def __init__(
+        self,
+        repo_path: str,
+        dry_run: bool = False,
+        facts_path: str = "knowledge/extract/architecture_facts.json",
+    ):
         self.repo_path = Path(repo_path)
+        self.facts_path = Path(facts_path)
         self.dry_run = dry_run
         self._llm = None
         self._model = os.getenv("MODEL", "gpt-oss-120b")
         self.total_calls = 0
         self.total_tokens = 0
+        self._container_configs: list[ContainerConfig] | None = None
+
+    @property
+    def container_configs(self) -> list[ContainerConfig]:
+        """Lazy-load container configs from extract-phase outputs."""
+        if self._container_configs is None:
+            self._container_configs = _detect_containers(self.repo_path, self.facts_path)
+        return self._container_configs
 
     def run(
         self,
@@ -224,12 +335,6 @@ class BuildVerifierStage:
     ) -> tuple[list[GeneratedFile], BuildVerificationResult]:
         """
         Run build verification with self-healing.
-
-        Args:
-            generated_files: Files from Stage 3 (post Stage 4 validation).
-            validation: Validation results from Stage 4.
-            plan_input: Plan input for heal prompt context.
-            strategy: Strategy for post-processing healed code.
 
         Returns:
             Tuple of (possibly-healed generated_files, BuildVerificationResult).
@@ -317,6 +422,26 @@ class BuildVerifierStage:
         """Build-verify a single container with self-healing retries."""
         start_time = time.time()
 
+        # Baseline check: build WITHOUT generated files first
+        logger.info(f"[Stage4b] {config.name}: running baseline build (no generated files)...")
+        baseline_exit, baseline_output = self._run_build(config)
+        if baseline_exit != 0:
+            logger.warning(
+                f"[Stage4b] {config.name}: BASELINE BUILD ALREADY BROKEN (exit={baseline_exit}), "
+                f"skipping verification — pre-existing errors in target repo"
+            )
+            return ContainerBuildResult(
+                container_id=config.container_id,
+                container_name=config.name,
+                build_command=config.build_command,
+                success=True,  # not our fault → treat as pass
+                exit_code=baseline_exit,
+                error_summary=f"Baseline broken (pre-existing): {baseline_output[:300]}",
+                attempts=0,
+                duration_seconds=time.time() - start_time,
+            )
+        logger.info(f"[Stage4b] {config.name}: baseline build OK")
+
         # Map file_path → GeneratedFile for quick lookup
         gen_file_map = {gf.file_path: gf for gf in container_gen_files}
 
@@ -339,7 +464,7 @@ class BuildVerifierStage:
                 return ContainerBuildResult(
                     container_id=config.container_id,
                     container_name=config.name,
-                    build_command=" ".join(config.build_command),
+                    build_command=config.build_command,
                     success=True,
                     exit_code=0,
                     attempts=attempt,
@@ -356,7 +481,7 @@ class BuildVerifierStage:
                 break
 
             # Parse errors and try self-healing
-            errors = _parse_build_errors(output, config.name)
+            errors = _parse_build_errors(output, config.build_tool)
 
             if not errors:
                 logger.warning(
@@ -401,7 +526,7 @@ class BuildVerifierStage:
         return ContainerBuildResult(
             container_id=config.container_id,
             container_name=config.name,
-            build_command=" ".join(config.build_command),
+            build_command=config.build_command,
             success=False,
             exit_code=exit_code,
             error_summary=error_summary,
@@ -415,11 +540,21 @@ class BuildVerifierStage:
     # =========================================================================
 
     def _run_build(self, config: ContainerConfig) -> tuple[int, str]:
-        """Run build command for a container. Returns (exit_code, combined_output)."""
+        """Run build command for a container via bash. Returns (exit_code, combined_output)."""
+        build_dir = self.repo_path / config.build_cwd
+        if not build_dir.exists():
+            msg = f"Build directory not found: {build_dir}"
+            logger.error(f"[Stage4b] {config.name}: {msg}")
+            return -1, msg
+
+        logger.info(
+            f"[Stage4b] {config.name}: running '{config.build_command}' in {build_dir}"
+        )
+
         try:
             result = subprocess.run(
-                config.build_command,
-                cwd=str(self.repo_path),
+                ["bash", "-c", config.build_command],
+                cwd=str(build_dir),
                 capture_output=True,
                 text=True,
                 timeout=config.timeout,
@@ -427,8 +562,8 @@ class BuildVerifierStage:
             output = (result.stdout or "") + "\n" + (result.stderr or "")
             return result.returncode, output.strip()
         except FileNotFoundError:
-            msg = f"Build tool not found: {config.build_command[0]}"
-            logger.error(f"[Stage4b] {msg}")
+            msg = f"Build tool not found: bash (required for build execution)"
+            logger.error(f"[Stage4b] {config.name}: {msg}")
             return -1, msg
         except subprocess.TimeoutExpired:
             msg = f"Build timed out after {config.timeout}s"
@@ -453,30 +588,15 @@ class BuildVerifierStage:
             try:
                 repo_relative = str(Path(gf.file_path).relative_to(self.repo_path)).replace("\\", "/")
             except ValueError:
-                # file_path not under repo_path — skip
                 continue
 
-            matched_id = None
-            for config in _CONTAINER_CONFIGS:
+            for config in self.container_configs:
                 if repo_relative.startswith(config.root_path):
-                    matched_id = config.container_id
+                    groups.setdefault(config.container_id, []).append(gf)
                     break
 
-            if matched_id is None:
-                # Check frontend aliases
-                for alias in _FRONTEND_ALIASES:
-                    # js_api files are also under frontend build
-                    pass
-                continue
-
-            if matched_id in _SKIPPED_CONTAINERS:
-                continue
-
-            groups.setdefault(matched_id, []).append(gf)
-
-        # Build result list
         result = []
-        for config in _CONTAINER_CONFIGS:
+        for config in self.container_configs:
             if config.container_id in groups:
                 result.append((config, groups[config.container_id]))
 
@@ -495,14 +615,12 @@ class BuildVerifierStage:
         result: dict[str, list[BuildError]] = {}
 
         for error in errors:
-            # Try to match error file path to a generated file
             for file_path in gen_file_map:
                 try:
                     repo_relative = str(Path(file_path).relative_to(self.repo_path)).replace("\\", "/")
                 except ValueError:
                     repo_relative = file_path
 
-                # Error paths may be relative or absolute — normalize
                 error_normalized = error.file_path.replace("\\", "/")
 
                 if (

@@ -458,6 +458,11 @@ class ArchitectureModelBuilder:
             # Map old evidence IDs to new
             evidence_ids = [self._old_to_new_evidence_id.get(eid, eid) for eid in raw.get("evidence", [])]
 
+            # Merge raw metadata dict directly (avoid double-nesting)
+            raw_metadata = raw.get("metadata", {})
+            if not isinstance(raw_metadata, dict):
+                raw_metadata = {}
+
             self.containers[canonical_id] = CanonicalContainer(
                 id=canonical_id,
                 name=raw.get("name", raw.get("id", "unknown")),
@@ -466,11 +471,7 @@ class ArchitectureModelBuilder:
                 category=raw.get("category", "unknown"),
                 root_path=raw.get("root_path", "."),
                 evidence_ids=evidence_ids,
-                metadata={
-                    k: v
-                    for k, v in raw.items()
-                    if k not in ("id", "name", "type", "technology", "category", "root_path", "evidence")
-                },
+                metadata=raw_metadata,
             )
 
     def _normalize_components(self):
@@ -745,6 +746,7 @@ class ArchitectureModel:
         validation: list[dict] = None,
         tests: list[dict] = None,
         error_handling: list[dict] = None,
+        build_system: list[dict] = None,
     ):
         self.system_name = system_name
         self.containers = containers
@@ -762,6 +764,7 @@ class ArchitectureModel:
         self.validation = validation or []
         self.tests = tests or []
         self.error_handling = error_handling or []
+        self.build_system = build_system or []
 
     def get_components_by_layer(self, layer: str) -> list[CanonicalComponent]:
         """Get all components in a specific layer."""
@@ -813,6 +816,7 @@ class ArchitectureModel:
             "validation": len(self.validation),
             "tests": len(self.tests),
             "error_handling": len(self.error_handling),
+            "build_system": len(self.build_system),
             "by_layer": layer_counts,
             "by_stereotype": stereotype_counts,
         }
