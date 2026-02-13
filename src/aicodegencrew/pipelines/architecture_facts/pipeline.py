@@ -211,6 +211,7 @@ class ArchitectureFactsPipeline:
             canonical_model.validation = [self._fact_to_dict(v) for v in getattr(results, "validation", [])]
             canonical_model.tests = [self._fact_to_dict(t) for t in getattr(results, "tests", [])]
             canonical_model.error_handling = [self._fact_to_dict(e) for e in getattr(results, "error_handling", [])]
+            canonical_model.build_system = [self._fact_to_dict(b) for b in getattr(results, "build_system", [])]
 
             stats = canonical_model.get_statistics()
             logger.info(f"[Phase1] Canonical model: {stats['components']} components, {stats['relations']} relations")
