@@ -4,7 +4,7 @@ from ..config import settings
 from ..schemas import LogResponse
 
 
-def read_log(filename: str = "aicodegencrew.log", tail: int = 200) -> LogResponse:
+def read_log(filename: str = "current.log", tail: int = 200) -> LogResponse:
     """Read the last N lines of a log file."""
     log_path = settings.logs_dir / filename
 

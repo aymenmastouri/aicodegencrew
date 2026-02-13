@@ -616,7 +616,7 @@ interface ParsedComponent {
             } @else {
               <div class="empty-inline tab-empty">
                 <mat-icon>code</mat-icon>
-                <span>No codegen reports found. Run Phase 5 (Code Generation) to see results.</span>
+                <span>No codegen reports found. Run the Implement phase to see results.</span>
               </div>
             }
           </mat-tab>

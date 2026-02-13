@@ -26,8 +26,8 @@ def _config_dir() -> Path:
 
 
 def _output_dir() -> Path:
-    """Return the knowledge/phase1_facts output directory."""
-    return settings.knowledge_dir / "phase1_facts"
+    """Return the knowledge/extract output directory."""
+    return settings.knowledge_dir / "extract"
 
 
 def _get_output_stats(output_file: str) -> tuple[int | None, str | None, int]:

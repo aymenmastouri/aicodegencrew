@@ -4,7 +4,7 @@ Tests for Live Progress Bar, Sub-Phase Progress, Live Metrics, ETA Estimation.
 Covers:
 - schemas: SubPhaseProgress, LiveMetrics, updated PhaseProgress, updated ExecutionStatus
 - pipeline_executor: progress computation, sub-phase parsing, live metrics, ETA
-- reset exclusion: Reset All excludes phase0_indexing
+- reset exclusion: Reset All excludes discover
 """
 
 import json
@@ -31,36 +31,36 @@ def tmp_project(tmp_path):
     (tmp_path / "config" / "phases_config.yaml").write_text(
         """
 phases:
-  phase0_indexing:
+  discover:
     enabled: true
     name: "Repository Indexing"
     order: 0
     dependencies: []
-  phase1_architecture_facts:
+  extract:
     enabled: true
     name: "Architecture Facts"
     order: 1
-    dependencies: [phase0_indexing]
-  phase2_architecture_analysis:
+    dependencies: [discover]
+  analyze:
     enabled: true
     name: "Architecture Analysis"
     order: 2
-    dependencies: [phase1_architecture_facts]
-  phase3_architecture_synthesis:
+    dependencies: [extract]
+  document:
     enabled: true
     name: "Architecture Synthesis"
     order: 3
-    dependencies: [phase2_architecture_analysis]
-  phase4_development_planning:
+    dependencies: [analyze]
+  plan:
     enabled: true
     name: "Development Planning"
     order: 4
-    dependencies: [phase2_architecture_analysis]
-  phase5_code_generation:
+    dependencies: [analyze]
+  implement:
     enabled: true
     name: "Code Generation"
     order: 5
-    dependencies: [phase4_development_planning]
+    dependencies: [plan]
 """
     )
 
@@ -156,7 +156,7 @@ class TestNewSchemas:
         from ui.backend.schemas import PhaseProgress, SubPhaseProgress
 
         pp = PhaseProgress(
-            phase_id="deep_analysis",
+            phase_id="analyze",
             name="Architecture Analysis",
             status="running",
             sub_phases=[
@@ -171,7 +171,7 @@ class TestNewSchemas:
     def test_phase_progress_empty_sub_phases(self):
         from ui.backend.schemas import PhaseProgress
 
-        pp = PhaseProgress(phase_id="indexing", name="Indexing")
+        pp = PhaseProgress(phase_id="discover", name="Indexing")
         assert pp.sub_phases == []
         assert pp.total_tokens == 0
 
@@ -228,10 +228,10 @@ class TestProgressComputation:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         write_metrics(metrics_file, [
-            {"event": "phase_start", "timestamp": "T1", "data": {"phase": "p1", "name": "Phase 1"}},
-            {"event": "phase_complete", "timestamp": "T2", "data": {"phase": "p1", "duration_seconds": 10}},
-            {"event": "phase_start", "timestamp": "T3", "data": {"phase": "p2", "name": "Phase 2"}},
-            {"event": "phase_complete", "timestamp": "T4", "data": {"phase": "p2", "duration_seconds": 20}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
+            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p1", "duration_seconds": 10}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p2", "name": "Phase 2"}},
+            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p2", "duration_seconds": 20}},
         ])
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
@@ -249,9 +249,9 @@ class TestProgressComputation:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         write_metrics(metrics_file, [
-            {"event": "phase_start", "timestamp": "T1", "data": {"phase": "p1", "name": "Phase 1"}},
-            {"event": "phase_complete", "timestamp": "T2", "data": {"phase": "p1", "duration_seconds": 10}},
-            {"event": "phase_start", "timestamp": "T3", "data": {"phase": "p2", "name": "Phase 2"}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
+            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p1", "duration_seconds": 10}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p2", "name": "Phase 2"}},
         ])
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
@@ -291,11 +291,11 @@ class TestSubPhaseParsing:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         write_metrics(metrics_file, [
-            {"event": "phase_start", "timestamp": "T1", "data": {"phase": "deep_analysis", "name": "Analysis"}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "analyze", "name": "Analysis"}},
             {
-                "event": "mini_crew_complete",
-                "timestamp": "T2",
+                "msg": "mini_crew_complete",
                 "data": {
+                    "event": "mini_crew_complete",
                     "crew_type": "architecture_analyzer",
                     "crew_name": "Arch Analyzer",
                     "total_tokens": 500,
@@ -304,9 +304,9 @@ class TestSubPhaseParsing:
                 },
             },
             {
-                "event": "mini_crew_complete",
-                "timestamp": "T3",
+                "msg": "mini_crew_complete",
                 "data": {
+                    "event": "mini_crew_complete",
                     "crew_type": "dependency_analyzer",
                     "crew_name": "Dep Analyzer",
                     "total_tokens": 300,
@@ -318,7 +318,7 @@ class TestSubPhaseParsing:
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
         executor.state = "running"
-        executor.current_run = RunInfo(run_id="test", preset=None, phases=["deep_analysis"], started_at="T0")
+        executor.current_run = RunInfo(run_id="test", preset=None, phases=["analyze"], started_at="T0")
         executor._started_at = time.monotonic() - 20
 
         status = executor.get_status()
@@ -326,7 +326,7 @@ class TestSubPhaseParsing:
         assert len(progress) == 1
 
         phase = progress[0]
-        assert phase["phase_id"] == "deep_analysis"
+        assert phase["phase_id"] == "analyze"
         assert len(phase["sub_phases"]) == 2
         assert phase["sub_phases"][0]["name"] == "Arch Analyzer"
         assert phase["sub_phases"][0]["total_tokens"] == 500
@@ -337,23 +337,21 @@ class TestSubPhaseParsing:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         write_metrics(metrics_file, [
-            {"event": "phase_start", "timestamp": "T1", "data": {"phase": "facts_extraction", "name": "Facts"}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Facts"}},
             {
-                "event": "mini_crew_complete",
-                "timestamp": "T2",
-                "data": {"crew_type": "architecture_collector", "crew_name": "Arch Collector", "total_tokens": 200},
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "crew_type": "architecture_collector", "crew_name": "Arch Collector", "total_tokens": 200},
             },
             {
-                "event": "mini_crew_failed",
-                "timestamp": "T3",
-                "data": {"crew_type": "security_collector", "crew_name": "Security Collector", "total_tokens": 50},
+                "msg": "mini_crew_failed",
+                "data": {"event": "mini_crew_failed", "crew_type": "security_collector", "crew_name": "Security Collector", "total_tokens": 50},
             },
         ])
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
         executor.state = "running"
-        executor.current_run = RunInfo(run_id="test", preset=None, phases=["facts_extraction"], started_at="T0")
+        executor.current_run = RunInfo(run_id="test", preset=None, phases=["extract"], started_at="T0")
         executor._started_at = time.monotonic() - 10
 
         status = executor.get_status()
@@ -366,23 +364,22 @@ class TestSubPhaseParsing:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         write_metrics(metrics_file, [
-            {"event": "phase_start", "timestamp": "T1", "data": {"phase": "facts_extraction", "name": "Facts"}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Facts"}},
             {
-                "event": "mini_crew_complete",
-                "timestamp": "T2",
-                "data": {"crew_type": "unknown_crew", "crew_name": "Unknown", "total_tokens": 100},
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "crew_type": "unknown_crew", "crew_name": "Unknown", "total_tokens": 100},
             },
         ])
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
         executor.state = "running"
-        executor.current_run = RunInfo(run_id="test", preset=None, phases=["facts_extraction"], started_at="T0")
+        executor.current_run = RunInfo(run_id="test", preset=None, phases=["extract"], started_at="T0")
         executor._started_at = time.monotonic() - 5
 
         status = executor.get_status()
         phase = status["phase_progress"][0]
-        # Unknown crew doesn't map to facts_extraction, so no sub-phases attached
+        # Unknown crew doesn't map to extract, so no sub-phases attached
         assert len(phase["sub_phases"]) == 0
 
     def test_no_metrics_file_empty_progress(self, mock_settings):
@@ -410,10 +407,10 @@ class TestLiveMetrics:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         write_metrics(metrics_file, [
-            {"event": "phase_start", "timestamp": "T1", "data": {"phase": "p1", "name": "Phase 1"}},
-            {"event": "mini_crew_complete", "timestamp": "T2", "data": {"total_tokens": 1000}},
-            {"event": "mini_crew_complete", "timestamp": "T3", "data": {"total_tokens": 2000}},
-            {"event": "mini_crew_complete", "timestamp": "T4", "data": {"total_tokens": 500}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
+            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 1000}},
+            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 2000}},
+            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 500}},
         ])
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
@@ -440,7 +437,7 @@ class TestLiveMetrics:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         write_metrics(metrics_file, [
-            {"event": "mini_crew_complete", "timestamp": "T1", "data": {"total_tokens": 1000}},
+            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 1000}},
         ])
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
@@ -589,7 +586,7 @@ class TestCrewPhaseMapping:
             "test_collector",
         ]
         for crew in facts_crews:
-            assert PipelineExecutor._CREW_PHASE_MAP.get(crew) == "facts_extraction", f"{crew} should map to facts_extraction"
+            assert PipelineExecutor._CREW_PHASE_MAP.get(crew) == "extract", f"{crew} should map to extract"
 
     def test_all_analyzers_map_to_analysis(self):
         from ui.backend.services.pipeline_executor import PipelineExecutor
@@ -601,20 +598,20 @@ class TestCrewPhaseMapping:
             "impact_analyzer",
         ]
         for crew in analysis_crews:
-            assert PipelineExecutor._CREW_PHASE_MAP.get(crew) == "deep_analysis", f"{crew} should map to deep_analysis"
+            assert PipelineExecutor._CREW_PHASE_MAP.get(crew) == "analyze", f"{crew} should map to analyze"
 
-    def test_synthesis_crews_map_correctly(self):
+    def test_document_crews_map_correctly(self):
         from ui.backend.services.pipeline_executor import PipelineExecutor
 
-        assert PipelineExecutor._CREW_PHASE_MAP["synthesis_crew"] == "synthesis"
-        assert PipelineExecutor._CREW_PHASE_MAP["cross_cutting_crew"] == "synthesis"
-        assert PipelineExecutor._CREW_PHASE_MAP["recommendation_crew"] == "synthesis"
+        assert PipelineExecutor._CREW_PHASE_MAP["synthesis_crew"] == "document"
+        assert PipelineExecutor._CREW_PHASE_MAP["cross_cutting_crew"] == "document"
+        assert PipelineExecutor._CREW_PHASE_MAP["recommendation_crew"] == "document"
 
-    def test_codegen_crews_map_correctly(self):
+    def test_implement_crews_map_correctly(self):
         from ui.backend.services.pipeline_executor import PipelineExecutor
 
-        assert PipelineExecutor._CREW_PHASE_MAP["code_generation_crew"] == "code_generation"
-        assert PipelineExecutor._CREW_PHASE_MAP["code_validation_crew"] == "code_generation"
+        assert PipelineExecutor._CREW_PHASE_MAP["code_generation_crew"] == "implement"
+        assert PipelineExecutor._CREW_PHASE_MAP["code_validation_crew"] == "implement"
 
 
 # =============================================================================
@@ -623,11 +620,11 @@ class TestCrewPhaseMapping:
 
 
 class TestResetAllExcludesIndexing:
-    """Verify that the reset-all endpoint itself does not exclude indexing
+    """Verify that the reset-all endpoint itself does not exclude discover
     (that's a frontend concern), but test the backend reset-all behavior."""
 
-    def test_reset_all_includes_indexing_by_default(self, tmp_project):
-        """Backend reset-all resets everything including indexing."""
+    def test_reset_all_includes_discover_by_default(self, tmp_project):
+        """Backend reset-all resets everything including discover."""
         with (
             patch("ui.backend.services.reset_service.settings") as s,
             patch("ui.backend.services.history_service.settings") as sh,
@@ -644,22 +641,22 @@ class TestResetAllExcludesIndexing:
 
             from ui.backend.services.reset_service import compute_cascade
 
-            result = compute_cascade(["phase0_indexing"])
-            assert "phase0_indexing" in result
+            result = compute_cascade(["discover"])
+            assert "discover" in result
 
-    def test_filtering_excludes_indexing(self):
-        """Simulate frontend filter: completed phases minus indexing."""
+    def test_filtering_excludes_discover(self):
+        """Simulate frontend filter: completed phases minus discover."""
         phases = [
-            {"id": "phase0_indexing", "status": "completed"},
-            {"id": "phase1_architecture_facts", "status": "completed"},
-            {"id": "phase2_architecture_analysis", "status": "completed"},
-            {"id": "phase3_architecture_synthesis", "status": "idle"},
+            {"id": "discover", "status": "completed"},
+            {"id": "extract", "status": "completed"},
+            {"id": "analyze", "status": "completed"},
+            {"id": "document", "status": "idle"},
         ]
         # Frontend logic
-        reset_ids = [p["id"] for p in phases if p["status"] == "completed" and p["id"] != "phase0_indexing"]
-        assert "phase0_indexing" not in reset_ids
-        assert "phase1_architecture_facts" in reset_ids
-        assert "phase2_architecture_analysis" in reset_ids
+        reset_ids = [p["id"] for p in phases if p["status"] == "completed" and p["id"] != "discover"]
+        assert "discover" not in reset_ids
+        assert "extract" in reset_ids
+        assert "analyze" in reset_ids
         assert len(reset_ids) == 2
 
 
@@ -685,7 +682,7 @@ class TestEmptyDirectoryNotCompleted:
 
     def test_dir_with_files_is_completed(self, tmp_project):
         """A directory with actual files should still report as completed."""
-        dev_dir = tmp_project / "knowledge" / "phase4_planning"
+        dev_dir = tmp_project / "knowledge" / "plan"
         dev_dir.mkdir(parents=True, exist_ok=True)
         (dev_dir / "task1_plan.json").write_text('{"plan": true}')
 
@@ -696,7 +693,7 @@ class TestEmptyDirectoryNotCompleted:
             from ui.backend.services.phase_runner import get_pipeline_status
 
             status = get_pipeline_status()
-            planning = next((p for p in status.phases if p.id == "phase4_development_planning"), None)
+            planning = next((p for p in status.phases if p.id == "plan"), None)
             assert planning is not None
             assert planning.output_exists is True
             assert planning.status == "completed"

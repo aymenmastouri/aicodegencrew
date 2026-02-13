@@ -198,8 +198,8 @@ assert validator.validate_mermaid_syntax()
 ## Test Metrics & Benchmarks
 
 ### Performance Expectations
-- **Phase 1** (facts_only): ~30-40 seconds for 557 components
-- **Phase 2** (synthesis): ~2-5 minutes (LLM dependent)
+- **Extract** (scan): ~30-40 seconds for 557 components
+- **Document** (document): ~2-5 minutes (LLM dependent)
 - **Full Workflow**: ~3-6 minutes
 
 ### Quality Thresholds

@@ -147,7 +147,7 @@ test.describe('Full Pipeline Flow', () => {
     const options = page.locator('mat-option');
     await expect(options.first()).toBeVisible({ timeout: 10_000 });
 
-    // Select facts_only (no LLM needed, fast)
+    // Select scan (no LLM needed, fast)
     const factsOption = page.locator('mat-option:has-text("Facts Extraction")');
     if (await factsOption.isVisible().catch(() => false)) {
       await factsOption.click();
@@ -222,14 +222,14 @@ test.describe('Full Pipeline Flow', () => {
 
   // ── 8. Full run (skip indexing unless opted in) ──────────
 
-  test('17 - Execute facts_only preset and monitor output', async ({ page }) => {
+  test('17 - Execute scan preset and monitor output', async ({ page }) => {
     // This test actually runs a pipeline - only meaningful with a backend
     // that has a configured PROJECT_PATH. Skip if backend is not fully set up.
     test.skip(SKIP_INDEXING, 'Skipped: indexing takes 2-10 min. Set INCLUDE_INDEXING=true to enable.');
 
     await page.goto('/run');
 
-    // Select facts_only preset
+    // Select scan preset
     await page.locator('mat-select').first().click();
     const factsOption = page.locator('mat-option:has-text("Facts Extraction")');
     await expect(factsOption).toBeVisible({ timeout: 10_000 });

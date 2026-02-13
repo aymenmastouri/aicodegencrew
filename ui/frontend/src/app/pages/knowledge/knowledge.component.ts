@@ -641,12 +641,12 @@ export class KnowledgeComponent implements OnInit {
 
   // ─── Categorization ─────────────────────────────────────────────
   private categorize(files: KnowledgeFile[]): void {
-    // Architecture Documentation (phase3_synthesis)
-    const arc42 = this.sortArc42(files.filter(f => this.inDir(f, 'phase3_synthesis/arc42') || this.inDir(f, 'arc42')));
-    const c4 = this.sortC4(files.filter(f => this.inDir(f, 'phase3_synthesis/c4') || (this.inDir(f, 'c4') && !this.inDir(f, 'arc42'))));
-    const quality = files.filter(f => this.inDir(f, 'phase3_synthesis/quality'));
+    // Architecture Documentation (document / legacy phase3_synthesis)
+    const arc42 = this.sortArc42(files.filter(f => this.inDir(f, 'document/arc42') || this.inDir(f, 'phase3_synthesis/arc42') || this.inDir(f, 'arc42')));
+    const c4 = this.sortC4(files.filter(f => this.inDir(f, 'document/c4') || this.inDir(f, 'phase3_synthesis/c4') || (this.inDir(f, 'c4') && !this.inDir(f, 'arc42'))));
+    const quality = files.filter(f => this.inDir(f, 'document/quality') || this.inDir(f, 'phase3_synthesis/quality'));
     const synthOther = files.filter(f =>
-      this.inDir(f, 'phase3_synthesis') &&
+      (this.inDir(f, 'document') || this.inDir(f, 'phase3_synthesis')) &&
       !arc42.includes(f) && !c4.includes(f) && !quality.includes(f));
 
     this.archGroups = [
@@ -660,13 +660,13 @@ export class KnowledgeComponent implements OnInit {
       this.activeArchGroup = this.archGroups[0].id;
     }
 
-    // Pipeline Data (phase1 facts, phase2 analysis, phase4 plans, phase5 codegen)
-    const facts = files.filter(f => this.inDir(f, 'phase1_facts'));
-    const analysis = files.filter(f => this.inDir(f, 'phase2_analysis'));
-    const plans = files.filter(f => this.inDir(f, 'phase4_planning'));
-    const codegen = files.filter(f => this.inDir(f, 'phase5_codegen'));
-    const testing = files.filter(f => this.inDir(f, 'phase6_testing'));
-    const deployment = files.filter(f => this.inDir(f, 'phase7_deployment'));
+    // Pipeline Data (extract/facts, analyze/analysis, plan/planning, implement/codegen)
+    const facts = files.filter(f => this.inDir(f, 'extract') || this.inDir(f, 'phase1_facts'));
+    const analysis = files.filter(f => this.inDir(f, 'analyze') || this.inDir(f, 'phase2_analysis'));
+    const plans = files.filter(f => this.inDir(f, 'plan') || this.inDir(f, 'phase4_planning'));
+    const codegen = files.filter(f => this.inDir(f, 'implement') || this.inDir(f, 'phase5_codegen'));
+    const testing = files.filter(f => this.inDir(f, 'verify') || this.inDir(f, 'phase6_testing'));
+    const deployment = files.filter(f => this.inDir(f, 'deliver') || this.inDir(f, 'phase7_deployment'));
 
     this.dataGroups = [
       { id: 'facts', label: 'Facts & Evidence', icon: 'data_object', phase: 'Phase 1', description: 'Architecture facts and evidence', files: facts },

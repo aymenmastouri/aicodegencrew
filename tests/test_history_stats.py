@@ -24,23 +24,23 @@ import pytest
 @pytest.fixture()
 def tmp_project(tmp_path):
     """Create a temporary project structure."""
-    (tmp_path / "knowledge" / "phase0_indexing").mkdir(parents=True)
-    (tmp_path / "knowledge" / "phase1_facts").mkdir(parents=True)
+    (tmp_path / "knowledge" / "discover").mkdir(parents=True)
+    (tmp_path / "knowledge" / "extract").mkdir(parents=True)
     (tmp_path / "logs").mkdir()
     (tmp_path / "config").mkdir()
     (tmp_path / "config" / "phases_config.yaml").write_text(
         """
 phases:
-  phase0_indexing:
+  discover:
     enabled: true
     name: "Repository Indexing"
     order: 0
     dependencies: []
-  phase1_architecture_facts:
+  extract:
     enabled: true
     name: "Architecture Facts"
     order: 1
-    dependencies: [phase0_indexing]
+    dependencies: [discover]
 """
     )
     return tmp_path
@@ -94,12 +94,12 @@ class TestHistoryStats:
         hist = tmp_project / "logs" / "run_history.jsonl"
         _append(hist, {
             "run_id": "r1", "status": "completed", "trigger": "pipeline",
-            "preset": "full", "phases": ["phase0_indexing", "phase1_architecture_facts"],
+            "preset": "full", "phases": ["discover", "extract"],
             "started_at": "2026-01-01T10:00:00", "duration_seconds": 120,
         })
         _append(hist, {
             "run_id": "r2", "status": "completed", "trigger": "pipeline",
-            "preset": "full", "phases": ["phase0_indexing"],
+            "preset": "full", "phases": ["discover"],
             "started_at": "2026-01-02T10:00:00", "duration_seconds": 60,
         })
 
@@ -147,12 +147,12 @@ class TestHistoryStats:
 
         hist = tmp_project / "logs" / "run_history.jsonl"
         _append(hist, {"run_id": "r1", "status": "completed", "trigger": "pipeline",
-                       "phases": ["indexing", "facts_extraction"], "duration_seconds": 10})
+                       "phases": ["discover", "extract"], "duration_seconds": 10})
         _append(hist, {"run_id": "r2", "status": "completed", "trigger": "pipeline",
-                       "phases": ["indexing"], "duration_seconds": 20})
+                       "phases": ["discover"], "duration_seconds": 20})
 
         stats = get_history_stats()
-        assert stats["phase_frequency"] == {"indexing": 2, "facts_extraction": 1}
+        assert stats["phase_frequency"] == {"discover": 2, "extract": 1}
 
     def test_get_history_stats_deleted_files(self, mock_settings, tmp_project):
         """Total_deleted_files sums deleted_count from resets."""
@@ -194,7 +194,7 @@ class TestHistoryStats:
 
         append_run_to_history({
             "run_id": "reset1", "status": "completed", "trigger": "reset",
-            "phases": ["phase1_architecture_facts"], "deleted_count": 7,
+            "phases": ["extract"], "deleted_count": 7,
         })
 
         history = get_run_history()
@@ -207,7 +207,7 @@ class TestHistoryStats:
 
         append_run_to_history({
             "run_id": "run1", "status": "completed", "trigger": "pipeline",
-            "phases": ["indexing"], "duration_seconds": 30,
+            "phases": ["discover"], "duration_seconds": 30,
         })
 
         # Write metrics events

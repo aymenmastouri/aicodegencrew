@@ -25,60 +25,60 @@ import pytest
 def tmp_project(tmp_path):
     """Create a temporary project structure mimicking the real layout."""
     # Create per-phase dirs
-    (tmp_path / "knowledge" / "phase0_indexing").mkdir(parents=True)
-    (tmp_path / "knowledge" / "phase1_facts").mkdir(parents=True)
-    (tmp_path / "knowledge" / "phase2_analysis").mkdir(parents=True)
-    (tmp_path / "knowledge" / "phase3_synthesis" / "c4").mkdir(parents=True)
-    (tmp_path / "knowledge" / "phase3_synthesis" / "arc42").mkdir(parents=True)
-    (tmp_path / "knowledge" / "phase4_planning").mkdir(parents=True)
-    (tmp_path / "knowledge" / "phase5_codegen").mkdir(parents=True)
+    (tmp_path / "knowledge" / "discover").mkdir(parents=True)
+    (tmp_path / "knowledge" / "extract").mkdir(parents=True)
+    (tmp_path / "knowledge" / "analyze").mkdir(parents=True)
+    (tmp_path / "knowledge" / "document" / "c4").mkdir(parents=True)
+    (tmp_path / "knowledge" / "document" / "arc42").mkdir(parents=True)
+    (tmp_path / "knowledge" / "plan").mkdir(parents=True)
+    (tmp_path / "knowledge" / "implement").mkdir(parents=True)
     (tmp_path / "logs").mkdir()
     (tmp_path / "config").mkdir()
 
     # Create sample output files
-    (tmp_path / "knowledge" / "phase0_indexing" / "index.bin").write_text("binary-data")
-    (tmp_path / "knowledge" / "phase1_facts" / "architecture_facts.json").write_text('{"components": []}')
-    (tmp_path / "knowledge" / "phase1_facts" / "evidence_map.json").write_text("{}")
-    (tmp_path / "knowledge" / "phase2_analysis" / "analyzed_architecture.json").write_text("{}")
-    (tmp_path / "knowledge" / "phase3_synthesis" / "c4" / "c4-context.md").write_text("# C4")
-    (tmp_path / "knowledge" / "phase3_synthesis" / "arc42" / "arc42.md").write_text("# Arc42")
-    (tmp_path / "knowledge" / "phase4_planning" / "TASK-001_plan.json").write_text("{}")
-    (tmp_path / "knowledge" / "phase5_codegen" / "TASK-001_report.json").write_text("{}")
+    (tmp_path / "knowledge" / "discover" / "index.bin").write_text("binary-data")
+    (tmp_path / "knowledge" / "extract" / "architecture_facts.json").write_text('{"components": []}')
+    (tmp_path / "knowledge" / "extract" / "evidence_map.json").write_text("{}")
+    (tmp_path / "knowledge" / "analyze" / "analyzed_architecture.json").write_text("{}")
+    (tmp_path / "knowledge" / "document" / "c4" / "c4-context.md").write_text("# C4")
+    (tmp_path / "knowledge" / "document" / "arc42" / "arc42.md").write_text("# Arc42")
+    (tmp_path / "knowledge" / "plan" / "TASK-001_plan.json").write_text("{}")
+    (tmp_path / "knowledge" / "implement" / "TASK-001_report.json").write_text("{}")
 
     # Create phases_config.yaml
     (tmp_path / "config" / "phases_config.yaml").write_text(
         """
 phases:
-  phase0_indexing:
+  discover:
     enabled: true
     name: "Repository Indexing"
     order: 0
     dependencies: []
-  phase1_architecture_facts:
+  extract:
     enabled: true
     name: "Architecture Facts"
     order: 1
-    dependencies: [phase0_indexing]
-  phase2_architecture_analysis:
+    dependencies: [discover]
+  analyze:
     enabled: true
     name: "Architecture Analysis"
     order: 2
-    dependencies: [phase1_architecture_facts]
-  phase3_architecture_synthesis:
+    dependencies: [extract]
+  document:
     enabled: true
     name: "Architecture Synthesis"
     order: 3
-    dependencies: [phase2_architecture_analysis]
-  phase4_development_planning:
+    dependencies: [analyze]
+  plan:
     enabled: true
     name: "Development Planning"
     order: 4
-    dependencies: [phase2_architecture_analysis]
-  phase5_code_generation:
+    dependencies: [analyze]
+  implement:
     enabled: true
     name: "Code Generation"
     order: 5
-    dependencies: [phase4_development_planning]
+    dependencies: [plan]
 """
     )
 
@@ -142,9 +142,9 @@ class TestHistoryService:
             "run_id": "legacy1",
             "status": "completed",
             "timestamp": "2026-01-01T00:00:00",
-            "planned_phases": ["phase0_indexing"],
+            "planned_phases": ["discover"],
             "total_duration": "5m 30s",
-            "environment": {"preset": "facts_only"},
+            "environment": {"preset": "scan"},
             "phases": [],
         }
         (tmp_project / "knowledge" / "run_report.json").write_text(json.dumps(report))
@@ -153,7 +153,7 @@ class TestHistoryService:
         assert len(history) == 1
         assert history[0]["run_id"] == "legacy1"
         assert history[0]["trigger"] == "pipeline"
-        assert history[0]["preset"] == "facts_only"
+        assert history[0]["preset"] == "scan"
 
     def test_limit_and_offset(self, mock_settings):
         from ui.backend.services.history_service import append_run_to_history, get_run_history
@@ -208,100 +208,100 @@ class TestResetService:
     def test_compute_cascade_single_root(self, mock_settings):
         from ui.backend.services.reset_service import compute_cascade
 
-        result = compute_cascade(["phase0_indexing"])
+        result = compute_cascade(["discover"])
         # Phase 0 cascades to everything
-        assert "phase0_indexing" in result
-        assert "phase1_architecture_facts" in result
-        assert "phase2_architecture_analysis" in result
-        assert "phase3_architecture_synthesis" in result
-        assert "phase4_development_planning" in result
-        assert "phase5_code_generation" in result
+        assert "discover" in result
+        assert "extract" in result
+        assert "analyze" in result
+        assert "document" in result
+        assert "plan" in result
+        assert "implement" in result
 
     def test_compute_cascade_phase2(self, mock_settings):
         from ui.backend.services.reset_service import compute_cascade
 
-        result = compute_cascade(["phase2_architecture_analysis"])
+        result = compute_cascade(["analyze"])
         # Phase 2 cascades to 3, 4, 5
-        assert "phase2_architecture_analysis" in result
-        assert "phase3_architecture_synthesis" in result
-        assert "phase4_development_planning" in result
-        assert "phase5_code_generation" in result
+        assert "analyze" in result
+        assert "document" in result
+        assert "plan" in result
+        assert "implement" in result
         # But NOT phase 0 or 1
-        assert "phase0_indexing" not in result
-        assert "phase1_architecture_facts" not in result
+        assert "discover" not in result
+        assert "extract" not in result
 
     def test_compute_cascade_leaf(self, mock_settings):
         from ui.backend.services.reset_service import compute_cascade
 
-        result = compute_cascade(["phase5_code_generation"])
-        assert result == ["phase5_code_generation"]
+        result = compute_cascade(["implement"])
+        assert result == ["implement"]
 
     def test_compute_cascade_phase4(self, mock_settings):
         from ui.backend.services.reset_service import compute_cascade
 
-        result = compute_cascade(["phase4_development_planning"])
-        assert "phase4_development_planning" in result
-        assert "phase5_code_generation" in result
-        assert "phase3_architecture_synthesis" not in result
+        result = compute_cascade(["plan"])
+        assert "plan" in result
+        assert "implement" in result
+        assert "document" not in result
 
     def test_preview_shows_correct_files(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import preview_reset
 
-        result = preview_reset(["phase1_architecture_facts"], cascade=False)
-        assert "phase1_architecture_facts" in result["phases_to_reset"]
+        result = preview_reset(["extract"], cascade=False)
+        assert "extract" in result["phases_to_reset"]
         assert any("architecture_facts.json" in f for f in result["files_to_delete"])
 
     def test_preview_with_cascade(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import preview_reset
 
-        result = preview_reset(["phase1_architecture_facts"], cascade=True)
+        result = preview_reset(["extract"], cascade=True)
         assert len(result["phases_to_reset"]) >= 5  # phase1 -> 2,3,4,5
 
     def test_preview_no_cascade(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import preview_reset
 
-        result = preview_reset(["phase1_architecture_facts"], cascade=False)
-        assert result["phases_to_reset"] == ["phase1_architecture_facts"]
+        result = preview_reset(["extract"], cascade=False)
+        assert result["phases_to_reset"] == ["extract"]
 
     def test_execute_deletes_phase_dir(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        facts_dir = tmp_project / "knowledge" / "phase1_facts"
+        facts_dir = tmp_project / "knowledge" / "extract"
         assert facts_dir.exists()
 
-        result = execute_reset(["phase1_architecture_facts"], cascade=False)
+        result = execute_reset(["extract"], cascade=False)
 
         # Dir contents deleted
         assert result["deleted_count"] >= 1
-        assert "phase1_architecture_facts" in result["reset_phases"]
+        assert "extract" in result["reset_phases"]
 
     def test_execute_with_cascade_deletes_dependents(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        result = execute_reset(["phase2_architecture_analysis"], cascade=True)
+        result = execute_reset(["analyze"], cascade=True)
         # Should delete phase 2, 3, 4, 5 outputs
-        assert "phase2_architecture_analysis" in result["reset_phases"]
-        assert "phase3_architecture_synthesis" in result["reset_phases"]
-        assert "phase4_development_planning" in result["reset_phases"]
-        assert "phase5_code_generation" in result["reset_phases"]
+        assert "analyze" in result["reset_phases"]
+        assert "document" in result["reset_phases"]
+        assert "plan" in result["reset_phases"]
+        assert "implement" in result["reset_phases"]
 
         # Verify files are gone
-        assert not (tmp_project / "knowledge" / "phase2_analysis" / "analyzed_architecture.json").exists()
-        assert not (tmp_project / "knowledge" / "phase3_synthesis" / "c4" / "c4-context.md").exists()
+        assert not (tmp_project / "knowledge" / "analyze" / "analyzed_architecture.json").exists()
+        assert not (tmp_project / "knowledge" / "document" / "c4" / "c4-context.md").exists()
 
     def test_execute_recreates_empty_dirs(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        execute_reset(["phase4_development_planning"], cascade=False)
+        execute_reset(["plan"], cascade=False)
         # Dir should be recreated empty
-        plan_dir = tmp_project / "knowledge" / "phase4_planning"
+        plan_dir = tmp_project / "knowledge" / "plan"
         assert plan_dir.exists()
         assert list(plan_dir.iterdir()) == []
 
     def test_execute_appends_to_history(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
 
-        execute_reset(["phase5_code_generation"], cascade=False)
+        execute_reset(["implement"], cascade=False)
 
         history_path = tmp_project / "logs" / "run_history.jsonl"
         assert history_path.exists()
@@ -309,7 +309,7 @@ class TestResetService:
         assert len(entries) == 1
         assert entries[0]["trigger"] == "reset"
         assert entries[0]["status"] == "reset"
-        assert "phase5_code_generation" in entries[0]["phases"]
+        assert "implement" in entries[0]["phases"]
 
     def test_execute_nonexistent_phase_no_error(self, mock_settings, tmp_project):
         from ui.backend.services.reset_service import execute_reset
@@ -330,13 +330,13 @@ class TestSchemas:
     def test_reset_request_defaults(self):
         from ui.backend.schemas import ResetRequest
 
-        req = ResetRequest(phase_ids=["phase1_architecture_facts"])
+        req = ResetRequest(phase_ids=["extract"])
         assert req.cascade is True
 
     def test_reset_request_override(self):
         from ui.backend.schemas import ResetRequest
 
-        req = ResetRequest(phase_ids=["phase1_architecture_facts"], cascade=False)
+        req = ResetRequest(phase_ids=["extract"], cascade=False)
         assert req.cascade is False
 
     def test_reset_preview_schema(self):
@@ -379,7 +379,7 @@ class TestSchemas:
             run_id="reset_001",
             status="reset",
             trigger="reset",
-            phases=["phase1_architecture_facts", "phase2_architecture_analysis"],
+            phases=["extract", "analyze"],
         )
         assert entry.trigger == "reset"
 
@@ -411,18 +411,18 @@ class TestResetRouter:
         test_client, _ = client
         resp = test_client.post(
             "/api/reset/preview",
-            json={"phase_ids": ["phase5_code_generation"]},
+            json={"phase_ids": ["implement"]},
         )
         assert resp.status_code == 200
         data = resp.json()
         assert "phases_to_reset" in data
-        assert "phase5_code_generation" in data["phases_to_reset"]
+        assert "implement" in data["phases_to_reset"]
 
     def test_execute_endpoint(self, client):
         test_client, _ = client
         resp = test_client.post(
             "/api/reset/execute",
-            json={"phase_ids": ["phase5_code_generation"], "cascade": False},
+            json={"phase_ids": ["implement"], "cascade": False},
         )
         assert resp.status_code == 200
         data = resp.json()
@@ -435,7 +435,7 @@ class TestResetRouter:
         mock_executor.state = "running"
         resp = test_client.post(
             "/api/reset/execute",
-            json={"phase_ids": ["phase1_architecture_facts"]},
+            json={"phase_ids": ["extract"]},
         )
         assert resp.status_code == 409
 

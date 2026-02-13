@@ -196,7 +196,7 @@ class TestPhase0ToPhase1:
         assert result["status"] == "success"
         assert result["skipped"] is True
         assert result["index_mode"] == "off"
-        assert result["phase"] == "phase0_indexing"
+        assert result["phase"] == "discover"
 
 
 # =============================================================================
@@ -515,7 +515,7 @@ class TestPhase2ToPhase3:
         """PhaseOutputValidator rejects analyzed JSON missing required keys."""
         from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
-        spec = PHASE_OUTPUT_SPECS["phase2_architecture_analysis"]
+        spec = PHASE_OUTPUT_SPECS["analyze"]
         assert "required_keys" in spec
         assert "architecture" in spec["required_keys"]
         assert "patterns" in spec["required_keys"]

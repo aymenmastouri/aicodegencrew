@@ -79,7 +79,7 @@ test.describe('Run Pipeline', () => {
   });
 
   test('should navigate from preset query param', async ({ page }) => {
-    await page.goto('/run?preset=facts_only');
+    await page.goto('/run?preset=scan');
     // Wait for presets to load and select to be populated
     await page.waitForTimeout(2000);
     const select = page.locator('mat-select').first();

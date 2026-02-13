@@ -193,64 +193,64 @@ SAMPLE_PLAN_JSON = {
 
 MINIMAL_PHASES_CONFIG = {
     "phases": {
-        "phase0_indexing": {
+        "discover": {
             "enabled": True,
             "name": "Repository Indexing",
             "order": 0,
             "required": True,
         },
-        "phase1_architecture_facts": {
+        "extract": {
             "enabled": True,
             "name": "Architecture Facts Extraction",
             "order": 1,
             "required": True,
-            "dependencies": ["phase0_indexing"],
+            "dependencies": ["discover"],
         },
-        "phase2_architecture_analysis": {
+        "analyze": {
             "enabled": True,
             "name": "Architecture Analysis",
             "order": 2,
             "required": True,
-            "dependencies": ["phase1_architecture_facts"],
+            "dependencies": ["extract"],
         },
-        "phase3_architecture_synthesis": {
+        "document": {
             "enabled": True,
             "name": "Architecture Synthesis",
             "order": 3,
             "required": False,
-            "dependencies": ["phase2_architecture_analysis"],
+            "dependencies": ["analyze"],
         },
-        "phase4_development_planning": {
+        "plan": {
             "enabled": True,
             "name": "Development Planning",
             "order": 4,
             "required": False,
-            "dependencies": ["phase2_architecture_analysis"],
+            "dependencies": ["analyze"],
         },
     },
     "presets": {
-        "indexing_only": ["phase0_indexing"],
-        "facts_only": ["phase0_indexing", "phase1_architecture_facts"],
-        "analysis_only": [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
+        "index": ["discover"],
+        "scan": ["discover", "extract"],
+        "analyze": [
+            "discover",
+            "extract",
+            "analyze",
         ],
-        "architecture_workflow": [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase3_architecture_synthesis",
+        "document": [
+            "discover",
+            "extract",
+            "analyze",
+            "document",
         ],
-        "planning_only": [
-            "phase0_indexing",
-            "phase1_architecture_facts",
-            "phase2_architecture_analysis",
-            "phase4_development_planning",
+        "plan": [
+            "discover",
+            "extract",
+            "analyze",
+            "plan",
         ],
     },
     "execution": {
-        "mode": "architecture_workflow",
+        "mode": "document",
         "stop_on_error": True,
     },
 }
@@ -314,11 +314,11 @@ def mock_llm():
 
 def pytest_configure(config):
     """Register custom pytest markers."""
-    config.addinivalue_line("markers", "phase0: Phase 0 tests (indexing)")
-    config.addinivalue_line("markers", "phase1: Phase 1 tests (facts extraction)")
-    config.addinivalue_line("markers", "phase2: Phase 2 tests (architecture analysis)")
-    config.addinivalue_line("markers", "phase3: Phase 3 tests (architecture synthesis)")
-    config.addinivalue_line("markers", "phase4: Phase 4 tests (development planning)")
-    config.addinivalue_line("markers", "phase5: Phase 5 tests (code generation)")
+    config.addinivalue_line("markers", "phase0: Phase 0 tests (discover)")
+    config.addinivalue_line("markers", "phase1: Phase 1 tests (extract)")
+    config.addinivalue_line("markers", "phase2: Phase 2 tests (analyze)")
+    config.addinivalue_line("markers", "phase3: Phase 3 tests (document)")
+    config.addinivalue_line("markers", "phase4: Phase 4 tests (plan)")
+    config.addinivalue_line("markers", "phase5: Phase 5 tests (implement)")
     config.addinivalue_line("markers", "e2e: End-to-end tests")
     config.addinivalue_line("markers", "slow: Slow tests (>10 seconds)")

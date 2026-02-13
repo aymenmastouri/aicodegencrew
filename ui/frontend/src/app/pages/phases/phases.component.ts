@@ -313,14 +313,14 @@ export class PhasesComponent implements OnInit {
 
   resetAll(): void {
     this.pipelineService.previewReset(
-      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'phase0_indexing').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'discover').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
           width: '480px',
           data: {
-            title: 'Reset All Phases (excluding Indexing)',
+            title: 'Reset All Phases (excluding Discover)',
             message: `The following ${names.length} phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
             details: names,
             type: 'warn',

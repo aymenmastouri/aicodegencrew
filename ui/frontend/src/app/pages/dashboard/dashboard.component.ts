@@ -39,8 +39,8 @@ import { humanizePhaseId } from '../../shared/phase-utils';
       <div class="hero">
         <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="hero-logo" />
         <div class="hero-text">
-          <h1 class="hero-title"><span class="hero-accent">AI</span>CodeGen<span class="hero-accent">Crew</span></h1>
-          <p class="hero-subtitle">Full SDLC Pipeline — from Architecture Analysis to Code Generation</p>
+          <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
+          <p class="hero-subtitle">AI-Powered Development Lifecycle Automation — Discover, Extract, Analyze, Document, Plan, Implement</p>
         </div>
         <div class="hero-stats">
           @if (health) {
@@ -851,6 +851,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private statusSub?: Subscription;
   private timerSub?: Subscription;
+  private dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Onboarding
   setupStatus: SetupStatus | null = null;
@@ -995,14 +996,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   resetAll(): void {
     this.pipelineSvc.previewReset(
-      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'phase0_indexing').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'discover').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
           width: '480px',
           data: {
-            title: 'Reset All Phases (excluding Indexing)',
+            title: 'Reset All Phases (excluding Discover)',
             message: `The following ${names.length} phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
             details: names,
             type: 'warn',
@@ -1032,6 +1033,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopLiveUpdates();
+    if (this.dismissTimer) clearTimeout(this.dismissTimer);
   }
 
   formatElapsed(seconds: number): string {
@@ -1042,6 +1044,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   shortPhase(phaseId: string): string {
     const SHORT: Record<string, string> = {
+      // New canonical IDs
+      discover: 'Discover',
+      extract: 'Extract',
+      analyze: 'Analyze',
+      document: 'Document',
+      plan: 'Plan',
+      implement: 'Implement',
+      verify: 'Verify',
+      deliver: 'Deliver',
+      // Legacy long form (backwards compat)
       phase0_indexing: 'Index',
       phase1_architecture_facts: 'Facts',
       phase2_architecture_analysis: 'Analysis',
@@ -1050,6 +1062,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       phase5_code_generation: 'CodeGen',
       phase6_test_generation: 'TestGen',
       phase7_review_deploy: 'Deploy',
+      // Legacy short form (backwards compat)
       indexing: 'Index',
       facts_extraction: 'Facts',
       deep_analysis: 'Analysis',
@@ -1120,6 +1133,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private updateExecution(s: ExecutionStatus): void {
+    const prevState = this.executionState;
     this.executionState = s.state;
     this.executionRunId = s.run_id || '';
     // Only overwrite stepper data if the backend has real progress info
@@ -1129,6 +1143,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (s.elapsed_seconds != null) {
       this.executionElapsed = Math.round(s.elapsed_seconds);
     }
+
+    // Auto-dismiss stepper after terminal states
+    if (this.dismissTimer) {
+      clearTimeout(this.dismissTimer);
+      this.dismissTimer = null;
+    }
+    if (s.state === 'completed' || s.state === 'failed' || s.state === 'cancelled') {
+      const delay = s.state === 'completed' ? 15000 : 30000;
+      this.dismissTimer = setTimeout(() => {
+        this.executionState = 'idle';
+        this.phaseProgress = [];
+        this.cdr.markForCheck();
+      }, delay);
+    }
+
+    // When state resets to idle, also refresh phase cards
+    if (prevState !== 'idle' && s.state === 'idle') {
+      this.refreshAll();
+    }
+
     this.cdr.markForCheck();
   }
 
