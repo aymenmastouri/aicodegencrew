@@ -1,13 +1,13 @@
-# AICodeGenCrew
+# SDLC Pilot
 
-**AI-Powered Software Development Lifecycle Automation**
+**AI-Powered Development Lifecycle Automation**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![CrewAI](https://img.shields.io/badge/framework-CrewAI-orange.svg)](https://crewai.com/)
 [![Angular 21](https://img.shields.io/badge/dashboard-Angular%2021-red.svg)](#sdlc-dashboard)
 [![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#why-on-premises)
 
-AICodeGenCrew automates the full Software Development Lifecycle, from architecture extraction to code generation. Point it at any repository, operate everything through the **SDLC Dashboard**, and get:
+SDLC Pilot automates the full Software Development Lifecycle, from architecture extraction to code generation. Point it at any repository, operate everything through the **SDLC Dashboard**, and get:
 
 - Architecture facts, C4 models, arc42 documentation
 - Development plans from JIRA/DOCX/Excel tasks
@@ -59,14 +59,14 @@ TASK_INPUT_DIR=C:\work\my-project\tasks
 
 From the Dashboard:
 1. Go to **Run Pipeline** — the input file summary shows what's uploaded
-2. Select a preset (e.g. `planning_only`) or pick individual phases
+2. Select a preset (e.g. `plan`) or pick individual phases
 3. Optionally adjust environment variables
 4. Click **Run Pipeline** and watch live log output
 
 Or via CLI:
 ```bash
 aicodegencrew plan                                  # Development planning
-aicodegencrew run --preset architecture_workflow    # C4 + arc42 docs
+aicodegencrew run --preset document                 # C4 + arc42 docs
 aicodegencrew codegen                               # Code generation
 ```
 
@@ -74,7 +74,7 @@ aicodegencrew codegen                               # Code generation
 
 ## SDLC Dashboard
 
-The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 21** + **FastAPI**.
+The Dashboard is the primary interface for SDLC Pilot. Built with **Angular 21** + **FastAPI**.
 
 | Page | Purpose |
 |------|---------|
@@ -86,6 +86,8 @@ The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 2
 | **Reports** | 3-tab view: structured plan viewer (overview metrics, migration sequence, component chips), code diff viewer (colored diffs), git branch management |
 | **Metrics** | Explore `metrics.jsonl` events with filters |
 | **Logs** | Tail application logs with color-coded levels |
+| **Collectors** | Manage and configure data collectors for pipeline input |
+| **History** | Run history with stats (success rate, avg duration, token usage), phase frequency, KPI cards |
 
 **Key capabilities:**
 - **File upload** with drag-and-drop, extension validation, 4 input categories
@@ -93,7 +95,7 @@ The Dashboard is the primary interface for AICodeGenCrew. Built with **Angular 2
 - **Code diff viewer** — per-file expandable diffs with green/red line coloring, action chips (created/modified/deleted), language badges
 - **Git branch management** — list `codegen/*` branches with file count, report links, and delete action
 - **Pipeline reset** — per-phase and full pipeline reset with cascade propagation, confirm dialog with cascade preview
-- **Persistent run history** — append-only JSONL (`logs/run_history.jsonl`) with Run/Reset type tracking, legacy `run_report.json` fallback
+- **Persistent run history** — append-only JSONL (`logs/run_history.jsonl`) with Run/Reset type tracking
 - **Document rendering** — JSON syntax highlighting, Markdown, AsciiDoc, HTML, Confluence wiki
 - Real-time log streaming via Server-Sent Events (SSE)
 - Environment configuration editing before each run
@@ -113,44 +115,44 @@ docker-compose -f ui/docker-compose.ui.yml up --build
 
 ## Architecture
 
-4-layer pipeline with 8 phases:
+3-layer pipeline with 8 phases:
 
 ```
 KNOWLEDGE (no LLM)          REASONING (hybrid)           EXECUTION (hybrid)
-Phase 0: Indexing        ->  Phase 2: Analysis        ->  Phase 5: Code Generation
-Phase 1: Facts           ->  Phase 3: Synthesis (C4)  ->  Phase 6: Test Gen (planned)
-                             Phase 4: Planning         ->  Phase 7: Deploy (planned)
+Discover                ->  Analyze                  ->  Implement
+Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
+                             Plan                     ->  Deliver (planned)
 ```
 
-| Phase | Name | LLM | Description |
-|:-----:|------|:---:|-------------|
-| 0 | Indexing | No | Vector-index repository into ChromaDB |
-| 1 | Facts | No | Deterministic extraction: components, relations, interfaces |
-| 2 | Analysis | Yes | Multi-agent analysis (domain, workflow, quality) |
-| 3 | Synthesis | Yes | C4 diagrams + arc42 chapters + DrawIO |
-| 4 | Planning | Hybrid | 4 deterministic stages + 1 LLM call (18-40s) |
-| 5 | Code Gen | Hybrid | Strategy pattern per task type, git branch isolation |
-| 6 | Test Gen | - | Planned |
-| 7 | Deploy | - | Planned |
+| Name | LLM | Description |
+|------|:---:|-------------|
+| Discover | No | Vector-index repository into ChromaDB |
+| Extract | No | Deterministic extraction: components, relations, interfaces |
+| Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
+| Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
+| Plan | Hybrid | 4 deterministic stages + 1 LLM call (18-40s) |
+| Implement | Hybrid | Strategy pattern per task type, git branch isolation |
+| Verify | - | Planned |
+| Deliver | - | Planned |
 
 > Full specification: [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md)
 
 ### Data Flow
 
 ```
-Repository ─► Phase 0 ─► knowledge/phase0_indexing/  (ChromaDB)
-             Phase 1 ─► knowledge/phase1_facts/      (architecture_facts.json)
-             Phase 2 ─► knowledge/phase2_analysis/    (analyzed_architecture.json)
-             Phase 3 ─► knowledge/phase3_synthesis/   (C4 + arc42 + DrawIO)
-             Phase 4 ─► knowledge/phase4_planning/    (task_plan.json)
-             Phase 5 ─► Git branch codegen/{task_id}  + knowledge/phase5_codegen/
+Repository ─► Discover   ─► knowledge/discover/    (ChromaDB)
+             Extract    ─► knowledge/extract/     (architecture_facts.json)
+             Analyze    ─► knowledge/analyze/     (analyzed_architecture.json)
+             Document   ─► knowledge/document/    (C4 + arc42 + DrawIO)
+             Plan       ─► knowledge/plan/        (task_plan.json)
+             Implement  ─► Git branch codegen/{task_id}  + knowledge/implement/
 ```
 
 ---
 
 ## Why On-Premises?
 
-Enterprise code contains sensitive IP and customer data. AICodeGenCrew runs **entirely on your infrastructure**:
+Enterprise code contains sensitive IP and customer data. SDLC Pilot runs **entirely on your infrastructure**:
 
 - **Local models** via [Ollama](https://ollama.com/) (e.g. `qwen2.5-coder`, `llama3`)
 - **On-prem API endpoints** (OpenAI-compatible: vLLM, TGI)
@@ -180,12 +182,14 @@ Copy `.env.example` to `.env` and configure. Key variables:
 
 | Preset | Phases | Use Case |
 |--------|--------|----------|
-| `planning_only` | 0, 1, 2, 3, 4 | Development planning (most common) |
-| `architecture_workflow` | 0 – 3 | C4 + arc42 documentation |
-| `architecture_full` | 0 – 4 | Architecture + planning |
-| `codegen_only` | 0, 1, 2, 3, 4, 5 | Planning + code generation |
-| `facts_only` | 0, 1 | Deterministic facts (no LLM) |
-| `full_pipeline` | 0 – 7 | All phases end-to-end |
+| `index` | Discover | Repository indexing only |
+| `scan` | Discover + Extract | Deterministic facts (no LLM) |
+| `analyze` | Discover → Analyze | AI analysis |
+| `document` | Discover → Document | C4 + arc42 documentation |
+| `plan` | Discover → Plan | Development planning (most common) |
+| `develop` | Discover → Implement | Planning + code generation |
+| `architect` | Discover → Plan (no code) | Architecture + planning |
+| `full` | All phases | End-to-end |
 
 ---
 
@@ -197,8 +201,8 @@ aicodegencrew [--env <path>] <command> [options]
 
 | Command | Description |
 |---------|-------------|
-| `plan` | Development planning (Phases 0+1+2+4) |
-| `codegen` | Code generation (Phases 0+1+2+4+5) |
+| `plan` | Development planning (Discover → Plan) |
+| `codegen` | Code generation (Discover → Implement) |
 | `run --preset <name>` | Run a preset |
 | `run --phases <p1> <p2>` | Run specific phases |
 | `index` | Index repository only |
@@ -210,7 +214,7 @@ Common options: `--repo-path`, `--index-mode`, `--git-url`, `--branch`, `--confi
 
 ---
 
-## Task Inputs (Phase 4)
+## Task Inputs (Plan phase)
 
 Two ways to provide input files:
 
@@ -226,7 +230,7 @@ Two ways to provide input files:
 | **Logs** | `.log` `.txt` `.xlsx` `.csv` | Application logs |
 | **Reference** | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` | Mockups, diagrams |
 
-Output: `knowledge/phase4_planning/{task_id}_plan.json` with affected components, implementation steps, test/security/validation strategies.
+Output: `knowledge/plan/{task_id}_plan.json` with affected components, implementation steps, test/security/validation strategies.
 
 ---
 
@@ -235,13 +239,13 @@ Output: `knowledge/phase4_planning/{task_id}_plan.json` with affected components
 ```
 <OUTPUT_BASE_DIR>/
 ├── knowledge/
-│   ├── phase0_indexing/     # Phase 0: ChromaDB vector store
-│   ├── phase1_facts/        # Phase 1: architecture_facts.json, evidence_map.json
-│   ├── phase2_analysis/     # Phase 2: analyzed_architecture.json
-│   ├── phase3_synthesis/    # Phase 3: c4/, arc42/ (C4 diagrams + arc42 chapters)
-│   ├── phase4_planning/     # Phase 4: {task_id}_plan.json
-│   └── phase5_codegen/      # Phase 5: {task_id}_report.json
-├── architecture-docs/       # Phase 3 export (Markdown + Confluence + AsciiDoc + HTML)
+│   ├── discover/            # Discover: ChromaDB vector store
+│   ├── extract/             # Extract: architecture_facts.json, evidence_map.json
+│   ├── analyze/             # Analyze: analyzed_architecture.json
+│   ├── document/            # Document: c4/, arc42/ (C4 diagrams + arc42 chapters)
+│   ├── plan/                # Plan: {task_id}_plan.json
+│   └── implement/           # Implement: {task_id}_report.json
+├── architecture-docs/       # Document export (Markdown + Confluence + AsciiDoc + HTML)
 └── logs/
     ├── current.log
     ├── metrics.jsonl        # Structured metrics
@@ -252,7 +256,7 @@ Output: `knowledge/phase4_planning/{task_id}_plan.json` with affected components
 
 ## Deployment
 
-AICodeGenCrew is **Capgemini proprietary** software. Three delivery modes:
+SDLC Pilot is **Capgemini proprietary** software. Three delivery modes:
 
 | Mode | Command | Source Visible |
 |------|---------|:--------------:|
@@ -271,7 +275,7 @@ python scripts/build_release.py --bump patch --tag --docker
 
 ## Testing
 
-600+ tests, no LLM or network required (except `tests/e2e/`).
+780+ tests, no LLM or network required (except `tests/e2e/`).
 
 ```bash
 pip install -e ".[dev]"
@@ -298,18 +302,18 @@ pytest tests/ --ignore=tests/e2e    # Unit + integration only
 ```
 aicodegencrew/
 ├── ui/                          # SDLC Dashboard (primary interface)
-│   ├── frontend/                #   Angular 21 SPA (9 pages, Material + Tailwind)
+│   ├── frontend/                #   Angular 21 SPA (10 pages, Material + Tailwind)
 │   ├── backend/                 #   FastAPI (11 routers, SSE streaming, file upload, reset)
 │   └── docker-compose.ui.yml
 ├── src/aicodegencrew/
 │   ├── cli.py                   # CLI entry point
 │   ├── orchestrator.py          # Phase orchestration
-│   ├── crews/                   # AI Agent Workflows (Phases 2-3)
-│   ├── pipelines/               # Deterministic Pipelines (Phases 0, 1, 4, 5)
+│   ├── crews/                   # AI Agent Workflows (Analyze + Document)
+│   ├── pipelines/               # Deterministic Pipelines (Discover, Extract, Plan, Implement)
 │   ├── shared/                  # Validation, models, utilities
 │   └── mcp/                     # Model Context Protocol server
 ├── config/phases_config.yaml
-├── tests/                       # 600+ tests
+├── tests/                       # 780+ tests
 ├── docs/                        # Architecture docs + diagrams
 ├── Dockerfile                   # Multi-stage (no source in final image)
 └── docker-compose.yml
@@ -324,6 +328,6 @@ aicodegencrew/
 ---
 
 <p align="center">
-  Built with <a href="https://crewai.com/">CrewAI</a> &middot; Powered by local LLMs &middot; Made for enterprise<br>
+  <strong>SDLC Pilot</strong> &mdash; Built with <a href="https://crewai.com/">CrewAI</a> &middot; Powered by local LLMs &middot; Made for enterprise<br>
   <sub>&copy; Capgemini. All rights reserved</sub>
 </p>

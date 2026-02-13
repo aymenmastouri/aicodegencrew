@@ -8,9 +8,9 @@ Validation runs before a dependent phase starts.
 
 Usage:
     validator = PhaseOutputValidator()
-    errors = validator.validate_phase("phase1_architecture_facts")
+    errors = validator.validate_phase("extract")
     if errors:
-        raise ValueError(f"Phase 1 output invalid: {errors}")
+        raise ValueError(f"Extract phase output invalid: {errors}")
 """
 
 import json
@@ -30,48 +30,48 @@ logger = setup_logger(__name__)
 # =============================================================================
 
 PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
-    "phase0_indexing": {
-        "required_paths": ["knowledge/phase0_indexing"],
+    "discover": {
+        "required_paths": ["knowledge/discover"],
         "description": "ChromaDB vector index",
     },
-    "phase1_architecture_facts": {
+    "extract": {
         "required_paths": [
-            "knowledge/phase1_facts/architecture_facts.json",
-            "knowledge/phase1_facts/evidence_map.json",
+            "knowledge/extract/architecture_facts.json",
+            "knowledge/extract/evidence_map.json",
         ],
         "schema": "architecture_facts",
         "min_components": 1,
         "min_containers": 1,
         "description": "Architecture facts JSON (ground truth)",
     },
-    "phase2_architecture_analysis": {
+    "analyze": {
         "required_paths": [
-            "knowledge/phase2_analysis/analyzed_architecture.json",
+            "knowledge/analyze/analyzed_architecture.json",
         ],
         "schema": "analyzed_architecture",
         "required_keys": ["architecture", "patterns"],
         "description": "AI-analyzed architecture JSON",
     },
-    "phase3_architecture_synthesis": {
+    "document": {
         "required_paths": [
-            "knowledge/phase3_synthesis/c4/c4-context.md",
-            "knowledge/phase3_synthesis/c4/c4-container.md",
-            "knowledge/phase3_synthesis/c4/c4-component.md",
-            "knowledge/phase3_synthesis/c4/c4-deployment.md",
+            "knowledge/document/c4/c4-context.md",
+            "knowledge/document/c4/c4-container.md",
+            "knowledge/document/c4/c4-component.md",
+            "knowledge/document/c4/c4-deployment.md",
         ],
         "min_file_size": 500,  # Minimum bytes per output file
         "description": "C4 + Arc42 documentation",
     },
-    "phase4_development_planning": {
+    "plan": {
         "required_paths": [
-            "knowledge/phase4_planning",
+            "knowledge/plan",
         ],
         "schema": "development_plan",
         "description": "Development plans from hybrid pipeline",
     },
-    "phase5_code_generation": {
+    "implement": {
         "required_paths": [
-            "knowledge/phase5_codegen",
+            "knowledge/implement",
         ],
         "schema": "codegen_report",
         "description": "Code generation reports",
@@ -155,7 +155,7 @@ class PhaseOutputValidator:
     def _validate_facts(self, spec: dict) -> list[str]:
         """Validate architecture_facts.json against Pydantic schema."""
         errors = []
-        facts_path = Path("knowledge/phase1_facts/architecture_facts.json")
+        facts_path = Path("knowledge/extract/architecture_facts.json")
 
         try:
             with open(facts_path, encoding="utf-8") as f:
@@ -179,7 +179,7 @@ class PhaseOutputValidator:
             errors.append(f"Too few containers: {len(facts.containers)} (min {min_cont})")
 
         # Evidence cross-reference
-        evidence_path = Path("knowledge/phase1_facts/evidence_map.json")
+        evidence_path = Path("knowledge/extract/evidence_map.json")
         if evidence_path.exists():
             try:
                 with open(evidence_path, encoding="utf-8") as f:
@@ -195,7 +195,7 @@ class PhaseOutputValidator:
     def _validate_analysis(self, spec: dict) -> list[str]:
         """Validate analyzed_architecture.json structure."""
         errors = []
-        analysis_path = Path("knowledge/phase2_analysis/analyzed_architecture.json")
+        analysis_path = Path("knowledge/analyze/analyzed_architecture.json")
 
         try:
             with open(analysis_path, encoding="utf-8") as f:
@@ -211,16 +211,16 @@ class PhaseOutputValidator:
         return errors
 
     def _validate_development_plans(self, spec: dict) -> list[str]:
-        """Validate Phase 4 development plan JSON files."""
+        """Validate development plan JSON files."""
         errors = []
-        plans_dir = Path("knowledge/phase4_planning")
+        plans_dir = Path("knowledge/plan")
 
         if not plans_dir.is_dir():
             return []  # Directory existence already checked
 
         plan_files = list(plans_dir.glob("*_plan.json"))
         if not plan_files:
-            errors.append("No plan files (*_plan.json) in knowledge/phase4_planning/")
+            errors.append("No plan files (*_plan.json) in knowledge/plan/")
             return errors
 
         required_keys = {"task_id", "understanding", "development_plan"}
@@ -247,9 +247,9 @@ class PhaseOutputValidator:
         return errors
 
     def _validate_codegen_reports(self, spec: dict) -> list[str]:
-        """Validate Phase 5 code generation report JSON files."""
+        """Validate code generation report JSON files."""
         errors = []
-        reports_dir = Path("knowledge/phase5_codegen")
+        reports_dir = Path("knowledge/implement")
 
         if not reports_dir.is_dir():
             return []  # Directory existence already checked

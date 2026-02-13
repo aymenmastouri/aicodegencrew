@@ -4,11 +4,11 @@
 
 ### 1.1 Purpose and Goal
 
-**AICodeGenCrew** is a fully local, on-premises AI-powered blueprint for a complete, end-to-end Software Development Lifecycle (SDLC).
+**SDLC Pilot** is a fully local, on-premises AI-powered blueprint for a complete, end-to-end Software Development Lifecycle (SDLC).
 
 **Use Case:** Provide a fully local / on-prem AI SDLC blueprint (using only on-prem LLMs, no external data transfer) that analyzes an existing repository, generates evidence-based architecture documentation, and supports the full development workflow by creating and then working through backlog items (issues/CRs/tasks): planning, implementing changes, generating tests, running build/CI validations, and finally preparing and merging the delivery end-to-end.
 
-**Why On-Premises?** Enterprise software often contains sensitive intellectual property, customer data, or security-critical code. Sending this data to external AI services (like OpenAI, Anthropic, etc.) may violate compliance requirements, data protection regulations, or internal security policies. AICodeGenCrew is designed to run entirely on your infrastructure with your own LLMs - no data ever leaves your network.
+**Why On-Premises?** Enterprise software often contains sensitive intellectual property, customer data, or security-critical code. Sending this data to external AI services (like OpenAI, Anthropic, etc.) may violate compliance requirements, data protection regulations, or internal security policies. SDLC Pilot is designed to run entirely on your infrastructure with your own LLMs - no data ever leaves your network.
 
 ### 1.2 4-Layer Architecture Model
 
@@ -30,14 +30,14 @@ The system is organized into 4 distinct layers, each with clear responsibilities
 
 | Phase | Name | Layer | Type | Status |
 |-------|------|-------|------|--------|
-| 0 | Indexing | Knowledge | Pipeline | IMPLEMENTED |
-| 1 | Architecture Facts | Knowledge | Pipeline | IMPLEMENTED |
-| 2 | Architecture Analysis | Reasoning | Crew | IMPLEMENTED |
-| 3 | Architecture Synthesis | Reasoning | Crew | IMPLEMENTED |
-| 4 | Development Planning | Reasoning | Hybrid | IMPLEMENTED |
-| 5 | Code Generation | Execution | Hybrid | IMPLEMENTED |
-| 6 | Test Generation | Execution | Crew | PLANNED |
-| 7 | Review + Deploy | Execution | Pipeline | PLANNED |
+| 0 | Discover | Knowledge | Pipeline | IMPLEMENTED |
+| 1 | Extract | Knowledge | Pipeline | IMPLEMENTED |
+| 2 | Analyze | Reasoning | Crew | IMPLEMENTED |
+| 3 | Document | Reasoning | Crew | IMPLEMENTED |
+| 4 | Plan | Reasoning | Hybrid | IMPLEMENTED |
+| 5 | Implement | Execution | Hybrid | IMPLEMENTED |
+| 6 | Verify | Execution | Crew | PLANNED |
+| 7 | Deliver | Execution | Pipeline | PLANNED |
 
 ### 1.4 Key Benefits
 
@@ -53,7 +53,7 @@ The system is organized into 4 distinct layers, each with clear responsibilities
 
 ### 1.5 What You Get
 
-When you run AICodeGenCrew on your repository, you receive:
+When you run SDLC Pilot on your repository, you receive:
 
 - **C4 Diagrams:** Context, Container, Component, and Deployment views as editable DrawIO files
 - **arc42 Documentation:** All 12 chapters including introduction, constraints, context, solution strategy, building blocks, runtime scenarios, deployment, and quality requirements
@@ -72,14 +72,14 @@ Establish a fully automated SDLC pipeline that covers:
 
 | Phase | Layer | Capability | Implementation |
 |-------|-------|------------|----------------|
-| Phase 0: Indexing | Knowledge | Repository analysis, vector storage | Pipeline (ChromaDB) |
-| Phase 1: Architecture Facts | Knowledge | Deterministic code analysis | Pipeline (31 Collectors) |
-| Phase 2: Architecture Analysis | Reasoning | Multi-agent architecture analysis | Crew (MapReduce) |
-| Phase 3: Architecture Synthesis | Reasoning | C4 + arc42 documentation | Crew (Mini-Crews) |
-| Phase 4: Development Planning | Reasoning | Parse tasks + create implementation plans | Hybrid Pipeline (IMPLEMENTED) |
-| Phase 5: Code Generation | Execution | Feature implementation | Hybrid Pipeline (IMPLEMENTED) |
-| Phase 6: Test Generation | Execution | Test creation | Crew (Planned) |
-| Phase 7: Review + Deploy | Execution | CI/CD integration | Pipeline (Planned) |
+| Discover | Knowledge | Repository analysis, vector storage | Pipeline (ChromaDB) |
+| Extract | Knowledge | Deterministic code analysis | Pipeline (31 Collectors) |
+| Analyze | Reasoning | Multi-agent architecture analysis | Crew (MapReduce) |
+| Document | Reasoning | C4 + arc42 documentation | Crew (Mini-Crews) |
+| Plan | Reasoning | Parse tasks + create implementation plans | Hybrid Pipeline (IMPLEMENTED) |
+| Implement | Execution | Feature implementation | Hybrid Pipeline (IMPLEMENTED) |
+| Verify | Execution | Test creation | Crew (Planned) |
+| Deliver | Execution | CI/CD integration | Pipeline (Planned) |
 
 ### 2.2 Core Principles
 
@@ -92,24 +92,24 @@ Establish a fully automated SDLC pipeline that covers:
 | Incremental Adoption | Phases can be executed independently |
 | Clean Output | No evidence IDs in final documentation |
 
-### 2.3 Current Focus: Knowledge + Reasoning + Execution Layers (Phases 0-5)
+### 2.3 Current Focus: Knowledge + Reasoning + Execution Layers (Discover through Implement)
 
 The implementation covers deterministic facts extraction through code generation:
 
 | Area | Implementation | Status |
 |------|----------------|--------|
-| **Phase 0 Indexing** | ChromaDB vector storage | IMPLEMENTED |
-| **Phase 1 Facts** | 31 Collectors | IMPLEMENTED |
-| **Phase 2 Analysis** | MapReduce multi-agent analysis | IMPLEMENTED |
-| **Phase 3 Synthesis** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
-| **Phase 4 Planning** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
-| **Phase 5 Code Gen** | Hybrid pipeline (4 deterministic + 1 LLM per file) | IMPLEMENTED |
+| **Discover** | ChromaDB vector storage | IMPLEMENTED |
+| **Extract** | 31 Collectors | IMPLEMENTED |
+| **Analyze** | MapReduce multi-agent analysis | IMPLEMENTED |
+| **Document** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
+| **Plan** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
+| **Implement** | Hybrid pipeline (4 deterministic + 1 LLM per file) | IMPLEMENTED |
 | **SDLC Dashboard** | Angular 21 + FastAPI web UI with SSE streaming, file upload, doc rendering | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
 ### 2.4 Knowledge Layer Capabilities
 
-Phase 1 extracts comprehensive architecture facts from any codebase:
+Extract extracts comprehensive architecture facts from any codebase:
 
 | Capability | Description |
 |------------|-------------|
@@ -140,11 +140,11 @@ Phase 1 extracts comprehensive architecture facts from any codebase:
 
 > See [pipeline-flow.drawio](diagrams/pipeline-flow.drawio) for the full 4-layer pipeline diagram.
 
-**Why Evidence-First?** LLMs hallucinate. If you ask an LLM "what components does this system have?", it will guess based on naming conventions. By extracting facts deterministically first (Phase 1, no LLM), then feeding only verified facts to the LLM (Phase 2+), every statement in the output is traceable to real code. This is critical for enterprise documentation that auditors and architects rely on.
+**Why Evidence-First?** LLMs hallucinate. If you ask an LLM "what components does this system have?", it will guess based on naming conventions. By extracting facts deterministically first (Extract, no LLM), then feeding only verified facts to the LLM (Analyze+), every statement in the output is traceable to real code. This is critical for enterprise documentation that auditors and architects rely on.
 
 **Key Rules:**
-- Phase 1 produces facts and evidence (deterministic, no LLM)
-- Phase 2 synthesizes documentation from facts only
+- Extract produces facts and evidence (deterministic, no LLM)
+- Analyze synthesizes documentation from facts only
 - If it is not in `architecture_facts.json`, it must NOT appear in output
 - Evidence IDs are for internal processing only, NOT in final documentation
 - Feedback loop updates knowledge base continuously
@@ -153,8 +153,8 @@ Phase 1 extracts comprehensive architecture facts from any codebase:
 
 | Classification | Layer | LLM Requirement | Phases |
 |----------------|-------|-----------------|--------|
-| Pipeline | Knowledge | None (Embeddings for Phase 0) | 0, 1, 6, 7 |
-| Crew | Reasoning/Execution | Full LLM | 2, 3, 4, 5 |
+| Pipeline | Knowledge | None (Embeddings for Discover) | Discover, Extract, Verify, Deliver |
+| Crew | Reasoning/Execution | Full LLM | Analyze, Document, Plan, Implement |
 
 ### 3.3 Core Modules
 
@@ -163,8 +163,8 @@ Phase 1 extracts comprehensive architecture facts from any codebase:
 | **Orchestrator** | `orchestrator.py` | Phase coordination (register - run) |
 | CLI | `cli.py` | Command-line interface, repo resolution |
 | GitRepoManager | `shared/utils/git_repo_manager.py` | Clone/pull remote Git repos |
-| Pipelines | `pipelines/` | Deterministic processes (Phase 0, 1) |
-| Crews | `crews/` | AI agent workflows (Phase 2+) |
+| Pipelines | `pipelines/` | Deterministic processes (Discover, Extract) |
+| Crews | `crews/` | AI agent workflows (Analyze+) |
 | Shared | `shared/` | Common utilities, models, tools |
 
 ### 3.4 SDLCOrchestrator Design
@@ -174,13 +174,13 @@ The orchestrator follows clean architecture principles:
 ```python
 # Simple, explicit API
 orchestrator = SDLCOrchestrator()
-orchestrator.register("phase0_indexing", IndexingPipeline(...))
-orchestrator.register("phase1_architecture_facts", ArchFactsPipeline(...))
-orchestrator.register("phase2_architecture_analysis", AnalysisCrew(...))
-orchestrator.register("phase3_architecture_synthesis", SynthesisCrew(...))
-orchestrator.register("phase4_development_planning", PlanningPipeline(...))
+orchestrator.register("discover", IndexingPipeline(...))
+orchestrator.register("extract", ArchFactsPipeline(...))
+orchestrator.register("analyze", AnalysisCrew(...))
+orchestrator.register("document", SynthesisCrew(...))
+orchestrator.register("plan", PlanningPipeline(...))
 
-result = orchestrator.run(preset="architecture_full")
+result = orchestrator.run(preset="architect")
 ```
 
 | Principle | Implementation |
@@ -193,11 +193,11 @@ result = orchestrator.run(preset="architecture_full")
 | **Phase Validation** | `PhaseOutputValidator` checks outputs between phases |
 | **Strict CLI** | Preset/phase names validated against `phases_config.yaml` |
 
-### 3.5 Mini-Crews Pattern (Phase 3)
+### 3.5 Mini-Crews Pattern (Document)
 
 **Why Mini-Crews?** CrewAI's default pattern — one Crew with many sequential tasks — fails for large documents. After ~10-15 tasks, the accumulated conversation history exceeds the LLM context window (120K tokens), producing `max_tokens must be at least 1` errors. Mini-Crews solve this by giving each sub-task a fresh agent with a fresh context window, passing data via template variables instead of conversation history.
 
-Phase 3 uses the **Mini-Crews Pattern** instead of a single large Crew:
+Document uses the **Mini-Crews Pattern** instead of a single large Crew:
 
 ```
 OLD: 1 Crew with 26 sequential tasks → Context overflow after task ~10-15
@@ -253,7 +253,7 @@ class MiniCrewBase(ABC):
 
 #### 3.6.1 LLM Optimization Features (Phase 0.5 + 1 + 1.5)
 
-> **Status**: Fully implemented across Phase 2 and Phase 3 crews.
+> **Status**: Fully implemented across Analyze and Document crews.
 > See `docs/LLM_OPTIMIZATION_ROADMAP.md` for detailed rationale and metrics.
 
 **Phase 0.5: Guardrails & Stop Conditions**
@@ -303,7 +303,7 @@ src/aicodegencrew/
     crews/
         __init__.py
 
-        architecture_analysis/         # Phase 2: Architecture Analysis
+        architecture_analysis/         # Analyze: Architecture Analysis
             __init__.py
             crew.py                    # ArchitectureAnalysisCrew (5 mini-crews, all Python)
             mapreduce_crew.py          # MapReduceAnalysisCrew (large repos)
@@ -312,7 +312,7 @@ src/aicodegencrew/
                 __init__.py
                 rag_query_tool.py      # ChromaDB semantic search
 
-        architecture_synthesis/        # Phase 3: Architecture Synthesis
+        architecture_synthesis/        # Document: Architecture Synthesis
             __init__.py
             crew.py                    # ArchitectureSynthesisCrew (orchestrator)
             base_crew.py               # MiniCrewBase ABC (shared infrastructure)
@@ -333,16 +333,16 @@ src/aicodegencrew/
                 facts_query_tool.py    # Query architecture facts
                 chunked_writer_tool.py # ChunkedWriterTool + StereotypeListTool
 
-        codegen/                       # Phase 5: Code Generation (IMPLEMENTED)
+        codegen/                       # Implement: Code Generation (IMPLEMENTED)
             (deleted — moved to pipelines/code_generation/)
 
-        testing/                       # Phase 6: Test Generation (PLANNED)
+        testing/                       # Verify: Test Generation (PLANNED)
             __init__.py
             agents.py                  # Test generation agents
             crew.py                    # TestGenerationCrew
             tasks.py                   # Test generation tasks
 
-        review/                        # Phase 7: Review + Deploy (PLANNED)
+        review/                        # Deliver: Review + Deploy (PLANNED)
             __init__.py
             agents.py                  # Review agents
             crew.py                    # ReviewCrew
@@ -352,12 +352,12 @@ src/aicodegencrew/
         __init__.py
         indexing.py                    # Backward compat
 
-        indexing/                      # Phase 0: Repository Indexing
+        indexing/                      # Discover: Repository Indexing
             __init__.py
             indexing_pipeline.py       # IndexingPipeline + IndexingState + ensure_repo_indexed
             ...
 
-        architecture_facts/            # Phase 1: Architecture Facts
+        architecture_facts/            # Extract: Architecture Facts
             __init__.py
             pipeline.py               # ArchitectureFactsPipeline
             collectors/                # Dimension + Specialist collectors
@@ -371,7 +371,7 @@ src/aicodegencrew/
             collectors/
                 fact_adapter.py        # RawFact→CollectedComponent/Interface/Relation
 
-        development_planning/          # Phase 4: Development Planning (HYBRID)
+        development_planning/          # Plan: Development Planning (HYBRID)
             __init__.py
             pipeline.py                # DevelopmentPlanningPipeline (5 stages)
             schemas.py                 # Pydantic schemas for plans
@@ -401,14 +401,14 @@ src/aicodegencrew/
                 breaking_changes.py    # Breaking change detection
                 migration_steps.py     # Migration step generation
 
-        code_generation/                # Phase 5: Code Generation (HYBRID)
+        code_generation/                # Implement: Code Generation (HYBRID)
             __init__.py
             pipeline.py                # CodeGenerationPipeline (5 stages)
             schemas.py                 # Pydantic schemas (8 models)
 
             stages/                    # 5-stage hybrid architecture
                 __init__.py
-                stage1_plan_reader.py      # Read Phase 4 plan + resolve file paths
+                stage1_plan_reader.py      # Read Plan output + resolve file paths
                 stage2_context_collector.py # Collect source code from target repo
                 stage3_code_generator.py   # LLM call per file (only LLM stage)
                 stage4_code_validator.py   # Syntax, security, pattern validation
@@ -445,9 +445,9 @@ src/aicodegencrew/
 
         models/
             __init__.py
-            architecture_facts_schema.py  # Pydantic schema for Phase 1
-            analysis_schema.py            # Pydantic schema for Phase 2
-            development_plan_schema.py    # Pydantic schema for Phase 4
+            architecture_facts_schema.py  # Pydantic schema for Extract
+            analysis_schema.py            # Pydantic schema for Analyze
+            development_plan_schema.py    # Pydantic schema for Plan
 
         tools/                         # Shared tool base classes
             __init__.py
@@ -463,14 +463,14 @@ src/aicodegencrew/
 
 ## 4. Phase Specifications
 
-### 4.1 Phase 0: Repository Indexing
+### 4.1 Discover Phase
 
 | Attribute | Specification |
 |-----------|---------------|
 | Type | Pipeline (deterministic) |
 | Module | `pipelines/indexing/indexing_pipeline.py` |
 | LLM Requirement | None (embeddings only) |
-| Output | `knowledge/phase0_indexing/` (ChromaDB) + `knowledge/phase0_indexing/.indexing_state.json` |
+| Output | `knowledge/discover/` (ChromaDB) + `knowledge/discover/.indexing_state.json` |
 | Dependency | None |
 | Status | Implemented |
 
@@ -486,26 +486,26 @@ src/aicodegencrew/
 
 ---
 
-### 4.2 Phase 1: Architecture Facts (CRITICAL!)
+### 4.2 Extract Phase (CRITICAL!)
 
 | Attribute | Specification |
 |-----------|---------------|
 | Type | Pipeline (deterministic, **NO LLM!**) |
 | Module | `pipelines/architecture_facts/` |
 | LLM Requirement | **NONE** |
-| Output | `knowledge/phase1_facts/architecture_facts.json` |
-|        | `knowledge/phase1_facts/evidence_map.json` |
-| Dependency | Phase 0 |
+| Output | `knowledge/extract/architecture_facts.json` |
+|        | `knowledge/extract/evidence_map.json` |
+| Dependency | Discover |
 
 #### Purpose
 
-**Phase 1 creates the SINGLE SOURCE OF TRUTH for architecture.**
+**Extract creates the SINGLE SOURCE OF TRUTH for architecture.**
 - No interpretation
 - No LLM
 - No documentation
 - Only Facts + Evidence
 
-**Everything not in Phase 1 output must NOT be written by Phase 2!**
+**Everything not in Extract output must NOT be written by Analyze!**
 
 #### What Gets Extracted
 
@@ -705,7 +705,7 @@ ModelBuilder.build()                   → CanonicalModel (normalized, deduplica
 
 ---
 
-### 4.3 Phase 2: Architecture Analysis (Mini-Crews Pattern)
+### 4.3 Analyze Phase (Mini-Crews Pattern)
 
 > **Reference Diagram:** [docs/diagrams/analysis-crew.drawio](diagrams/analysis-crew.drawio)
 
@@ -716,9 +716,9 @@ ModelBuilder.build()                   → CanonicalModel (normalized, deduplica
 | Config | Python constants (no YAML) |
 | LLM Requirement | Yes |
 | Input | `architecture_facts.json` + ChromaDB Index |
-| Output | `knowledge/phase2_analysis/analyzed_architecture.json` |
+| Output | `knowledge/analyze/analyzed_architecture.json` |
 | Checkpoint | `.checkpoint_analysis.json` (resume on failure) |
-| Dependency | Phase 0 (Index) + Phase 1 (Facts) |
+| Dependency | Discover + Extract |
 | Status | Implemented |
 
 #### Mini-Crew Architecture
@@ -830,7 +830,7 @@ AGENT_CONFIGS = {
 
 ---
 
-### 4.4 Phase 3: Architecture Synthesis (Mini-Crews Pattern)
+### 4.4 Document Phase (Mini-Crews Pattern)
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -838,12 +838,12 @@ AGENT_CONFIGS = {
 | Module | `crews/architecture_synthesis/` |
 | Base Class | `base_crew.py` → `MiniCrewBase` (ABC) |
 | LLM Requirement | Yes |
-| Input | `architecture_facts.json` (Phase 1) + `analyzed_architecture.json` (Phase 2) |
+| Input | `architecture_facts.json` (Extract) + `analyzed_architecture.json` (Analyze) |
 | Input (optional) | ChromaDB Index (via MCP server) |
-| Output | `knowledge/phase3_synthesis/c4/` (DrawIO + Markdown) |
-|        | `knowledge/phase3_synthesis/arc42/` (Markdown) |
-|        | `knowledge/phase3_synthesis/quality/` (Reports) |
-| Dependency | Phase 1 + Phase 2 (validated by `PhaseOutputValidator`) |
+| Output | `knowledge/document/c4/` (DrawIO + Markdown) |
+|        | `knowledge/document/arc42/` (Markdown) |
+|        | `knowledge/document/quality/` (Reports) |
+| Dependency | Extract + Analyze (validated by `PhaseOutputValidator`) |
 | Status | Implemented |
 
 #### Why Mini-Crews?
@@ -969,15 +969,15 @@ providing token-efficient access to architecture facts without loading full JSON
 
 ```
 knowledge/
-├── phase0_indexing/                # ChromaDB vector store
+├── discover/                      # ChromaDB vector store
 │   ├── chroma.sqlite3             # ChromaDB database
 │   └── .indexing_state.json       # Persistent indexing state
-├── phase1_facts/                  # Architecture facts (Phase 1)
+├── extract/                       # Architecture facts (Extract)
 │   ├── architecture_facts.json
 │   └── evidence_map.json
-├── phase2_analysis/               # Architecture analysis (Phase 2)
+├── analyze/                       # Architecture analysis (Analyze)
 │   └── analyzed_architecture.json
-├── phase3_synthesis/              # Documentation synthesis (Phase 3)
+├── document/                      # Documentation synthesis (Document)
 │   ├── .checkpoint_c4.json        # Resume checkpoint (temporary)
 │   ├── .checkpoint_arc42.json     # Resume checkpoint (temporary)
 │   ├── c4/
@@ -1005,13 +1005,12 @@ knowledge/
 │   └── quality/
 │       ├── c4-report.md           # C4 quality gate report
 │       └── arc42-report.md        # Arc42 quality gate report
-├── phase4_planning/               # Development plans (Phase 4)
+├── plan/                          # Development plans (Plan)
 │   └── {task_id}_plan.json        # 1 per task
-├── phase5_codegen/                # Code generation reports (Phase 5)
+├── implement/                     # Code generation reports (Implement)
 │   └── {task_id}_report.json      # 1 per task
-├── phase6_testing/                # (planned)
-├── phase7_deployment/             # (planned)
-└── run_report.json
+├── verify/                        # (planned)
+└── deliver/                       # (planned)
 ```
 
 #### Rules (MUST FOLLOW!)
@@ -1027,7 +1026,7 @@ knowledge/
 
 ---
 
-### 4.5 Phase 4: Development Planning (HYBRID PIPELINE - IMPLEMENTED)
+### 4.5 Plan Phase (HYBRID PIPELINE - IMPLEMENTED)
 
 > **Reference Diagram:** [development-planning-pipeline.drawio](diagrams/development-planning-pipeline.drawio) - Hybrid Pipeline Flow
 
@@ -1041,11 +1040,11 @@ knowledge/
 | | `inputs/requirements/` (Specs, documentation) — supplementary context for richer plans |
 | | `inputs/logs/` (Error logs, traces) — supplementary context for debugging tasks |
 | | `inputs/reference/` (Examples, patterns) — supplementary context for design guidance |
-| | `architecture_facts.json` (Phase 1, all 17 keys) |
-| | `analyzed_architecture.json` (Phase 2) |
-| | ChromaDB (Phase 0, semantic search) |
-| Output | `knowledge/phase4_planning/{task_id}_plan.json` (1 per task) |
-| Dependency | Phase 0 (Indexing), Phase 1 (Facts), Phase 2 (Analysis) |
+| | `architecture_facts.json` (Extract, all 17 keys) |
+| | `analyzed_architecture.json` (Analyze) |
+| | ChromaDB (Discover, semantic search) |
+| Output | `knowledge/plan/{task_id}_plan.json` (1 per task) |
+| Dependency | Discover, Extract, Analyze |
 | Status | **IMPLEMENTED** |
 
 #### Architecture: Hybrid Pipeline
@@ -1127,8 +1126,8 @@ Sorted:
   2. BNUVZ-12568 [Major] type=upgrade is_child=1  ← child second
 
 Output:
-  knowledge/phase4_planning/BNUVZ-12529_plan.json
-  knowledge/phase4_planning/BNUVZ-12568_plan.json
+  knowledge/plan/BNUVZ-12529_plan.json
+  knowledge/plan/BNUVZ-12568_plan.json
 ```
 
 #### Stage 1: Input Parsers (IMPLEMENTED)
@@ -1351,7 +1350,7 @@ A generic, framework-agnostic rules engine for upgrade task planning. All upgrad
       "validation": "architecture_facts.json (149 validation patterns, regex)",
       "error_handling": "architecture_facts.json (23 error patterns, keyword)",
       "architecture": "analyzed_architecture.json",
-      "semantic_search": "ChromaDB (Phase 0)"
+      "semantic_search": "ChromaDB (Discover)"
     }
   }
 }
@@ -1401,14 +1400,14 @@ The plan JSON includes an additional `upgrade_plan` section:
 }
 ```
 
-#### Data Utilization (100% of Phase 0-2)
+#### Data Utilization (100% of Discover through Analyze)
 
-Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
+Plan Hybrid Pipeline uses **ALL** outputs from previous phases:
 
-**From Phase 0:**
+**From Discover:**
 - ChromaDB vector store (semantic search in Stage 2)
 
-**From Phase 1 (architecture_facts.json - ALL 17 keys):**
+**From Extract (architecture_facts.json - ALL 17 keys):**
 - `components` [951] → Component discovery (Stage 2)
 - `interfaces` [226] → API endpoint lookup (Stage 2)
 - `relations` [190] → Dependency graph (Stage 2)
@@ -1422,7 +1421,7 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 - `tech_versions` [8] → Tech stack info (Stage 4)
 - `evidence` [2508] → Traceability (Stage 5)
 
-**From Phase 2:**
+**From Analyze:**
 - `analyzed_architecture.json` → Architecture style, patterns, quality (Stage 4+5)
 
 **From Upgrade Rules Engine (when task_type="upgrade"):**
@@ -1434,19 +1433,19 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 ---
 
-### 4.6 Phase 5: Code Generation (HYBRID PIPELINE - IMPLEMENTED)
+### 4.6 Implement Phase (HYBRID PIPELINE - IMPLEMENTED)
 
 | Attribute | Specification |
 |-----------|---------------|
 | Type | Pipeline (Hybrid: Deterministic + 1 LLM Call per file) |
 | Module | `pipelines/code_generation/` |
 | LLM Requirement | Yes (Stage 3 only, 1 call per affected file) |
-| Input | `knowledge/phase4_planning/{task_id}_plan.json` (Phase 4) |
+| Input | `knowledge/plan/{task_id}_plan.json` (Plan) |
 | | Target repository source code (`PROJECT_PATH`) |
-| | `architecture_facts.json` (Phase 1, for file path resolution) |
+| | `architecture_facts.json` (Extract, for file path resolution) |
 | Output | Git branch `codegen/{task_id}` in target repo |
-| | `knowledge/phase5_codegen/{task_id}_report.json` |
-| Dependency | Phase 4 (Development Planning) |
+| | `knowledge/implement/{task_id}_report.json` |
+| Dependency | Plan |
 | Status | **IMPLEMENTED** |
 
 #### Architecture: Hybrid Pipeline
@@ -1457,7 +1456,7 @@ Phase 4 Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 ```
 Stage 1: Plan Reader (Deterministic, <1s) - IMPLEMENTED
-  └─ Read Phase 4 plan JSON → CodegenPlanInput
+  └─ Read Plan output JSON → CodegenPlanInput
   └─ Resolve missing file paths from architecture_facts.json
   └─ Select strategy (feature/bugfix/upgrade/refactoring)
 
@@ -1481,7 +1480,7 @@ Stage 5: Output Writer (Git + File I/O, 2-5s) - IMPLEMENTED
   └─ Safety: abort if working tree dirty, never push, never touch main
   └─ Create branch codegen/{task_id}, write files, commit, switch back
   └─ >50% failure threshold → abort entire task
-  └─ Write JSON report to knowledge/phase5_codegen/
+  └─ Write JSON report to knowledge/implement/
 
 Total: 30s-5min depending on file count
 ```
@@ -1535,14 +1534,14 @@ aicodegencrew codegen --index-mode off
 
 | Source Phase | Output Artifact | Consumer Phase |
 |--------------|-----------------|----------------|
-| Phase 0 | ChromaDB Vector Index | Phase 1, Phase 2, Phase 3 (optional), Phase 4 |
-| Phase 1 | `architecture_facts.json` | Phase 2, Phase 3, Phase 4 |
-| Phase 1 | `evidence_map.json` | Phase 2, Phase 3, Phase 4 |
-| Phase 2 | `analyzed_architecture.json` | Phase 3, Phase 4 |
-| Phase 3 | `c4/*.md`, `c4/*.drawio` | Phase 4 |
-| Phase 3 | `arc42/*.md` | Phase 4 |
-| Phase 4 | Development Plans | Phase 5 |
-| Phase 5 | Git branch + codegen report | Phase 6, Phase 7 |
+| Discover | ChromaDB Vector Index | Extract, Analyze, Document (optional), Plan |
+| Extract | `architecture_facts.json` | Analyze, Document, Plan |
+| Extract | `evidence_map.json` | Analyze, Document, Plan |
+| Analyze | `analyzed_architecture.json` | Document, Plan |
+| Document | `c4/*.md`, `c4/*.drawio` | Plan |
+| Document | `arc42/*.md` | Plan |
+| Plan | Development Plans | Implement |
+| Implement | Git branch + codegen report | Verify, Deliver |
 
 ### 5.2 Knowledge Directory Structure
 
@@ -1552,10 +1551,10 @@ knowledge/
     user_preference.txt
     
     architecture/
-        architecture_facts.json     # From Phase 1 (truth)
-        evidence_map.json           # From Phase 1 (evidence)
-        
-        c4/                         # From Phase 3 (C4Crew)
+        architecture_facts.json     # From Extract (truth)
+        evidence_map.json           # From Extract (evidence)
+
+        c4/                         # From Document (C4Crew)
             c4-context.md
             c4-context.drawio
             c4-container.md
@@ -1565,7 +1564,7 @@ knowledge/
             c4-deployment.md
             c4-deployment.drawio
 
-        arc42/                      # From Phase 3 (Arc42Crew)
+        arc42/                      # From Document (Arc42Crew)
             01-introduction.md
             02-constraints.md
             03-context.md
@@ -1579,7 +1578,7 @@ knowledge/
             11-risks.md
             12-glossary.md
             
-        quality/                    # From Phase 3
+        quality/                    # From Document
             arc42-report.md
             
         html/                       # Generated reports
@@ -1650,7 +1649,7 @@ GIT_BRANCH=           # empty = auto-detect
 
 **Usage via CLI (overrides .env):**
 ```bash
-python -m aicodegencrew run --preset architecture_full --git-url https://gitlab.example.com/team/project.git --branch develop
+python -m aicodegencrew run --preset architect --git-url https://gitlab.example.com/team/project.git --branch develop
 python -m aicodegencrew index --git-url https://gitlab.example.com/team/project.git
 ```
 
@@ -1670,7 +1669,7 @@ Embeddings utilize local Ollama exclusively, independent of LLM provider configu
 | Mode | Description |
 |------|-------------|
 | `off` | Skip indexing; utilize existing index |
-| `auto` | Conditional indexing based on change detection (default). Persistent state (`knowledge/phase0_indexing/.indexing_state.json`) survives ChromaDB deletion — warns instead of silently re-indexing |
+| `auto` | Conditional indexing based on change detection (default). Persistent state (`knowledge/discover/.indexing_state.json`) survives ChromaDB deletion — warns instead of silently re-indexing |
 | `force` | Clear ChromaDB directory and perform complete re-indexing |
 | `smart` | Incremental update — per-file hash check against ChromaDB, only re-embeds changed files |
 
@@ -1683,14 +1682,14 @@ Unknown presets raise an error instead of silently falling back.
 
 | Preset | Phases | Description |
 |--------|--------|-------------|
-| `indexing_only` | 0 | Repository indexing only |
-| `facts_only` | 0, 1 | Indexing + Architecture Facts (no LLM) |
-| `analysis_only` | 0, 1, 2 | Indexing + Facts + Analysis |
-| `architecture_workflow` | 0, 1, 2, 3 | C4 Model + arc42 documentation (excludes Phase 4) |
-| `planning_only` | 0, 1, 2, 4 | Development planning (most common preset) |
-| `codegen_only` | 0, 1, 2, 4, 5 | Planning + code generation |
-| `architecture_full` | 0, 1, 2, 3, 4 | Architecture documentation + Development Planning |
-| `full_pipeline` | 0-7 | Complete automated SDLC pipeline |
+| `index` | 0 | Repository indexing only |
+| `scan` | 0, 1 | Indexing + Architecture Facts (no LLM) |
+| `analyze` | 0, 1, 2 | Indexing + Facts + Analysis |
+| `document` | 0, 1, 2, 3 | C4 Model + arc42 documentation (excludes Plan) |
+| `plan` | 0, 1, 2, 4 | Development planning (most common preset) |
+| `develop` | 0, 1, 2, 4, 5 | Planning + code generation |
+| `architect` | 0, 1, 2, 3, 4 | Architecture documentation + Development Planning |
+| `full` | 0-7 | Complete automated SDLC pipeline |
 
 ---
 
@@ -1705,7 +1704,7 @@ python -m aicodegencrew list
 ### 8.2 Development Planning (Shortcut)
 
 ```bash
-# Quick: Development planning (Phase 0+1+2+4)
+# Quick: Development planning (Discover+Extract+Analyze+Plan)
 aicodegencrew plan
 
 # With custom .env file
@@ -1719,26 +1718,26 @@ aicodegencrew plan --index-mode off
 
 ```bash
 # Only extract facts (no LLM)
-python -m aicodegencrew run --preset facts_only
+python -m aicodegencrew run --preset scan
 
 # Full architecture documentation (C4 + arc42)
-python -m aicodegencrew run --preset architecture_workflow
+python -m aicodegencrew run --preset document
 
 # Analysis only (no synthesis)
-python -m aicodegencrew run --preset analysis_only
+python -m aicodegencrew run --preset analyze
 ```
 
 ### 8.4 Single Phase Execution
 
 ```bash
-# Phase 1: Architecture Facts
-python -m aicodegencrew run --phases phase1_architecture_facts
+# Extract: Architecture Facts
+python -m aicodegencrew run --phases extract
 
-# Phase 2: Architecture Analysis
-python -m aicodegencrew run --phases phase2_architecture_analysis
+# Analyze: Architecture Analysis
+python -m aicodegencrew run --phases analyze
 
-# Phase 3: Architecture Synthesis (C4 + arc42)
-python -m aicodegencrew run --phases phase3_architecture_synthesis
+# Document: Architecture Synthesis (C4 + arc42)
+python -m aicodegencrew run --phases document
 ```
 
 ### 8.5 Options
@@ -2187,11 +2186,11 @@ Each tab has a "Show Raw JSON" toggle for debugging.
 **Why categories?** Different pipeline stages consume different file types. Categorization enables:
 - Extension validation per category (`.xml` for tasks, `.xlsx` for requirements, etc.)
 - Auto-configuration of `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` in `.env`
-- Supplementary context injection into Phase 4 LLM prompts
+- Supplementary context injection into Plan LLM prompts
 
 | Category | Extensions | Pipeline Consumer |
 |----------|-----------|-------------------|
-| **Tasks** | `.xml` `.docx` `.pdf` `.txt` `.json` | Stage 1: Input Parser (Phase 4) |
+| **Tasks** | `.xml` `.docx` `.pdf` `.txt` `.json` | Stage 1: Input Parser (Plan) |
 | **Requirements** | `.xlsx` `.docx` `.pdf` `.txt` `.csv` | Stage 4: Plan Generator (supplementary context) |
 | **Logs** | `.log` `.txt` `.xlsx` `.csv` | Stage 4: Plan Generator (supplementary context) |
 | **Reference** | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` | Stage 4: Plan Generator (supplementary context) |

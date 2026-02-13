@@ -17,7 +17,7 @@ class PartialResultsTool(BaseTool):
     """
     Tool to read all partial analysis JSON files for synthesis.
 
-    This tool reads all task outputs from knowledge/phase2_analysis/analysis/
+    This tool reads all task outputs from knowledge/analyze/analysis/
     and returns them as a merged context for the synthesis agent.
     """
 
@@ -29,9 +29,9 @@ class PartialResultsTool(BaseTool):
     """
     args_schema: type[BaseModel] = PartialResultsInput
 
-    analysis_dir: str = Field(default="knowledge/phase2_analysis/analysis")
+    analysis_dir: str = Field(default="knowledge/analyze/analysis")
 
-    def __init__(self, analysis_dir: str = "knowledge/phase2_analysis/analysis"):
+    def __init__(self, analysis_dir: str = "knowledge/analyze/analysis"):
         super().__init__()
         self.analysis_dir = analysis_dir
 

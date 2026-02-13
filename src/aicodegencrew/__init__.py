@@ -27,7 +27,7 @@ Package Structure:
 
 Usage:
     python -m aicodegencrew --list
-    python -m aicodegencrew --preset architecture_workflow
+    python -m aicodegencrew --preset document
 
     from aicodegencrew import SDLCOrchestrator
     from aicodegencrew.pipelines import IndexingPipeline

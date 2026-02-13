@@ -32,15 +32,15 @@ class ArchitectureFactsPipeline:
     Deterministic extraction - NO LLM!
 
     Outputs (Dimension Files):
-    - knowledge/phase1_facts/system.json
-    - knowledge/phase1_facts/containers.json
-    - knowledge/phase1_facts/components.json
-    - knowledge/phase1_facts/interfaces.json
-    - knowledge/phase1_facts/relations.json
-    - knowledge/phase1_facts/data_model.json
-    - knowledge/phase1_facts/runtime.json
-    - knowledge/phase1_facts/infrastructure.json
-    - knowledge/phase1_facts/evidence_map.json
+    - knowledge/extract/system.json
+    - knowledge/extract/containers.json
+    - knowledge/extract/components.json
+    - knowledge/extract/interfaces.json
+    - knowledge/extract/relations.json
+    - knowledge/extract/data_model.json
+    - knowledge/extract/runtime.json
+    - knowledge/extract/infrastructure.json
+    - knowledge/extract/evidence_map.json
     """
 
     def __init__(
@@ -53,10 +53,10 @@ class ArchitectureFactsPipeline:
 
         Args:
             repo_path: Path to the repository to analyze
-            output_dir: Output directory (defaults to knowledge/phase1_facts)
+            output_dir: Output directory (defaults to knowledge/extract)
         """
         self.repo_path = Path(repo_path).resolve()
-        self.output_dir = Path(output_dir) if output_dir else Path("knowledge/phase1_facts")
+        self.output_dir = Path(output_dir) if output_dir else Path("knowledge/extract")
 
         if not self.repo_path.exists():
             raise ValueError(f"Repository path does not exist: {self.repo_path}")
@@ -159,7 +159,7 @@ class ArchitectureFactsPipeline:
         logger.info("[Phase1] Mode: DETERMINISTIC (no LLM)")
         logger.info("=" * 60)
 
-        log_metric("phase_start", phase="phase1_architecture_facts")
+        log_metric("phase_start", phase="extract")
 
         # Step 0: Clean old outputs
         logger.info("[Phase1] Step 0: Clean old outputs...")
@@ -259,7 +259,7 @@ class ArchitectureFactsPipeline:
 
             log_metric(
                 "phase_complete",
-                phase="phase1_architecture_facts",
+                phase="extract",
                 status="success",
                 components=stats["components"],
                 relations=stats["relations"],
@@ -268,7 +268,7 @@ class ArchitectureFactsPipeline:
             )
 
             return {
-                "phase": "phase1_architecture_facts",
+                "phase": "extract",
                 "status": "success",
                 "dimension_paths": {k: str(v) for k, v in dimension_paths.items()},
                 "statistics": {
@@ -283,9 +283,9 @@ class ArchitectureFactsPipeline:
 
         except Exception as e:
             logger.error(f"[Phase1] Error: {e}", exc_info=True)
-            log_metric("phase_failed", phase="phase1_architecture_facts", error=str(e)[:500])
+            log_metric("phase_failed", phase="extract", error=str(e)[:500])
             return {
-                "phase": "phase1_architecture_facts",
+                "phase": "extract",
                 "status": "failed",
                 "error": str(e),
             }

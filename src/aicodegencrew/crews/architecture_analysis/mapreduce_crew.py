@@ -16,7 +16,7 @@ BENEFITS:
 USAGE:
     from aicodegencrew.crews.architecture_analysis import MapReduceAnalysisCrew
 
-    crew = MapReduceAnalysisCrew(facts_path="knowledge/phase1_facts/architecture_facts.json")
+    crew = MapReduceAnalysisCrew(facts_path="knowledge/extract/architecture_facts.json")
     result = crew.run()
 """
 
@@ -185,14 +185,14 @@ class MapReduceAnalysisCrew:
 
     def __init__(
         self,
-        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
+        facts_path: str = "knowledge/extract/architecture_facts.json",
         chroma_dir: str = None,
-        output_dir: str = "knowledge/phase2_analysis",
+        output_dir: str = "knowledge/analyze",
         parallel: bool = True,
         max_workers: int = 3,
     ):
         self.facts_path = Path(facts_path)
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing")
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
         self.output_dir = Path(output_dir)
         self.parallel = parallel
         self.max_workers = max_workers

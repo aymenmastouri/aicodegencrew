@@ -26,16 +26,16 @@
 
 phases:
   # =========================================================================
-  # PIPELINE: Phase 0 - Repository Indexing
+  # PIPELINE: Discover - Repository Indexing
   # =========================================================================
   # Type:      Pipeline (no AI, only embeddings)
   # Location:  pipelines/indexing/indexing_pipeline.py
   # Control:   INDEX_MODE in .env (off/auto/force/smart)
-  # Output:    knowledge/phase0_indexing (ChromaDB vector store)
+  # Output:    knowledge/discover (ChromaDB vector store)
   # =========================================================================
-  phase0_indexing:
+  discover:
     enabled: true
-    name: "Repository Indexing"
+    name: "Discover"
     description: "Index codebase into ChromaDB for RAG"
     type: pipeline
     required: true
@@ -44,89 +44,89 @@ phases:
       # Controlled via .env: INDEX_MODE, EMBED_MODEL, CHROMA_DIR
 
   # =========================================================================
-  # PIPELINE: Phase 1 - Architecture Facts (DETERMINISTIC, NO LLM!)
+  # PIPELINE: Extract - Architecture Facts (DETERMINISTIC, NO LLM!)
   # =========================================================================
   # Type:      Pipeline (deterministic extraction, no AI)
   # Location:  pipelines/architecture_facts/
-  # Output:    knowledge/phase1_facts/architecture_facts.json
-  #            knowledge/phase1_facts/evidence_map.json
-  # 
+  # Output:    knowledge/extract/architecture_facts.json
+  #            knowledge/extract/evidence_map.json
+  #
   # This is the SINGLE SOURCE OF TRUTH for architecture.
-  # Everything not in architecture_facts.json must NOT be written by Phase 2.
+  # Everything not in architecture_facts.json must NOT be written by Analyze.
   # =========================================================================
-  phase1_architecture_facts:
+  extract:
     enabled: true
-    name: "Architecture Facts Extraction"
+    name: "Extract"
     description: "Deterministic extraction of architecture facts (no LLM)"
     type: pipeline
     required: true
     order: 1
-    dependencies: [phase0_indexing]
+    dependencies: [discover]
     config:
-      output_dir: "./knowledge/phase1_facts"
+      output_dir: "./knowledge/extract"
 
   # =========================================================================
-  # CREW: Phase 2 - Architecture Analysis
+  # CREW: Analyze - Architecture Analysis
   # =========================================================================
   # Type:      Crew (AI Agents - 4 specialized analysts)
   # Location:  crews/architecture_analysis/
   # Input:     architecture_facts.json + evidence_map.json + ChromaDB
-  # Output:    knowledge/phase2_analysis/analyzed_architecture.json
-  # 
+  # Output:    knowledge/analyze/analyzed_architecture.json
+  #
   # AGENTS:
   # 1. Technical Architect: Styles, patterns, tech stack, layers
   # 2. Functional Analyst: Domain model, capabilities, use cases
   # 3. Quality Analyst: Technical debt, risks, quality attributes
   # 4. Synthesis Lead: Merge all analyses into unified JSON
   # =========================================================================
-  phase2_architecture_analysis:
+  analyze:
     enabled: true
-    name: "Architecture Analysis"
+    name: "Analyze"
     description: "Multi-agent analysis of architecture facts"
     type: crew
     required: true
     order: 2
-    dependencies: [phase1_architecture_facts]
+    dependencies: [extract]
     config:
-      output_dir: "./knowledge/phase2_analysis"
+      output_dir: "./knowledge/analyze"
       temperature: 0.2
       max_iterations: 15
       verbose: true
 
   # =========================================================================
-  # CREW: Phase 3 - Architecture Synthesis (LLM, evidence-first)
+  # CREW: Document - Architecture Synthesis (LLM, evidence-first)
   # =========================================================================
   # Type:      Crew (AI Agents)
   # Location:  crews/architecture_synthesis/
   # Input:     architecture_facts.json + analyzed_architecture.json + ChromaDB
-  # Output:    knowledge/phase3_synthesis/c4/
-  #            knowledge/phase3_synthesis/arc42/
-  #            knowledge/phase3_synthesis/runtime/
-  #            knowledge/phase3_synthesis/evidence/
-  # 
+  # Output:    knowledge/document/c4/
+  #            knowledge/document/arc42/
+  #            knowledge/document/runtime/
+  #            knowledge/document/evidence/
+  #
   # RULES:
   # - Only synthesize what is in architecture_facts.json
   # - Every statement must reference evidence
   # - If no evidence, mark as UNKNOWN
   # - No invented containers/components
   # =========================================================================
-  phase3_architecture_synthesis:
+  document:
     enabled: true
-    name: "Architecture Synthesis"
+    name: "Document"
     description: "AI synthesizes C4 and arc42 from architecture facts"
     type: crew
     required: false
     order: 3
-    dependencies: [phase2_architecture_analysis]
+    dependencies: [analyze]
     config:
-      output_dir: "./knowledge/phase3_synthesis"
+      output_dir: "./knowledge/document"
       temperature: 0.2
       max_iterations: 15
       verbose: true
 
   # =========================================================================
   # =========================================================================
-  # PIPELINE: Phase 4 - Development Planning (HYBRID ARCHITECTURE)
+  # PIPELINE: Plan - Development Planning (HYBRID ARCHITECTURE)
   # =========================================================================
   # Type:      Pipeline (Hybrid: Deterministic + 1 LLM Call)
   # Location:  pipelines/development_planning/
@@ -143,11 +143,11 @@ phases:
   #
   # Input:
   #   - inputs/tasks/ (JIRA XML, DOCX, Excel, logs, etc.)
-  #   - architecture_facts.json (Phase 1, all 17 keys)
-  #   - analyzed_architecture.json (Phase 2)
-  #   - ChromaDB (Phase 0, semantic search)
+  #   - architecture_facts.json (Extract, all 17 keys)
+  #   - analyzed_architecture.json (Analyze)
+  #   - ChromaDB (Discover, semantic search)
   #
-  # Output: knowledge/phase4_planning/{task_id}_plan.json
+  # Output: knowledge/plan/{task_id}_plan.json
   #   - affected_components (from ChromaDB RAG + scoring)
   #   - implementation_steps
   #   - test_strategy (from 925 test patterns, TF-IDF similarity)
@@ -157,16 +157,16 @@ phases:
   #   - architecture_context (from analyzed_architecture.json)
   #   - risks, complexity estimate
   # =========================================================================
-  phase4_development_planning:
+  plan:
     enabled: true
-    name: "Development Planning"
+    name: "Plan"
     description: "Fast, evidence-based implementation plans using hybrid architecture"
     type: pipeline
     required: false
     order: 4
-    dependencies: [phase2_architecture_analysis]
+    dependencies: [analyze]
     config:
-      output_dir: "./knowledge/phase4_planning"
+      output_dir: "./knowledge/plan"
       input_dirs:
         tasks: "./inputs/tasks"
         requirements: "./inputs/requirements"
@@ -174,7 +174,7 @@ phases:
         reference: "./inputs/reference"
 
   # =========================================================================
-  # PIPELINE: Phase 5 - Code Generation (HYBRID ARCHITECTURE)
+  # PIPELINE: Implement - Code Generation (HYBRID ARCHITECTURE)
   # =========================================================================
   # Type:      Pipeline (Hybrid: Deterministic + 1 LLM Call per file)
   # Location:  pipelines/code_generation/
@@ -185,68 +185,68 @@ phases:
   #   Stage 4: Code Validator (deterministic, 1-3s)
   #   Stage 5: Output Writer (git + file I/O, 2-5s)
   #
-  # Input:     knowledge/phase4_planning/{task_id}_plan.json (Phase 4)
+  # Input:     knowledge/plan/{task_id}_plan.json (Plan phase)
   # Output:    Git branch codegen/{task_id} in target repo
-  #            knowledge/phase5_codegen/{task_id}_report.json
+  #            knowledge/implement/{task_id}_report.json
   # =========================================================================
-  phase5_code_generation:
+  implement:
     enabled: true
-    name: "Code Generation"
-    description: "Generate code from Phase 4 plans using hybrid architecture"
+    name: "Implement"
+    description: "Generate code from plans using hybrid architecture"
     type: pipeline
     required: false
     order: 5
-    dependencies: [phase4_development_planning]
+    dependencies: [plan]
     config:
-      output_dir: "./knowledge/phase5_codegen"
+      output_dir: "./knowledge/implement"
 
   # =========================================================================
-  # CREW: Phase 6 - Test Generation (PLANNED)
+  # CREW: Verify - Test Generation (PLANNED)
   # =========================================================================
   # Type:      Crew (AI Agents)
   # Location:  crews/test_generation/ (planned)
   # Purpose:   Generate tests matching existing test patterns
   # Tasks:     Unit tests, integration tests following 925 existing patterns
-  # Input:     Generated code from Phase 5 + test patterns
+  # Input:     Generated code from Implement + test patterns
   # Output:    JUnit/Jest test files
   # =========================================================================
-  phase6_test_generation:
+  verify:
     enabled: false
-    name: "Test Generation"
+    name: "Verify"
     description: "Generate tests matching existing patterns"
     type: crew
     required: false
     order: 6
-    dependencies: [phase5_code_generation]
+    dependencies: [implement]
     config:
-      output_dir: "./knowledge/phase6_testing"
+      output_dir: "./knowledge/verify"
 
   # =========================================================================
-  # PIPELINE: Phase 7 - Review + Deploy (PLANNED)
+  # PIPELINE: Deliver - Review + Deploy (PLANNED)
   # =========================================================================
   # Type:      Pipeline (deterministic)
   # Location:  pipelines/review_deploy/ (planned)
   # Purpose:   Build validation, CI/CD integration, PR merge
   # Tasks:     Compile check, run tests, create PR, merge
-  # Input:     Generated code + tests from Phase 5-6
+  # Input:     Generated code + tests from Implement-Verify
   # Output:    Merged PR, deployed code
   # =========================================================================
-  phase7_review_deploy:
+  deliver:
     enabled: false
-    name: "Review & Deploy"
+    name: "Deliver"
     description: "Build validation, CI/CD integration, PR merge"
     type: pipeline
     required: false
     order: 7
-    dependencies: [phase6_test_generation]
+    dependencies: [verify]
     config:
-      output_dir: "./knowledge/phase7_deployment"
+      output_dir: "./knowledge/deliver"
 
 # =============================================================================
 # Execution Settings
 # =============================================================================
 execution:
-  mode: "architecture_workflow"
+  mode: "document"
   stop_on_error: true
   parallel_execution: false
 
@@ -254,84 +254,84 @@ execution:
 # Quick Presets
 # =============================================================================
 presets:
-  indexing_only:
-    display_name: "Repository Indexing"
+  index:
+    display_name: "Discover"
     description: "Index codebase into vector store (ChromaDB)"
     icon: "cloud_sync"
     phases:
-      - phase0_indexing
+      - discover
 
-  facts_only:
-    display_name: "Facts Extraction"
+  scan:
+    display_name: "Discover + Extract"
     description: "Deterministic architecture facts extraction (no LLM)"
     icon: "fact_check"
     phases:
-      - phase0_indexing
-      - phase1_architecture_facts
+      - discover
+      - extract
 
-  analysis_only:
-    display_name: "Architecture Analysis"
+  analyze:
+    display_name: "Discover → Analyze"
     description: "AI-powered analysis of architecture patterns and quality"
     icon: "psychology"
     phases:
-      - phase0_indexing
-      - phase1_architecture_facts
-      - phase2_architecture_analysis
+      - discover
+      - extract
+      - analyze
 
-  architecture_workflow:
-    display_name: "Architecture Documentation"
+  document:
+    display_name: "Discover → Document"
     description: "Generate full Arc42 & C4 architecture documentation"
     icon: "menu_book"
     phases:
-      - phase0_indexing
-      - phase1_architecture_facts
-      - phase2_architecture_analysis
-      - phase3_architecture_synthesis
+      - discover
+      - extract
+      - analyze
+      - document
 
-  planning_only:
-    display_name: "Development Planning"
+  plan:
+    display_name: "Discover → Plan"
     description: "Generate implementation plans from task descriptions"
     icon: "assignment"
     phases:
-      - phase0_indexing
-      - phase1_architecture_facts
-      - phase2_architecture_analysis
-      - phase3_architecture_synthesis
-      - phase4_development_planning
+      - discover
+      - extract
+      - analyze
+      - document
+      - plan
 
-  codegen_only:
-    display_name: "Code Generation"
+  develop:
+    display_name: "Discover → Implement"
     description: "Generate code from plans (Planning & Code Gen)"
     icon: "code"
     phases:
-      - phase0_indexing
-      - phase1_architecture_facts
-      - phase2_architecture_analysis
-      - phase3_architecture_synthesis
-      - phase4_development_planning
-      - phase5_code_generation
+      - discover
+      - extract
+      - analyze
+      - document
+      - plan
+      - implement
 
-  architecture_full:
-    display_name: "Architecture & Planning"
+  architect:
+    display_name: "Discover → Plan (no code)"
     description: "Full architecture docs & development planning"
     icon: "architecture"
     phases:
-      - phase0_indexing
-      - phase1_architecture_facts
-      - phase2_architecture_analysis
-      - phase3_architecture_synthesis
-      - phase4_development_planning
+      - discover
+      - extract
+      - analyze
+      - document
+      - plan
 
-  full_pipeline:
-    display_name: "Full SDLC Pipeline"
-    description: "All phases: indexing → analysis → docs → planning → codegen"
+  full:
+    display_name: "Full Pipeline"
+    description: "All phases: Discover → Extract → Analyze → Document → Plan → Implement → Verify → Deliver"
     icon: "rocket_launch"
     phases:
-      - phase0_indexing
-      - phase1_architecture_facts
-      - phase2_architecture_analysis
-      - phase3_architecture_synthesis
-      - phase4_development_planning
-      - phase5_code_generation
-      - phase6_test_generation
-      - phase7_review_deploy
+      - discover
+      - extract
+      - analyze
+      - document
+      - plan
+      - implement
+      - verify
+      - deliver

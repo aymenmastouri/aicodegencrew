@@ -43,9 +43,9 @@ class CodeGenerationPipeline:
         self,
         repo_path: str,
         task_id: str | None = None,
-        plans_dir: str = "knowledge/phase4_planning",
-        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
-        report_dir: str = "knowledge/phase5_codegen",
+        plans_dir: str = "knowledge/plan",
+        facts_path: str = "knowledge/extract/architecture_facts.json",
+        report_dir: str = "knowledge/implement",
         dry_run: bool = False,
     ):
         self.repo_path = str(repo_path)
@@ -74,7 +74,7 @@ class CodeGenerationPipeline:
             report_dict = report.model_dump()
             return {
                 "status": report.status,
-                "phase": "phase5_code_generation",
+                "phase": "implement",
                 "task_id": report.task_id,
                 "report": report_dict,
                 "reports": [report_dict],
@@ -100,7 +100,7 @@ class CodeGenerationPipeline:
             logger.warning(f"[Phase5] No plan files found in {self.plans_dir}")
             return {
                 "status": "skipped",
-                "phase": "phase5_code_generation",
+                "phase": "implement",
                 "message": "No plan files found",
                 "reports": [],
             }
@@ -137,7 +137,7 @@ class CodeGenerationPipeline:
 
         log_metric(
             "phase_complete",
-            phase="phase5_code_generation",
+            phase="implement",
             status="success" if failed == 0 else "partial",
             duration_seconds=total_duration,
             tasks_total=len(plan_files),
@@ -147,7 +147,7 @@ class CodeGenerationPipeline:
 
         return {
             "status": "completed" if failed == 0 else "partial",
-            "phase": "phase5_code_generation",
+            "phase": "implement",
             "reports": reports,
             "metrics": {
                 "tasks_total": len(plan_files),
@@ -186,7 +186,7 @@ class CodeGenerationPipeline:
 
             log_metric(
                 "stage_complete",
-                phase="phase5_code_generation",
+                phase="implement",
                 stage="stage1_plan_reader",
                 duration_seconds=stage1_duration,
                 task_id=task_id,
@@ -204,7 +204,7 @@ class CodeGenerationPipeline:
 
             log_metric(
                 "stage_complete",
-                phase="phase5_code_generation",
+                phase="implement",
                 stage="stage2_context_collector",
                 duration_seconds=stage2_duration,
                 task_id=task_id,
@@ -230,7 +230,7 @@ class CodeGenerationPipeline:
 
             log_metric(
                 "stage_complete",
-                phase="phase5_code_generation",
+                phase="implement",
                 stage="stage3_code_generator",
                 duration_seconds=stage3_duration,
                 task_id=task_id,
@@ -249,7 +249,7 @@ class CodeGenerationPipeline:
 
             log_metric(
                 "stage_complete",
-                phase="phase5_code_generation",
+                phase="implement",
                 stage="stage4_code_validator",
                 duration_seconds=stage4_duration,
                 task_id=task_id,
@@ -280,7 +280,7 @@ class CodeGenerationPipeline:
 
             log_metric(
                 "stage_complete",
-                phase="phase5_code_generation",
+                phase="implement",
                 stage="stage5_output_writer",
                 duration_seconds=stage5_duration,
                 task_id=task_id,
@@ -303,7 +303,7 @@ class CodeGenerationPipeline:
 
             log_metric(
                 "phase_complete",
-                phase="phase5_code_generation",
+                phase="implement",
                 status=report.status,
                 task_id=task_id,
                 duration_seconds=total_duration,
@@ -322,7 +322,7 @@ class CodeGenerationPipeline:
 
             log_metric(
                 "phase_failed",
-                phase="phase5_code_generation",
+                phase="implement",
                 error=str(e),
                 task_id=task_id,
                 duration_seconds=total_duration,

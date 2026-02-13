@@ -771,18 +771,18 @@ QUALITY_GATE_DESCRIPTION = """
 Quality review of all arc42 chapters.
 
 READ all chapter files using safe_file_read tool and validate:
-1. knowledge/phase3_synthesis/arc42/01-introduction.md
-2. knowledge/phase3_synthesis/arc42/02-constraints.md
-3. knowledge/phase3_synthesis/arc42/03-context.md
-4. knowledge/phase3_synthesis/arc42/04-solution-strategy.md
-5. knowledge/phase3_synthesis/arc42/05-building-blocks.md
-6. knowledge/phase3_synthesis/arc42/06-runtime-view.md
-7. knowledge/phase3_synthesis/arc42/07-deployment.md
-8. knowledge/phase3_synthesis/arc42/08-crosscutting.md
-9. knowledge/phase3_synthesis/arc42/09-decisions.md
-10. knowledge/phase3_synthesis/arc42/10-quality.md
-11. knowledge/phase3_synthesis/arc42/11-risks.md
-12. knowledge/phase3_synthesis/arc42/12-glossary.md
+1. knowledge/document/arc42/01-introduction.md
+2. knowledge/document/arc42/02-constraints.md
+3. knowledge/document/arc42/03-context.md
+4. knowledge/document/arc42/04-solution-strategy.md
+5. knowledge/document/arc42/05-building-blocks.md
+6. knowledge/document/arc42/06-runtime-view.md
+7. knowledge/document/arc42/07-deployment.md
+8. knowledge/document/arc42/08-crosscutting.md
+9. knowledge/document/arc42/09-decisions.md
+10. knowledge/document/arc42/10-quality.md
+11. knowledge/document/arc42/11-risks.md
+12. knowledge/document/arc42/12-glossary.md
 
 Validate:
 - All 12 chapters complete
@@ -902,7 +902,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     @staticmethod
     def _merge_building_blocks() -> None:
         """Merge 4 building-blocks part files into 05-building-blocks.md."""
-        base = Path("knowledge/phase3_synthesis/arc42")
+        base = Path("knowledge/document/arc42")
         parts = [
             "05-part1-overview.md",
             "05-part2-controllers.md",
@@ -938,7 +938,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     @staticmethod
     def _merge_runtime_view() -> None:
         """Merge 2 runtime-view part files into 06-runtime-view.md."""
-        base = Path("knowledge/phase3_synthesis/arc42")
+        base = Path("knowledge/document/arc42")
         parts = [
             "06-part1-api-flows.md",
             "06-part2-business-flows.md",
@@ -972,7 +972,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     @staticmethod
     def _merge_crosscutting() -> None:
         """Merge 2 crosscutting part files into 08-crosscutting.md."""
-        base = Path("knowledge/phase3_synthesis/arc42")
+        base = Path("knowledge/document/arc42")
         parts = [
             "08-part1-technical.md",
             "08-part2-patterns.md",

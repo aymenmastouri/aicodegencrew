@@ -23,8 +23,8 @@ class KnowledgeConfig:
         if knowledge_dir:
             path = Path(knowledge_dir)
         else:
-            # Default to knowledge/phase1_facts in project root
-            path = Path.cwd() / "knowledge" / "phase1_facts"
+            # Default to knowledge/extract in project root
+            path = Path.cwd() / "knowledge" / "extract"
         return cls(knowledge_path=path)
 
 

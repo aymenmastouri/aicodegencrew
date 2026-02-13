@@ -352,7 +352,7 @@ Das `CHANGELOG.md` wird automatisch mit Git-Commit-Messages gefullt.
 **Gefiltert werden:**
 - Merge-Commits (`Merge ...`)
 - Release-Commits (`release: ...`)
-- Auto-generierte Phase-Commits (`[aicodegencrew] phase0_indexing completed ...`)
+- Auto-generierte Phase-Commits (`[aicodegencrew] discover completed ...`)
 
 ---
 
@@ -409,7 +409,7 @@ ARC42_LANGUAGE=de    # Deutsch (Default: en = Englisch)
 - Checkpoint-Dateien (`.checkpoint_*.json`)
 
 **Wo bleibt alles fur Testen?**
-Im Projekt selbst unter `knowledge/` — da liegt alles in den per-Phase Ordnern (`phase1_facts/`, `phase2_analysis/`, `phase3_synthesis/` etc.).
+Im Projekt selbst unter `knowledge/` — da liegt alles in den per-Phase Ordnern (`extract/`, `analyze/`, `document/` etc.).
 `DOCS_OUTPUT_DIR` ist eine **Kopie** der Architekturdokumente, nicht ein Verschieben.
 
 ---

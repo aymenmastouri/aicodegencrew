@@ -108,15 +108,15 @@ class MiniCrewBase(ABC):
 
     def __init__(
         self,
-        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
+        facts_path: str = "knowledge/extract/architecture_facts.json",
         analyzed_path: str | None = None,
         chroma_dir: str | None = None,
     ):
         self.facts_path = Path(facts_path)
         self.analyzed_path = (
-            Path(analyzed_path) if analyzed_path else Path("knowledge/phase2_analysis/analyzed_architecture.json")
+            Path(analyzed_path) if analyzed_path else Path("knowledge/analyze/analyzed_architecture.json")
         )
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing")
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
 
         # Load data
         self.facts = self._load_json(self.facts_path)
@@ -482,7 +482,7 @@ class MiniCrewBase(ABC):
             expected_files: List of files that should have been written
             tracker: Optional ToolCallTracker to check if doc_writer was called
         """
-        base = Path("knowledge/phase3_synthesis")
+        base = Path("knowledge/document")
         for file_path in expected_files:
             full = base / file_path
 
@@ -581,8 +581,8 @@ class MiniCrewBase(ABC):
 The system has {total_components} components across {total_containers} containers.
 
 For detailed architecture information, refer to the facts:
-- `knowledge/phase1_facts/architecture_facts.json`
-- `knowledge/phase2_analysis/analyzed_architecture.json`
+- `knowledge/extract/architecture_facts.json`
+- `knowledge/analyze/analyzed_architecture.json`
 
 ## Next Steps
 
@@ -596,7 +596,7 @@ This chapter requires manual completion or re-running with a more capable LLM.
         this creates skeleton documents from facts so the documentation set
         isn't left with gaps. Stubs are clearly marked as auto-generated.
         """
-        base = Path("knowledge/phase3_synthesis")
+        base = Path("knowledge/document")
         facts = self.facts
         system_name = facts.get("system", {}).get("name", "System")
 
@@ -644,7 +644,7 @@ This chapter requires manual completion or re-running with a more capable LLM.
 
     def _checkpoint_path(self) -> Path:
         """Path to checkpoint file for this crew."""
-        return Path("knowledge/phase3_synthesis") / f".checkpoint_{self.crew_name.lower()}.json"
+        return Path("knowledge/document") / f".checkpoint_{self.crew_name.lower()}.json"
 
     def _save_checkpoint(self) -> None:
         """Save current checkpoints to disk for resume capability."""

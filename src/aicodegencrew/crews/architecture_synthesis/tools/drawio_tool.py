@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 class DrawioDiagramInput(BaseModel):
     """Input schema for DrawioDiagramTool."""
 
-    file_path: str = Field(description="The path to save the .drawio file (relative to knowledge/phase3_synthesis/)")
+    file_path: str = Field(description="The path to save the .drawio file (relative to knowledge/document/)")
     diagram_name: str = Field(description="Name of the diagram (shown in tab)")
     nodes: list[dict[str, Any]] = Field(
         description="List of nodes. Each node: {id: str, label: str, x: int, y: int, width: int, height: int, style: str}"
@@ -107,9 +107,9 @@ class DrawioDiagramTool(BaseTool):
 '''
 
             # Write to file
-            base_dir = Path("knowledge/phase3_synthesis")
+            base_dir = Path("knowledge/document")
             # Strip base_dir prefix if agent already included it (prevents double-nesting)
-            clean_path = file_path.replace("knowledge/phase3_synthesis/", "").replace("knowledge\\phase3_synthesis\\", "")
+            clean_path = file_path.replace("knowledge/document/", "").replace("knowledge\\document\\", "")
             # Also strip legacy path if agent uses old convention
             clean_path = clean_path.replace("knowledge/architecture/", "").replace("knowledge\\architecture\\", "")
             full_path = base_dir / clean_path

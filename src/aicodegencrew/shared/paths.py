@@ -6,20 +6,20 @@ imports from here instead of hardcoding directory names.
 
 # Phase output directories (relative to project root)
 PHASE_DIRS: dict[str, str] = {
-    "phase0_indexing": "knowledge/phase0_indexing",
-    "phase1_architecture_facts": "knowledge/phase1_facts",
-    "phase2_architecture_analysis": "knowledge/phase2_analysis",
-    "phase3_architecture_synthesis": "knowledge/phase3_synthesis",
-    "phase4_development_planning": "knowledge/phase4_planning",
-    "phase5_code_generation": "knowledge/phase5_codegen",
-    "phase6_test_generation": "knowledge/phase6_testing",
-    "phase7_review_deploy": "knowledge/phase7_deployment",
+    "discover": "knowledge/discover",
+    "extract": "knowledge/extract",
+    "analyze": "knowledge/analyze",
+    "document": "knowledge/document",
+    "plan": "knowledge/plan",
+    "implement": "knowledge/implement",
+    "verify": "knowledge/verify",
+    "deliver": "knowledge/deliver",
 }
 
 # Frequently-used file paths
-PHASE1_FACTS = "knowledge/phase1_facts/architecture_facts.json"
-PHASE1_EVIDENCE = "knowledge/phase1_facts/evidence_map.json"
-PHASE2_ANALYSIS = "knowledge/phase2_analysis/analyzed_architecture.json"
+PHASE1_FACTS = "knowledge/extract/architecture_facts.json"
+PHASE1_EVIDENCE = "knowledge/extract/evidence_map.json"
+PHASE2_ANALYSIS = "knowledge/analyze/analyzed_architecture.json"
 
-# ChromaDB lives inside phase0
-CHROMA_DIR = "knowledge/phase0_indexing"
+# ChromaDB lives inside discover phase
+CHROMA_DIR = "knowledge/discover"
