@@ -46,6 +46,7 @@ from .angular import (
     AngularServiceCollector,
     AngularStateCollector,
 )
+from .build_system_collector import BuildSystemCollector
 from .base import (
     CollectorOutput,
     DimensionCollector,
@@ -103,6 +104,7 @@ __all__ = [
     "AngularComponentCollector",
     # Angular
     "AngularModuleCollector",
+    "BuildSystemCollector",
     "AngularRoutingCollector",
     "AngularServiceCollector",
     "AngularStateCollector",

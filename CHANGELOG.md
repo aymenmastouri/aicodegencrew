@@ -6,6 +6,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.5.0] - 2026-02-13
+
+### Added
+
+**Cascade Code Generation**
+- Cascade mode for multi-task code generation: single integration branch (`codegen/batch-{timestamp}`), sequential processing
+- Each task sees cumulative file changes from all prior tasks — dependent tasks no longer fail
+- `setup_cascade_branch()`, `cascade_write_and_commit()`, `teardown_cascade()` lifecycle in OutputWriterStage
+- Cascade tracking fields in CodegenReport: `cascade_branch`, `cascade_position`, `cascade_total`, `prior_task_ids`
+- Single-task mode unchanged: still creates isolated `codegen/{task_id}` branches
+
+**Plan Reader Improvements**
+- String component resolution: Phase 4 plans with compact component names now resolved via architecture_facts.json
+- Container root_path prepending: file paths correctly resolved as repo-relative (e.g., `frontend/src/app/...`)
+- Lazy-loaded container index for O(1) path lookup
+
+**Pipeline Executor Fix**
+- Phases routing: individual phases (`--phases implement`) now passed directly to CLI instead of falling back to `--preset full`
+- Dashboard can start any individual phase or combination without triggering the full pipeline
+
+**Build System Collector**
+- New collector for build system facts extraction (Maven, Gradle, npm)
+
+### Fixed
+- `_is_clean_working_tree` ignoring untracked files (added `-uno` flag) — target repos with untracked files no longer block cascade
+- Pipeline executor phases fallback routing (was always defaulting to full preset)
+
+---
+
+## [0.4.0] - 2026-02-13
+
+### Added
+
+**SDLC Pilot Rebrand**
+- Domain-driven phase IDs (discover, extract, analyze, document, plan, implement, verify, deliver)
+- Progress bar robustness improvements
+- Updated presets with display names
+
+---
+
 ## [0.3.0] - 2026-02-12
 
 ### Added
@@ -142,7 +182,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Structured metrics logging (`logs/metrics.jsonl`)
 - Session correlation via run_id
 - Run reports exported to `knowledge/run_report.json` after each pipeline execution
-- Configurable output directory via `OUTPUT_BASE_DIR` environment variable
 
 **Multi-Format Export**
 - Automatic conversion of architecture docs to Confluence, AsciiDoc, and HTML formats

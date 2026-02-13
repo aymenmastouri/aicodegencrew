@@ -60,6 +60,12 @@ export class NotificationService implements OnDestroy {
     this.snackBar.open(msg, 'OK', { duration: 3000 });
   }
 
+  /** Force an immediate status poll (call after starting/cancelling a pipeline). */
+  refreshNow(): void {
+    this.dismissedRunId = null;
+    this.restartPoll(3000);
+  }
+
   dismiss(): void {
     // Remember which run was dismissed so polling doesn't resurrect it
     const current = this.state$.value;

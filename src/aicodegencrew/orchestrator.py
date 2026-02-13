@@ -351,9 +351,7 @@ class SDLCOrchestrator:
 
     def _outputs_exist(self, phase_id: str) -> bool:
         """Check if phase outputs exist from previous run."""
-        from .shared.utils.logger import OUTPUT_BASE_DIR
-
-        base = OUTPUT_BASE_DIR
+        base = Path(".")
         output_files = {
             "discover": [base / "knowledge" / "discover"],
             "extract": [

@@ -28,6 +28,7 @@ import {
   SSEEvent,
   PhaseProgress,
 } from '../../services/pipeline.service';
+import { NotificationService } from '../../services/notification.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
 import { humanizePhaseId } from '../../shared/phase-utils';
 
@@ -778,6 +779,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     private api: ApiService,
     private pipeline: PipelineService,
     private inputsService: InputsService,
+    private notifSvc: NotificationService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
   ) {}
@@ -878,6 +880,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     this.celebrationType = null;
     this.pipeline.startPipeline(request).subscribe({
       next: () => {
+        this.notifSvc.refreshNow();
         this.connectSSE();
       },
       error: (err) => {
@@ -892,6 +895,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   cancelPipeline(): void {
     this.pipeline.cancelPipeline().subscribe({
       next: () => {
+        this.notifSvc.refreshNow();
         this.refreshStatus();
       },
     });

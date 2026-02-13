@@ -130,3 +130,8 @@ class CodegenReport(BaseModel):
     llm_calls: int = 0
     total_tokens: int = 0
     dry_run: bool = False
+    # Cascade mode fields (populated when processing multiple tasks sequentially)
+    cascade_branch: str = ""
+    cascade_position: int = 0
+    cascade_total: int = 0
+    prior_task_ids: list[str] = Field(default_factory=list)

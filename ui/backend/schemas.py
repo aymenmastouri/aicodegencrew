@@ -267,6 +267,7 @@ class CollectorInfo(BaseModel):
     description: str
     dimension: str
     category: str  # "core" | "optional"
+    collector_type: str | None = None
     step: int
     output_file: str
     can_disable: bool

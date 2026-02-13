@@ -88,9 +88,7 @@ class PipelineExecutor:
                         break
             elif phases:
                 phase_list = phases
-                # Pass phases as a custom preset isn't possible via CLI;
-                # use the preset that matches or run individual phases
-                # For now, find the best-matching preset
+                # Try exact preset match first, otherwise use --phases directly
                 from .phase_runner import get_presets
 
                 for p in get_presets():
@@ -98,8 +96,7 @@ class PipelineExecutor:
                         cmd.extend(["--preset", p.name])
                         break
                 else:
-                    # No matching preset — use full as fallback
-                    cmd.extend(["--preset", "full"])
+                    cmd.extend(["--phases", *phases])
 
             self.current_run = RunInfo(
                 run_id=run_id,
@@ -112,6 +109,8 @@ class PipelineExecutor:
             self._exit_code = None
             self._started_at = time.monotonic()
             self._finished_at = None
+            # Wall-clock start time for filtering metrics.jsonl events (local time to match metrics format)
+            self._run_started_wall = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 
             # Spawn subprocess
             try:
@@ -375,6 +374,24 @@ class PipelineExecutor:
                 except (json.JSONDecodeError, KeyError):
                     continue
 
+            # Guard against showing stale events from a previous run:
+            # If we're running but the latest run_id in metrics predates our start,
+            # the new subprocess hasn't written events yet — return expected phases as pending.
+            if self.state == "running" and current_run_id and hasattr(self, "_run_started_wall"):
+                for line in reversed(recent):
+                    try:
+                        ev = json.loads(line.strip())
+                        data = ev.get("data", {})
+                        evt = data.get("event") or ev.get("msg", "")
+                        if evt == "phase_start" and data.get("run_id") == current_run_id:
+                            event_ts = ev.get("ts", "")[:19]  # Trim to seconds
+                            if event_ts < self._run_started_wall:
+                                # No new events yet — show expected phases as pending
+                                return self._pending_phase_list()
+                            break
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+
             for line in recent:
                 try:
                     event = json.loads(line.strip())
@@ -488,6 +505,23 @@ class PipelineExecutor:
             return None
 
         return {"total_tokens": total_tokens, "crew_completions": crew_completions}
+
+    def _pending_phase_list(self) -> list[dict]:
+        """Return expected phases as pending placeholders (before subprocess writes events)."""
+        if not self.current_run or not self.current_run.phases:
+            return []
+        return [
+            {
+                "phase_id": phase_id,
+                "name": phase_id.replace("_", " ").title(),
+                "status": "pending",
+                "started_at": None,
+                "duration_seconds": None,
+                "sub_phases": [],
+                "total_tokens": 0,
+            }
+            for phase_id in self.current_run.phases
+        ]
 
     def _estimate_eta(self, elapsed: float | None) -> float | None:
         """Estimate remaining time based on historical run durations."""
