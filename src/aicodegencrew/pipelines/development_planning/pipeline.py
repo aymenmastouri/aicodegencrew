@@ -61,9 +61,9 @@ class DevelopmentPlanningPipeline:
         self,
         input_file: str = None,
         input_files: list[str] = None,
-        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
-        analyzed_path: str = "knowledge/phase2_analysis/analyzed_architecture.json",
-        output_dir: str = "knowledge/phase4_planning",
+        facts_path: str = "knowledge/extract/architecture_facts.json",
+        analyzed_path: str = "knowledge/analyze/analyzed_architecture.json",
+        output_dir: str = "knowledge/plan",
         chroma_dir: str = None,
         repo_path: str = None,
         supplementary_files: dict[str, list[str]] = None,
@@ -103,25 +103,11 @@ class DevelopmentPlanningPipeline:
         # Ensure output dir exists
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Load architecture data
-        self.facts = self._load_json(self.facts_path)
-        self.analyzed_architecture = self._load_json(self.analyzed_path)
-
-        # Load supplementary context (text snippets for LLM prompt)
-        self.supplementary_context = self._load_supplementary_context()
-
-        # Create stages
-        self.stage1 = InputParserStage()
-        self.stage2 = ComponentDiscoveryStage(
-            facts=self.facts,
-            chroma_dir=self.chroma_dir,
-        )
-        self.stage3 = PatternMatcherStage(facts=self.facts, repo_path=self.repo_path)
-        self.stage4 = PlanGeneratorStage(
-            analyzed_architecture=self.analyzed_architecture,
-            supplementary_context=self.supplementary_context,
-        )
-        self.stage5 = ValidatorStage(analyzed_architecture=self.analyzed_architecture)
+        # Defer data loading to run() so earlier phases can produce files first
+        self.facts: dict = {}
+        self.analyzed_architecture: dict = {}
+        self.supplementary_context: str = ""
+        self._stages_initialized = False
 
     def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """
@@ -135,6 +121,26 @@ class DevelopmentPlanningPipeline:
         """
         return self.run()
 
+    def _ensure_stages(self) -> None:
+        """Load data and create stages on first run (deferred from __init__)."""
+        if self._stages_initialized:
+            return
+        self.facts = self._load_json(self.facts_path)
+        self.analyzed_architecture = self._load_json(self.analyzed_path)
+        self.supplementary_context = self._load_supplementary_context()
+        self.stage1 = InputParserStage()
+        self.stage2 = ComponentDiscoveryStage(
+            facts=self.facts,
+            chroma_dir=self.chroma_dir,
+        )
+        self.stage3 = PatternMatcherStage(facts=self.facts, repo_path=self.repo_path)
+        self.stage4 = PlanGeneratorStage(
+            analyzed_architecture=self.analyzed_architecture,
+            supplementary_context=self.supplementary_context,
+        )
+        self.stage5 = ValidatorStage(analyzed_architecture=self.analyzed_architecture)
+        self._stages_initialized = True
+
     def run(self) -> dict[str, Any]:
         """
         Run pipeline for all input files.
@@ -145,11 +151,12 @@ class DevelopmentPlanningPipeline:
         Returns:
             Dict with status, output_files, duration, metrics, results
         """
+        self._ensure_stages()
         if len(self.input_files) == 1:
             result = self._run_single(self.input_files[0])
             return {
                 "status": "completed",
-                "phase": "phase4_development_planning",
+                "phase": "plan",
                 "task_id": result["task_id"],
                 "output_file": result["output_file"],
                 "output_files": [result["output_file"]],
@@ -221,7 +228,7 @@ class DevelopmentPlanningPipeline:
 
         log_metric(
             "phase_complete",
-            phase="phase4_development_planning",
+            phase="plan",
             status="success" if failed == 0 else "partial",
             duration_seconds=total_duration,
             tasks_total=len(sorted_tasks),
@@ -233,7 +240,7 @@ class DevelopmentPlanningPipeline:
 
         return {
             "status": "completed" if failed == 0 else "partial",
-            "phase": "phase4_development_planning",
+            "phase": "plan",
             "output_files": output_files,
             "duration_seconds": total_duration,
             "results": results,
@@ -279,7 +286,7 @@ class DevelopmentPlanningPipeline:
 
             log_metric(
                 "stage_complete",
-                phase="phase4_development_planning",
+                phase="plan",
                 stage="stage1_input_parser",
                 duration_seconds=stage1_duration,
                 task_id=task.task_id,
@@ -301,7 +308,7 @@ class DevelopmentPlanningPipeline:
 
             log_metric(
                 "phase_complete",
-                phase="phase4_development_planning",
+                phase="plan",
                 status="success",
                 duration_seconds=total_duration,
                 task_id=task.task_id,
@@ -316,7 +323,7 @@ class DevelopmentPlanningPipeline:
 
             log_metric(
                 "phase_failed",
-                phase="phase4_development_planning",
+                phase="plan",
                 error=str(e),
                 duration_seconds=total_duration,
             )
@@ -335,7 +342,7 @@ class DevelopmentPlanningPipeline:
 
         log_metric(
             "stage_complete",
-            phase="phase4_development_planning",
+            phase="plan",
             stage="stage2_component_discovery",
             duration_seconds=stage2_duration,
             task_id=task.task_id,
@@ -355,7 +362,7 @@ class DevelopmentPlanningPipeline:
 
         log_metric(
             "stage_complete",
-            phase="phase4_development_planning",
+            phase="plan",
             stage="stage3_pattern_matcher",
             duration_seconds=stage3_duration,
             task_id=task.task_id,
@@ -374,7 +381,7 @@ class DevelopmentPlanningPipeline:
 
         log_metric(
             "stage_complete",
-            phase="phase4_development_planning",
+            phase="plan",
             stage="stage4_plan_generator",
             duration_seconds=stage4_duration,
             task_id=task.task_id,
@@ -405,7 +412,7 @@ class DevelopmentPlanningPipeline:
 
         log_metric(
             "stage_complete",
-            phase="phase4_development_planning",
+            phase="plan",
             stage="stage5_validator",
             duration_seconds=stage5_duration,
             task_id=task.task_id,

@@ -112,7 +112,7 @@ class StereotypeListTool(BaseTool):
     )
     args_schema: type[BaseModel] = StereotypeListInput
 
-    facts_path: str = "knowledge/phase1_facts/architecture_facts.json"
+    facts_path: str = "knowledge/extract/architecture_facts.json"
     _facts_cache: dict[str, Any] | None = None
 
     def __init__(self, facts_path: str = None, **kwargs):

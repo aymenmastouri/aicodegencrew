@@ -90,11 +90,11 @@ class SDLCOrchestrator:
 
     Usage:
         orchestrator = SDLCOrchestrator()
-        orchestrator.register("phase0_indexing", IndexingPipeline(...))
-        orchestrator.register("phase1_architecture_facts", ArchFactsPipeline(...))
-        orchestrator.register("phase2_architecture_analysis", AnalysisCrew(...))
+        orchestrator.register("discover", IndexingPipeline(...))
+        orchestrator.register("extract", ArchFactsPipeline(...))
+        orchestrator.register("analyze", AnalysisCrew(...))
 
-        result = orchestrator.run(preset="architecture_workflow")
+        result = orchestrator.run(preset="document")
     """
 
     def __init__(self, config_path: str | None = None):
@@ -116,7 +116,7 @@ class SDLCOrchestrator:
         Register a phase for execution.
 
         Args:
-            phase_id: Unique phase identifier (e.g., "phase0_indexing")
+            phase_id: Unique phase identifier (e.g., "discover")
             executable: Pipeline or Crew instance with kickoff() method
 
         Returns:
@@ -138,7 +138,7 @@ class SDLCOrchestrator:
         Execute the SDLC pipeline.
 
         Args:
-            preset: Named preset from config (e.g., "architecture_workflow")
+            preset: Named preset from config (e.g., "document")
             phases: Explicit list of phases to run (overrides preset)
             stop_on_error: Stop execution on first failure
 
@@ -355,22 +355,22 @@ class SDLCOrchestrator:
 
         base = OUTPUT_BASE_DIR
         output_files = {
-            "phase0_indexing": [base / "knowledge" / "phase0_indexing"],
-            "phase1_architecture_facts": [
-                base / "knowledge" / "phase1_facts" / "architecture_facts.json",
-                base / "knowledge" / "phase1_facts" / "evidence_map.json",
+            "discover": [base / "knowledge" / "discover"],
+            "extract": [
+                base / "knowledge" / "extract" / "architecture_facts.json",
+                base / "knowledge" / "extract" / "evidence_map.json",
             ],
-            "phase2_architecture_analysis": [
-                base / "knowledge" / "phase2_analysis" / "analyzed_architecture.json",
+            "analyze": [
+                base / "knowledge" / "analyze" / "analyzed_architecture.json",
             ],
-            "phase3_architecture_synthesis": [
-                base / "knowledge" / "phase3_synthesis" / "c4" / "c4-context.md",
+            "document": [
+                base / "knowledge" / "document" / "c4" / "c4-context.md",
             ],
-            "phase4_development_planning": [
-                base / "knowledge" / "phase4_planning",
+            "plan": [
+                base / "knowledge" / "plan",
             ],
-            "phase5_code_generation": [
-                base / "knowledge" / "phase5_codegen",
+            "implement": [
+                base / "knowledge" / "implement",
             ],
         }
 
@@ -428,10 +428,10 @@ class SDLCOrchestrator:
         """Return minimal default config."""
         return {
             "phases": {
-                "phase0_indexing": {"enabled": True, "order": 0},
+                "discover": {"enabled": True, "order": 0},
             },
             "presets": {
-                "indexing_only": ["phase0_indexing"],
+                "index": ["discover"],
             },
         }
 

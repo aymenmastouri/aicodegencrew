@@ -689,14 +689,14 @@ class ArchitectureAnalysisCrew:
 
     def __init__(
         self,
-        facts_path: str = "knowledge/phase1_facts/architecture_facts.json",
+        facts_path: str = "knowledge/extract/architecture_facts.json",
         chroma_dir: str = None,
-        output_dir: str = "knowledge/phase2_analysis",
+        output_dir: str = "knowledge/analyze",
     ):
         """Initialize crew with paths."""
         self.facts_path = Path(facts_path)
         self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing")
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
         self.output_dir = Path(output_dir)
         self._analysis_dir = self.output_dir / "analysis"
         self._checkpoint_file = self.output_dir / ".checkpoint_analysis.json"
@@ -991,12 +991,12 @@ class ArchitectureAnalysisCrew:
                 logger.error(f"   [MISSING] {f}")
             logger.error("")
             logger.error("[HINT] Solution: Run Phase 1 first:")
-            logger.error("   python run.py --phases phase1_architecture_facts")
+            logger.error("   python run.py --phases extract")
             logger.error("")
             logger.error("=" * 60)
             raise FileNotFoundError(
                 f"Missing Phase 1 files: {', '.join(missing_files)}. "
-                f"Run Phase 1 first: python run.py --phases phase1_architecture_facts"
+                f"Run Phase 1 first: python run.py --phases extract"
             )
 
         logger.info("   [OK] All prerequisites satisfied!")
@@ -1119,7 +1119,7 @@ class ArchitectureAnalysisCrew:
 
         return {
             "status": "completed",
-            "phase": "phase2_architecture_analysis",
+            "phase": "analyze",
             "result": output_path,
         }
 

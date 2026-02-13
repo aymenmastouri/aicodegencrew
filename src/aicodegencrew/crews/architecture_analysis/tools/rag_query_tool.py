@@ -67,7 +67,7 @@ class RAGQueryTool(BaseTool):
 
     # Standard locations for ChromaDB (ClassVar = not a Pydantic field)
     CHROMA_PATHS: ClassVar[list[str]] = [
-        "knowledge/phase0_indexing",  # Primary location (Phase 0 output)
+        "knowledge/discover",  # Primary location (Phase 0 output)
         ".cache/.chroma",  # Legacy location
         ".chroma_db",  # Legacy location
         ".chroma",  # Alternative

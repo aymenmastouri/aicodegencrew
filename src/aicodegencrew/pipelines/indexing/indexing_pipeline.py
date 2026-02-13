@@ -64,7 +64,7 @@ class IndexingConfig:
         return cls(
             repo_path=resolved_path,
             index_mode=index_mode or os.getenv("INDEX_MODE", "auto"),
-            chroma_dir=chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing"),
+            chroma_dir=chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover"),
             collection_name=os.getenv("COLLECTION_NAME", "repo_docs"),
             include_submodules=True,
             batch_size=int(os.getenv("INDEX_BATCH_SIZE", "50")),
@@ -182,7 +182,7 @@ class IndexingState:
 
 
 def _get_index_lock_path(chroma_dir: str | None = None) -> Path:
-    d = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing")
+    d = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
     return Path(d).resolve() / ".index.lock"
 
 
@@ -358,7 +358,7 @@ class IndexingPipeline:
         self.metrics = IndexingMetrics()
 
         # Resolve chroma dir — state file lives inside it
-        chroma_resolved = Path(self.config.chroma_dir or "knowledge/phase0_indexing").resolve()
+        chroma_resolved = Path(self.config.chroma_dir or "knowledge/discover").resolve()
         self._cache_dir = chroma_resolved
         self._chroma_dir_resolved = str(chroma_resolved)
 
@@ -410,13 +410,13 @@ class IndexingPipeline:
         logger.info("[START] Repository Indexing Pipeline")
         logger.info(f"[CONFIG] INDEX_MODE={self.index_mode}  repo={self.repo_path}")
 
-        log_metric("phase_start", phase="phase0_indexing", index_mode=self.index_mode)
+        log_metric("phase_start", phase="discover", index_mode=self.index_mode)
 
         if self.index_mode == "off":
             logger.info("[SKIP] INDEX_MODE=off")
-            log_metric("phase_complete", phase="phase0_indexing", status="skipped")
+            log_metric("phase_complete", phase="discover", status="skipped")
             return {
-                "phase": "phase0_indexing",
+                "phase": "discover",
                 "status": "success",
                 "message": "Skipped (INDEX_MODE=off)",
                 "skipped": True,
@@ -428,14 +428,14 @@ class IndexingPipeline:
             skipped = result_msg.startswith("Skipped:")
             log_metric(
                 "phase_complete",
-                phase="phase0_indexing",
+                phase="discover",
                 status="success",
                 skipped=skipped,
                 duration_seconds=round(self.metrics.duration_seconds, 2),
                 chunks_indexed=self.metrics.total_chunks_indexed,
             )
             return {
-                "phase": "phase0_indexing",
+                "phase": "discover",
                 "status": "success",
                 "repo_path": str(self.repo_path),
                 "message": result_msg,
@@ -445,9 +445,9 @@ class IndexingPipeline:
             }
         except Exception as e:
             logger.error(f"[ERROR] Indexing failed: {e}", exc_info=True)
-            log_metric("phase_failed", phase="phase0_indexing", error=str(e)[:500])
+            log_metric("phase_failed", phase="discover", error=str(e)[:500])
             return {
-                "phase": "phase0_indexing",
+                "phase": "discover",
                 "status": "failed",
                 "error": str(e),
                 "index_mode": self.index_mode,

@@ -4,13 +4,13 @@ AI Code Generation Crew - Unified CLI
 
 Modern CLI with subcommands:
     aicodegencrew run              Run SDLC pipeline
-    aicodegencrew plan             Run development planning (Phase 0+1+2+4)
+    aicodegencrew plan             Run development planning
     aicodegencrew index            Index repository
     aicodegencrew list             List available phases
 
 Usage:
-    python -m aicodegencrew run --preset architecture_workflow
-    python -m aicodegencrew run --phases phase1_architecture_facts
+    python -m aicodegencrew run --preset document
+    python -m aicodegencrew run --phases extract
     python -m aicodegencrew --env /path/to/.env plan
     python -m aicodegencrew index --force
     python -m aicodegencrew list
@@ -138,11 +138,11 @@ def clean_knowledge(phase: str = "all") -> None:
     cleaned: list[str] = []
 
     phase_dirs = {
-        "phase1": "phase1_facts",
-        "phase2": "phase2_analysis",
-        "phase3": "phase3_synthesis",
-        "phase4": "phase4_planning",
-        "phase5": "phase5_codegen",
+        "extract": "extract",
+        "analyze": "analyze",
+        "document": "document",
+        "plan": "plan",
+        "implement": "implement",
     }
 
     if phase == "all":
@@ -224,7 +224,7 @@ def cmd_index(config: Config) -> int:
     from .pipelines.indexing import ensure_repo_indexed
 
     repo_path = _resolve_repo_path(config)
-    chroma_dir = Path(os.getenv("CHROMA_DIR", "knowledge/phase0_indexing"))
+    chroma_dir = Path(os.getenv("CHROMA_DIR", "knowledge/discover"))
 
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")
@@ -314,23 +314,23 @@ def _export_run_report(
 
     # Collect output files per phase (relative to output_base)
     phase_outputs = {
-        "phase0_indexing": [str(base / ".cache" / ".chroma")],
-        "phase1_architecture_facts": [
-            str(base / "knowledge" / "architecture" / "architecture_facts.json"),
-            str(base / "knowledge" / "architecture" / "evidence_map.json"),
+        "discover": [str(base / "knowledge" / "discover")],
+        "extract": [
+            str(base / "knowledge" / "extract" / "architecture_facts.json"),
+            str(base / "knowledge" / "extract" / "evidence_map.json"),
         ],
-        "phase2_architecture_analysis": [
-            str(base / "knowledge" / "architecture" / "analyzed_architecture.json"),
+        "analyze": [
+            str(base / "knowledge" / "analyze" / "analyzed_architecture.json"),
         ],
-        "phase3_architecture_synthesis": [
-            str(base / "knowledge" / "phase3_synthesis" / "c4"),
-            str(base / "knowledge" / "phase3_synthesis" / "arc42"),
+        "document": [
+            str(base / "knowledge" / "document" / "c4"),
+            str(base / "knowledge" / "document" / "arc42"),
         ],
-        "phase4_development_planning": [
-            str(base / "knowledge" / "phase4_planning"),
+        "plan": [
+            str(base / "knowledge" / "plan"),
         ],
-        "phase5_code_generation": [
-            str(base / "knowledge" / "phase5_codegen"),
+        "implement": [
+            str(base / "knowledge" / "implement"),
         ],
     }
 
@@ -383,7 +383,7 @@ def _export_architecture_docs():
     from .shared.utils.logger import OUTPUT_BASE_DIR
 
     docs_dir = os.getenv("DOCS_OUTPUT_DIR", str(OUTPUT_BASE_DIR / "architecture-docs"))
-    source = OUTPUT_BASE_DIR / "knowledge" / "phase3_synthesis"
+    source = OUTPUT_BASE_DIR / "knowledge" / "document"
     target = Path(docs_dir)
 
     # Only copy the deliverable subdirectories (c4, arc42)
@@ -432,9 +432,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # Convenience: all output paths relative to output_base
     knowledge_dir = base / "knowledge"
-    phase1_dir = knowledge_dir / "phase1_facts"
-    phase2_dir = knowledge_dir / "phase2_analysis"
-    phase4_dir = knowledge_dir / "phase4_planning"
+    phase1_dir = knowledge_dir / "extract"
+    phase2_dir = knowledge_dir / "analyze"
+    phase4_dir = knowledge_dir / "plan"
 
     # Clean if requested
     if config.clean:
@@ -455,42 +455,42 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # --- Phase 0: Indexing ---
     if config.index_mode == "off":
         logger.info("[CONFIG] INDEX_MODE=off -> Skipping Phase 0")
-        orchestrator.config["phases"]["phase0_indexing"]["enabled"] = False
-    elif "phase0_indexing" in planned_phases:
+        orchestrator.config["phases"]["discover"]["enabled"] = False
+    elif "discover" in planned_phases:
         indexing_pipeline = IndexingPipeline(
             repo_path=str(repo_path),
             index_mode=config.index_mode,
         )
-        orchestrator.register_phase("phase0_indexing", indexing_pipeline)
+        orchestrator.register_phase("discover", indexing_pipeline)
 
-    # --- Phase 1: Architecture Facts ---
-    if "phase1_architecture_facts" in planned_phases:
+    # --- Extract: Architecture Facts ---
+    if "extract" in planned_phases:
         if not config.no_clean:
-            clean_knowledge("phase1")
+            clean_knowledge("extract")
         facts_pipeline = ArchitectureFactsPipeline(
             repo_path=str(repo_path),
             output_dir=str(phase1_dir),
         )
-        orchestrator.register_phase("phase1_architecture_facts", facts_pipeline)
+        orchestrator.register_phase("extract", facts_pipeline)
 
-    # --- Phase 2: Architecture Analysis ---
-    if "phase2_architecture_analysis" in planned_phases:
+    # --- Analyze: Architecture Analysis ---
+    if "analyze" in planned_phases:
         from .crews.architecture_analysis import MapReduceAnalysisCrew
 
         analysis_crew = MapReduceAnalysisCrew(facts_path=str(phase1_dir / "architecture_facts.json"))
-        orchestrator.register_phase("phase2_architecture_analysis", analysis_crew)
+        orchestrator.register_phase("analyze", analysis_crew)
 
-    # --- Phase 3: Architecture Synthesis ---
+    # --- Document: Architecture Synthesis ---
     if os.getenv("SKIP_SYNTHESIS", "").lower() in ("true", "1", "yes"):
-        logger.info("[CONFIG] SKIP_SYNTHESIS=true -> Skipping Phase 3")
-        orchestrator.config["phases"]["phase3_architecture_synthesis"]["enabled"] = False
-    elif "phase3_architecture_synthesis" in planned_phases:
+        logger.info("[CONFIG] SKIP_SYNTHESIS=true -> Skipping Document phase")
+        orchestrator.config["phases"]["document"]["enabled"] = False
+    elif "document" in planned_phases:
         synthesis_crew = ArchitectureSynthesisCrew(facts_path=str(phase1_dir / "architecture_facts.json"))
-        orchestrator.register_phase("phase3_architecture_synthesis", synthesis_crew)
+        orchestrator.register_phase("document", synthesis_crew)
 
-    # --- Phase 4: Development Planning (Hybrid Pipeline) ---
-    codegen_task_id = None  # For Phase 5 single-task mode
-    if "phase4_development_planning" in planned_phases:
+    # --- Plan: Development Planning (Hybrid Pipeline) ---
+    codegen_task_id = None  # For Implement single-task mode
+    if "plan" in planned_phases:
         from .pipelines.development_planning import DevelopmentPlanningPipeline
 
         # Get input directory from .env (REQUIRED - no hardcoded default)
@@ -540,12 +540,12 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
                 repo_path=os.getenv("PROJECT_PATH"),
                 supplementary_files=supplementary_files,
             )
-            orchestrator.register_phase("phase4_development_planning", planning_pipeline)
+            orchestrator.register_phase("plan", planning_pipeline)
         else:
-            logger.warning(f"[Phase4] No input files found in {input_dir}, skipping phase")
+            logger.warning(f"[Plan] No input files found in {input_dir}, skipping phase")
 
-    # --- Phase 5: Code Generation (Hybrid Pipeline) ---
-    if "phase5_code_generation" in planned_phases:
+    # --- Implement: Code Generation (Hybrid Pipeline) ---
+    if "implement" in planned_phases:
         from .pipelines.code_generation import CodeGenerationPipeline
 
         codegen_dry_run = getattr(config, "dry_run", False)
@@ -556,10 +556,10 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             task_id=codegen_task,
             plans_dir=str(phase4_dir),
             facts_path=str(phase1_dir / "architecture_facts.json"),
-            report_dir=str(knowledge_dir / "phase5_codegen"),
+            report_dir=str(knowledge_dir / "implement"),
             dry_run=codegen_dry_run,
         )
-        orchestrator.register_phase("phase5_code_generation", codegen_pipeline)
+        orchestrator.register_phase("implement", codegen_pipeline)
 
     # Execute
     try:
@@ -573,7 +573,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             logger.info(f"Time: {result.total_duration}")
 
             # Export Phase 3 docs to external dir if configured
-            if "phase3_architecture_synthesis" in planned_phases:
+            if "document" in planned_phases:
                 _export_architecture_docs()
 
             return 0
@@ -693,10 +693,10 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to phases_config.yaml",
     )
 
-    # --- plan command (shortcut for run --preset planning_only) ---
+    # --- plan command (shortcut for run --preset plan) ---
     plan_parser = subparsers.add_parser(
         "plan",
-        help="Run development planning (shortcut for: run --preset planning_only)",
+        help="Run development planning (shortcut for: run --preset plan)",
     )
     plan_parser.add_argument(
         "--repo-path",
@@ -712,10 +712,10 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to phases_config.yaml",
     )
 
-    # --- codegen command (shortcut for run --preset codegen_only) ---
+    # --- codegen command (shortcut for run --preset develop) ---
     codegen_parser = subparsers.add_parser(
         "codegen",
-        help="Run code generation (shortcut for: run --preset codegen_only)",
+        help="Run code generation (shortcut for: run --preset develop)",
     )
     codegen_parser.add_argument(
         "--repo-path",
@@ -810,7 +810,7 @@ def main(argv: list[str] | None = None) -> int:
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
         return cmd_run(config, preset=args.preset, phases=args.phases)
 
-    # --- plan (shortcut for run --preset planning_only) ---
+    # --- plan (shortcut for run --preset plan) ---
     if args.command == "plan":
         config = Config.from_env(
             repo_path=args.repo_path,
@@ -818,9 +818,9 @@ def main(argv: list[str] | None = None) -> int:
             config_path=args.config,
         )
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
-        return cmd_run(config, preset="planning_only")
+        return cmd_run(config, preset="plan")
 
-    # --- codegen (shortcut for run --preset codegen_only) ---
+    # --- codegen (shortcut for run --preset develop) ---
     if args.command == "codegen":
         config = Config.from_env(
             repo_path=args.repo_path,
@@ -830,7 +830,7 @@ def main(argv: list[str] | None = None) -> int:
             task_id=args.task_id,
         )
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
-        return cmd_run(config, preset="codegen_only")
+        return cmd_run(config, preset="develop")
 
     parser.print_help()
     return 1

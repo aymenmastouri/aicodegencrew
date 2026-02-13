@@ -36,11 +36,11 @@ class ArchitectureSynthesisCrew:
     - ChromaDB Index: Semantic search (optional)
     """
 
-    def __init__(self, facts_path: str = "knowledge/phase1_facts/architecture_facts.json"):
+    def __init__(self, facts_path: str = "knowledge/extract/architecture_facts.json"):
         """Initialize orchestrator with architecture facts path."""
         self.facts_path = Path(facts_path)
         self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        self.analyzed_path = Path("knowledge/phase2_analysis/analyzed_architecture.json")
+        self.analyzed_path = Path("knowledge/analyze/analyzed_architecture.json")
         self.c4_crew = None
         self.arc42_crew = None
         # Note: Validation happens at kickoff(), not here (allows Phase 1+2 to run first)
@@ -81,7 +81,7 @@ class ArchitectureSynthesisCrew:
             logger.error("")
             logger.error("[HINT] Solution: Run Phase 1 and Phase 2 first:")
             logger.error(
-                "   python -m aicodegencrew run --phases phase1_architecture_facts,phase2_architecture_analysis"
+                "   python -m aicodegencrew run --phases extract,analyze"
             )
             logger.error("")
             logger.error("=" * 60)
@@ -96,7 +96,7 @@ class ArchitectureSynthesisCrew:
         """Delete old Phase 3 outputs before new run."""
         import shutil
 
-        output_dir = Path("knowledge/phase3_synthesis")
+        output_dir = Path("knowledge/document")
 
         output_dirs = ["c4", "arc42", "quality"]
         deleted = 0
@@ -127,7 +127,7 @@ class ArchitectureSynthesisCrew:
 
         # Only archive on fresh run. When resuming (checkpoint exists),
         # keep existing files — skipped crews depend on them still being there.
-        synthesis_dir = Path("knowledge/phase3_synthesis")
+        synthesis_dir = Path("knowledge/document")
         c4_checkpoint = synthesis_dir / ".checkpoint_c4.json"
         arc42_checkpoint = synthesis_dir / ".checkpoint_arc42.json"
         is_resume = c4_checkpoint.exists() or arc42_checkpoint.exists()
@@ -170,7 +170,7 @@ class ArchitectureSynthesisCrew:
 
         return {
             "status": "completed",
-            "phase": "phase3_architecture_synthesis",
+            "phase": "document",
             "result": summary,
         }
 

@@ -155,15 +155,18 @@ architecture-docs/
 knowledge-*/
 
 # Knowledge runtime outputs (per-phase isolation)
-knowledge/phase0_indexing/
-knowledge/phase1_facts/
-knowledge/phase2_analysis/
-knowledge/phase3_synthesis/
-knowledge/phase4_planning/
-knowledge/phase5_codegen/
-knowledge/phase6_testing/
-knowledge/phase7_deployment/
+knowledge/discover/
+knowledge/extract/
+knowledge/analyze/
+knowledge/document/
+knowledge/plan/
+knowledge/implement/
+knowledge/verify/
+knowledge/deliver/
 knowledge/run_report.json
+
+# Checkpoint files (Phase 3 resume state)
+.checkpoint_*.json
 
 # Legacy paths (should not be created)
 knowledge/architecture/

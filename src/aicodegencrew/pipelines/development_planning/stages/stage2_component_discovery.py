@@ -41,7 +41,7 @@ class ComponentDiscoveryStage:
             chroma_dir: ChromaDB directory path
         """
         self.facts = facts
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/phase0_indexing")
+        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
 
         self.components = facts.get("components", [])
         self.interfaces = facts.get("interfaces", [])

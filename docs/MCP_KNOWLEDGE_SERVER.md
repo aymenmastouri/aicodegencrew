@@ -170,7 +170,7 @@ Response:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `AICODEGENCREW_KNOWLEDGE_PATH` | Path to knowledge directory | `./knowledge/phase1_facts` |
+| `AICODEGENCREW_KNOWLEDGE_PATH` | Path to knowledge directory | `./knowledge/extract` |
 
 ### Claude Desktop Config
 
@@ -217,7 +217,7 @@ Add to `claude_desktop_config.json`:
 ┌─────────────────────────────────────────────────────────────────┐
 │  Phase 1 Knowledge Base (JSON)                                  │
 │                                                                 │
-│  knowledge/phase1_facts/                                        │
+│  knowledge/extract/                                        │
 │  ├── components.json    (951+ components)                       │
 │  ├── relations.json     (190 relations)                         │
 │  ├── interfaces.json    (226 endpoints/routes)                  │
@@ -262,10 +262,10 @@ python -m aicodegencrew.mcp.server 2>&1 | head -20
 
 ```bash
 # Ensure knowledge directory exists
-ls knowledge/phase1_facts/
+ls knowledge/extract/
 
 # Run Phase 1 first
-python -m aicodegencrew run --phases phase1_architecture_facts
+python -m aicodegencrew run --phases extract
 ```
 
 ### Connection timeout

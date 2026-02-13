@@ -469,18 +469,18 @@ your-workspace/              ← Your chosen directory
 │   └── reference/           ← Mockups, diagrams (REFERENCE_DIR)
 ├── knowledge/               ← Tool outputs (auto-created)
 │   ├── run_report.json      ← Status of last run (legacy)
-│   ├── phase0_indexing/     ← Phase 0: Vector database (ChromaDB index)
-│   ├── phase1_facts/
+│   ├── discover/            ← Phase 0: Vector database (ChromaDB index)
+│   ├── extract/
 │   │   ├── architecture_facts.json    ← Phase 1 output
 │   │   └── evidence_map.json          ← Phase 1 evidence map
-│   ├── phase2_analysis/
+│   ├── analyze/
 │   │   └── analyzed_architecture.json ← Phase 2 output
-│   ├── phase3_synthesis/
+│   ├── document/
 │   │   ├── c4/              ← Phase 3 C4 diagrams
 │   │   └── arc42/           ← Phase 3 arc42 chapters
-│   ├── phase4_planning/
+│   ├── plan/
 │   │   └── ${TASK_ID}_plan.json ← Phase 4 development plan (one per task)
-│   └── phase5_codegen/
+│   └── implement/
 │       └── ${TASK_ID}_report.json ← Phase 5 code generation report
 ├── architecture-docs/       ← Multi-format exports (if Phase 3 run)
 │   ├── c4/
@@ -544,12 +544,12 @@ C:\work\my-project\
 
 | Your Goal | Preset to Use | Time | LLM? |
 |-----------|---------------|------|------|
-| Generate development plan from JIRA ticket | `planning_only` | 30-40 sec | Hybrid |
-| Generate code from plans | `codegen_only` | 1-5 min | Hybrid |
+| Generate development plan from JIRA ticket | `plan` | 30-40 sec | Hybrid |
+| Generate code from plans | `develop` | 1-5 min | Hybrid |
 | Plan + generate code (end-to-end) | Use `codegen` command | 2-6 min | Hybrid |
-| Get quick architecture facts (no AI analysis) | `facts_only` | 3-5 min | No |
-| Full architecture documentation (C4 + arc42) | `architecture_workflow` | 45-60 min | Yes |
-| Architecture docs + development plan | `architecture_full` | 60-90 min | Yes |
+| Get quick architecture facts (no AI analysis) | `scan` | 3-5 min | No |
+| Full architecture documentation (C4 + arc42) | `document` | 45-60 min | Yes |
+| Architecture docs + development plan | `architect` | 60-90 min | Yes |
 | Just update the vector index | Use `index` command | 5-10 min | No |
 | Run pipeline from web browser | Use SDLC Dashboard | N/A | Depends |
 
@@ -559,25 +559,25 @@ C:\work\my-project\
 ```bash
 aicodegencrew plan
 ```
-Output: `knowledge/phase4_planning/{TASK_ID}_plan.json`
+Output: `knowledge/plan/{TASK_ID}_plan.json`
 
 **Use Case 2: "I need C4 diagrams for architecture review"**
 ```bash
-aicodegencrew run --preset architecture_workflow
+aicodegencrew run --preset document
 ```
-Output: `knowledge/phase3_synthesis/c4/*.md` + `*.drawio`
+Output: `knowledge/document/c4/*.md` + `*.drawio`
 
 **Use Case 3: "I have plans, need generated code"**
 ```bash
 aicodegencrew codegen
 ```
-Output: Git branch `codegen/{task_id}` in target repo + `knowledge/phase5_codegen/{task_id}_report.json`
+Output: Git branch `codegen/{task_id}` in target repo + `knowledge/implement/{task_id}_report.json`
 
 **Use Case 4: "I want component list without waiting for LLM"**
 ```bash
-aicodegencrew run --preset facts_only
+aicodegencrew run --preset scan
 ```
-Output: `knowledge/phase1_facts/architecture_facts.json` (3 min, no LLM)
+Output: `knowledge/extract/architecture_facts.json` (3 min, no LLM)
 
 See Section 11 (Quick Start) for detailed command examples
 
@@ -597,7 +597,7 @@ See Section 11 (Quick Start) for detailed command examples
    aicodegencrew plan
    ```
 
-This runs Phases 0+1+2+4 and generates a development plan in `knowledge/phase4_planning/`.
+This runs Phases 0+1+2+4 and generates a development plan in `knowledge/plan/`.
 
 ### With Custom `.env` Location
 
@@ -608,7 +608,7 @@ aicodegencrew --env C:\configs\my-project.env plan
 ### Full Architecture Documentation
 
 ```bash
-aicodegencrew run --preset architecture_workflow
+aicodegencrew run --preset document
 ```
 
 ---
@@ -660,7 +660,7 @@ aicodegencrew codegen --dry-run
 aicodegencrew codegen --index-mode off
 ```
 
-Phase 5 reads plans from `knowledge/phase4_planning/`, generates code using a strategy pattern (feature/bugfix/upgrade/refactoring), validates syntax and security, and commits to a `codegen/{task_id}` git branch in the target repository.
+Phase 5 reads plans from `knowledge/plan/`, generates code using a strategy pattern (feature/bugfix/upgrade/refactoring), validates syntax and security, and commits to a `codegen/{task_id}` git branch in the target repository.
 
 **Safety:** Dry-run mode previews all changes without writing files. The tool never pushes to remote and never modifies main/develop branches.
 
@@ -668,13 +668,13 @@ Phase 5 reads plans from `knowledge/phase4_planning/`, generates code using a st
 
 ```bash
 # Run a preset
-aicodegencrew run --preset architecture_workflow
+aicodegencrew run --preset document
 
 # Run specific phases
-aicodegencrew run --phases phase0_indexing phase1_architecture_facts
+aicodegencrew run --phases discover extract
 
 # Force re-index + clean output
-aicodegencrew run --preset architecture_workflow --index-mode force --clean
+aicodegencrew run --preset document --index-mode force --clean
 ```
 
 ### `index` Command
@@ -738,7 +738,7 @@ aicodegencrew plan --index-mode smart
 aicodegencrew plan --index-mode force
 ```
 
-**Pro Tip:** Check `knowledge/phase0_indexing/.indexing_state.json` to see last index date.
+**Pro Tip:** Check `knowledge/discover/.indexing_state.json` to see last index date.
 
 ---
 
@@ -839,7 +839,7 @@ Place multiple XML files in your `TASK_INPUT_DIR` folder. The tool processes the
 
 ### Development Plans (Phase 4)
 
-Output: `knowledge/phase4_planning/{TASK_ID}_plan.json`
+Output: `knowledge/plan/{TASK_ID}_plan.json`
 
 Each plan contains:
 - **affected_components**: Components impacted by the change
@@ -861,10 +861,10 @@ Each plan contains:
 
 #### Understanding the JSON Structure
 
-After running `aicodegencrew plan`, you'll find development plans in `knowledge/phase4_planning/`:
+After running `aicodegencrew plan`, you'll find development plans in `knowledge/plan/`:
 
 ```
-knowledge/phase4_planning/
+knowledge/plan/
 ├── ${TASK_ID}_plan.json    ← One file per task (e.g., PROJ-123_plan.json)
 ├── ${TASK_ID}_plan.json    ← Multiple tasks = multiple files
 └── ...
@@ -927,7 +927,7 @@ Reset is blocked while a pipeline is running (returns 409 Conflict).
 
 ### Code Generation Reports (Phase 5)
 
-Output: `knowledge/phase5_codegen/{TASK_ID}_report.json`
+Output: `knowledge/implement/{TASK_ID}_report.json`
 
 Code changes are committed to a **git branch** (`codegen/{task_id}`) in the target repository. The report tracks:
 
@@ -955,12 +955,12 @@ Internal output (always): `knowledge/` (organized by phase)
 
 ```
 knowledge/
-├── phase1_facts/
+├── extract/
 │   ├── architecture_facts.json   # Phase 1: Raw facts (internal)
 │   └── evidence_map.json         # Phase 1: Evidence map (internal)
-├── phase2_analysis/
+├── analyze/
 │   └── analyzed_architecture.json # Phase 2: AI analysis (internal)
-└── phase3_synthesis/
+└── document/
     ├── c4/                        # C4 Model (for architect)
     │   ├── c4-context.md + .drawio
     │   ├── c4-container.md + .drawio
@@ -1023,11 +1023,11 @@ Arc42 chapters follow the **official arc42 template** structure (arc42.org). Set
 
 | Preset | Phases | Use Case |
 |--------|--------|----------|
-| `planning_only` | 0, 1, 2, 4 | Development planning from JIRA tickets |
-| `facts_only` | 0, 1 | Quick architecture facts (no LLM needed) |
-| `analysis_only` | 0, 1, 2 | Facts + AI analysis |
-| `architecture_workflow` | 0, 1, 2, 3 | Full C4 + arc42 documentation |
-| `architecture_full` | 0, 1, 2, 3, 4 | Architecture docs + development planning |
+| `plan` | 0, 1, 2, 4 | Development planning from JIRA tickets |
+| `scan` | 0, 1 | Quick architecture facts (no LLM needed) |
+| `analyze` | 0, 1, 2 | Facts + AI analysis |
+| `document` | 0, 1, 2, 3 | Full C4 + arc42 documentation |
+| `architect` | 0, 1, 2, 3, 4 | Architecture docs + development planning |
 
 Usage:
 ```bash
@@ -1215,7 +1215,7 @@ aicodegencrew index --force
 
 Each phase depends on the previous. Run all phases in order:
 ```bash
-aicodegencrew run --preset planning_only
+aicodegencrew run --preset plan
 ```
 
 ### "I want to re-run a phase from scratch"
@@ -1230,7 +1230,7 @@ Or via API:
 ```bash
 curl -X POST http://localhost:8001/api/reset/execute \
   -H "Content-Type: application/json" \
-  -d '{"phase_ids": ["phase2_architecture_analysis"]}'
+  -d '{"phase_ids": ["analyze"]}'
 ```
 
 ### Docker: "Permission denied" on volumes
@@ -1290,7 +1290,7 @@ Open **http://localhost** in your browser.
 ### Running a Pipeline from the Dashboard
 
 1. Navigate to **Run Pipeline** (or click the play button on any preset in the Phases page)
-2. Select a **preset** (e.g., `planning_only`) or switch to **Custom Phases** tab and select individual phases
+2. Select a **preset** (e.g., `plan`) or switch to **Custom Phases** tab and select individual phases
 3. Optionally expand **Environment Configuration** to override .env variables for this run
 4. Click **Run Pipeline**
 5. Watch the **Live Output** panel — logs stream in real-time via SSE
