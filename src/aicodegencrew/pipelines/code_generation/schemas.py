@@ -111,6 +111,39 @@ class ValidationResult(BaseModel):
 
 
 # =============================================================================
+# Stage 4b: Build Verifier Schemas
+# =============================================================================
+
+
+class ContainerBuildResult(BaseModel):
+    """Build result for a single container (backend/frontend)."""
+
+    container_id: str = Field(..., description="e.g. container.backend")
+    container_name: str = Field(..., description="e.g. backend")
+    build_command: str = ""
+    success: bool = False
+    exit_code: int = -1
+    error_summary: str = ""
+    attempts: int = 1
+    healed_files: list[str] = Field(default_factory=list)
+    duration_seconds: float = 0.0
+
+
+class BuildVerificationResult(BaseModel):
+    """Aggregated build verification across all containers."""
+
+    container_results: list[ContainerBuildResult] = Field(default_factory=list)
+    all_passed: bool = False
+    total_containers_built: int = 0
+    total_containers_failed: int = 0
+    total_heal_attempts: int = 0
+    total_heal_successes: int = 0
+    duration_seconds: float = 0.0
+    skipped: bool = False
+    skip_reason: str = ""
+
+
+# =============================================================================
 # Stage 5: Output Writer Schemas
 # =============================================================================
 
@@ -130,6 +163,7 @@ class CodegenReport(BaseModel):
     llm_calls: int = 0
     total_tokens: int = 0
     dry_run: bool = False
+    build_verification: BuildVerificationResult | None = None
     # Cascade mode fields (populated when processing multiple tasks sequentially)
     cascade_branch: str = ""
     cascade_position: int = 0

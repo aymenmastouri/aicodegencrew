@@ -103,7 +103,7 @@ The implementation covers deterministic facts extraction through code generation
 | **Analyze** | MapReduce multi-agent analysis | IMPLEMENTED |
 | **Document** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
 | **Plan** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
-| **Implement** | Hybrid pipeline (4 deterministic + 1 LLM per file) | IMPLEMENTED |
+| **Implement** | Hybrid pipeline (6 stages: 4 deterministic + LLM gen + build verify with self-heal) | IMPLEMENTED |
 | **SDLC Dashboard** | Angular 21 + FastAPI web UI with SSE streaming, file upload, doc rendering | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
@@ -403,15 +403,16 @@ src/aicodegencrew/
 
         code_generation/                # Implement: Code Generation (HYBRID)
             __init__.py
-            pipeline.py                # CodeGenerationPipeline (5 stages)
-            schemas.py                 # Pydantic schemas (8 models)
+            pipeline.py                # CodeGenerationPipeline (6 stages)
+            schemas.py                 # Pydantic schemas (10 models)
 
-            stages/                    # 5-stage hybrid architecture
+            stages/                    # 6-stage hybrid architecture
                 __init__.py
                 stage1_plan_reader.py      # Read Plan output + resolve file paths
                 stage2_context_collector.py # Collect source code from target repo
-                stage3_code_generator.py   # LLM call per file (only LLM stage)
+                stage3_code_generator.py   # LLM call per file (primary LLM stage)
                 stage4_code_validator.py   # Syntax, security, pattern validation
+                stage4b_build_verifier.py  # Build verification + self-healing (LLM)
                 stage5_output_writer.py    # Git branch + file writes + report
 
             strategies/                # Task-type-specific strategies
@@ -1437,9 +1438,9 @@ Plan Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 | Attribute | Specification |
 |-----------|---------------|
-| Type | Pipeline (Hybrid: Deterministic + 1 LLM Call per file) |
+| Type | Pipeline (Hybrid: Deterministic + LLM per file + Build Verification) |
 | Module | `pipelines/code_generation/` |
-| LLM Requirement | Yes (Stage 3 only, 1 call per affected file) |
+| LLM Requirement | Yes (Stage 3: generation, Stage 4b: optional self-healing) |
 | Input | `knowledge/plan/{task_id}_plan.json` (Plan) |
 | | Target repository source code (`PROJECT_PATH`) |
 | | `architecture_facts.json` (Extract, for file path resolution) |
@@ -1452,7 +1453,7 @@ Plan Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 **Why Hybrid?** Code generation needs precision, not creativity. Each modified file has a clear context (existing code + plan + patterns), and the LLM's job is to produce valid code that fits. Multi-agent crews waste tokens on inter-agent coordination and produce inconsistent style across files. One LLM call per file with a strategy-specific prompt (feature/bugfix/upgrade/refactoring) gives predictable, reviewable output that developers trust.
 
-**5-Stage Pipeline:**
+**6-Stage Pipeline:**
 
 ```
 Stage 1: Plan Reader (Deterministic, <1s) - IMPLEMENTED
@@ -1465,7 +1466,7 @@ Stage 2: Context Collector (File I/O, 2-5s) - IMPLEMENTED
   └─ Detect language, find sibling files, extract related patterns
   └─ Truncate large files (>12K chars) to fit LLM context
 
-Stage 3: Code Generator (LLM, 10-30s per file) - IMPLEMENTED ← ONLY LLM CALLS
+Stage 3: Code Generator (LLM, 10-30s per file) - IMPLEMENTED ← PRIMARY LLM CALLS
   └─ Strategy-specific prompt per file (feature/bugfix/upgrade/refactoring)
   └─ Retry with backoff on failure (configurable CODEGEN_MAX_RETRIES)
   └─ Rate limiting between calls (configurable CODEGEN_CALL_DELAY)
@@ -1476,14 +1477,23 @@ Stage 4: Code Validator (Deterministic, 1-3s) - IMPLEMENTED
   └─ Pattern compliance (class name matches file, exports present)
   └─ Unified diff generation for modified files
 
+Stage 4b: Build Verifier (Subprocess + LLM heal, 30s-5min) - IMPLEMENTED
+  └─ Group generated files by target container (backend/frontend/import_schema)
+  └─ Backup-and-restore: write files to disk, build, always restore
+  └─ Per-container build: gradlew compileJava (backend), ng build (frontend)
+  └─ Self-healing loop: parse errors → LLM fix → re-validate → retry (max 3x)
+  └─ Error parsers: javac (File.java:42: error:) and tsc (file.ts:42:10 - error TS2345:)
+  └─ Configurable: CODEGEN_BUILD_VERIFY (on/off), CODEGEN_BUILD_MAX_RETRIES
+  └─ Works identically in dry_run and normal mode (Stage 5 does final writes)
+
 Stage 5: Output Writer (Git + File I/O, 2-5s) - IMPLEMENTED
   └─ Safety: abort if working tree dirty, never push, never touch main
   └─ Single task: branch codegen/{task_id}, write files, commit, switch back
   └─ Multi-task cascade: single branch codegen/batch-{timestamp}, sequential commits
   └─ >50% failure threshold → abort entire task
-  └─ Write JSON report to knowledge/implement/
+  └─ Write JSON report to knowledge/implement/ (includes build_verification results)
 
-Total: 30s-5min depending on file count
+Total: 30s-10min depending on file count and build times
 
 Cascade Mode (Multi-Task):
   When multiple plan files exist, tasks are processed sequentially on ONE branch.
@@ -1492,6 +1502,26 @@ Cascade Mode (Multi-Task):
   └─ cascade_write_and_commit() per task (no branch switching)
   └─ teardown_cascade() → switch back to original branch
 ```
+
+#### Build Verification Flow
+
+```
+For each container (backend, frontend, import_schema):
+  1. backup.apply()   — write ALL generated files to disk, save originals
+  2. Run build command (subprocess, with timeout)
+  3. If success → done
+  4. If fail → parse errors (javac/tsc patterns)
+     └─ Match errors to generated files
+     └─ For each failing file: LLM heal prompt → fix code → re-validate syntax
+     └─ Retry build (up to CODEGEN_BUILD_MAX_RETRIES times)
+  5. backup.restore() — ALWAYS restore originals (Stage 5 handles final writes)
+```
+
+| Container | Build Command | Timeout |
+|-----------|--------------|---------|
+| `container.backend` | `gradlew.bat compileJava -q` | 120s |
+| `container.frontend` | `npx ng build --configuration=development` | 180s |
+| `container.import_schema` | `gradlew.bat compileJava -q` | 120s |
 
 #### Strategy Pattern
 
@@ -1506,13 +1536,16 @@ Cascade Mode (Multi-Task):
 
 | Feature | Description |
 |---------|-------------|
-| **Dry-run mode** | `--dry-run` runs Stages 1-4 but skips file writes and git |
+| **Dry-run mode** | `--dry-run` runs Stages 1-4b but skips file writes and git (Stage 4b still builds to verify) |
 | **Dirty tree check** | Aborts if target repo has uncommitted changes |
 | **Branch isolation** | Single: `codegen/{task_id}`, Multi: `codegen/batch-{timestamp}`, never touches main/develop |
 | **No push** | Never pushes to remote — user reviews and pushes manually |
 | **Failure threshold** | Aborts if >50% of files fail generation/validation |
 | **Security scan** | Blocks hardcoded secrets, SQL injection, XSS, eval/exec |
 | **Explicit git add** | Only stages files explicitly written (no `git add -A`) |
+| **Build verification** | Compiles generated code per container before committing (Stage 4b) |
+| **Self-healing** | On build failure, parses errors and uses LLM to fix (max 3 retries) |
+| **Backup-restore** | Stage 4b always restores files after build verification (even on crash) |
 
 #### CLI: `codegen` Command
 

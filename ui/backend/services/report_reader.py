@@ -5,16 +5,29 @@ import os
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
 
 from ..config import settings
 from ..schemas import BranchInfo, BranchList, ReportList
 
 
 def list_reports() -> ReportList:
-    """List all development plans and codegen reports."""
+    """List all phase outputs: extract, analyze, document, plan, implement."""
     plans = _read_json_dir(settings.knowledge_dir / "plan", "*_plan.json")
     reports = _read_json_dir(settings.knowledge_dir / "implement", "*_report.json")
-    return ReportList(plans=plans, codegen_reports=reports)
+
+    # Extract / Analyze / Document: metadata only (content loaded on demand)
+    extract = _list_file_meta(settings.knowledge_dir, "extract")
+    analyze = _list_file_meta(settings.knowledge_dir, "analyze")
+    document = _list_file_meta(settings.knowledge_dir, "document")
+
+    return ReportList(
+        plans=plans,
+        codegen_reports=reports,
+        extract_reports=extract,
+        analyze_reports=analyze,
+        document_reports=document,
+    )
 
 
 def read_report(report_type: str, task_id: str) -> dict:
@@ -123,8 +136,32 @@ def _read_json_dir(directory: Path, pattern: str) -> list[dict]:
         try:
             with open(path, encoding="utf-8") as f:
                 data = json.load(f)
-                data["_file"] = path.name
+                if isinstance(data, dict):
+                    data["_file"] = path.name
+                else:
+                    data = {"_file": path.name, "_content": data}
                 results.append(data)
         except (json.JSONDecodeError, OSError):
             continue
+    return results
+
+
+def _list_file_meta(knowledge_dir: Path, phase: str) -> list[dict[str, Any]]:
+    """List file metadata (name, size, type) for a phase directory — no content."""
+    phase_dir = knowledge_dir / phase
+    if not phase_dir.exists():
+        return []
+    _skip = {".sqlite3", ".bin", ".pickle"}
+    results: list[dict[str, Any]] = []
+    for path in sorted(phase_dir.rglob("*")):
+        if not path.is_file() or path.suffix.lower() in _skip:
+            continue
+        rel = str(path.relative_to(knowledge_dir)).replace("\\", "/")
+        stat = path.stat()
+        results.append({
+            "_file": rel,
+            "_name": path.name,
+            "_type": path.suffix.lstrip("."),
+            "_size": stat.st_size,
+        })
     return results

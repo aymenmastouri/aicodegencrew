@@ -11,7 +11,7 @@
         </mxCell>
 
         <!-- Subtitle -->
-        <mxCell id="subtitle" value="30s-5min total | 1 LLM call per file | 4 strategies | Git branch per task | Dry-run mode" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+        <mxCell id="subtitle" value="30s-10min total | LLM gen + build verify + self-heal | 4 strategies | Git branch per task | Dry-run mode" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
           <mxGeometry x="350" y="60" width="700" height="30" as="geometry" />
         </mxCell>
 
@@ -130,6 +130,18 @@
         </mxCell>
 
         <!-- ================================================================ -->
+        <!-- Stage 4b: Build Verifier -->
+        <!-- ================================================================ -->
+
+        <mxCell id="stage4b" value="Stage 4b: Build Verifier&#xa;(Subprocess + LLM heal, 30s-5min)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="860" y="380" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="stage4b-desc" value="• Group files by container&#xa;  (backend/frontend/import_schema)&#xa;• Backup → build → restore (always)&#xa;• Self-healing loop (max 3 retries):&#xa;  parse errors → LLM fix → re-validate&#xa;• Error parsers: javac + tsc&#xa;• CODEGEN_BUILD_VERIFY=false to skip&#xa;• Works in dry_run + normal mode" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="860" y="445" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
         <!-- Stage 5: Output Writer -->
         <!-- ================================================================ -->
 
@@ -137,8 +149,8 @@
           <mxGeometry x="1130" y="380" width="200" height="60" as="geometry" />
         </mxCell>
 
-        <mxCell id="stage5-desc" value="• Safety: abort if dirty tree&#xa;• Create branch codegen/{task_id}&#xa;• Write only valid files&#xa;• Explicit file staging (no -A)&#xa;• Git commit with task metadata&#xa;• Switch back to original branch&#xa;• &gt;50% fail threshold → abort&#xa;• Dry-run: skip writes + git" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
-          <mxGeometry x="1130" y="445" width="200" height="110" as="geometry" />
+        <mxCell id="stage5-desc" value="• Safety: abort if dirty tree&#xa;• Create branch codegen/{task_id}&#xa;• Write only valid files&#xa;• Explicit file staging (no -A)&#xa;• Git commit with task metadata&#xa;• Switch back to original branch&#xa;• &gt;50% fail threshold → abort&#xa;• Includes build_verification in report&#xa;• Dry-run: skip writes + git" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="445" width="200" height="120" as="geometry" />
         </mxCell>
 
         <!-- ================================================================ -->
@@ -153,8 +165,8 @@
           <mxGeometry x="860" y="600" width="200" height="50" as="geometry" />
         </mxCell>
 
-        <mxCell id="output-report-desc" value="• status (success/partial/failed/dry_run)&#xa;• files_changed, files_created, files_failed&#xa;• branch_name, llm_calls, total_tokens&#xa;• validation_errors, generated_files&#xa;• duration_seconds" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
-          <mxGeometry x="860" y="655" width="200" height="80" as="geometry" />
+        <mxCell id="output-report-desc" value="• status (success/partial/failed/dry_run)&#xa;• files_changed, files_created, files_failed&#xa;• branch_name, llm_calls, total_tokens&#xa;• validation_errors, generated_files&#xa;• build_verification (per-container results)&#xa;• duration_seconds" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="860" y="655" width="200" height="90" as="geometry" />
         </mxCell>
 
         <!-- ================================================================ -->
@@ -221,13 +233,27 @@
           <mxGeometry x="1065" y="165" width="70" height="25" as="geometry" />
         </mxCell>
 
-        <!-- Arrows: Stage 4 -> Stage 5 -->
-        <mxCell id="arrow-stage4-stage5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage4" target="stage5">
+        <!-- Arrows: Stage 4 -> Stage 4b -->
+        <mxCell id="arrow-stage4-stage4b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage4" target="stage4b">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1230" y="340" />
+              <mxPoint x="960" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="label-validated" value="GeneratedFile[] +&#xa;ValidationResult" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="310" width="110" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows: Stage 4b -> Stage 5 -->
+        <mxCell id="arrow-stage4b-stage5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="stage4b" target="stage5">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <mxCell id="label-validated" value="ValidationResult" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1335" y="280" width="90" height="25" as="geometry" />
+        <mxCell id="label-healed" value="(healed) files +&#xa;BuildVerificationResult" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="365" width="70" height="40" as="geometry" />
         </mxCell>
 
         <!-- Arrow: Stage 5 -> Output Branch -->
@@ -273,7 +299,7 @@
           <mxGeometry x="40" y="600" width="150" height="30" as="geometry" />
         </mxCell>
 
-        <mxCell id="legend-llm" value="LLM Stage (1 call/file)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="legend-llm" value="LLM Stage (gen + heal)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="40" y="640" width="150" height="30" as="geometry" />
         </mxCell>
 
@@ -301,12 +327,12 @@
           <mxGeometry x="240" y="560" width="160" height="30" as="geometry" />
         </mxCell>
 
-        <mxCell id="stats-duration" value="Duration: 30s (1 file) to 5min (20+ files)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="240" y="600" width="300" height="20" as="geometry" />
+        <mxCell id="stats-duration" value="Duration: 30s (1 file) to 10min (20+ files + build verify)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="600" width="350" height="20" as="geometry" />
         </mxCell>
 
-        <mxCell id="stats-llm" value="LLM Calls: 1 per affected file (max 2 retries)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="240" y="625" width="300" height="20" as="geometry" />
+        <mxCell id="stats-llm" value="LLM Calls: 1/file (gen) + 0-3/file (heal on build failure)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="240" y="625" width="350" height="20" as="geometry" />
         </mxCell>
 
         <mxCell id="stats-strategies" value="Strategies: Feature, Bugfix, Upgrade, Refactoring" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
@@ -353,8 +379,12 @@
           <mxGeometry x="630" y="675" width="350" height="20" as="geometry" />
         </mxCell>
 
-        <mxCell id="data-flow5" value="Valid files → Stage 5 → Git branch + report JSON" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="630" y="700" width="350" height="20" as="geometry" />
+        <mxCell id="data-flow4b" value="Valid files → Stage 4b → Build verify + self-heal → BuildVerificationResult" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="630" y="700" width="400" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="data-flow5" value="Healed files + results → Stage 5 → Git branch + report JSON" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="630" y="725" width="400" height="20" as="geometry" />
         </mxCell>
 
       </root>

@@ -77,6 +77,9 @@ class ReportSummary(BaseModel):
 class ReportList(BaseModel):
     plans: list[dict[str, Any]] = []
     codegen_reports: list[dict[str, Any]] = []
+    extract_reports: list[dict[str, Any]] = []
+    analyze_reports: list[dict[str, Any]] = []
+    document_reports: list[dict[str, Any]] = []
 
 
 class LogEntry(BaseModel):
