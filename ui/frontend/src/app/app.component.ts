@@ -250,7 +250,15 @@ import { NotificationService } from './services/notification.service';
       .nav-content {
         flex: 1;
         overflow-y: auto;
+        overflow-x: hidden;
         padding-top: 8px;
+        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+      }
+      .nav-content::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .nav-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
       }
       .nav-group-label {
         padding: 16px 20px 4px;
@@ -317,6 +325,7 @@ import { NotificationService } from './services/notification.service';
       }
       .content-area {
         background: var(--cg-gray-50);
+        overflow-x: hidden;
       }
     `,
   ],

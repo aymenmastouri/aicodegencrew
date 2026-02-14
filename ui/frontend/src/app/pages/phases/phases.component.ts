@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -104,9 +104,6 @@ import { humanizePhaseId } from '../../shared/phase-utils';
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let p">
-                  <button mat-icon-button color="primary" (click)="runPhase(p.id)" matTooltip="Run this phase">
-                    <mat-icon>play_arrow</mat-icon>
-                  </button>
                   <button mat-icon-button color="warn"
                     [disabled]="getPhaseStatus(p.id) !== 'completed' && getPhaseStatus(p.id) !== 'failed'"
                     (click)="resetPhase(p.id)"
@@ -140,12 +137,6 @@ import { humanizePhaseId } from '../../shared/phase-utils';
                   <mat-chip>{{ humanize(phase) }}</mat-chip>
                 }
               </mat-chip-set>
-              <div class="preset-action">
-                <button mat-flat-button color="primary" (click)="runPreset(preset.name)">
-                  <mat-icon>play_arrow</mat-icon>
-                  Run {{ preset.display_name || preset.name }}
-                </button>
-              </div>
             </mat-expansion-panel>
           }
         </mat-accordion>
@@ -203,9 +194,6 @@ import { humanizePhaseId } from '../../shared/phase-utils';
         color: var(--cg-gray-500);
         margin: 0 0 12px;
       }
-      .preset-action {
-        margin-top: 16px;
-      }
       .spacer {
         flex: 1;
       }
@@ -248,7 +236,6 @@ export class PhasesComponent implements OnInit, OnDestroy {
   constructor(
     private api: ApiService,
     private pipelineService: PipelineService,
-    private router: Router,
     private cdr: ChangeDetectorRef,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
@@ -291,14 +278,6 @@ export class PhasesComponent implements OnInit, OnDestroy {
     return phase?.status || 'idle';
   }
 
-  runPreset(presetName: string): void {
-    this.router.navigate(['/run'], { queryParams: { preset: presetName } });
-  }
-
-  runPhase(phaseId: string): void {
-    this.router.navigate(['/run'], { queryParams: { phase: phaseId } });
-  }
-
   hasCompletedPhases(): boolean {
     if (!this.pipeline) return false;
     return this.pipeline.phases.some((p) => p.status === 'completed');
@@ -306,7 +285,9 @@ export class PhasesComponent implements OnInit, OnDestroy {
 
   hasResettablePhases(): boolean {
     if (!this.pipeline) return false;
-    return this.pipeline.phases.some((p) => p.status === 'completed' || p.status === 'failed');
+    return this.pipeline.phases.some(
+      (p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover',
+    );
   }
 
   getPhaseError(phaseId: string): string {
@@ -371,9 +352,11 @@ export class PhasesComponent implements OnInit, OnDestroy {
   }
 
   resetAll(): void {
-    this.pipelineService.previewReset(
-      this.pipeline?.phases.filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover').map((p) => p.id) || [],
-    ).subscribe({
+    const phaseIds = this.pipeline?.phases
+      .filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover')
+      .map((p) => p.id) || [];
+
+    this.pipelineService.previewReset(phaseIds).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
@@ -389,10 +372,10 @@ export class PhasesComponent implements OnInit, OnDestroy {
         });
         ref.afterClosed().subscribe((confirmed) => {
           if (!confirmed) return;
-          this.pipelineService.resetAll().subscribe({
+          this.pipelineService.executeReset(preview.phases_to_reset).subscribe({
             next: (result) => {
               this.snackBar.open(
-                `Reset all phases, deleted ${result.deleted_count} file(s)`,
+                `Reset ${result.reset_phases.length} phase(s), deleted ${result.deleted_count} file(s)`,
                 'OK',
                 { duration: 4000 },
               );
