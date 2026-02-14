@@ -117,7 +117,7 @@ class SystemCollector(DimensionCollector):
         """Parse Maven pom.xml for system info."""
         try:
             content = pom_path.read_text(encoding="utf-8", errors="ignore")
-        except:
+        except Exception:
             return {}
 
         result = {}
@@ -150,7 +150,7 @@ class SystemCollector(DimensionCollector):
                 "version": data.get("version"),
                 "description": data.get("description"),
             }
-        except:
+        except Exception:
             return {}
 
     def _detect_bounded_contexts(self) -> list[RawSubsystem]:
@@ -228,7 +228,7 @@ class SystemCollector(DimensionCollector):
                         if match:
                             return match.group(1)
             return None
-        except:
+        except Exception:
             return None
 
     def _extract_context_from_package(self, package_name: str) -> str | None:
@@ -319,7 +319,7 @@ class SystemCollector(DimensionCollector):
                         count += 1
                         if count >= 3:  # At least 3 files = valid context
                             return True
-            except:
+            except Exception:
                 continue
 
         return count >= 3

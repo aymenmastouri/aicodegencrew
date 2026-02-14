@@ -38,11 +38,11 @@ from ..strategies.base import BaseStrategy
 
 logger = setup_logger(__name__)
 
-# Environment config
-BUILD_VERIFY_ENABLED = os.getenv("CODEGEN_BUILD_VERIFY", "true").lower() != "false"
-MAX_RETRIES = int(os.getenv("CODEGEN_BUILD_MAX_RETRIES", "3"))
-CALL_DELAY = float(os.getenv("CODEGEN_CALL_DELAY", "2"))
-BUILD_TIMEOUT = int(os.getenv("CODEGEN_BUILD_TIMEOUT", "600"))
+# Internal constants (no env vars)
+BUILD_VERIFY_ENABLED = True
+MAX_RETRIES = 3
+CALL_DELAY = 2.0
+BUILD_TIMEOUT = 600
 
 
 # =========================================================================
@@ -366,9 +366,9 @@ class BuildVerifierStage:
             Tuple of (possibly-healed generated_files, BuildVerificationResult).
         """
         if not BUILD_VERIFY_ENABLED:
-            logger.info("[Stage4b] Build verification disabled (CODEGEN_BUILD_VERIFY=false)")
+            logger.info("[Stage4b] Build verification disabled")
             return generated_files, BuildVerificationResult(
-                skipped=True, skip_reason="CODEGEN_BUILD_VERIFY=false"
+                skipped=True, skip_reason="build verification disabled"
             )
 
         # Filter to valid files only (skip files that failed Stage 4)

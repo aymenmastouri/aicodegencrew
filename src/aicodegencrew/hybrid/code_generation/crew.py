@@ -41,6 +41,7 @@ from .schemas import (
     ContainerBuildResult,
     GeneratedFile,
 )
+from ...shared.paths import CHROMA_DIR
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 from .agents import AGENT_CONFIGS
@@ -64,6 +65,11 @@ from .tools import (
 # MCP server script path (project root)
 _MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
 
+# Internal constants (no env vars needed)
+_MAX_RETRIES = 2       # transient error retries per mini-crew
+_MAX_RPM = 30          # CrewAI rate-limit per crew
+_VERBOSE = True        # CrewAI verbose logging
+
 logger = setup_logger(__name__)
 
 
@@ -83,6 +89,10 @@ class ImplementCrew:
         facts_path: str = "knowledge/extract/architecture_facts.json",
         chroma_dir: str | None = None,
         output_dir: str = "knowledge/implement",
+        *,
+        resume: bool = False,
+        build_verify: bool = True,
+        test_enabled: bool = True,
     ):
         """Initialize crew with paths.
 
@@ -91,13 +101,21 @@ class ImplementCrew:
             facts_path: Path to architecture_facts.json.
             chroma_dir: ChromaDB directory for RAG queries.
             output_dir: Output directory for checkpoints and reports.
+            resume: If True, skip already-completed mini-crews (checkpoint).
+            build_verify: If True, run build+heal loop after code generation.
+            test_enabled: If True, run test generation after build.
         """
         self.repo_path = Path(repo_path)
         self.facts_path = Path(facts_path)
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
+        self.chroma_dir = chroma_dir or CHROMA_DIR
         self.output_dir = Path(output_dir)
         self._checkpoint_file = self.output_dir / ".checkpoint_implement.json"
         self._mcp_server_path = _MCP_SERVER_PATH
+
+        # Behavior flags (constructor params, not env vars)
+        self.resume = resume
+        self.build_verify = build_verify
+        self.test_enabled = test_enabled
 
         # Metrics (exposed for pipeline)
         self.total_calls = 0
@@ -221,7 +239,6 @@ class ImplementCrew:
     def _create_agent(self, agent_key: str, tools: list) -> Agent:
         """Create a fresh agent with fresh LLM context."""
         config = AGENT_CONFIGS[agent_key]
-        verbose = os.getenv("CODEGEN_CREW_VERBOSE", "true").lower() == "true"
         return Agent(
             role=config["role"],
             goal=config["goal"],
@@ -235,7 +252,7 @@ class ImplementCrew:
                     cache_tools_list=True,
                 )
             ],
-            verbose=verbose,
+            verbose=_VERBOSE,
             max_iter=25,
             max_retry_limit=3,
             allow_delegation=False,
@@ -282,16 +299,13 @@ class ImplementCrew:
 
     def _run_mini_crew(self, name: str, tasks: list[Task]) -> str:
         """Run a mini-crew with fresh context, retry on transient errors."""
-        max_retries = int(os.getenv("CREW_MAX_RETRIES", "2"))
-        max_rpm = int(os.getenv("CODEGEN_MAX_RPM", "30"))
-        verbose = os.getenv("CODEGEN_CREW_VERBOSE", "true").lower() == "true"
 
         logger.info(
             f"[Implement] Starting Mini-Crew: {name} ({len(tasks)} tasks)"
         )
         start_time = time.time()
 
-        for attempt in range(1, max_retries + 1):
+        for attempt in range(1, _MAX_RETRIES + 1):
             tracker = None
             try:
                 # Collect unique agents from tasks
@@ -300,9 +314,9 @@ class ImplementCrew:
                     agents=agents,
                     tasks=tasks,
                     process=Process.sequential,
-                    verbose=verbose,
+                    verbose=_VERBOSE,
                     memory=False,
-                    max_rpm=max_rpm,
+                    max_rpm=_MAX_RPM,
                     planning=False,
                 )
                 tracker = install_guardrails(max_total=50)
@@ -341,11 +355,11 @@ class ImplementCrew:
                 return str(result)
 
             except (ConnectionError, TimeoutError, OSError) as e:
-                if attempt < max_retries:
+                if attempt < _MAX_RETRIES:
                     delay = 5 * (2 ** (attempt - 1))
                     logger.warning(
                         f"[Implement] {name}: Connection error "
-                        f"(attempt {attempt}/{max_retries}), "
+                        f"(attempt {attempt}/{_MAX_RETRIES}), "
                         f"retrying in {delay}s: {e}"
                     )
                     time.sleep(delay)
@@ -449,10 +463,7 @@ class ImplementCrew:
         """Run Mini-Crew A: Senior Developer generates code for one container."""
         crew_name = f"codegen_{container['name']}"
         completed = self._load_checkpoint()
-        if (
-            os.getenv("CODEGEN_CREW_RESUME", "false").lower() == "true"
-            and crew_name in completed
-        ):
+        if self.resume and crew_name in completed:
             logger.info(f"[Implement] Skipping {crew_name} (already completed)")
             return "resumed — skipped"
 
@@ -490,12 +501,12 @@ class ImplementCrew:
         Returns:
             ContainerBuildResult with success status and attempt count.
         """
-        max_retries = int(os.getenv("CODEGEN_BUILD_MAX_RETRIES", "3"))
+        build_max_retries = 3
         container_name = container["name"]
         container_id = container["id"]
         start_time = time.time()
 
-        for attempt in range(1, max_retries + 1):
+        for attempt in range(1, build_max_retries + 1):
             # Step 1: DevOps runs build verification
             devops_tools = self._create_devops_tools(staging)
             devops = self._create_agent("devops_engineer", devops_tools)
@@ -534,7 +545,7 @@ class ImplementCrew:
                 )
 
             # Step 2: Senior Dev heals (only if more attempts remain)
-            if attempt < max_retries:
+            if attempt < build_max_retries:
                 dev_tools = self._create_senior_dev_tools(staging)
                 dev = self._create_agent("senior_developer", dev_tools)
 
@@ -554,7 +565,7 @@ class ImplementCrew:
             else:
                 logger.warning(
                     f"[Implement] Build FAILED for {container_name} "
-                    f"after {max_retries} attempts"
+                    f"after {build_max_retries} attempts"
                 )
 
         duration = time.time() - start_time
@@ -563,8 +574,8 @@ class ImplementCrew:
             container_name=container_name,
             success=False,
             exit_code=-1,
-            error_summary=f"Build failed after {max_retries} attempts",
-            attempts=max_retries,
+            error_summary=f"Build failed after {build_max_retries} attempts",
+            attempts=build_max_retries,
             duration_seconds=round(duration, 1),
         )
 
@@ -621,10 +632,7 @@ class ImplementCrew:
         crew_name = f"testgen_{container['name']}"
         completed = self._load_checkpoint()
 
-        if (
-            os.getenv("CODEGEN_CREW_RESUME", "false").lower() == "true"
-            and crew_name in completed
-        ):
+        if self.resume and crew_name in completed:
             logger.info(f"[Implement] Skipping {crew_name} (already completed)")
             return "resumed — skipped"
 
@@ -730,12 +738,8 @@ class ImplementCrew:
         start_time = time.time()
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        build_verify_enabled = (
-            os.getenv("CODEGEN_BUILD_VERIFY", "true").lower() == "true"
-        )
-        test_enabled = (
-            os.getenv("CODEGEN_TEST_ENABLED", "true").lower() == "true"
-        )
+        build_verify_enabled = self.build_verify
+        test_enabled = self.test_enabled
 
         # Shared staging dict across all agents and containers
         staging: dict = {}
@@ -826,7 +830,7 @@ class ImplementCrew:
             duration_seconds=round(time.time() - start_time, 1),
             skipped=not build_verify_enabled,
             skip_reason=(
-                "" if build_verify_enabled else "CODEGEN_BUILD_VERIFY=false"
+                "" if build_verify_enabled else "build_verify=False"
             ),
         )
 

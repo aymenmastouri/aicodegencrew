@@ -212,7 +212,7 @@ class ComponentCollector(DimensionCollector):
                 content = pom.read_text(encoding="utf-8", errors="ignore")
                 if "spring-boot" in content.lower():
                     return True
-            except:
+            except Exception:
                 continue
 
         # Check Gradle
@@ -223,7 +223,7 @@ class ComponentCollector(DimensionCollector):
                 content = gradle.read_text(encoding="utf-8", errors="ignore")
                 if "org.springframework.boot" in content or "spring-boot" in content.lower():
                     return True
-            except:
+            except Exception:
                 continue
 
         return False

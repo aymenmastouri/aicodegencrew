@@ -16,10 +16,10 @@ from ..strategies.base import BaseStrategy
 logger = setup_logger(__name__)
 
 # Delay between LLM calls (seconds) to respect on-prem rate limits
-CALL_DELAY = float(os.getenv("CODEGEN_CALL_DELAY", "2"))
+CALL_DELAY = 2.0
 
-# Max retries per file
-MAX_RETRIES = int(os.getenv("CODEGEN_MAX_RETRIES", "2"))
+# Max retries per file on LLM error
+MAX_RETRIES = 2
 
 
 class CodeGeneratorStage:

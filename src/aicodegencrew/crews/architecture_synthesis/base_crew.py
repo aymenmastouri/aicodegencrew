@@ -25,6 +25,7 @@ from typing import Any
 from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 
+from ...shared.paths import CHROMA_DIR
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 from ...shared.tools import RAGQueryTool
@@ -116,7 +117,7 @@ class MiniCrewBase(ABC):
         self.analyzed_path = (
             Path(analyzed_path) if analyzed_path else Path("knowledge/analyze/analyzed_architecture.json")
         )
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
+        self.chroma_dir = chroma_dir or CHROMA_DIR
 
         # Load data
         self.facts = self._load_json(self.facts_path)
@@ -299,11 +300,10 @@ class MiniCrewBase(ABC):
                 completion. If files are missing but the result contains
                 markdown content, the result is written as a fallback.
         """
-        max_retries = int(os.getenv("CREW_MAX_RETRIES", str(_MAX_RETRIES)))
         logger.info(f"[{self.crew_name}] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
         start_time = time.time()
 
-        for attempt in range(1, max_retries + 1):
+        for attempt in range(1, _MAX_RETRIES + 1):
             tracker = None
             try:
                 crew = Crew(
@@ -357,11 +357,11 @@ class MiniCrewBase(ABC):
 
             except (ConnectionError, TimeoutError, OSError) as e:
                 # Transient connection error — retry with backoff
-                if attempt < max_retries:
+                if attempt < _MAX_RETRIES:
                     delay = _RETRY_DELAY_BASE * (2 ** (attempt - 1))
                     logger.warning(
                         f"[{self.crew_name}] {name}: Connection error "
-                        f"(attempt {attempt}/{max_retries}), "
+                        f"(attempt {attempt}/{_MAX_RETRIES}), "
                         f"retrying in {delay}s: {e}"
                     )
                     time.sleep(delay)

@@ -7,7 +7,6 @@ Windows/Unix compatibility.
 """
 
 import json
-import os
 import platform
 import subprocess
 import time
@@ -23,7 +22,7 @@ from ....shared.utils.token_budget import truncate_response
 logger = setup_logger(__name__)
 
 IS_WINDOWS = platform.system() == "Windows"
-BUILD_TIMEOUT = int(os.getenv("CODEGEN_BUILD_TIMEOUT", "600"))
+BUILD_TIMEOUT = 600  # seconds
 
 
 @dataclass
