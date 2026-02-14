@@ -10,6 +10,7 @@ Total Duration: 30s-5min (depending on file count)
 LLM Calls: 1 per affected file
 """
 
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -24,8 +25,11 @@ from .stages import (
     OutputWriterStage,
     PlanReaderStage,
 )
+from ...crews.implement import ImplementCrew
 
 logger = setup_logger(__name__)
+
+_USE_CREW = os.getenv("CODEGEN_USE_CREW", "false").lower() == "true"
 
 
 class CodeGenerationPipeline:
@@ -230,28 +234,46 @@ class CodeGenerationPipeline:
                 duration_seconds=time.time() - task_start,
             )
 
-        # Stage 3: Code Generator (LLM)
-        step_start(f"Stage 3: Code Generator ({task_id})")
-        stage3 = CodeGeneratorStage()
-        generated_files = stage3.run(plan_input, context, strategy)
-        step_done(f"Stage 3: Code Generator ({task_id})")
+        if _USE_CREW:
+            # CrewAI mode: ImplementCrew replaces Stage 3 + 4b
+            step_start(f"Stage 3+4b: Implement Crew ({task_id})")
+            crew = ImplementCrew(
+                repo_path=self.repo_path,
+                facts_path=str(self.facts_path),
+            )
+            generated_files, build_result = crew.run(plan_input, context)
+            step_done(f"Stage 3+4b: Implement Crew ({task_id})")
+            llm_calls = crew.total_calls
+            total_tokens = crew.total_tokens
 
-        # Stage 4: Code Validator
-        step_start(f"Stage 4: Code Validator ({task_id})")
-        stage4 = CodeValidatorStage()
-        validation = stage4.run(generated_files)
-        step_done(f"Stage 4: Code Validator ({task_id})")
+            # Stage 4: Code Validator (crew mode: post-check on crew output)
+            step_start(f"Stage 4: Code Validator ({task_id})")
+            stage4 = CodeValidatorStage()
+            validation = stage4.run(generated_files)
+            step_done(f"Stage 4: Code Validator ({task_id})")
+        else:
+            # Legacy mode: Stage 3 → Stage 4 → Stage 4b
+            step_start(f"Stage 3: Code Generator ({task_id})")
+            stage3 = CodeGeneratorStage()
+            generated_files = stage3.run(plan_input, context, strategy)
+            step_done(f"Stage 3: Code Generator ({task_id})")
 
-        # Stage 4b: Build Verifier
-        step_start(f"Stage 4b: Build Verifier ({task_id})")
-        stage4b = BuildVerifierStage(
-            repo_path=self.repo_path,
-            dry_run=self.dry_run,
-        )
-        generated_files, build_result = stage4b.run(
-            generated_files, validation, plan_input, strategy
-        )
-        step_done(f"Stage 4b: Build Verifier ({task_id})")
+            step_start(f"Stage 4: Code Validator ({task_id})")
+            stage4 = CodeValidatorStage()
+            validation = stage4.run(generated_files)
+            step_done(f"Stage 4: Code Validator ({task_id})")
+
+            step_start(f"Stage 4b: Build Verifier ({task_id})")
+            stage4b = BuildVerifierStage(
+                repo_path=self.repo_path,
+                dry_run=self.dry_run,
+            )
+            generated_files, build_result = stage4b.run(
+                generated_files, validation, plan_input, strategy
+            )
+            step_done(f"Stage 4b: Build Verifier ({task_id})")
+            llm_calls = stage3.total_calls + stage4b.total_calls
+            total_tokens = stage3.total_tokens + stage4b.total_tokens
 
         # Stage 5: Cascade write (no branch creation, no switchback)
         step_start(f"Stage 5: Cascade Write ({task_id})")
@@ -265,8 +287,8 @@ class CodeGenerationPipeline:
             cascade_total=cascade_total,
             prior_task_ids=prior_task_ids,
             duration_seconds=task_duration,
-            llm_calls=stage3.total_calls + stage4b.total_calls,
-            total_tokens=stage3.total_tokens + stage4b.total_tokens,
+            llm_calls=llm_calls,
+            total_tokens=total_tokens,
             build_verification=build_result,
         )
         step_done(f"Stage 5: Cascade Write ({task_id})")
@@ -336,69 +358,118 @@ class CodeGenerationPipeline:
                     duration_seconds=time.time() - start_time,
                 )
 
-            # Stage 3: Code Generator (LLM)
-            step_start(f"Stage 3: Code Generator ({task_id})")
-            stage3_start = time.time()
-            stage3 = CodeGeneratorStage()
-            generated_files = stage3.run(plan_input, context, strategy)
-            stage3_duration = time.time() - stage3_start
-            step_done(f"Stage 3: Code Generator ({task_id})")
+            if _USE_CREW:
+                # CrewAI mode: ImplementCrew replaces Stage 3 + 4b
+                step_start(f"Stage 3+4b: Implement Crew ({task_id})")
+                crew_start = time.time()
+                crew = ImplementCrew(
+                    repo_path=self.repo_path,
+                    facts_path=str(self.facts_path),
+                )
+                generated_files, build_result = crew.run(plan_input, context)
+                crew_duration = time.time() - crew_start
+                step_done(f"Stage 3+4b: Implement Crew ({task_id})")
 
-            log_metric(
-                "stage_complete",
-                phase="implement",
-                stage="stage3_code_generator",
-                duration_seconds=stage3_duration,
-                task_id=task_id,
-                files_generated=len(generated_files),
-                llm_calls=stage3.total_calls,
-                total_tokens=stage3.total_tokens,
-            )
+                log_metric(
+                    "stage_complete",
+                    phase="implement",
+                    stage="implement_crew",
+                    duration_seconds=crew_duration,
+                    task_id=task_id,
+                    files_generated=len(generated_files),
+                    llm_calls=crew.total_calls,
+                    total_tokens=crew.total_tokens,
+                    build_passed=build_result.all_passed,
+                )
 
-            # Stage 4: Code Validator
-            step_start(f"Stage 4: Code Validator ({task_id})")
-            stage4_start = time.time()
-            stage4 = CodeValidatorStage()
-            validation = stage4.run(generated_files)
-            stage4_duration = time.time() - stage4_start
-            step_done(f"Stage 4: Code Validator ({task_id})")
+                llm_calls = crew.total_calls
+                total_tokens = crew.total_tokens
 
-            log_metric(
-                "stage_complete",
-                phase="implement",
-                stage="stage4_code_validator",
-                duration_seconds=stage4_duration,
-                task_id=task_id,
-                valid=validation.total_valid,
-                invalid=validation.total_invalid,
-                security_issues=len(validation.security_issues),
-            )
+                # Stage 4: Code Validator (crew mode: post-check on crew output)
+                step_start(f"Stage 4: Code Validator ({task_id})")
+                stage4_start = time.time()
+                stage4 = CodeValidatorStage()
+                validation = stage4.run(generated_files)
+                stage4_duration = time.time() - stage4_start
+                step_done(f"Stage 4: Code Validator ({task_id})")
 
-            # Stage 4b: Build Verifier
-            step_start(f"Stage 4b: Build Verifier ({task_id})")
-            stage4b_start = time.time()
-            stage4b = BuildVerifierStage(
-                repo_path=self.repo_path,
-                dry_run=self.dry_run,
-            )
-            generated_files, build_result = stage4b.run(
-                generated_files, validation, plan_input, strategy
-            )
-            stage4b_duration = time.time() - stage4b_start
-            step_done(f"Stage 4b: Build Verifier ({task_id})")
+                log_metric(
+                    "stage_complete",
+                    phase="implement",
+                    stage="stage4_code_validator",
+                    duration_seconds=stage4_duration,
+                    task_id=task_id,
+                    valid=validation.total_valid,
+                    invalid=validation.total_invalid,
+                    security_issues=len(validation.security_issues),
+                )
+            else:
+                # Legacy mode: Stage 3 → Stage 4 → Stage 4b
+                step_start(f"Stage 3: Code Generator ({task_id})")
+                stage3_start = time.time()
+                stage3 = CodeGeneratorStage()
+                generated_files = stage3.run(plan_input, context, strategy)
+                stage3_duration = time.time() - stage3_start
+                step_done(f"Stage 3: Code Generator ({task_id})")
 
-            log_metric(
-                "stage_complete",
-                phase="implement",
-                stage="stage4b_build_verifier",
-                duration_seconds=stage4b_duration,
-                task_id=task_id,
-                all_passed=build_result.all_passed,
-                containers_built=build_result.total_containers_built,
-                containers_failed=build_result.total_containers_failed,
-                heal_attempts=build_result.total_heal_attempts,
-                skipped=build_result.skipped,
-            )
+                log_metric(
+                    "stage_complete",
+                    phase="implement",
+                    stage="stage3_code_generator",
+                    duration_seconds=stage3_duration,
+                    task_id=task_id,
+                    files_generated=len(generated_files),
+                    llm_calls=stage3.total_calls,
+                    total_tokens=stage3.total_tokens,
+                )
+
+                # Stage 4: Code Validator
+                step_start(f"Stage 4: Code Validator ({task_id})")
+                stage4_start = time.time()
+                stage4 = CodeValidatorStage()
+                validation = stage4.run(generated_files)
+                stage4_duration = time.time() - stage4_start
+                step_done(f"Stage 4: Code Validator ({task_id})")
+
+                log_metric(
+                    "stage_complete",
+                    phase="implement",
+                    stage="stage4_code_validator",
+                    duration_seconds=stage4_duration,
+                    task_id=task_id,
+                    valid=validation.total_valid,
+                    invalid=validation.total_invalid,
+                    security_issues=len(validation.security_issues),
+                )
+
+                # Stage 4b: Build Verifier
+                step_start(f"Stage 4b: Build Verifier ({task_id})")
+                stage4b_start = time.time()
+                stage4b = BuildVerifierStage(
+                    repo_path=self.repo_path,
+                    dry_run=self.dry_run,
+                )
+                generated_files, build_result = stage4b.run(
+                    generated_files, validation, plan_input, strategy
+                )
+                stage4b_duration = time.time() - stage4b_start
+                step_done(f"Stage 4b: Build Verifier ({task_id})")
+
+                log_metric(
+                    "stage_complete",
+                    phase="implement",
+                    stage="stage4b_build_verifier",
+                    duration_seconds=stage4b_duration,
+                    task_id=task_id,
+                    all_passed=build_result.all_passed,
+                    containers_built=build_result.total_containers_built,
+                    containers_failed=build_result.total_containers_failed,
+                    heal_attempts=build_result.total_heal_attempts,
+                    skipped=build_result.skipped,
+                )
+
+                llm_calls = stage3.total_calls + stage4b.total_calls
+                total_tokens = stage3.total_tokens + stage4b.total_tokens
 
             # Stage 5: Output Writer
             step_start(f"Stage 5: Output Writer ({task_id})")
@@ -414,8 +485,8 @@ class CodeGenerationPipeline:
                 generated_files=generated_files,
                 validation=validation,
                 duration_seconds=total_duration,
-                llm_calls=stage3.total_calls + stage4b.total_calls,
-                total_tokens=stage3.total_tokens + stage4b.total_tokens,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
                 build_verification=build_result,
             )
             stage5_duration = time.time() - stage5_start
