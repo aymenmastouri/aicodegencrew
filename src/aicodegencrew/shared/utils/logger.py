@@ -208,7 +208,7 @@ def archive_current_log() -> None:
         pass
 
 
-def _archive_metrics() -> None:
+def archive_metrics() -> None:
     """Archive metrics.jsonl if > 1MB."""
     if METRICS_LOG.exists():
         try:
@@ -221,16 +221,23 @@ def _archive_metrics() -> None:
             pass
 
 
-def cleanup_old_archives() -> int:
+def cleanup_old_archives(max_metrics: int = 5) -> int:
     """Remove old archive files. Returns number of files removed."""
     if not ARCHIVE_DIR.exists():
         return 0
 
-    archives = sorted(ARCHIVE_DIR.glob("*_session.log"), reverse=True)
     removed = 0
-    for old_archive in archives[MAX_ARCHIVE_FILES:]:
-        old_archive.unlink()
+
+    # Session logs: keep MAX_ARCHIVE_FILES (20)
+    for old in sorted(ARCHIVE_DIR.glob("*_session.log"), reverse=True)[MAX_ARCHIVE_FILES:]:
+        old.unlink()
         removed += 1
+
+    # Metrics archives: keep max_metrics (5)
+    for old in sorted(ARCHIVE_DIR.glob("*_metrics.jsonl"), reverse=True)[max_metrics:]:
+        old.unlink()
+        removed += 1
+
     return removed
 
 
@@ -274,7 +281,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
 
         # Archive previous session and large metrics
         archive_current_log()
-        _archive_metrics()
+        archive_metrics()
 
         # ==========================================================================
         # Console Handler - Clean, readable format
