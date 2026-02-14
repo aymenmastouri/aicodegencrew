@@ -13,7 +13,7 @@ from aicodegencrew.phase_registry import get_resettable_phases
 from ..config import settings
 from ..schemas import ResetPreview, ResetRequest, ResetResult
 from ..services.pipeline_executor import executor
-from ..services.reset_service import execute_reset, preview_reset
+from ..services.reset_service import clear_phase_state_only, execute_reset, preview_reset
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +69,13 @@ def reset_execute(request: ResetRequest):
         phase_ids=request.phase_ids,
         cascade=request.cascade,
     )
+
+
+@router.post("/clear-state")
+def clear_state(request: ResetRequest):
+    """Clear phase status only (no file deletion, no cascade). Used for Discover."""
+    cleared = clear_phase_state_only(request.phase_ids)
+    return {"cleared": cleared}
 
 
 @router.post("/all", response_model=ResetResult)

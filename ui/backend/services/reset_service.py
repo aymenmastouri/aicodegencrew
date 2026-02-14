@@ -64,6 +64,13 @@ def _clear_phase_state(phase_ids: list[str]) -> None:
         logger.warning("Failed to clear phase state: %s", exc)
 
 
+def clear_phase_state_only(phase_ids: list[str]) -> list[str]:
+    """Clear phase status from phase_state.json without deleting any files."""
+    _clear_phase_state(phase_ids)
+    logger.info("Cleared phase state for: %s", phase_ids)
+    return phase_ids
+
+
 def _resolve_paths(phase_id: str) -> list[Path]:
     """Return absolute paths for a phase's cleanup targets."""
     targets = get_cleanup_targets(phase_id)

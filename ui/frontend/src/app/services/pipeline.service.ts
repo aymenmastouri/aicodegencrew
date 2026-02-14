@@ -173,6 +173,12 @@ export class PipelineService {
     return this.http.post<ResetResult>(`${this.base}/reset/all`, {});
   }
 
+  clearPhaseState(phaseIds: string[]): Observable<{ cleared: string[] }> {
+    return this.http.post<{ cleared: string[] }>(`${this.base}/reset/clear-state`, {
+      phase_ids: phaseIds,
+    });
+  }
+
   // SSE stream
   connectSSE(): Observable<SSEEvent> {
     return new Observable<SSEEvent>((observer) => {
