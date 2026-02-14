@@ -317,13 +317,43 @@ export class PhasesComponent implements OnInit, OnDestroy {
   }
 
   resetPhase(phaseId: string): void {
+    const phaseName = this.phaseDisplayName(phaseId);
+
+    // Discover: only clear status (no file deletion, no cascade)
+    if (phaseId === 'discover') {
+      const ref = this.dialog.open(ConfirmDialogComponent, {
+        width: '480px',
+        data: {
+          title: `Clear ${phaseName} Status`,
+          message: `This will clear the failed/completed status for ${phaseName}.\nNo files will be deleted. The index remains intact.`,
+          details: [phaseName],
+          type: 'info',
+          icon: 'refresh',
+          confirmLabel: 'Clear Status',
+        } as ConfirmDialogData,
+      });
+      ref.afterClosed().subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.pipelineService.clearPhaseState([phaseId]).subscribe({
+          next: () => {
+            this.snackBar.open(`${phaseName} status cleared`, 'OK', { duration: 4000 });
+            this.refreshStatus();
+          },
+          error: (err) => {
+            this.snackBar.open(err?.error?.detail || 'Clear status failed', 'OK', { duration: 4000 });
+          },
+        });
+      });
+      return;
+    }
+
     this.pipelineService.previewReset([phaseId]).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
           width: '480px',
           data: {
-            title: 'Reset Phase',
+            title: `Reset ${phaseName}`,
             message: `The following phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
             details: names,
             type: 'warn',
