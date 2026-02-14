@@ -303,7 +303,7 @@ body {
 
 .status-planned {
   background: var(--cg-gray-100);
-  color: var(--cg-gray-500);
+  color: var(--cg-gray-600);
   font-style: italic;
 }
 
@@ -660,4 +660,17 @@ body {
 .status-chip.status-sm {
   padding: 1px 8px;
   font-size: 11px;
+}
+
+// ---------------------------------------------------------------------------
+// Reduced motion — respect user preference
+// ---------------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +10,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { NotificationService } from './services/notification.service';
+
+type SidenavMode = 'full' | 'rail' | 'overlay';
 
 @Component({
   selector: 'app-root',
@@ -29,7 +31,7 @@ import { NotificationService } from './services/notification.service';
   ],
   template: `
     <mat-toolbar class="app-toolbar sticky top-0 z-[1000]">
-      <button mat-icon-button (click)="sidenav.toggle()" matTooltip="Toggle menu">
+      <button mat-icon-button (click)="toggleSidenav()" matTooltip="Toggle menu">
         <mat-icon class="text-white">menu</mat-icon>
       </button>
       <a routerLink="/dashboard" class="brand-link">
@@ -68,23 +70,30 @@ import { NotificationService } from './services/notification.service';
           </button>
         }
       }
-
-      <div class="toolbar-brand">
-        <span class="toolbar-tagline">SDLC Pilot</span>
-      </div>
     </mat-toolbar>
 
     <mat-sidenav-container class="sidenav-container">
-      <mat-sidenav #sidenav mode="side" opened class="sidenav">
-        <div class="sidenav-inner">
+      <mat-sidenav #sidenav
+        [mode]="sidenavLayout === 'overlay' ? 'over' : 'side'"
+        [opened]="sidenavLayout !== 'overlay' || sidenavOpenOverlay"
+        (closedStart)="onSidenavClosed()"
+        class="sidenav"
+        [class.sidenav-rail]="sidenavLayout === 'rail' && !railExpanded"
+        [class.sidenav-full]="sidenavLayout === 'full' || railExpanded">
+        <div class="sidenav-inner"
+             (mouseenter)="onRailHover(true)"
+             (mouseleave)="onRailHover(false)">
           <div class="nav-content">
             @for (group of navGroups; track group.label) {
               <div class="nav-group-label">{{ group.label }}</div>
               <mat-nav-list class="nav-section">
                 @for (item of group.items; track item.route) {
-                  <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link">
+                  <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link"
+                     (click)="onNavItemClick()"
+                     [matTooltip]="sidenavLayout === 'rail' && !railExpanded ? item.label : ''"
+                     matTooltipPosition="right">
                     <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-                    <span matListItemTitle>{{ item.label }}</span>
+                    <span matListItemTitle class="nav-label">{{ item.label }}</span>
                   </a>
                 }
               </mat-nav-list>
@@ -133,23 +142,8 @@ import { NotificationService } from './services/notification.service';
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 1px;
-        color: rgba(255, 255, 255, 0.35);
+        color: rgba(255, 255, 255, 0.65);
         font-weight: 500;
-      }
-      .toolbar-brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .toolbar-logo {
-        height: 24px;
-      }
-      .toolbar-tagline {
-        font-size: 11px;
-        font-style: italic;
-        color: rgba(255, 255, 255, 0.45);
-        letter-spacing: 0.5px;
-        white-space: nowrap;
       }
 
       /* Status Indicator */
@@ -208,7 +202,7 @@ import { NotificationService } from './services/notification.service';
       }
       .mini-eta {
         font-size: 10px;
-        color: rgba(255, 255, 255, 0.45);
+        color: rgba(255, 255, 255, 0.65);
         font-family: 'Cascadia Code', 'Fira Code', monospace;
       }
 
@@ -237,11 +231,25 @@ import { NotificationService } from './services/notification.service';
       .sidenav-container {
         height: calc(100vh - 56px);
       }
+
+      /* Sidenav — responsive width via classes */
       .sidenav {
-        width: 230px;
         background: var(--cg-navy);
         border-right: none !important;
+        transition: width 0.2s ease;
+        overflow-x: hidden;
       }
+      .sidenav-full {
+        width: 230px;
+      }
+      .sidenav-rail {
+        width: 64px;
+      }
+      /* When neither class is set (initial or overlay), default to full */
+      .sidenav:not(.sidenav-rail):not(.sidenav-full) {
+        width: 230px;
+      }
+
       .sidenav-inner {
         display: flex;
         flex-direction: column;
@@ -260,14 +268,25 @@ import { NotificationService } from './services/notification.service';
       .nav-content::-webkit-scrollbar-thumb:hover {
         background: rgba(255, 255, 255, 0.2);
       }
+
+      /* Nav group labels — hidden in rail mode */
       .nav-group-label {
         padding: 16px 20px 4px;
         font-size: 10px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 1.5px;
-        color: rgba(255, 255, 255, 0.35);
+        color: rgba(255, 255, 255, 0.6);
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity 0.15s ease;
       }
+      .sidenav-rail .nav-group-label {
+        opacity: 0;
+        height: 8px;
+        padding: 4px 0;
+      }
+
       .nav-section {
         padding-top: 0 !important;
         padding-bottom: 0 !important;
@@ -300,9 +319,34 @@ import { NotificationService } from './services/notification.service';
       .active-link ::ng-deep .mat-icon {
         color: var(--cg-vibrant) !important;
       }
+
+      /* Nav label — hidden in rail mode */
+      .nav-label {
+        white-space: nowrap;
+        overflow: hidden;
+        transition: opacity 0.15s ease;
+      }
+      .sidenav-rail .nav-label {
+        opacity: 0;
+        width: 0;
+      }
+
+      /* Rail mode: center icons */
+      .sidenav-rail .nav-section ::ng-deep .mat-mdc-list-item {
+        margin: 1px 4px;
+      }
+
       .sidenav-footer {
         padding: 16px 20px;
         border-top: 1px solid rgba(255, 255, 255, 0.06);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .sidenav-rail .sidenav-footer {
+        opacity: 0;
+        padding: 8px;
+        height: 0;
+        overflow: hidden;
       }
       .footer-row {
         display: flex;
@@ -311,7 +355,7 @@ import { NotificationService } from './services/notification.service';
       }
       .footer-legal {
         font-size: 10px;
-        color: rgba(255, 255, 255, 0.3);
+        color: rgba(255, 255, 255, 0.6);
       }
       .footer-sep {
         width: 3px; height: 3px;
@@ -321,17 +365,101 @@ import { NotificationService } from './services/notification.service';
       .footer-version {
         font-size: 10px;
         font-family: monospace;
-        color: rgba(255, 255, 255, 0.25);
+        color: rgba(255, 255, 255, 0.6);
       }
       .content-area {
         background: var(--cg-gray-50);
         overflow-x: hidden;
       }
+
+      /* Hide tagline on small screens */
+      @media (max-width: 768px) {
+        .brand-sub { display: none; }
+      }
     `,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
+  @ViewChild('sidenav') sidenav!: MatSidenav;
+
+  sidenavLayout: SidenavMode = 'full';
+  sidenavOpenOverlay = false;
+  railExpanded = false;
+
+  private mediaOverlay!: MediaQueryList;
+  private mediaRail!: MediaQueryList;
+  private mediaFull!: MediaQueryList;
+
   constructor(public notifSvc: NotificationService) {}
+
+  ngOnInit(): void {
+    // < 1024px → overlay (hidden by default)
+    this.mediaOverlay = window.matchMedia('(max-width: 1023px)');
+    // 1024–1439px → rail
+    this.mediaRail = window.matchMedia('(min-width: 1024px) and (max-width: 1439px)');
+    // >= 1440px → full
+    this.mediaFull = window.matchMedia('(min-width: 1440px)');
+
+    this.updateLayout();
+
+    this.mediaOverlay.addEventListener('change', this.onMediaChange);
+    this.mediaRail.addEventListener('change', this.onMediaChange);
+    this.mediaFull.addEventListener('change', this.onMediaChange);
+  }
+
+  ngOnDestroy(): void {
+    this.mediaOverlay.removeEventListener('change', this.onMediaChange);
+    this.mediaRail.removeEventListener('change', this.onMediaChange);
+    this.mediaFull.removeEventListener('change', this.onMediaChange);
+  }
+
+  private onMediaChange = (): void => {
+    this.updateLayout();
+  };
+
+  private updateLayout(): void {
+    if (this.mediaFull.matches) {
+      this.sidenavLayout = 'full';
+      this.railExpanded = false;
+    } else if (this.mediaRail.matches) {
+      this.sidenavLayout = 'rail';
+      this.railExpanded = false;
+    } else {
+      this.sidenavLayout = 'overlay';
+      this.sidenavOpenOverlay = false;
+      this.railExpanded = false;
+    }
+  }
+
+  toggleSidenav(): void {
+    if (this.sidenavLayout === 'overlay') {
+      this.sidenavOpenOverlay = !this.sidenavOpenOverlay;
+    } else if (this.sidenavLayout === 'rail') {
+      // Toggle between rail and full on button click
+      this.sidenavLayout = 'full';
+    } else {
+      // Full → rail
+      this.sidenavLayout = 'rail';
+      this.railExpanded = false;
+    }
+  }
+
+  onSidenavClosed(): void {
+    this.sidenavOpenOverlay = false;
+  }
+
+  onNavItemClick(): void {
+    // Close overlay sidenav on navigation
+    if (this.sidenavLayout === 'overlay') {
+      this.sidenavOpenOverlay = false;
+    }
+  }
+
+  onRailHover(hovering: boolean): void {
+    if (this.sidenavLayout === 'rail') {
+      this.railExpanded = hovering;
+    }
+  }
 
   formatEta(seconds: number): string {
     if (seconds < 60) return `${Math.round(seconds)}s`;

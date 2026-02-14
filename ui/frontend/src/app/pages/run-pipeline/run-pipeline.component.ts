@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,7 +13,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -49,7 +48,6 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
     MatChipsModule,
     MatInputModule,
     MatFormFieldModule,
-    MatTableModule,
     MatTabsModule,
     MatTooltipModule,
     ScrollingModule,
@@ -61,229 +59,192 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         <mat-icon class="page-icon">rocket_launch</mat-icon>
         <div>
           <h1 class="page-title">Run Pipeline</h1>
-          <p class="page-subtitle">Configure and execute pipeline phases with presets or custom selection</p>
+          <p class="page-subtitle">Configure and execute pipeline phases</p>
         </div>
       </div>
 
-      <!-- Run Mode Selector -->
-      <mat-card class="config-card">
-        <mat-card-header>
-          <mat-card-title>Pipeline Configuration</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <mat-tab-group [(selectedIndex)]="runModeIndex">
-            <!-- Preset Mode -->
-            <mat-tab label="Run Preset">
-              <div class="tab-content">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Select Preset</mat-label>
-                  <mat-select [(ngModel)]="selectedPreset">
-                    @for (preset of presets; track preset.name) {
-                      <mat-option [value]="preset.name">
-                        <mat-icon style="font-size:18px;vertical-align:middle;margin-right:6px">{{
-                          preset.icon || 'playlist_play'
-                        }}</mat-icon>
-                        {{ preset.display_name || preset.name }}
-                      </mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-                @if (selectedPreset) {
-                  <div class="phase-chips">
-                    <span class="chips-label">Phases:</span>
-                    @for (phase of getPresetPhases(); track phase) {
-                      <mat-chip>{{ humanize(phase) }}</mat-chip>
-                    }
-                  </div>
-                }
-              </div>
-            </mat-tab>
-
-            <!-- Custom Phases Mode -->
-            <mat-tab label="Run Custom Phases">
-              <div class="tab-content">
-                <div class="phase-checkboxes">
-                  @for (phase of phases; track phase.id) {
-                    <mat-checkbox
-                      [checked]="selectedPhases.includes(phase.id)"
-                      (change)="togglePhase(phase.id, $event.checked)"
-                    >
-                      <span class="phase-label">
-                        <strong>{{ phase.order }}.</strong> {{ phase.name }}
-                      </span>
-                    </mat-checkbox>
+      <!-- ================================================================ -->
+      <!-- SECTION 1: CONFIGURE (hidden while pipeline is running)          -->
+      <!-- ================================================================ -->
+      @if (status?.state !== 'running') {
+        <mat-card class="config-card">
+          <mat-card-header>
+            <mat-card-title class="section-card-title">
+              <mat-icon>settings</mat-icon>
+              Pipeline Configuration
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-tab-group [(selectedIndex)]="runModeIndex">
+              <!-- Preset Mode -->
+              <mat-tab label="Run Preset">
+                <div class="tab-content">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Select Preset</mat-label>
+                    <mat-select [(ngModel)]="selectedPreset">
+                      @for (preset of presets; track preset.name) {
+                        <mat-option [value]="preset.name">
+                          <mat-icon style="font-size:18px;vertical-align:middle;margin-right:6px">{{
+                            preset.icon || 'playlist_play'
+                          }}</mat-icon>
+                          {{ preset.display_name || preset.name }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  @if (selectedPreset) {
+                    <div class="phase-chips">
+                      <span class="chips-label">Phases:</span>
+                      @for (phase of getPresetPhases(); track phase) {
+                        <mat-chip>{{ humanize(phase) }}</mat-chip>
+                      }
+                    </div>
                   }
                 </div>
+              </mat-tab>
+
+              <!-- Custom Phases Mode -->
+              <mat-tab label="Run Custom Phases">
+                <div class="tab-content">
+                  <div class="phase-checkboxes">
+                    @for (phase of phases; track phase.id) {
+                      <mat-checkbox
+                        [checked]="selectedPhases.includes(phase.id)"
+                        (change)="togglePhase(phase.id, $event.checked)"
+                      >
+                        <span class="phase-label">
+                          <strong>{{ phase.order }}.</strong> {{ phase.name }}
+                        </span>
+                      </mat-checkbox>
+                    }
+                  </div>
+                </div>
+              </mat-tab>
+            </mat-tab-group>
+
+            <!-- Advanced: Input files + Env overrides -->
+            <mat-expansion-panel class="advanced-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>tune</mat-icon>
+                  Advanced Options
+                </mat-panel-title>
+                <mat-panel-description>Input files &amp; environment overrides</mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <!-- Input Files Summary -->
+              <div class="advanced-section">
+                <h3 class="advanced-section-title">
+                  <mat-icon>upload_file</mat-icon>
+                  Input Files
+                  @if (inputSummary && inputSummary.total_files > 0) {
+                    <span class="advanced-badge">{{ inputSummary.total_files }} ready</span>
+                  }
+                </h3>
+                <div class="input-chips">
+                  @if (inputSummary) {
+                    @for (catEntry of inputCategoryEntries; track catEntry.key) {
+                      <span class="input-chip" [class.has-files]="catEntry.value.file_count > 0">
+                        <mat-icon>{{ catEntry.value.icon }}</mat-icon>
+                        {{ catEntry.value.label }}
+                        <span class="chip-count">{{ catEntry.value.file_count }}</span>
+                      </span>
+                    }
+                  }
+                </div>
+                <a mat-stroked-button routerLink="/inputs" class="manage-btn">
+                  <mat-icon>open_in_new</mat-icon>
+                  Manage Files
+                </a>
               </div>
-            </mat-tab>
-          </mat-tab-group>
-        </mat-card-content>
-      </mat-card>
 
-      <!-- Input Files Summary -->
-      <mat-card class="input-summary-card">
-        <mat-card-header>
-          <mat-icon mat-card-avatar class="input-icon">upload_file</mat-icon>
-          <mat-card-title>Input Files</mat-card-title>
-          <mat-card-subtitle>
-            @if (inputSummary && inputSummary.total_files > 0) {
-              {{ inputSummary.total_files }} file{{ inputSummary.total_files > 1 ? 's' : '' }} ready
-            } @else {
-              Upload task files to run Phase 4
-            }
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="input-chips">
-            @if (inputSummary) {
-              @for (catEntry of inputCategoryEntries; track catEntry.key) {
-                <span class="input-chip" [class.has-files]="catEntry.value.file_count > 0">
-                  <mat-icon>{{ catEntry.value.icon }}</mat-icon>
-                  {{ catEntry.value.label }}
-                  <span class="chip-count">{{ catEntry.value.file_count }}</span>
-                </span>
+              <!-- Environment Overrides -->
+              @if (envGroups.length > 0) {
+                <div class="advanced-section">
+                  <h3 class="advanced-section-title">
+                    <mat-icon>settings_ethernet</mat-icon>
+                    Environment Overrides
+                  </h3>
+                  @for (group of envGroups; track group) {
+                    <h4 class="env-group-title">{{ group }}</h4>
+                    <div class="env-fields">
+                      @for (v of getEnvByGroup(group); track v.name) {
+                        <mat-form-field appearance="outline" class="env-field">
+                          <mat-label>{{ v.name }}</mat-label>
+                          <input
+                            matInput
+                            [(ngModel)]="envValues[v.name]"
+                            [placeholder]="v.value || '(not set)'"
+                            [matTooltip]="v.description"
+                          />
+                          @if (v.required) {
+                            <mat-icon matSuffix color="warn" matTooltip="Required">star</mat-icon>
+                          }
+                        </mat-form-field>
+                      }
+                    </div>
+                  }
+                </div>
               }
-            }
-          </div>
-          <a mat-stroked-button routerLink="/inputs" class="manage-btn">
-            <mat-icon>settings</mat-icon>
-            Manage Files
-          </a>
-        </mat-card-content>
-      </mat-card>
+            </mat-expansion-panel>
+          </mat-card-content>
 
-      <!-- Environment Config -->
-      <mat-expansion-panel class="env-panel">
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <mat-icon>tune</mat-icon>
-            Environment Configuration
-          </mat-panel-title>
-          <mat-panel-description>Override .env variables for this run</mat-panel-description>
-        </mat-expansion-panel-header>
-
-        @for (group of envGroups; track group) {
-          <h3 class="env-group-title">{{ group }}</h3>
-          <div class="env-fields">
-            @for (v of getEnvByGroup(group); track v.name) {
-              <mat-form-field appearance="outline" class="env-field">
-                <mat-label>{{ v.name }}</mat-label>
-                <input
-                  matInput
-                  [(ngModel)]="envValues[v.name]"
-                  [placeholder]="v.value || '(not set)'"
-                  [matTooltip]="v.description"
-                />
-                @if (v.required) {
-                  <mat-icon matSuffix color="warn" matTooltip="Required">star</mat-icon>
-                }
-              </mat-form-field>
-            }
-          </div>
-        }
-      </mat-expansion-panel>
-
-      <!-- Action Buttons + Progress Bar -->
-      <div class="action-bar">
-        <button
-          mat-flat-button
-          color="primary"
-          [disabled]="status?.state === 'running' || (!selectedPreset && selectedPhases.length === 0)"
-          (click)="runPipeline()"
-        >
-          <mat-icon>{{ status?.state === 'running' ? 'sync' : 'play_arrow' }}</mat-icon>
-          {{ status?.state === 'running' ? 'Running...' : 'Run Pipeline' }}
-        </button>
-        <button mat-stroked-button color="warn" [disabled]="status?.state !== 'running'" (click)="cancelPipeline()">
-          <mat-icon>stop</mat-icon>
-          Cancel
-        </button>
-        @if (status?.state === 'running') {
-          <div class="progress-section">
-            <mat-progress-bar
-              [mode]="status?.progress_percent != null ? 'determinate' : 'indeterminate'"
-              [value]="status?.progress_percent || 0"
-              class="run-progress">
-            </mat-progress-bar>
-            <span class="progress-label">
-              {{ status?.completed_phase_count || 0 }}/{{ status?.total_phase_count || 0 }} phases
-              <span class="progress-pct">{{ status?.progress_percent | number:'1.0-0' }}%</span>
-            </span>
-          </div>
-        }
-      </div>
-
-      <!-- Live Metrics Bar -->
-      @if (status?.state === 'running' && status?.live_metrics) {
-        <div class="metrics-bar">
-          <div class="stat-item">
-            <mat-icon>timer</mat-icon>
-            <span class="stat-value">{{ formatDuration(status!.elapsed_seconds || 0) }}</span>
-            <span class="stat-label">Elapsed</span>
-          </div>
-          <div class="stat-item">
-            <mat-icon>token</mat-icon>
-            <span class="stat-value">{{ (status!.live_metrics!.total_tokens | number) || '0' }}</span>
-            <span class="stat-label">Tokens</span>
-          </div>
-          <div class="stat-item">
-            <mat-icon>groups</mat-icon>
-            <span class="stat-value">{{ status!.live_metrics!.crew_completions }}</span>
-            <span class="stat-label">Crews</span>
-          </div>
-          @if (status?.eta_seconds != null && status!.eta_seconds! > 0) {
-            <div class="stat-item stat-eta">
-              <mat-icon>schedule</mat-icon>
-              <span class="stat-value">~{{ formatDuration(status!.eta_seconds!) }}</span>
-              <span class="stat-label">ETA</span>
-            </div>
-          }
-        </div>
+          <!-- Run button inside the config card -->
+          <mat-card-actions class="config-actions">
+            <button
+              mat-flat-button
+              color="primary"
+              class="run-btn"
+              [disabled]="!selectedPreset && selectedPhases.length === 0"
+              (click)="runPipeline()"
+            >
+              <mat-icon>play_arrow</mat-icon>
+              Run Pipeline
+            </button>
+          </mat-card-actions>
+        </mat-card>
       }
 
-      <!-- Celebration Banner -->
-      @if (showCelebration && celebrationType) {
-        <div class="celebration-banner" [class]="'celebration-' + celebrationType"
-             [@.disabled]="false">
-          @if (celebrationType === 'success') {
-            <div class="celebration-content">
-              <mat-icon class="celebration-icon">celebration</mat-icon>
-              <div class="celebration-text">
-                <span class="celebration-title">Pipeline Completed Successfully</span>
-                <span class="celebration-sub">
-                  {{ status?.completed_phase_count || 0 }} phases completed in {{ formatDuration(status?.elapsed_seconds || 0) }}
-                </span>
-              </div>
-              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
-                <mat-icon>close</mat-icon>
-              </button>
-            </div>
-            <div class="confetti-wrap">
-              @for (i of confettiDots; track i) {
-                <span class="confetti-dot" [style.left.%]="i * 12 + 5"
-                      [style.animation-delay.ms]="i * 250"></span>
-              }
-            </div>
-          } @else {
-            <div class="celebration-content">
-              <mat-icon class="celebration-icon">error_outline</mat-icon>
-              <div class="celebration-text">
-                <span class="celebration-title">Pipeline Failed</span>
-                <span class="celebration-sub">
-                  Check the logs below for details
-                  <a routerLink="/logs" class="logs-link">Open Logs</a>
-                </span>
-              </div>
-              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
-                <mat-icon>close</mat-icon>
-              </button>
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Live Status + Enhanced Phase Stepper -->
+      <!-- ================================================================ -->
+      <!-- SECTION 2: EXECUTION (visible while running / after completion)  -->
+      <!-- ================================================================ -->
       @if (status && status.state !== 'idle') {
+
+        <!-- Celebration Banner -->
+        @if (showCelebration && celebrationType) {
+          <div class="celebration-banner" [class]="'celebration-' + celebrationType">
+            @if (celebrationType === 'success') {
+              <div class="celebration-content">
+                <mat-icon class="celebration-icon">check_circle</mat-icon>
+                <div class="celebration-text">
+                  <span class="celebration-title">Pipeline Completed Successfully</span>
+                  <span class="celebration-sub">
+                    {{ status?.completed_phase_count || 0 }} phases in {{ formatDuration(status?.elapsed_seconds || 0) }}
+                  </span>
+                </div>
+                <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            } @else {
+              <div class="celebration-content">
+                <mat-icon class="celebration-icon">error_outline</mat-icon>
+                <div class="celebration-text">
+                  <span class="celebration-title">Pipeline Failed</span>
+                  <span class="celebration-sub">
+                    Check logs for details
+                    <a routerLink="/logs" class="logs-link">Open Logs</a>
+                  </span>
+                </div>
+                <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Status Card with Phase Stepper -->
         <mat-card class="status-card" [class]="'state-' + status.state">
           <mat-card-header>
             <mat-icon mat-card-avatar [class]="'state-icon-' + status.state">
@@ -303,7 +264,56 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
             </mat-card-subtitle>
           </mat-card-header>
 
-          <!-- Enhanced Phase Stepper -->
+          <!-- Progress Bar + Cancel -->
+          @if (status.state === 'running') {
+            <div class="exec-bar">
+              <div class="progress-section">
+                <mat-progress-bar
+                  [mode]="status.progress_percent != null ? 'determinate' : 'indeterminate'"
+                  [value]="status.progress_percent || 0"
+                  class="run-progress">
+                </mat-progress-bar>
+                <span class="progress-label">
+                  {{ status.completed_phase_count || 0 }}/{{ status.total_phase_count || 0 }} phases
+                  <span class="progress-pct">{{ status.progress_percent | number:'1.0-0' }}%</span>
+                </span>
+              </div>
+              <button mat-stroked-button color="warn" (click)="cancelPipeline()">
+                <mat-icon>stop</mat-icon>
+                Cancel
+              </button>
+            </div>
+          }
+
+          <!-- Live Metrics -->
+          @if (status.state === 'running' && status.live_metrics) {
+            <div class="metrics-bar">
+              <div class="metric-item">
+                <mat-icon>timer</mat-icon>
+                <span class="metric-value">{{ formatDuration(status.elapsed_seconds || 0) }}</span>
+                <span class="metric-label">Elapsed</span>
+              </div>
+              <div class="metric-item">
+                <mat-icon>token</mat-icon>
+                <span class="metric-value">{{ (status.live_metrics.total_tokens | number) || '0' }}</span>
+                <span class="metric-label">Tokens</span>
+              </div>
+              <div class="metric-item">
+                <mat-icon>groups</mat-icon>
+                <span class="metric-value">{{ status.live_metrics.crew_completions }}</span>
+                <span class="metric-label">Crews</span>
+              </div>
+              @if (status.eta_seconds != null && status.eta_seconds > 0) {
+                <div class="metric-item metric-eta">
+                  <mat-icon>schedule</mat-icon>
+                  <span class="metric-value">~{{ formatDuration(status.eta_seconds) }}</span>
+                  <span class="metric-label">ETA</span>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Phase Stepper -->
           @if (status.phase_progress.length > 0) {
             <mat-card-content>
               <div class="stepper-track">
@@ -327,7 +337,6 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
                     @if (pp.status === 'running') {
                       <div class="step-time step-time-active">running</div>
                     }
-                    <!-- Sub-phase chips -->
                     @if (pp.status === 'running' && pp.sub_phases?.length) {
                       <div class="sub-phase-chips">
                         @for (sp of pp.sub_phases; track sp.name) {
@@ -353,10 +362,26 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
               </div>
             </mat-card-content>
           }
+
+          <!-- "Run again" when completed/failed -->
+          @if (status.state === 'completed' || status.state === 'failed' || status.state === 'cancelled') {
+            <mat-card-actions class="exec-actions">
+              <button mat-flat-button color="primary" (click)="resetToConfig()">
+                <mat-icon>replay</mat-icon>
+                Configure New Run
+              </button>
+              <a mat-stroked-button routerLink="/history">
+                <mat-icon>history</mat-icon>
+                View Full History
+              </a>
+            </mat-card-actions>
+          }
         </mat-card>
       }
 
-      <!-- Live Log Output with Virtual Scroll -->
+      <!-- ================================================================ -->
+      <!-- SECTION 3: LIVE LOG OUTPUT (always visible when there are logs)  -->
+      <!-- ================================================================ -->
       @if (logLines.length > 0) {
         <mat-card class="log-card">
           <mat-card-header>
@@ -390,77 +415,11 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
           </mat-card-content>
         </mat-card>
       }
-
-      <!-- Run History -->
-      <mat-card class="history-card">
-        <mat-card-header>
-          <mat-card-title class="section-card-title">
-            <mat-icon>history</mat-icon>
-            Run History
-          </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          @if (history.length === 0) {
-            <div class="empty-inline">
-              <mat-icon>schedule</mat-icon>
-              <span>No previous runs. Start your first pipeline above.</span>
-            </div>
-          } @else {
-            <table mat-table [dataSource]="history" class="history-table">
-              <ng-container matColumnDef="started_at">
-                <th mat-header-cell *matHeaderCellDef>Date</th>
-                <td mat-cell *matCellDef="let r">{{ r.started_at | date: 'short' }}</td>
-              </ng-container>
-              <ng-container matColumnDef="trigger">
-                <th mat-header-cell *matHeaderCellDef>Type</th>
-                <td mat-cell *matCellDef="let r">
-                  @if (r.trigger === 'reset') {
-                    <span class="trigger-chip trigger-reset">
-                      <mat-icon class="trigger-icon">restart_alt</mat-icon> Reset
-                    </span>
-                  } @else {
-                    <span class="trigger-chip trigger-run">
-                      <mat-icon class="trigger-icon">play_arrow</mat-icon> Run
-                    </span>
-                  }
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="run_id">
-                <th mat-header-cell *matHeaderCellDef>Run ID</th>
-                <td mat-cell *matCellDef="let r" class="mono">{{ r.run_id }}</td>
-              </ng-container>
-              <ng-container matColumnDef="preset">
-                <th mat-header-cell *matHeaderCellDef>Preset</th>
-                <td mat-cell *matCellDef="let r">{{ r.preset || '-' }}</td>
-              </ng-container>
-              <ng-container matColumnDef="phases">
-                <th mat-header-cell *matHeaderCellDef>Phases</th>
-                <td mat-cell *matCellDef="let r">
-                  @for (p of r.phases; track p) {
-                    <mat-chip class="small-chip">{{ humanize(p) }}</mat-chip>
-                  }
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>Status</th>
-                <td mat-cell *matCellDef="let r">
-                  <span class="status-chip" [class]="'status-' + r.status">{{ r.status }}</span>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="duration">
-                <th mat-header-cell *matHeaderCellDef>Duration</th>
-                <td mat-cell *matCellDef="let r">{{ r.duration || '-' }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="historyColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: historyColumns"></tr>
-            </table>
-          }
-        </mat-card-content>
-      </mat-card>
     </div>
   `,
   styles: [
     `
+      /* Config Card */
       .config-card { margin-bottom: 16px; }
       .tab-content { padding: 16px 0; }
       .full-width { width: 100%; }
@@ -471,13 +430,30 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
       .chips-label { font-size: 13px; font-weight: 500; color: var(--cg-gray-500); }
       .phase-checkboxes { display: flex; flex-direction: column; gap: 8px; }
       .phase-label { display: inline-flex; align-items: center; gap: 4px; }
-      .input-summary-card { margin-bottom: 16px; }
-      .input-icon {
-        background: rgba(0, 112, 173, 0.08);
-        color: var(--cg-blue) !important;
-        border-radius: 10px !important;
-        display: flex !important; align-items: center; justify-content: center;
+
+      /* Advanced panel inside config card */
+      .advanced-panel {
+        margin-top: 16px;
+        box-shadow: none !important;
+        border: 1px solid var(--cg-gray-100);
       }
+      .advanced-panel ::ng-deep .mat-expansion-panel-body { padding: 0 16px 16px; }
+      .advanced-section { margin-top: 16px; }
+      .advanced-section-title {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 14px; font-weight: 600; color: var(--cg-gray-700);
+        margin: 0 0 8px;
+      }
+      .advanced-section-title .mat-icon {
+        font-size: 18px; width: 18px; height: 18px; color: var(--cg-blue);
+      }
+      .advanced-badge {
+        font-size: 11px; font-weight: 600;
+        background: rgba(40, 167, 69, 0.1); color: var(--cg-success);
+        padding: 2px 8px; border-radius: 8px;
+      }
+
+      /* Input chips */
       .input-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
       .input-chip {
         display: inline-flex; align-items: center; gap: 4px;
@@ -497,22 +473,34 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
       .input-chip.has-files .chip-count { background: var(--cg-vibrant); color: #fff; }
       .manage-btn { font-size: 13px; }
       .manage-btn .mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
-      .env-panel { margin-bottom: 16px; }
+
+      /* Env overrides */
       .env-group-title {
-        font-size: 13px; font-weight: 600; color: var(--cg-blue);
-        margin: 16px 0 8px; text-transform: uppercase; letter-spacing: 0.5px;
+        font-size: 12px; font-weight: 600; color: var(--cg-blue);
+        margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px;
       }
       .env-fields {
         display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px;
       }
       .env-field { width: 100%; }
 
-      /* Action bar + determinate progress */
-      .action-bar {
-        display: flex; align-items: center; gap: 12px; margin: 16px 0; flex-wrap: wrap;
+      /* Config actions */
+      .config-actions {
+        padding: 8px 16px 16px !important;
+      }
+      .run-btn {
+        font-size: 15px;
+        padding: 0 32px;
+        height: 44px;
+      }
+
+      /* Execution section */
+      .exec-bar {
+        display: flex; align-items: center; gap: 16px;
+        padding: 0 16px 12px;
       }
       .progress-section {
-        flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 200px;
+        flex: 1; display: flex; flex-direction: column; gap: 4px;
       }
       .run-progress { width: 100%; }
       .run-progress ::ng-deep .mdc-linear-progress__bar-inner {
@@ -527,25 +515,24 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         font-weight: 600; color: var(--cg-blue);
       }
 
-      /* Live Metrics Bar */
+      /* Live Metrics */
       .metrics-bar {
         display: flex; gap: 16px; flex-wrap: wrap;
-        padding: 10px 16px; margin-bottom: 16px;
-        background: #fff; border-radius: 10px;
-        border: 1px solid var(--cg-gray-100);
+        padding: 8px 16px 12px;
+        border-top: 1px solid var(--cg-gray-100);
       }
-      .stat-item {
+      .metric-item {
         display: flex; align-items: center; gap: 6px;
         font-size: 13px; color: var(--cg-gray-600);
       }
-      .stat-item .mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--cg-blue); }
-      .stat-value {
+      .metric-item .mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--cg-blue); }
+      .metric-value {
         font-family: 'Cascadia Code', 'Fira Code', monospace;
         font-weight: 600; color: var(--cg-gray-900);
       }
-      .stat-label { font-size: 11px; color: var(--cg-gray-400); }
-      .stat-eta .mat-icon { color: var(--cg-vibrant); }
-      .stat-eta .stat-value { color: var(--cg-vibrant); }
+      .metric-label { font-size: 11px; color: var(--cg-gray-400); }
+      .metric-eta .mat-icon { color: var(--cg-vibrant); }
+      .metric-eta .metric-value { color: var(--cg-vibrant); }
 
       /* Celebration Banner */
       .celebration-banner {
@@ -574,22 +561,6 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         from { transform: translateY(-20px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
-      .confetti-wrap {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        pointer-events: none; overflow: hidden;
-      }
-      .confetti-dot {
-        position: absolute; top: -8px;
-        width: 6px; height: 6px; border-radius: 50%;
-        background: rgba(255, 255, 255, 0.4);
-        animation: confetti-float 2s ease-in forwards;
-      }
-      .confetti-dot:nth-child(odd) { background: rgba(18, 171, 219, 0.5); width: 5px; height: 5px; }
-      .confetti-dot:nth-child(3n) { background: rgba(255, 193, 7, 0.5); width: 7px; height: 7px; }
-      @keyframes confetti-float {
-        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-        100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
-      }
 
       /* Status Card */
       .status-card { margin-bottom: 16px; }
@@ -601,6 +572,11 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
       .state-icon-failed { color: var(--cg-error); }
       .state-icon-running { color: var(--cg-blue); }
       .state-icon-cancelled { color: var(--cg-warn); }
+
+      .exec-actions {
+        padding: 8px 16px 16px !important;
+        display: flex; gap: 12px;
+      }
 
       /* Enhanced Stepper */
       .stepper-track {
@@ -621,7 +597,6 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
       .step-num {
         font-size: 13px; font-weight: 600; color: var(--cg-gray-400);
       }
-      /* Running */
       .step-running .step-circle {
         background: rgba(0, 112, 173, 0.08); border-color: var(--cg-blue);
         box-shadow: 0 0 0 5px rgba(0, 112, 173, 0.1);
@@ -632,17 +607,14 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         50% { box-shadow: 0 0 0 10px rgba(0, 112, 173, 0.04); }
       }
       .step-spinner ::ng-deep circle { stroke: var(--cg-blue) !important; }
-      /* Completed */
       .step-completed .step-circle {
         background: var(--cg-success, #28a745); border-color: var(--cg-success, #28a745);
       }
       .step-check { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      /* Failed */
       .step-failed .step-circle {
         background: var(--cg-error, #dc3545); border-color: var(--cg-error, #dc3545);
       }
       .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      /* Labels */
       .step-label {
         margin-top: 8px; font-size: 11px; font-weight: 500;
         color: var(--cg-gray-500); text-align: center;
@@ -651,14 +623,12 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
       .step-running .step-label { color: var(--cg-blue); font-weight: 600; }
       .step-completed .step-label { color: var(--cg-success); }
       .step-failed .step-label { color: var(--cg-error); }
-      /* Duration */
       .step-time {
         margin-top: 3px; font-size: 10px;
         font-family: 'Cascadia Code', 'Fira Code', monospace;
         color: var(--cg-gray-400);
       }
       .step-time-active { color: var(--cg-blue); font-weight: 600; }
-      /* Connector Lines */
       .stepper-line {
         flex: 1; min-width: 24px; height: 3px;
         background: var(--cg-gray-200); border-radius: 2px;
@@ -690,19 +660,15 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
       .sub-completed { background: rgba(40, 167, 69, 0.08); color: var(--cg-success); }
       .sub-failed { background: rgba(220, 53, 69, 0.08); color: var(--cg-error); }
       .sub-icon { font-size: 12px; width: 12px; height: 12px; }
-      .sub-tokens {
-        font-family: monospace; font-size: 9px; opacity: 0.7;
-      }
+      .sub-tokens { font-family: monospace; font-size: 9px; opacity: 0.7; }
 
-      /* Log Viewer with Virtual Scroll */
+      /* Log Viewer */
       .log-card { margin-bottom: 16px; }
       .log-card mat-card-header { display: flex; align-items: center; }
       .log-title { display: flex !important; align-items: center; gap: 8px; }
       .log-count { font-size: 12px; color: var(--cg-gray-500); font-weight: 400; }
       .spacer { flex: 1; }
-      .log-search-field {
-        width: 180px; margin: 0 8px;
-      }
+      .log-search-field { width: 180px; margin: 0 8px; }
       .log-search-field ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
       .log-search-field ::ng-deep .mdc-text-field { height: 36px !important; }
       .log-search-field ::ng-deep .mat-mdc-form-field-infix { padding: 4px 0 !important; min-height: unset; }
@@ -728,13 +694,6 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
       .log-error { color: #f48771; }
       .log-warning { color: #cca700; }
       .log-info { color: #89d185; }
-
-      /* History */
-      .history-card { margin-bottom: 24px; }
-      .history-table { width: 100%; }
-      .history-table tr.mat-mdc-row:hover { background: rgba(0, 112, 173, 0.03); }
-      .small-chip { font-size: 11px; }
-      .trigger-icon { font-size: 16px; width: 16px; height: 16px; }
     `,
   ],
 })
@@ -763,17 +722,13 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   filteredLogLines: string[] = [];
   logSearch = '';
   autoScroll = true;
-  history: RunHistoryEntry[] = [];
-  historyColumns = ['started_at', 'trigger', 'run_id', 'preset', 'phases', 'status', 'duration'];
 
   // Celebration
   showCelebration = false;
   celebrationType: 'success' | 'failure' | null = null;
-  confettiDots = [0, 1, 2, 3, 4, 5, 6, 7];
   private celebrationTimer?: ReturnType<typeof setTimeout>;
 
   private sseSub?: Subscription;
-  private statusInterval?: ReturnType<typeof setInterval>;
 
   constructor(
     private api: ApiService,
@@ -791,10 +746,6 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     });
     this.api.getPhases().subscribe((p) => {
       this.phases = p;
-      this.cdr.markForCheck();
-    });
-    this.pipeline.getHistory().subscribe((h) => {
-      this.history = h;
       this.cdr.markForCheck();
     });
     this.pipeline.getStatus().subscribe((s) => {
@@ -833,7 +784,6 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sseSub?.unsubscribe();
-    if (this.statusInterval) clearInterval(this.statusInterval);
     if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
   }
 
@@ -854,6 +804,16 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     } else {
       this.selectedPhases = this.selectedPhases.filter((p) => p !== phaseId);
     }
+  }
+
+  /** Reset execution state so the config form shows again */
+  resetToConfig(): void {
+    this.status = { state: 'idle', phase_progress: [] } as any;
+    this.logLines = [];
+    this.filteredLogLines = [];
+    this.showCelebration = false;
+    this.celebrationType = null;
+    this.cdr.markForCheck();
   }
 
   runPipeline(): void {
@@ -944,15 +904,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         if (event.type === 'pipeline_complete') {
           this.status = event.data as ExecutionStatus;
           const finalState = this.status?.state || 'completed';
-          if (finalState === 'cancelled') {
-            // No celebration for cancelled runs
-          } else {
+          if (finalState !== 'cancelled') {
             this.triggerCelebration(finalState === 'failed' ? 'failure' : 'success');
           }
-          this.pipeline.getHistory().subscribe((h) => {
-            this.history = h;
-            this.cdr.markForCheck();
-          });
         }
         this.cdr.markForCheck();
       },
@@ -965,10 +919,6 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   private refreshStatus(): void {
     this.pipeline.getStatus().subscribe((s) => {
       this.status = s;
-      this.cdr.markForCheck();
-    });
-    this.pipeline.getHistory().subscribe((h) => {
-      this.history = h;
       this.cdr.markForCheck();
     });
   }

@@ -49,7 +49,7 @@ interface ParsedComponent {
         <mat-icon class="page-icon">summarize</mat-icon>
         <div>
           <h1 class="page-title">Reports</h1>
-          <p class="page-subtitle">Phase outputs, development plans, codegen reports, and branch management</p>
+          <p class="page-subtitle">Architecture documentation, development plans, code generation, and branches</p>
         </div>
       </div>
 
@@ -60,123 +60,62 @@ interface ParsedComponent {
       } @else {
         <mat-tab-group [(selectedIndex)]="activeTabIndex" (selectedTabChange)="onTabChange($event)">
           <!-- ============================================================ -->
-          <!-- TAB 1: Extract                                               -->
-          <!-- ============================================================ -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">biotech</mat-icon>
-              Extract ({{ reports?.extract_reports?.length || 0 }})
-            </ng-template>
-
-            @if (reports?.extract_reports?.length) {
-              <mat-accordion class="report-accordion" multi>
-                @for (file of reports!.extract_reports; track file['_file']) {
-                  <mat-expansion-panel (opened)="loadFileContent($any(file['_file']))">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>
-                        <mat-icon class="panel-icon">data_object</mat-icon>
-                        <span class="mono">{{ file['_name'] }}</span>
-                      </mat-panel-title>
-                      <mat-panel-description>
-                        <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
-                        <button mat-icon-button class="dl-btn" matTooltip="Download"
-                                (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
-                          <mat-icon>download</mat-icon>
-                        </button>
-                      </mat-panel-description>
-                    </mat-expansion-panel-header>
-                    @if (fileLoading[$any(file['_file'])]) {
-                      <mat-spinner diameter="24"></mat-spinner>
-                    } @else if (fileContents[$any(file['_file'])]) {
-                      <pre class="code-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
-                    }
-                  </mat-expansion-panel>
-                }
-              </mat-accordion>
-            } @else {
-              <div class="empty-inline tab-empty">
-                <mat-icon>biotech</mat-icon>
-                <span>No extract outputs found. Run the Extract phase to generate architecture facts.</span>
-              </div>
-            }
-          </mat-tab>
-
-          <!-- ============================================================ -->
-          <!-- TAB 2: Analyze                                               -->
-          <!-- ============================================================ -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">analytics</mat-icon>
-              Analyze ({{ reports?.analyze_reports?.length || 0 }})
-            </ng-template>
-
-            @if (reports?.analyze_reports?.length) {
-              <mat-accordion class="report-accordion" multi>
-                @for (file of reports!.analyze_reports; track file['_file']) {
-                  <mat-expansion-panel (opened)="loadFileContent($any(file['_file']))">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>
-                        <mat-icon class="panel-icon">data_object</mat-icon>
-                        <span class="mono">{{ file['_name'] }}</span>
-                      </mat-panel-title>
-                      <mat-panel-description>
-                        <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
-                        <button mat-icon-button class="dl-btn" matTooltip="Download"
-                                (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
-                          <mat-icon>download</mat-icon>
-                        </button>
-                      </mat-panel-description>
-                    </mat-expansion-panel-header>
-                    @if (fileLoading[$any(file['_file'])]) {
-                      <mat-spinner diameter="24"></mat-spinner>
-                    } @else if (fileContents[$any(file['_file'])]) {
-                      <pre class="code-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
-                    }
-                  </mat-expansion-panel>
-                }
-              </mat-accordion>
-            } @else {
-              <div class="empty-inline tab-empty">
-                <mat-icon>analytics</mat-icon>
-                <span>No analysis outputs found. Run the Analyze phase to generate architecture analysis.</span>
-              </div>
-            }
-          </mat-tab>
-
-          <!-- ============================================================ -->
-          <!-- TAB 3: Document                                              -->
+          <!-- TAB 1: Architecture Documents                                -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">auto_stories</mat-icon>
-              Document ({{ reports?.document_reports?.length || 0 }})
+              Architecture ({{ reports?.document_reports?.length || 0 }})
             </ng-template>
 
-            @if (reports?.document_reports?.length) {
-              <mat-accordion class="report-accordion" multi>
-                @for (file of reports!.document_reports; track file['_file']) {
-                  <mat-expansion-panel (opened)="loadFileContent($any(file['_file']))">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>
-                        <mat-icon class="panel-icon">{{ file['_type'] === 'md' ? 'article' : 'data_object' }}</mat-icon>
-                        <span class="mono">{{ file['_name'] }}</span>
-                      </mat-panel-title>
-                      <mat-panel-description>
-                        <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
-                        <button mat-icon-button class="dl-btn" matTooltip="Download"
-                                (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
-                          <mat-icon>download</mat-icon>
-                        </button>
-                      </mat-panel-description>
-                    </mat-expansion-panel-header>
-                    @if (fileLoading[$any(file['_file'])]) {
-                      <mat-spinner diameter="24"></mat-spinner>
-                    } @else if (fileContents[$any(file['_file'])]) {
-                      <pre class="code-viewer doc-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
-                    }
-                  </mat-expansion-panel>
+            @if (docGroupKeys.length > 0) {
+              <div class="doc-groups">
+                @for (groupKey of docGroupKeys; track groupKey) {
+                  <div class="doc-group">
+                    <div class="doc-group-header">
+                      <div class="doc-group-icon-wrap" [class]="'group-' + groupKey">
+                        <mat-icon>{{ docGroupMeta[groupKey]?.icon || 'description' }}</mat-icon>
+                      </div>
+                      <div class="doc-group-info">
+                        <h3 class="doc-group-title">{{ docGroupMeta[groupKey]?.label || groupKey }}</h3>
+                        <p class="doc-group-desc">
+                          {{ docGroupMeta[groupKey]?.description || '' }}
+                          <span class="doc-group-count">{{ docGroups[groupKey].length }} files</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="doc-group-files">
+                      @for (file of docGroups[groupKey]; track file['_file']) {
+                        <div class="doc-file-card" (click)="toggleDocPreview($any(file['_file']))">
+                          <div class="doc-file-row">
+                            <mat-icon class="doc-file-icon">{{ file['_type'] === 'md' ? 'article' : file['_type'] === 'drawio' ? 'draw' : 'data_object' }}</mat-icon>
+                            <div class="doc-file-info">
+                              <span class="doc-file-name">{{ formatDocName($any(file['_name'])) }}</span>
+                              <span class="doc-file-meta">{{ $any(file['_type']) | uppercase }} &middot; {{ formatBytes($any(file['_size'])) }}</span>
+                            </div>
+                            <button mat-icon-button class="dl-btn" matTooltip="Download"
+                                    (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
+                              <mat-icon>download</mat-icon>
+                            </button>
+                            <mat-icon class="doc-expand-icon">
+                              {{ docPreviewOpen[$any(file['_file'])] ? 'expand_less' : 'expand_more' }}
+                            </mat-icon>
+                          </div>
+                          @if (docPreviewOpen[$any(file['_file'])]) {
+                            <div class="doc-preview" (click)="$event.stopPropagation()">
+                              @if (fileLoading[$any(file['_file'])]) {
+                                <div class="loading-center"><mat-spinner diameter="24"></mat-spinner></div>
+                              } @else if (fileContents[$any(file['_file'])]) {
+                                <pre class="code-viewer doc-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
                 }
-              </mat-accordion>
+              </div>
             } @else {
               <div class="empty-inline tab-empty">
                 <mat-icon>auto_stories</mat-icon>
@@ -186,7 +125,7 @@ interface ParsedComponent {
           </mat-tab>
 
           <!-- ============================================================ -->
-          <!-- TAB 4: Development Plans                                     -->
+          <!-- TAB 2: Development Plans                                     -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
@@ -639,12 +578,12 @@ interface ParsedComponent {
           </mat-tab>
 
           <!-- ============================================================ -->
-          <!-- TAB 5: Codegen Reports                                       -->
+          <!-- TAB 3: Code Generation                                       -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">code</mat-icon>
-              Codegen Reports ({{ reports?.codegen_reports?.length || 0 }})
+              Code Generation ({{ reports?.codegen_reports?.length || 0 }})
             </ng-template>
 
             @if (reports?.codegen_reports?.length) {
@@ -755,7 +694,7 @@ interface ParsedComponent {
           </mat-tab>
 
           <!-- ============================================================ -->
-          <!-- TAB 6: Git Branches                                          -->
+          <!-- TAB 4: Git Branches                                          -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
@@ -823,6 +762,70 @@ interface ParsedComponent {
   `,
   styles: [
     `
+      /* Architecture grouped docs */
+      .doc-groups { margin-top: 16px; display: flex; flex-direction: column; gap: 24px; }
+      .doc-group-header {
+        display: flex; align-items: center; gap: 14px; margin-bottom: 12px;
+      }
+      .doc-group-icon-wrap {
+        width: 44px; height: 44px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .doc-group-icon-wrap .mat-icon { color: #fff; font-size: 22px; width: 22px; height: 22px; }
+      .group-arc42 { background: linear-gradient(135deg, #0070ad, #12abdb); }
+      .group-c4 { background: linear-gradient(135deg, #2b0a3d, #5b2d8e); }
+      .group-quality { background: linear-gradient(135deg, #28a745, #20c997); }
+      .group-other { background: linear-gradient(135deg, #6c757d, #adb5bd); }
+      .doc-group-info { flex: 1; }
+      .doc-group-title {
+        margin: 0; font-size: 16px; font-weight: 600; color: var(--cg-gray-900);
+      }
+      .doc-group-desc {
+        margin: 2px 0 0; font-size: 12px; color: var(--cg-gray-500);
+      }
+      .doc-group-count {
+        display: inline-block; margin-left: 6px;
+        padding: 1px 8px; border-radius: 8px;
+        background: var(--cg-gray-100); font-weight: 600; font-size: 11px;
+      }
+      .doc-group-files {
+        display: flex; flex-direction: column; gap: 4px;
+      }
+      .doc-file-card {
+        background: #fff; border: 1px solid var(--cg-gray-100); border-radius: 10px;
+        cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+        overflow: hidden;
+      }
+      .doc-file-card:hover {
+        border-color: var(--cg-gray-200);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      }
+      .doc-file-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px;
+      }
+      .doc-file-icon {
+        font-size: 20px; width: 20px; height: 20px; color: var(--cg-blue); flex-shrink: 0;
+      }
+      .doc-file-info { flex: 1; display: flex; flex-direction: column; }
+      .doc-file-name {
+        font-size: 13px; font-weight: 500; color: var(--cg-gray-900);
+      }
+      .doc-file-meta {
+        font-size: 11px; color: var(--cg-gray-400);
+      }
+      .doc-expand-icon {
+        font-size: 20px; width: 20px; height: 20px; color: var(--cg-gray-400);
+      }
+      .doc-preview {
+        border-top: 1px solid var(--cg-gray-100);
+      }
+      .doc-preview .code-viewer {
+        border-radius: 0 0 10px 10px;
+        max-height: 400px;
+      }
+
       .tab-icon {
         margin-right: 6px;
         font-size: 18px;
@@ -1447,6 +1450,17 @@ export class ReportsComponent implements OnInit {
   fileContents: Record<string, string> = {};
   fileLoading: Record<string, boolean> = {};
 
+  /** Architecture doc grouping */
+  docPreviewOpen: Record<string, boolean> = {};
+  docGroups: Record<string, Record<string, unknown>[]> = {};
+  docGroupKeys: string[] = [];
+  docGroupMeta: Record<string, { label: string; icon: string; description: string }> = {
+    arc42: { label: 'Arc42 Documentation', icon: 'menu_book', description: 'Standardized architecture documentation' },
+    c4: { label: 'C4 Model Diagrams', icon: 'architecture', description: 'Context, Container, Component & Deployment views' },
+    quality: { label: 'Quality Reports', icon: 'verified', description: 'Architecture quality assessments & reviews' },
+    other: { label: 'Other Documents', icon: 'description', description: 'Additional documentation artifacts' },
+  };
+
   constructor(
     private api: ApiService,
     private cdr: ChangeDetectorRef,
@@ -1458,6 +1472,7 @@ export class ReportsComponent implements OnInit {
     this.api.getReports().subscribe({
       next: (r) => {
         this.reports = r;
+        this.buildDocGroups(r.document_reports || []);
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -1468,9 +1483,46 @@ export class ReportsComponent implements OnInit {
     });
   }
 
+  /** Group document files by subdirectory (arc42, c4, quality, other) */
+  private buildDocGroups(docs: Record<string, unknown>[]): void {
+    const groups: Record<string, Record<string, unknown>[]> = {};
+    const order = ['arc42', 'c4', 'quality'];
+    for (const doc of docs) {
+      const filePath = (doc['_file'] as string) || '';
+      // Extract subfolder: "document/arc42/file.md" → "arc42"
+      const parts = filePath.split('/');
+      const group = parts.length >= 3 ? parts[1] : 'other';
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(doc);
+    }
+    // Sort keys: known groups first, then alphabetical
+    this.docGroupKeys = [
+      ...order.filter((k) => groups[k]),
+      ...Object.keys(groups).filter((k) => !order.includes(k)).sort(),
+    ];
+    this.docGroups = groups;
+  }
+
+  toggleDocPreview(filePath: string): void {
+    this.docPreviewOpen[filePath] = !this.docPreviewOpen[filePath];
+    if (this.docPreviewOpen[filePath]) {
+      this.loadFileContent(filePath);
+    }
+  }
+
+  /** Format doc filename for display: "01-introduction.md" → "Introduction" */
+  formatDocName(name: string): string {
+    return name
+      .replace(/\.\w+$/, '')           // remove extension
+      .replace(/^\d+-/, '')             // remove leading number prefix
+      .replace(/^c4-/, 'C4 ')          // "c4-context" → "C4 context"
+      .replace(/[-_]/g, ' ')           // dashes/underscores to spaces
+      .replace(/\b\w/g, (c) => c.toUpperCase()); // capitalize words
+  }
+
   onTabChange(event: MatTabChangeEvent): void {
-    // Git Branches is the 6th tab (index 5)
-    if (event.index === 5 && !this.branches) {
+    // Git Branches is the 4th tab (index 3)
+    if (event.index === 3 && !this.branches) {
       this.loadBranches();
     }
   }
@@ -1655,7 +1707,7 @@ export class ReportsComponent implements OnInit {
   }
 
   goToReport(taskId: string): void {
-    this.activeTabIndex = 4; // Codegen Reports tab
+    this.activeTabIndex = 2; // Code Generation tab
   }
 
   isString(val: unknown): boolean {
