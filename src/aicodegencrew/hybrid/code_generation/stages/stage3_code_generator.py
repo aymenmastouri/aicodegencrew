@@ -26,7 +26,7 @@ class CodeGeneratorStage:
     """Generate code using LLM — 1 call per file."""
 
     def __init__(self):
-        self._model = os.getenv("MODEL", "gpt-oss-120b")
+        self._model = os.getenv("MODEL", "gpt-4o-mini")
         self.llm = self._create_llm()
         self.total_tokens = 0
         self.total_calls = 0
@@ -36,7 +36,7 @@ class CodeGeneratorStage:
         from openai import OpenAI
 
         provider = os.getenv("LLM_PROVIDER", "onprem")
-        api_base = os.getenv("API_BASE", "http://sov-ai-platform.nue.local.vm:4000/v1")
+        api_base = os.getenv("API_BASE", "")
         api_key = os.getenv("OPENAI_API_KEY", "dummy-key")
 
         client = OpenAI(base_url=api_base, api_key=api_key)
