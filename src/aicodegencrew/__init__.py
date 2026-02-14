@@ -1,43 +1,32 @@
 """
-AI Code Generation Crew
+AI Code Generation Crew — SDLC Automation Platform
 
-AI-powered SDLC automation using CrewAI with local Ollama models.
+8-phase pipeline from repository indexing to code generation:
 
-Package Structure:
-    aicodegencrew/
-        cli.py              # Unified CLI entry point
-        orchestrator.py     # SDLC pipeline orchestrator
+    pipelines/          Pure deterministic (no LLM)
+        indexing/           Phase 0: Repository indexing (ChromaDB)
+        architecture_facts/ Phase 1: Architecture facts extraction
 
-        pipelines/          # Automated processes (no LLM)
-            indexing.py     # Phase 0: Repository indexing
-            architecture_facts/  # Phase 1: Architecture facts
-            tools/          # Shared pipeline tools
-            git_ops/        # Future: Git operations
-            cicd/           # Future: CI/CD integration
-            merge/          # Future: Merge and release
+    crews/              LLM agent workflows (CrewAI)
+        architecture_analysis/  Phase 2: Architecture analysis
+        architecture_synthesis/ Phase 3: Architecture synthesis (C4, arc42)
 
-        crews/              # AI agent workflows (LLM required)
-            architecture_synthesis/  # Phase 2: Architecture synthesis
-            development/    # Phase 4: AI development (PLANNED)
+    hybrid/             Pipeline stages + LLM agents combined
+        development_planning/   Phase 4: Development planning
+        code_generation/        Phase 5: Code generation + build verification
 
-        shared/             # Common utilities
-            utils/
-            models/
-            tools/
+    shared/             Common utilities, models, and shared tools
 
 Usage:
-    python -m aicodegencrew --list
-    python -m aicodegencrew --preset document
-
-    from aicodegencrew import SDLCOrchestrator
-    from aicodegencrew.pipelines import IndexingPipeline
-    from aicodegencrew.crews import ArchitectureCrew
+    aicodegencrew run --preset document
+    aicodegencrew codegen --task-id TASK-001
+    python -m aicodegencrew list
 """
 
 from .cli import main
 from .orchestrator import SDLCOrchestrator
 
-__version__ = "0.3.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "SDLCOrchestrator",

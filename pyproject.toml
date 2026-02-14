@@ -1,12 +1,12 @@
 [project]
 name = "aicodegencrew"
 version = "0.5.0"
-description = "AI-powered SDLC automation using CrewAI with local Ollama models"
+description = "AI-powered SDLC automation platform — from architecture analysis to code generation"
 authors = [{ name = "Aymen Mastouri", email = "aymen.mastouri@icloud.com" }]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
 license = { text = "Proprietary" }
-keywords = ["ai", "crewai", "ollama", "sdlc", "code-generation", "rag"]
+keywords = ["ai", "sdlc", "code-generation", "architecture", "rag", "automation"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -111,6 +111,3 @@ ignore = [
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
-
-[tool.crewai]
-type = "crew"
