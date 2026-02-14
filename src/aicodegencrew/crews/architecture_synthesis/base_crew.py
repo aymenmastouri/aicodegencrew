@@ -27,7 +27,7 @@ from crewai.mcp import MCPServerStdio
 
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
-from ..architecture_analysis.tools import RAGQueryTool
+from ...shared.tools import RAGQueryTool
 from .tools import (
     DocWriterTool,
     DrawioDiagramTool,

@@ -35,8 +35,8 @@ from typing import Any
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from ....shared.utils.logger import setup_logger
-from ....shared.utils.token_budget import truncate_response
+from ..utils.logger import setup_logger
+from ..utils.token_budget import truncate_response
 
 logger = setup_logger(__name__)
 
