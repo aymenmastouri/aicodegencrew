@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from aicodegencrew.shared.utils.logger import archive_metrics, cleanup_old_archives
+
 from ..config import settings
 from .history_service import append_run_to_history
 from .phase_outputs import PHASE_OUTPUTS, get_cleanup_targets
@@ -107,15 +109,56 @@ def preview_reset(
     }
 
 
+def _archive_phase_outputs(phases_to_reset: list[str], timestamp: str) -> Path | None:
+    """Copy phase outputs to knowledge/archive/reset_{timestamp}/ before deletion."""
+    archive_root = settings.project_root / "knowledge" / "archive" / f"reset_{timestamp}"
+    archived_anything = False
+
+    for pid in phases_to_reset:
+        for p in _resolve_paths(pid):
+            dest = archive_root / pid / p.name
+            try:
+                if p.is_dir():
+                    shutil.copytree(p, dest)
+                else:
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(p, dest)
+                archived_anything = True
+            except OSError as exc:
+                logger.warning("Archive failed for %s: %s", p, exc)
+
+    return archive_root if archived_anything else None
+
+
+def _cleanup_reset_archives(max_keep: int = 5) -> int:
+    """Remove oldest reset archives beyond max_keep."""
+    archive_dir = settings.project_root / "knowledge" / "archive"
+    if not archive_dir.exists():
+        return 0
+
+    dirs = sorted(
+        [d for d in archive_dir.iterdir() if d.is_dir() and d.name.startswith("reset_")],
+        reverse=True,
+    )
+    removed = 0
+    for old_dir in dirs[max_keep:]:
+        shutil.rmtree(old_dir, ignore_errors=True)
+        removed += 1
+    return removed
+
+
 def execute_reset(
     phase_ids: list[str],
     cascade: bool = True,
 ) -> dict:
-    """Execute reset: delete phase outputs, recreate empty dirs, log event."""
+    """Execute reset: archive phase outputs, delete them, recreate empty dirs, log event."""
     phases_to_reset = compute_cascade(phase_ids) if cascade else list(phase_ids)
 
     ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     deleted_count = 0
+
+    # Archive phase outputs before deletion
+    archive_path = _archive_phase_outputs(phases_to_reset, ts)
 
     for pid in phases_to_reset:
         paths = _resolve_paths(pid)
@@ -156,10 +199,17 @@ def execute_reset(
         "completed_at": result_ts,
         "duration_seconds": 0,
         "deleted_count": deleted_count,
+        "archive_path": str(archive_path) if archive_path else None,
     })
+
+    # Rotate metrics and clean up old archives
+    archive_metrics()
+    cleanup_old_archives()
+    _cleanup_reset_archives()
 
     return {
         "reset_phases": phases_to_reset,
         "deleted_count": deleted_count,
         "timestamp": result_ts,
+        "archive_path": str(archive_path) if archive_path else None,
     }
