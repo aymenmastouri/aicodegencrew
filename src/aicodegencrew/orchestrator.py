@@ -99,14 +99,13 @@ class SDLCOrchestrator:
         result = orchestrator.run(preset="document")
     """
 
-    def __init__(self, config_path: str | None = None, repo_path: str | Path | None = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize with optional config path."""
         self.config_path = config_path or self._default_config_path()
         self.config = self._load_config()
         self.phases: dict[str, PhaseExecutable] = {}
         self.results: dict[str, PhaseResult] = {}
         self._start_time: datetime | None = None
-        self._repo_path = Path(repo_path) if repo_path else Path(".")
 
         logger.info("[Orchestrator] Initialized")
 
@@ -337,15 +336,15 @@ class SDLCOrchestrator:
         phase_config = self.get_phase_config(phase_id)
         dependencies = phase_config.get("dependencies", [])
 
-        validator = PhaseOutputValidator(base_dir=self._repo_path)
+        validator = PhaseOutputValidator()
 
         for dep in dependencies:
             # Check if ran successfully in this session
             if dep in self.results and self.results[dep].is_success():
                 continue
 
-            # Check if output files exist from previous run
-            if outputs_exist(dep, self._repo_path):
+            # Check if output files exist from previous run (CWD-relative)
+            if outputs_exist(dep, Path(".")):
                 # Validate output quality
                 errors = validator.validate_phase(dep)
                 if errors:

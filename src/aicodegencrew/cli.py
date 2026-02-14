@@ -123,14 +123,13 @@ def setup_logging() -> None:
 # =============================================================================
 
 
-def clean_knowledge(phase: str = "all", base_dir: Path | None = None) -> None:
+def clean_knowledge(phase: str = "all") -> None:
     """Clean knowledge directory before running a phase.
 
     Args:
-        phase: Phase ID or "all".
-        base_dir: Base directory containing knowledge/. Defaults to CWD.
+        phase: Phase ID or "all". Cleans relative to CWD.
     """
-    base = base_dir or Path(".")
+    base = Path(".")
 
     cleaned: list[str] = []
 
@@ -209,9 +208,9 @@ def cmd_index(config: Config) -> int:
     from .pipelines.indexing import ensure_repo_indexed
 
     repo_path = _resolve_repo_path(config)
-    from .shared.paths import resolve_chroma_dir
+    from .shared.paths import CHROMA_DIR
 
-    chroma_dir = Path(resolve_chroma_dir(repo_path))
+    chroma_dir = Path(CHROMA_DIR)
 
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")
@@ -387,21 +386,21 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # Resolve repo path (clone from Git URL if configured)
     repo_path = _resolve_repo_path(config)
 
-    # Resolve all knowledge paths relative to repo_path (CWD-independent)
-    from .shared.paths import resolve_chroma_dir, resolve_knowledge_dir
+    # Knowledge paths: relative to project root (CWD), NOT target repo
+    from .shared.paths import CHROMA_DIR, KNOWLEDGE_DIR
 
-    knowledge_dir = resolve_knowledge_dir(repo_path)
-    chroma_dir = resolve_chroma_dir(repo_path)
+    knowledge_dir = KNOWLEDGE_DIR
+    chroma_dir = CHROMA_DIR
     phase1_dir = knowledge_dir / "extract"
     phase2_dir = knowledge_dir / "analyze"
     phase4_dir = knowledge_dir / "plan"
 
     # Clean if requested
     if config.clean:
-        clean_knowledge("all", base_dir=repo_path)
+        clean_knowledge("all")
 
     # Initialize orchestrator
-    orchestrator = SDLCOrchestrator(config_path=config.config_path, repo_path=repo_path)
+    orchestrator = SDLCOrchestrator(config_path=config.config_path)
 
     # Resolve which phases will run (strict validation)
     try:
@@ -426,7 +425,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # --- Extract: Architecture Facts ---
     if "extract" in planned_phases:
         if not config.no_clean:
-            clean_knowledge("extract", base_dir=repo_path)
+            clean_knowledge("extract")
         facts_pipeline = ArchitectureFactsPipeline(
             repo_path=str(repo_path),
             output_dir=str(phase1_dir),
@@ -463,7 +462,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         from .hybrid.development_planning import DevelopmentPlanningPipeline
 
         if not config.no_clean:
-            clean_knowledge("plan", base_dir=repo_path)
+            clean_knowledge("plan")
 
         # Get input directory from .env (REQUIRED - no hardcoded default)
         input_dir = os.getenv("TASK_INPUT_DIR", "")

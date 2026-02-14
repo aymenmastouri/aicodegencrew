@@ -56,7 +56,7 @@ class ArchitectureFactsPipeline:
             output_dir: Output directory (defaults to knowledge/extract)
         """
         self.repo_path = Path(repo_path).resolve()
-        self.output_dir = Path(output_dir) if output_dir else (self.repo_path / "knowledge" / "extract")
+        self.output_dir = Path(output_dir) if output_dir else (Path(".") / "knowledge" / "extract").resolve()
 
         if not self.repo_path.exists():
             raise ValueError(f"Repository path does not exist: {self.repo_path}")

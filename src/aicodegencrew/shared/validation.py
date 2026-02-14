@@ -82,9 +82,9 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
 class PhaseOutputValidator:
     """Validates phase output files and data contracts."""
 
-    def __init__(self, base_dir: Path | None = None):
-        """Initialize with optional base directory (repo_path)."""
-        self._base = base_dir or Path(".")
+    def __init__(self):
+        """Initialize. All paths are relative to CWD (project root)."""
+        self._base = Path(".")
 
     def validate_phase(self, phase_id: str) -> list[str]:
         """
