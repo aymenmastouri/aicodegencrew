@@ -160,10 +160,37 @@ class PipelineExecutor:
                 self.state = "cancelled"
                 self._finished_at = time.monotonic()
                 logger.info("Pipeline cancelled: run_id=%s", self.current_run.run_id if self.current_run else "?")
+
+                # Mark any "running" phases as failed in phase_state.json
+                self._mark_running_phases_cancelled()
+
                 return True
             except Exception as exc:
                 logger.error("Failed to cancel pipeline: %s", exc)
                 return False
+
+    def _mark_running_phases_cancelled(self) -> None:
+        """After cancel, update phase_state.json so running phases show as failed."""
+        state_path = settings.project_root / "logs" / "phase_state.json"
+        try:
+            if not state_path.exists():
+                return
+            with open(state_path, encoding="utf-8") as f:
+                data = json.load(f)
+            phases = data.get("phases", {})
+            modified = False
+            for entry in phases.values():
+                if entry.get("status") == "running":
+                    entry["status"] = "failed"
+                    entry["error"] = "Cancelled by user"
+                    entry["completed_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+                    modified = True
+            if modified:
+                data["updated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+                with open(state_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+        except Exception as exc:
+            logger.warning("Failed to update phase_state.json after cancel: %s", exc)
 
     def get_status(self) -> dict:
         """Get current execution status."""
