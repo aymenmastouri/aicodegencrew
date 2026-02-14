@@ -206,7 +206,9 @@ def cmd_index(config: Config) -> int:
     from .pipelines.indexing import ensure_repo_indexed
 
     repo_path = _resolve_repo_path(config)
-    chroma_dir = Path(os.getenv("CHROMA_DIR", "knowledge/discover"))
+    from .shared.paths import CHROMA_DIR as _CHROMA_DIR
+
+    chroma_dir = Path(_CHROMA_DIR)
 
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")

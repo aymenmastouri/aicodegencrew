@@ -137,7 +137,7 @@ class InterfaceCollector(DimensionCollector):
                 content = gradle.read_text(encoding="utf-8", errors="ignore")
                 if "org.springframework.boot" in content:
                     return True
-            except:
+            except Exception:
                 continue
         return False
 
@@ -161,7 +161,7 @@ class InterfaceCollector(DimensionCollector):
         for java_file in java_files:
             try:
                 content = java_file.read_text(encoding="utf-8", errors="ignore")
-            except:
+            except Exception:
                 continue
 
             for match in SCHEDULED_PATTERN.finditer(content):
@@ -209,7 +209,7 @@ class InterfaceCollector(DimensionCollector):
         for java_file in java_files:
             try:
                 content = java_file.read_text(encoding="utf-8", errors="ignore")
-            except:
+            except Exception:
                 continue
 
             # Kafka listeners

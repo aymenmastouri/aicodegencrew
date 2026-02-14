@@ -85,11 +85,6 @@ class RAGQueryTool(BaseTool):
         if self.chroma_dir and Path(self.chroma_dir).exists():
             return self.chroma_dir
 
-        # Check environment variable
-        env_path = os.getenv("CHROMA_DIR")
-        if env_path and Path(env_path).exists():
-            return env_path
-
         # Resolve project root from __file__ (stable, independent of CWD)
         # __file__ = src/aicodegencrew/shared/tools/rag_query_tool.py
         base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent

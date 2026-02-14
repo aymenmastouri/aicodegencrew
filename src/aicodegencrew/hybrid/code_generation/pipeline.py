@@ -10,7 +10,6 @@ Total Duration: 30s-5min (depending on file count)
 LLM Calls: 1 per affected file
 """
 
-import os
 import time
 from pathlib import Path
 from typing import Any
@@ -29,7 +28,7 @@ from .crew import ImplementCrew
 
 logger = setup_logger(__name__)
 
-_USE_CREW = os.getenv("CODEGEN_USE_CREW", "false").lower() == "true"
+_USE_CREW = False  # Set True to use CrewAI agents instead of direct LLM pipeline
 
 
 class CodeGenerationPipeline:

@@ -339,7 +339,7 @@ Create final container analysis JSON:
             end = text.rfind("}") + 1
             if start >= 0 and end > start:
                 return json.loads(text[start:end])
-        except:
+        except Exception:
             pass
         return {}
 

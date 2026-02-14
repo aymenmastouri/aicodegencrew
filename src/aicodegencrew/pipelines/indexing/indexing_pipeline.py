@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
+from ...shared.paths import CHROMA_DIR
 from ...shared.utils.file_filters import collect_files
 from ...shared.utils.logger import log_metric, setup_logger
 from .chroma_index_tool import ChromaIndexTool
@@ -64,7 +65,7 @@ class IndexingConfig:
         return cls(
             repo_path=resolved_path,
             index_mode=index_mode or os.getenv("INDEX_MODE", "auto"),
-            chroma_dir=chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover"),
+            chroma_dir=chroma_dir or CHROMA_DIR,
             collection_name=os.getenv("COLLECTION_NAME", "repo_docs"),
             include_submodules=True,
             batch_size=int(os.getenv("INDEX_BATCH_SIZE", "50")),
@@ -182,7 +183,7 @@ class IndexingState:
 
 
 def _get_index_lock_path(chroma_dir: str | None = None) -> Path:
-    d = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
+    d = chroma_dir or CHROMA_DIR
     return Path(d).resolve() / ".index.lock"
 
 

@@ -28,6 +28,7 @@ from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 from crewai_tools import FileWriterTool
 
+from ...shared.paths import CHROMA_DIR
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 from .agents import AGENT_CONFIGS
@@ -72,7 +73,7 @@ class ArchitectureAnalysisCrew:
         """Initialize crew with paths."""
         self.facts_path = Path(facts_path)
         self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
+        self.chroma_dir = chroma_dir or CHROMA_DIR
         self.output_dir = Path(output_dir)
         self._analysis_dir = self.output_dir / "analysis"
         self._checkpoint_file = self.output_dir / ".checkpoint_analysis.json"
@@ -176,13 +177,14 @@ class ArchitectureAnalysisCrew:
             )
         return tasks
 
+    _MAX_RETRIES = 2  # transient error retries
+
     def _run_mini_crew(self, name: str, tasks: list[Task]) -> str:
         """Run a mini-crew with fresh context, retry on transient errors."""
-        max_retries = int(os.getenv("CREW_MAX_RETRIES", "2"))
         logger.info(f"[Phase2] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
         start_time = time.time()
 
-        for attempt in range(1, max_retries + 1):
+        for attempt in range(1, self._MAX_RETRIES + 1):
             tracker = None
             try:
                 crew = Crew(
@@ -222,11 +224,11 @@ class ArchitectureAnalysisCrew:
                 return str(result)
 
             except (ConnectionError, TimeoutError, OSError) as e:
-                if attempt < max_retries:
+                if attempt < self._MAX_RETRIES:
                     delay = 5 * (2 ** (attempt - 1))
                     logger.warning(
                         f"[Phase2] {name}: Connection error "
-                        f"(attempt {attempt}/{max_retries}), "
+                        f"(attempt {attempt}/{self._MAX_RETRIES}), "
                         f"retrying in {delay}s: {e}"
                     )
                     time.sleep(delay)

@@ -16,6 +16,7 @@ from chromadb.config import Settings
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
+from ...shared.paths import CHROMA_DIR
 from ...shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -94,7 +95,7 @@ class ChromaIndexTool(BaseTool):
         Client is created only when first needed.
         """
         if not hasattr(self, "_client"):
-            chroma_dir = self.chroma_dir or os.getenv("CHROMA_DIR", "./.chroma_db")
+            chroma_dir = self.chroma_dir or CHROMA_DIR
             Path(chroma_dir).mkdir(parents=True, exist_ok=True)
 
             logger.info(f"Initializing ChromaDB client at: {chroma_dir}")

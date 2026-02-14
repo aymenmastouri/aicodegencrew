@@ -13,10 +13,10 @@ Duration: 2-5 seconds (RAG + scoring)
 NO LLM REQUIRED
 """
 
-import os
 from pathlib import Path
 from typing import Any
 
+from ....shared.paths import CHROMA_DIR
 from ....shared.utils.logger import setup_logger
 from ..schemas import ComponentMatch, DependencyRelation, InterfaceMatch, TaskInput
 
@@ -41,7 +41,7 @@ class ComponentDiscoveryStage:
             chroma_dir: ChromaDB directory path
         """
         self.facts = facts
-        self.chroma_dir = chroma_dir or os.getenv("CHROMA_DIR", "knowledge/discover")
+        self.chroma_dir = chroma_dir or CHROMA_DIR
 
         self.components = facts.get("components", [])
         self.interfaces = facts.get("interfaces", [])
