@@ -8,10 +8,11 @@ import os
 
 from fastapi import APIRouter, HTTPException
 
+from aicodegencrew.phase_registry import get_resettable_phases
+
 from ..config import settings
 from ..schemas import ResetPreview, ResetRequest, ResetResult
 from ..services.pipeline_executor import executor
-from ..services.phase_outputs import PHASE_OUTPUTS
 from ..services.reset_service import execute_reset, preview_reset
 
 logger = logging.getLogger(__name__)
@@ -79,7 +80,7 @@ def reset_all():
             detail="Cannot reset while pipeline is running",
         )
 
-    all_phases = [p for p in PHASE_OUTPUTS if p != "discover"]
+    all_phases = get_resettable_phases()
 
     return execute_reset(
         phase_ids=all_phases,

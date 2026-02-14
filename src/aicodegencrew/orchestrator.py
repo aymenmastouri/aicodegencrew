@@ -19,6 +19,7 @@ from typing import Any, Protocol
 
 import yaml
 
+from .phase_registry import outputs_exist
 from .shared.utils.logger import log_metric, logger
 from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_failed, set_phase_running
 
@@ -342,7 +343,7 @@ class SDLCOrchestrator:
                 continue
 
             # Check if output files exist from previous run
-            if self._outputs_exist(dep):
+            if outputs_exist(dep, Path(".")):
                 # Validate output quality
                 errors = validator.validate_phase(dep)
                 if errors:
@@ -357,34 +358,6 @@ class SDLCOrchestrator:
             return False
 
         return True
-
-    def _outputs_exist(self, phase_id: str) -> bool:
-        """Check if phase outputs exist from previous run."""
-        base = Path(".")
-        output_files = {
-            "discover": [base / "knowledge" / "discover"],
-            "extract": [
-                base / "knowledge" / "extract" / "architecture_facts.json",
-                base / "knowledge" / "extract" / "evidence_map.json",
-            ],
-            "analyze": [
-                base / "knowledge" / "analyze" / "analyzed_architecture.json",
-            ],
-            "document": [
-                base / "knowledge" / "document" / "c4" / "c4-context.md",
-            ],
-            "plan": [
-                base / "knowledge" / "plan",
-            ],
-            "implement": [
-                base / "knowledge" / "implement",
-            ],
-        }
-
-        expected = output_files.get(phase_id, [])
-        if not expected:
-            return False
-        return all(p.exists() for p in expected)
 
     def _build_result(self, status: str, message: str) -> PipelineResult:
         """Build final pipeline result."""

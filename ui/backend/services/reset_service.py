@@ -7,27 +7,13 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-import yaml
-
+from aicodegencrew.phase_registry import get_all_phases, get_cleanup_targets, get_dependency_graph
 from aicodegencrew.shared.utils.logger import archive_metrics, cleanup_old_archives
 
 from ..config import settings
 from .history_service import append_run_to_history
-from .phase_outputs import PHASE_OUTPUTS, get_cleanup_targets
 
 logger = logging.getLogger(__name__)
-
-
-def _load_dependencies() -> dict[str, list[str]]:
-    """Load phase dependency graph from phases_config.yaml."""
-    if not settings.phases_config.exists():
-        return {}
-    with open(settings.phases_config, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f) or {}
-    deps: dict[str, list[str]] = {}
-    for phase_id, phase_cfg in cfg.get("phases", {}).items():
-        deps[phase_id] = phase_cfg.get("dependencies", [])
-    return deps
 
 
 def compute_cascade(phase_ids: list[str]) -> list[str]:
@@ -36,7 +22,7 @@ def compute_cascade(phase_ids: list[str]) -> list[str]:
     If phase A is being reset and phase B depends (directly or transitively)
     on A, then B must also be reset.
     """
-    deps = _load_dependencies()
+    deps = get_dependency_graph()
 
     # Build reverse map: phase -> set of phases that depend on it
     dependents: dict[str, set[str]] = {}
@@ -53,9 +39,9 @@ def compute_cascade(phase_ids: list[str]) -> list[str]:
                 to_reset.add(child)
                 queue.append(child)
 
-    # Sort by order (phase number embedded in id)
-    all_phases = list(deps.keys())
-    return sorted(to_reset, key=lambda p: all_phases.index(p) if p in all_phases else 99)
+    # Sort by registry order
+    order = {p.phase_id: p.order for p in get_all_phases()}
+    return sorted(to_reset, key=lambda p: order.get(p, 99))
 
 
 def _clear_phase_state(phase_ids: list[str]) -> None:

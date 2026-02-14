@@ -10,6 +10,15 @@
 
 **Why On-Premises?** Enterprise software often contains sensitive intellectual property, customer data, or security-critical code. Sending this data to external AI services (like OpenAI, Anthropic, etc.) may violate compliance requirements, data protection regulations, or internal security policies. SDLC Pilot is designed to run entirely on your infrastructure with your own LLMs - no data ever leaves your network.
 
+### Detailed Architecture Documentation
+
+- [Phase Registry](architecture/phase-registry.md) — Single source of truth for phase metadata
+- [Orchestration & State](architecture/orchestration.md) — Phase execution, dependencies, crash recovery
+- [Pipeline Pattern](architecture/pipeline-pattern.md) — Stage-based execution, self-healing builds
+- [Crew Pattern](architecture/crew-pattern.md) — Multi-agent AI collaboration, MapReduce
+- [Knowledge Lifecycle](architecture/knowledge-lifecycle.md) — 16 dimensions, data flow, archive/reset
+- [Dashboard Architecture](architecture/dashboard.md) — Angular + FastAPI, SSE, 11 routers
+
 ### 1.2 4-Layer Architecture Model
 
 > **Reference Diagrams:**
