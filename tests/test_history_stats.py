@@ -213,16 +213,70 @@ class TestHistoryStats:
         # Write metrics events
         metrics_path = tmp_project / "logs" / "metrics.jsonl"
         _append(metrics_path, {
-            "event": "mini_crew_complete",
-            "data": {"run_id": "run1", "total_tokens": 500},
+            "msg": "mini_crew_complete",
+            "data": {"event": "mini_crew_complete", "run_id": "run1", "total_tokens": 500},
         })
         _append(metrics_path, {
-            "event": "mini_crew_complete",
-            "data": {"run_id": "run1", "total_tokens": 300},
+            "msg": "mini_crew_complete",
+            "data": {"event": "mini_crew_complete", "run_id": "run1", "total_tokens": 300},
         })
 
         history = get_run_history()
         assert history[0]["total_tokens"] == 800
+
+    def test_history_entry_tokens_use_engine_run_id(self, mock_settings, tmp_project):
+        """If UI run_id differs, token enrichment falls back to engine_run_id."""
+        from ui.backend.services.history_service import append_run_to_history, get_run_history
+
+        append_run_to_history({
+            "run_id": "ui_run_1",
+            "engine_run_id": "eng12345",
+            "status": "completed",
+            "trigger": "pipeline",
+            "phases": ["discover"],
+        })
+
+        metrics_path = tmp_project / "logs" / "metrics.jsonl"
+        _append(metrics_path, {
+            "msg": "mini_crew_complete",
+            "data": {"event": "mini_crew_complete", "run_id": "eng12345", "total_tokens": 750},
+        })
+
+        history = get_run_history()
+        assert history[0]["run_id"] == "ui_run_1"
+        assert history[0]["total_tokens"] == 750
+
+    def test_run_detail_matches_report_by_engine_run_id(self, mock_settings, tmp_project):
+        """Run detail should enrich from run_report when report uses engine_run_id."""
+        from ui.backend.services.history_service import append_run_to_history, get_run_detail
+
+        append_run_to_history({
+            "run_id": "ui_run_2",
+            "engine_run_id": "eng99999",
+            "status": "completed",
+            "trigger": "pipeline",
+            "phases": ["extract"],
+        })
+
+        report = {
+            "run_id": "eng99999",
+            "status": "success",
+            "environment": {"preset": "full"},
+            "phases": [{"phase": "extract", "status": "completed"}],
+        }
+        (tmp_project / "knowledge" / "run_report.json").write_text(json.dumps(report), encoding="utf-8")
+
+        metrics_path = tmp_project / "logs" / "metrics.jsonl"
+        _append(metrics_path, {
+            "msg": "mini_crew_complete",
+            "data": {"event": "mini_crew_complete", "run_id": "eng99999", "total_tokens": 123},
+        })
+
+        detail = get_run_detail("ui_run_2")
+        assert detail is not None
+        assert detail["phase_results"] == [{"phase": "extract", "status": "completed"}]
+        assert detail["environment"]["preset"] == "full"
+        assert len(detail["metrics_events"]) == 1
 
     def test_stats_route_before_run_id(self, mock_settings):
         """/stats not treated as run_id — both routes work."""
@@ -244,3 +298,5 @@ class TestHistoryStats:
         # /nonexistent should return 404 (run_id not found)
         resp_detail = client.get("/api/pipeline/history/nonexistent")
         assert resp_detail.status_code == 404
+
+

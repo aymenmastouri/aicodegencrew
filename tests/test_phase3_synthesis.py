@@ -409,3 +409,62 @@ class TestSynthesisCrewKickoff:
 
         mock_run.assert_called_once()
         assert result == mock_result
+
+
+class TestSynthesisCrewStatus:
+    """Test phase status reporting (completed vs partial)."""
+
+    def test_run_returns_partial_when_subcrews_degrade(self, tmp_path):
+        extract_dir = tmp_path / "knowledge" / "extract"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
+
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
+
+        c4_mock = MagicMock()
+        c4_mock.run.return_value = "C4 done"
+        c4_mock.has_degraded_outputs.return_value = True
+        c4_mock.get_degradation_reasons.return_value = ["c4 degraded"]
+
+        arc42_mock = MagicMock()
+        arc42_mock.run.return_value = "Arc42 done"
+        arc42_mock.has_degraded_outputs.return_value = False
+        arc42_mock.get_degradation_reasons.return_value = []
+
+        with (
+            patch.object(crew, "_validate_prerequisites", return_value=None),
+            patch.object(crew, "_clean_old_outputs", return_value=None),
+            patch("aicodegencrew.crews.architecture_synthesis.crew.C4Crew", return_value=c4_mock),
+            patch("aicodegencrew.crews.architecture_synthesis.crew.Arc42Crew", return_value=arc42_mock),
+        ):
+            result = crew.run()
+
+        assert result["status"] == "partial"
+        assert result["phase"] == "document"
+        assert result["degradation_reasons"] == ["c4 degraded"]
+
+    def test_run_returns_completed_when_no_degradation(self, tmp_path):
+        extract_dir = tmp_path / "knowledge" / "extract"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
+
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
+
+        c4_mock = MagicMock()
+        c4_mock.run.return_value = "C4 done"
+        c4_mock.has_degraded_outputs.return_value = False
+        c4_mock.get_degradation_reasons.return_value = []
+
+        arc42_mock = MagicMock()
+        arc42_mock.run.return_value = "Arc42 done"
+        arc42_mock.has_degraded_outputs.return_value = False
+        arc42_mock.get_degradation_reasons.return_value = []
+
+        with (
+            patch.object(crew, "_validate_prerequisites", return_value=None),
+            patch.object(crew, "_clean_old_outputs", return_value=None),
+            patch("aicodegencrew.crews.architecture_synthesis.crew.C4Crew", return_value=c4_mock),
+            patch("aicodegencrew.crews.architecture_synthesis.crew.Arc42Crew", return_value=arc42_mock),
+        ):
+            result = crew.run()
+
+        assert result["status"] == "completed"
+        assert result["degradation_reasons"] == []

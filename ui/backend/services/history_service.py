@@ -124,6 +124,17 @@ def get_history_stats() -> dict:
     }
 
 
+def _metric_event_name(parsed: dict, data: dict) -> str:
+    """Normalize metric event name across log shapes."""
+    return data.get("event") or parsed.get("msg") or parsed.get("event") or ""
+
+
+def _metric_run_id(parsed: dict, data: dict) -> str | None:
+    """Normalize metric run_id across log shapes."""
+    rid = data.get("run_id") or parsed.get("run_id")
+    return str(rid) if rid else None
+
+
 def _aggregate_tokens() -> dict[str, int]:
     """Scan metrics.jsonl for mini_crew_complete events and sum tokens by run_id."""
     metrics_path = settings.metrics_file
@@ -140,11 +151,11 @@ def _aggregate_tokens() -> dict[str, int]:
                     continue
                 try:
                     parsed = json.loads(line)
-                    if parsed.get("event") != "mini_crew_complete":
-                        continue
                     data = parsed.get("data", {})
-                    run_id = data.get("run_id") or parsed.get("run_id")
-                    tokens = data.get("total_tokens", 0) or 0
+                    if _metric_event_name(parsed, data) != "mini_crew_complete":
+                        continue
+                    run_id = _metric_run_id(parsed, data)
+                    tokens = data.get("total_tokens", 0) or data.get("tokens", 0) or 0
                     if run_id:
                         token_map[run_id] = token_map.get(run_id, 0) + tokens
                 except json.JSONDecodeError:
@@ -161,9 +172,12 @@ def _enrich_tokens(entries: list[dict]) -> None:
     if not token_map:
         return
     for entry in entries:
-        rid = entry.get("run_id")
-        if rid and rid in token_map:
-            entry["total_tokens"] = token_map[rid]
+        run_id = entry.get("run_id")
+        engine_run_id = entry.get("engine_run_id")
+        if run_id and run_id in token_map:
+            entry["total_tokens"] = token_map[run_id]
+        elif engine_run_id and engine_run_id in token_map:
+            entry["total_tokens"] = token_map[engine_run_id]
 
 
 def get_run_detail(run_id: str) -> dict | None:
@@ -171,7 +185,7 @@ def get_run_detail(run_id: str) -> dict | None:
     path = _history_path()
     entry: dict | None = None
 
-    # Search JSONL for matching run_id
+    # Search JSONL for matching run_id (UI run_id or engine_run_id)
     if path.exists() and path.stat().st_size > 0:
         try:
             with open(path, encoding="utf-8") as f:
@@ -181,7 +195,7 @@ def get_run_detail(run_id: str) -> dict | None:
                         continue
                     try:
                         parsed = json.loads(line)
-                        if parsed.get("run_id") == run_id:
+                        if parsed.get("run_id") == run_id or parsed.get("engine_run_id") == run_id:
                             entry = parsed
                     except json.JSONDecodeError:
                         continue
@@ -198,6 +212,12 @@ def get_run_detail(run_id: str) -> dict | None:
     if entry is None:
         return None
 
+    candidate_ids = {str(run_id)}
+    if entry.get("run_id"):
+        candidate_ids.add(str(entry["run_id"]))
+    if entry.get("engine_run_id"):
+        candidate_ids.add(str(entry["engine_run_id"]))
+
     # Enrich with run_report.json if the run matches current report
     if not entry.get("phase_results"):
         report_path = settings.run_report
@@ -205,14 +225,14 @@ def get_run_detail(run_id: str) -> dict | None:
             try:
                 with open(report_path, encoding="utf-8") as f:
                     report = json.load(f)
-                if report.get("run_id") == run_id:
+                if str(report.get("run_id", "")) in candidate_ids:
                     entry["phase_results"] = report.get("phases", [])
                     entry["environment"] = report.get("environment", {})
             except (json.JSONDecodeError, OSError):
                 pass
 
     # Enrich with filtered metrics events
-    entry["metrics_events"] = _get_metrics_for_run(run_id)
+    entry["metrics_events"] = _get_metrics_for_run_ids(candidate_ids)
 
     # Add environment info if not already present
     if not entry.get("environment"):
@@ -224,12 +244,13 @@ def get_run_detail(run_id: str) -> dict | None:
     return entry
 
 
-def _get_metrics_for_run(run_id: str) -> list[dict]:
-    """Filter metrics.jsonl events for a specific run_id."""
+def _get_metrics_for_run_ids(run_ids: set[str]) -> list[dict]:
+    """Filter metrics.jsonl events for one or more run_ids."""
     metrics_path = settings.metrics_file
     events: list[dict] = []
 
-    if not metrics_path.exists():
+    normalized_ids = {str(rid) for rid in run_ids if rid}
+    if not metrics_path.exists() or not normalized_ids:
         return events
 
     try:
@@ -241,7 +262,8 @@ def _get_metrics_for_run(run_id: str) -> list[dict]:
                 try:
                     parsed = json.loads(line)
                     data = parsed.get("data", {})
-                    if data.get("run_id") == run_id or parsed.get("run_id") == run_id:
+                    event_run_id = _metric_run_id(parsed, data)
+                    if event_run_id in normalized_ids:
                         events.append(parsed)
                 except json.JSONDecodeError:
                     continue

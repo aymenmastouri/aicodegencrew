@@ -46,10 +46,15 @@ class KnowledgeConfig:
     def auto_detect(cls) -> "KnowledgeConfig":
         """Auto-detect knowledge directory."""
         candidates = [
+            # Current pipeline output location
+            Path.cwd() / "knowledge" / "extract",
+            Path.cwd().parent / "knowledge" / "extract",
+            # Legacy fallback
             Path.cwd() / "knowledge" / "architecture",
             Path.cwd().parent / "knowledge" / "architecture",
         ]
         for parent in Path.cwd().parents:
+            candidates.append(parent / "knowledge" / "extract")
             candidates.append(parent / "knowledge" / "architecture")
         
         for path in candidates:
@@ -57,7 +62,7 @@ class KnowledgeConfig:
                 return cls(knowledge_path=path)
         
         # Default fallback
-        return cls(knowledge_path=Path.cwd() / "knowledge" / "architecture")
+        return cls(knowledge_path=Path.cwd() / "knowledge" / "extract")
 
 
 class KnowledgeTools:

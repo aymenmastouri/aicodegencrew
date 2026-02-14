@@ -144,6 +144,8 @@ class MiniCrewBase(ABC):
         # Token budget tracking
         self._token_budget = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
         self._token_usage: list[dict[str, Any]] = []
+        # Track quality degradations (fallback writes, stubs, mini-crew failures).
+        self._degradation_reasons: list[str] = []
 
     # -------------------------------------------------------------------------
     # ABSTRACT - Subclasses must implement
@@ -399,6 +401,7 @@ class MiniCrewBase(ABC):
         duration = time.time() - start_time
         error_type = type(error).__name__
         error_msg = str(error)[:500]
+        self._mark_degraded(f"{name}: {error_type}")
 
         logger.error(f"[{self.crew_name}] Failed Mini-Crew: {name} ({duration:.1f}s, {error_type}): {error_msg}")
 
@@ -501,6 +504,7 @@ class MiniCrewBase(ABC):
                 doc_writer_called = any("doc_writer:" in call for call in tracker.calls)
 
             if not doc_writer_called:
+                self._mark_degraded(f"{crew_name}: missing doc_writer for {file_path}")
                 logger.warning(
                     f"[{self.crew_name}] {crew_name}: Agent did NOT call doc_writer! "
                     f"Tool calls made: {len(tracker.calls) if tracker else 0}. "
@@ -521,6 +525,7 @@ class MiniCrewBase(ABC):
             # doc_writer was called but file still missing — try fallback from result
             content = self._extract_content(result)
             if len(content) > 300 and ("# " in content or "## " in content):
+                self._mark_degraded(f"{crew_name}: fallback write for {file_path}")
                 logger.warning(
                     f"[{self.crew_name}] {crew_name}: {file_path} NOT written by agent! "
                     f"Fallback-writing {len(content)} chars from result."
@@ -529,6 +534,7 @@ class MiniCrewBase(ABC):
                 with open(full, "w", encoding="utf-8") as f:
                     f.write(content)
             else:
+                self._mark_degraded(f"{crew_name}: stub fallback for {file_path}")
                 logger.warning(
                     f"[{self.crew_name}] {crew_name}: {file_path} NOT written, "
                     f"result too short for fallback ({len(content)} chars). "
@@ -625,9 +631,23 @@ This chapter requires manual completion or re-running with a more capable LLM.
             full.parent.mkdir(parents=True, exist_ok=True)
             with open(full, "w", encoding="utf-8") as f:
                 f.write(content)
+            self._mark_degraded(f"{crew_name}: recovered stub for {file_path}")
             logger.warning(
                 f"[{self.crew_name}] {crew_name}: Recovery-generated stub for {file_path} ({len(content)} chars)"
             )
+
+    def _mark_degraded(self, reason: str) -> None:
+        """Record a degradation reason once."""
+        if reason not in self._degradation_reasons:
+            self._degradation_reasons.append(reason)
+
+    def has_degraded_outputs(self) -> bool:
+        """Whether this crew produced degraded output."""
+        return bool(self._degradation_reasons)
+
+    def get_degradation_reasons(self) -> list[str]:
+        """Get degradation reasons for reporting."""
+        return list(self._degradation_reasons)
 
     # -------------------------------------------------------------------------
     # CHECKPOINT PERSISTENCE
