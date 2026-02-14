@@ -174,6 +174,12 @@ class PipelineExecutor:
                     self.state = "idle"
                     self._finished_at = None
 
+        # Detect external CLI runs when executor is idle
+        if self.state == "idle":
+            ext = self._check_external_run()
+            if ext:
+                return ext
+
         elapsed = None
         if self._started_at and self.state == "running":
             elapsed = round(time.monotonic() - self._started_at, 1)
@@ -522,6 +528,67 @@ class PipelineExecutor:
             }
             for phase_id in self.current_run.phases
         ]
+
+    def _check_external_run(self) -> dict | None:
+        """Check phase_state.json for an external CLI run in progress."""
+        import os as _os
+
+        state_path = settings.project_root / "logs" / "phase_state.json"
+        if not state_path.exists():
+            return None
+
+        try:
+            with open(state_path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            return None
+
+        pid = data.get("pid")
+        phases = data.get("phases", {})
+
+        # Check if any phase is running and PID is alive
+        has_running = any(e.get("status") == "running" for e in phases.values())
+        if not has_running:
+            return None
+
+        # Verify the process is actually alive
+        try:
+            _os.kill(pid, 0)
+        except (OSError, ProcessLookupError, TypeError):
+            return None
+
+        # External run is active — build a status response
+        run_id = data.get("run_id", "cli")
+        phase_progress = []
+        for phase_id, entry in phases.items():
+            phase_progress.append({
+                "phase_id": phase_id,
+                "name": phase_id.replace("_", " ").title(),
+                "status": entry.get("status", "pending"),
+                "started_at": entry.get("started_at"),
+                "duration_seconds": entry.get("duration_seconds"),
+                "sub_phases": [],
+                "total_tokens": 0,
+            })
+
+        completed = sum(1 for p in phase_progress if p["status"] == "completed")
+        total = len(phase_progress) if phase_progress else 1
+        progress = round(completed / total * 100, 1)
+
+        return {
+            "state": "running",
+            "run_id": run_id,
+            "preset": None,
+            "phases": list(phases.keys()),
+            "started_at": data.get("updated_at"),
+            "elapsed_seconds": None,
+            "phase_progress": phase_progress,
+            "progress_percent": progress,
+            "completed_phase_count": completed,
+            "total_phase_count": total,
+            "eta_seconds": None,
+            "live_metrics": None,
+        }
 
     def _estimate_eta(self, elapsed: float | None) -> float | None:
         """Estimate remaining time based on historical run durations."""

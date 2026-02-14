@@ -56,6 +56,26 @@ def compute_cascade(phase_ids: list[str]) -> list[str]:
     return sorted(to_reset, key=lambda p: all_phases.index(p) if p in all_phases else 99)
 
 
+def _clear_phase_state(phase_ids: list[str]) -> None:
+    """Remove phase entries from logs/phase_state.json after reset."""
+    import json
+
+    state_path = settings.project_root / "logs" / "phase_state.json"
+    if not state_path.exists():
+        return
+    try:
+        with open(state_path, encoding="utf-8") as f:
+            data = json.load(f)
+        phases = data.get("phases", {})
+        for pid in phase_ids:
+            phases.pop(pid, None)
+        data["updated_at"] = datetime.now(UTC).isoformat()
+        with open(state_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.warning("Failed to clear phase state: %s", exc)
+
+
 def _resolve_paths(phase_id: str) -> list[Path]:
     """Return absolute paths for a phase's cleanup targets."""
     targets = get_cleanup_targets(phase_id)
@@ -120,6 +140,9 @@ def execute_reset(
             p = settings.project_root / rel
             if not p.suffix and not p.exists():
                 p.mkdir(parents=True, exist_ok=True)
+
+    # Clear phase state entries for reset phases
+    _clear_phase_state(phases_to_reset)
 
     result_ts = datetime.now(UTC).isoformat()
 
