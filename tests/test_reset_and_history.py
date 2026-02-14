@@ -234,7 +234,8 @@ class TestResetService:
         from ui.backend.services.reset_service import compute_cascade
 
         result = compute_cascade(["implement"])
-        assert result == ["implement"]
+        # implement -> verify -> deliver (forward cascade)
+        assert set(result) == {"implement", "verify", "deliver"}
 
     def test_compute_cascade_phase4(self, mock_settings):
         from ui.backend.services.reset_service import compute_cascade
