@@ -22,7 +22,6 @@ USAGE:
 
 import json
 import logging
-import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -86,8 +85,12 @@ class ContainerAnalyzer:
 
     def _load_container_facts(self) -> dict[str, Any]:
         """Load facts filtered by this container."""
-        with open(self.facts_path, encoding="utf-8") as f:
-            all_facts = json.load(f)
+        try:
+            with open(self.facts_path, encoding="utf-8") as f:
+                all_facts = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"Could not read facts: {e}")
+            return {}
 
         # Normalize container name for matching (handle hyphen/underscore differences)
         # container_name = "e2e-xnp" -> normalized = "e2e_xnp" or "e2exnp"
@@ -483,8 +486,12 @@ class MapReduceAnalysisCrew:
             logger.warning(f"Facts file not found: {self.facts_path}")
             return {}
 
-        with open(self.facts_path, encoding="utf-8") as f:
-            return json.load(f)
+        try:
+            with open(self.facts_path, encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"Could not read facts: {e}")
+            return {}
 
     def kickoff(self, inputs: dict[str, Any] = None) -> str:
         """Execute crew - compatible with orchestrator interface."""

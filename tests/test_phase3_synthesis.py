@@ -100,7 +100,7 @@ class TestMiniCrewBaseLLMFactory:
             "LLM_CONTEXT_WINDOW": "64000",
         },
     )
-    @patch("aicodegencrew.crews.architecture_synthesis.base_crew.LLM")
+    @patch("aicodegencrew.shared.utils.llm_factory.LLM")
     def test_create_llm_from_env(self, MockLLM):
         """LLM is created with env var settings."""
         mock_instance = MagicMock()
@@ -146,7 +146,7 @@ class TestMiniCrewBaseLLMFactory:
             assert mock_instance.context_window_size == 64000
 
     @patch.dict(os.environ, {"MAX_LLM_OUTPUT_TOKENS": "0"}, clear=False)
-    @patch("aicodegencrew.crews.architecture_synthesis.base_crew.LLM")
+    @patch("aicodegencrew.shared.utils.llm_factory.LLM")
     def test_create_llm_zero_tokens_fallback(self, MockLLM):
         """max_tokens < 1 falls back to 4000."""
         mock_instance = MagicMock()

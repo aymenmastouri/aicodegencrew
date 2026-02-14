@@ -41,8 +41,8 @@ class PlanGeneratorStage:
         from openai import OpenAI
 
         provider = os.getenv("LLM_PROVIDER", "onprem")
-        self._model = os.getenv("MODEL", "gpt-oss-120b")
-        api_base = os.getenv("API_BASE", "http://sov-ai-platform.nue.local.vm:4000/v1")
+        self._model = os.getenv("MODEL", "gpt-4o-mini")
+        api_base = os.getenv("API_BASE", "")
         api_key = os.getenv("OPENAI_API_KEY", "dummy-key")
 
         client = OpenAI(base_url=api_base, api_key=api_key)

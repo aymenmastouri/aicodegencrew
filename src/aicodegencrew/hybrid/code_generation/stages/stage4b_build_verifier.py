@@ -340,7 +340,7 @@ class BuildVerifierStage:
         self.facts_path = Path(facts_path)
         self.dry_run = dry_run
         self._llm = None
-        self._model = os.getenv("MODEL", "gpt-oss-120b")
+        self._model = os.getenv("MODEL", "gpt-4o-mini")
         self.total_calls = 0
         self.total_tokens = 0
         self._container_configs: list[ContainerConfig] | None = None
@@ -675,7 +675,7 @@ class BuildVerifierStage:
         if self._llm is None:
             from openai import OpenAI
 
-            api_base = os.getenv("API_BASE", "http://sov-ai-platform.nue.local.vm:4000/v1")
+            api_base = os.getenv("API_BASE", "")
             api_key = os.getenv("OPENAI_API_KEY", "dummy-key")
             self._llm = OpenAI(base_url=api_base, api_key=api_key)
         return self._llm

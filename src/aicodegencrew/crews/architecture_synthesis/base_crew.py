@@ -26,6 +26,7 @@ from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 
 from ...shared.paths import CHROMA_DIR
+from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 from ...shared.tools import RAGQueryTool
@@ -189,25 +190,7 @@ class MiniCrewBase(ABC):
 
     def _create_llm(self) -> LLM:
         """Create LLM instance from environment variables."""
-        model = os.getenv("MODEL", "gpt-4o-mini")
-        api_base = os.getenv("API_BASE", "")
-        max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
-        context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
-
-        if max_tokens < 1:
-            max_tokens = 4000
-
-        llm = LLM(
-            model=model,
-            base_url=api_base,
-            temperature=0.1,
-            max_tokens=max_tokens,
-            timeout=300,
-        )
-        # Set context window size directly (not via constructor kwargs,
-        # which would pass it as additional_params to the API call)
-        llm.context_window_size = context_window
-        return llm
+        return create_llm()
 
     # -------------------------------------------------------------------------
     # TOOL FACTORY
@@ -394,7 +377,7 @@ class MiniCrewBase(ABC):
                 uninstall_guardrails(tracker)
 
         # Should never reach here, but satisfy type checker
-        raise RuntimeError(f"Mini-crew {name} failed after {max_retries} attempts")
+        raise RuntimeError(f"Mini-crew {name} failed after {_MAX_RETRIES} attempts")
 
     def _handle_crew_failure(
         self,
