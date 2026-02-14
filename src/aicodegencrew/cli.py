@@ -442,7 +442,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # --- Plan: Development Planning (Hybrid Pipeline) ---
     codegen_task_id = None  # For Implement single-task mode
     if "plan" in planned_phases:
-        from .pipelines.development_planning import DevelopmentPlanningPipeline
+        from .hybrid.development_planning import DevelopmentPlanningPipeline
 
         # Get input directory from .env (REQUIRED - no hardcoded default)
         input_dir = os.getenv("TASK_INPUT_DIR", "")
@@ -497,7 +497,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # --- Implement: Code Generation (Hybrid Pipeline) ---
     if "implement" in planned_phases:
-        from .pipelines.code_generation import CodeGenerationPipeline
+        from .hybrid.code_generation import CodeGenerationPipeline
 
         codegen_dry_run = getattr(config, "dry_run", False)
         codegen_task = getattr(config, "task_id", None) or codegen_task_id

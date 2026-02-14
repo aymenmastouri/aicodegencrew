@@ -34,7 +34,7 @@ from typing import Any
 from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 
-from ...pipelines.code_generation.schemas import (
+from .schemas import (
     BuildVerificationResult,
     CodegenPlanInput,
     CollectedContext,

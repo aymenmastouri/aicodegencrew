@@ -10,7 +10,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aicodegencrew.pipelines.development_planning.schemas import (
+from aicodegencrew.hybrid.development_planning.schemas import (
     ComponentMatch,
     ImplementationPlan,
     TaskInput,
@@ -224,7 +224,7 @@ class TestSchemas:
 
 class TestInputParser:
     def test_parse_text_file(self, tmp_path):
-        from aicodegencrew.pipelines.development_planning.stages.stage1_input_parser import InputParserStage
+        from aicodegencrew.hybrid.development_planning.stages.stage1_input_parser import InputParserStage
 
         txt = tmp_path / "TASK-100.txt"
         txt.write_text("Implement user profile page with avatar upload", encoding="utf-8")
@@ -237,14 +237,14 @@ class TestInputParser:
         assert "profile" in result.summary.lower() or "profile" in result.description.lower()
 
     def test_parse_missing_file(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage1_input_parser import InputParserStage
+        from aicodegencrew.hybrid.development_planning.stages.stage1_input_parser import InputParserStage
 
         stage = InputParserStage()
         with pytest.raises(ValueError, match="not found"):
             stage.run("/nonexistent/file.txt")
 
     def test_parse_unsupported_format(self, tmp_path):
-        from aicodegencrew.pipelines.development_planning.stages.stage1_input_parser import InputParserStage
+        from aicodegencrew.hybrid.development_planning.stages.stage1_input_parser import InputParserStage
 
         pdf = tmp_path / "task.pdf"
         pdf.write_text("dummy", encoding="utf-8")
@@ -254,7 +254,7 @@ class TestInputParser:
             stage.run(str(pdf))
 
     def test_detect_bugfix_type(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage1_input_parser import InputParserStage
+        from aicodegencrew.hybrid.development_planning.stages.stage1_input_parser import InputParserStage
 
         stage = InputParserStage()
         task = _make_task(
@@ -266,7 +266,7 @@ class TestInputParser:
         assert result.task_type == "bugfix"
 
     def test_detect_upgrade_type(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage1_input_parser import InputParserStage
+        from aicodegencrew.hybrid.development_planning.stages.stage1_input_parser import InputParserStage
 
         stage = InputParserStage()
         task = _make_task(
@@ -279,7 +279,7 @@ class TestInputParser:
         assert result.task_type == "upgrade"
 
     def test_detect_refactoring_type(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage1_input_parser import InputParserStage
+        from aicodegencrew.hybrid.development_planning.stages.stage1_input_parser import InputParserStage
 
         stage = InputParserStage()
         task = _make_task(
@@ -291,7 +291,7 @@ class TestInputParser:
         assert result.task_type == "refactoring"
 
     def test_detect_feature_type_default(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage1_input_parser import InputParserStage
+        from aicodegencrew.hybrid.development_planning.stages.stage1_input_parser import InputParserStage
 
         stage = InputParserStage()
         task = _make_task(
@@ -310,7 +310,7 @@ class TestInputParser:
 
 class TestComponentDiscovery:
     def test_name_matching(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -321,7 +321,7 @@ class TestComponentDiscovery:
         assert scores["comp.user_service"] > 0
 
     def test_package_matching(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -332,7 +332,7 @@ class TestComponentDiscovery:
         assert len(scores) > 0
 
     def test_stereotype_matching_controller(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -343,7 +343,7 @@ class TestComponentDiscovery:
         assert scores["comp.auth_controller"] > 0
 
     def test_combine_scores(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -360,7 +360,7 @@ class TestComponentDiscovery:
         assert combined["comp.user_service"] > 0.5
 
     def test_find_interfaces(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -371,7 +371,7 @@ class TestComponentDiscovery:
         assert interfaces[0].path == "/api/users"
 
     def test_find_dependencies(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -382,7 +382,7 @@ class TestComponentDiscovery:
         assert len(deps) >= 1
 
     def test_change_type_inference(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -393,7 +393,7 @@ class TestComponentDiscovery:
         assert stage._infer_change_type("update user validation") == "modify"
 
     def test_run_without_chromadb(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage2_component_discovery import (
+        from aicodegencrew.hybrid.development_planning.stages.stage2_component_discovery import (
             ComponentDiscoveryStage,
         )
 
@@ -414,7 +414,7 @@ class TestComponentDiscovery:
 
 class TestPatternMatcher:
     def test_match_test_patterns(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
+        from aicodegencrew.hybrid.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
 
         stage = PatternMatcherStage(facts=SAMPLE_FACTS)
         patterns = stage._match_test_patterns(
@@ -426,7 +426,7 @@ class TestPatternMatcher:
         assert isinstance(patterns, list)
 
     def test_match_security_patterns(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
+        from aicodegencrew.hybrid.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
 
         stage = PatternMatcherStage(facts=SAMPLE_FACTS)
         patterns = stage._match_security_patterns(
@@ -439,7 +439,7 @@ class TestPatternMatcher:
             assert hasattr(patterns[0], "security_type") or isinstance(patterns[0], dict)
 
     def test_match_validation_patterns(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
+        from aicodegencrew.hybrid.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
 
         stage = PatternMatcherStage(facts=SAMPLE_FACTS)
         patterns = stage._match_validation_patterns(
@@ -450,7 +450,7 @@ class TestPatternMatcher:
         assert isinstance(patterns, list)
 
     def test_match_error_patterns(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
+        from aicodegencrew.hybrid.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
 
         stage = PatternMatcherStage(facts=SAMPLE_FACTS)
         patterns = stage._match_error_patterns(
@@ -461,7 +461,7 @@ class TestPatternMatcher:
         assert isinstance(patterns, list)
 
     def test_match_workflows(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
+        from aicodegencrew.hybrid.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
 
         stage = PatternMatcherStage(facts=SAMPLE_FACTS)
         workflows = stage._match_workflows(
@@ -472,7 +472,7 @@ class TestPatternMatcher:
         assert isinstance(workflows, list)
 
     def test_run_full(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
+        from aicodegencrew.hybrid.development_planning.stages.stage3_pattern_matcher import PatternMatcherStage
 
         stage = PatternMatcherStage(facts=SAMPLE_FACTS)
         task = _make_task()
@@ -501,7 +501,7 @@ class TestPatternMatcher:
 
 class TestValidator:
     def test_valid_plan(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage5_validator import ValidatorStage
+        from aicodegencrew.hybrid.development_planning.stages.stage5_validator import ValidatorStage
 
         stage = ValidatorStage()
         plan = _make_plan()
@@ -520,7 +520,7 @@ class TestValidator:
         assert len(result.errors) == 0
 
     def test_missing_components(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage5_validator import ValidatorStage
+        from aicodegencrew.hybrid.development_planning.stages.stage5_validator import ValidatorStage
 
         stage = ValidatorStage()
         plan = _make_plan()
@@ -532,7 +532,7 @@ class TestValidator:
         assert any("component" in e.lower() for e in result.errors)
 
     def test_missing_steps(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage5_validator import ValidatorStage
+        from aicodegencrew.hybrid.development_planning.stages.stage5_validator import ValidatorStage
 
         stage = ValidatorStage()
         plan = _make_plan()
@@ -543,7 +543,7 @@ class TestValidator:
         assert result.is_valid is False
 
     def test_missing_complexity(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage5_validator import ValidatorStage
+        from aicodegencrew.hybrid.development_planning.stages.stage5_validator import ValidatorStage
 
         stage = ValidatorStage()
         plan = _make_plan()
@@ -554,7 +554,7 @@ class TestValidator:
         assert result.is_valid is False
 
     def test_warnings_for_optional_fields(self):
-        from aicodegencrew.pipelines.development_planning.stages.stage5_validator import ValidatorStage
+        from aicodegencrew.hybrid.development_planning.stages.stage5_validator import ValidatorStage
 
         stage = ValidatorStage()
         plan = _make_plan()
@@ -574,7 +574,7 @@ class TestValidator:
 
 class TestPipelineSorting:
     def test_sort_by_priority(self):
-        from aicodegencrew.pipelines.development_planning.pipeline import DevelopmentPlanningPipeline
+        from aicodegencrew.hybrid.development_planning.pipeline import DevelopmentPlanningPipeline
 
         pipeline = DevelopmentPlanningPipeline.__new__(DevelopmentPlanningPipeline)
 
@@ -590,7 +590,7 @@ class TestPipelineSorting:
         assert sorted_tasks[-1].task_id == "LOW-1"
 
     def test_sort_by_type(self):
-        from aicodegencrew.pipelines.development_planning.pipeline import DevelopmentPlanningPipeline
+        from aicodegencrew.hybrid.development_planning.pipeline import DevelopmentPlanningPipeline
 
         pipeline = DevelopmentPlanningPipeline.__new__(DevelopmentPlanningPipeline)
 
