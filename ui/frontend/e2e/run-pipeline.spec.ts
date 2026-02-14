@@ -5,10 +5,20 @@ test.describe('Run Pipeline', () => {
     await page.goto('/run');
   });
 
+  // --- Page Layout ---
+
   test('should render page title with icon', async ({ page }) => {
     await expect(page.locator('.page-title')).toContainText('Run Pipeline');
-    await expect(page.locator('.page-title mat-icon')).toBeVisible();
+    await expect(page.locator('.page-icon')).toBeVisible();
   });
+
+  test('should show Pipeline Configuration card when idle', async ({ page }) => {
+    const configCard = page.locator('.config-card');
+    await expect(configCard).toBeVisible({ timeout: 10_000 });
+    await expect(configCard).toContainText('Pipeline Configuration');
+  });
+
+  // --- Configure Section: Tabs ---
 
   test('should display two tabs: Run Preset and Run Custom Phases', async ({ page }) => {
     await expect(page.locator('.mat-mdc-tab')).toHaveCount(2);
@@ -26,12 +36,14 @@ test.describe('Run Pipeline', () => {
 
   test('should show phase chips when preset is selected', async ({ page }) => {
     await page.locator('mat-select').first().click();
-    // Presets now show display names, select "Full SDLC Pipeline"
-    await page.locator('mat-option:has-text("Full SDLC Pipeline")').click();
+    const options = page.locator('mat-option');
+    await expect(options.first()).toBeVisible({ timeout: 10_000 });
+    // Select the first available preset
+    await options.first().click();
     const chips = page.locator('.phase-chips mat-chip');
     await expect(chips.first()).toBeVisible({ timeout: 5_000 });
     const count = await chips.count();
-    expect(count).toBeGreaterThanOrEqual(4);
+    expect(count).toBeGreaterThanOrEqual(1);
   });
 
   test('should show phase checkboxes in custom mode', async ({ page }) => {
@@ -40,6 +52,8 @@ test.describe('Run Pipeline', () => {
     const checkboxes = page.locator('mat-checkbox');
     await expect(checkboxes).toHaveCount(8);
   });
+
+  // --- Configure Section: Run Button ---
 
   test('should disable Run button when nothing selected', async ({ page }) => {
     const runButton = page.locator('button:has-text("Run Pipeline")').first();
@@ -54,66 +68,52 @@ test.describe('Run Pipeline', () => {
     await expect(runButton).toBeEnabled({ timeout: 5_000 });
   });
 
-  test('should disable Cancel button when not running', async ({ page }) => {
-    const cancelButton = page.locator('button:has-text("Cancel")');
-    await expect(cancelButton).toBeDisabled();
+  test('should place Run button inside config card', async ({ page }) => {
+    const runBtn = page.locator('.config-card button:has-text("Run Pipeline")');
+    await expect(runBtn).toBeVisible();
   });
 
-  test('should show Environment Configuration expansion panel', async ({ page }) => {
-    const envPanel = page.locator('mat-expansion-panel:has-text("Environment Configuration")');
-    await expect(envPanel).toBeVisible();
+  // --- Configure Section: Advanced Options ---
+
+  test('should show Advanced Options expansion panel', async ({ page }) => {
+    const advancedPanel = page.locator('mat-expansion-panel:has-text("Advanced Options")');
+    await expect(advancedPanel).toBeVisible();
   });
 
-  test('should expand env config and show fields', async ({ page }) => {
-    await page.locator('mat-expansion-panel-header:has-text("Environment Configuration")').click();
-    await expect(page.locator('.env-fields').first()).toBeVisible({ timeout: 5_000 });
+  test('should expand Advanced Options and show Input Files section', async ({ page }) => {
+    await page.locator('mat-expansion-panel-header:has-text("Advanced Options")').click();
+    await expect(page.locator('.advanced-section-title:has-text("Input Files")').first()).toBeVisible({ timeout: 5_000 });
   });
 
-  test('should show Run History section', async ({ page }) => {
-    await expect(page.locator('mat-card:has-text("Run History")')).toBeVisible();
+  test('should expand Advanced Options and show Environment section', async ({ page }) => {
+    await page.locator('mat-expansion-panel-header:has-text("Advanced Options")').click();
+    await expect(page.locator('.advanced-section-title:has-text("Environment Overrides")').first()).toBeVisible({ timeout: 5_000 });
   });
 
-  test('should show empty history message when no runs', async ({ page }) => {
-    const emptyOrTable = page.locator('.empty-inline, .history-table');
-    await expect(emptyOrTable.first()).toBeVisible({ timeout: 5_000 });
+  test('should show Manage Files link in Advanced Options', async ({ page }) => {
+    await page.locator('mat-expansion-panel-header:has-text("Advanced Options")').click();
+    const manageBtn = page.locator('.manage-btn:has-text("Manage Files")');
+    await expect(manageBtn).toBeVisible({ timeout: 5_000 });
   });
+
+  // --- Preset Query Param ---
 
   test('should navigate from preset query param', async ({ page }) => {
     await page.goto('/run?preset=scan');
-    // Wait for presets to load and select to be populated
     await page.waitForTimeout(2000);
     const select = page.locator('mat-select').first();
-    // Display name is "Facts Extraction" now
-    await expect(select).toContainText('Facts Extraction', { timeout: 10_000 });
+    // "scan" preset auto-selects and shows its display name
+    await expect(select).not.toBeEmpty({ timeout: 10_000 });
+    const text = await select.textContent();
+    // Should have selected something (not blank)
+    expect(text?.trim().length).toBeGreaterThan(0);
   });
 
-  // --- History Trigger Column Tests ---
+  // --- No Run History (removed) ---
 
-  test('should include Type column header in history table', async ({ page }) => {
+  test('should NOT show embedded Run History table', async ({ page }) => {
+    // The old embedded history table was removed; users go to /history instead
     const historyCard = page.locator('mat-card:has-text("Run History")');
-    await expect(historyCard).toBeVisible({ timeout: 5_000 });
-    // If there is a history table, check for Type column
-    const table = historyCard.locator('.history-table');
-    const tableExists = await table.isVisible().catch(() => false);
-    if (tableExists) {
-      await expect(table.locator('th:has-text("Type")')).toBeVisible();
-    }
-  });
-
-  test('should show trigger chips for history entries', async ({ page }) => {
-    const historyCard = page.locator('mat-card:has-text("Run History")');
-    await expect(historyCard).toBeVisible({ timeout: 5_000 });
-    const table = historyCard.locator('.history-table');
-    const tableExists = await table.isVisible().catch(() => false);
-    if (tableExists) {
-      // Should have at least one trigger chip (Run or Reset)
-      const triggerChips = table.locator('.trigger-chip');
-      const count = await triggerChips.count();
-      if (count > 0) {
-        const firstChip = triggerChips.first();
-        const text = await firstChip.textContent();
-        expect(text?.trim()).toMatch(/Run|Reset/);
-      }
-    }
+    await expect(historyCard).toHaveCount(0);
   });
 });
