@@ -20,6 +20,7 @@ from typing import Any, Protocol
 import yaml
 
 from .shared.utils.logger import log_metric, logger
+from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_failed, set_phase_running
 
 # =============================================================================
 # PROTOCOLS (Interfaces)
@@ -148,6 +149,11 @@ class SDLCOrchestrator:
         self._start_time = datetime.now()
         self.results.clear()
 
+        # Initialize phase state tracking
+        import uuid as _uuid
+
+        init_run(_uuid.uuid4().hex[:8])
+
         # Determine phases to run
         phases_to_run = self._resolve_phases(preset, phases)
 
@@ -268,6 +274,7 @@ class SDLCOrchestrator:
         logger.info(f"{'=' * 60}")
 
         log_metric("phase_start", phase_id=phase_id)
+        set_phase_running(phase_id)
 
         try:
             executable = self.phases[phase_id]
@@ -286,6 +293,7 @@ class SDLCOrchestrator:
 
             logger.info(f"[Phase] {phase_id} - Completed in {duration:.2f}s")
             log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status="success")
+            set_phase_completed(phase_id, duration)
 
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
@@ -302,6 +310,7 @@ class SDLCOrchestrator:
             duration = (datetime.now() - start).total_seconds()
             logger.error(f"[Phase] {phase_id} - Failed: {e}", exc_info=True)
             log_metric("phase_failed", phase_id=phase_id, duration_seconds=round(duration, 2), error=str(e)[:500])
+            set_phase_failed(phase_id, duration, str(e))
 
             return PhaseResult(
                 phase_id=phase_id,

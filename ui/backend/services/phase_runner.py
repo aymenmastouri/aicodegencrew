@@ -1,10 +1,20 @@
 """Service for reading phase configuration and status."""
 
+import json
+import logging
+import os
+from pathlib import Path
+
 import yaml
 
 from ..config import settings
 from ..schemas import PhaseInfo, PhaseStatus, PipelineStatus, PresetInfo
 from .phase_outputs import check_phase_output_exists
+
+logger = logging.getLogger(__name__)
+
+_STATE_FILE_NAME = "phase_state.json"
+_STALE_THRESHOLD = 3600  # 1 hour
 
 
 def _load_phases_config() -> dict:
@@ -13,6 +23,70 @@ def _load_phases_config() -> dict:
         return {"phases": {}, "presets": {}}
     with open(settings.phases_config, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
+
+
+def _read_phase_state() -> dict:
+    """Read logs/phase_state.json written by the orchestrator."""
+    path = settings.project_root / "logs" / _STATE_FILE_NAME
+    if not path.exists():
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.warning("Failed to read phase state: %s", exc)
+        return {}
+
+
+def _is_pid_alive(pid: int | None) -> bool:
+    """Check if a process is still running."""
+    if not pid:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except (OSError, ProcessLookupError):
+        return False
+
+
+def _resolve_status(
+    state_entry: dict | None,
+    output_exists: bool,
+    enabled: bool,
+    pid: int | None,
+) -> tuple[str, float | None, str | None]:
+    """Resolve effective phase status using priority matrix.
+
+    Returns (status, duration_seconds, error).
+    """
+    if state_entry:
+        st = state_entry.get("status", "")
+        duration = state_entry.get("duration_seconds")
+        error = state_entry.get("error")
+
+        if st == "running":
+            # Crash recovery: check PID liveness
+            if _is_pid_alive(pid):
+                return "running", None, None
+            else:
+                return "failed", duration, "Process terminated unexpectedly"
+
+        if st == "failed":
+            return "failed", duration, error
+
+        if st == "completed":
+            if output_exists:
+                return "completed", duration, None
+            elif enabled:
+                # Output deleted (reset happened after completion)
+                return "ready", None, None
+
+    # No state entry — backward compatible: check output files
+    if output_exists:
+        return "completed", None, None
+    if enabled:
+        return "ready", None, None
+    return "planned", None, None
 
 
 def get_phases() -> list[PhaseInfo]:
@@ -57,13 +131,18 @@ def get_presets() -> list[PresetInfo]:
 
 
 def get_pipeline_status() -> PipelineStatus:
-    """Get current pipeline status based on output files.
+    """Get current pipeline status by merging state file with output-file checks.
 
-    Uses the shared PHASE_OUTPUTS config (phase_outputs.py) as single
-    source of truth for output detection — same paths used by reset.
+    Priority: state file (running/failed/completed) > output existence > config enabled.
+    Backward compatible: no state file = old output-only behavior.
     """
     config = _load_phases_config()
+    state_data = _read_phase_state()
+    state_phases = state_data.get("phases", {})
+    pid = state_data.get("pid")
+
     statuses = []
+    any_running = False
 
     for phase_id, phase_cfg in sorted(
         config.get("phases", {}).items(),
@@ -71,13 +150,12 @@ def get_pipeline_status() -> PipelineStatus:
     ):
         output_exists = check_phase_output_exists(phase_id, settings.project_root)
         enabled = phase_cfg.get("enabled", False)
+        state_entry = state_phases.get(phase_id)
 
-        if output_exists:
-            status = "completed"
-        elif enabled:
-            status = "ready"
-        else:
-            status = "planned"
+        status, duration, error = _resolve_status(state_entry, output_exists, enabled, pid)
+
+        if status == "running":
+            any_running = True
 
         statuses.append(
             PhaseStatus(
@@ -86,7 +164,9 @@ def get_pipeline_status() -> PipelineStatus:
                 status=status,
                 enabled=enabled,
                 output_exists=output_exists,
+                duration_seconds=duration,
+                last_run=state_entry.get("completed_at") if state_entry else None,
             )
         )
 
-    return PipelineStatus(phases=statuses, is_running=False)
+    return PipelineStatus(phases=statuses, is_running=any_running)

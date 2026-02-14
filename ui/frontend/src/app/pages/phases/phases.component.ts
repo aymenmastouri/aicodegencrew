@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -55,8 +55,8 @@ import { humanizePhaseId } from '../../shared/phase-utils';
               Phase Configuration
             </mat-card-title>
             <span class="spacer"></span>
-            <button mat-stroked-button color="warn" [disabled]="!hasCompletedPhases()" (click)="resetAll()"
-              matTooltip="Reset all completed phases">
+            <button mat-stroked-button color="warn" [disabled]="!hasResettablePhases()" (click)="resetAll()"
+              matTooltip="Reset all completed/failed phases">
               <mat-icon>restart_alt</mat-icon>
               Reset All
             </button>
@@ -83,6 +83,12 @@ import { humanizePhaseId } from '../../shared/phase-utils';
                 <th mat-header-cell *matHeaderCellDef>Status</th>
                 <td mat-cell *matCellDef="let p">
                   <span class="status-chip" [class]="'status-' + getPhaseStatus(p.id)">
+                    @if (getPhaseStatus(p.id) === 'running') {
+                      <mat-spinner diameter="14" class="inline-spinner"></mat-spinner>
+                    }
+                    @if (getPhaseStatus(p.id) === 'failed') {
+                      <mat-icon class="status-icon-error" [matTooltip]="getPhaseError(p.id)">error_outline</mat-icon>
+                    }
                     {{ getPhaseStatus(p.id) }}
                   </span>
                 </td>
@@ -102,7 +108,7 @@ import { humanizePhaseId } from '../../shared/phase-utils';
                     <mat-icon>play_arrow</mat-icon>
                   </button>
                   <button mat-icon-button color="warn"
-                    [disabled]="getPhaseStatus(p.id) !== 'completed'"
+                    [disabled]="getPhaseStatus(p.id) !== 'completed' && getPhaseStatus(p.id) !== 'failed'"
                     (click)="resetPhase(p.id)"
                     matTooltip="Reset this phase">
                     <mat-icon>restart_alt</mat-icon>
@@ -207,15 +213,37 @@ import { humanizePhaseId } from '../../shared/phase-utils';
         display: flex;
         align-items: center;
       }
+      .inline-spinner {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+      .status-icon-error {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+        margin-right: 2px;
+        color: var(--cg-red, #d32f2f);
+      }
+      .status-running {
+        color: var(--cg-blue, #0070ad);
+        font-weight: 500;
+      }
+      .status-failed {
+        color: var(--cg-red, #d32f2f);
+        font-weight: 500;
+      }
     `,
   ],
 })
-export class PhasesComponent implements OnInit {
+export class PhasesComponent implements OnInit, OnDestroy {
   phases: PhaseInfo[] = [];
   presets: PresetInfo[] = [];
   pipeline: PipelineStatus | null = null;
   displayedColumns = ['order', 'id', 'name', 'status', 'dependencies', 'actions'];
   loading = true;
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private api: ApiService,
@@ -244,8 +272,13 @@ export class PhasesComponent implements OnInit {
     });
     this.api.getPipelineStatus().subscribe((p) => {
       this.pipeline = p;
+      this.startAutoRefreshIfNeeded();
       this.cdr.markForCheck();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoRefresh();
   }
 
   humanize(phaseId: string): string {
@@ -269,6 +302,32 @@ export class PhasesComponent implements OnInit {
   hasCompletedPhases(): boolean {
     if (!this.pipeline) return false;
     return this.pipeline.phases.some((p) => p.status === 'completed');
+  }
+
+  hasResettablePhases(): boolean {
+    if (!this.pipeline) return false;
+    return this.pipeline.phases.some((p) => p.status === 'completed' || p.status === 'failed');
+  }
+
+  getPhaseError(phaseId: string): string {
+    if (!this.pipeline) return '';
+    const phase = this.pipeline.phases.find((p) => p.id === phaseId);
+    return phase?.last_run ? `Failed at ${phase.last_run}` : 'Phase failed';
+  }
+
+  private startAutoRefreshIfNeeded(): void {
+    if (this.pipeline?.is_running && !this.refreshTimer) {
+      this.refreshTimer = setInterval(() => this.refreshStatus(), 3000);
+    } else if (!this.pipeline?.is_running && this.refreshTimer) {
+      this.stopAutoRefresh();
+    }
+  }
+
+  private stopAutoRefresh(): void {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
   }
 
   private phaseDisplayName(phaseId: string): string {
@@ -313,7 +372,7 @@ export class PhasesComponent implements OnInit {
 
   resetAll(): void {
     this.pipelineService.previewReset(
-      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'discover').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
@@ -351,6 +410,7 @@ export class PhasesComponent implements OnInit {
   private refreshStatus(): void {
     this.api.getPipelineStatus().subscribe((p) => {
       this.pipeline = p;
+      this.startAutoRefreshIfNeeded();
       this.cdr.markForCheck();
     });
   }
