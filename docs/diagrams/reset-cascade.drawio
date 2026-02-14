@@ -1,0 +1,206 @@
+<mxfile host="app.diagrams.net" modified="2026-02-14T00:00:00.000Z" agent="AICodeGenCrew" version="22.1.0" type="device">
+  <diagram id="reset-cascade" name="Reset Cascade &amp; Archive Flow">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="800" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Reset Cascade &amp; Archive Flow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#1a1a1a;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ TOP: Cascade Visualization ═══ -->
+        <mxCell id="cascade-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#C62828;strokeWidth=2;opacity=20;" vertex="1" parent="1">
+          <mxGeometry x="30" y="80" width="1340" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="cascade-label" value="CASCADE RESET: Resetting &quot;extract&quot; triggers downstream reset" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=14;fontStyle=1;fontColor=#C62828;" vertex="1" parent="1">
+          <mxGeometry x="40" y="85" width="500" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Phase boxes in cascade -->
+        <mxCell id="p0" value="&lt;b&gt;discover&lt;/b&gt;&lt;br&gt;(not resettable)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#9E9E9E;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1" value="&lt;b&gt;extract&lt;/b&gt;&lt;br&gt;RESET TARGET" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#C62828;strokeWidth=3;fontSize=11;fontColor=#C62828;" vertex="1" parent="1">
+          <mxGeometry x="220" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p2" value="&lt;b&gt;analyze&lt;/b&gt;&lt;br&gt;CASCADE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="390" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p3" value="&lt;b&gt;document&lt;/b&gt;&lt;br&gt;CASCADE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="560" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p4" value="&lt;b&gt;plan&lt;/b&gt;&lt;br&gt;CASCADE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="730" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p5" value="&lt;b&gt;implement&lt;/b&gt;&lt;br&gt;CASCADE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="900" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p6" value="&lt;b&gt;verify&lt;/b&gt;&lt;br&gt;CASCADE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p7" value="&lt;b&gt;deliver&lt;/b&gt;&lt;br&gt;CASCADE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="130" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Dependency arrows -->
+        <mxCell id="d01" style="rounded=1;strokeWidth=1;strokeColor=#9E9E9E;endArrow=block;endFill=1;" edge="1" parent="1" source="p0" target="p1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d12" style="rounded=1;strokeWidth=2;strokeColor=#C62828;endArrow=block;endFill=1;" edge="1" parent="1" source="p1" target="p2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d23" style="rounded=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;" edge="1" parent="1" source="p2" target="p3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d24" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;" edge="1" parent="1" source="p2" target="p4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="455" y="210" />
+              <mxPoint x="795" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d45" style="rounded=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;" edge="1" parent="1" source="p4" target="p5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d56" style="rounded=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;" edge="1" parent="1" source="p5" target="p6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d67" style="rounded=1;strokeWidth=2;strokeColor=#E65100;endArrow=block;endFill=1;" edge="1" parent="1" source="p6" target="p7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Cascade explanation -->
+        <mxCell id="cascade-note" value="&lt;i&gt;Forward propagation: if A is reset and B depends on A, then B must also be reset&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="500" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ BOTTOM LEFT: Reset Execution Flow ═══ -->
+        <mxCell id="flow-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;strokeWidth=2;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="30" y="310" width="660" height="450" as="geometry" />
+        </mxCell>
+        <mxCell id="flow-label" value="RESET EXECUTION FLOW" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=14;fontStyle=1;fontColor=#0D47A1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="315" width="250" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Step boxes -->
+        <mxCell id="f1" value="&lt;b&gt;1. POST /api/reset/execute&lt;/b&gt;&lt;br&gt;{phase_ids, cascade: true}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="360" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f2" value="&lt;b&gt;2. Compute cascade&lt;/b&gt;&lt;br&gt;Forward propagation via&lt;br&gt;get_dependency_graph()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="430" width="230" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f3" value="&lt;b&gt;3. Archive outputs&lt;/b&gt;&lt;br&gt;knowledge/archive/reset_{ts}/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#E65100;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="510" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f4" value="&lt;b&gt;4. Delete outputs&lt;/b&gt;&lt;br&gt;get_cleanup_targets(phase_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#C62828;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="580" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f5" value="&lt;b&gt;5. Recreate empty dirs&lt;/b&gt;&lt;br&gt;mkdir for directory phases" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="650" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f6" value="&lt;b&gt;6. Clear phase_state.json&lt;/b&gt;&lt;br&gt;Remove entries for reset phases" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="360" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f7" value="&lt;b&gt;7. Rotate metrics + logs&lt;/b&gt;&lt;br&gt;archive_metrics()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#607D8B;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="430" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f8" value="&lt;b&gt;8. Cleanup old archives&lt;/b&gt;&lt;br&gt;Keep max 5, delete oldest" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECEFF1;strokeColor=#607D8B;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="500" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f9" value="&lt;b&gt;9. Log to run_history&lt;/b&gt;&lt;br&gt;{run_id: reset_{ts}, status: reset}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="570" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f10" value="&lt;b&gt;Response&lt;/b&gt;&lt;br&gt;{reset_phases, deleted_count,&lt;br&gt;archive_path, timestamp}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;shadow=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="350" y="650" width="230" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Flow arrows -->
+        <mxCell id="fa1" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f1" target="f2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fa2" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f2" target="f3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fa3" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f3" target="f4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fa4" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f4" target="f5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fa5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f5" target="f6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="310" y="672" />
+              <mxPoint x="310" y="382" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fa6" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f6" target="f7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fa7" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f7" target="f8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fa8" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f8" target="f9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="fa9" style="rounded=1;strokeWidth=1;strokeColor=#1565C0;endArrow=block;endFill=1;" edge="1" parent="1" source="f9" target="f10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ BOTTOM RIGHT: Archive Structure ═══ -->
+        <mxCell id="arch-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57C00;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="720" y="310" width="640" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="arch-title" value="ARCHIVE STRUCTURE" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=14;fontStyle=1;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="730" y="315" width="200" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="arch-tree" value="knowledge/&lt;br&gt;├── extract/           &lt;i&gt;(active outputs)&lt;/i&gt;&lt;br&gt;├── analyze/&lt;br&gt;├── document/&lt;br&gt;├── plan/&lt;br&gt;├── implement/&lt;br&gt;└── archive/&lt;br&gt;    ├── reset_20260214_163800/   &lt;b&gt;(latest)&lt;/b&gt;&lt;br&gt;    │   ├── extract/&lt;br&gt;    │   ├── analyze/&lt;br&gt;    │   └── document/&lt;br&gt;    ├── reset_20260213_091200/&lt;br&gt;    ├── reset_20260212_140500/&lt;br&gt;    ├── reset_20260211_103000/&lt;br&gt;    └── reset_20260210_160000/   &lt;i&gt;(max 5)&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=11;fontFamily=Courier New;fontColor=#333;spacingLeft=10;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="730" y="345" width="380" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- Retention policy -->
+        <mxCell id="retention-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F57C00;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="1130" y="350" width="210" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="retention-title" value="&lt;b&gt;Retention Policy&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="355" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="retention-content" value="Max archives: &lt;b&gt;5&lt;/b&gt;&lt;br&gt;Strategy: delete oldest&lt;br&gt;Trigger: every reset&lt;br&gt;Metrics: also rotated" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#333;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="380" width="190" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Reset-all note -->
+        <mxCell id="resetall-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#C62828;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="720" y="590" width="640" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="resetall-title" value="&lt;b&gt;POST /api/reset/all&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontColor=#C62828;" vertex="1" parent="1">
+          <mxGeometry x="730" y="595" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="resetall-content" value="Resets all phases except &lt;b&gt;discover&lt;/b&gt; (ChromaDB index is expensive to rebuild).&lt;br&gt;Uses &lt;code&gt;get_resettable_phases()&lt;/code&gt; from phase_registry — no hardcoded exclusion.&lt;br&gt;Blocked while pipeline is running (HTTP 409)." style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#333;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="730" y="618" width="600" height="45" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

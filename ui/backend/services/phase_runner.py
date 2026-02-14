@@ -9,7 +9,7 @@ import yaml
 
 from ..config import settings
 from ..schemas import PhaseInfo, PhaseStatus, PipelineStatus, PresetInfo
-from .phase_outputs import check_phase_output_exists
+from aicodegencrew.phase_registry import check_phase_output_exists
 
 logger = logging.getLogger(__name__)
 

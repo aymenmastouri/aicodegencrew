@@ -42,6 +42,7 @@ warnings.filterwarnings("ignore", message=".*LangChain.*")
 from dotenv import load_dotenv
 
 # load_dotenv moved into main() to support --env flag
+from .phase_registry import PHASES, get_cleanup_targets
 from .shared.utils.logger import logger
 
 # =============================================================================
@@ -130,25 +131,13 @@ def clean_knowledge(phase: str = "all") -> None:
 
     cleaned: list[str] = []
 
-    phase_dirs = {
-        "extract": "extract",
-        "analyze": "analyze",
-        "document": "document",
-        "plan": "plan",
-        "implement": "implement",
-    }
-
-    if phase == "all":
-        for subdir in phase_dirs.values():
-            target = knowledge_dir / subdir
+    phases_to_clean = list(PHASES) if phase == "all" else [phase]
+    for pid in phases_to_clean:
+        for rel in get_cleanup_targets(pid):
+            target = Path(rel)
             if target.exists():
                 shutil.rmtree(target)
                 cleaned.append(str(target))
-    elif phase in phase_dirs:
-        target = knowledge_dir / phase_dirs[phase]
-        if target.exists():
-            shutil.rmtree(target)
-            cleaned.append(str(target))
 
     if cleaned:
         logger.info(f"[CLEAN] Removed {len(cleaned)} items")
@@ -305,34 +294,12 @@ def _export_run_report(
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / "run_report.json"
 
-    # Collect output files per phase (relative to output_base)
-    phase_outputs = {
-        "discover": [str(base / "knowledge" / "discover")],
-        "extract": [
-            str(base / "knowledge" / "extract" / "architecture_facts.json"),
-            str(base / "knowledge" / "extract" / "evidence_map.json"),
-        ],
-        "analyze": [
-            str(base / "knowledge" / "analyze" / "analyzed_architecture.json"),
-        ],
-        "document": [
-            str(base / "knowledge" / "document" / "c4"),
-            str(base / "knowledge" / "document" / "arc42"),
-        ],
-        "plan": [
-            str(base / "knowledge" / "plan"),
-        ],
-        "implement": [
-            str(base / "knowledge" / "implement"),
-        ],
-    }
-
     phases_detail = []
     for pr in result.phases:
         detail = pr.to_dict()
         detail["duration_seconds"] = round(pr.duration_seconds, 2)
-        # List actual output files that exist
-        expected = phase_outputs.get(pr.phase_id, [])
+        # List actual output files from registry cleanup targets
+        expected = [str(base / rel) for rel in get_cleanup_targets(pr.phase_id)]
         detail["output_files"] = [f for f in expected if Path(f).exists()]
         phases_detail.append(detail)
 
