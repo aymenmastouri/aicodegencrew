@@ -39,7 +39,7 @@ class PlanReaderStage:
         Read and validate a Phase 4 plan.
 
         Args:
-            task_id: Task ID to look up plan file (e.g., BNUVZ-12529).
+            task_id: Task ID to look up plan file (e.g., PROJ-123).
             plan_path: Direct path to plan JSON (overrides task_id).
 
         Returns:

@@ -13,8 +13,8 @@ Detection Strategy:
 4. Skip: node_modules, dist, build, deployment, .git, etc.
 
 Container Types:
-- backend: Spring Boot, Java backend
-- frontend: Angular, React, Vue
+- backend: Java/Kotlin backend (Spring Boot, Quarkus, etc.)
+- frontend: Web frontend (Angular, React, Vue, etc.)
 - test: E2E tests, integration tests
 - batch: Spring Batch jobs
 - library: Shared libraries (no main class)

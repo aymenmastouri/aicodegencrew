@@ -123,7 +123,7 @@ class ContainerAnalysisCrew:
         tech_agent = Agent(
             role="Technical Architect",
             goal=f"Analyze technical architecture of container '{self.container_name}'",
-            backstory="Expert in software architecture patterns, Spring Boot, Angular, and enterprise systems.",
+            backstory="Expert in software architecture patterns and enterprise systems across any technology stack.",
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
@@ -174,7 +174,7 @@ Output as JSON:
 {{
     "primary_pattern": "Layered|Hexagonal|Component-Based|...",
     "layers": ["Presentation", "Service", "Repository"],
-    "technologies": ["Spring Boot", "JPA", "..."],
+    "technologies": ["<detected frameworks>", "..."],
     "integration_style": "REST API"
 }}""",
             expected_output="JSON with pattern, layers, technologies",

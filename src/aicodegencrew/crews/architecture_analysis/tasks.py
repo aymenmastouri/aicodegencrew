@@ -87,7 +87,7 @@ Valid JSON object with these exact keys:
 {"primary_pattern": "Layered|Hexagonal|Clean Architecture|CQRS|Unknown",
  "layer_structure": ["Controller", "Service", "Repository"],
  "component_counts": {"controller": <n>, "service": <n>, "repository": <n>},
- "technology": {"framework": "Spring Boot|Angular|...", "language": "Java|TypeScript|..."},
+ "technology": {"framework": "<detected framework>", "language": "<detected language>"},
  "layer_violations": <number>,
  "reasoning": "Evidence-based explanation"}"""
 

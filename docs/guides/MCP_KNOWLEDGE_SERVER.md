@@ -77,7 +77,7 @@ with MCPServerAdapter(server_params) as tools:
 
 | Tool | Description | Example |
 |------|-------------|---------|
-| `get_relations_for` | Get all relations | `get_relations_for("DeedEntryService")` |
+| `get_relations_for` | Get all relations | `get_relations_for("OrderService")` |
 | `get_call_graph` | Get dependency graph | `get_call_graph("WorkflowService", depth=2)` |
 
 ### Interface Tools
@@ -85,7 +85,7 @@ with MCPServerAdapter(server_params) as tools:
 | Tool | Description | Example |
 |------|-------------|---------|
 | `get_endpoints` | List REST endpoints | `get_endpoints("/workflow.*")` |
-| `get_endpoint_by_path` | Get specific endpoint | `get_endpoint_by_path("/uvz/v1/workflow/{id}", "GET")` |
+| `get_endpoint_by_path` | Get specific endpoint | `get_endpoint_by_path("/api/v1/resource/{id}", "GET")` |
 | `get_routes` | List frontend routes | `get_routes()` |
 
 ### Evidence Tools
@@ -104,40 +104,40 @@ with MCPServerAdapter(server_params) as tools:
 
 ## Example Queries
 
-### "What services does DeedEntryService call?"
+### "What services does OrderService call?"
 
 ```
 Tool: get_relations_for
-Input: "DeedEntryService"
+Input: "OrderService"
 
 Response:
 {
-  "component_id": "component.backend.deedentry_logic_impl.deed_entry_service_impl",
+  "component_id": "component.backend.orders.order_service_impl",
   "outgoing": {
-    "count": 6,
+    "count": 3,
     "relations": [
-      {"to": "correction_note_service", "type": "uses"},
-      {"to": "deed_entry_log_service", "type": "uses"},
-      {"to": "deed_registry_service", "type": "uses"},
+      {"to": "payment_service", "type": "uses"},
+      {"to": "inventory_service", "type": "uses"},
+      {"to": "notification_service", "type": "uses"},
       ...
     ]
   }
 }
 ```
 
-### "What endpoints handle workflow operations?"
+### "What endpoints handle order operations?"
 
 ```
 Tool: get_endpoints
-Input: "/workflow"
+Input: "/orders"
 
 Response:
 {
-  "filter": "/workflow",
+  "filter": "/orders",
   "count": 5,
   "endpoints": [
-    {"path": "/uvz/v1/workflow/{id}", "method": "GET"},
-    {"path": "/uvz/v1/workflow/{id}/status", "method": "PUT"},
+    {"path": "/api/v1/orders/{id}", "method": "GET"},
+    {"path": "/api/v1/orders/{id}/status", "method": "PUT"},
     ...
   ]
 }
