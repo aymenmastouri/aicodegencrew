@@ -113,6 +113,7 @@ class MiniCrewBase(ABC):
         facts_path: str = "knowledge/extract/architecture_facts.json",
         analyzed_path: str | None = None,
         chroma_dir: str | None = None,
+        output_dir: str | None = None,
     ):
         self.facts_path = Path(facts_path)
         if analyzed_path:
@@ -134,8 +135,8 @@ class MiniCrewBase(ABC):
         # MCP server config (resolved once, reused across mini-crews)
         self._mcp_server_path = self._resolve_mcp_server_path()
 
-        # Output directory: derived from facts_path (knowledge/extract → knowledge/document)
-        self._output_dir = self.facts_path.parent.parent / "document"
+        # Output directory: explicit or derived from facts_path
+        self._output_dir = Path(output_dir) if output_dir else self.facts_path.parent.parent / "document"
 
         # Checkpoint tracking
         self._checkpoints: list[dict[str, Any]] = []
