@@ -9,6 +9,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { InputsService, CategoryDetail, InputFile } from '../../services/inputs.service';
+import { NotificationService } from '../../services/notification.service';
 import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
 interface CategoryView {
@@ -98,10 +99,11 @@ interface CategoryView {
                 class="drop-zone"
                 [class.drag-over]="cat.dragOver"
                 [class.has-error]="cat.error"
-                (dragover)="onDragOver($event, cat)"
+                [class.drop-disabled]="isRunning"
+                (dragover)="!isRunning && onDragOver($event, cat)"
                 (dragleave)="onDragLeave(cat)"
-                (drop)="onDrop($event, cat)"
-                (click)="fileInput.click()"
+                (drop)="!isRunning && onDrop($event, cat)"
+                (click)="!isRunning && fileInput.click()"
               >
                 <input
                   #fileInput
@@ -145,7 +147,10 @@ interface CategoryView {
                           >{{ formatSize(file.size_bytes) }} &middot; {{ formatDate(file.modified) }}</span
                         >
                       </div>
-                      <button mat-icon-button color="warn" matTooltip="Delete file" (click)="deleteFile(cat, file)">
+                      <button mat-icon-button color="warn"
+                        [matTooltip]="isRunning ? 'Pipeline is running' : 'Delete file'"
+                        [disabled]="isRunning"
+                        (click)="deleteFile(cat, file)">
                         <mat-icon>delete_outline</mat-icon>
                       </button>
                     </div>
@@ -225,9 +230,14 @@ interface CategoryView {
         margin-bottom: 12px;
         min-height: 80px;
       }
-      .drop-zone:hover {
+      .drop-zone:hover:not(.drop-disabled) {
         border-color: var(--cg-blue);
         background: rgba(0, 112, 173, 0.03);
+      }
+      .drop-disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        pointer-events: none;
       }
       .drop-zone.drag-over {
         border-color: var(--cg-vibrant);
@@ -330,6 +340,7 @@ export class InputFilesComponent implements OnInit {
   categories: CategoryView[] = [];
   totalFiles = 0;
   totalSize = 0;
+  isRunning = false;
 
   private hints: Record<string, string> = {
     tasks: 'Drop JIRA XML exports, tickets, or task descriptions here',
@@ -340,11 +351,16 @@ export class InputFilesComponent implements OnInit {
 
   constructor(
     private inputsService: InputsService,
+    private notifSvc: NotificationService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
+    this.notifSvc.notification$.subscribe((n) => {
+      this.isRunning = n.state === 'running';
+      this.cdr.markForCheck();
+    });
     this.loadAll();
   }
 

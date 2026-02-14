@@ -15,6 +15,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { PipelineService, EnvVariable } from '../../services/pipeline.service';
 import { ApiService, PresetInfo } from '../../services/api.service';
+import { NotificationService } from '../../services/notification.service';
 
 interface PhaseToggle {
   id: string;
@@ -138,7 +139,7 @@ const NUMERIC_FIELDS = new Set([
                   <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
                     <mat-icon>restart_alt</mat-icon> Reset to defaults
                   </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('general')" [disabled]="saving">
+                  <button mat-flat-button color="primary" (click)="saveTab('general')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                     <mat-icon>save</mat-icon> Save
                   </button>
                 </div>
@@ -187,7 +188,7 @@ const NUMERIC_FIELDS = new Set([
                   <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
                     <mat-icon>restart_alt</mat-icon> Reset to defaults
                   </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving">
+                  <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                     <mat-icon>save</mat-icon> Save
                   </button>
                 </div>
@@ -229,7 +230,7 @@ const NUMERIC_FIELDS = new Set([
                   <button mat-stroked-button (click)="resetTab('indexing')" class="btn-reset">
                     <mat-icon>restart_alt</mat-icon> Reset to defaults
                   </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('indexing')" [disabled]="saving">
+                  <button mat-flat-button color="primary" (click)="saveTab('indexing')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                     <mat-icon>save</mat-icon> Save
                   </button>
                 </div>
@@ -316,7 +317,7 @@ const NUMERIC_FIELDS = new Set([
                   <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
                     <mat-icon>restart_alt</mat-icon> Reset to defaults
                   </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('advanced')" [disabled]="saving">
+                  <button mat-flat-button color="primary" (click)="saveTab('advanced')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                     <mat-icon>save</mat-icon> Save
                   </button>
                 </div>
@@ -458,6 +459,7 @@ const NUMERIC_FIELDS = new Set([
 export class SettingsComponent implements OnInit {
   loading = true;
   saving = false;
+  isRunning = false;
   allVars: EnvVariable[] = [];
   defaults: Record<string, string> = {};
   showSecrets: Record<string, boolean> = {};
@@ -467,12 +469,17 @@ export class SettingsComponent implements OnInit {
   constructor(
     private pipelineSvc: PipelineService,
     private api: ApiService,
+    private notifSvc: NotificationService,
     private http: HttpClient,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
+    this.notifSvc.notification$.subscribe((n) => {
+      this.isRunning = n.state === 'running';
+      this.cdr.markForCheck();
+    });
     this.pipelineSvc.getEnvSchema().subscribe({
       next: (vars) => {
         this.allVars = vars;

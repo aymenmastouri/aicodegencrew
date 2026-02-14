@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ApiService, ReportList, BranchList } from '../../services/api.service';
+import { NotificationService } from '../../services/notification.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
@@ -738,7 +739,8 @@ interface ParsedComponent {
                           <button
                             mat-icon-button
                             color="warn"
-                            matTooltip="Delete branch"
+                            [matTooltip]="isRunning ? 'Pipeline is running' : 'Delete branch'"
+                            [disabled]="isRunning"
                             (click)="deleteBranch(branch.task_id)"
                           >
                             <mat-icon>delete</mat-icon>
@@ -1439,6 +1441,7 @@ interface ParsedComponent {
 export class ReportsComponent implements OnInit {
   reports: ReportList | null = null;
   loading = true;
+  isRunning = false;
   branches: BranchList | null = null;
   branchesLoading = false;
   branchesError = '';
@@ -1463,12 +1466,17 @@ export class ReportsComponent implements OnInit {
 
   constructor(
     private api: ApiService,
+    private notifSvc: NotificationService,
     private cdr: ChangeDetectorRef,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
+    this.notifSvc.notification$.subscribe((n) => {
+      this.isRunning = n.state === 'running';
+      this.cdr.markForCheck();
+    });
     this.api.getReports().subscribe({
       next: (r) => {
         this.reports = r;

@@ -180,11 +180,17 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         <h2>Phases</h2>
         <div class="section-actions">
           @if (hasCompletedPhases()) {
-            <button mat-stroked-button class="btn-reset" (click)="resetAll()" matTooltip="Reset all completed phases">
+            <button mat-stroked-button class="btn-reset" (click)="resetAll()"
+              [disabled]="executionState === 'running'"
+              [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset all completed phases'">
               Reset All
             </button>
           }
-          <button mat-flat-button color="primary" routerLink="/run">Run Pipeline</button>
+          <button mat-flat-button color="primary" routerLink="/run"
+            [disabled]="executionState === 'running'"
+            [matTooltip]="executionState === 'running' ? 'Pipeline is running' : ''">
+            Run Pipeline
+          </button>
         </div>
       </div>
 
@@ -205,7 +211,8 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                 <span class="status-label">{{ phase.status }}</span>
                 @if (phase.status === 'completed') {
                   <button class="reset-btn" (click)="resetPhase(phase.id); $event.stopPropagation(); $event.preventDefault()"
-                    matTooltip="Reset">
+                    [disabled]="executionState === 'running'"
+                    [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset'">
                     <mat-icon>restart_alt</mat-icon>
                   </button>
                 }
@@ -633,7 +640,8 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         cursor: pointer;
         transition: all 0.15s;
       }
-      .reset-btn:hover { background: rgba(220, 53, 69, 0.1); color: var(--cg-error, #dc3545); }
+      .reset-btn:hover:not(:disabled) { background: rgba(220, 53, 69, 0.1); color: var(--cg-error, #dc3545); }
+      .reset-btn:disabled { opacity: 0.35; cursor: not-allowed; }
       .reset-btn .mat-icon { font-size: 15px; width: 15px; height: 15px; }
 
       /* Empty */
