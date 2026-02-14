@@ -17,8 +17,8 @@ from typing import Any, ClassVar
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from ....shared.utils.logger import setup_logger
-from ....shared.utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, truncate_response
+from ..utils.logger import setup_logger
+from ..utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, truncate_response
 
 logger = setup_logger(__name__)
 
@@ -91,8 +91,8 @@ class RAGQueryTool(BaseTool):
             return env_path
 
         # Resolve project root from __file__ (stable, independent of CWD)
-        # __file__ = src/aicodegencrew/crews/architecture_analysis/tools/rag_query_tool.py
-        base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent
+        # __file__ = src/aicodegencrew/shared/tools/rag_query_tool.py
+        base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
 
         for rel_path in self.CHROMA_PATHS:
             full_path = base_dir / rel_path
