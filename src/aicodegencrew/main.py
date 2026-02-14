@@ -1,4 +1,4 @@
-"""Main entry point for crewai run command."""
+"""Main entry point for aicodegencrew CLI."""
 
 import sys
 
@@ -6,13 +6,10 @@ from .cli import main as cli_main
 
 
 def main():
-    """Entry point for crewai run - injects 'run' command if not provided."""
-    # When called via 'crewai run', no args are passed
-    # We need to inject 'run' as the default command
+    """Entry point — injects 'run' command if no subcommand is provided."""
     if len(sys.argv) == 1 or (
-        len(sys.argv) > 1 and sys.argv[1] not in ("run", "index", "list", "plan", "-h", "--help", "--env")
+        len(sys.argv) > 1 and sys.argv[1] not in ("run", "index", "list", "plan", "codegen", "-h", "--help", "--env")
     ):
-        # Insert 'run' as first argument
         sys.argv.insert(1, "run")
     cli_main()
 
