@@ -12,7 +12,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 
 import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../../services/pipeline.service';
-import { humanizePhaseId } from '../../shared/phase-utils';
+import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as formatDurationUtil, formatNumber as formatNumberUtil } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-history',
@@ -776,50 +776,15 @@ export class HistoryComponent implements OnInit, OnDestroy {
   }
 
   formatDurationShort(seconds: number): string {
-    if (!seconds) return '0s';
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    const m = Math.floor(seconds / 60);
-    const s = Math.round(seconds % 60);
-    return s > 0 ? `${m}m ${s}s` : `${m}m`;
+    return formatDurationUtil(seconds);
   }
 
   formatNumber(n: number): string {
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-    return `${n}`;
+    return formatNumberUtil(n);
   }
 
   shortPhase(phaseId: string): string {
-    const SHORT: Record<string, string> = {
-      // New canonical IDs
-      discover: 'Discover',
-      extract: 'Extract',
-      analyze: 'Analyze',
-      document: 'Document',
-      plan: 'Plan',
-      implement: 'Implement',
-      verify: 'Verify',
-      deliver: 'Deliver',
-      // Legacy long form (backwards compat)
-      phase0_indexing: 'Index',
-      phase1_architecture_facts: 'Facts',
-      phase2_architecture_analysis: 'Analysis',
-      phase3_architecture_synthesis: 'Synthesis',
-      phase4_development_planning: 'Planning',
-      phase5_code_generation: 'CodeGen',
-      phase6_test_generation: 'TestGen',
-      phase7_review_deploy: 'Deploy',
-      // Legacy short form (backwards compat)
-      indexing: 'Index',
-      facts_extraction: 'Facts',
-      deep_analysis: 'Analysis',
-      synthesis: 'Synthesis',
-      planning: 'Planning',
-      code_generation: 'CodeGen',
-      test_generation: 'TestGen',
-      review_deploy: 'Deploy',
-    };
-    return SHORT[phaseId] || phaseId.replace(/^phase\d+_/, '').replace(/_/g, ' ').slice(0, 10);
+    return shortPhaseUtil(phaseId);
   }
 
   setFilter(value: string): void {

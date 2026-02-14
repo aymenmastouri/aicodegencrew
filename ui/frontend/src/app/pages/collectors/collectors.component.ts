@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 
 import { ApiService, CollectorInfo, CollectorListResponse } from '../../services/api.service';
+import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-collectors',
@@ -160,14 +161,14 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
               *matRowDef="let row; columns: displayedColumns"
               class="collector-row"
               [class.expanded-row]="expandedId === row.id"
-              (click)="row.fact_count !== null && toggleOutput(row)"
+              (click)="onRowClick(row)"
             ></tr>
           </table>
         </mat-card>
 
         <!-- Output Preview Panel -->
         @if (expandedId && outputData) {
-          <mat-card class="output-card">
+          <mat-card class="output-card" id="collector-output">
             <mat-card-header>
               <mat-icon mat-card-avatar>data_object</mat-icon>
               <mat-card-title>{{ expandedId }} output</mat-card-title>
@@ -179,7 +180,7 @@ import { ApiService, CollectorInfo, CollectorListResponse } from '../../services
               <pre class="output-json">{{ outputPreview }}</pre>
             </mat-card-content>
             <mat-card-actions align="end">
-              <button mat-button (click)="expandedId = null; outputData = null; cdr.markForCheck()">
+              <button mat-button (click)="closeOutput()">
                 Close
               </button>
             </mat-card-actions>
@@ -338,7 +339,7 @@ export class CollectorsComponent implements OnInit {
   constructor(
     private api: ApiService,
     private snack: MatSnackBar,
-    public cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -389,6 +390,12 @@ export class CollectorsComponent implements OnInit {
     });
   }
 
+  onRowClick(collector: CollectorInfo): void {
+    if (collector.fact_count !== null) {
+      this.toggleOutput(collector);
+    }
+  }
+
   toggleOutput(collector: CollectorInfo): void {
     if (this.expandedId === collector.id) {
       this.expandedId = null;
@@ -409,6 +416,7 @@ export class CollectorsComponent implements OnInit {
         this.outputFileSize = res.file_size_bytes;
         this.outputLoading = false;
         this.cdr.markForCheck();
+        setTimeout(() => document.getElementById('collector-output')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
       },
       error: () => {
         this.outputLoading = false;
@@ -419,11 +427,13 @@ export class CollectorsComponent implements OnInit {
     });
   }
 
+  closeOutput(): void {
+    this.expandedId = null;
+    this.outputData = null;
+    this.cdr.markForCheck();
+  }
+
   formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return formatBytesUtil(bytes);
   }
 }

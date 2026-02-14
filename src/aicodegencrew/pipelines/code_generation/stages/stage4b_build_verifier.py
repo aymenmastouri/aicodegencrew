@@ -17,11 +17,14 @@ SAFETY:
 
 import json
 import os
+import platform
 import re
 import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+
+IS_WINDOWS = platform.system() == "Windows"
 
 from ....shared.utils.logger import setup_logger
 from ..schemas import (
@@ -131,12 +134,18 @@ def _derive_build_command(build_tool: str, repo_path: Path, container_root: str)
     build_dir = repo_path / container_root
 
     if build_tool == "gradle":
-        if (build_dir / "gradlew").exists() or (build_dir / "gradlew.bat").exists():
+        has_wrapper = (build_dir / "gradlew").exists() or (build_dir / "gradlew.bat").exists()
+        if has_wrapper:
+            if IS_WINDOWS:
+                return r".\gradlew.bat clean build --info"
             return "./gradlew clean build --info"
         return "gradle clean build --info"
 
     elif build_tool == "maven":
-        if (build_dir / "mvnw").exists() or (build_dir / "mvnw.cmd").exists():
+        has_wrapper = (build_dir / "mvnw").exists() or (build_dir / "mvnw.cmd").exists()
+        if has_wrapper:
+            if IS_WINDOWS:
+                return r".\mvnw.cmd clean compile"
             return "./mvnw clean compile"
         return "mvn clean compile"
 
@@ -166,25 +175,40 @@ def _derive_build_command(build_tool: str, repo_path: Path, container_root: str)
 # =========================================================================
 
 # Gradle/javac: File.java:42: error: message
+# Handles both relative paths (src/File.java) and Windows absolute paths (C:\...\File.java)
 _JAVAC_PATTERN = re.compile(
-    r"^(?P<file>[^\s:]+\.java):(?P<line>\d+):\s*error:\s*(?P<msg>.+)$", re.MULTILINE
+    r"^(?P<file>.+?\.java):(?P<line>\d+):\s*error:\s*(?P<msg>.+)$", re.MULTILINE
 )
 
-# Angular/TypeScript: file.ts:42:10 - error TS2345: message
+# Angular/TypeScript error patterns (handles TS and NG error codes).
+# Angular CLI outputs errors in multiple formats with optional prefix:
+#   "Error: src/app/foo.ts:42:10 - error TS2345: msg"
+#   "ERROR in src/app/foo.ts:42:10 - error NG6002: msg"
+#   "./src/app/foo.ts:42:10 - error TS2345: msg"
+#   "src/app/foo.ts:42:10 - error NG8001: msg"
 _TSC_PATTERN1 = re.compile(
-    r"^(?P<file>[^\s:]+\.ts):(?P<line>\d+):(?P<col>\d+)\s*-\s*error\s+(?P<code>TS\d+):\s*(?P<msg>.+)$",
+    r"^(?:Error:\s*|ERROR\s+in\s*|\.\/)?(?P<file>[^\s:]+\.(?:ts|html)):(?P<line>\d+):(?P<col>\d+)\s*-\s*error\s+(?P<code>(?:TS|NG)\d+):\s*(?P<msg>.+)$",
     re.MULTILINE,
 )
 
 # TypeScript alternate: file.ts(42,10): error TS2345: message
 _TSC_PATTERN2 = re.compile(
-    r"^(?P<file>[^\s(]+\.ts)\((?P<line>\d+),(?P<col>\d+)\):\s*error\s+(?P<code>TS\d+):\s*(?P<msg>.+)$",
+    r"^(?:Error:\s*|ERROR\s+in\s*|\.\/)?(?P<file>[^\s(]+\.(?:ts|html))\((?P<line>\d+),(?P<col>\d+)\):\s*error\s+(?P<code>(?:TS|NG)\d+):\s*(?P<msg>.+)$",
     re.MULTILINE,
 )
 
+# ANSI escape code stripper (Angular CLI uses color codes in output)
+_ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _strip_ansi(text: str) -> str:
+    """Remove ANSI color/style escape codes from text."""
+    return _ANSI_ESCAPE.sub("", text)
+
+
 # Maven/javac: [ERROR] /path/File.java:[42,10] error message
 _MAVEN_PATTERN = re.compile(
-    r"^\[ERROR\]\s*(?P<file>[^\s:]+\.java):\[(?P<line>\d+),(?P<col>\d+)\]\s*(?P<msg>.+)$",
+    r"^\[ERROR\]\s*(?P<file>.+?\.java):\[(?P<line>\d+),(?P<col>\d+)\]\s*(?P<msg>.+)$",
     re.MULTILINE,
 )
 
@@ -202,6 +226,8 @@ class BuildError:
 
 def _parse_build_errors(output: str, build_tool: str) -> list[BuildError]:
     """Parse build output into structured errors based on build tool."""
+    # Strip ANSI color codes (Angular CLI, Gradle with --info use colors)
+    output = _strip_ansi(output)
     errors: list[BuildError] = []
 
     if build_tool in ("gradle", "maven"):
@@ -225,28 +251,28 @@ def _parse_build_errors(output: str, build_tool: str) -> list[BuildError]:
                 )
             )
     elif build_tool in ("npm", "angular"):
-        for m in _TSC_PATTERN1.finditer(output):
-            errors.append(
-                BuildError(
-                    file_path=m.group("file"),
-                    line=int(m.group("line")),
-                    column=int(m.group("col")),
-                    code=m.group("code"),
-                    message=m.group("msg").strip(),
+        for pattern in (_TSC_PATTERN1, _TSC_PATTERN2):
+            for m in pattern.finditer(output):
+                errors.append(
+                    BuildError(
+                        file_path=m.group("file"),
+                        line=int(m.group("line")),
+                        column=int(m.group("col")),
+                        code=m.group("code"),
+                        message=m.group("msg").strip(),
+                    )
                 )
-            )
-        for m in _TSC_PATTERN2.finditer(output):
-            errors.append(
-                BuildError(
-                    file_path=m.group("file"),
-                    line=int(m.group("line")),
-                    column=int(m.group("col")),
-                    code=m.group("code"),
-                    message=m.group("msg").strip(),
-                )
-            )
 
-    return errors
+    # Deduplicate (same file+line can match multiple patterns)
+    seen = set()
+    unique_errors = []
+    for e in errors:
+        key = (e.file_path, e.line, e.code)
+        if key not in seen:
+            seen.add(key)
+            unique_errors.append(e)
+
+    return unique_errors
 
 
 # =========================================================================
@@ -436,7 +462,7 @@ class BuildVerifierStage:
                 build_command=config.build_command,
                 success=True,  # not our fault → treat as pass
                 exit_code=baseline_exit,
-                error_summary=f"Baseline broken (pre-existing): {baseline_output[:300]}",
+                error_summary=f"Baseline broken (pre-existing): {baseline_output[-500:]}",
                 attempts=0,
                 duration_seconds=time.time() - start_time,
             )
@@ -484,10 +510,14 @@ class BuildVerifierStage:
             errors = _parse_build_errors(output, config.build_tool)
 
             if not errors:
+                # Log last 500 chars of output for debugging
                 logger.warning(
-                    f"[Stage4b] {config.name}: could not parse build errors, skipping heal"
+                    f"[Stage4b] {config.name}: could not parse build errors, skipping heal. "
+                    f"Output tail: {output[-500:]}"
                 )
                 break
+
+            logger.info(f"[Stage4b] {config.name}: parsed {len(errors)} build errors")
 
             # Match errors to generated files
             healed_any = False
@@ -520,8 +550,8 @@ class BuildVerifierStage:
 
         duration = time.time() - start_time
 
-        # Summarize error output (first 500 chars)
-        error_summary = output[:500] if output else "Build failed with no parseable output"
+        # Summarize error output — use tail (errors are usually at the end of build output)
+        error_summary = output[-2000:] if output else "Build failed with no parseable output"
 
         return ContainerBuildResult(
             container_id=config.container_id,
@@ -540,7 +570,7 @@ class BuildVerifierStage:
     # =========================================================================
 
     def _run_build(self, config: ContainerConfig) -> tuple[int, str]:
-        """Run build command for a container via bash. Returns (exit_code, combined_output)."""
+        """Run build command via shell. Returns (exit_code, combined_output)."""
         build_dir = self.repo_path / config.build_cwd
         if not build_dir.exists():
             msg = f"Build directory not found: {build_dir}"
@@ -553,16 +583,19 @@ class BuildVerifierStage:
 
         try:
             result = subprocess.run(
-                ["bash", "-c", config.build_command],
+                config.build_command,
                 cwd=str(build_dir),
                 capture_output=True,
-                text=True,
                 timeout=config.timeout,
+                shell=True,
             )
-            output = (result.stdout or "") + "\n" + (result.stderr or "")
+            # Decode with error handling (gradle output may contain non-UTF-8 bytes)
+            stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
+            stderr = result.stderr.decode("utf-8", errors="replace") if result.stderr else ""
+            output = stdout + "\n" + stderr
             return result.returncode, output.strip()
         except FileNotFoundError:
-            msg = f"Build tool not found: bash (required for build execution)"
+            msg = f"Build tool not found for: {config.build_command}"
             logger.error(f"[Stage4b] {config.name}: {msg}")
             return -1, msg
         except subprocess.TimeoutExpired:

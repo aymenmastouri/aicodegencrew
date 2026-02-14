@@ -13,6 +13,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { ApiService, ReportList, BranchList } from '../../services/api.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
 interface DiffLine {
   type: 'add' | 'del' | 'info' | 'context';
@@ -57,7 +58,7 @@ interface ParsedComponent {
           <mat-spinner diameter="36"></mat-spinner>
         </div>
       } @else {
-        <mat-tab-group (selectedTabChange)="onTabChange($event)">
+        <mat-tab-group [(selectedIndex)]="activeTabIndex" (selectedTabChange)="onTabChange($event)">
           <!-- ============================================================ -->
           <!-- TAB 1: Extract                                               -->
           <!-- ============================================================ -->
@@ -78,6 +79,10 @@ interface ParsedComponent {
                       </mat-panel-title>
                       <mat-panel-description>
                         <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
+                        <button mat-icon-button class="dl-btn" matTooltip="Download"
+                                (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
+                          <mat-icon>download</mat-icon>
+                        </button>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
                     @if (fileLoading[$any(file['_file'])]) {
@@ -116,6 +121,10 @@ interface ParsedComponent {
                       </mat-panel-title>
                       <mat-panel-description>
                         <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
+                        <button mat-icon-button class="dl-btn" matTooltip="Download"
+                                (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
+                          <mat-icon>download</mat-icon>
+                        </button>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
                     @if (fileLoading[$any(file['_file'])]) {
@@ -154,6 +163,10 @@ interface ParsedComponent {
                       </mat-panel-title>
                       <mat-panel-description>
                         <span class="file-size-badge">{{ formatBytes($any(file['_size'])) }}</span>
+                        <button mat-icon-button class="dl-btn" matTooltip="Download"
+                                (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
+                          <mat-icon>download</mat-icon>
+                        </button>
                       </mat-panel-description>
                     </mat-expansion-panel-header>
                     @if (fileLoading[$any(file['_file'])]) {
@@ -208,6 +221,9 @@ interface ParsedComponent {
                     <div class="plan-body">
                       <!-- Toggle Raw JSON -->
                       <div class="toggle-row">
+                        <button mat-button (click)="downloadPlanJson(plan)">
+                          <mat-icon>download</mat-icon> Download
+                        </button>
                         <button mat-button (click)="toggleRawJson($any(plan['task_id']))">
                           <mat-icon>{{ showRawJson[$any(plan['task_id'])] ? 'visibility' : 'data_object' }}</mat-icon>
                           {{ showRawJson[$any(plan['task_id'])] ? 'Structured View' : 'Raw JSON' }}
@@ -623,7 +639,7 @@ interface ParsedComponent {
           </mat-tab>
 
           <!-- ============================================================ -->
-          <!-- TAB 2: Codegen Reports                                       -->
+          <!-- TAB 5: Codegen Reports                                       -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
@@ -652,6 +668,9 @@ interface ParsedComponent {
 
                     <div class="report-body">
                       <div class="toggle-row">
+                        <button mat-button (click)="downloadReportJson(report)">
+                          <mat-icon>download</mat-icon> Download
+                        </button>
                         <button mat-button (click)="toggleRawJson('report_' + report['task_id'])">
                           <mat-icon>{{
                             showRawJson['report_' + $any(report['task_id'])] ? 'visibility' : 'data_object'
@@ -736,7 +755,7 @@ interface ParsedComponent {
           </mat-tab>
 
           <!-- ============================================================ -->
-          <!-- TAB 3: Git Branches                                          -->
+          <!-- TAB 6: Git Branches                                          -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
@@ -1359,6 +1378,23 @@ interface ParsedComponent {
         padding: 0 12px;
       }
 
+      /* Download button in panel description */
+      .dl-btn {
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 32px !important;
+        margin-left: 4px;
+      }
+      .dl-btn .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-gray-500);
+      }
+      .dl-btn:hover .mat-icon {
+        color: var(--cg-vibrant);
+      }
+
       /* Branches */
       .branches-grid {
         display: grid;
@@ -1403,6 +1439,7 @@ export class ReportsComponent implements OnInit {
   branches: BranchList | null = null;
   branchesLoading = false;
   branchesError = '';
+  activeTabIndex = 0;
   showRawJson: Record<string, boolean> = {};
   expandedFiles: Record<string, boolean> = {};
 
@@ -1482,9 +1519,7 @@ export class ReportsComponent implements OnInit {
   }
 
   formatBytes(bytes: number): string {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
+    return formatBytesUtil(bytes);
   }
 
   /** Parse component ID strings into structured objects */
@@ -1620,14 +1655,45 @@ export class ReportsComponent implements OnInit {
   }
 
   goToReport(taskId: string): void {
-    const tabGroupEl = document.querySelector('mat-tab-group');
-    if (tabGroupEl) {
-      const tabs = tabGroupEl.querySelectorAll('.mat-mdc-tab');
-      if (tabs[1]) (tabs[1] as HTMLElement).click();
-    }
+    this.activeTabIndex = 4; // Codegen Reports tab
   }
 
   isString(val: unknown): boolean {
     return typeof val === 'string';
+  }
+
+  /** Download a knowledge file by its path */
+  downloadFileContent(path: string, filename: string): void {
+    this.api.getKnowledgeFile(path).subscribe({
+      next: (data) => {
+        const text = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        this.triggerDownload(text, filename, filename.endsWith('.json') ? 'application/json' : 'text/plain');
+      },
+      error: () => {
+        this.snackBar.open('Failed to download file', 'OK', { duration: 3000 });
+      },
+    });
+  }
+
+  /** Download a plan as JSON */
+  downloadPlanJson(plan: Record<string, unknown>): void {
+    const taskId = plan['task_id'] as string || 'plan';
+    this.triggerDownload(JSON.stringify(plan, null, 2), `${taskId}_plan.json`, 'application/json');
+  }
+
+  /** Download a codegen report as JSON */
+  downloadReportJson(report: Record<string, unknown>): void {
+    const taskId = report['task_id'] as string || 'report';
+    this.triggerDownload(JSON.stringify(report, null, 2), `${taskId}_report.json`, 'application/json');
+  }
+
+  private triggerDownload(content: string, filename: string, mime: string): void {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
