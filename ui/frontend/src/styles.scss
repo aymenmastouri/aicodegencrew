@@ -168,6 +168,7 @@ body {
   font-family: Roboto, 'Helvetica Neue', sans-serif;
   background: var(--cg-gray-50);
   color: var(--cg-gray-900);
+  overflow-x: hidden;
 }
 
 // Preflight sets border-width:0 — restore for Material dividers/borders
@@ -351,24 +352,46 @@ body {
 }
 
 // ---------------------------------------------------------------------------
-// Dark code viewer scrollbar
+// Modern scrollbars — thin, subtle, auto-hiding feel
 // ---------------------------------------------------------------------------
+
+// Firefox
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+// Chrome / Edge / Safari
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  &:hover {
+    background: rgba(0, 0, 0, 0.22);
+  }
+}
+// Don't show horizontal scrollbar on the page root
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+// Dark-background containers get light scrollbars
 .code-viewer,
 .log-viewer,
-.file-content {
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-  }
+.file-content,
+.json-viewer,
+.diff-viewer {
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
   &::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
     &:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.28);
     }
   }
 }
