@@ -123,18 +123,21 @@ def setup_logging() -> None:
 # =============================================================================
 
 
-def clean_knowledge(phase: str = "all") -> None:
-    """Clean knowledge directory before running a phase."""
-    knowledge_dir = Path("knowledge")
-    if not knowledge_dir.exists():
-        return
+def clean_knowledge(phase: str = "all", base_dir: Path | None = None) -> None:
+    """Clean knowledge directory before running a phase.
+
+    Args:
+        phase: Phase ID or "all".
+        base_dir: Base directory containing knowledge/. Defaults to CWD.
+    """
+    base = base_dir or Path(".")
 
     cleaned: list[str] = []
 
     phases_to_clean = list(PHASES) if phase == "all" else [phase]
     for pid in phases_to_clean:
         for rel in get_cleanup_targets(pid):
-            target = Path(rel)
+            target = base / rel
             if target.exists():
                 shutil.rmtree(target)
                 cleaned.append(str(target))
@@ -206,9 +209,9 @@ def cmd_index(config: Config) -> int:
     from .pipelines.indexing import ensure_repo_indexed
 
     repo_path = _resolve_repo_path(config)
-    from .shared.paths import CHROMA_DIR as _CHROMA_DIR
+    from .shared.paths import resolve_chroma_dir
 
-    chroma_dir = Path(_CHROMA_DIR)
+    chroma_dir = Path(resolve_chroma_dir(repo_path))
 
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")
@@ -281,6 +284,7 @@ def _export_run_report(
     result: PipelineResult,
     config: Config,
     planned_phases: set[str],
+    knowledge_dir: Path | None = None,
 ) -> Path | None:
     """Export run_report.json to knowledge/ directory.
 
@@ -291,10 +295,10 @@ def _export_run_report(
 
     from .shared.utils.logger import CURRENT_LOG, METRICS_LOG, RUN_ID
 
-    base = Path(".").resolve()
-    report_dir = base / "knowledge"
+    report_dir = knowledge_dir or Path("knowledge")
     report_dir.mkdir(parents=True, exist_ok=True)
     report_path = report_dir / "run_report.json"
+    base = report_dir.parent  # repo_path
 
     phases_detail = []
     for pr in result.phases:
@@ -334,7 +338,7 @@ def _export_run_report(
         return None
 
 
-def _export_architecture_docs():
+def _export_architecture_docs(knowledge_dir: Path | None = None):
     """Copy Phase 3 architecture docs (C4 + Arc42) to export dir.
 
     Default: <output_base>/architecture-docs. Override with DOCS_OUTPUT_DIR in .env.
@@ -342,7 +346,7 @@ def _export_architecture_docs():
     import shutil
 
     docs_dir = os.getenv("DOCS_OUTPUT_DIR", "architecture-docs")
-    source = Path("knowledge") / "document"
+    source = (knowledge_dir or Path("knowledge")) / "document"
     target = Path(docs_dir)
 
     # Only copy the deliverable subdirectories (c4, arc42)
@@ -383,18 +387,21 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # Resolve repo path (clone from Git URL if configured)
     repo_path = _resolve_repo_path(config)
 
-    # All output paths relative to CWD
-    knowledge_dir = Path("knowledge")
+    # Resolve all knowledge paths relative to repo_path (CWD-independent)
+    from .shared.paths import resolve_chroma_dir, resolve_knowledge_dir
+
+    knowledge_dir = resolve_knowledge_dir(repo_path)
+    chroma_dir = resolve_chroma_dir(repo_path)
     phase1_dir = knowledge_dir / "extract"
     phase2_dir = knowledge_dir / "analyze"
     phase4_dir = knowledge_dir / "plan"
 
     # Clean if requested
     if config.clean:
-        clean_knowledge("all")
+        clean_knowledge("all", base_dir=repo_path)
 
     # Initialize orchestrator
-    orchestrator = SDLCOrchestrator(config_path=config.config_path)
+    orchestrator = SDLCOrchestrator(config_path=config.config_path, repo_path=repo_path)
 
     # Resolve which phases will run (strict validation)
     try:
@@ -419,7 +426,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     # --- Extract: Architecture Facts ---
     if "extract" in planned_phases:
         if not config.no_clean:
-            clean_knowledge("extract")
+            clean_knowledge("extract", base_dir=repo_path)
         facts_pipeline = ArchitectureFactsPipeline(
             repo_path=str(repo_path),
             output_dir=str(phase1_dir),
@@ -430,7 +437,11 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     if "analyze" in planned_phases:
         from .crews.architecture_analysis import MapReduceAnalysisCrew
 
-        analysis_crew = MapReduceAnalysisCrew(facts_path=str(phase1_dir / "architecture_facts.json"))
+        analysis_crew = MapReduceAnalysisCrew(
+            facts_path=str(phase1_dir / "architecture_facts.json"),
+            chroma_dir=chroma_dir,
+            output_dir=str(phase2_dir),
+        )
         orchestrator.register_phase("analyze", analysis_crew)
 
     # --- Document: Architecture Synthesis ---
@@ -438,13 +449,21 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         logger.info("[CONFIG] SKIP_SYNTHESIS=true -> Skipping Document phase")
         orchestrator.config["phases"]["document"]["enabled"] = False
     elif "document" in planned_phases:
-        synthesis_crew = ArchitectureSynthesisCrew(facts_path=str(phase1_dir / "architecture_facts.json"))
+        synthesis_crew = ArchitectureSynthesisCrew(
+            facts_path=str(phase1_dir / "architecture_facts.json"),
+            analyzed_path=str(phase2_dir / "analyzed_architecture.json"),
+            output_dir=str(knowledge_dir / "document"),
+            chroma_dir=chroma_dir,
+        )
         orchestrator.register_phase("document", synthesis_crew)
 
     # --- Plan: Development Planning (Hybrid Pipeline) ---
     codegen_task_id = None  # For Implement single-task mode
     if "plan" in planned_phases:
         from .hybrid.development_planning import DevelopmentPlanningPipeline
+
+        if not config.no_clean:
+            clean_knowledge("plan", base_dir=repo_path)
 
         # Get input directory from .env (REQUIRED - no hardcoded default)
         input_dir = os.getenv("TASK_INPUT_DIR", "")
@@ -490,6 +509,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
                 facts_path=facts_path,
                 analyzed_path=analyzed_path,
                 output_dir=str(phase4_dir),
+                chroma_dir=chroma_dir,
                 repo_path=os.getenv("PROJECT_PATH"),
                 supplementary_files=supplementary_files,
             )
@@ -511,6 +531,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             facts_path=str(phase1_dir / "architecture_facts.json"),
             report_dir=str(knowledge_dir / "implement"),
             dry_run=codegen_dry_run,
+            chroma_dir=chroma_dir,
         )
         orchestrator.register_phase("implement", codegen_pipeline)
 
@@ -519,7 +540,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         result = orchestrator.run(preset=preset, phases=phases)
 
         # Always export run report (success or failure)
-        _export_run_report(result, config, planned_phases)
+        _export_run_report(result, config, planned_phases, knowledge_dir=knowledge_dir)
 
         if result.status == "success":
             logger.info("\n[OK] Pipeline successful!")
@@ -527,7 +548,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
             # Export Phase 3 docs to external dir if configured
             if "document" in planned_phases:
-                _export_architecture_docs()
+                _export_architecture_docs(knowledge_dir=knowledge_dir)
 
             return 0
         else:

@@ -245,6 +245,34 @@ class TestProgressComputation:
         assert status["total_phase_count"] == 2
         assert status["progress_percent"] == 100.0
 
+    def test_progress_completed_uses_observed_phases(self, mock_settings, metrics_file):
+        """Completed runs should show 100% even when planned preset contains unregistered phases."""
+        from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
+
+        write_metrics(metrics_file, [
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Extract"}},
+            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "extract", "duration_seconds": 10}},
+            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "analyze", "name": "Analyze"}},
+            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "analyze", "duration_seconds": 20}},
+        ])
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.state = "completed"
+        # Preset planned 4 phases, but only 2 were actually executed.
+        executor.current_run = RunInfo(
+            run_id="test",
+            preset="full",
+            phases=["discover", "extract", "analyze", "verify"],
+            started_at="T0",
+        )
+        executor._started_at = time.monotonic() - 30
+
+        status = executor.get_status()
+        assert status["completed_phase_count"] == 2
+        assert status["total_phase_count"] == 2
+        assert status["progress_percent"] == 100.0
+
     def test_progress_one_running(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 

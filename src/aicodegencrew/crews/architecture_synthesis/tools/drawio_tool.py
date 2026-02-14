@@ -43,6 +43,9 @@ class DrawioDiagramTool(BaseTool):
         create_drawio_diagram(file_path="c4/diagram.drawio", diagram_name="Container", nodes=nodes, edges=edges)
     """
 
+    # Configurable output directory (set by base_crew)
+    output_dir: str | None = None
+
     name: str = "create_drawio_diagram"
     description: str = (
         "Create a Draw.io diagram file. "
@@ -107,7 +110,7 @@ class DrawioDiagramTool(BaseTool):
 '''
 
             # Write to file
-            base_dir = Path("knowledge/document")
+            base_dir = Path(self.output_dir) if self.output_dir else Path("knowledge/document")
             # Strip base_dir prefix if agent already included it (prevents double-nesting)
             clean_path = file_path.replace("knowledge/document/", "").replace("knowledge\\document\\", "")
             # Also strip legacy path if agent uses old convention

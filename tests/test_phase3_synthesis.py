@@ -305,32 +305,33 @@ class TestSynthesisCrewPrerequisites:
     def test_validate_prerequisites_all_present(self, tmp_path, monkeypatch):
         """No error when all prerequisite files exist."""
         monkeypatch.chdir(tmp_path)
-        _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
-        _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
-        # analyzed_path is hardcoded to knowledge/analyze/analyzed_architecture.json
-        (tmp_path / "knowledge" / "analyze").mkdir(parents=True)
-        _write_json(tmp_path / "knowledge" / "analyze" / "analyzed_architecture.json", MINIMAL_ANALYSIS)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        analyze_dir = tmp_path / "knowledge" / "analyze"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
+        _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
+        _write_json(analyze_dir / "analyzed_architecture.json", MINIMAL_ANALYSIS)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
         # Should not raise
         crew._validate_prerequisites()
 
     def test_validate_prerequisites_missing_facts(self, tmp_path):
         """Error when architecture_facts.json is missing."""
-        _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
-        _write_json(tmp_path / "analyzed_architecture.json", MINIMAL_ANALYSIS)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        extract_dir.mkdir(parents=True, exist_ok=True)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
         with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
             crew._validate_prerequisites()
 
     def test_validate_prerequisites_missing_analysis(self, tmp_path, monkeypatch):
         """Error when analyzed_architecture.json is missing."""
         monkeypatch.chdir(tmp_path)
-        _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
-        _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
+        _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
         with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
             crew._validate_prerequisites()
 
@@ -341,22 +342,24 @@ class TestSynthesisCrewCleanup:
     def test_clean_no_existing_outputs(self, tmp_path, monkeypatch):
         """No error when there's nothing to clean."""
         monkeypatch.chdir(tmp_path)
-        _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
         # Should not raise
         crew._clean_old_outputs()
 
     def test_clean_existing_c4_dir(self, tmp_path, monkeypatch):
         """Cleans existing c4 directory."""
         monkeypatch.chdir(tmp_path)
-        _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
         output_dir = tmp_path / "knowledge" / "document"
         c4_dir = output_dir / "c4"
         c4_dir.mkdir(parents=True)
         (c4_dir / "test.md").write_text("test content", encoding="utf-8")
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
         crew._clean_old_outputs()
 
         # c4 dir should be recreated empty
@@ -366,9 +369,9 @@ class TestSynthesisCrewCleanup:
     def test_resume_skips_clean(self, tmp_path, monkeypatch):
         """When checkpoint exists, clean is skipped."""
         monkeypatch.chdir(tmp_path)
-        _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
-        _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
-        _write_json(tmp_path / "analyzed_architecture.json", MINIMAL_ANALYSIS)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
+        _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
 
         # Create a checkpoint file in the synthesis output dir
         synthesis_dir = tmp_path / "knowledge" / "document"
@@ -380,7 +383,7 @@ class TestSynthesisCrewCleanup:
         c4_dir.mkdir()
         (c4_dir / "test.md").write_text("keep me", encoding="utf-8")
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
 
         # Verify is_resume logic
         c4_checkpoint = synthesis_dir / ".checkpoint_c4.json"
@@ -395,9 +398,10 @@ class TestSynthesisCrewKickoff:
 
     def test_kickoff_delegates_to_run(self, tmp_path):
         """kickoff() calls run()."""
-        _write_json(tmp_path / "architecture_facts.json", MINIMAL_FACTS)
+        extract_dir = tmp_path / "knowledge" / "extract"
+        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
 
         mock_result = {"status": "completed", "phase": "document"}
         with patch.object(crew, "run", return_value=mock_result) as mock_run:

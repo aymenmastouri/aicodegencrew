@@ -34,11 +34,13 @@ class DocWriterTool(BaseTool):
     )
     args_schema: type[BaseModel] = DocWriterInput
 
+    # Configurable output directory (set by base_crew)
+    output_dir: str | None = None
+
     def _run(self, file_path: str, content: str, overwrite: bool = True) -> str:
         """Write content to a file."""
         try:
-            # Base directory for Phase 3 synthesis docs
-            base_dir = Path("knowledge/document")
+            base_dir = Path(self.output_dir) if self.output_dir else Path("knowledge/document")
 
             # Strip base_dir prefix if agent already included it (prevents double-nesting)
             clean_path = file_path.replace("knowledge/document/", "").replace("knowledge\\document\\", "")

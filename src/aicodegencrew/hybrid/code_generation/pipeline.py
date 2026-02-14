@@ -51,6 +51,7 @@ class CodeGenerationPipeline:
         facts_path: str = "knowledge/extract/architecture_facts.json",
         report_dir: str = "knowledge/implement",
         dry_run: bool = False,
+        chroma_dir: str | None = None,
     ):
         self.repo_path = str(repo_path)
         self.task_id = task_id
@@ -58,12 +59,15 @@ class CodeGenerationPipeline:
         self.facts_path = Path(facts_path)
         self.report_dir = Path(report_dir)
         self.dry_run = dry_run
+        self.chroma_dir = chroma_dir
+        self._plan_files_override: list[Path] | None = None
 
         # Ensure output dir exists
         self.report_dir.mkdir(parents=True, exist_ok=True)
 
     def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """Execute pipeline (Orchestrator-compatible interface)."""
+        self._plan_files_override = self._extract_plan_files_from_inputs(inputs)
         return self.run()
 
     def run(self) -> dict[str, Any]:
@@ -98,7 +102,11 @@ class CodeGenerationPipeline:
         """Process all plan files as a cascade on a single integration branch."""
         start_time = time.time()
 
-        plan_files = sorted(self.plans_dir.glob("*_plan.json"))
+        if self._plan_files_override is not None:
+            plan_files = sorted(self._plan_files_override)
+            logger.info(f"[Phase5] Using {len(plan_files)} plan file(s) from previous phase output")
+        else:
+            plan_files = sorted(self.plans_dir.glob("*_plan.json"))
         if not plan_files:
             logger.warning(f"[Phase5] No plan files found in {self.plans_dir}")
             return {
@@ -193,6 +201,34 @@ class CodeGenerationPipeline:
             },
         }
 
+    @staticmethod
+    def _extract_plan_files_from_inputs(inputs: dict[str, Any] | None) -> list[Path] | None:
+        """Prefer current-run plan outputs when orchestrator provides them."""
+        if not isinstance(inputs, dict):
+            return None
+
+        previous_results = inputs.get("previous_results")
+        if not isinstance(previous_results, dict):
+            return None
+
+        plan_result = previous_results.get("plan")
+        if not isinstance(plan_result, dict):
+            return None
+
+        output_files = plan_result.get("output_files")
+        if not isinstance(output_files, list):
+            return None
+
+        plan_files: list[Path] = []
+        for path_str in output_files:
+            path = Path(str(path_str))
+            if path.name.endswith("_plan.json") and path.exists():
+                plan_files.append(path)
+
+        # Distinct + stable order by string path
+        unique = sorted({str(p): p for p in plan_files}.values(), key=lambda p: str(p))
+        return unique
+
     def _run_single_cascade(
         self,
         task_id: str,
@@ -239,6 +275,7 @@ class CodeGenerationPipeline:
             crew = ImplementCrew(
                 repo_path=self.repo_path,
                 facts_path=str(self.facts_path),
+                chroma_dir=self.chroma_dir,
             )
             generated_files, build_result = crew.run(plan_input, context)
             step_done(f"Stage 3+4b: Implement Crew ({task_id})")

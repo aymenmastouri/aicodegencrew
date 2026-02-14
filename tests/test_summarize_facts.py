@@ -11,6 +11,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from aicodegencrew.crews.architecture_synthesis.arc42.crew import Arc42Crew
+from aicodegencrew.crews.architecture_synthesis.arc42.tasks import CH08_PART2_PATTERNS
 
 
 def _make_crew_with_facts(facts: dict, analysis: dict | None = None) -> Arc42Crew:
@@ -58,6 +59,20 @@ def test_summarize_facts_minimal():
     assert isinstance(result, dict)
     assert "system_summary" in result
     assert "containers_summary" in result
+
+
+def test_arc42_task_template_formatting_is_safe():
+    """Arc42 task templates must format cleanly with crew template data."""
+    formatted = CH08_PART2_PATTERNS.format(
+        system_name="System",
+        system_summary="Summary",
+        containers_summary="Containers",
+        components_summary="Components",
+        relations_summary="Relations",
+        interfaces_summary="Interfaces",
+        building_blocks_data="Blocks",
+    )
+    assert "application-{profile}.yml" in formatted
 
 
 if __name__ == "__main__":

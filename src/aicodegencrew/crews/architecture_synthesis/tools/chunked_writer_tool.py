@@ -57,6 +57,9 @@ class ChunkedWriterTool(BaseTool):
     4. ChunkedWriter(mode="finalize", section="## Summary", content="...")
     """
 
+    # Configurable output directory (set by base_crew)
+    output_dir: str | None = None
+
     name: str = "chunked_writer"
     description: str = (
         "Write large documentation files in chunks/sections. "
@@ -90,7 +93,7 @@ class ChunkedWriterTool(BaseTool):
         """
         try:
             # Base directory for architecture docs (same as doc_writer)
-            base_dir = Path("knowledge/document")
+            base_dir = Path(self.output_dir) if self.output_dir else Path("knowledge/document")
 
             # Strip base_dir prefix if agent already included it (prevents double-nesting)
             clean_path = file_path.replace("knowledge/document/", "").replace("knowledge\\document\\", "")

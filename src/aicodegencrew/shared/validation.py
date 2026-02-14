@@ -82,6 +82,10 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
 class PhaseOutputValidator:
     """Validates phase output files and data contracts."""
 
+    def __init__(self, base_dir: Path | None = None):
+        """Initialize with optional base directory (repo_path)."""
+        self._base = base_dir or Path(".")
+
     def validate_phase(self, phase_id: str) -> list[str]:
         """
         Validate outputs for a completed phase.
@@ -96,7 +100,7 @@ class PhaseOutputValidator:
 
         # 1. Check required files exist
         for path_str in spec.get("required_paths", []):
-            path = Path(path_str)
+            path = self._base / path_str
             if not path.exists():
                 errors.append(f"Missing output: {path_str}")
             elif path.is_file() and path.stat().st_size == 0:
@@ -155,7 +159,7 @@ class PhaseOutputValidator:
     def _validate_facts(self, spec: dict) -> list[str]:
         """Validate architecture_facts.json against Pydantic schema."""
         errors = []
-        facts_path = Path("knowledge/extract/architecture_facts.json")
+        facts_path = self._base / "knowledge/extract/architecture_facts.json"
 
         try:
             with open(facts_path, encoding="utf-8") as f:
@@ -179,7 +183,7 @@ class PhaseOutputValidator:
             errors.append(f"Too few containers: {len(facts.containers)} (min {min_cont})")
 
         # Evidence cross-reference
-        evidence_path = Path("knowledge/extract/evidence_map.json")
+        evidence_path = self._base / "knowledge/extract/evidence_map.json"
         if evidence_path.exists():
             try:
                 with open(evidence_path, encoding="utf-8") as f:
@@ -195,7 +199,7 @@ class PhaseOutputValidator:
     def _validate_analysis(self, spec: dict) -> list[str]:
         """Validate analyzed_architecture.json structure."""
         errors = []
-        analysis_path = Path("knowledge/analyze/analyzed_architecture.json")
+        analysis_path = self._base / "knowledge/analyze/analyzed_architecture.json"
 
         try:
             with open(analysis_path, encoding="utf-8") as f:
@@ -213,7 +217,7 @@ class PhaseOutputValidator:
     def _validate_development_plans(self, spec: dict) -> list[str]:
         """Validate development plan JSON files."""
         errors = []
-        plans_dir = Path("knowledge/plan")
+        plans_dir = self._base / "knowledge/plan"
 
         if not plans_dir.is_dir():
             return []  # Directory existence already checked
@@ -249,7 +253,7 @@ class PhaseOutputValidator:
     def _validate_codegen_reports(self, spec: dict) -> list[str]:
         """Validate code generation report JSON files."""
         errors = []
-        reports_dir = Path("knowledge/implement")
+        reports_dir = self._base / "knowledge/implement"
 
         if not reports_dir.is_dir():
             return []  # Directory existence already checked
