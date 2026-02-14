@@ -263,7 +263,7 @@ class MiniCrewBase(ABC):
 #### 3.6.1 LLM Optimization Features (Phase 0.5 + 1 + 1.5)
 
 > **Status**: Fully implemented across Analyze and Document crews.
-> See `docs/LLM_OPTIMIZATION_ROADMAP.md` for detailed rationale and metrics.
+> Implemented across Analyze and Document crews (tool guardrails, budget limits, output gates).
 
 **Phase 0.5: Guardrails & Stop Conditions**
 
