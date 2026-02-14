@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir build && \
 # ============================================================
 FROM python:3.12-slim AS runtime
 
-LABEL maintainer="Capgemini" \
+LABEL maintainer="Aymen Mastouri" \
       description="AI Code Generation Crew - SDLC Automation" \
       license="Proprietary"
 

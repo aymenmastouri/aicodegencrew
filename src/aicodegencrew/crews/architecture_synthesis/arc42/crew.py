@@ -36,7 +36,7 @@ ARC42_AGENT_CONFIG = {
     "goal": "Create comprehensive 100-120 page arc42 documentation following SEAGuide standards",
     "backstory": (
         "You are a SENIOR SOFTWARE ARCHITECT with expertise in creating professional\n"
-        "architecture documentation following Capgemini's SEAGuide standard.\n"
+        "architecture documentation following the SEAGuide standard.\n"
         "\n"
         "## SEAGuide QUALITY STANDARDS\n"
         "You MUST follow these principles from SEAGuide:\n"

@@ -70,8 +70,7 @@ import { NotificationService } from './services/notification.service';
       }
 
       <div class="toolbar-brand">
-        <span class="toolbar-tagline">Make it real</span>
-        <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="Capgemini" class="toolbar-logo" />
+        <span class="toolbar-tagline">SDLC Pilot</span>
       </div>
     </mat-toolbar>
 
@@ -93,9 +92,9 @@ import { NotificationService } from './services/notification.service';
           </div>
           <div class="sidenav-footer">
             <div class="footer-row">
-              <span class="footer-legal">&copy; 2026 Capgemini</span>
+              <span class="footer-legal">&copy; 2026 Aymen Mastouri</span>
               <span class="footer-sep"></span>
-              <span class="footer-version">v0.3.0</span>
+              <span class="footer-version">v0.5.0</span>
             </div>
           </div>
         </div>
@@ -349,7 +348,6 @@ export class AppComponent {
         { route: '/phases', icon: 'account_tree', label: 'Phases' },
         { route: '/knowledge', icon: 'psychology', label: 'Knowledge' },
         { route: '/reports', icon: 'summarize', label: 'Reports' },
-        { route: '/outputs', icon: 'code', label: 'Outputs' },
       ],
     },
     {

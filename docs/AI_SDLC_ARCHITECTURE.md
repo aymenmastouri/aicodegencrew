@@ -1984,7 +1984,7 @@ Both can be set simultaneously. `GIT_REPO_URL` takes priority when set.
 
 | Mode | Source Visible | Use Case |
 |------|---------------|----------|
-| **Development** (`pip install -e .`) | Yes | Capgemini dev team only |
+| **Development** (`pip install -e .`) | Yes | Development only |
 | **Wheel Distribution** (`pip install *.whl`) | No (`.pyc` only) | Internal distribution |
 | **Docker** (`docker run`) | No (compiled in image) | Production deployment |
 
@@ -2058,7 +2058,7 @@ python scripts/build_release.py
 python scripts/build_release.py --docker
 
 # Wheel + Docker + push to registry
-python scripts/build_release.py --docker --push --registry registry.capgemini.com
+python scripts/build_release.py --docker --push --registry your-registry.example.com
 ```
 
 Output: `dist/release/` containing:
@@ -2281,6 +2281,6 @@ docker-compose -f ui/docker-compose.ui.yml up --build
 
 ## 16. License
 
-Proprietary — Capgemini. See [LICENSE](../LICENSE) for details.
+Proprietary — Aymen Mastouri. See [LICENSE](../LICENSE) for details.
 
-© Capgemini. All rights reserved
+© 2026 Aymen Mastouri. All rights reserved

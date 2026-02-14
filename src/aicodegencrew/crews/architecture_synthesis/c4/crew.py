@@ -29,7 +29,7 @@ C4_AGENT_CONFIG = {
     "goal": "Create comprehensive ~30 page C4 documentation with valid DrawIO diagrams",
     "backstory": (
         "You are a SENIOR SOFTWARE ARCHITECT expert in C4 modeling following\n"
-        "Capgemini's SEAGuide standard.\n"
+        "the SEAGuide standard.\n"
         "\n"
         "## C4 MODEL OVERVIEW (from SEAGuide)\n"
         "\n"

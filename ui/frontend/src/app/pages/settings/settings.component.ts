@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -35,6 +36,41 @@ const GROUP_TO_TAB: Record<string, string> = {
 
 const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
 
+/** Fields that should render as dropdowns */
+const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
+  LLM_PROVIDER: [
+    { label: 'On-Prem', value: 'onprem' },
+  ],
+  LOG_LEVEL: [
+    { label: 'DEBUG', value: 'DEBUG' },
+    { label: 'INFO', value: 'INFO' },
+    { label: 'WARNING', value: 'WARNING' },
+    { label: 'ERROR', value: 'ERROR' },
+  ],
+  ARC42_LANGUAGE: [
+    { label: 'Auto-detect', value: '' },
+    { label: 'English', value: 'en' },
+    { label: 'Deutsch', value: 'de' },
+  ],
+  INCLUDE_SUBMODULES: [
+    { label: 'Yes', value: 'true' },
+    { label: 'No', value: 'false' },
+  ],
+  CREWAI_TRACING_ENABLED: [
+    { label: 'Enabled', value: 'true' },
+    { label: 'Disabled', value: 'false' },
+  ],
+};
+
+/** Fields that should render as number inputs */
+const NUMERIC_FIELDS = new Set([
+  'MAX_LLM_INPUT_TOKENS', 'MAX_LLM_OUTPUT_TOKENS', 'LLM_CONTEXT_WINDOW',
+  'LLM_NUM_RETRIES', 'LLM_RETRY_DELAY', 'OLLAMA_TIMEOUT_S',
+  'CHUNK_CHARS', 'CHUNK_OVERLAP', 'MAX_FILE_BYTES',
+  'INDEX_MAX_TOTAL_FILES', 'INDEX_MAX_TOTAL_CHUNKS', 'INDEX_BATCH_SIZE',
+  'MAX_RAG_RESULTS', 'MAX_EVIDENCE_PER_ITEM',
+]);
+
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -44,6 +80,7 @@ const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
@@ -78,7 +115,17 @@ const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
                 @for (v of getTabVars('general'); track v.name) {
                   <mat-form-field appearance="outline" class="field-full">
                     <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                    <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    @if (getOptions(v.name); as opts) {
+                      <mat-select [(ngModel)]="v.value">
+                        @for (opt of opts; track opt.value) {
+                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                        }
+                      </mat-select>
+                    } @else if (isNumeric(v.name)) {
+                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    } @else {
+                      <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    }
                     @if (v.description) {
                       <mat-hint>{{ v.description }}</mat-hint>
                     }
@@ -110,13 +157,23 @@ const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
                 @for (v of getTabVars('llm'); track v.name) {
                   <mat-form-field appearance="outline" class="field-full">
                     <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                    <input matInput [(ngModel)]="v.value"
-                      [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
-                      [placeholder]="v.description || ''" />
-                    @if (isSecret(v.name)) {
-                      <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
-                        <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
-                      </button>
+                    @if (getOptions(v.name); as opts) {
+                      <mat-select [(ngModel)]="v.value">
+                        @for (opt of opts; track opt.value) {
+                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                        }
+                      </mat-select>
+                    } @else if (isNumeric(v.name)) {
+                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    } @else {
+                      <input matInput [(ngModel)]="v.value"
+                        [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
+                        [placeholder]="v.description || ''" />
+                      @if (isSecret(v.name)) {
+                        <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
+                          <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
+                        </button>
+                      }
                     }
                     @if (v.description) {
                       <mat-hint>{{ v.description }}</mat-hint>
@@ -149,7 +206,17 @@ const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
                 @for (v of getTabVars('indexing'); track v.name) {
                   <mat-form-field appearance="outline" class="field-full">
                     <mat-label>{{ v.name }}</mat-label>
-                    <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    @if (getOptions(v.name); as opts) {
+                      <mat-select [(ngModel)]="v.value">
+                        @for (opt of opts; track opt.value) {
+                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                        }
+                      </mat-select>
+                    } @else if (isNumeric(v.name)) {
+                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    } @else {
+                      <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    }
                     @if (v.description) {
                       <mat-hint>{{ v.description }}</mat-hint>
                     }
@@ -226,7 +293,17 @@ const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
                 @for (v of getTabVars('advanced'); track v.name) {
                   <mat-form-field appearance="outline" class="field-full">
                     <mat-label>{{ v.name }}</mat-label>
-                    <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    @if (getOptions(v.name); as opts) {
+                      <mat-select [(ngModel)]="v.value">
+                        @for (opt of opts; track opt.value) {
+                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                        }
+                      </mat-select>
+                    } @else if (isNumeric(v.name)) {
+                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    } @else {
+                      <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                    }
                     @if (v.description) {
                       <mat-hint>{{ v.description }}</mat-hint>
                     }
@@ -444,6 +521,14 @@ export class SettingsComponent implements OnInit {
 
   isSecret(name: string): boolean {
     return SECRET_KEYS.has(name);
+  }
+
+  getOptions(name: string): { label: string; value: string }[] | null {
+    return FIELD_OPTIONS[name] || null;
+  }
+
+  isNumeric(name: string): boolean {
+    return NUMERIC_FIELDS.has(name);
   }
 
   saveTab(tab: string): void {

@@ -1,6 +1,6 @@
 # AICodeGenCrew - User Guide
 
-**Version 0.5.0 | Capgemini Proprietary**
+**Version 0.5.0 | Proprietary**
 
 ---
 
@@ -1354,6 +1354,6 @@ A: Yes. Place all XML files in your `TASK_INPUT_DIR` folder (configured in `.env
 
 ---
 
-*Capgemini Proprietary - Internal Use Only*
+*Proprietary — Aymen Mastouri*
 
-*© Capgemini. All rights reserved*
+*© 2026 Aymen Mastouri. All rights reserved*
