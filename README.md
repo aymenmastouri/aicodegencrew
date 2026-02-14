@@ -1,5 +1,9 @@
 # SDLC Pilot
 
+> **Proprietary Prototype**
+> This repository contains a private prototype created by Aymen Mastouri.
+> No internal or external usage is permitted without explicit written agreement.
+
 **AI-Powered Development Lifecycle Automation**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
@@ -257,7 +261,7 @@ Output: `knowledge/plan/{task_id}_plan.json` with affected components, implement
 
 ## Deployment
 
-SDLC Pilot is **Capgemini proprietary** software. Three delivery modes:
+SDLC Pilot is **proprietary** software. Three delivery modes:
 
 | Mode | Command | Source Visible |
 |------|---------|:--------------:|
@@ -324,11 +328,11 @@ aicodegencrew/
 
 ## License
 
-**Copyright 2024-2026 Capgemini** — Proprietary and confidential.
+**Copyright 2026 Aymen Mastouri** — Proprietary and confidential.
 
 ---
 
 <p align="center">
   <strong>SDLC Pilot</strong> &mdash; Built with <a href="https://crewai.com/">CrewAI</a> &middot; Powered by local LLMs &middot; Made for enterprise<br>
-  <sub>&copy; Capgemini. All rights reserved</sub>
+  <sub>&copy; 2026 Aymen Mastouri. All rights reserved</sub>
 </p>

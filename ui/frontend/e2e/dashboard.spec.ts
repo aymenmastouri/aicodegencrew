@@ -138,8 +138,8 @@ test.describe('Dashboard', () => {
     }
   });
 
-  test('should show Capgemini logo in hero section', async ({ page }) => {
-    const heroLogo = page.locator('.hero-logo');
-    await expect(heroLogo).toBeVisible();
+  test('should show hero section', async ({ page }) => {
+    const hero = page.locator('.hero');
+    await expect(hero).toBeVisible();
   });
 });

@@ -96,7 +96,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 **Frontend Infrastructure**
 - Upgraded Angular 19 → 21 (zoneless change detection)
-- Added Tailwind CSS with Capgemini custom theme
+- Added Tailwind CSS with custom theme
 - Grouped sidebar navigation (Operations, Explore, Monitor)
 - Sidenav footer with version badge
 

@@ -15,7 +15,7 @@ import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 import { ApiService, PipelineStatus, HealthResponse, SetupStatus } from '../../services/api.service';
 import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
-import { humanizePhaseId } from '../../shared/phase-utils';
+import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as formatDurationUtil } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,7 +37,7 @@ import { humanizePhaseId } from '../../shared/phase-utils';
     <div class="page-container">
       <!-- Hero -->
       <div class="hero">
-        <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="hero-logo" />
+        <div class="hero-logo-placeholder"></div>
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
           <p class="hero-subtitle">AI-Powered Development Lifecycle Automation — Discover, Extract, Analyze, Document, Plan, Implement</p>
@@ -113,8 +113,7 @@ import { humanizePhaseId } from '../../shared/phase-utils';
         <div class="stepper-card" [class]="'stepper-' + executionState">
           <div class="stepper-header">
             <div class="stepper-left">
-              <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png"
-                   alt="" class="stepper-logo" [class]="'logo-' + executionState" />
+              <mat-icon class="stepper-logo" [class]="'logo-' + executionState">rocket_launch</mat-icon>
               <div>
                 <div class="stepper-title">
                   @if (executionState === 'running') {
@@ -1037,42 +1036,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   formatElapsed(seconds: number): string {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return m > 0 ? `${m}m ${s}s` : `${s}s`;
+    return formatDurationUtil(seconds);
   }
 
   shortPhase(phaseId: string): string {
-    const SHORT: Record<string, string> = {
-      // New canonical IDs
-      discover: 'Discover',
-      extract: 'Extract',
-      analyze: 'Analyze',
-      document: 'Document',
-      plan: 'Plan',
-      implement: 'Implement',
-      verify: 'Verify',
-      deliver: 'Deliver',
-      // Legacy long form (backwards compat)
-      phase0_indexing: 'Index',
-      phase1_architecture_facts: 'Facts',
-      phase2_architecture_analysis: 'Analysis',
-      phase3_architecture_synthesis: 'Synthesis',
-      phase4_development_planning: 'Planning',
-      phase5_code_generation: 'CodeGen',
-      phase6_test_generation: 'TestGen',
-      phase7_review_deploy: 'Deploy',
-      // Legacy short form (backwards compat)
-      indexing: 'Index',
-      facts_extraction: 'Facts',
-      deep_analysis: 'Analysis',
-      synthesis: 'Synthesis',
-      planning: 'Planning',
-      code_generation: 'CodeGen',
-      test_generation: 'TestGen',
-      review_deploy: 'Deploy',
-    };
-    return SHORT[phaseId] || phaseId.replace(/^phase\d+_/, '').replace(/_/g, ' ').slice(0, 10);
+    return shortPhaseUtil(phaseId);
   }
 
   humanizePhase(phaseId: string): string {
@@ -1080,9 +1048,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   formatDuration(seconds?: number): string {
-    if (!seconds) return '0s';
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
+    return formatDurationUtil(seconds);
   }
 
   private pollStatus(): void {
