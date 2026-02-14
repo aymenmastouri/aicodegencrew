@@ -358,10 +358,10 @@ class IndexingPipeline:
         self.repo_path = self.config.repo_path
         self.metrics = IndexingMetrics()
 
-        # Resolve chroma dir relative to repo_path (not CWD) so the index
-        # is always found regardless of where the tool is started from.
+        # Resolve chroma dir relative to CWD (project root), NOT repo_path.
+        # Knowledge outputs always go into the project directory.
         chroma_base = self.config.chroma_dir or CHROMA_DIR
-        chroma_resolved = (self.config.repo_path / chroma_base).resolve()
+        chroma_resolved = Path(chroma_base).resolve()
         self._cache_dir = chroma_resolved
         self._chroma_dir_resolved = str(chroma_resolved)
 
