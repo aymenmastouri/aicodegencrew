@@ -30,7 +30,7 @@ import {
 } from '../../services/pipeline.service';
 import { NotificationService } from '../../services/notification.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
-import { humanizePhaseId } from '../../shared/phase-utils';
+import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../shared/phase-utils';
 
 @Component({
   selector: 'app-run-pipeline',
@@ -1004,10 +1004,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   formatDuration(seconds: number): string {
-    if (seconds < 60) return `${seconds.toFixed(0)}s`;
-    const min = Math.floor(seconds / 60);
-    const sec = Math.floor(seconds % 60);
-    return `${min}m ${sec}s`;
+    return formatDurationUtil(seconds);
   }
 
   getLogLevel(line: string): string {

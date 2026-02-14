@@ -110,6 +110,9 @@ import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.serv
       .filter-field {
         margin: 0;
       }
+      .filter-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
       .metrics-table {
         width: 100%;
       }

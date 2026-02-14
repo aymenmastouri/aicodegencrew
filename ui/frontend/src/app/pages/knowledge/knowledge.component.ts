@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
@@ -8,11 +8,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 
 import { marked } from 'marked';
 import { ApiService, KnowledgeFile, KnowledgeSummary } from '../../services/api.service';
-import { humanizePhaseId } from '../../shared/phase-utils';
+import { humanizePhaseId, formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
 /** A group of files within a section. */
 interface FileGroup {
@@ -36,6 +37,7 @@ interface FileGroup {
     MatProgressSpinnerModule,
     MatChipsModule,
     MatTooltipModule,
+    MatSnackBarModule,
     RouterLink,
   ],
   template: `
@@ -235,7 +237,13 @@ interface FileGroup {
                     <mat-icon>code</mat-icon> Source
                   </button>
                 }
-                <button mat-icon-button (click)="closeViewer()" matTooltip="Close">
+                <button mat-icon-button (click)="copyContent()" matTooltip="Copy to clipboard">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+                <button mat-icon-button (click)="downloadContent()" matTooltip="Download file">
+                  <mat-icon>download</mat-icon>
+                </button>
+                <button mat-icon-button (click)="closeViewer()" matTooltip="Close (Esc)">
                   <mat-icon>close</mat-icon>
                 </button>
               </div>
@@ -621,7 +629,13 @@ export class KnowledgeComponent implements OnInit {
     private api: ApiService,
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer,
+    private snackBar: MatSnackBar,
   ) {}
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.selectedFile) this.closeViewer();
+  }
 
   ngOnInit(): void {
     this.api.getKnowledgeFiles().subscribe({
@@ -767,6 +781,33 @@ export class KnowledgeComponent implements OnInit {
     this.selectedFile = null;
     this.selectedContent = null;
     this.renderedHtml = null;
+  }
+
+  copyContent(): void {
+    if (!this.selectedContent) return;
+    navigator.clipboard.writeText(this.selectedContent).then(
+      () => this.snackBar.open('Copied to clipboard', 'OK', { duration: 2000 }),
+      () => this.snackBar.open('Failed to copy', 'OK', { duration: 3000 }),
+    );
+  }
+
+  downloadContent(): void {
+    if (!this.selectedFile || !this.selectedContent) return;
+    const mimeMap: Record<string, string> = {
+      json: 'application/json',
+      md: 'text/markdown',
+      html: 'text/html',
+      adoc: 'text/asciidoc',
+      xml: 'application/xml',
+    };
+    const mime = mimeMap[this.selectedFile.type] || 'text/plain';
+    const blob = new Blob([this.selectedContent], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = this.selectedFile.name;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // ─── Rendering ──────────────────────────────────────────────────
@@ -924,8 +965,6 @@ export class KnowledgeComponent implements OnInit {
   }
 
   formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return formatBytesUtil(bytes);
   }
 }

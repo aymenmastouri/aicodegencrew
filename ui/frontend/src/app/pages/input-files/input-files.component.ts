@@ -9,6 +9,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { InputsService, CategoryDetail, InputFile } from '../../services/inputs.service';
+import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
 interface CategoryView {
   id: string;
@@ -495,10 +496,7 @@ export class InputFilesComponent implements OnInit {
   }
 
   formatSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const units = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
+    return formatBytesUtil(bytes);
   }
 
   formatDate(iso: string): string {

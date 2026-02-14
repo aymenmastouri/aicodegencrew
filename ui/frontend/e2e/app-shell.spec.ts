@@ -8,8 +8,8 @@ test.describe('App Shell', () => {
   test('should render toolbar with brand name', async ({ page }) => {
     const toolbar = page.locator('mat-toolbar');
     await expect(toolbar).toBeVisible();
-    await expect(toolbar).toContainText('AICodeGenCrew');
-    await expect(toolbar).toContainText('SDLC Dashboard');
+    await expect(toolbar).toContainText('SDLC');
+    await expect(toolbar).toContainText('Pilot');
   });
 
   test('should render sidenav with 3 groups', async ({ page }) => {
@@ -21,11 +21,11 @@ test.describe('App Shell', () => {
 
   test('should render all 12 nav items', async ({ page }) => {
     const navItems = page.locator('mat-nav-list a[mat-list-item]');
-    await expect(navItems).toHaveCount(12);
+    await expect(navItems).toHaveCount(11);
   });
 
   test('should show version badge in sidenav footer', async ({ page }) => {
-    await expect(page.locator('.footer-version')).toContainText('v0.3.0');
+    await expect(page.locator('.footer-version')).toContainText('v0.5.0');
   });
 
   test('should highlight active nav item', async ({ page }) => {
@@ -44,7 +44,6 @@ test.describe('App Shell', () => {
       { label: 'Phases', url: '/phases' },
       { label: 'Knowledge', url: '/knowledge' },
       { label: 'Reports', url: '/reports' },
-      { label: 'Outputs', url: '/outputs' },
       { label: 'Metrics', url: '/metrics' },
       { label: 'Logs', url: '/logs' },
       { label: 'History', url: '/history' },
