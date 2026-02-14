@@ -115,9 +115,12 @@ class MiniCrewBase(ABC):
         chroma_dir: str | None = None,
     ):
         self.facts_path = Path(facts_path)
-        self.analyzed_path = (
-            Path(analyzed_path) if analyzed_path else Path("knowledge/analyze/analyzed_architecture.json")
-        )
+        if analyzed_path:
+            self.analyzed_path = Path(analyzed_path)
+        else:
+            # Derive from facts_path: knowledge/extract/ → knowledge/analyze/
+            knowledge_base = self.facts_path.parent.parent
+            self.analyzed_path = knowledge_base / "analyze" / "analyzed_architecture.json"
         self.chroma_dir = chroma_dir or CHROMA_DIR
 
         # Load data
@@ -130,6 +133,9 @@ class MiniCrewBase(ABC):
 
         # MCP server config (resolved once, reused across mini-crews)
         self._mcp_server_path = self._resolve_mcp_server_path()
+
+        # Output directory: derived from facts_path (knowledge/extract → knowledge/document)
+        self._output_dir = self.facts_path.parent.parent / "document"
 
         # Checkpoint tracking
         self._checkpoints: list[dict[str, Any]] = []
@@ -198,9 +204,10 @@ class MiniCrewBase(ABC):
 
     def _create_base_tools(self) -> list:
         """Create base tool set shared by all synthesis crews."""
+        out = str(self._output_dir)
         return [
-            DrawioDiagramTool(),
-            DocWriterTool(),
+            DrawioDiagramTool(output_dir=out),
+            DocWriterTool(output_dir=out),
             FileReadTool(),
             FactsQueryTool(facts_path=str(self.facts_path)),
             StereotypeListTool(facts_path=str(self.facts_path)),
@@ -465,7 +472,7 @@ class MiniCrewBase(ABC):
             expected_files: List of files that should have been written
             tracker: Optional ToolCallTracker to check if doc_writer was called
         """
-        base = Path("knowledge/document")
+        base = self._output_dir
         for file_path in expected_files:
             full = base / file_path
 
@@ -579,7 +586,7 @@ This chapter requires manual completion or re-running with a more capable LLM.
         this creates skeleton documents from facts so the documentation set
         isn't left with gaps. Stubs are clearly marked as auto-generated.
         """
-        base = Path("knowledge/document")
+        base = self._output_dir
         facts = self.facts
         system_name = facts.get("system", {}).get("name", "System")
 
@@ -627,7 +634,7 @@ This chapter requires manual completion or re-running with a more capable LLM.
 
     def _checkpoint_path(self) -> Path:
         """Path to checkpoint file for this crew."""
-        return Path("knowledge/document") / f".checkpoint_{self.crew_name.lower()}.json"
+        return self._output_dir / f".checkpoint_{self.crew_name.lower()}.json"
 
     def _save_checkpoint(self) -> None:
         """Save current checkpoints to disk for resume capability."""

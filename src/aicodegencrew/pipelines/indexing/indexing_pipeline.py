@@ -358,8 +358,10 @@ class IndexingPipeline:
         self.repo_path = self.config.repo_path
         self.metrics = IndexingMetrics()
 
-        # Resolve chroma dir — state file lives inside it
-        chroma_resolved = Path(self.config.chroma_dir or "knowledge/discover").resolve()
+        # Resolve chroma dir relative to repo_path (not CWD) so the index
+        # is always found regardless of where the tool is started from.
+        chroma_base = self.config.chroma_dir or CHROMA_DIR
+        chroma_resolved = (self.config.repo_path / chroma_base).resolve()
         self._cache_dir = chroma_resolved
         self._chroma_dir_resolved = str(chroma_resolved)
 
@@ -468,6 +470,21 @@ class IndexingPipeline:
 
         if not needs_idx:
             logger.info(f"Skipping indexing: {reason}")
+            # Regenerate state file if missing (e.g. after manual deletion)
+            if fp and not IndexingState.load(self._cache_dir):
+                count_result = self.chroma_tool._run(
+                    "count", collection_name=self.config.collection_name
+                )
+                chunk_count = count_result.get("count", 0)
+                state = IndexingState(
+                    fingerprint=fp,
+                    fingerprint_type=fp_type,
+                    chunk_count=chunk_count,
+                    timestamp=time.time(),
+                    repo_path=str(self.repo_path),
+                )
+                state.save(self._cache_dir)
+                logger.info("[AUTO] Regenerated missing state file")
             return f"Skipped: {reason}"
 
         # Acquire lock (with stale-lock recovery)
@@ -572,6 +589,32 @@ class IndexingPipeline:
             )
             return True, current_fp, fp_type, f"Incremental update: {stored_fp[:8]} -> {current_fp[:8]}"
 
+        if stored_fp and current_fp == stored_fp:
+            # Metadata confirms repo unchanged — skip
+            return False, current_fp, fp_type, f"Unchanged ({doc_count} chunks)"
+
+        # No stored fingerprint in metadata (collection.modify() may have failed).
+        # Check state file as fallback evidence.
+        if saved and saved.fingerprint != current_fp:
+            # State file says repo changed — do smart incremental update
+            self.index_mode = "smart"
+            logger.info(
+                f"[AUTO->SMART] State file indicates change ({saved.fingerprint[:8]} -> {current_fp[:8]}), "
+                f"switching to incremental update"
+            )
+            return True, current_fp, fp_type, f"Incremental update: {saved.fingerprint[:8]} -> {current_fp[:8]}"
+
+        if not saved:
+            # No state file, no metadata fingerprint, but ChromaDB has data.
+            # Do smart incremental check to verify what's actually changed.
+            self.index_mode = "smart"
+            logger.info(
+                "[AUTO->SMART] No state file and no metadata fingerprint, "
+                "switching to incremental update to verify"
+            )
+            return True, current_fp, fp_type, "Incremental update (no prior state)"
+
+        # State file fingerprint matches current, metadata has no fingerprint — skip
         return False, current_fp, fp_type, f"Unchanged ({doc_count} chunks)"
 
     # -- Force-mode helpers -------------------------------------------------

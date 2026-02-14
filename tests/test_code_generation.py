@@ -1224,3 +1224,34 @@ class TestCodeGenerationPipeline:
 
         result = pipeline.kickoff()
         assert result["status"] == "skipped"
+
+    def test_kickoff_uses_current_plan_outputs_only(self, tmp_path):
+        """When previous phase outputs are provided, stale plan files are ignored."""
+        plans_dir = tmp_path / "plans"
+        plans_dir.mkdir(parents=True, exist_ok=True)
+
+        # Simulate stale + current plans in the same directory
+        (plans_dir / "OLD-001_plan.json").write_text("{}", encoding="utf-8")
+        (plans_dir / "NEW-001_plan.json").write_text("{}", encoding="utf-8")
+
+        pipeline = CodeGenerationPipeline(
+            repo_path=str(tmp_path),
+            plans_dir=str(plans_dir),
+            report_dir=str(tmp_path / "reports"),
+            dry_run=True,
+        )
+
+        with patch.object(CodeGenerationPipeline, "_run_single_cascade") as mock_run_single:
+            mock_run_single.return_value = CodegenReport(task_id="NEW-001", status="dry_run")
+            result = pipeline.kickoff({
+                "previous_results": {
+                    "plan": {
+                        "output_files": [str(plans_dir / "NEW-001_plan.json")],
+                    }
+                }
+            })
+
+        assert result["metrics"]["tasks_total"] == 1
+        assert result["metrics"]["tasks_succeeded"] == 1
+        assert mock_run_single.call_count == 1
+        assert mock_run_single.call_args.kwargs["task_id"] == "NEW-001"

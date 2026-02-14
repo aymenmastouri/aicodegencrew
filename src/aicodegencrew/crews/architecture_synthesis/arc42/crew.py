@@ -76,7 +76,7 @@ class Arc42Crew(MiniCrewBase):
 
     def _get_extra_tools(self) -> list:
         """Arc42 needs ChunkedWriterTool for large chapters."""
-        return [ChunkedWriterTool()]
+        return [ChunkedWriterTool(output_dir=str(self._output_dir))]
 
     def _summarize_facts(self) -> dict[str, str]:
         """Create summaries combining Phase 1 facts and Phase 2 analysis."""
@@ -153,10 +153,9 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     # MERGE BUILDING BLOCKS
     # -------------------------------------------------------------------------
 
-    @staticmethod
-    def _merge_building_blocks() -> None:
+    def _merge_building_blocks(self) -> None:
         """Merge 4 building-blocks part files into 05-building-blocks.md."""
-        base = Path("knowledge/document/arc42")
+        base = self._output_dir / "arc42"
         parts = [
             "05-part1-overview.md",
             "05-part2-controllers.md",
@@ -189,10 +188,9 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     # MERGE RUNTIME VIEW
     # -------------------------------------------------------------------------
 
-    @staticmethod
-    def _merge_runtime_view() -> None:
+    def _merge_runtime_view(self) -> None:
         """Merge 2 runtime-view part files into 06-runtime-view.md."""
-        base = Path("knowledge/document/arc42")
+        base = self._output_dir / "arc42"
         parts = [
             "06-part1-api-flows.md",
             "06-part2-business-flows.md",
@@ -223,10 +221,9 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     # MERGE CROSSCUTTING
     # -------------------------------------------------------------------------
 
-    @staticmethod
-    def _merge_crosscutting() -> None:
+    def _merge_crosscutting(self) -> None:
         """Merge 2 crosscutting part files into 08-crosscutting.md."""
-        base = Path("knowledge/document/arc42")
+        base = self._output_dir / "arc42"
         parts = [
             "08-part1-technical.md",
             "08-part2-patterns.md",

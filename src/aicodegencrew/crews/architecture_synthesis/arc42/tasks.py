@@ -529,7 +529,7 @@ Create arc42 Chapter 8 Part 2: Architecture Patterns and Conventions (8-10 pages
 - Custom validators
 - Validation at each layer (controller, service, entity)
 ### 8.9 Configuration Management (2 pages)
-- Property sources and profiles (application.yml, application-{profile}.yml)
+- Property sources and profiles (application.yml, application-{{profile}}.yml)
 - Environment-specific configuration
 - Externalized configuration
 - Feature toggles
