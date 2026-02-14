@@ -60,27 +60,42 @@ Every claim in crew output must be backed by tool query results:
 - No invented containers, components, or relationships
 - Evidence includes file path, line number, and confidence score
 
-## MapReduce Pattern
+## Scaling for Large Repositories
 
-For large repositories (300+ components across 2+ containers), analysis uses MapReduce:
+For large repositories (**≥300 components** across **≥2 containers**), analysis automatically switches to a MapReduce strategy. This prevents context window overflow and enables parallel execution.
+
+### MapReduce Pattern
 
 ```mermaid
-graph LR
-    subgraph Map Phase
-        C1[Container A<br/>Analysis]
-        C2[Container B<br/>Analysis]
-        C3[Container C<br/>Analysis]
+graph TD
+    subgraph "Map Phase (parallel)"
+        C1[Container A Analyst<br/>~150 components]
+        C2[Container B Analyst<br/>~400 components]
+        C3[Container C Analyst<br/>~250 components]
     end
-    subgraph Reduce Phase
-        M[Merge + Deduplicate]
+    C1 --> P1[container_a_analysis.json]
+    C2 --> P2[container_b_analysis.json]
+    C3 --> P3[container_c_analysis.json]
+
+    subgraph "Reduce Phase"
+        S[Synthesis Agent<br/>Merge + Deduplicate]
     end
-    C1 --> M
-    C2 --> M
-    C3 --> M
-    M --> F[Final Analysis]
+    P1 --> S
+    P2 --> S
+    P3 --> S
+    S --> F[analyzed_architecture.json]
 ```
 
-Each container is analyzed independently, then results are merged with deduplication of cross-container patterns.
+**Map**: Each container is analyzed independently by a dedicated analyst agent with a fresh LLM context window, keeping the per-agent token budget small (200-400 components instead of 951+).
+
+**Reduce**: A synthesis agent merges the container-level analyses into a unified `analyzed_architecture.json`, deduplicating cross-container patterns and reconciling shared interfaces.
+
+### Benefits
+
+- **Smaller context per agent**: ~200-400 components vs. the full set, avoiding token limit overflow
+- **Parallel execution**: Container analyses run concurrently (3x+ speedup)
+- **Horizontal scaling**: Scales to 100k+ components — just add more containers
+- **Failure isolation**: A failure in one container's analysis doesn't corrupt others
 
 ## CrewAI + MCP Integration
 

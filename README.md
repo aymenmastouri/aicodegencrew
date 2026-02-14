@@ -215,7 +215,7 @@ aicodegencrew [--env <path>] <command> [options]
 
 Common options: `--repo-path`, `--index-mode`, `--git-url`, `--branch`, `--config`, `--clean`
 
-> Full CLI reference: [User Guide](docs/USER_GUIDE.md)
+> Full CLI reference: [User Guide](docs/guides/USER_GUIDE.md)
 
 ---
 
@@ -274,7 +274,7 @@ SDLC Pilot is **proprietary** software. Three delivery modes:
 python scripts/build_release.py --bump patch --tag --docker
 ```
 
-> Details: [Delivery Guide](docs/DELIVERY_GUIDE.md)
+> Details: [Delivery Guide](docs/guides/DELIVERY_GUIDE.md)
 
 ---
 
@@ -295,8 +295,8 @@ pytest tests/ --ignore=tests/e2e    # Unit + integration only
 | Document | Description |
 |----------|-------------|
 | [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md) | Full architecture specification |
-| [User Guide](docs/USER_GUIDE.md) | Installation, configuration, CLI, troubleshooting |
-| [Delivery Guide](docs/DELIVERY_GUIDE.md) | Release process and deployment |
+| [User Guide](docs/guides/USER_GUIDE.md) | Installation, configuration, CLI, troubleshooting |
+| [Delivery Guide](docs/guides/DELIVERY_GUIDE.md) | Release process and deployment |
 | [Phase Configuration](config/phases_config.yaml) | Phase definitions and presets |
 | [Environment Template](.env.example) | All configurable variables |
 
