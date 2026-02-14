@@ -46,13 +46,13 @@ class PhaseResult:
     """Result of a single phase execution."""
 
     phase_id: str
-    status: str  # 'success', 'failed', 'skipped'
+    status: str  # 'success', 'partial', 'failed', 'skipped'
     message: str = ""
     output: Any = None
     duration_seconds: float = 0.0
 
     def is_success(self) -> bool:
-        return self.status == "success"
+        return self.status in ("success", "partial", "skipped")
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -291,10 +291,30 @@ class SDLCOrchestrator:
             # Handle different execution styles
             output = self._invoke_executable(executable, inputs)
 
+            # Phase implementations may report their own status in returned dict.
+            phase_status = "success"
+            metric_status = "success"
+            phase_message = "Completed"
+            if isinstance(output, dict):
+                raw_status = str(output.get("status", "")).lower()
+                raw_message = output.get("message")
+                if raw_status in ("failed", "error"):
+                    raise RuntimeError(str(raw_message or f"Phase {phase_id} reported failure"))
+                if raw_status == "partial":
+                    phase_status = "partial"
+                    metric_status = "partial"
+                    phase_message = str(raw_message or "Completed with degradations")
+                elif raw_status == "skipped":
+                    phase_status = "skipped"
+                    metric_status = "skipped"
+                    phase_message = str(raw_message or "Skipped")
+                elif raw_status in ("completed", "success", "dry_run"):
+                    phase_message = str(raw_message or "Completed")
+
             duration = (datetime.now() - start).total_seconds()
 
-            logger.info(f"[Phase] {phase_id} - Completed in {duration:.2f}s")
-            log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status="success")
+            logger.info(f"[Phase] {phase_id} - {phase_status.capitalize()} in {duration:.2f}s")
+            log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status=metric_status)
             set_phase_completed(phase_id, duration)
 
             # Auto-commit after successful phase
@@ -302,8 +322,8 @@ class SDLCOrchestrator:
 
             return PhaseResult(
                 phase_id=phase_id,
-                status="success",
-                message="Completed",
+                status=phase_status,
+                message=phase_message,
                 output=output,
                 duration_seconds=duration,
             )

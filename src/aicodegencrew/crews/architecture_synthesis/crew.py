@@ -175,6 +175,18 @@ class ArchitectureSynthesisCrew:
 
         logger.info("Arc42 Crew completed")
 
+        degraded_reasons: list[str] = []
+        if self.c4_crew and self.c4_crew.has_degraded_outputs():
+            degraded_reasons.extend(self.c4_crew.get_degradation_reasons())
+        if self.arc42_crew and self.arc42_crew.has_degraded_outputs():
+            degraded_reasons.extend(self.arc42_crew.get_degradation_reasons())
+
+        phase_status = "partial" if degraded_reasons else "completed"
+        if degraded_reasons:
+            logger.warning(
+                "[Phase3] Completed with degraded outputs: %d issue(s)", len(degraded_reasons)
+            )
+
         # Combined summary
         summary = "\n\n".join(results)
         logger.info("=" * 60)
@@ -182,9 +194,10 @@ class ArchitectureSynthesisCrew:
         logger.info("=" * 60)
 
         return {
-            "status": "completed",
+            "status": phase_status,
             "phase": "document",
             "result": summary,
+            "degradation_reasons": degraded_reasons,
         }
 
     def run_c4_only(self) -> str:

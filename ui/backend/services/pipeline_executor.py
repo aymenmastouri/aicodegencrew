@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import subprocess
 import sys
 import threading
@@ -45,6 +46,8 @@ class PipelineExecutor:
     def _init(self) -> None:
         self.state: str = "idle"  # idle | running | completed | failed | cancelled
         self.current_run: RunInfo | None = None
+        self._engine_run_id: str | None = None
+        self._run_started_wall: str | None = None
         self._process: subprocess.Popen | None = None
         self._log_lines: list[str] = []
         self._log_lock = threading.Lock()
@@ -107,6 +110,7 @@ class PipelineExecutor:
             self.state = "running"
             self._log_lines = []
             self._exit_code = None
+            self._engine_run_id = None
             self._started_at = time.monotonic()
             self._finished_at = None
             # Wall-clock start time for filtering metrics.jsonl events (local time to match metrics format)
@@ -200,6 +204,10 @@ class PipelineExecutor:
                 with self._state_lock:
                     self.state = "idle"
                     self._finished_at = None
+                    self._started_at = None
+                    self.current_run = None
+                    self._engine_run_id = None
+                    self._run_started_wall = None
 
         # Detect external CLI runs when executor is idle
         if self.state == "idle":
@@ -218,7 +226,11 @@ class PipelineExecutor:
 
         # Compute progress percent
         total = len(self.current_run.phases) if self.current_run else 0
-        completed = sum(1 for p in phase_progress if p.get("status") == "completed")
+        completed = sum(
+            1
+            for p in phase_progress
+            if p.get("status") in ("completed", "partial", "skipped")
+        )
         running = sum(1 for p in phase_progress if p.get("status") == "running")
         if phase_progress:
             observed = len(phase_progress)
@@ -313,6 +325,11 @@ class PipelineExecutor:
         try:
             for line in proc.stdout:
                 line = line.rstrip("\n\r")
+                if self._engine_run_id is None:
+                    parsed_run_id = self._extract_engine_run_id_from_line(line)
+                    if parsed_run_id:
+                        self._engine_run_id = parsed_run_id
+                        logger.info("Detected engine run_id=%s for ui_run_id=%s", parsed_run_id, self.current_run.run_id if self.current_run else "?")
                 with self._log_lock:
                     self._log_lines.append(line)
 
@@ -340,6 +357,16 @@ class PipelineExecutor:
                     self._finished_at = time.monotonic()
             self._append_history_entry()
 
+    _RUN_ID_RE = re.compile(r"\brun_id=([0-9a-f]{8})\b")
+
+    @classmethod
+    def _extract_engine_run_id_from_line(cls, line: str) -> str | None:
+        """Extract engine run_id from subprocess log output."""
+        match = cls._RUN_ID_RE.search(line)
+        if match:
+            return match.group(1)
+        return None
+
     def _append_history_entry(self) -> None:
         """Append a run entry to the JSONL history."""
         if not self.current_run:
@@ -350,6 +377,7 @@ class PipelineExecutor:
             duration = round(time.monotonic() - self._started_at, 1) if self._started_at else None
             append_run_to_history({
                 "run_id": self.current_run.run_id,
+                "engine_run_id": self._engine_run_id,
                 "status": self.state,
                 "trigger": "pipeline",
                 "preset": self.current_run.preset,
@@ -378,12 +406,65 @@ class PipelineExecutor:
         "synthesis_crew": "document",
         "cross_cutting_crew": "document",
         "recommendation_crew": "document",
+        "C4": "document",
+        "Arc42": "document",
+        "C4Crew": "document",
+        "Arc42Crew": "document",
         # Phase 4 (Planning)
         "planning_crew": "plan",
         # Phase 5 (CodeGen)
         "code_generation_crew": "implement",
         "code_validation_crew": "implement",
     }
+
+    def _resolve_bound_run_id(self) -> str | None:
+        """Resolve the active engine run_id for this executor run."""
+        if self._engine_run_id:
+            return self._engine_run_id
+
+        proc = self._process
+        if proc is None or proc.pid is None:
+            return None
+
+        state_path = settings.project_root / "logs" / "phase_state.json"
+        if not state_path.exists():
+            return None
+
+        try:
+            with open(state_path, encoding="utf-8") as f:
+                state = json.load(f)
+            if state.get("pid") == proc.pid and state.get("run_id"):
+                self._engine_run_id = str(state["run_id"])
+                return self._engine_run_id
+        except (OSError, json.JSONDecodeError):
+            return None
+
+        return None
+
+    @staticmethod
+    def _extract_event_name(event: dict, data: dict) -> str:
+        """Read event name across production and legacy metric shapes."""
+        return data.get("event") or event.get("msg") or event.get("event") or ""
+
+    @staticmethod
+    def _extract_event_run_id(event: dict, data: dict) -> str | None:
+        """Read run_id across production and legacy metric shapes."""
+        run_id = data.get("run_id") or event.get("run_id")
+        return str(run_id) if run_id else None
+
+    def _event_in_active_scope(self, event: dict, data: dict, bound_run_id: str | None) -> bool:
+        """Check whether a metric event belongs to this run."""
+        event_run_id = self._extract_event_run_id(event, data)
+
+        if bound_run_id:
+            return event_run_id == bound_run_id
+
+        if self._run_started_wall:
+            event_ts = str(event.get("ts", ""))[:19]
+            if event_ts and event_ts < self._run_started_wall:
+                return False
+
+        return True
 
     def _read_phase_progress(self) -> list[dict]:
         """Read phase progress from metrics.jsonl tail, including sub-phase data."""
@@ -394,42 +475,14 @@ class PipelineExecutor:
         if not metrics_file.exists():
             return []
 
+        saw_active_event = False
+
         try:
             with open(metrics_file, encoding="utf-8") as f:
                 lines = f.readlines()
 
-            recent = lines[-500:]
-
-            # Detect the most recent run_id to filter out old runs
-            current_run_id = None
-            for line in reversed(recent):
-                try:
-                    ev = json.loads(line.strip())
-                    data = ev.get("data", {})
-                    evt = data.get("event") or ev.get("msg", "")
-                    if evt == "phase_start" and data.get("run_id"):
-                        current_run_id = data["run_id"]
-                        break
-                except (json.JSONDecodeError, KeyError):
-                    continue
-
-            # Guard against showing stale events from a previous run:
-            # If we're running but the latest run_id in metrics predates our start,
-            # the new subprocess hasn't written events yet — return expected phases as pending.
-            if self.state == "running" and current_run_id and hasattr(self, "_run_started_wall"):
-                for line in reversed(recent):
-                    try:
-                        ev = json.loads(line.strip())
-                        data = ev.get("data", {})
-                        evt = data.get("event") or ev.get("msg", "")
-                        if evt == "phase_start" and data.get("run_id") == current_run_id:
-                            event_ts = ev.get("ts", "")[:19]  # Trim to seconds
-                            if event_ts < self._run_started_wall:
-                                # No new events yet — show expected phases as pending
-                                return self._pending_phase_list()
-                            break
-                    except (json.JSONDecodeError, KeyError):
-                        continue
+            recent = lines[-1000:]
+            bound_run_id = self._resolve_bound_run_id()
 
             for line in recent:
                 try:
@@ -438,11 +491,13 @@ class PipelineExecutor:
                     continue
 
                 data = event.get("data", {})
-                event_name = data.get("event") or event.get("msg", "")
-
-                # Filter to current run only
-                if current_run_id and data.get("run_id") and data["run_id"] != current_run_id:
+                event_name = self._extract_event_name(event, data)
+                if not event_name:
                     continue
+
+                if not self._event_in_active_scope(event, data, bound_run_id):
+                    continue
+                saw_active_event = True
 
                 if event_name == "phase_start":
                     phase_id = data.get("phase") or data.get("phase_id", "")
@@ -461,14 +516,15 @@ class PipelineExecutor:
                     phase_id = data.get("phase") or data.get("phase_id", "")
                     if not phase_id:
                         continue
+                    completed_status = "partial" if str(data.get("status", "")).lower() == "partial" else "completed"
                     if phase_id in progress:
-                        progress[phase_id]["status"] = "completed"
+                        progress[phase_id]["status"] = completed_status
                         progress[phase_id]["duration_seconds"] = data.get("duration_seconds")
                     else:
                         progress[phase_id] = {
                             "phase_id": phase_id,
                             "name": data.get("name", phase_id),
-                            "status": "completed",
+                            "status": completed_status,
                             "started_at": None,
                             "duration_seconds": data.get("duration_seconds"),
                             "sub_phases": [],
@@ -520,11 +576,29 @@ class PipelineExecutor:
         except Exception as exc:
             logger.warning("Failed to read metrics for progress: %s", exc)
 
+        if self.state == "running" and not saw_active_event:
+            return self._pending_phase_list()
+
         # Attach sub-phases and aggregate tokens
         for phase_id, phase_data in progress.items():
             subs = sub_phases.get(phase_id, [])
             phase_data["sub_phases"] = subs
             phase_data["total_tokens"] = sum(s.get("total_tokens", 0) for s in subs)
+
+        if not progress and self.state == "running":
+            return self._pending_phase_list()
+
+        if self.current_run and self.current_run.phases:
+            ordered: list[dict] = []
+            seen: set[str] = set()
+            for phase_id in self.current_run.phases:
+                if phase_id in progress:
+                    ordered.append(progress[phase_id])
+                    seen.add(phase_id)
+            for phase_id, phase_data in progress.items():
+                if phase_id not in seen:
+                    ordered.append(phase_data)
+            return ordered
 
         return list(progress.values())
 
@@ -541,15 +615,22 @@ class PipelineExecutor:
             with open(metrics_file, encoding="utf-8") as f:
                 lines = f.readlines()
 
-            for line in lines[-300:]:
+            bound_run_id = self._resolve_bound_run_id()
+
+            for line in lines[-500:]:
                 try:
                     event = json.loads(line.strip())
                 except json.JSONDecodeError:
                     continue
 
                 data = event.get("data", {})
-                evt = data.get("event") or event.get("msg", "")
-                if evt == "mini_crew_complete":
+                event_name = self._extract_event_name(event, data)
+                if not event_name:
+                    continue
+                if not self._event_in_active_scope(event, data, bound_run_id):
+                    continue
+
+                if event_name == "mini_crew_complete":
                     total_tokens += data.get("total_tokens", 0) or data.get("tokens", 0) or 0
                     crew_completions += 1
         except Exception as exc:

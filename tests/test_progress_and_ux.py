@@ -410,6 +410,54 @@ class TestSubPhaseParsing:
         # Unknown crew doesn't map to extract, so no sub-phases attached
         assert len(phase["sub_phases"]) == 0
 
+    def test_phase_progress_filters_to_engine_run_id(self, mock_settings, metrics_file):
+        from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
+
+        write_metrics(metrics_file, [
+            {
+                "msg": "phase_start",
+                "data": {"event": "phase_start", "phase": "extract", "name": "Facts", "run_id": "old11111"},
+            },
+            {
+                "msg": "mini_crew_complete",
+                "data": {
+                    "event": "mini_crew_complete",
+                    "run_id": "old11111",
+                    "crew_type": "architecture_collector",
+                    "crew_name": "Old Collector",
+                    "total_tokens": 999,
+                },
+            },
+            {
+                "msg": "phase_start",
+                "data": {"event": "phase_start", "phase": "analyze", "name": "Analysis", "run_id": "new22222"},
+            },
+            {
+                "msg": "mini_crew_complete",
+                "data": {
+                    "event": "mini_crew_complete",
+                    "run_id": "new22222",
+                    "crew_type": "architecture_analyzer",
+                    "crew_name": "Arch Analyzer",
+                    "total_tokens": 300,
+                },
+            },
+        ])
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.state = "running"
+        executor.current_run = RunInfo(run_id="ui_test", preset=None, phases=["analyze"], started_at="T0")
+        executor._engine_run_id = "new22222"
+        executor._started_at = time.monotonic() - 5
+
+        status = executor.get_status()
+        assert len(status["phase_progress"]) == 1
+        phase = status["phase_progress"][0]
+        assert phase["phase_id"] == "analyze"
+        assert phase["total_tokens"] == 300
+        assert phase["sub_phases"][0]["name"] == "Arch Analyzer"
+
     def test_no_metrics_file_empty_progress(self, mock_settings):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
@@ -451,6 +499,69 @@ class TestLiveMetrics:
         assert status["live_metrics"] is not None
         assert status["live_metrics"]["total_tokens"] == 3500
         assert status["live_metrics"]["crew_completions"] == 3
+
+    def test_live_metrics_filters_by_engine_run_id(self, mock_settings, metrics_file):
+        from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
+
+        write_metrics(metrics_file, [
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "old11111", "total_tokens": 4000},
+            },
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "new22222", "total_tokens": 1200},
+            },
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "new22222", "total_tokens": 800},
+            },
+        ])
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.state = "running"
+        executor.current_run = RunInfo(run_id="ui_test", preset=None, phases=["p1"], started_at="T0")
+        executor._engine_run_id = "new22222"
+        executor._started_at = time.monotonic() - 5
+
+        status = executor.get_status()
+        assert status["live_metrics"] is not None
+        assert status["live_metrics"]["total_tokens"] == 2000
+        assert status["live_metrics"]["crew_completions"] == 2
+
+    def test_live_metrics_binds_run_id_from_phase_state(self, mock_settings, metrics_file, tmp_project):
+        from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
+
+        write_metrics(metrics_file, [
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "old11111", "total_tokens": 4000},
+            },
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "state3333", "total_tokens": 600},
+            },
+        ])
+
+        phase_state_path = tmp_project / "logs" / "phase_state.json"
+        phase_state_path.write_text(
+            json.dumps({"run_id": "state3333", "pid": 4242, "phases": {}}),
+            encoding="utf-8",
+        )
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.state = "running"
+        executor.current_run = RunInfo(run_id="ui_test", preset=None, phases=["p1"], started_at="T0")
+        executor._process = MagicMock(pid=4242)
+        executor._started_at = time.monotonic() - 5
+
+        status = executor.get_status()
+        assert status["live_metrics"] is not None
+        assert status["live_metrics"]["total_tokens"] == 600
+        assert status["live_metrics"]["crew_completions"] == 1
+        assert executor._engine_run_id == "state3333"
 
     def test_live_metrics_not_returned_when_idle(self, mock_settings):
         from ui.backend.services.pipeline_executor import PipelineExecutor
@@ -634,6 +745,10 @@ class TestCrewPhaseMapping:
         assert PipelineExecutor._CREW_PHASE_MAP["synthesis_crew"] == "document"
         assert PipelineExecutor._CREW_PHASE_MAP["cross_cutting_crew"] == "document"
         assert PipelineExecutor._CREW_PHASE_MAP["recommendation_crew"] == "document"
+        assert PipelineExecutor._CREW_PHASE_MAP["C4"] == "document"
+        assert PipelineExecutor._CREW_PHASE_MAP["Arc42"] == "document"
+        assert PipelineExecutor._CREW_PHASE_MAP["C4Crew"] == "document"
+        assert PipelineExecutor._CREW_PHASE_MAP["Arc42Crew"] == "document"
 
     def test_implement_crews_map_correctly(self):
         from ui.backend.services.pipeline_executor import PipelineExecutor
