@@ -142,7 +142,7 @@ class LiveMetrics(BaseModel):
 class PhaseProgress(BaseModel):
     phase_id: str
     name: str
-    status: str = "pending"  # pending | running | completed | failed
+    status: str = "pending"  # pending | running | completed | failed | skipped
     started_at: str | None = None
     duration_seconds: float | None = None
     sub_phases: list[SubPhaseProgress] = []

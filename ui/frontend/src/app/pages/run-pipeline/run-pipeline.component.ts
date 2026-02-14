@@ -326,6 +326,8 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
                         <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
                       } @else if (pp.status === 'failed') {
                         <mat-icon class="step-fail">close</mat-icon>
+                      } @else if (pp.status === 'skipped') {
+                        <mat-icon class="step-skip">skip_next</mat-icon>
                       } @else {
                         <span class="step-num">{{ i + 1 }}</span>
                       }
@@ -336,6 +338,9 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
                     }
                     @if (pp.status === 'running') {
                       <div class="step-time step-time-active">running</div>
+                    }
+                    @if (pp.status === 'skipped') {
+                      <div class="step-time step-time-skipped">skipped</div>
                     }
                     @if (pp.status === 'running' && pp.sub_phases?.length) {
                       <div class="sub-phase-chips">
@@ -615,6 +620,14 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         background: var(--cg-error, #dc3545); border-color: var(--cg-error, #dc3545);
       }
       .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Skipped */
+      .step-skipped .step-circle {
+        background: var(--cg-gray-100); border-color: var(--cg-gray-200);
+        opacity: 0.7;
+      }
+      .step-skip { font-size: 18px; width: 18px; height: 18px; color: var(--cg-gray-400); }
+      .step-skipped .step-label { color: var(--cg-gray-400); text-decoration: line-through; }
+      .step-time-skipped { color: var(--cg-gray-400); font-style: italic; }
       .step-label {
         margin-top: 8px; font-size: 11px; font-weight: 500;
         color: var(--cg-gray-500); text-align: center;

@@ -238,6 +238,7 @@ class SDLCOrchestrator:
                 filtered.append(phase_id)
             else:
                 logger.info(f"[Orchestrator] Skipping unregistered phase: {phase_id}")
+                log_metric("phase_skipped", phase_id=phase_id, reason="unregistered")
 
         return filtered
 

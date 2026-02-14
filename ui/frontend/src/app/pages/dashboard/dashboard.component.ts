@@ -151,6 +151,8 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                     <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
                   } @else if (step.status === 'failed') {
                     <mat-icon class="step-fail">close</mat-icon>
+                  } @else if (step.status === 'skipped') {
+                    <mat-icon class="step-skip">skip_next</mat-icon>
                   } @else {
                     <span class="step-num">{{ i + 1 }}</span>
                   }
@@ -460,8 +462,10 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
       .step-skipped .step-circle {
         background: var(--cg-gray-100);
         border-color: var(--cg-gray-200);
-        opacity: 0.5;
+        opacity: 0.7;
       }
+      .step-skip { font-size: 18px; width: 18px; height: 18px; color: var(--cg-gray-400); }
+      .step-skipped .step-label { color: var(--cg-gray-400); text-decoration: line-through; }
       /* Labels */
       .step-label {
         margin-top: 8px;

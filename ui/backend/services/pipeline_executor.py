@@ -191,10 +191,16 @@ class PipelineExecutor:
 
         # Compute progress percent
         total = len(self.current_run.phases) if self.current_run else 0
-        if total == 0 and phase_progress:
-            total = len(phase_progress)
         completed = sum(1 for p in phase_progress if p.get("status") == "completed")
         running = sum(1 for p in phase_progress if p.get("status") == "running")
+        if phase_progress:
+            observed = len(phase_progress)
+            if total == 0:
+                total = observed
+            # Full preset may include phases that are intentionally unregistered/skipped
+            # (e.g., verify/deliver planned but not implemented). Show 100% on success.
+            elif self.state == "completed" and completed == observed:
+                total = observed
         progress = round((completed + running * 0.5) / total * 100, 1) if total > 0 else 0
 
         # Live metrics
@@ -457,6 +463,19 @@ class PipelineExecutor:
                             "sub_phases": [],
                             "total_tokens": 0,
                         }
+                elif event_name == "phase_skipped":
+                    phase_id = data.get("phase") or data.get("phase_id", "")
+                    if not phase_id:
+                        continue
+                    progress[phase_id] = {
+                        "phase_id": phase_id,
+                        "name": data.get("name", phase_id),
+                        "status": "skipped",
+                        "started_at": None,
+                        "duration_seconds": None,
+                        "sub_phases": [],
+                        "total_tokens": 0,
+                    }
                 elif event_name in ("mini_crew_complete", "mini_crew_failed"):
                     crew_type = data.get("crew_type", "")
                     parent_phase = self._CREW_PHASE_MAP.get(crew_type, "")
