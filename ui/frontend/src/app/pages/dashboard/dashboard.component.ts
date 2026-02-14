@@ -209,7 +209,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
               <div class="phase-bottom">
                 <span class="status-dot" [class]="'dot-' + phase.status"></span>
                 <span class="status-label">{{ phase.status }}</span>
-                @if (phase.status === 'completed') {
+                @if (phase.status === 'completed' || phase.status === 'failed') {
                   <button class="reset-btn" (click)="resetPhase(phase.id); $event.stopPropagation(); $event.preventDefault()"
                     [disabled]="executionState === 'running'"
                     [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset'">
@@ -1007,7 +1007,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   resetAll(): void {
     this.pipelineSvc.previewReset(
-      this.pipeline?.phases.filter((p) => p.status === 'completed' && p.id !== 'discover').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
