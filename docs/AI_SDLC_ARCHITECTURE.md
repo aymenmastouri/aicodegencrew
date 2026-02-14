@@ -759,9 +759,9 @@ See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
 ```json
 {
   "system": {
-    "name": "uvz",
-    "domain": "Deed Management Platform",
-    "description": "Notary deed registration and workflow system"
+    "name": "my-app",
+    "domain": "Business Platform",
+    "description": "Enterprise application system"
   },
   "architecture": {
     "primary_style": "layered_architecture",
@@ -773,8 +773,8 @@ See the detailed diagram: [analysis-crew.drawio](diagrams/analysis-crew.drawio)
     {"name": "factory_pattern", "evidence_count": 6}
   ],
   "capabilities": [
-    {"name": "Deed Management", "key_components": ["DeedEntryService", "DeedRegistryService"]},
-    {"name": "Workflow Processing", "key_components": ["WorkflowService", "ActionService"]}
+    {"name": "Order Management", "key_components": ["OrderService", "InventoryService"]},
+    {"name": "User Management", "key_components": ["UserService", "AuthService"]}
   ],
   "quality_attributes": {
     "maintainability": {"level": "high", "reason": "Layered + Repository pattern"},
@@ -1128,16 +1128,16 @@ Tasks are sorted by a composite key `(is_child, priority, task_type, task_id)`:
 **Example** (2 files in `inputs/tasks/`):
 ```
 Input:
-  BNUVZ-12568.xml  (SASS Migration, Major, links to BNUVZ-12529)
-  BNUVZ-12529.xml  (Angular Upgrade, Major, no links in batch)
+  PROJ-456.xml  (SASS Migration, Major, links to PROJ-123)
+  PROJ-123.xml  (Framework Upgrade, Major, no links in batch)
 
 Sorted:
-  1. BNUVZ-12529 [Major] type=upgrade is_child=0  ← parent first
-  2. BNUVZ-12568 [Major] type=upgrade is_child=1  ← child second
+  1. PROJ-123 [Major] type=upgrade is_child=0  ← parent first
+  2. PROJ-456 [Major] type=upgrade is_child=1  ← child second
 
 Output:
-  knowledge/plan/BNUVZ-12529_plan.json
-  knowledge/plan/BNUVZ-12568_plan.json
+  knowledge/plan/PROJ-123_plan.json
+  knowledge/plan/PROJ-456_plan.json
 ```
 
 #### Stage 1: Input Parsers (IMPLEMENTED)
@@ -1309,7 +1309,7 @@ A generic, framework-agnostic rules engine for upgrade task planning. All upgrad
       "integration_tests": ["UserRegistrationIT.testEmailSent()"],
       "similar_patterns": [
         {
-          "name": "DeedEntryServiceImplTest",
+          "name": "OrderServiceImplTest",
           "framework": "junit",
           "relevance_score": 0.87,
           "pattern_description": "Similar unit test with @MockBean injection"

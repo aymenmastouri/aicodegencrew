@@ -374,14 +374,14 @@ knowledge/extract/architecture_facts.json (+ dimension files)
 
 16 dimensions available via `FactsQueryTool`:
 
-| Dimension | Items (uvz) | Used By |
+| Dimension | Description | Used By |
 |-----------|------------|---------|
-| `system` | 1 | All agents — overview |
-| `containers` | 5 | DevOps — build targets |
-| `components` | 951 | Senior Dev — API verification |
-| `interfaces` | 226 | Senior Dev — REST endpoint design |
-| `relations` | 190 | Senior Dev — dependency awareness |
-| `data_model` | 433 entities | Senior Dev — entity structure |
+| `system` | System overview | All agents — overview |
+| `containers` | Deployable units | DevOps — build targets |
+| `components` | All components | Senior Dev — API verification |
+| `interfaces` | REST endpoints | Senior Dev — REST endpoint design |
+| `relations` | Dependencies | Senior Dev — dependency awareness |
+| `data_model` | Entities & tables | Senior Dev — entity structure |
 | `dependencies` | 170 | DevOps — library compatibility |
 | `tech_versions` | 8 | DevOps — version awareness |
 | `tests` | 925 | Tester — pattern matching |

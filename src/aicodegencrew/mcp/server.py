@@ -221,8 +221,8 @@ def get_endpoints(path_pattern: str = None) -> str:
         path_pattern: Optional regex to filter paths.
             Examples:
             - "/workflow.*" - all workflow endpoints
-            - "/uvz/v1/action.*" - action API endpoints
-            - None - all 95 REST endpoints
+            - "/api/v1/action.*" - action API endpoints
+            - None - all REST endpoints
 
     Returns:
         List of endpoints with path, method, and implementing component.
@@ -238,7 +238,7 @@ def get_endpoint_by_path(path: str, method: str = None) -> str:
     Get endpoint details by exact path.
 
     Args:
-        path: Exact API path (e.g., "/uvz/v1/workflow/{id}")
+        path: Exact API path (e.g., "/api/v1/resource/{id}")
         method: Optional HTTP method (GET, POST, PUT, DELETE, PATCH)
 
     Returns:
@@ -417,7 +417,7 @@ def get_entity_relationships(entity_name: str) -> str:
     Get all relationships for an entity (JPA relations, references, etc.).
 
     Args:
-        entity_name: Entity name (e.g., "DeedEntry", "Workflow")
+        entity_name: Entity name (e.g., "Order", "User")
 
     Returns:
         JPA relations (OneToMany, ManyToOne, etc.) and other references.

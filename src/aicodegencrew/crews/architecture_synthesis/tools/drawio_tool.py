@@ -33,8 +33,8 @@ class DrawioDiagramTool(BaseTool):
 
     Example usage:
         nodes = [
-            {"id": "frontend", "label": "Frontend\\n(Angular)", "x": 100, "y": 100, "width": 180, "height": 80, "style": "rounded=1;fillColor=#E3F2FD"},
-            {"id": "backend", "label": "Backend\\n(Spring Boot)", "x": 350, "y": 100, "width": 200, "height": 80, "style": "rounded=1;fillColor=#FFF3E0"}
+            {"id": "frontend", "label": "Frontend\\n(Web App)", "x": 100, "y": 100, "width": 180, "height": 80, "style": "rounded=1;fillColor=#E3F2FD"},
+            {"id": "backend", "label": "Backend\\n(API Server)", "x": 350, "y": 100, "width": 200, "height": 80, "style": "rounded=1;fillColor=#FFF3E0"}
         ]
         edges = [
             {"source": "frontend", "target": "backend", "label": "REST API"}

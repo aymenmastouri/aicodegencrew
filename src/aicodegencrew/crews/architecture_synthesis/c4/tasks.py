@@ -310,7 +310,7 @@ Use create_drawio_diagram tool with these specifications:
 FILE: c4/c4-component.drawio
 
 LAYOUT (show LAYERS as swimlanes, not individual components):
-- Container Boundary: "Backend API [Spring Boot]"
+- Container Boundary: "<Container Name> [<Technology>]"
 - Presentation Layer box: Controllers (X components)
 - Business Layer box: Services (X components)
 - Data Access Layer box: Repositories (X components)

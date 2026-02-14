@@ -310,7 +310,7 @@ class KnowledgeTools:
         Get endpoint details by exact path.
 
         Args:
-            path: Exact path (e.g., "/uvz/v1/workflow/{id}")
+            path: Exact path (e.g., "/api/v1/resource/{id}")
             method: Optional HTTP method filter (GET, POST, etc.)
         """
         for iface in self.interfaces.get("interfaces", []):
@@ -575,7 +575,7 @@ class KnowledgeTools:
         Get all relationships for an entity (JPA relations, references, etc.).
 
         Args:
-            entity_name: Entity name (e.g., "DeedEntry", "Workflow")
+            entity_name: Entity name (e.g., "Order", "User")
         """
         result = self.get_component(entity_name)
         if "error" in result:

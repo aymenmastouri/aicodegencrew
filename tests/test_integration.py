@@ -912,7 +912,7 @@ class TestConfluenceConverterIntegration:
 
 ## System Overview
 
-The **UVZ System** is a Spring Boot + Angular application.
+The **Sample System** is a multi-tier web application.
 
 ### External Actors
 
@@ -954,7 +954,7 @@ public class MainController {
         # Verify key Confluence formatting
         assert "h1. C4 Context Diagram" in result
         assert "h2. System Overview" in result
-        assert "*UVZ System*" in result  # bold
+        assert "*Sample System*" in result  # bold
         assert "||Actor||Description||Protocol||" in result  # table header
         assert "{code:language=java}" in result  # code block
         assert "{quote}" in result  # blockquote

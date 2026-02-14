@@ -200,7 +200,7 @@ def _extract_linked_tasks(item: ET.Element, own_id: str, description: str) -> li
     """Extract linked ticket IDs from issuelinks, subtasks, and description references."""
     linked = set()
 
-    # 1. Issuelinks (e.g., <issuelink><issuekey>BNUVZ-12570</issuekey></issuelink>)
+    # 1. Issuelinks (e.g., <issuelink><issuekey>PROJ-456</issuekey></issuelink>)
     for issuekey in item.findall(".//issuelinks//issuekey"):
         if issuekey.text:
             linked.add(issuekey.text.strip())
@@ -215,7 +215,7 @@ def _extract_linked_tasks(item: ET.Element, own_id: str, description: str) -> li
     if parent is not None and parent.text:
         linked.add(parent.text.strip())
 
-    # 4. Ticket references in description (e.g., BNUVZ-12529, PROJ-123)
+    # 4. Ticket references in description (e.g., PROJ-123, TEAM-456)
     if description:
         refs = re.findall(r"[A-Z][A-Z0-9]+-\d+", description)
         for ref in refs:

@@ -47,7 +47,7 @@ class GitRepoManager:
 
     @property
     def repo_name(self) -> str:
-        """Extract repository name from URL (e.g. 'uvz' from '...uvz.git')."""
+        """Extract repository name from URL (e.g. 'my-app' from '...my-app.git')."""
         path = urlparse(self.repo_url).path
         name = Path(path).stem  # strips .git
         return name or "repo"

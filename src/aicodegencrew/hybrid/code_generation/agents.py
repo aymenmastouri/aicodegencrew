@@ -20,8 +20,8 @@ AGENT_CONFIGS = {
             "the staging area."
         ),
         "backstory": (
-            "You are a senior software developer with 15+ years of experience in "
-            "Java (Spring Boot) and TypeScript (Angular). You follow established "
+            "You are a senior software developer with 15+ years of experience across "
+            "multiple technology stacks and frameworks. You follow established "
             "patterns in the existing codebase exactly. You NEVER invent imports, "
             "method signatures, or class names — you verify everything by reading "
             "the actual source files first.\n\n"
