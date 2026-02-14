@@ -319,9 +319,35 @@ export class PhasesComponent implements OnInit, OnDestroy {
   resetPhase(phaseId: string): void {
     const phaseName = this.phaseDisplayName(phaseId);
 
-    // Discover: no cascade (don't reset extract, analyze, etc.)
-    const cascade = phaseId !== 'discover';
+    // Discover: clear status only (preserve ChromaDB index)
+    if (phaseId === 'discover') {
+      const ref = this.dialog.open(ConfirmDialogComponent, {
+        width: '480px',
+        data: {
+          title: `Clear ${phaseName} Status`,
+          message: `This will clear the status for ${phaseName}.\nThe ChromaDB index will not be deleted.`,
+          details: [phaseName],
+          type: 'info',
+          icon: 'refresh',
+          confirmLabel: 'Clear Status',
+        } as ConfirmDialogData,
+      });
+      ref.afterClosed().subscribe((confirmed) => {
+        if (!confirmed) return;
+        this.pipelineService.clearPhaseState([phaseId]).subscribe({
+          next: () => {
+            this.snackBar.open(`${phaseName} status cleared`, 'OK', { duration: 4000 });
+            this.refreshStatus();
+          },
+          error: (err) => {
+            this.snackBar.open(err?.error?.detail || 'Clear status failed', 'OK', { duration: 4000 });
+          },
+        });
+      });
+      return;
+    }
 
+    const cascade = true;
     this.pipelineService.previewReset([phaseId], cascade).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
