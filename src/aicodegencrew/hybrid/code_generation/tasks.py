@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ...pipelines.code_generation.schemas import CodegenPlanInput, FileContext
+    from .schemas import CodegenPlanInput, FileContext
 
 
 # =============================================================================

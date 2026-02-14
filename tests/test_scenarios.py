@@ -436,7 +436,7 @@ class TestScenario3ErrorRecovery:
 
     def test_stage1_rejects_unsupported_format(self, tmp_path):
         """Stage 1 rejects unsupported file formats with clear error."""
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.stages import (
             InputParserStage,
         )
 
@@ -449,7 +449,7 @@ class TestScenario3ErrorRecovery:
 
     def test_stage1_rejects_missing_file(self, tmp_path):
         """Stage 1 rejects nonexistent files."""
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.stages import (
             InputParserStage,
         )
 
@@ -459,7 +459,7 @@ class TestScenario3ErrorRecovery:
 
     def test_development_pipeline_requires_input(self):
         """Pipeline raises ValueError when no input files provided."""
-        from aicodegencrew.pipelines.development_planning.pipeline import (
+        from aicodegencrew.hybrid.development_planning.pipeline import (
             DevelopmentPlanningPipeline,
         )
 

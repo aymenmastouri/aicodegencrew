@@ -12,27 +12,27 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aicodegencrew.pipelines.development_planning.parsers.text_parser import (
+from aicodegencrew.hybrid.development_planning.parsers.text_parser import (
     parse_text,
 )
-from aicodegencrew.pipelines.development_planning.parsers.xml_parser import (
+from aicodegencrew.hybrid.development_planning.parsers.xml_parser import (
     parse_xml,
 )
-from aicodegencrew.pipelines.development_planning.upgrade_rules.angular import (
+from aicodegencrew.hybrid.development_planning.upgrade_rules.angular import (
     ANGULAR_UPGRADE_RULES,
 )
-from aicodegencrew.pipelines.development_planning.upgrade_rules.base import (
+from aicodegencrew.hybrid.development_planning.upgrade_rules.base import (
     UpgradeCategory,
     UpgradeRuleSet,
     UpgradeSeverity,
 )
-from aicodegencrew.pipelines.development_planning.upgrade_rules.engine import (
+from aicodegencrew.hybrid.development_planning.upgrade_rules.engine import (
     UpgradeRulesEngine,
 )
-from aicodegencrew.pipelines.development_planning.upgrade_rules.java import (
+from aicodegencrew.hybrid.development_planning.upgrade_rules.java import (
     JAVA_UPGRADE_RULES,
 )
-from aicodegencrew.pipelines.development_planning.upgrade_rules.spring import (
+from aicodegencrew.hybrid.development_planning.upgrade_rules.spring import (
     SPRING_UPGRADE_RULES,
 )
 

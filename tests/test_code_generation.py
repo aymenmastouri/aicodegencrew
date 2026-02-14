@@ -11,8 +11,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from aicodegencrew.pipelines.code_generation.pipeline import CodeGenerationPipeline
-from aicodegencrew.pipelines.code_generation.schemas import (
+from aicodegencrew.hybrid.code_generation.pipeline import CodeGenerationPipeline
+from aicodegencrew.hybrid.code_generation.schemas import (
     CodegenPlanInput,
     CodegenReport,
     CollectedContext,
@@ -22,12 +22,12 @@ from aicodegencrew.pipelines.code_generation.schemas import (
     GeneratedFile,
     ValidationResult,
 )
-from aicodegencrew.pipelines.code_generation.stages.stage1_plan_reader import PlanReaderStage
-from aicodegencrew.pipelines.code_generation.stages.stage2_context_collector import ContextCollectorStage
-from aicodegencrew.pipelines.code_generation.stages.stage3_code_generator import CodeGeneratorStage
-from aicodegencrew.pipelines.code_generation.stages.stage4_code_validator import CodeValidatorStage
-from aicodegencrew.pipelines.code_generation.stages.stage5_output_writer import OutputWriterStage
-from aicodegencrew.pipelines.code_generation.strategies import (
+from aicodegencrew.hybrid.code_generation.stages.stage1_plan_reader import PlanReaderStage
+from aicodegencrew.hybrid.code_generation.stages.stage2_context_collector import ContextCollectorStage
+from aicodegencrew.hybrid.code_generation.stages.stage3_code_generator import CodeGeneratorStage
+from aicodegencrew.hybrid.code_generation.stages.stage4_code_validator import CodeValidatorStage
+from aicodegencrew.hybrid.code_generation.stages.stage5_output_writer import OutputWriterStage
+from aicodegencrew.hybrid.code_generation.strategies import (
     STRATEGY_MAP,
     BaseStrategy,
     BugfixStrategy,
@@ -669,8 +669,8 @@ class TestCodeGeneratorStage:
         ctx = CollectedContext(file_contexts=[fc], total_files=1)
 
         with (
-            patch("aicodegencrew.pipelines.code_generation.stages.stage3_code_generator.MAX_RETRIES", 1),
-            patch("aicodegencrew.pipelines.code_generation.stages.stage3_code_generator.CALL_DELAY", 0),
+            patch("aicodegencrew.hybrid.code_generation.stages.stage3_code_generator.MAX_RETRIES", 1),
+            patch("aicodegencrew.hybrid.code_generation.stages.stage3_code_generator.CALL_DELAY", 0),
         ):
             result = stage.run(plan, ctx, FeatureStrategy())
 
@@ -694,7 +694,7 @@ class TestCodeGeneratorStage:
         plan = CodegenPlanInput(task_id="T-1", task_type="feature", summary="Test")
         ctx = CollectedContext(file_contexts=[fc], total_files=1)
 
-        with patch("aicodegencrew.pipelines.code_generation.stages.stage3_code_generator.CALL_DELAY", 0):
+        with patch("aicodegencrew.hybrid.code_generation.stages.stage3_code_generator.CALL_DELAY", 0):
             result = stage.run(plan, ctx, FeatureStrategy())
 
         assert result[0].error == ""

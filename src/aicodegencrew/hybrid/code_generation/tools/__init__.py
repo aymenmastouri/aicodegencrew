@@ -22,7 +22,7 @@ from .test_pattern_tool import TestPatternTool
 from .test_writer_tool import TestWriterTool
 
 # Re-export from architecture analysis crew (reuse, not copy)
-from ...architecture_analysis.tools import FactsQueryTool, RAGQueryTool
+from ....crews.architecture_analysis.tools import FactsQueryTool, RAGQueryTool
 
 __all__ = [
     "BuildErrorParserTool",

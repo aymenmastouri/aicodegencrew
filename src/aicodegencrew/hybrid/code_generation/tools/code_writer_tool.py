@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from ....shared.utils.logger import setup_logger
 from ....shared.utils.token_budget import truncate_response
-from ...implement.tools.code_reader_tool import EXT_TO_LANG
+from .code_reader_tool import EXT_TO_LANG
 
 logger = setup_logger(__name__)
 

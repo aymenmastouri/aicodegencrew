@@ -653,8 +653,8 @@ class TestPhase4StageFlow:
 
     def test_stage1_parses_text_file(self, tmp_path):
         """Stage 1 InputParserStage can parse a .txt task file."""
-        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
+        from aicodegencrew.hybrid.development_planning.stages import (
             InputParserStage,
         )
 
@@ -674,7 +674,7 @@ class TestPhase4StageFlow:
 
     def test_stage1_detects_upgrade_type(self, tmp_path):
         """Stage 1 detects upgrade task type from content."""
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.stages import (
             InputParserStage,
         )
 
@@ -690,7 +690,7 @@ class TestPhase4StageFlow:
 
     def test_stage1_detects_bugfix_type(self, tmp_path):
         """Stage 1 detects bugfix task type."""
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.stages import (
             InputParserStage,
         )
 
@@ -706,8 +706,8 @@ class TestPhase4StageFlow:
 
     def test_stage2_component_discovery_no_chromadb(self, mock_facts):
         """Stage 2 works with facts-only scoring when ChromaDB is unavailable."""
-        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
+        from aicodegencrew.hybrid.development_planning.stages import (
             ComponentDiscoveryStage,
         )
 
@@ -732,8 +732,8 @@ class TestPhase4StageFlow:
 
     def test_stage3_pattern_matcher_returns_all_categories(self, mock_facts):
         """Stage 3 returns test_patterns, security_patterns, etc."""
-        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
+        from aicodegencrew.hybrid.development_planning.stages import (
             PatternMatcherStage,
         )
 
@@ -769,11 +769,11 @@ class TestPhase4StageFlow:
 
     def test_stage5_validates_valid_plan(self):
         """Stage 5 validates a well-formed plan as valid."""
-        from aicodegencrew.pipelines.development_planning.schemas import (
+        from aicodegencrew.hybrid.development_planning.schemas import (
             ImplementationPlan,
             ValidationResult,
         )
-        from aicodegencrew.pipelines.development_planning.stages import ValidatorStage
+        from aicodegencrew.hybrid.development_planning.stages import ValidatorStage
 
         stage5 = ValidatorStage(analyzed_architecture={})
 
@@ -818,10 +818,10 @@ class TestPhase4StageFlow:
 
     def test_stage5_rejects_empty_components(self):
         """Stage 5 rejects plans with no affected components."""
-        from aicodegencrew.pipelines.development_planning.schemas import (
+        from aicodegencrew.hybrid.development_planning.schemas import (
             ImplementationPlan,
         )
-        from aicodegencrew.pipelines.development_planning.stages import ValidatorStage
+        from aicodegencrew.hybrid.development_planning.stages import ValidatorStage
 
         stage5 = ValidatorStage()
 
@@ -844,7 +844,7 @@ class TestPhase4StageFlow:
 
     def test_stage_chain_1_to_3_with_mock_data(self, tmp_path, mock_facts):
         """Full Stage 1 -> 2 -> 3 chain with mock data (no LLM)."""
-        from aicodegencrew.pipelines.development_planning.stages import (
+        from aicodegencrew.hybrid.development_planning.stages import (
             ComponentDiscoveryStage,
             InputParserStage,
             PatternMatcherStage,
@@ -877,7 +877,7 @@ class TestPhase4StageFlow:
 
     def test_task_input_schema_roundtrip(self):
         """TaskInput can be serialized and deserialized."""
-        from aicodegencrew.pipelines.development_planning.schemas import TaskInput
+        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
 
         task = TaskInput(
             task_id="PROJ-456",
