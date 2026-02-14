@@ -607,57 +607,66 @@ class TestOrchestratorIsPhaseEnabled:
 
 
 # =============================================================================
-# Orchestrator: _outputs_exist()
+# Phase Registry: outputs_exist()
 # =============================================================================
 
 
 class TestOutputsExist:
-    """Tests for _outputs_exist()."""
+    """Tests for phase_registry.outputs_exist() — the single source of truth."""
 
-    def test_missing_files_returns_false(self, orchestrator, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        # No files exist under tmp_path
-        assert orchestrator._outputs_exist("extract") is False
+    def test_missing_files_returns_false(self, tmp_path):
+        from aicodegencrew.phase_registry import outputs_exist
 
-    def test_discover_requires_knowledge_dir(self, orchestrator, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        assert orchestrator._outputs_exist("discover") is False
+        assert outputs_exist("extract", tmp_path) is False
 
-        (tmp_path / "knowledge" / "discover").mkdir(parents=True)
-        assert orchestrator._outputs_exist("discover") is True
+    def test_discover_requires_knowledge_dir_with_files(self, tmp_path):
+        from aicodegencrew.phase_registry import outputs_exist
 
-    def test_extract_requires_both_files(self, orchestrator, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
+        assert outputs_exist("discover", tmp_path) is False
+
+        discover_dir = tmp_path / "knowledge" / "discover"
+        discover_dir.mkdir(parents=True)
+        # Empty dir -> False (rglob finds nothing)
+        assert outputs_exist("discover", tmp_path) is False
+
+        (discover_dir / "chroma.sqlite3").write_text("")
+        assert outputs_exist("discover", tmp_path) is True
+
+    def test_extract_requires_facts_json(self, tmp_path):
+        from aicodegencrew.phase_registry import outputs_exist
+
         extract_dir = tmp_path / "knowledge" / "extract"
         extract_dir.mkdir(parents=True)
+        assert outputs_exist("extract", tmp_path) is False
+
         (extract_dir / "architecture_facts.json").write_text("{}")
-        # Only one file -- still False
-        assert orchestrator._outputs_exist("extract") is False
+        assert outputs_exist("extract", tmp_path) is True
 
-        (extract_dir / "evidence_map.json").write_text("{}")
-        assert orchestrator._outputs_exist("extract") is True
+    def test_analyze_requires_analyzed_json(self, tmp_path):
+        from aicodegencrew.phase_registry import outputs_exist
 
-    def test_analyze_requires_analyzed_json(self, orchestrator, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
         analyze_dir = tmp_path / "knowledge" / "analyze"
         analyze_dir.mkdir(parents=True)
-        assert orchestrator._outputs_exist("analyze") is False
+        assert outputs_exist("analyze", tmp_path) is False
 
         (analyze_dir / "analyzed_architecture.json").write_text("{}")
-        assert orchestrator._outputs_exist("analyze") is True
+        assert outputs_exist("analyze", tmp_path) is True
 
-    def test_document_requires_c4_context_md(self, orchestrator, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
+    def test_document_requires_c4_dir_with_files(self, tmp_path):
+        from aicodegencrew.phase_registry import outputs_exist
+
         c4_dir = tmp_path / "knowledge" / "document" / "c4"
         c4_dir.mkdir(parents=True)
-        assert orchestrator._outputs_exist("document") is False
+        # Empty dir -> False
+        assert outputs_exist("document", tmp_path) is False
 
         (c4_dir / "c4-context.md").write_text("# C4 Context")
-        assert orchestrator._outputs_exist("document") is True
+        assert outputs_exist("document", tmp_path) is True
 
-    def test_unknown_phase_returns_false(self, orchestrator, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        assert orchestrator._outputs_exist("phase99_unknown") is False
+    def test_unknown_phase_returns_false(self, tmp_path):
+        from aicodegencrew.phase_registry import outputs_exist
+
+        assert outputs_exist("phase99_unknown", tmp_path) is False
 
 
 # =============================================================================

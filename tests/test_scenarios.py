@@ -425,14 +425,14 @@ class TestScenario3ErrorRecovery:
         if not config_path.exists():
             pytest.skip("Config not found")
 
-        orch = SDLCOrchestrator(config_path=str(config_path))
+        from aicodegencrew.phase_registry import outputs_exist
+
         # phase1 depends on phase0 output (.cache/.chroma)
         # Without it, dependency check should fail
-        result = orch._outputs_exist("extract")
+        result = outputs_exist("extract", tmp_path)
         # Since we are in tmp_path, the output files don't exist
-        # (the method checks absolute paths from CWD)
-        # This verifies the method handles the situation
-        assert isinstance(result, bool)
+        # This verifies the function handles the situation
+        assert result is False
 
     def test_stage1_rejects_unsupported_format(self, tmp_path):
         """Stage 1 rejects unsupported file formats with clear error."""
