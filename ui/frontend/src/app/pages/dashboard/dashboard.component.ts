@@ -973,35 +973,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   resetPhase(phaseId: string): void {
     const phaseName = this.phaseDisplayName(phaseId);
 
-    // Discover: only clear status (no file deletion, no cascade)
-    if (phaseId === 'discover') {
-      const ref = this.dialog.open(ConfirmDialogComponent, {
-        width: '480px',
-        data: {
-          title: `Clear ${phaseName} Status`,
-          message: `This will clear the failed/completed status for ${phaseName}.\nNo files will be deleted. The index remains intact.`,
-          details: [phaseName],
-          type: 'info',
-          icon: 'refresh',
-          confirmLabel: 'Clear Status',
-        } as ConfirmDialogData,
-      });
-      ref.afterClosed().subscribe((confirmed) => {
-        if (!confirmed) return;
-        this.pipelineSvc.clearPhaseState([phaseId]).subscribe({
-          next: () => {
-            this.snackBar.open(`${phaseName} status cleared`, 'OK', { duration: 4000 });
-            this.refreshAll();
-          },
-          error: (err) => {
-            this.snackBar.open(err?.error?.detail || 'Clear status failed', 'OK', { duration: 4000 });
-          },
-        });
-      });
-      return;
-    }
+    // Discover: no cascade (don't reset extract, analyze, etc.)
+    const cascade = phaseId !== 'discover';
 
-    this.pipelineSvc.previewReset([phaseId]).subscribe({
+    this.pipelineSvc.previewReset([phaseId], cascade).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
         const ref = this.dialog.open(ConfirmDialogComponent, {
@@ -1017,7 +992,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
         ref.afterClosed().subscribe((confirmed) => {
           if (!confirmed) return;
-          this.pipelineSvc.executeReset([phaseId]).subscribe({
+          this.pipelineSvc.executeReset([phaseId], cascade).subscribe({
             next: (result) => {
               this.snackBar.open(
                 `Reset ${result.reset_phases.length} phase(s), deleted ${result.deleted_count} file(s)`,
