@@ -100,96 +100,92 @@ const NUMERIC_FIELDS = new Set([
         </div>
       } @else {
         <mat-tab-group animationDuration="200ms" class="settings-tabs">
-          <!-- General Tab -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">folder</mat-icon> General
-            </ng-template>
-            <ng-template matTabContent>
-              <div class="tab-content">
-                <div class="tab-description">Repository path, output directories, and general settings</div>
-                @for (v of getTabVars('general'); track v.name) {
-                  <mat-form-field appearance="outline" class="field-full">
-                    <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                    @if (getOptions(v.name); as opts) {
-                      <mat-select [(ngModel)]="v.value">
-                        @for (opt of opts; track opt.value) {
-                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                        }
-                      </mat-select>
-                    } @else if (isNumeric(v.name)) {
-                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                    } @else {
-                      <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                    }
-                    @if (v.description) {
-                      <mat-hint>{{ v.description }}</mat-hint>
-                    }
-                  </mat-form-field>
-                }
-                @if (getTabVars('general').length === 0) {
-                  <div class="empty-tab">No variables found for this tab.</div>
-                }
-                <div class="tab-actions">
-                  <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
-                    <mat-icon>restart_alt</mat-icon> Reset to defaults
-                  </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('general')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
-                    <mat-icon>save</mat-icon> Save
-                  </button>
-                </div>
-              </div>
-            </ng-template>
-          </mat-tab>
-
-          <!-- LLM Tab -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">smart_toy</mat-icon> LLM
-            </ng-template>
-            <ng-template matTabContent>
-              <div class="tab-content">
-                <div class="tab-description">Language model provider, API keys, embeddings, and token limits</div>
-                @for (v of getTabVars('llm'); track v.name) {
-                  <mat-form-field appearance="outline" class="field-full">
-                    <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                    @if (getOptions(v.name); as opts) {
-                      <mat-select [(ngModel)]="v.value">
-                        @for (opt of opts; track opt.value) {
-                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                        }
-                      </mat-select>
-                    } @else if (isNumeric(v.name)) {
-                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                    } @else {
-                      <input matInput [(ngModel)]="v.value"
-                        [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
-                        [placeholder]="v.description || ''" />
-                      @if (isSecret(v.name)) {
-                        <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
-                          <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
-                        </button>
+          @if (hasTabVars('general')) {
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="tab-icon">folder</mat-icon> General
+              </ng-template>
+              <ng-template matTabContent>
+                <div class="tab-content">
+                  <div class="tab-description">Repository path, output directories, and general settings</div>
+                  @for (v of getTabVars('general'); track v.name) {
+                    <mat-form-field appearance="outline" class="field-full">
+                      <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
+                      @if (getOptions(v.name); as opts) {
+                        <mat-select [(ngModel)]="v.value">
+                          @for (opt of opts; track opt.value) {
+                            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                          }
+                        </mat-select>
+                      } @else if (isNumeric(v.name)) {
+                        <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                      } @else {
+                        <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
                       }
-                    }
-                    @if (v.description) {
-                      <mat-hint>{{ v.description }}</mat-hint>
-                    }
-                  </mat-form-field>
-                }
-                @if (getTabVars('llm').length === 0) {
-                  <div class="empty-tab">No variables found for this tab.</div>
-                }
-                <div class="tab-actions">
-                  <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
-                    <mat-icon>restart_alt</mat-icon> Reset to defaults
-                  </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
-                    <mat-icon>save</mat-icon> Save
-                  </button>
+                      @if (v.description) {
+                        <mat-hint>{{ v.description }}</mat-hint>
+                      }
+                    </mat-form-field>
+                  }
+                  <div class="tab-actions">
+                    <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
+                      <mat-icon>restart_alt</mat-icon> Reset to defaults
+                    </button>
+                    <button mat-flat-button color="primary" (click)="saveTab('general')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      <mat-icon>save</mat-icon> Save
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </ng-template>
-          </mat-tab>
+              </ng-template>
+            </mat-tab>
+          }
+
+          @if (hasTabVars('llm')) {
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="tab-icon">smart_toy</mat-icon> LLM
+              </ng-template>
+              <ng-template matTabContent>
+                <div class="tab-content">
+                  <div class="tab-description">Language model provider, API keys, embeddings, and token limits</div>
+                  @for (v of getTabVars('llm'); track v.name) {
+                    <mat-form-field appearance="outline" class="field-full">
+                      <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
+                      @if (getOptions(v.name); as opts) {
+                        <mat-select [(ngModel)]="v.value">
+                          @for (opt of opts; track opt.value) {
+                            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                          }
+                        </mat-select>
+                      } @else if (isNumeric(v.name)) {
+                        <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                      } @else {
+                        <input matInput [(ngModel)]="v.value"
+                          [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
+                          [placeholder]="v.description || ''" />
+                        @if (isSecret(v.name)) {
+                          <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
+                            <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
+                          </button>
+                        }
+                      }
+                      @if (v.description) {
+                        <mat-hint>{{ v.description }}</mat-hint>
+                      }
+                    </mat-form-field>
+                  }
+                  <div class="tab-actions">
+                    <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
+                      <mat-icon>restart_alt</mat-icon> Reset to defaults
+                    </button>
+                    <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      <mat-icon>save</mat-icon> Save
+                    </button>
+                  </div>
+                </div>
+              </ng-template>
+            </mat-tab>
+          }
 
           <!-- Phases Tab -->
           <mat-tab>
@@ -236,47 +232,45 @@ const NUMERIC_FIELDS = new Set([
             </ng-template>
           </mat-tab>
 
-          <!-- Advanced Tab -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">tune</mat-icon> Advanced
-            </ng-template>
-            <ng-template matTabContent>
-              <div class="tab-content">
-                <div class="tab-description">Logging, tracing, skip flags, and directory overrides</div>
-                @for (v of getTabVars('advanced'); track v.name) {
-                  <mat-form-field appearance="outline" class="field-full">
-                    <mat-label>{{ v.name }}</mat-label>
-                    @if (getOptions(v.name); as opts) {
-                      <mat-select [(ngModel)]="v.value">
-                        @for (opt of opts; track opt.value) {
-                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                        }
-                      </mat-select>
-                    } @else if (isNumeric(v.name)) {
-                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                    } @else {
-                      <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                    }
-                    @if (v.description) {
-                      <mat-hint>{{ v.description }}</mat-hint>
-                    }
-                  </mat-form-field>
-                }
-                @if (getTabVars('advanced').length === 0) {
-                  <div class="empty-tab">No variables found for this tab.</div>
-                }
-                <div class="tab-actions">
-                  <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
-                    <mat-icon>restart_alt</mat-icon> Reset to defaults
-                  </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('advanced')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
-                    <mat-icon>save</mat-icon> Save
-                  </button>
+          @if (hasTabVars('advanced')) {
+            <mat-tab>
+              <ng-template mat-tab-label>
+                <mat-icon class="tab-icon">tune</mat-icon> Advanced
+              </ng-template>
+              <ng-template matTabContent>
+                <div class="tab-content">
+                  <div class="tab-description">Logging, tracing, skip flags, and directory overrides</div>
+                  @for (v of getTabVars('advanced'); track v.name) {
+                    <mat-form-field appearance="outline" class="field-full">
+                      <mat-label>{{ v.name }}</mat-label>
+                      @if (getOptions(v.name); as opts) {
+                        <mat-select [(ngModel)]="v.value">
+                          @for (opt of opts; track opt.value) {
+                            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                          }
+                        </mat-select>
+                      } @else if (isNumeric(v.name)) {
+                        <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                      } @else {
+                        <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                      }
+                      @if (v.description) {
+                        <mat-hint>{{ v.description }}</mat-hint>
+                      }
+                    </mat-form-field>
+                  }
+                  <div class="tab-actions">
+                    <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
+                      <mat-icon>restart_alt</mat-icon> Reset to defaults
+                    </button>
+                    <button mat-flat-button color="primary" (click)="saveTab('advanced')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      <mat-icon>save</mat-icon> Save
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </ng-template>
-          </mat-tab>
+              </ng-template>
+            </mat-tab>
+          }
         </mat-tab-group>
       }
     </div>
@@ -481,6 +475,10 @@ export class SettingsComponent implements OnInit {
 
   isSecret(name: string): boolean {
     return SECRET_KEYS.has(name);
+  }
+
+  hasTabVars(tab: string): boolean {
+    return this.getTabVars(tab).length > 0;
   }
 
   getOptions(name: string): { label: string; value: string }[] | null {
