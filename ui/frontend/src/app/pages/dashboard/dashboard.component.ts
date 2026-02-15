@@ -977,7 +977,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   hasCompletedPhases(): boolean {
-    return !!this.pipeline?.phases.some((p) => isTerminal(p.status));
+    return !!this.pipeline?.phases.some(
+      (p) => isTerminal(p.status) && p.status !== 'skipped' && p.id !== 'discover',
+    );
   }
 
   private phaseDisplayName(phaseId: string): string {
