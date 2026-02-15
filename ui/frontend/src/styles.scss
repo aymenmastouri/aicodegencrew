@@ -286,6 +286,11 @@ body {
   color: var(--cg-success);
 }
 
+.status-partial {
+  background: rgba(255, 152, 0, 0.1);
+  color: var(--cg-warn, #f57c00);
+}
+
 .status-failed {
   background: rgba(220, 53, 69, 0.1);
   color: var(--cg-error);

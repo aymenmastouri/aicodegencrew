@@ -147,6 +147,8 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                 <div class="step-circle">
                   @if (step.status === 'completed') {
                     <mat-icon class="step-check">check</mat-icon>
+                  } @else if (step.status === 'partial') {
+                    <mat-icon class="step-warn">warning</mat-icon>
                   } @else if (step.status === 'running') {
                     <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
                   } @else if (step.status === 'failed') {
@@ -158,7 +160,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                   }
                 </div>
                 <div class="step-label">{{ step.name }}</div>
-                @if (step.status === 'completed' && step.duration_seconds) {
+                @if ((step.status === 'completed' || step.status === 'partial') && step.duration_seconds) {
                   <div class="step-time">{{ formatDuration(step.duration_seconds) }}</div>
                 }
                 @if (step.status === 'running') {
@@ -166,8 +168,8 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                 }
               </div>
               @if (!last) {
-                <div class="stepper-line" [class.line-done]="step.status === 'completed'"
-                     [class.line-active]="step.status === 'running'">
+                <div class="stepper-line" [class.line-done]="step.status === 'completed' || step.status === 'partial'"
+                     [class.line-active]="step.status === 'running'"
                 </div>
               }
             }
@@ -209,7 +211,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
               <div class="phase-bottom">
                 <span class="status-dot" [class]="'dot-' + phase.status"></span>
                 <span class="status-label">{{ phase.status }}</span>
-                @if (phase.status === 'completed' || phase.status === 'failed') {
+                @if (phase.status === 'completed' || phase.status === 'partial' || phase.status === 'failed') {
                   <button class="reset-btn" (click)="resetPhase(phase.id); $event.stopPropagation(); $event.preventDefault()"
                     [disabled]="executionState === 'running'"
                     [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset'">
@@ -459,6 +461,12 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         border-color: var(--cg-success, #28a745);
       }
       .step-check { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Partial */
+      .step-partial .step-circle {
+        background: var(--cg-warn, #f57c00);
+        border-color: var(--cg-warn, #f57c00);
+      }
+      .step-warn { font-size: 18px; width: 18px; height: 18px; color: #fff; }
       /* Failed */
       .step-failed .step-circle {
         background: var(--cg-error, #dc3545);
@@ -485,6 +493,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
       }
       .step-running .step-label { color: var(--cg-blue); font-weight: 600; }
       .step-completed .step-label { color: var(--cg-success); }
+      .step-partial .step-label { color: var(--cg-warn, #f57c00); }
       .step-failed .step-label { color: var(--cg-error); }
       /* Duration */
       .step-time {
@@ -1038,7 +1047,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   resetAll(): void {
     this.pipelineSvc.previewReset(
-      this.pipeline?.phases.filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => (p.status === 'completed' || p.status === 'partial' || p.status === 'failed') && p.id !== 'discover').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
