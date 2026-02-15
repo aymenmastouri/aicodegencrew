@@ -10,7 +10,7 @@ from ..schemas import EnvVariable
 
 # Group definitions: (group_name, key_prefixes_or_keys)
 _ENV_GROUPS = [
-    ("Repository", ["PROJECT_PATH", "INCLUDE_SUBMODULES"]),
+    ("Repository", ["PROJECT_PATH"]),
     ("LLM", ["LLM_", "MODEL", "API_BASE", "OPENAI_API_KEY", "MAX_LLM_"]),
     ("Embeddings", ["OLLAMA_", "EMBED_", "NO_PROXY"]),
     ("Indexing", ["INDEX_", "CHROMA_", "CHUNK_", "MAX_FILE_", "MAX_RAG_"]),
@@ -90,26 +90,17 @@ def write_env(values: dict[str, str], path: Path | None = None) -> None:
 
 
 def get_env_schema() -> list[EnvVariable]:
-    """Return variable metadata combining .env.example (descriptions) and .env (values/extra keys)."""
+    """Return variable metadata from .env.example with current values from .env."""
     example_vars = _parse_example_file()
     current_values = read_env()
 
-    # Build map from example for fast lookup and description reuse
-    example_map: dict[str, str] = {name: desc for name, desc in example_vars}
-
-    # Preserve order: example keys first, then any additional keys found in .env
-    ordered_keys: list[str] = list(example_map.keys())
-    for key in current_values.keys():
-        if key not in example_map:
-            ordered_keys.append(key)
-
     variables: list[EnvVariable] = []
-    for name in ordered_keys:
+    for name, description in example_vars:
         variables.append(
             EnvVariable(
                 name=name,
                 value=current_values.get(name, ""),
-                description=example_map.get(name, ""),
+                description=description,
                 group=_classify_group(name),
                 required=name in _REQUIRED_KEYS,
             )

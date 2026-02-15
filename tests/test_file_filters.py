@@ -85,3 +85,22 @@ def test_collect_files_respects_exclude_patterns(tmp_path):
     # Should only find the .java file, not .class in target
     assert len(files) == 1
     assert files[0].name == "Main.java"
+
+
+def test_should_include_unknown_text_extension():
+    """Blocklist: unknown extensions are included (not binary)."""
+    assert should_include_file(Path("src/config.toml")) is True
+    assert should_include_file(Path("src/query.graphql")) is True
+    assert should_include_file(Path("src/schema.proto")) is True
+
+
+def test_should_exclude_binary_extensions():
+    """Blocklist: binary extensions are excluded."""
+    assert should_include_file(Path("assets/logo.png")) is False
+    assert should_include_file(Path("lib/native.so")) is False
+    assert should_include_file(Path("dist/bundle.min.js")) is False
+
+
+def test_extensionless_files_included():
+    """Files without extension are included (Makefile, etc.)."""
+    assert should_include_file(Path("src/Makefile")) is True

@@ -2242,13 +2242,11 @@ Reads `.env.example` for variable descriptions, groups variables by category:
 
 | Group | Key Prefixes |
 |-------|-------------|
-| Repository | `PROJECT_PATH`, `INCLUDE_SUBMODULES` |
-| LLM | `LLM_*`, `MODEL`, `API_BASE`, `OPENAI_API_KEY`, `MAX_LLM_*` |
-| Embeddings | `OLLAMA_*`, `EMBED_*`, `NO_PROXY` |
-| Indexing | `INDEX_*`, `CHROMA_*`, `CHUNK_*`, `MAX_FILE_*`, `MAX_RAG_*` |
+| Repository | `PROJECT_PATH` |
+| LLM | `LLM_PROVIDER`, `MODEL`, `API_BASE`, `OPENAI_API_KEY` |
+| Embeddings | `OLLAMA_*`, `EMBED_*` |
 | Phase Control | `SKIP_*`, `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` |
-| Output | `DOCS_OUTPUT_DIR`, `ARC42_LANGUAGE` |
-| Logging | `LOG_LEVEL`, `CREWAI_TRACING` |
+| Output | `DOCS_OUTPUT_DIR` |
 
 ### 15.5 Frontend Pages
 
