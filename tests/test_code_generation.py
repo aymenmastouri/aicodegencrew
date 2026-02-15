@@ -270,6 +270,7 @@ class TestSchemas:
         assert r.files_changed == 0
         assert r.branch_name == ""
         assert r.dry_run is False
+        assert r.degradation_reasons == []
 
     def test_codegen_report_model_dump(self):
         r = CodegenReport(task_id="T-1", status="success", files_changed=3)
@@ -898,6 +899,30 @@ class TestOutputWriterStage:
         report = stage.run(task_id="T-1", generated_files=[gf], validation=validation)
         assert report.status == "failed"
 
+    def test_degradation_reasons_force_partial(self, tmp_path):
+        """Passing degradation reasons turns a 'success' into 'partial' and attaches reasons."""
+        stage = OutputWriterStage(
+            repo_path=str(tmp_path),
+            report_dir=str(tmp_path / "reports"),
+            dry_run=True,
+        )
+
+        gf = GeneratedFile(file_path="a.java", content="class A {}", language="java")
+        validation = ValidationResult(
+            file_results=[FileValidationResult(file_path="a.java", is_valid=True)],
+            total_valid=1,
+        )
+
+        report = stage.run(
+            task_id="T-1",
+            generated_files=[gf],
+            validation=validation,
+            degradation_reasons=["build failed"],
+        )
+
+        assert report.status == "dry_run"
+        assert "build failed" in report.degradation_reasons
+
     def test_filter_valid_files(self):
         files = [
             GeneratedFile(file_path="a.java", content="ok"),
@@ -1127,6 +1152,21 @@ class TestCodeGenerationPipeline:
 
         assert result["status"] == "dry_run"
         assert result["task_id"] == "TEST-001"
+
+    def test_pipeline_single_task_missing_plan_fails_fast(self, tmp_path):
+        """Single-task mode fails fast when plan file is missing."""
+        repo = tmp_path / "repo"
+        repo.mkdir()
+        pipeline = CodeGenerationPipeline(
+            repo_path=str(repo),
+            task_id="TASK-404",
+            plans_dir=str(tmp_path / "plans"),
+            report_dir=str(tmp_path / "reports"),
+            dry_run=True,
+        )
+        result = pipeline.run()
+        assert result["status"] == "failed"
+        assert "plan file not found" in result["message"]
 
     def test_pipeline_no_plans(self, tmp_path):
         """Pipeline returns skipped when no plan files found."""

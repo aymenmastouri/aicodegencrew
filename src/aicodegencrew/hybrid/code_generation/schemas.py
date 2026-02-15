@@ -159,6 +159,7 @@ class CodegenReport(BaseModel):
     files_failed: int = 0
     generated_files: list[GeneratedFile] = Field(default_factory=list)
     validation_errors: list[str] = Field(default_factory=list)
+    degradation_reasons: list[str] = Field(default_factory=list)
     duration_seconds: float = 0.0
     llm_calls: int = 0
     total_tokens: int = 0

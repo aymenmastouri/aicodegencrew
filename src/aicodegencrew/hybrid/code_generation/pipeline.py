@@ -70,6 +70,21 @@ class CodeGenerationPipeline:
         self._plan_files_override = self._extract_plan_files_from_inputs(inputs)
         return self.run()
 
+    def _validate_prerequisites(self, plan_path: str | None = None) -> list[str]:
+        """Validate required inputs before running Phase 5."""
+        errors: list[str] = []
+
+        if not self.plans_dir.exists():
+            errors.append(f"plans_dir missing: {self.plans_dir}")
+
+        if self.task_id:
+            # Single-task mode requires specific plan file
+            candidate = plan_path or str(self.plans_dir / f"{self.task_id}_plan.json")
+            if not Path(candidate).exists():
+                errors.append(f"plan file not found for task_id={self.task_id}: {candidate}")
+
+        return errors
+
     def run(self) -> dict[str, Any]:
         """
         Run code generation pipeline.
@@ -77,6 +92,15 @@ class CodeGenerationPipeline:
         If task_id is set, process single task. Otherwise, process all
         available plan files in plans_dir.
         """
+        prereq_errors = self._validate_prerequisites()
+        if prereq_errors:
+            return {
+                "status": "failed",
+                "phase": "implement",
+                "message": "; ".join(prereq_errors),
+                "reports": [],
+            }
+
         if self.task_id:
             report = self._run_single(self.task_id)
             report_dict = report.model_dump()
@@ -314,6 +338,13 @@ class CodeGenerationPipeline:
         # Stage 5: Cascade write (no branch creation, no switchback)
         step_start(f"Stage 5: Cascade Write ({task_id})")
         task_duration = time.time() - task_start
+
+        degradation_reasons = self._compute_degradations(
+            generated_files=generated_files,
+            validation=validation,
+            build_result=build_result,
+        )
+
         report = writer.cascade_write_and_commit(
             task_id=task_id,
             generated_files=generated_files,
@@ -326,6 +357,7 @@ class CodeGenerationPipeline:
             llm_calls=llm_calls,
             total_tokens=total_tokens,
             build_verification=build_result,
+            degradation_reasons=degradation_reasons,
         )
         step_done(f"Stage 5: Cascade Write ({task_id})")
 
@@ -516,6 +548,12 @@ class CodeGenerationPipeline:
                 dry_run=self.dry_run,
             )
             total_duration = time.time() - start_time
+            degradation_reasons = self._compute_degradations(
+                generated_files=generated_files,
+                validation=validation,
+                build_result=build_result,
+            )
+
             report = stage5.run(
                 task_id=task_id,
                 generated_files=generated_files,
@@ -524,6 +562,7 @@ class CodeGenerationPipeline:
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
                 build_verification=build_result,
+                degradation_reasons=degradation_reasons,
             )
             stage5_duration = time.time() - stage5_start
             step_done(f"Stage 5: Output Writer ({task_id})")
@@ -540,6 +579,10 @@ class CodeGenerationPipeline:
 
             total_duration = time.time() - start_time
             report.duration_seconds = total_duration
+            if degradation_reasons:
+                report.degradation_reasons = degradation_reasons
+                if report.status == "success":
+                    report.status = "partial"
 
             logger.info("=" * 80)
             logger.info(f"[Phase5] Pipeline completed: {report.status}")
@@ -579,3 +622,27 @@ class CodeGenerationPipeline:
             )
 
             raise
+
+    @staticmethod
+    def _compute_degradations(
+        generated_files: list,
+        validation,
+        build_result,
+    ) -> list[str]:
+        """Derive degradation reasons for implement phase."""
+        reasons: list[str] = []
+        if validation and getattr(validation, "total_invalid", 0) > 0:
+            reasons.append(f"{validation.total_invalid} file(s) failed validation")
+
+        # Compute failed_count similar to stage5 filtering
+        invalid_paths = {r.file_path for r in getattr(validation, "file_results", []) if not r.is_valid}
+        failed_count = len([gf for gf in generated_files if gf.file_path in invalid_paths])
+        if failed_count > 0:
+            reasons.append(f"{failed_count} generated file(s) dropped after validation")
+
+        if build_result and not build_result.skipped and not build_result.all_passed:
+            reasons.append(
+                f"build failed for {build_result.total_containers_failed}/{build_result.total_containers_built} container(s)"
+            )
+
+        return reasons

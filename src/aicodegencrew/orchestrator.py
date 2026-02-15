@@ -315,7 +315,7 @@ class SDLCOrchestrator:
 
             logger.info(f"[Phase] {phase_id} - {phase_status.capitalize()} in {duration:.2f}s")
             log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status=metric_status)
-            set_phase_completed(phase_id, duration)
+            set_phase_completed(phase_id, duration, status=phase_status)
 
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
