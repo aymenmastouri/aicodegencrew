@@ -13,9 +13,9 @@ Duration: 2-5 seconds (RAG + scoring)
 NO LLM REQUIRED
 """
 
+import multiprocessing
 import os
 import queue
-import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -25,6 +25,68 @@ from ....shared.utils.logger import setup_logger
 from ..schemas import ComponentMatch, DependencyRelation, InterfaceMatch, TaskInput
 
 logger = setup_logger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Subprocess worker for semantic search (crash-isolated)
+# ---------------------------------------------------------------------------
+# Module-level function so it's picklable by multiprocessing.Process on Windows.
+# A segfault in ChromaDB/SQLite/Ollama kills only the child, not the pipeline.
+
+
+def _semantic_search_subprocess(
+    chroma_dir: str,
+    query: str,
+    n: int,
+    components: list[dict],
+    result_queue: multiprocessing.Queue,
+) -> None:
+    """Run ChromaDB semantic search in an isolated subprocess."""
+    try:
+        import chromadb  # noqa: local import — child process
+        from chromadb.config import Settings
+
+        chroma_path = Path(chroma_dir)
+        if not chroma_path.exists():
+            result_queue.put({})
+            return
+
+        client = chromadb.PersistentClient(
+            path=str(chroma_path),
+            settings=Settings(anonymized_telemetry=False),
+        )
+        collection = client.get_collection(name="repo_docs")
+
+        # Embed query via Ollama (short timeout — fail fast)
+        from aicodegencrew.shared.utils.ollama_client import OllamaClient
+
+        embedding = OllamaClient(timeout=10, max_retries=1).embed_text(query)
+        if not embedding:
+            result_queue.put({})
+            return
+
+        results = collection.query(
+            query_embeddings=[embedding],
+            n_results=n,
+            include=["metadatas", "distances"],
+        )
+
+        scores: dict[str, float] = {}
+        if results and results.get("metadatas"):
+            metadatas = results["metadatas"][0]
+            distances = results["distances"][0]
+            for i, meta in enumerate(metadatas):
+                file_path = meta.get("file_path", "")
+                for comp in components:
+                    comp_file = comp.get("file_path", "")
+                    if comp_file and comp_file in file_path:
+                        similarity = 1 - min(distances[i], 1.0)
+                        scores[comp["id"]] = similarity
+                        break
+
+        result_queue.put(scores)
+    except Exception:
+        result_queue.put({})
 
 
 class ComponentDiscoveryStage:
@@ -81,38 +143,54 @@ class ComponentDiscoveryStage:
         # Multi-signal scoring
         semantic_scores: dict[str, float] = {}
         semantic_timeout_s = int(os.getenv("STAGE2_SEMANTIC_TIMEOUT_S", "12"))
-        semantic_queue: "queue.Queue[dict[str, float] | BaseException]" = queue.Queue(maxsize=1)
+
+        # Launch semantic search in an ISOLATED SUBPROCESS.
+        # ChromaDB/SQLite native code can segfault under memory pressure;
+        # a subprocess crash kills only the child, not the pipeline.
+        proc: multiprocessing.Process | None = None
+        result_queue: multiprocessing.Queue | None = None
 
         if semantic_timeout_s > 0:
             semantic_start = time.monotonic()
+            try:
+                result_queue = multiprocessing.Queue(maxsize=1)
+                proc = multiprocessing.Process(
+                    target=_semantic_search_subprocess,
+                    args=(self.chroma_dir, query, 20, self.components, result_queue),
+                    daemon=True,
+                )
+                proc.start()
+                logger.debug(f"[Stage2] Semantic search subprocess started (pid={proc.pid})")
+            except Exception as exc:
+                logger.warning(f"[Stage2] Could not spawn semantic subprocess: {exc}")
+                proc = None
 
-            def _semantic_worker() -> None:
-                try:
-                    semantic_queue.put(self._semantic_search(query, n=20))
-                except BaseException as exc:  # noqa: BLE001 - best-effort signal, never fail stage 2
-                    semantic_queue.put(exc)
-
-            threading.Thread(
-                target=_semantic_worker,
-                name=f"stage2-semantic-{task.task_id}",
-                daemon=True,
-            ).start()
-
+        # Run deterministic signals in the main process (parallel to subprocess)
         name_scores = self._name_matching(query)
         package_scores = self._package_matching(labels) if labels else {}
         stereotype_scores = self._stereotype_matching(query)
         symbol_scores = self._symbol_matching(query)
 
-        if semantic_timeout_s > 0:
-            remaining = max(0.0, semantic_timeout_s - (time.monotonic() - semantic_start))
-            try:
-                result = semantic_queue.get(timeout=remaining)
-                if isinstance(result, BaseException):
-                    logger.warning(f"[Stage2] Semantic search failed: {result}")
-                else:
-                    semantic_scores = result
-            except queue.Empty:
-                logger.warning(f"[Stage2] Semantic search timed out after {semantic_timeout_s}s, continuing without it")
+        # Collect subprocess result (or timeout)
+        if proc is not None:
+            elapsed = time.monotonic() - semantic_start
+            remaining = max(0.1, semantic_timeout_s - elapsed)
+            proc.join(timeout=remaining)
+
+            if proc.is_alive():
+                logger.warning(f"[Stage2] Semantic search subprocess timed out after {semantic_timeout_s}s, terminating")
+                proc.terminate()
+                proc.join(timeout=3)
+                if proc.is_alive():
+                    proc.kill()
+            elif proc.exitcode != 0:
+                logger.warning(f"[Stage2] Semantic search subprocess crashed (exit={proc.exitcode})")
+            else:
+                # Subprocess finished normally — read scores
+                try:
+                    semantic_scores = result_queue.get_nowait()
+                except queue.Empty:
+                    pass
 
         # Combine scores (weighted average)
         combined_scores = self._combine_scores(
