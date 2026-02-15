@@ -29,7 +29,6 @@ const GROUP_TO_TAB: Record<string, string> = {
   Output: 'general',
   LLM: 'llm',
   Embeddings: 'llm',
-  Indexing: 'indexing',
   'Phase Control': 'advanced',
   Logging: 'advanced',
   General: 'general',
@@ -66,10 +65,6 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
 /** Fields that should render as number inputs */
 const NUMERIC_FIELDS = new Set([
   'MAX_LLM_INPUT_TOKENS', 'MAX_LLM_OUTPUT_TOKENS', 'LLM_CONTEXT_WINDOW',
-  'LLM_NUM_RETRIES', 'LLM_RETRY_DELAY', 'OLLAMA_TIMEOUT_S',
-  'CHUNK_CHARS', 'CHUNK_OVERLAP', 'MAX_FILE_BYTES',
-  'INDEX_MAX_TOTAL_FILES', 'INDEX_MAX_TOTAL_CHUNKS', 'INDEX_BATCH_SIZE',
-  'MAX_RAG_RESULTS', 'MAX_EVIDENCE_PER_ITEM',
 ]);
 
 @Component({
@@ -95,7 +90,7 @@ const NUMERIC_FIELDS = new Set([
         <mat-icon class="page-icon">settings</mat-icon>
         <div>
           <h1 class="page-title">Settings</h1>
-          <p class="page-subtitle">Configure environment, LLM, indexing, phases, and advanced options</p>
+          <p class="page-subtitle">Configure repository, LLM, phases, and advanced options</p>
         </div>
       </div>
 
@@ -189,48 +184,6 @@ const NUMERIC_FIELDS = new Set([
                     <mat-icon>restart_alt</mat-icon> Reset to defaults
                   </button>
                   <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
-                    <mat-icon>save</mat-icon> Save
-                  </button>
-                </div>
-              </div>
-            </ng-template>
-          </mat-tab>
-
-          <!-- Indexing Tab -->
-          <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">manage_search</mat-icon> Indexing
-            </ng-template>
-            <ng-template matTabContent>
-              <div class="tab-content">
-                <div class="tab-description">Index mode, ChromaDB, chunking, and RAG settings</div>
-                @for (v of getTabVars('indexing'); track v.name) {
-                  <mat-form-field appearance="outline" class="field-full">
-                    <mat-label>{{ v.name }}</mat-label>
-                    @if (getOptions(v.name); as opts) {
-                      <mat-select [(ngModel)]="v.value">
-                        @for (opt of opts; track opt.value) {
-                          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                        }
-                      </mat-select>
-                    } @else if (isNumeric(v.name)) {
-                      <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                    } @else {
-                      <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                    }
-                    @if (v.description) {
-                      <mat-hint>{{ v.description }}</mat-hint>
-                    }
-                  </mat-form-field>
-                }
-                @if (getTabVars('indexing').length === 0) {
-                  <div class="empty-tab">No variables found for this tab.</div>
-                }
-                <div class="tab-actions">
-                  <button mat-stroked-button (click)="resetTab('indexing')" class="btn-reset">
-                    <mat-icon>restart_alt</mat-icon> Reset to defaults
-                  </button>
-                  <button mat-flat-button color="primary" (click)="saveTab('indexing')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                     <mat-icon>save</mat-icon> Save
                   </button>
                 </div>
