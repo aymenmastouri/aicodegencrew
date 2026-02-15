@@ -183,17 +183,19 @@ def execute_reset(
     result_ts = datetime.now(UTC).isoformat()
 
     # Append reset event to run history
-    append_run_to_history({
-        "run_id": f"reset_{ts}",
-        "status": "reset",
-        "trigger": "reset",
-        "phases": phases_to_reset,
-        "started_at": result_ts,
-        "completed_at": result_ts,
-        "duration_seconds": 0,
-        "deleted_count": deleted_count,
-        "archive_path": str(archive_path) if archive_path else None,
-    })
+    append_run_to_history(
+        {
+            "run_id": f"reset_{ts}",
+            "status": "reset",
+            "trigger": "reset",
+            "phases": phases_to_reset,
+            "started_at": result_ts,
+            "completed_at": result_ts,
+            "duration_seconds": 0,
+            "deleted_count": deleted_count,
+            "archive_path": str(archive_path) if archive_path else None,
+        }
+    )
 
     # Rotate metrics and clean up old archives
     archive_metrics()

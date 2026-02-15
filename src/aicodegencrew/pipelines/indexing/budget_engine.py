@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import os
 import re
-from pathlib import Path
 
 from ...shared.utils.logger import setup_logger
 from .models import SymbolRecord
@@ -168,9 +167,6 @@ class BudgetEngine:
 
         result = result_a + result_b + result_c
 
-        logger.info(
-            f"[Budget] Reordered {total} files: "
-            f"A={len(result_a)}, B={len(result_b)}, C={len(result_c)}"
-        )
+        logger.info(f"[Budget] Reordered {total} files: A={len(result_a)}, B={len(result_b)}, C={len(result_c)}")
 
         return result

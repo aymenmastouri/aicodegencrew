@@ -33,9 +33,7 @@ class RAGQueryInput(BaseModel):
     file_filter: str = Field(
         default="", description="Optional: filter by file path pattern (e.g., 'Service.java', 'Controller')"
     )
-    content_type: str = Field(
-        default="", description="Optional: filter by content type ('code', 'doc', 'config')"
-    )
+    content_type: str = Field(default="", description="Optional: filter by content type ('code', 'doc', 'config')")
 
 
 class RAGQueryTool(BaseTool):
@@ -167,7 +165,7 @@ class RAGQueryTool(BaseTool):
 
         index = {}
         try:
-            with open(evidence_path, "r", encoding="utf-8") as f:
+            with open(evidence_path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:

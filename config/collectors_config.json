@@ -1,0 +1,14 @@
+{
+  "interfaces": false,
+  "data_model": true,
+  "runtime": true,
+  "infrastructure": true,
+  "dependencies": true,
+  "workflows": true,
+  "tech_versions": true,
+  "security_details": true,
+  "validation": true,
+  "tests": true,
+  "error_handling": true,
+  "build_system": true
+}

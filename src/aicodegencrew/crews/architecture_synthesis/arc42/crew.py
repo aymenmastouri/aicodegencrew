@@ -17,7 +17,6 @@ Data is passed via template variables (summaries), not inter-task context.
 """
 
 import logging
-from pathlib import Path
 
 from crewai import Task
 

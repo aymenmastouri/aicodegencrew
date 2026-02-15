@@ -158,10 +158,12 @@ def _list_file_meta(knowledge_dir: Path, phase: str) -> list[dict[str, Any]]:
             continue
         rel = str(path.relative_to(knowledge_dir)).replace("\\", "/")
         stat = path.stat()
-        results.append({
-            "_file": rel,
-            "_name": path.name,
-            "_type": path.suffix.lstrip("."),
-            "_size": stat.st_size,
-        })
+        results.append(
+            {
+                "_file": rel,
+                "_name": path.name,
+                "_type": path.suffix.lstrip("."),
+                "_size": stat.st_size,
+            }
+        )
     return results

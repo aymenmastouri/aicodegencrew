@@ -23,9 +23,7 @@ logger = setup_logger(__name__)
 
 # Gradle/javac: File.java:42: error: message
 # Handles both relative paths and Windows absolute paths (C:\...\File.java)
-_JAVAC_PATTERN = re.compile(
-    r"^(?P<file>.+?\.java):(?P<line>\d+):\s*error:\s*(?P<msg>.+)$", re.MULTILINE
-)
+_JAVAC_PATTERN = re.compile(r"^(?P<file>.+?\.java):(?P<line>\d+):\s*error:\s*(?P<msg>.+)$", re.MULTILINE)
 
 # Angular/TypeScript error patterns
 _TSC_PATTERN1 = re.compile(
@@ -72,28 +70,34 @@ def _parse_build_errors(output: str, build_tool: str) -> list[BuildError]:
 
     if build_tool in ("gradle", "maven"):
         for m in _JAVAC_PATTERN.finditer(output):
-            errors.append(BuildError(
-                file_path=m.group("file"),
-                line=int(m.group("line")),
-                message=m.group("msg").strip(),
-            ))
+            errors.append(
+                BuildError(
+                    file_path=m.group("file"),
+                    line=int(m.group("line")),
+                    message=m.group("msg").strip(),
+                )
+            )
         for m in _MAVEN_PATTERN.finditer(output):
-            errors.append(BuildError(
-                file_path=m.group("file"),
-                line=int(m.group("line")),
-                column=int(m.group("col")),
-                message=m.group("msg").strip(),
-            ))
-    elif build_tool in ("npm", "angular"):
-        for pattern in (_TSC_PATTERN1, _TSC_PATTERN2):
-            for m in pattern.finditer(output):
-                errors.append(BuildError(
+            errors.append(
+                BuildError(
                     file_path=m.group("file"),
                     line=int(m.group("line")),
                     column=int(m.group("col")),
-                    code=m.group("code"),
                     message=m.group("msg").strip(),
-                ))
+                )
+            )
+    elif build_tool in ("npm", "angular"):
+        for pattern in (_TSC_PATTERN1, _TSC_PATTERN2):
+            for m in pattern.finditer(output):
+                errors.append(
+                    BuildError(
+                        file_path=m.group("file"),
+                        line=int(m.group("line")),
+                        column=int(m.group("col")),
+                        code=m.group("code"),
+                        message=m.group("msg").strip(),
+                    )
+                )
 
     # Deduplicate
     seen = set()
@@ -124,9 +128,7 @@ def _auto_detect_tool(build_output: str) -> str:
 class BuildErrorParserInput(BaseModel):
     """Input schema for BuildErrorParserTool."""
 
-    build_output: str = Field(
-        ..., description="Raw build output text to parse for errors"
-    )
+    build_output: str = Field(..., description="Raw build output text to parse for errors")
     build_tool: str = Field(
         default="auto",
         description="Build tool type: 'gradle', 'maven', 'npm', 'angular', or 'auto' for auto-detection",
@@ -157,11 +159,13 @@ class BuildErrorParserTool(BaseTool):
         """Parse build output and return structured errors."""
         try:
             if not build_output or not build_output.strip():
-                return json.dumps({
-                    "errors": [],
-                    "error_count": 0,
-                    "files_affected": [],
-                })
+                return json.dumps(
+                    {
+                        "errors": [],
+                        "error_count": 0,
+                        "files_affected": [],
+                    }
+                )
 
             # Auto-detect build tool if needed
             if build_tool == "auto":

@@ -226,11 +226,7 @@ class PipelineExecutor:
 
         # Compute progress percent
         total = len(self.current_run.phases) if self.current_run else 0
-        completed = sum(
-            1
-            for p in phase_progress
-            if p.get("status") in ("completed", "partial", "skipped")
-        )
+        completed = sum(1 for p in phase_progress if p.get("status") in ("completed", "partial", "skipped"))
         running = sum(1 for p in phase_progress if p.get("status") == "running")
         if phase_progress:
             observed = len(phase_progress)
@@ -329,7 +325,11 @@ class PipelineExecutor:
                     parsed_run_id = self._extract_engine_run_id_from_line(line)
                     if parsed_run_id:
                         self._engine_run_id = parsed_run_id
-                        logger.info("Detected engine run_id=%s for ui_run_id=%s", parsed_run_id, self.current_run.run_id if self.current_run else "?")
+                        logger.info(
+                            "Detected engine run_id=%s for ui_run_id=%s",
+                            parsed_run_id,
+                            self.current_run.run_id if self.current_run else "?",
+                        )
                 with self._log_lock:
                     self._log_lines.append(line)
 
@@ -375,17 +375,19 @@ class PipelineExecutor:
             from .history_service import append_run_to_history
 
             duration = round(time.monotonic() - self._started_at, 1) if self._started_at else None
-            append_run_to_history({
-                "run_id": self.current_run.run_id,
-                "engine_run_id": self._engine_run_id,
-                "status": self.state,
-                "trigger": "pipeline",
-                "preset": self.current_run.preset,
-                "phases": self.current_run.phases,
-                "started_at": self.current_run.started_at,
-                "completed_at": datetime.now(UTC).isoformat(),
-                "duration_seconds": duration,
-            })
+            append_run_to_history(
+                {
+                    "run_id": self.current_run.run_id,
+                    "engine_run_id": self._engine_run_id,
+                    "status": self.state,
+                    "trigger": "pipeline",
+                    "preset": self.current_run.preset,
+                    "phases": self.current_run.phases,
+                    "started_at": self.current_run.started_at,
+                    "completed_at": datetime.now(UTC).isoformat(),
+                    "duration_seconds": duration,
+                }
+            )
         except Exception as exc:
             logger.warning("Failed to write history entry: %s", exc)
 
@@ -516,7 +518,13 @@ class PipelineExecutor:
                     phase_id = data.get("phase") or data.get("phase_id", "")
                     if not phase_id:
                         continue
-                    completed_status = "partial" if str(data.get("status", "")).lower() == "partial" else "completed"
+                    raw_complete_status = str(data.get("status", "")).lower()
+                    if raw_complete_status == "partial":
+                        completed_status = "partial"
+                    elif raw_complete_status == "skipped":
+                        completed_status = "skipped"
+                    else:
+                        completed_status = "completed"
                     if phase_id in progress:
                         progress[phase_id]["status"] = completed_status
                         progress[phase_id]["duration_seconds"] = data.get("duration_seconds")
@@ -688,15 +696,17 @@ class PipelineExecutor:
         run_id = data.get("run_id", "cli")
         phase_progress = []
         for phase_id, entry in phases.items():
-            phase_progress.append({
-                "phase_id": phase_id,
-                "name": phase_id.replace("_", " ").title(),
-                "status": entry.get("status", "pending"),
-                "started_at": entry.get("started_at"),
-                "duration_seconds": entry.get("duration_seconds"),
-                "sub_phases": [],
-                "total_tokens": 0,
-            })
+            phase_progress.append(
+                {
+                    "phase_id": phase_id,
+                    "name": phase_id.replace("_", " ").title(),
+                    "status": entry.get("status", "pending"),
+                    "started_at": entry.get("started_at"),
+                    "duration_seconds": entry.get("duration_seconds"),
+                    "sub_phases": [],
+                    "total_tokens": 0,
+                }
+            )
 
         completed = sum(1 for p in phase_progress if p["status"] == "completed")
         total = len(phase_progress) if phase_progress else 1

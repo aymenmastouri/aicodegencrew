@@ -383,7 +383,7 @@ class TestSynthesisCrewCleanup:
         c4_dir.mkdir()
         (c4_dir / "test.md").write_text("keep me", encoding="utf-8")
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
+        ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
 
         # Verify is_resume logic
         c4_checkpoint = synthesis_dir / ".checkpoint_c4.json"

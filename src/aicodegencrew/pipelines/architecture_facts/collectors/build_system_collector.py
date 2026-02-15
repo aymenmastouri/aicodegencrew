@@ -12,8 +12,6 @@ Output -> build_system.json
 
 import json
 import re
-import subprocess
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -49,8 +47,17 @@ class BuildSystemCollector(DimensionCollector):
     DIMENSION = "build_system"
 
     SKIP_DIRS = {
-        "node_modules", ".git", "__pycache__", "dist", "build", "target",
-        ".venv", "venv", ".idea", ".gradle", "out",
+        "node_modules",
+        ".git",
+        "__pycache__",
+        "dist",
+        "build",
+        "target",
+        ".venv",
+        "venv",
+        ".idea",
+        ".gradle",
+        "out",
     }
 
     def __init__(self, repo_path: Path):
@@ -88,7 +95,6 @@ class BuildSystemCollector(DimensionCollector):
 
         for settings_file in settings_files:
             settings_root = settings_file.parent
-            rel_settings = self._relative_path(settings_file)
 
             # Parse include directives to find modules
             modules = self._parse_gradle_settings(settings_file)
@@ -267,7 +273,7 @@ class BuildSystemCollector(DimensionCollector):
     ) -> None:
         """Extract facts from a single pom.xml, then recurse into child modules."""
         try:
-            tree = ET.parse(pom_file)  # noqa: S314
+            tree = ET.parse(pom_file)
         except ET.ParseError:
             logger.warning(f"  [Maven] Failed to parse {pom_file}")
             return
@@ -517,9 +523,15 @@ class BuildSystemCollector(DimensionCollector):
     def _detect_source_dirs(self, module_root: Path) -> list[str]:
         """Detect conventional source directories relative to module root."""
         candidates = [
-            "src/main/java", "src/main/kotlin", "src/main/resources",
-            "src/test/java", "src/test/kotlin", "src/test/resources",
-            "src", "lib", "app",
+            "src/main/java",
+            "src/main/kotlin",
+            "src/main/resources",
+            "src/test/java",
+            "src/test/kotlin",
+            "src/test/resources",
+            "src",
+            "lib",
+            "app",
         ]
         found = []
         for candidate in candidates:

@@ -419,7 +419,6 @@ class TestScenario3ErrorRecovery:
 
     def test_orchestrator_dependency_check_fails_gracefully(self, tmp_path):
         """Orchestrator dependency check fails when outputs missing."""
-        from aicodegencrew.orchestrator import SDLCOrchestrator
 
         config_path = Path(__file__).parent.parent / "config" / "phases_config.yaml"
         if not config_path.exists():
@@ -1192,9 +1191,7 @@ class TestScenario6RunReport:
             git_branch="",
         )
 
-        report_path = _export_run_report(
-            result, config, {"discover", "extract", "analyze"}
-        )
+        report_path = _export_run_report(result, config, {"discover", "extract", "analyze"})
 
         report = json.loads(report_path.read_text(encoding="utf-8"))
         assert report["status"] == "failed"
@@ -1218,9 +1215,7 @@ class TestScenario6RunReport:
             git_branch="",
         )
 
-        _export_run_report(
-            result, config, {"analyze", "discover", "extract"}
-        )
+        _export_run_report(result, config, {"analyze", "discover", "extract"})
 
         report = json.loads((tmp_path / "knowledge" / "run_report.json").read_text(encoding="utf-8"))
         # sorted() produces alphabetical order

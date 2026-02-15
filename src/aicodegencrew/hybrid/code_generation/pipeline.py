@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from ...shared.utils.logger import log_metric, setup_logger, step_done, step_start
+from .crew import ImplementCrew
 from .schemas import CodegenReport
 from .stages import (
     BuildVerifierStage,
@@ -24,7 +25,6 @@ from .stages import (
     OutputWriterStage,
     PlanReaderStage,
 )
-from .crew import ImplementCrew
 
 logger = setup_logger(__name__)
 
@@ -328,9 +328,7 @@ class CodeGenerationPipeline:
                 repo_path=self.repo_path,
                 dry_run=self.dry_run,
             )
-            generated_files, build_result = stage4b.run(
-                generated_files, validation, plan_input, strategy
-            )
+            generated_files, build_result = stage4b.run(generated_files, validation, plan_input, strategy)
             step_done(f"Stage 4b: Build Verifier ({task_id})")
             llm_calls = stage3.total_calls + stage4b.total_calls
             total_tokens = stage3.total_tokens + stage4b.total_tokens
@@ -517,9 +515,7 @@ class CodeGenerationPipeline:
                     repo_path=self.repo_path,
                     dry_run=self.dry_run,
                 )
-                generated_files, build_result = stage4b.run(
-                    generated_files, validation, plan_input, strategy
-                )
+                generated_files, build_result = stage4b.run(generated_files, validation, plan_input, strategy)
                 stage4b_duration = time.time() - stage4b_start
                 step_done(f"Stage 4b: Build Verifier ({task_id})")
 

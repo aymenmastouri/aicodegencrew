@@ -19,6 +19,7 @@ import json
 import os
 import platform
 import re
+import shlex
 import subprocess
 import time
 from dataclasses import dataclass, field
@@ -49,16 +50,17 @@ BUILD_TIMEOUT = 600
 # Container build configuration (auto-detected)
 # =========================================================================
 
+
 @dataclass
 class ContainerConfig:
     """Build configuration for a target-repo container."""
 
     container_id: str
     name: str
-    root_path: str       # relative path prefix in repo (e.g. "backend/")
-    build_cwd: str       # relative dir from repo root to run build in
-    build_command: str    # shell command string (runs via bash -c)
-    build_tool: str       # "gradle" | "maven" | "npm" | "angular"
+    root_path: str  # relative path prefix in repo (e.g. "backend/")
+    build_cwd: str  # relative dir from repo root to run build in
+    build_command: str  # shell command string (runs via bash -c)
+    build_tool: str  # "gradle" | "maven" | "npm" | "angular"
     timeout: int = BUILD_TIMEOUT
 
 
@@ -110,14 +112,16 @@ def _detect_containers(
             logger.info(f"[Stage4b] Could not derive build command for {cid} ({build_tool}), skipping")
             continue
 
-        configs.append(ContainerConfig(
-            container_id=cid,
-            name=container.get("name", root),
-            root_path=root + "/",
-            build_cwd=root,
-            build_command=build_cmd,
-            build_tool=build_tool,
-        ))
+        configs.append(
+            ContainerConfig(
+                container_id=cid,
+                name=container.get("name", root),
+                root_path=root + "/",
+                build_cwd=root,
+                build_command=build_cmd,
+                build_tool=build_tool,
+            )
+        )
 
     if configs:
         logger.info(f"[Stage4b] Detected {len(configs)} buildable containers:")
@@ -170,15 +174,21 @@ def _derive_build_command(build_tool: str, repo_path: Path, container_root: str)
     return ""
 
 
+def _prepare_subprocess_command(command: str) -> list[str]:
+    """Prepare command args for subprocess.run without shell=True."""
+    if IS_WINDOWS:
+        # Use cmd explicitly for .cmd/.bat wrappers and shell built-ins.
+        return ["cmd", "/d", "/s", "/c", command]
+    return shlex.split(command)
+
+
 # =========================================================================
 # Error parsing
 # =========================================================================
 
 # Gradle/javac: File.java:42: error: message
 # Handles both relative paths (src/File.java) and Windows absolute paths (C:\...\File.java)
-_JAVAC_PATTERN = re.compile(
-    r"^(?P<file>.+?\.java):(?P<line>\d+):\s*error:\s*(?P<msg>.+)$", re.MULTILINE
-)
+_JAVAC_PATTERN = re.compile(r"^(?P<file>.+?\.java):(?P<line>\d+):\s*error:\s*(?P<msg>.+)$", re.MULTILINE)
 
 # Angular/TypeScript error patterns (handles TS and NG error codes).
 # Angular CLI outputs errors in multiple formats with optional prefix:
@@ -279,6 +289,7 @@ def _parse_build_errors(output: str, build_tool: str) -> list[BuildError]:
 # File backup/restore
 # =========================================================================
 
+
 @dataclass
 class _FileBackup:
     """Manages backup and restore of generated files on disk."""
@@ -327,6 +338,7 @@ class _FileBackup:
 # Build Verifier Stage
 # =========================================================================
 
+
 class BuildVerifierStage:
     """Verify generated code compiles in the target project, with self-healing."""
 
@@ -367,9 +379,7 @@ class BuildVerifierStage:
         """
         if not BUILD_VERIFY_ENABLED:
             logger.info("[Stage4b] Build verification disabled")
-            return generated_files, BuildVerificationResult(
-                skipped=True, skip_reason="build verification disabled"
-            )
+            return generated_files, BuildVerificationResult(skipped=True, skip_reason="build verification disabled")
 
         # Filter to valid files only (skip files that failed Stage 4)
         invalid_paths = {r.file_path for r in validation.file_results if not r.is_valid}
@@ -377,9 +387,7 @@ class BuildVerifierStage:
 
         if not valid_files:
             logger.info("[Stage4b] No valid files to build-verify")
-            return generated_files, BuildVerificationResult(
-                skipped=True, skip_reason="No valid generated files"
-            )
+            return generated_files, BuildVerificationResult(skipped=True, skip_reason="No valid generated files")
 
         # Group files by container
         container_files = self._group_by_container(valid_files)
@@ -398,9 +406,7 @@ class BuildVerifierStage:
 
         try:
             for config, files in container_files:
-                result = self._verify_container(
-                    config, files, valid_files, backup, plan_input, strategy
-                )
+                result = self._verify_container(config, files, valid_files, backup, plan_input, strategy)
                 container_results.append(result)
         finally:
             # Always restore — Stage 5 handles final writes
@@ -409,9 +415,7 @@ class BuildVerifierStage:
         total_duration = time.time() - start_time
         all_passed = all(r.success for r in container_results)
         total_heal_attempts = sum(max(r.attempts - 1, 0) for r in container_results)
-        total_heal_successes = sum(
-            1 for r in container_results if r.success and r.attempts > 1
-        )
+        total_heal_successes = sum(1 for r in container_results if r.success and r.attempts > 1)
 
         build_result = BuildVerificationResult(
             container_results=container_results,
@@ -474,9 +478,7 @@ class BuildVerifierStage:
         healed_files: list[str] = []
 
         for attempt in range(1, MAX_RETRIES + 1):
-            logger.info(
-                f"[Stage4b] {config.name}: attempt {attempt}/{MAX_RETRIES}"
-            )
+            logger.info(f"[Stage4b] {config.name}: attempt {attempt}/{MAX_RETRIES}")
 
             # Apply ALL generated files (cross-container deps)
             backup.restore()
@@ -498,9 +500,7 @@ class BuildVerifierStage:
                     duration_seconds=time.time() - start_time,
                 )
 
-            logger.warning(
-                f"[Stage4b] {config.name}: BUILD FAILED (attempt {attempt}, exit={exit_code})"
-            )
+            logger.warning(f"[Stage4b] {config.name}: BUILD FAILED (attempt {attempt}, exit={exit_code})")
 
             # Last attempt — don't try to heal
             if attempt >= MAX_RETRIES:
@@ -533,9 +533,7 @@ class BuildVerifierStage:
 
                     syntax_errors = CodeValidatorStage._check_syntax(healed_code, gf.language)
                     if syntax_errors:
-                        logger.warning(
-                            f"[Stage4b] Healed code for {file_path} has syntax errors: {syntax_errors}"
-                        )
+                        logger.warning(f"[Stage4b] Healed code for {file_path} has syntax errors: {syntax_errors}")
                         continue
 
                     gf.content = healed_code
@@ -577,17 +575,14 @@ class BuildVerifierStage:
             logger.error(f"[Stage4b] {config.name}: {msg}")
             return -1, msg
 
-        logger.info(
-            f"[Stage4b] {config.name}: running '{config.build_command}' in {build_dir}"
-        )
+        logger.info(f"[Stage4b] {config.name}: running '{config.build_command}' in {build_dir}")
 
         try:
             result = subprocess.run(
-                config.build_command,
+                _prepare_subprocess_command(config.build_command),
                 cwd=str(build_dir),
                 capture_output=True,
                 timeout=config.timeout,
-                shell=True,
             )
             # Decode with error handling (gradle output may contain non-UTF-8 bytes)
             stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
@@ -687,10 +682,7 @@ class BuildVerifierStage:
         plan_input: CodegenPlanInput,
     ) -> str | None:
         """Use LLM to fix build errors in a generated file."""
-        error_text = "\n".join(
-            f"  Line {e.line}: {e.code + ': ' if e.code else ''}{e.message}"
-            for e in errors
-        )
+        error_text = "\n".join(f"  Line {e.line}: {e.code + ': ' if e.code else ''}{e.message}" for e in errors)
 
         prompt = f"""You are a code-repair assistant. Fix ONLY the compilation errors in the code below.
 Do NOT change functionality, do NOT add features, do NOT refactor.
@@ -710,7 +702,7 @@ Language: {gf.language}
 {gf.content}
 
 ## Original Code (before generation)
-{gf.original_content if gf.original_content else '(new file)'}
+{gf.original_content if gf.original_content else "(new file)"}
 
 ## Instructions
 1. Fix ALL compilation errors listed above

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from ..config import settings
 from ..schemas import EnvUpdate, EnvVariable
 from ..services.env_manager import get_env_schema, read_env, write_env
-from ..config import settings
 
 router = APIRouter(prefix="/api/env", tags=["environment"])
 

@@ -1283,13 +1283,15 @@ class TestCodeGenerationPipeline:
 
         with patch.object(CodeGenerationPipeline, "_run_single_cascade") as mock_run_single:
             mock_run_single.return_value = CodegenReport(task_id="NEW-001", status="dry_run")
-            result = pipeline.kickoff({
-                "previous_results": {
-                    "plan": {
-                        "output_files": [str(plans_dir / "NEW-001_plan.json")],
+            result = pipeline.kickoff(
+                {
+                    "previous_results": {
+                        "plan": {
+                            "output_files": [str(plans_dir / "NEW-001_plan.json")],
+                        }
                     }
                 }
-            })
+            )
 
         assert result["metrics"]["tasks_total"] == 1
         assert result["metrics"]["tasks_succeeded"] == 1

@@ -79,11 +79,7 @@ def get_history_stats() -> dict:
     total_runs = len(runs)
 
     # Average duration of completed runs
-    durations = [
-        r["duration_seconds"]
-        for r in runs
-        if r.get("status") == "completed" and r.get("duration_seconds")
-    ]
+    durations = [r["duration_seconds"] for r in runs if r.get("status") == "completed" and r.get("duration_seconds")]
     avg_duration = sum(durations) / len(durations) if durations else 0.0
 
     # Total tokens from metrics

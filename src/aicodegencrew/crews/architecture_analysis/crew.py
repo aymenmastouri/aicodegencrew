@@ -355,8 +355,7 @@ class ArchitectureAnalysisCrew:
             logger.error("")
             logger.error("=" * 60)
             raise FileNotFoundError(
-                f"Missing Phase 1 files: {', '.join(missing_files)}. "
-                f"Run Phase 1 first: python run.py --phases extract"
+                f"Missing Phase 1 files: {', '.join(missing_files)}. Run Phase 1 first: python run.py --phases extract"
             )
 
         logger.info("   [OK] All prerequisites satisfied!")

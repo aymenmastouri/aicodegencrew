@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -11,7 +11,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { NotificationService } from './services/notification.service';
 
-type SidenavMode = 'full' | 'rail' | 'overlay';
+type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
 
 @Component({
   selector: 'app-root',
@@ -31,8 +31,9 @@ type SidenavMode = 'full' | 'rail' | 'overlay';
   ],
   template: `
     <mat-toolbar class="app-toolbar sticky top-0 z-[1000]">
-      <button mat-icon-button (click)="toggleSidenav()" matTooltip="Toggle menu">
-        <mat-icon class="text-white">menu</mat-icon>
+      <button mat-icon-button (click)="toggleSidenav()"
+              [matTooltip]="sidenavLayout === 'hidden' ? 'Show menu' : sidenavLayout === 'rail' ? 'Hide menu' : 'Collapse menu'">
+        <mat-icon class="text-white">{{ sidenavLayout === 'hidden' ? 'menu_open' : 'menu' }}</mat-icon>
       </button>
       <a routerLink="/dashboard" class="brand-link">
         <span class="brand">
@@ -52,7 +53,7 @@ type SidenavMode = 'full' | 'rail' | 'overlay';
                 class="mini-progress-bar"></mat-progress-bar>
             </div>
             <span class="mini-progress-pct">{{ notif.progressPercent | number:'1.0-0' }}%</span>
-            @if (notif.etaSeconds != null && notif.etaSeconds > 0) {
+            @if (notif.etaSeconds !== null && notif.etaSeconds !== undefined && notif.etaSeconds > 0) {
               <span class="mini-eta">~{{ formatEta(notif.etaSeconds) }}</span>
             }
           </a>
@@ -75,11 +76,12 @@ type SidenavMode = 'full' | 'rail' | 'overlay';
     <mat-sidenav-container class="sidenav-container">
       <mat-sidenav #sidenav
         [mode]="sidenavLayout === 'overlay' ? 'over' : 'side'"
-        [opened]="sidenavLayout !== 'overlay' || sidenavOpenOverlay"
+        [opened]="sidenavLayout !== 'overlay' && sidenavLayout !== 'hidden' || sidenavOpenOverlay"
         (closedStart)="onSidenavClosed()"
         class="sidenav"
         [class.sidenav-rail]="sidenavLayout === 'rail' && !railExpanded"
-        [class.sidenav-full]="sidenavLayout === 'full' || railExpanded">
+        [class.sidenav-full]="sidenavLayout === 'full' || (sidenavLayout === 'rail' && railExpanded)"
+        [class.sidenav-hidden]="sidenavLayout === 'hidden'">
         <div class="sidenav-inner"
              (mouseenter)="onRailHover(true)"
              (mouseleave)="onRailHover(false)">
@@ -385,6 +387,7 @@ export class AppComponent implements OnInit, OnDestroy {
   sidenavLayout: SidenavMode = 'full';
   sidenavOpenOverlay = false;
   railExpanded = false;
+  private userToggled = false;
 
   private mediaOverlay!: MediaQueryList;
   private mediaRail!: MediaQueryList;
@@ -408,9 +411,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.mediaOverlay.removeEventListener('change', this.onMediaChange);
-    this.mediaRail.removeEventListener('change', this.onMediaChange);
-    this.mediaFull.removeEventListener('change', this.onMediaChange);
+    this.mediaOverlay?.removeEventListener('change', this.onMediaChange);
+    this.mediaRail?.removeEventListener('change', this.onMediaChange);
+    this.mediaFull?.removeEventListener('change', this.onMediaChange);
   }
 
   private onMediaChange = (): void => {
@@ -418,29 +421,30 @@ export class AppComponent implements OnInit, OnDestroy {
   };
 
   private updateLayout(): void {
+    this.userToggled = false;
+    this.railExpanded = false;
     if (this.mediaFull.matches) {
       this.sidenavLayout = 'full';
-      this.railExpanded = false;
     } else if (this.mediaRail.matches) {
       this.sidenavLayout = 'rail';
-      this.railExpanded = false;
     } else {
       this.sidenavLayout = 'overlay';
       this.sidenavOpenOverlay = false;
-      this.railExpanded = false;
     }
   }
 
   toggleSidenav(): void {
+    this.userToggled = true;
+    this.railExpanded = false;
     if (this.sidenavLayout === 'overlay') {
       this.sidenavOpenOverlay = !this.sidenavOpenOverlay;
-    } else if (this.sidenavLayout === 'rail') {
-      // Toggle between rail and full on button click
-      this.sidenavLayout = 'full';
-    } else {
-      // Full → rail
+    } else if (this.sidenavLayout === 'full') {
       this.sidenavLayout = 'rail';
-      this.railExpanded = false;
+    } else if (this.sidenavLayout === 'rail') {
+      this.sidenavLayout = 'hidden';
+    } else {
+      // hidden → full
+      this.sidenavLayout = 'full';
     }
   }
 
@@ -458,6 +462,9 @@ export class AppComponent implements OnInit, OnDestroy {
   onRailHover(hovering: boolean): void {
     if (this.sidenavLayout === 'rail') {
       this.railExpanded = hovering;
+    } else if (this.sidenavLayout === 'hidden' && hovering) {
+      // Peek: temporarily show rail on hover when hidden
+      this.railExpanded = false;
     }
   }
 
