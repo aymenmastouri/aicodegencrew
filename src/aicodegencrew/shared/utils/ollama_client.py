@@ -17,7 +17,7 @@ class OllamaClient:
         self,
         base_url: str = None,
         model: str = None,
-        timeout: int = 60,
+        timeout: int | None = None,
         max_retries: int = None,
     ):
         """Initialize Ollama client.
@@ -30,7 +30,10 @@ class OllamaClient:
         """
         self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         self.model = model or os.getenv("EMBED_MODEL", "nomic-embed-text:latest")
-        self.timeout = int(os.getenv("OLLAMA_TIMEOUT_S", str(timeout)))
+        # Explicit constructor args should override env vars; env is the fallback.
+        if timeout is None:
+            timeout = int(os.getenv("OLLAMA_TIMEOUT_S", "60"))
+        self.timeout = int(timeout)
         if max_retries is None:
             max_retries = int(os.getenv("OLLAMA_MAX_RETRIES", "10"))
         self.max_retries = max(1, int(max_retries))

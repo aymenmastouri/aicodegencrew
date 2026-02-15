@@ -96,8 +96,8 @@ class ValidatorStage:
 
         # Validate component references (skip for upgrade tasks — steps are framework-level)
         if "upgrade_plan" not in dev_plan:
-            component_errors = self._validate_component_references(dev_plan)
-            errors.extend(component_errors)
+            component_warnings = self._validate_component_references(dev_plan)
+            warnings.extend(component_warnings)
 
         # Validate upgrade plan (if upgrade task)
         if "upgrade_plan" in dev_plan:
@@ -140,37 +140,46 @@ class ValidatorStage:
         return warnings
 
     def _validate_component_references(self, dev_plan: dict) -> list[str]:
-        """Validate that implementation steps reference actual components."""
-        errors = []
+        """Validate that implementation steps reference actual components (soft check)."""
+        warnings = []
 
         affected_components = dev_plan.get("affected_components", [])
         impl_steps = dev_plan.get("implementation_steps", [])
 
         if not affected_components:
-            return errors
+            return warnings
 
-        # Extract component names
-        component_names = []
+        # Extract all identifiers: name, id, file_path stem (case-insensitive)
+        identifiers: set[str] = set()
         for comp in affected_components:
             if isinstance(comp, dict):
-                component_names.append(comp.get("name", ""))
+                for key in ("name", "id", "file_path"):
+                    val = comp.get(key, "")
+                    if val:
+                        identifiers.add(val.lower())
+                        # Also add file stem for paths (e.g. "foo.component" from "src/app/foo.component.ts")
+                        if "/" in val or "\\" in val:
+                            from pathlib import PurePosixPath
+
+                            identifiers.add(PurePosixPath(val).stem.lower())
             elif isinstance(comp, str):
-                component_names.append(comp)
+                identifiers.add(comp.lower())
+                if "/" in comp or "\\" in comp:
+                    from pathlib import PurePosixPath
 
-        # Check if at least one component is mentioned in steps
-        mentioned = False
-        for step in impl_steps:
-            if any(comp_name in step for comp_name in component_names if comp_name):
-                mentioned = True
-                break
+                    identifiers.add(PurePosixPath(comp).stem.lower())
 
-        if not mentioned and component_names:
-            errors.append(
-                "Implementation steps do not reference any affected components. "
-                "Steps should specify which component to modify."
+        # Check if at least one identifier appears in any step (case-insensitive)
+        steps_text = " ".join(impl_steps).lower()
+        mentioned = any(ident in steps_text for ident in identifiers if ident)
+
+        if not mentioned and identifiers:
+            warnings.append(
+                "Implementation steps do not explicitly reference any affected components. "
+                "Consider specifying which component to modify in each step."
             )
 
-        return errors
+        return warnings
 
     @staticmethod
     def _validate_upgrade_plan(dev_plan: dict) -> tuple:
