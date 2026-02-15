@@ -438,7 +438,7 @@ class IndexingPipeline:
 
         if self.index_mode == "off":
             logger.info("[SKIP] INDEX_MODE=off")
-            log_metric("phase_complete", phase="discover", status="skipped")
+            log_metric("phase_complete", phase="discover", status="success", skipped=True)
             return {
                 "phase": "discover",
                 "status": "success",
@@ -450,17 +450,18 @@ class IndexingPipeline:
         try:
             result_msg = self._run()
             skipped = result_msg.startswith("Skipped:")
+            phase_status = "skipped" if skipped else "success"
             log_metric(
                 "phase_complete",
                 phase="discover",
-                status="success",
+                status=phase_status,
                 skipped=skipped,
                 duration_seconds=round(self.metrics.duration_seconds, 2),
                 chunks_indexed=self.metrics.total_chunks_indexed,
             )
             return {
                 "phase": "discover",
-                "status": "success",
+                "status": phase_status,
                 "repo_path": str(self.repo_path),
                 "message": result_msg,
                 "statistics": self.metrics.to_dict(),
@@ -493,9 +494,7 @@ class IndexingPipeline:
             logger.info(f"Skipping indexing: {reason}")
             # Regenerate state file if missing (e.g. after manual deletion)
             if fp and not IndexingState.load(self._cache_dir):
-                count_result = self.chroma_tool._run(
-                    "count", collection_name=self.config.collection_name
-                )
+                count_result = self.chroma_tool._run("count", collection_name=self.config.collection_name)
                 chunk_count = count_result.get("count", 0)
                 state = IndexingState(
                     fingerprint=fp,
@@ -633,8 +632,7 @@ class IndexingPipeline:
             # Do smart incremental check to verify what's actually changed.
             self.index_mode = "smart"
             logger.info(
-                "[AUTO->SMART] No state file and no metadata fingerprint, "
-                "switching to incremental update to verify"
+                "[AUTO->SMART] No state file and no metadata fingerprint, switching to incremental update to verify"
             )
             return True, current_fp, fp_type, "Incremental update (no prior state)"
 

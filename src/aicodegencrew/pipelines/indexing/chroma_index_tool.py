@@ -7,7 +7,6 @@ Best Practices:
 - Metadata tracking for observability
 """
 
-import os
 from pathlib import Path
 from typing import Any
 

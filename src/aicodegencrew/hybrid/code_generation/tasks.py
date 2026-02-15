@@ -94,9 +94,7 @@ def code_generation_task(
     container_id = container.get("id", "unknown")
 
     file_list = "\n".join(f"  - {f.file_path} ({f.language})" for f in files)
-    steps_text = "\n".join(
-        f"  {i + 1}. {s}" for i, s in enumerate(plan.implementation_steps)
-    )
+    steps_text = "\n".join(f"  {i + 1}. {s}" for i, s in enumerate(plan.implementation_steps))
     type_instructions = _get_type_instructions(plan.task_type, plan.upgrade_plan)
 
     description = f"""\

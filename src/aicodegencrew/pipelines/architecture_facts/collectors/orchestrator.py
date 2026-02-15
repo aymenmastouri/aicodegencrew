@@ -24,6 +24,7 @@ from typing import Any
 
 from ....shared.utils.logger import logger
 from .base import RawEvidence, RawFact
+from .build_system_collector import BuildSystemCollector
 from .component_collector import ComponentCollector
 from .container_collector import ContainerCollector
 from .data_model_collector import DataModelCollector
@@ -38,7 +39,6 @@ from .system_collector import SystemCollector
 from .techstack_version_collector import TechStackVersionCollector
 from .test_collector import TestCollector
 from .validation_collector import ValidationCollector
-from .build_system_collector import BuildSystemCollector
 from .workflow_collector import WorkflowCollector
 
 
@@ -174,10 +174,7 @@ class CollectorOrchestrator:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             frameworks = manifest.get("frameworks", [])
             modules = manifest.get("modules", [])
-            logger.info(
-                f"[Orchestrator] Loaded repo manifest: "
-                f"{len(frameworks)} frameworks, {len(modules)} modules"
-            )
+            logger.info(f"[Orchestrator] Loaded repo manifest: {len(frameworks)} frameworks, {len(modules)} modules")
             return manifest
         except Exception as e:
             logger.debug(f"[Orchestrator] Could not load repo manifest: {e}")

@@ -114,13 +114,9 @@ class TestPatternTool(BaseTool):
 
             # Handle different data structures
             if isinstance(tests_data, dict):
-                patterns = self._extract_patterns_from_dict(
-                    tests_data, container_lower, stereotype_lower, limit
-                )
+                patterns = self._extract_patterns_from_dict(tests_data, container_lower, stereotype_lower, limit)
             elif isinstance(tests_data, list):
-                patterns = self._extract_patterns_from_list(
-                    tests_data, container_lower, stereotype_lower, limit
-                )
+                patterns = self._extract_patterns_from_list(tests_data, container_lower, stereotype_lower, limit)
             else:
                 patterns = []
 
@@ -189,18 +185,13 @@ class TestPatternTool(BaseTool):
     def _matches_filters(item: dict, container_filter: str, stereotype_filter: str) -> bool:
         """Check if a test pattern matches the given filters."""
         if container_filter:
-            item_container = (
-                item.get("container", "") or item.get("module", "") or ""
-            ).lower()
+            item_container = (item.get("container", "") or item.get("module", "") or "").lower()
             if container_filter not in item_container:
                 return False
 
         if stereotype_filter:
             item_stereotype = (
-                item.get("stereotype", "")
-                or item.get("tested_stereotype", "")
-                or item.get("type", "")
-                or ""
+                item.get("stereotype", "") or item.get("tested_stereotype", "") or item.get("type", "") or ""
             ).lower()
             if stereotype_filter not in item_stereotype:
                 return False

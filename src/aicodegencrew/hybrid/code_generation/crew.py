@@ -33,6 +33,11 @@ from typing import Any
 from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 
+from ...shared.paths import CHROMA_DIR
+from ...shared.utils.llm_factory import create_llm
+from ...shared.utils.logger import setup_logger
+from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
+from .agents import AGENT_CONFIGS
 from .schemas import (
     BuildVerificationResult,
     CodegenPlanInput,
@@ -40,11 +45,6 @@ from .schemas import (
     ContainerBuildResult,
     GeneratedFile,
 )
-from ...shared.paths import CHROMA_DIR
-from ...shared.utils.llm_factory import create_llm
-from ...shared.utils.logger import setup_logger
-from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
-from .agents import AGENT_CONFIGS
 from .tasks import (
     build_heal_task,
     build_verify_task,
@@ -66,9 +66,9 @@ from .tools import (
 _MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
 
 # Internal constants (no env vars needed)
-_MAX_RETRIES = 2       # transient error retries per mini-crew
-_MAX_RPM = 30          # CrewAI rate-limit per crew
-_VERBOSE = True        # CrewAI verbose logging
+_MAX_RETRIES = 2  # transient error retries per mini-crew
+_MAX_RPM = 30  # CrewAI rate-limit per crew
+_VERBOSE = True  # CrewAI verbose logging
 
 logger = setup_logger(__name__)
 
@@ -144,25 +144,23 @@ class ImplementCrew:
             self._containers = []
             for c in raw_containers:
                 metadata = c.get("metadata", {})
-                self._containers.append({
-                    "id": c.get("id", ""),
-                    "name": c.get("name", ""),
-                    "root_path": metadata.get("root_path", ""),
-                    "build_system": metadata.get("build_system", ""),
-                    "language": metadata.get("language", ""),
-                })
-            logger.info(
-                f"[Implement] Loaded {len(self._containers)} containers from facts"
-            )
+                self._containers.append(
+                    {
+                        "id": c.get("id", ""),
+                        "name": c.get("name", ""),
+                        "root_path": metadata.get("root_path", ""),
+                        "build_system": metadata.get("build_system", ""),
+                        "language": metadata.get("language", ""),
+                    }
+                )
+            logger.info(f"[Implement] Loaded {len(self._containers)} containers from facts")
         except Exception as e:
             logger.error(f"[Implement] Failed to load containers: {e}")
             self._containers = []
 
         return self._containers
 
-    def _group_files_by_container(
-        self, context: CollectedContext
-    ) -> dict[str, list]:
+    def _group_files_by_container(self, context: CollectedContext) -> dict[str, list]:
         """Group FileContexts by container based on root_path matching.
 
         Returns:
@@ -173,9 +171,7 @@ class ImplementCrew:
         groups: dict[str, list] = {}
 
         # Sort by root_path length (longest first) for most-specific match
-        sorted_containers = sorted(
-            containers, key=lambda c: len(c.get("root_path", "")), reverse=True
-        )
+        sorted_containers = sorted(containers, key=lambda c: len(c.get("root_path", "")), reverse=True)
 
         for fc in context.file_contexts:
             normalized = fc.file_path.replace("\\", "/")
@@ -282,9 +278,7 @@ class ImplementCrew:
     def _run_mini_crew(self, name: str, tasks: list[Task]) -> str:
         """Run a mini-crew with fresh context, retry on transient errors."""
 
-        logger.info(
-            f"[Implement] Starting Mini-Crew: {name} ({len(tasks)} tasks)"
-        )
+        logger.info(f"[Implement] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
         start_time = time.time()
 
         for attempt in range(1, _MAX_RETRIES + 1):
@@ -304,17 +298,11 @@ class ImplementCrew:
                 tracker = install_guardrails(max_total=50)
                 result = crew.kickoff()
                 duration = time.time() - start_time
-                logger.info(
-                    f"[Implement] Completed Mini-Crew: {name} ({duration:.1f}s)"
-                )
+                logger.info(f"[Implement] Completed Mini-Crew: {name} ({duration:.1f}s)")
 
                 # Accumulate metrics
                 tokens = getattr(result, "token_usage", {})
-                crew_tokens = (
-                    tokens.get("total_tokens", 0)
-                    if isinstance(tokens, dict)
-                    else 0
-                )
+                crew_tokens = tokens.get("total_tokens", 0) if isinstance(tokens, dict) else 0
                 self.total_tokens += crew_tokens
                 self.total_calls += 1
 
@@ -381,10 +369,7 @@ class ImplementCrew:
         duration = time.time() - start_time
         error_type = type(error).__name__
         error_msg = str(error)[:500]
-        logger.error(
-            f"[Implement] Failed Mini-Crew: {name} "
-            f"({duration:.1f}s, {error_type}): {error_msg}"
-        )
+        logger.error(f"[Implement] Failed Mini-Crew: {name} ({duration:.1f}s, {error_type}): {error_msg}")
         try:
             from ...shared.utils.logger import log_metric
 
@@ -412,10 +397,7 @@ class ImplementCrew:
             data = json.loads(self._checkpoint_file.read_text(encoding="utf-8"))
             completed = set(data.get("completed_crews", []))
             if completed:
-                logger.info(
-                    f"[Implement] Resuming: {len(completed)} crews already "
-                    f"completed: {sorted(completed)}"
-                )
+                logger.info(f"[Implement] Resuming: {len(completed)} crews already completed: {sorted(completed)}")
             return completed
         except Exception:
             return set()
@@ -426,9 +408,7 @@ class ImplementCrew:
         completed = self._load_checkpoint()
         completed.add(crew_name)
         data = {"completed_crews": sorted(completed)}
-        self._checkpoint_file.write_text(
-            json.dumps(data, indent=2), encoding="utf-8"
-        )
+        self._checkpoint_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
         logger.debug(f"[Implement] Checkpoint saved: {crew_name}")
 
     # =========================================================================
@@ -493,9 +473,7 @@ class ImplementCrew:
             devops_tools = self._create_devops_tools(staging)
             devops = self._create_agent("devops_engineer", devops_tools)
 
-            verify_desc, verify_expected = build_verify_task(
-                container_name, container_id
-            )
+            verify_desc, verify_expected = build_verify_task(container_name, container_id)
             verify = Task(
                 description=verify_desc,
                 expected_output=verify_expected,
@@ -503,26 +481,19 @@ class ImplementCrew:
                 human_input=False,
             )
 
-            verify_result = self._run_mini_crew(
-                f"build_verify_{container_name}_{attempt}", [verify]
-            )
+            verify_result = self._run_mini_crew(f"build_verify_{container_name}_{attempt}", [verify])
 
             # Check if build passed
             if self._check_build_result(verify_result):
                 duration = time.time() - start_time
-                logger.info(
-                    f"[Implement] Build PASSED for {container_name} "
-                    f"(attempt {attempt})"
-                )
+                logger.info(f"[Implement] Build PASSED for {container_name} (attempt {attempt})")
                 return ContainerBuildResult(
                     container_id=container_id,
                     container_name=container_name,
                     success=True,
                     exit_code=0,
                     attempts=attempt,
-                    healed_files=(
-                        list(staging.keys()) if attempt > 1 else []
-                    ),
+                    healed_files=(list(staging.keys()) if attempt > 1 else []),
                     duration_seconds=round(duration, 1),
                 )
 
@@ -531,9 +502,7 @@ class ImplementCrew:
                 dev_tools = self._create_senior_dev_tools(staging)
                 dev = self._create_agent("senior_developer", dev_tools)
 
-                heal_desc, heal_expected = build_heal_task(
-                    container, plan.task_id, verify_result
-                )
+                heal_desc, heal_expected = build_heal_task(container, plan.task_id, verify_result)
                 heal = Task(
                     description=heal_desc,
                     expected_output=heal_expected,
@@ -541,14 +510,9 @@ class ImplementCrew:
                     human_input=False,
                 )
 
-                self._run_mini_crew(
-                    f"build_heal_{container_name}_{attempt}", [heal]
-                )
+                self._run_mini_crew(f"build_heal_{container_name}_{attempt}", [heal])
             else:
-                logger.warning(
-                    f"[Implement] Build FAILED for {container_name} "
-                    f"after {build_max_retries} attempts"
-                )
+                logger.warning(f"[Implement] Build FAILED for {container_name} after {build_max_retries} attempts")
 
         duration = time.time() - start_time
         return ContainerBuildResult(
@@ -627,9 +591,7 @@ class ImplementCrew:
         if not modified_files:
             modified_files = files
 
-        desc, expected = test_generation_task(
-            container, plan.task_id, modified_files
-        )
+        desc, expected = test_generation_task(container, plan.task_id, modified_files)
         task = Task(
             description=desc,
             expected_output=expected,
@@ -708,13 +670,8 @@ class ImplementCrew:
         """
         logger.info("")
         logger.info("=" * 60)
-        logger.info(
-            f"[Implement] Starting Implement Crew for task: {plan.task_id}"
-        )
-        logger.info(
-            f"[Implement] Task type: {plan.task_type} | "
-            f"Files: {context.total_files}"
-        )
+        logger.info(f"[Implement] Starting Implement Crew for task: {plan.task_id}")
+        logger.info(f"[Implement] Task type: {plan.task_type} | Files: {context.total_files}")
         logger.info("=" * 60)
 
         start_time = time.time()
@@ -728,26 +685,17 @@ class ImplementCrew:
 
         # Group files by container
         container_groups = self._group_files_by_container(context)
-        logger.info(
-            f"[Implement] Files grouped into {len(container_groups)} "
-            f"container(s)"
-        )
+        logger.info(f"[Implement] Files grouped into {len(container_groups)} container(s)")
 
         container_build_results: list[ContainerBuildResult] = []
 
         for container_id, file_contexts in container_groups.items():
             if container_id == "unmatched":
-                logger.warning(
-                    f"[Implement] {len(file_contexts)} files could not be "
-                    f"matched to a container — skipping"
-                )
+                logger.warning(f"[Implement] {len(file_contexts)} files could not be matched to a container — skipping")
                 continue
 
             container = self._get_container_by_id(container_id)
-            logger.info(
-                f"[Implement] Processing container: {container['name']} "
-                f"({len(file_contexts)} files)"
-            )
+            logger.info(f"[Implement] Processing container: {container['name']} ({len(file_contexts)} files)")
 
             # Mini-Crew A: Code Generation
             self._run_code_generation(container, file_contexts, plan, staging)
@@ -757,15 +705,8 @@ class ImplementCrew:
                 build_result = self._run_build_heal(container, plan, staging)
                 container_build_results.append(build_result)
             else:
-                reason = (
-                    "disabled"
-                    if not build_verify_enabled
-                    else "no build_system configured"
-                )
-                logger.info(
-                    f"[Implement] Skipping build verification for "
-                    f"{container['name']} ({reason})"
-                )
+                reason = "disabled" if not build_verify_enabled else "no build_system configured"
+                logger.info(f"[Implement] Skipping build verification for {container['name']} ({reason})")
                 container_build_results.append(
                     ContainerBuildResult(
                         container_id=container_id,
@@ -778,14 +719,9 @@ class ImplementCrew:
             # Mini-Crew C: Test Generation (optional)
             if test_enabled:
                 file_paths = [fc.file_path for fc in file_contexts]
-                self._run_test_generation(
-                    container, plan, staging, file_paths
-                )
+                self._run_test_generation(container, plan, staging, file_paths)
             else:
-                logger.info(
-                    f"[Implement] Skipping test generation for "
-                    f"{container['name']} (disabled)"
-                )
+                logger.info(f"[Implement] Skipping test generation for {container['name']} (disabled)")
 
         # Convert staging -> GeneratedFile list
         generated_files = self._staging_to_generated_files(staging)
@@ -793,14 +729,8 @@ class ImplementCrew:
         # Aggregate build results
         passed = sum(1 for r in container_build_results if r.success)
         failed = sum(1 for r in container_build_results if not r.success)
-        total_heal = sum(
-            max(r.attempts - 1, 0) for r in container_build_results
-        )
-        heal_success = sum(
-            1
-            for r in container_build_results
-            if r.success and r.attempts > 1
-        )
+        total_heal = sum(max(r.attempts - 1, 0) for r in container_build_results)
+        heal_success = sum(1 for r in container_build_results if r.success and r.attempts > 1)
 
         build_result = BuildVerificationResult(
             container_results=container_build_results,
@@ -811,9 +741,7 @@ class ImplementCrew:
             total_heal_successes=heal_success,
             duration_seconds=round(time.time() - start_time, 1),
             skipped=not build_verify_enabled,
-            skip_reason=(
-                "" if build_verify_enabled else "build_verify=False"
-            ),
+            skip_reason=("" if build_verify_enabled else "build_verify=False"),
         )
 
         duration = time.time() - start_time
@@ -822,10 +750,7 @@ class ImplementCrew:
         logger.info(f"[Implement] Crew COMPLETE ({duration:.1f}s)")
         logger.info(f"[Implement] Files generated: {len(generated_files)}")
         logger.info(f"[Implement] Builds: {passed} passed, {failed} failed")
-        logger.info(
-            f"[Implement] Tokens: {self.total_tokens} | "
-            f"Crew calls: {self.total_calls}"
-        )
+        logger.info(f"[Implement] Tokens: {self.total_tokens} | Crew calls: {self.total_calls}")
         logger.info("=" * 60)
 
         return generated_files, build_result
@@ -835,10 +760,7 @@ class ImplementCrew:
         plan = inputs.get("plan") if inputs else None
         context = inputs.get("context") if inputs else None
         if not plan or not context:
-            raise ValueError(
-                "kickoff requires 'plan' (CodegenPlanInput) and "
-                "'context' (CollectedContext) in inputs"
-            )
+            raise ValueError("kickoff requires 'plan' (CodegenPlanInput) and 'context' (CollectedContext) in inputs")
         generated, build = self.run(plan, context)
         return {
             "status": "completed",

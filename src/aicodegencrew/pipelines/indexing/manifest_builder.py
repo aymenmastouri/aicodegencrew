@@ -10,7 +10,6 @@ Scans discovered file paths to produce a repo_manifest.json with:
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -91,8 +90,7 @@ class ManifestBuilder:
         )
 
         logger.info(
-            f"[Manifest] {stats.get('total_files', 0)} files, "
-            f"{len(frameworks)} frameworks, {len(modules)} modules"
+            f"[Manifest] {stats.get('total_files', 0)} files, {len(frameworks)} frameworks, {len(modules)} modules"
         )
         return manifest
 
@@ -153,9 +151,7 @@ class ManifestBuilder:
             pass
         return sorted(existing)
 
-    def _compute_stats(
-        self, all_file_paths: list[str]
-    ) -> tuple[dict[str, int], list[ModuleStats]]:
+    def _compute_stats(self, all_file_paths: list[str]) -> tuple[dict[str, int], list[ModuleStats]]:
         """Compute file stats by extension and by top-level module."""
         ext_counter: Counter[str] = Counter()
         module_files: dict[str, list[str]] = defaultdict(list)

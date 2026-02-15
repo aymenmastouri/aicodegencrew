@@ -27,12 +27,8 @@ StagingDict = dict[str, dict]
 class CodeWriterInput(BaseModel):
     """Input schema for CodeWriterTool."""
 
-    file_path: str = Field(
-        ..., description="Target file path (absolute or repo-relative)"
-    )
-    content: str = Field(
-        ..., description="Complete file content to write"
-    )
+    file_path: str = Field(..., description="Target file path (absolute or repo-relative)")
+    content: str = Field(..., description="Complete file content to write")
     action: Literal["modify", "create", "delete"] = Field(
         default="modify",
         description="Type of change: modify (update existing), create (new file), delete",
@@ -157,13 +153,15 @@ class CodeWriterTool(BaseTool):
                 preview += f"\n... (+{len(new_content.splitlines()) - max_lines} more lines)"
             return preview
 
-        diff_lines = list(difflib.unified_diff(
-            original.splitlines(keepends=True),
-            new_content.splitlines(keepends=True),
-            fromfile=f"a/{Path(file_path).name}",
-            tofile=f"b/{Path(file_path).name}",
-            lineterm="",
-        ))
+        diff_lines = list(
+            difflib.unified_diff(
+                original.splitlines(keepends=True),
+                new_content.splitlines(keepends=True),
+                fromfile=f"a/{Path(file_path).name}",
+                tofile=f"b/{Path(file_path).name}",
+                lineterm="",
+            )
+        )
 
         if not diff_lines:
             return "(no changes)"

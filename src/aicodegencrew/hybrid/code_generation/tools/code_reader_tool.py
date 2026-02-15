@@ -36,9 +36,7 @@ MAX_FILE_CHARS = 12000
 class CodeReaderInput(BaseModel):
     """Input schema for CodeReaderTool."""
 
-    file_path: str = Field(
-        ..., description="Path to the file to read (relative to repo root or absolute)"
-    )
+    file_path: str = Field(..., description="Path to the file to read (relative to repo root or absolute)")
     include_siblings: bool = Field(
         default=False,
         description="Include names of sibling files in the same directory for pattern reference",
@@ -79,17 +77,21 @@ class CodeReaderTool(BaseTool):
         try:
             resolved = self._resolve_path(file_path)
             if resolved is None:
-                return json.dumps({
-                    "error": f"File not found: {file_path}",
-                    "file_path": file_path,
-                })
+                return json.dumps(
+                    {
+                        "error": f"File not found: {file_path}",
+                        "file_path": file_path,
+                    }
+                )
 
             content = self._read_file(resolved)
             if content is None:
-                return json.dumps({
-                    "error": f"Could not read file: {file_path}",
-                    "file_path": file_path,
-                })
+                return json.dumps(
+                    {
+                        "error": f"Could not read file: {file_path}",
+                        "file_path": file_path,
+                    }
+                )
 
             # Truncate large files
             truncated = False

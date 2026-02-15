@@ -15,7 +15,6 @@ from unittest.mock import patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -92,16 +91,30 @@ class TestHistoryStats:
         from ui.backend.services.history_service import get_history_stats
 
         hist = tmp_project / "logs" / "run_history.jsonl"
-        _append(hist, {
-            "run_id": "r1", "status": "completed", "trigger": "pipeline",
-            "preset": "full", "phases": ["discover", "extract"],
-            "started_at": "2026-01-01T10:00:00", "duration_seconds": 120,
-        })
-        _append(hist, {
-            "run_id": "r2", "status": "completed", "trigger": "pipeline",
-            "preset": "full", "phases": ["discover"],
-            "started_at": "2026-01-02T10:00:00", "duration_seconds": 60,
-        })
+        _append(
+            hist,
+            {
+                "run_id": "r1",
+                "status": "completed",
+                "trigger": "pipeline",
+                "preset": "full",
+                "phases": ["discover", "extract"],
+                "started_at": "2026-01-01T10:00:00",
+                "duration_seconds": 120,
+            },
+        )
+        _append(
+            hist,
+            {
+                "run_id": "r2",
+                "status": "completed",
+                "trigger": "pipeline",
+                "preset": "full",
+                "phases": ["discover"],
+                "started_at": "2026-01-02T10:00:00",
+                "duration_seconds": 60,
+            },
+        )
 
         stats = get_history_stats()
         assert stats["total_runs"] == 2
@@ -115,10 +128,8 @@ class TestHistoryStats:
         from ui.backend.services.history_service import get_history_stats
 
         hist = tmp_project / "logs" / "run_history.jsonl"
-        _append(hist, {"run_id": "r1", "status": "completed", "trigger": "pipeline",
-                       "duration_seconds": 30})
-        _append(hist, {"run_id": "r2", "status": "completed", "trigger": "pipeline",
-                       "duration_seconds": 60})
+        _append(hist, {"run_id": "r1", "status": "completed", "trigger": "pipeline", "duration_seconds": 30})
+        _append(hist, {"run_id": "r2", "status": "completed", "trigger": "pipeline", "duration_seconds": 60})
         _append(hist, {"run_id": "r3", "status": "failed", "trigger": "pipeline"})
 
         stats = get_history_stats()
@@ -131,12 +142,18 @@ class TestHistoryStats:
         from ui.backend.services.history_service import get_history_stats
 
         hist = tmp_project / "logs" / "run_history.jsonl"
-        _append(hist, {"run_id": "r1", "status": "completed", "trigger": "pipeline",
-                       "preset": "quick", "duration_seconds": 10})
-        _append(hist, {"run_id": "r2", "status": "completed", "trigger": "pipeline",
-                       "preset": "full", "duration_seconds": 20})
-        _append(hist, {"run_id": "r3", "status": "completed", "trigger": "pipeline",
-                       "preset": "full", "duration_seconds": 30})
+        _append(
+            hist,
+            {"run_id": "r1", "status": "completed", "trigger": "pipeline", "preset": "quick", "duration_seconds": 10},
+        )
+        _append(
+            hist,
+            {"run_id": "r2", "status": "completed", "trigger": "pipeline", "preset": "full", "duration_seconds": 20},
+        )
+        _append(
+            hist,
+            {"run_id": "r3", "status": "completed", "trigger": "pipeline", "preset": "full", "duration_seconds": 30},
+        )
 
         stats = get_history_stats()
         assert stats["most_used_preset"] == "full"
@@ -146,10 +163,26 @@ class TestHistoryStats:
         from ui.backend.services.history_service import get_history_stats
 
         hist = tmp_project / "logs" / "run_history.jsonl"
-        _append(hist, {"run_id": "r1", "status": "completed", "trigger": "pipeline",
-                       "phases": ["discover", "extract"], "duration_seconds": 10})
-        _append(hist, {"run_id": "r2", "status": "completed", "trigger": "pipeline",
-                       "phases": ["discover"], "duration_seconds": 20})
+        _append(
+            hist,
+            {
+                "run_id": "r1",
+                "status": "completed",
+                "trigger": "pipeline",
+                "phases": ["discover", "extract"],
+                "duration_seconds": 10,
+            },
+        )
+        _append(
+            hist,
+            {
+                "run_id": "r2",
+                "status": "completed",
+                "trigger": "pipeline",
+                "phases": ["discover"],
+                "duration_seconds": 20,
+            },
+        )
 
         stats = get_history_stats()
         assert stats["phase_frequency"] == {"discover": 2, "extract": 1}
@@ -159,12 +192,9 @@ class TestHistoryStats:
         from ui.backend.services.history_service import get_history_stats
 
         hist = tmp_project / "logs" / "run_history.jsonl"
-        _append(hist, {"run_id": "reset1", "status": "completed", "trigger": "reset",
-                       "deleted_count": 5})
-        _append(hist, {"run_id": "reset2", "status": "completed", "trigger": "reset",
-                       "deleted_count": 3})
-        _append(hist, {"run_id": "r1", "status": "completed", "trigger": "pipeline",
-                       "duration_seconds": 10})
+        _append(hist, {"run_id": "reset1", "status": "completed", "trigger": "reset", "deleted_count": 5})
+        _append(hist, {"run_id": "reset2", "status": "completed", "trigger": "reset", "deleted_count": 3})
+        _append(hist, {"run_id": "r1", "status": "completed", "trigger": "pipeline", "duration_seconds": 10})
 
         stats = get_history_stats()
         assert stats["total_resets"] == 2
@@ -172,11 +202,10 @@ class TestHistoryStats:
 
     def test_history_stats_api_endpoint(self, mock_settings):
         """TestClient GET /api/pipeline/history/stats returns valid JSON."""
+        from fastapi import FastAPI
         from fastapi.testclient import TestClient
-
         from ui.backend.routers.pipeline import router
 
-        from fastapi import FastAPI
         app = FastAPI()
         app.include_router(router)
 
@@ -190,12 +219,17 @@ class TestHistoryStats:
 
     def test_history_entry_includes_deleted_count(self, mock_settings, tmp_project):
         """Reset entries return deleted_count."""
-        from ui.backend.services.history_service import get_run_history, append_run_to_history
+        from ui.backend.services.history_service import append_run_to_history, get_run_history
 
-        append_run_to_history({
-            "run_id": "reset1", "status": "completed", "trigger": "reset",
-            "phases": ["extract"], "deleted_count": 7,
-        })
+        append_run_to_history(
+            {
+                "run_id": "reset1",
+                "status": "completed",
+                "trigger": "reset",
+                "phases": ["extract"],
+                "deleted_count": 7,
+            }
+        )
 
         history = get_run_history()
         assert len(history) == 1
@@ -205,21 +239,32 @@ class TestHistoryStats:
         """Token enrichment works — metrics.jsonl tokens attached to entries."""
         from ui.backend.services.history_service import append_run_to_history, get_run_history
 
-        append_run_to_history({
-            "run_id": "run1", "status": "completed", "trigger": "pipeline",
-            "phases": ["discover"], "duration_seconds": 30,
-        })
+        append_run_to_history(
+            {
+                "run_id": "run1",
+                "status": "completed",
+                "trigger": "pipeline",
+                "phases": ["discover"],
+                "duration_seconds": 30,
+            }
+        )
 
         # Write metrics events
         metrics_path = tmp_project / "logs" / "metrics.jsonl"
-        _append(metrics_path, {
-            "msg": "mini_crew_complete",
-            "data": {"event": "mini_crew_complete", "run_id": "run1", "total_tokens": 500},
-        })
-        _append(metrics_path, {
-            "msg": "mini_crew_complete",
-            "data": {"event": "mini_crew_complete", "run_id": "run1", "total_tokens": 300},
-        })
+        _append(
+            metrics_path,
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "run1", "total_tokens": 500},
+            },
+        )
+        _append(
+            metrics_path,
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "run1", "total_tokens": 300},
+            },
+        )
 
         history = get_run_history()
         assert history[0]["total_tokens"] == 800
@@ -228,19 +273,24 @@ class TestHistoryStats:
         """If UI run_id differs, token enrichment falls back to engine_run_id."""
         from ui.backend.services.history_service import append_run_to_history, get_run_history
 
-        append_run_to_history({
-            "run_id": "ui_run_1",
-            "engine_run_id": "eng12345",
-            "status": "completed",
-            "trigger": "pipeline",
-            "phases": ["discover"],
-        })
+        append_run_to_history(
+            {
+                "run_id": "ui_run_1",
+                "engine_run_id": "eng12345",
+                "status": "completed",
+                "trigger": "pipeline",
+                "phases": ["discover"],
+            }
+        )
 
         metrics_path = tmp_project / "logs" / "metrics.jsonl"
-        _append(metrics_path, {
-            "msg": "mini_crew_complete",
-            "data": {"event": "mini_crew_complete", "run_id": "eng12345", "total_tokens": 750},
-        })
+        _append(
+            metrics_path,
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "eng12345", "total_tokens": 750},
+            },
+        )
 
         history = get_run_history()
         assert history[0]["run_id"] == "ui_run_1"
@@ -250,13 +300,15 @@ class TestHistoryStats:
         """Run detail should enrich from run_report when report uses engine_run_id."""
         from ui.backend.services.history_service import append_run_to_history, get_run_detail
 
-        append_run_to_history({
-            "run_id": "ui_run_2",
-            "engine_run_id": "eng99999",
-            "status": "completed",
-            "trigger": "pipeline",
-            "phases": ["extract"],
-        })
+        append_run_to_history(
+            {
+                "run_id": "ui_run_2",
+                "engine_run_id": "eng99999",
+                "status": "completed",
+                "trigger": "pipeline",
+                "phases": ["extract"],
+            }
+        )
 
         report = {
             "run_id": "eng99999",
@@ -267,10 +319,13 @@ class TestHistoryStats:
         (tmp_project / "knowledge" / "run_report.json").write_text(json.dumps(report), encoding="utf-8")
 
         metrics_path = tmp_project / "logs" / "metrics.jsonl"
-        _append(metrics_path, {
-            "msg": "mini_crew_complete",
-            "data": {"event": "mini_crew_complete", "run_id": "eng99999", "total_tokens": 123},
-        })
+        _append(
+            metrics_path,
+            {
+                "msg": "mini_crew_complete",
+                "data": {"event": "mini_crew_complete", "run_id": "eng99999", "total_tokens": 123},
+            },
+        )
 
         detail = get_run_detail("ui_run_2")
         assert detail is not None
@@ -280,11 +335,10 @@ class TestHistoryStats:
 
     def test_stats_route_before_run_id(self, mock_settings):
         """/stats not treated as run_id — both routes work."""
+        from fastapi import FastAPI
         from fastapi.testclient import TestClient
-
         from ui.backend.routers.pipeline import router
 
-        from fastapi import FastAPI
         app = FastAPI()
         app.include_router(router)
 
@@ -298,5 +352,3 @@ class TestHistoryStats:
         # /nonexistent should return 404 (run_id not found)
         resp_detail = client.get("/api/pipeline/history/nonexistent")
         assert resp_detail.status_code == 404
-
-

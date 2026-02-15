@@ -3,6 +3,7 @@
 Deterministic stage-based execution for phases that don't need multi-agent collaboration.
 
 > **Reference Diagrams:**
+> - [indexing-pipeline.drawio](../diagrams/indexing-pipeline.drawio) — Enhanced indexing pipeline (symbols, evidence, manifest, budget)
 > - [code-generation-pipeline.drawio](../diagrams/code-generation-pipeline.drawio) — Code generation stages + self-healing
 > - [development-planning-pipeline.drawio](../diagrams/development-planning-pipeline.drawio) — Planning pipeline stages
 > - [facts-collectors.drawio](../diagrams/facts-collectors.drawio) — Architecture facts collector pattern

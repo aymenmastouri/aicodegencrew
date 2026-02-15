@@ -22,16 +22,16 @@ logger = setup_logger(__name__)
 
 # Patterns that indicate test content
 _TEST_MARKERS = [
-    re.compile(r"@Test\b"),                    # JUnit
-    re.compile(r"@ParameterizedTest\b"),       # JUnit 5
-    re.compile(r"\bit\s*\("),                  # Jasmine/Jest/Mocha
-    re.compile(r"\bdescribe\s*\("),            # Jasmine/Jest/Mocha
-    re.compile(r"\btest\s*\("),               # Jest
-    re.compile(r"\bexpect\s*\("),             # Jest/Jasmine assertions
-    re.compile(r"assert\w*\s*\("),            # JUnit/TestNG assertions
-    re.compile(r"@SpringBootTest\b"),          # Spring Boot test
-    re.compile(r"@WebMvcTest\b"),              # Spring MVC test
-    re.compile(r"@DataJpaTest\b"),             # Spring Data JPA test
+    re.compile(r"@Test\b"),  # JUnit
+    re.compile(r"@ParameterizedTest\b"),  # JUnit 5
+    re.compile(r"\bit\s*\("),  # Jasmine/Jest/Mocha
+    re.compile(r"\bdescribe\s*\("),  # Jasmine/Jest/Mocha
+    re.compile(r"\btest\s*\("),  # Jest
+    re.compile(r"\bexpect\s*\("),  # Jest/Jasmine assertions
+    re.compile(r"assert\w*\s*\("),  # JUnit/TestNG assertions
+    re.compile(r"@SpringBootTest\b"),  # Spring Boot test
+    re.compile(r"@WebMvcTest\b"),  # Spring MVC test
+    re.compile(r"@DataJpaTest\b"),  # Spring Data JPA test
     re.compile(r"TestBed\.configureTestingModule"),  # Angular TestBed
 ]
 
@@ -53,12 +53,8 @@ _TEST_PATH_PATTERNS = [
 class TestWriterInput(BaseModel):
     """Input schema for TestWriterTool."""
 
-    file_path: str = Field(
-        ..., description="Target test file path (absolute or repo-relative)"
-    )
-    content: str = Field(
-        ..., description="Complete test file content"
-    )
+    file_path: str = Field(..., description="Target test file path (absolute or repo-relative)")
+    content: str = Field(..., description="Complete test file content")
     tested_component: str = Field(
         default="",
         description="Name of the component being tested (for traceability)",

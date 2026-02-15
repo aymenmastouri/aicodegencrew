@@ -26,10 +26,10 @@ from crewai import LLM, Agent, Crew, Process, Task
 from crewai.mcp import MCPServerStdio
 
 from ...shared.paths import CHROMA_DIR
+from ...shared.tools import RAGQueryTool
 from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
-from ...shared.tools import RAGQueryTool
 from .tools import (
     DocWriterTool,
     DrawioDiagramTool,

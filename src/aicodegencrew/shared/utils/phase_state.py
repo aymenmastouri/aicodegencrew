@@ -70,12 +70,14 @@ def _is_pid_alive(pid: int) -> bool:
 
 def init_run(run_id: str) -> None:
     """Initialize a new pipeline run. Resets all phase entries."""
-    _write_atomic({
-        "version": 1,
-        "run_id": run_id,
-        "pid": os.getpid(),
-        "phases": {},
-    })
+    _write_atomic(
+        {
+            "version": 1,
+            "run_id": run_id,
+            "pid": os.getpid(),
+            "phases": {},
+        }
+    )
     logger.debug("[PhaseState] init_run: %s (pid=%d)", run_id, os.getpid())
 
 
@@ -98,7 +100,7 @@ def set_phase_completed(phase_id: str, duration: float, status: str = "completed
     data = _read_raw()
     phases = data.setdefault("phases", {})
     entry = phases.get(phase_id, {})
-    entry["status"] = status if status in ("completed", "partial") else "completed"
+    entry["status"] = status if status in ("completed", "partial", "skipped") else "completed"
     entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
     entry["duration_seconds"] = round(duration, 2)
     entry["error"] = None
@@ -150,7 +152,7 @@ def read_all_phases() -> dict:
     phases = data.get("phases", {})
     modified = False
 
-    for phase_id, entry in phases.items():
+    for _phase_id, entry in phases.items():
         if entry.get("status") != "running":
             continue
 

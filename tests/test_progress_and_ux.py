@@ -14,7 +14,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -227,12 +226,15 @@ class TestProgressComputation:
     def test_progress_all_completed(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
-            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p1", "duration_seconds": 10}},
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p2", "name": "Phase 2"}},
-            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p2", "duration_seconds": 20}},
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
+                {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p1", "duration_seconds": 10}},
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p2", "name": "Phase 2"}},
+                {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p2", "duration_seconds": 20}},
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -249,12 +251,21 @@ class TestProgressComputation:
         """Completed runs should show 100% even when planned preset contains unregistered phases."""
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Extract"}},
-            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "extract", "duration_seconds": 10}},
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "analyze", "name": "Analyze"}},
-            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "analyze", "duration_seconds": 20}},
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Extract"}},
+                {
+                    "msg": "phase_complete",
+                    "data": {"event": "phase_complete", "phase": "extract", "duration_seconds": 10},
+                },
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "analyze", "name": "Analyze"}},
+                {
+                    "msg": "phase_complete",
+                    "data": {"event": "phase_complete", "phase": "analyze", "duration_seconds": 20},
+                },
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -276,11 +287,14 @@ class TestProgressComputation:
     def test_progress_one_running(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
-            {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p1", "duration_seconds": 10}},
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p2", "name": "Phase 2"}},
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
+                {"msg": "phase_complete", "data": {"event": "phase_complete", "phase": "p1", "duration_seconds": 10}},
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p2", "name": "Phase 2"}},
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -318,30 +332,33 @@ class TestSubPhaseParsing:
     def test_sub_phases_attached_to_correct_parent(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "analyze", "name": "Analysis"}},
-            {
-                "msg": "mini_crew_complete",
-                "data": {
-                    "event": "mini_crew_complete",
-                    "crew_type": "architecture_analyzer",
-                    "crew_name": "Arch Analyzer",
-                    "total_tokens": 500,
-                    "duration_seconds": 12.5,
-                    "tasks": ["analyze"],
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "analyze", "name": "Analysis"}},
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {
+                        "event": "mini_crew_complete",
+                        "crew_type": "architecture_analyzer",
+                        "crew_name": "Arch Analyzer",
+                        "total_tokens": 500,
+                        "duration_seconds": 12.5,
+                        "tasks": ["analyze"],
+                    },
                 },
-            },
-            {
-                "msg": "mini_crew_complete",
-                "data": {
-                    "event": "mini_crew_complete",
-                    "crew_type": "dependency_analyzer",
-                    "crew_name": "Dep Analyzer",
-                    "total_tokens": 300,
-                    "duration_seconds": 8.0,
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {
+                        "event": "mini_crew_complete",
+                        "crew_type": "dependency_analyzer",
+                        "crew_name": "Dep Analyzer",
+                        "total_tokens": 300,
+                        "duration_seconds": 8.0,
+                    },
                 },
-            },
-        ])
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -364,17 +381,30 @@ class TestSubPhaseParsing:
     def test_sub_phases_with_failed_crew(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Facts"}},
-            {
-                "msg": "mini_crew_complete",
-                "data": {"event": "mini_crew_complete", "crew_type": "architecture_collector", "crew_name": "Arch Collector", "total_tokens": 200},
-            },
-            {
-                "msg": "mini_crew_failed",
-                "data": {"event": "mini_crew_failed", "crew_type": "security_collector", "crew_name": "Security Collector", "total_tokens": 50},
-            },
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Facts"}},
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {
+                        "event": "mini_crew_complete",
+                        "crew_type": "architecture_collector",
+                        "crew_name": "Arch Collector",
+                        "total_tokens": 200,
+                    },
+                },
+                {
+                    "msg": "mini_crew_failed",
+                    "data": {
+                        "event": "mini_crew_failed",
+                        "crew_type": "security_collector",
+                        "crew_name": "Security Collector",
+                        "total_tokens": 50,
+                    },
+                },
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -391,13 +421,21 @@ class TestSubPhaseParsing:
     def test_unknown_crew_type_no_parent(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Facts"}},
-            {
-                "msg": "mini_crew_complete",
-                "data": {"event": "mini_crew_complete", "crew_type": "unknown_crew", "crew_name": "Unknown", "total_tokens": 100},
-            },
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "extract", "name": "Facts"}},
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {
+                        "event": "mini_crew_complete",
+                        "crew_type": "unknown_crew",
+                        "crew_name": "Unknown",
+                        "total_tokens": 100,
+                    },
+                },
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -413,36 +451,39 @@ class TestSubPhaseParsing:
     def test_phase_progress_filters_to_engine_run_id(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {
-                "msg": "phase_start",
-                "data": {"event": "phase_start", "phase": "extract", "name": "Facts", "run_id": "old11111"},
-            },
-            {
-                "msg": "mini_crew_complete",
-                "data": {
-                    "event": "mini_crew_complete",
-                    "run_id": "old11111",
-                    "crew_type": "architecture_collector",
-                    "crew_name": "Old Collector",
-                    "total_tokens": 999,
+        write_metrics(
+            metrics_file,
+            [
+                {
+                    "msg": "phase_start",
+                    "data": {"event": "phase_start", "phase": "extract", "name": "Facts", "run_id": "old11111"},
                 },
-            },
-            {
-                "msg": "phase_start",
-                "data": {"event": "phase_start", "phase": "analyze", "name": "Analysis", "run_id": "new22222"},
-            },
-            {
-                "msg": "mini_crew_complete",
-                "data": {
-                    "event": "mini_crew_complete",
-                    "run_id": "new22222",
-                    "crew_type": "architecture_analyzer",
-                    "crew_name": "Arch Analyzer",
-                    "total_tokens": 300,
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {
+                        "event": "mini_crew_complete",
+                        "run_id": "old11111",
+                        "crew_type": "architecture_collector",
+                        "crew_name": "Old Collector",
+                        "total_tokens": 999,
+                    },
                 },
-            },
-        ])
+                {
+                    "msg": "phase_start",
+                    "data": {"event": "phase_start", "phase": "analyze", "name": "Analysis", "run_id": "new22222"},
+                },
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {
+                        "event": "mini_crew_complete",
+                        "run_id": "new22222",
+                        "crew_type": "architecture_analyzer",
+                        "crew_name": "Arch Analyzer",
+                        "total_tokens": 300,
+                    },
+                },
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -482,12 +523,15 @@ class TestLiveMetrics:
     def test_live_metrics_when_running(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
-            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 1000}},
-            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 2000}},
-            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 500}},
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
+                {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 1000}},
+                {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 2000}},
+                {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 500}},
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -503,20 +547,23 @@ class TestLiveMetrics:
     def test_live_metrics_filters_by_engine_run_id(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {
-                "msg": "mini_crew_complete",
-                "data": {"event": "mini_crew_complete", "run_id": "old11111", "total_tokens": 4000},
-            },
-            {
-                "msg": "mini_crew_complete",
-                "data": {"event": "mini_crew_complete", "run_id": "new22222", "total_tokens": 1200},
-            },
-            {
-                "msg": "mini_crew_complete",
-                "data": {"event": "mini_crew_complete", "run_id": "new22222", "total_tokens": 800},
-            },
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {"event": "mini_crew_complete", "run_id": "old11111", "total_tokens": 4000},
+                },
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {"event": "mini_crew_complete", "run_id": "new22222", "total_tokens": 1200},
+                },
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {"event": "mini_crew_complete", "run_id": "new22222", "total_tokens": 800},
+                },
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -533,16 +580,19 @@ class TestLiveMetrics:
     def test_live_metrics_binds_run_id_from_phase_state(self, mock_settings, metrics_file, tmp_project):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {
-                "msg": "mini_crew_complete",
-                "data": {"event": "mini_crew_complete", "run_id": "old11111", "total_tokens": 4000},
-            },
-            {
-                "msg": "mini_crew_complete",
-                "data": {"event": "mini_crew_complete", "run_id": "state3333", "total_tokens": 600},
-            },
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {"event": "mini_crew_complete", "run_id": "old11111", "total_tokens": 4000},
+                },
+                {
+                    "msg": "mini_crew_complete",
+                    "data": {"event": "mini_crew_complete", "run_id": "state3333", "total_tokens": 600},
+                },
+            ],
+        )
 
         phase_state_path = tmp_project / "logs" / "phase_state.json"
         phase_state_path.write_text(
@@ -575,9 +625,12 @@ class TestLiveMetrics:
     def test_live_metrics_not_returned_when_completed(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
-        write_metrics(metrics_file, [
-            {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 1000}},
-        ])
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "mini_crew_complete", "data": {"event": "mini_crew_complete", "total_tokens": 1000}},
+            ],
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -615,12 +668,14 @@ class TestETAEstimation:
 
         # Add some completed runs
         for i in range(3):
-            append_run_to_history({
-                "run_id": f"hist_{i}",
-                "status": "completed",
-                "trigger": "pipeline",
-                "duration_seconds": 300.0,  # 5 minutes each
-            })
+            append_run_to_history(
+                {
+                    "run_id": f"hist_{i}",
+                    "status": "completed",
+                    "trigger": "pipeline",
+                    "duration_seconds": 300.0,  # 5 minutes each
+                }
+            )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -638,12 +693,14 @@ class TestETAEstimation:
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
         # Only 1 completed run (need >= 2)
-        append_run_to_history({
-            "run_id": "hist_0",
-            "status": "completed",
-            "trigger": "pipeline",
-            "duration_seconds": 300.0,
-        })
+        append_run_to_history(
+            {
+                "run_id": "hist_0",
+                "status": "completed",
+                "trigger": "pipeline",
+                "duration_seconds": 300.0,
+            }
+        )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()
@@ -669,12 +726,14 @@ class TestETAEstimation:
 
         # History says runs take 60s, but we've been running for 120s already
         for i in range(3):
-            append_run_to_history({
-                "run_id": f"hist_{i}",
-                "status": "completed",
-                "trigger": "pipeline",
-                "duration_seconds": 60.0,
-            })
+            append_run_to_history(
+                {
+                    "run_id": f"hist_{i}",
+                    "status": "completed",
+                    "trigger": "pipeline",
+                    "duration_seconds": 60.0,
+                }
+            )
 
         executor = PipelineExecutor.__new__(PipelineExecutor)
         executor._init()

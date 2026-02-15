@@ -93,9 +93,7 @@ class ArchitectureSynthesisCrew:
                 logger.error(f"   [MISSING] {f}")
             logger.error("")
             logger.error("[HINT] Solution: Run Phase 1 and Phase 2 first:")
-            logger.error(
-                "   python -m aicodegencrew run --phases extract,analyze"
-            )
+            logger.error("   python -m aicodegencrew run --phases extract,analyze")
             logger.error("")
             logger.error("=" * 60)
             raise FileNotFoundError(
@@ -158,7 +156,12 @@ class ArchitectureSynthesisCrew:
         logger.info("PHASE 3a: C4 CREW - Creating C4 Diagrams + DrawIO")
         logger.info("=" * 60)
 
-        self.c4_crew = C4Crew(facts_path=str(self.facts_path), analyzed_path=str(self.analyzed_path), chroma_dir=self.chroma_dir, output_dir=str(self.output_dir))
+        self.c4_crew = C4Crew(
+            facts_path=str(self.facts_path),
+            analyzed_path=str(self.analyzed_path),
+            chroma_dir=self.chroma_dir,
+            output_dir=str(self.output_dir),
+        )
         c4_result = self.c4_crew.run()
         results.append(f"C4 Crew Result:\n{c4_result}")
 
@@ -169,7 +172,12 @@ class ArchitectureSynthesisCrew:
         logger.info("PHASE 3b: ARC42 CREW - Creating Deep arc42 Documentation (50+ pages)")
         logger.info("=" * 60)
 
-        self.arc42_crew = Arc42Crew(facts_path=str(self.facts_path), analyzed_path=str(self.analyzed_path), chroma_dir=self.chroma_dir, output_dir=str(self.output_dir))
+        self.arc42_crew = Arc42Crew(
+            facts_path=str(self.facts_path),
+            analyzed_path=str(self.analyzed_path),
+            chroma_dir=self.chroma_dir,
+            output_dir=str(self.output_dir),
+        )
         arc42_result = self.arc42_crew.run()
         results.append(f"Arc42 Crew Result:\n{arc42_result}")
 
@@ -183,9 +191,7 @@ class ArchitectureSynthesisCrew:
 
         phase_status = "partial" if degraded_reasons else "completed"
         if degraded_reasons:
-            logger.warning(
-                "[Phase3] Completed with degraded outputs: %d issue(s)", len(degraded_reasons)
-            )
+            logger.warning("[Phase3] Completed with degraded outputs: %d issue(s)", len(degraded_reasons))
 
         # Combined summary
         summary = "\n\n".join(results)
@@ -204,14 +210,24 @@ class ArchitectureSynthesisCrew:
         """Run only the C4 Crew."""
         self._validate_prerequisites()
         logger.info("Running C4 Crew only...")
-        self.c4_crew = C4Crew(facts_path=str(self.facts_path), analyzed_path=str(self.analyzed_path), chroma_dir=self.chroma_dir, output_dir=str(self.output_dir))
+        self.c4_crew = C4Crew(
+            facts_path=str(self.facts_path),
+            analyzed_path=str(self.analyzed_path),
+            chroma_dir=self.chroma_dir,
+            output_dir=str(self.output_dir),
+        )
         return self.c4_crew.run()
 
     def run_arc42_only(self) -> str:
         """Run only the Arc42 Crew."""
         self._validate_prerequisites()
         logger.info("Running Arc42 Crew only...")
-        self.arc42_crew = Arc42Crew(facts_path=str(self.facts_path), analyzed_path=str(self.analyzed_path), chroma_dir=self.chroma_dir, output_dir=str(self.output_dir))
+        self.arc42_crew = Arc42Crew(
+            facts_path=str(self.facts_path),
+            analyzed_path=str(self.analyzed_path),
+            chroma_dir=self.chroma_dir,
+            output_dir=str(self.output_dir),
+        )
         return self.arc42_crew.run()
 
     def kickoff(self, inputs: dict = None) -> dict:

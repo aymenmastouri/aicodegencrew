@@ -143,6 +143,7 @@ Extract extracts comprehensive architecture facts from any codebase:
 > - [analysis-crew.drawio](diagrams/analysis-crew.drawio) - Multi-Agent Analysis Crew
 > - [synthesis-crew.drawio](diagrams/synthesis-crew.drawio) - C4 + Arc42 Synthesis Crews
 > - [development-planning-pipeline.drawio](diagrams/development-planning-pipeline.drawio) - Hybrid Development Planning Pipeline
+> - [indexing-pipeline.drawio](diagrams/indexing-pipeline.drawio) - Enhanced Indexing Pipeline (Symbols, Evidence, Manifest, Budget)
 > - [analysis-crew-schema.drawio](diagrams/analysis-crew-schema.drawio) - Analysis Schema Validation
 
 ### 3.1 Core Principle: Evidence-First Architecture
@@ -474,6 +475,9 @@ src/aicodegencrew/
 ## 4. Phase Specifications
 
 ### 4.1 Discover Phase
+
+> **Reference Diagram:** [indexing-pipeline.drawio](diagrams/indexing-pipeline.drawio) — Full pipeline with symbols, evidence, manifest, budget engine
+> **Detailed Concept:** [architecture/indexing-pipeline.md](architecture/indexing-pipeline.md)
 
 | Attribute | Specification |
 |-----------|---------------|
@@ -1966,6 +1970,7 @@ Agent step and task callbacks (`crew_callbacks.py`) route through `logger`:
 | Analysis Crew | `analysis-crew.drawio` | Multi-agent analysis crew |
 | Synthesis Crew | `synthesis-crew.drawio` | C4 + Arc42 synthesis crews |
 | Dev Planning Pipeline | `development-planning-pipeline.drawio` | Hybrid pipeline (5 stages) |
+| Indexing Pipeline | `indexing-pipeline.drawio` | Enhanced indexing (symbols, evidence, manifest, budget) |
 | Analysis Crew Schema | `analysis-crew-schema.drawio` | Schema validation flow |
 
 ---

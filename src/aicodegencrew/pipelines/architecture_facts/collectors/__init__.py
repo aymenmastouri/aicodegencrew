@@ -46,7 +46,6 @@ from .angular import (
     AngularServiceCollector,
     AngularStateCollector,
 )
-from .build_system_collector import BuildSystemCollector
 from .base import (
     CollectorOutput,
     DimensionCollector,
@@ -60,6 +59,7 @@ from .base import (
     RawRuntimeFact,
     RelationHint,
 )
+from .build_system_collector import BuildSystemCollector
 from .component_collector import ComponentCollector
 from .container_collector import ContainerCollector
 from .data_model_collector import DataModelCollector
@@ -102,32 +102,27 @@ from .workflow_collector import WorkflowCollector
 
 __all__ = [
     "AngularComponentCollector",
-    # Angular
     "AngularModuleCollector",
-    "BuildSystemCollector",
     "AngularRoutingCollector",
     "AngularServiceCollector",
     "AngularStateCollector",
-    # Orchestrator
+    "BuildSystemCollector",
     "CollectorOrchestrator",
     "CollectorOutput",
     "ComponentCollector",
     "ContainerCollector",
     "DataModelCollector",
     "DependencyCollector",
-    # Base
     "DimensionCollector",
     "DimensionResults",
     "DimensionResultsAdapter",
     "EvidenceCollector",
-    # Adapter
     "FactAdapter",
     "InfrastructureCollector",
     "InterfaceCollector",
     "MigrationCollector",
     "OracleProcedureCollector",
     "OracleSchemaCollector",
-    # Database
     "OracleTableCollector",
     "OracleViewCollector",
     "RawComponent",
@@ -142,13 +137,10 @@ __all__ = [
     "RuntimeCollector",
     "SpringConfigCollector",
     "SpringRepositoryCollector",
-    # Spring
     "SpringRestCollector",
     "SpringSecurityCollector",
     "SpringServiceCollector",
-    # Core
     "SystemCollector",
     "TechStackVersionCollector",
-    # Cross-cutting
     "WorkflowCollector",
 ]

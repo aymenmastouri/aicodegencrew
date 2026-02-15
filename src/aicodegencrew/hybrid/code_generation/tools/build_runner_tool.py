@@ -8,6 +8,7 @@ Windows/Unix compatibility.
 
 import json
 import platform
+import shlex
 import subprocess
 import time
 from dataclasses import dataclass
@@ -71,14 +72,16 @@ def _detect_containers(repo_path: Path, facts_path: Path) -> list[ContainerConfi
         if not build_cmd:
             continue
 
-        configs.append(ContainerConfig(
-            container_id=cid,
-            name=container.get("name", root),
-            root_path=root + "/",
-            build_cwd=root,
-            build_command=build_cmd,
-            build_tool=build_tool,
-        ))
+        configs.append(
+            ContainerConfig(
+                container_id=cid,
+                name=container.get("name", root),
+                root_path=root + "/",
+                build_cwd=root,
+                build_command=build_cmd,
+                build_tool=build_tool,
+            )
+        )
 
     return configs
 
@@ -131,11 +134,10 @@ def _run_build(build_command: str, build_dir: Path, timeout: int) -> tuple[int, 
 
     try:
         result = subprocess.run(
-            build_command,
+            _prepare_subprocess_command(build_command),
             cwd=str(build_dir),
             capture_output=True,
             timeout=timeout,
-            shell=True,
         )
         stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
         stderr = result.stderr.decode("utf-8", errors="replace") if result.stderr else ""
@@ -155,12 +157,18 @@ def _run_build(build_command: str, build_dir: Path, timeout: int) -> tuple[int, 
         return -1, msg
 
 
+def _prepare_subprocess_command(command: str) -> list[str]:
+    """Prepare command args for subprocess.run without shell=True."""
+    if IS_WINDOWS:
+        # Use cmd explicitly for .cmd/.bat wrappers and shell built-ins.
+        return ["cmd", "/d", "/s", "/c", command]
+    return shlex.split(command)
+
+
 class BuildRunnerInput(BaseModel):
     """Input schema for BuildRunnerTool."""
 
-    container_id: str = Field(
-        ..., description="Container ID from architecture facts (e.g. 'container.backend')"
-    )
+    container_id: str = Field(..., description="Container ID from architecture facts (e.g. 'container.backend')")
     baseline: bool = Field(
         default=False,
         description="If True, run a baseline build WITHOUT any staged files applied",
@@ -217,9 +225,7 @@ class BuildRunnerTool(BaseTool):
     def container_configs(self) -> list[ContainerConfig]:
         """Lazy-load container configs."""
         if self._container_configs is None:
-            self._container_configs = _detect_containers(
-                Path(self.repo_path), Path(self.facts_path)
-            )
+            self._container_configs = _detect_containers(Path(self.repo_path), Path(self.facts_path))
         return self._container_configs
 
     def _run(self, container_id: str, baseline: bool = False) -> str:
@@ -234,10 +240,12 @@ class BuildRunnerTool(BaseTool):
 
             if config is None:
                 available = [c.container_id for c in self.container_configs]
-                return json.dumps({
-                    "error": f"Container not found: {container_id}",
-                    "available_containers": available,
-                })
+                return json.dumps(
+                    {
+                        "error": f"Container not found: {container_id}",
+                        "available_containers": available,
+                    }
+                )
 
             build_dir = Path(self.repo_path) / config.build_cwd
 

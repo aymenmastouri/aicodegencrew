@@ -3,12 +3,8 @@
 from __future__ import annotations
 
 import json
-import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-
-from ..config import settings
-from ..schemas import CollectorInfo, CollectorListResponse, CollectorOutput
 
 # Import registry and config from the core pipeline
 from src.aicodegencrew.pipelines.architecture_facts.collectors.collector_config import (
@@ -18,6 +14,9 @@ from src.aicodegencrew.pipelines.architecture_facts.collectors.collector_config 
 from src.aicodegencrew.pipelines.architecture_facts.collectors.registry import (
     COLLECTOR_REGISTRY,
 )
+
+from ..config import settings
+from ..schemas import CollectorInfo, CollectorListResponse, CollectorOutput
 
 
 def _config_dir() -> Path:
@@ -42,7 +41,7 @@ def _get_output_stats(output_file: str) -> tuple[int | None, str | None, int]:
     try:
         stat = filepath.stat()
         file_size = stat.st_size
-        mtime = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat()
+        mtime = datetime.fromtimestamp(stat.st_mtime, tz=UTC).isoformat()
 
         with open(filepath, encoding="utf-8") as f:
             data = json.load(f)

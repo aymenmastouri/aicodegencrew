@@ -182,7 +182,7 @@ class ContextCollectorStage:
 
         records = []
         try:
-            with open(symbols_path, "r", encoding="utf-8") as f:
+            with open(symbols_path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -221,9 +221,7 @@ class ContextCollectorStage:
 
         return best
 
-    def _extract_targeted_content(
-        self, content: str, file_path: str, comp_name: str
-    ) -> str:
+    def _extract_targeted_content(self, content: str, file_path: str, comp_name: str) -> str:
         """Extract only the relevant method/class body using symbol index.
 
         Falls back to full-file truncation if symbol index is unavailable.

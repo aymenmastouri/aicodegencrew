@@ -9,10 +9,8 @@ Covers:
 """
 
 import json
-import os
 import shutil
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -88,9 +86,10 @@ phases:
 @pytest.fixture()
 def mock_settings(tmp_project):
     """Patch settings to use tmp_project as project root."""
-    with patch("ui.backend.services.reset_service.settings") as s, patch(
-        "ui.backend.services.history_service.settings"
-    ) as sh:
+    with (
+        patch("ui.backend.services.reset_service.settings") as s,
+        patch("ui.backend.services.history_service.settings") as sh,
+    ):
         s.project_root = tmp_project
         s.knowledge_dir = tmp_project / "knowledge"
         s.phases_config = tmp_project / "config" / "phases_config.yaml"
@@ -176,11 +175,7 @@ class TestHistoryService:
 
         # Write a file with valid + invalid lines
         path = tmp_project / "logs" / "run_history.jsonl"
-        path.write_text(
-            '{"run_id":"good1","status":"ok"}\n'
-            'THIS IS NOT JSON\n'
-            '{"run_id":"good2","status":"ok"}\n'
-        )
+        path.write_text('{"run_id":"good1","status":"ok"}\nTHIS IS NOT JSON\n{"run_id":"good2","status":"ok"}\n')
 
         history = get_run_history()
         assert len(history) == 2
@@ -397,13 +392,13 @@ class TestResetRouter:
     def client(self, mock_settings):
         """Create a TestClient for the FastAPI app."""
         # Patch settings in all modules that import it
-        with patch("ui.backend.config.settings", mock_settings), patch(
-            "ui.backend.routers.reset.executor"
-        ) as mock_executor:
+        with (
+            patch("ui.backend.config.settings", mock_settings),
+            patch("ui.backend.routers.reset.executor") as mock_executor,
+        ):
             mock_executor.state = "idle"
 
             from fastapi.testclient import TestClient
-
             from ui.backend.main import app
 
             yield TestClient(app), mock_executor

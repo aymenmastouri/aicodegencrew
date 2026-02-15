@@ -38,44 +38,24 @@ _JAVA_METHOD = re.compile(
     r"(?:\w+(?:<[^>]+>)?)\s+(\w+)\s*\(",
     re.MULTILINE,
 )
-_JAVA_ANNOTATION = re.compile(
-    r"^\s*@(\w+(?:\.\w+)?)", re.MULTILINE
-)
-_JAVA_IMPORT = re.compile(
-    r"^\s*import\s+(?:static\s+)?([\w.]+);", re.MULTILINE
-)
+_JAVA_ANNOTATION = re.compile(r"^\s*@(\w+(?:\.\w+)?)", re.MULTILINE)
+_JAVA_IMPORT = re.compile(r"^\s*import\s+(?:static\s+)?([\w.]+);", re.MULTILINE)
 
 # TypeScript patterns
-_TS_CLASS = re.compile(
-    r"^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)", re.MULTILINE
-)
-_TS_INTERFACE = re.compile(
-    r"^\s*(?:export\s+)?interface\s+(\w+)", re.MULTILINE
-)
-_TS_FUNCTION = re.compile(
-    r"^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)", re.MULTILINE
-)
+_TS_CLASS = re.compile(r"^\s*(?:export\s+)?(?:abstract\s+)?class\s+(\w+)", re.MULTILINE)
+_TS_INTERFACE = re.compile(r"^\s*(?:export\s+)?interface\s+(\w+)", re.MULTILINE)
+_TS_FUNCTION = re.compile(r"^\s*(?:export\s+)?(?:async\s+)?function\s+(\w+)", re.MULTILINE)
 _TS_METHOD = re.compile(
     r"^\s+(?:public|protected|private|readonly|static|async|abstract|\s)*(\w+)\s*\(",
     re.MULTILINE,
 )
-_TS_DECORATOR = re.compile(
-    r"^\s*@(\w+)", re.MULTILINE
-)
+_TS_DECORATOR = re.compile(r"^\s*@(\w+)", re.MULTILINE)
 
 # Python patterns
-_PY_CLASS = re.compile(
-    r"^class\s+(\w+)\s*[:\(]", re.MULTILINE
-)
-_PY_FUNCTION = re.compile(
-    r"^(?:    )?def\s+(\w+)\s*\(", re.MULTILINE
-)
-_PY_METHOD = re.compile(
-    r"^    def\s+(\w+)\s*\(", re.MULTILINE
-)
-_PY_DECORATOR = re.compile(
-    r"^(?:    )?@(\w+)", re.MULTILINE
-)
+_PY_CLASS = re.compile(r"^class\s+(\w+)\s*[:\(]", re.MULTILINE)
+_PY_FUNCTION = re.compile(r"^(?:    )?def\s+(\w+)\s*\(", re.MULTILINE)
+_PY_METHOD = re.compile(r"^    def\s+(\w+)\s*\(", re.MULTILINE)
+_PY_DECORATOR = re.compile(r"^(?:    )?@(\w+)", re.MULTILINE)
 
 # Spring endpoint annotations
 _SPRING_ENDPOINTS = re.compile(
@@ -128,51 +108,82 @@ class SymbolExtractor:
 
         return []
 
-    def _extract_java(
-        self, path: str, content: str, lines: list[str], module: str
-    ) -> list[SymbolRecord]:
+    def _extract_java(self, path: str, content: str, lines: list[str], module: str) -> list[SymbolRecord]:
         records: list[SymbolRecord] = []
 
         # Classes / interfaces / enums
         for m in _JAVA_CLASS.finditer(content):
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             end_line = self._find_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=m.group(1), kind="class", path=path,
-                line=line_no, end_line=end_line, language="java", module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=m.group(1),
+                    kind="class",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language="java",
+                    module=module,
+                )
+            )
 
         # Methods
         for m in _JAVA_METHOD.finditer(content):
             name = m.group(1)
             if name in ("if", "for", "while", "switch", "catch", "return"):
                 continue
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             end_line = self._find_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=name, kind="method", path=path,
-                line=line_no, end_line=end_line, language="java", module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=name,
+                    kind="method",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language="java",
+                    module=module,
+                )
+            )
 
         # Spring endpoints
         for m in _SPRING_ENDPOINTS.finditer(content):
-            line_no = content[:m.start()].count("\n") + 1
-            records.append(SymbolRecord(
-                symbol=m.group(1), kind="endpoint", path=path,
-                line=line_no, language="java", module=module,
-            ))
+            line_no = content[: m.start()].count("\n") + 1
+            records.append(
+                SymbolRecord(
+                    symbol=m.group(1),
+                    kind="endpoint",
+                    path=path,
+                    line=line_no,
+                    language="java",
+                    module=module,
+                )
+            )
 
         # Key annotations (Spring stereotypes)
-        spring_annots = {"RestController", "Controller", "Service", "Repository",
-                         "Component", "Configuration", "Entity"}
+        spring_annots = {
+            "RestController",
+            "Controller",
+            "Service",
+            "Repository",
+            "Component",
+            "Configuration",
+            "Entity",
+        }
         for m in _JAVA_ANNOTATION.finditer(content):
             name = m.group(1)
             if name in spring_annots:
-                line_no = content[:m.start()].count("\n") + 1
-                records.append(SymbolRecord(
-                    symbol=f"@{name}", kind="decorator", path=path,
-                    line=line_no, language="java", module=module,
-                ))
+                line_no = content[: m.start()].count("\n") + 1
+                records.append(
+                    SymbolRecord(
+                        symbol=f"@{name}",
+                        kind="decorator",
+                        path=path,
+                        line=line_no,
+                        language="java",
+                        module=module,
+                    )
+                )
 
         return records
 
@@ -183,90 +194,142 @@ class SymbolExtractor:
 
         # Classes
         for m in _TS_CLASS.finditer(content):
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             end_line = self._find_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=m.group(1), kind="class", path=path,
-                line=line_no, end_line=end_line, language=lang, module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=m.group(1),
+                    kind="class",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language=lang,
+                    module=module,
+                )
+            )
 
         # Interfaces
         for m in _TS_INTERFACE.finditer(content):
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             end_line = self._find_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=m.group(1), kind="interface", path=path,
-                line=line_no, end_line=end_line, language=lang, module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=m.group(1),
+                    kind="interface",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language=lang,
+                    module=module,
+                )
+            )
 
         # Functions
         for m in _TS_FUNCTION.finditer(content):
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             end_line = self._find_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=m.group(1), kind="function", path=path,
-                line=line_no, end_line=end_line, language=lang, module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=m.group(1),
+                    kind="function",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language=lang,
+                    module=module,
+                )
+            )
 
         # Decorators (Angular/NestJS)
         for m in _TS_DECORATOR.finditer(content):
             name = m.group(1)
             if name in _NG_DECORATORS:
-                line_no = content[:m.start()].count("\n") + 1
-                records.append(SymbolRecord(
-                    symbol=f"@{name}", kind="decorator", path=path,
-                    line=line_no, language=lang, module=module,
-                ))
+                line_no = content[: m.start()].count("\n") + 1
+                records.append(
+                    SymbolRecord(
+                        symbol=f"@{name}",
+                        kind="decorator",
+                        path=path,
+                        line=line_no,
+                        language=lang,
+                        module=module,
+                    )
+                )
 
         return records
 
-    def _extract_python(
-        self, path: str, content: str, lines: list[str], module: str
-    ) -> list[SymbolRecord]:
+    def _extract_python(self, path: str, content: str, lines: list[str], module: str) -> list[SymbolRecord]:
         records: list[SymbolRecord] = []
 
         # Classes
         for m in _PY_CLASS.finditer(content):
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             end_line = self._find_python_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=m.group(1), kind="class", path=path,
-                line=line_no, end_line=end_line, language="python", module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=m.group(1),
+                    kind="class",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language="python",
+                    module=module,
+                )
+            )
 
         # Top-level functions (no indent)
         for m in re.finditer(r"^def\s+(\w+)\s*\(", content, re.MULTILINE):
             name = m.group(1)
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             end_line = self._find_python_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=name, kind="function", path=path,
-                line=line_no, end_line=end_line, language="python", module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=name,
+                    kind="function",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language="python",
+                    module=module,
+                )
+            )
 
         # Methods (indented def)
         for m in _PY_METHOD.finditer(content):
             name = m.group(1)
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = content[: m.start()].count("\n") + 1
             # Skip if already captured as top-level function
             if any(r.symbol == name and r.line == line_no for r in records):
                 continue
             end_line = self._find_python_block_end(lines, line_no - 1)
-            records.append(SymbolRecord(
-                symbol=name, kind="method", path=path,
-                line=line_no, end_line=end_line, language="python", module=module,
-            ))
+            records.append(
+                SymbolRecord(
+                    symbol=name,
+                    kind="method",
+                    path=path,
+                    line=line_no,
+                    end_line=end_line,
+                    language="python",
+                    module=module,
+                )
+            )
 
         # Decorators
         for m in _PY_DECORATOR.finditer(content):
             name = m.group(1)
             if name in ("property", "staticmethod", "classmethod", "abstractmethod"):
                 continue
-            line_no = content[:m.start()].count("\n") + 1
-            records.append(SymbolRecord(
-                symbol=f"@{name}", kind="decorator", path=path,
-                line=line_no, language="python", module=module,
-            ))
+            line_no = content[: m.start()].count("\n") + 1
+            records.append(
+                SymbolRecord(
+                    symbol=f"@{name}",
+                    kind="decorator",
+                    path=path,
+                    line=line_no,
+                    language="python",
+                    module=module,
+                )
+            )
 
         return records
 

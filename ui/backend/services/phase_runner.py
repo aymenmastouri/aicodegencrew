@@ -3,13 +3,13 @@
 import json
 import logging
 import os
-from pathlib import Path
 
 import yaml
 
+from aicodegencrew.phase_registry import check_phase_output_exists
+
 from ..config import settings
 from ..schemas import PhaseInfo, PhaseStatus, PipelineStatus, PresetInfo
-from aicodegencrew.phase_registry import check_phase_output_exists
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +152,7 @@ def get_pipeline_status() -> PipelineStatus:
         enabled = phase_cfg.get("enabled", False)
         state_entry = state_phases.get(phase_id)
 
-        status, duration, error = _resolve_status(state_entry, output_exists, enabled, pid)
+        status, duration, _error = _resolve_status(state_entry, output_exists, enabled, pid)
 
         if status == "running":
             any_running = True

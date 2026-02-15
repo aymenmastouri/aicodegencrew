@@ -316,8 +316,7 @@ class ComponentDiscoveryStage:
             }
 
         all_ids = (
-            set(semantic.keys()) | set(name.keys()) | set(package.keys())
-            | set(stereotype.keys()) | set(symbol.keys())
+            set(semantic.keys()) | set(name.keys()) | set(package.keys()) | set(stereotype.keys()) | set(symbol.keys())
         )
 
         combined = {}
@@ -431,7 +430,7 @@ class ComponentDiscoveryStage:
 
         records = []
         try:
-            with open(symbols_path, "r", encoding="utf-8") as f:
+            with open(symbols_path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:

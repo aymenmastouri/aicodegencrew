@@ -1,6 +1,4 @@
-import json
 from types import SimpleNamespace
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,6 +8,7 @@ from fastapi.testclient import TestClient
 def client(tmp_path, monkeypatch):
     # Patch settings paths to temp dirs
     from ui.backend import config
+
     settings = config.settings
     settings.project_root = tmp_path
     settings.knowledge_dir = tmp_path / "knowledge"
@@ -90,7 +89,13 @@ presets:
     )
     monkeypatch.setattr(
         "ui.backend.services.report_reader.list_reports",
-        lambda: {"plans": [], "codegen_reports": [], "extract_reports": [], "analyze_reports": [], "document_reports": []},
+        lambda: {
+            "plans": [],
+            "codegen_reports": [],
+            "extract_reports": [],
+            "analyze_reports": [],
+            "document_reports": [],
+        },
     )
     monkeypatch.setattr(
         "ui.backend.services.report_reader.list_codegen_branches",
@@ -161,6 +166,7 @@ def test_misc_endpoints(client):
     assert client.get("/api/metrics").status_code == 200
     assert client.get("/api/health/setup-status").status_code == 200
     assert client.get("/api/env").status_code == 200
+
 
 def test_collectors_and_inputs(client, tmp_path, monkeypatch):
     # collectors list

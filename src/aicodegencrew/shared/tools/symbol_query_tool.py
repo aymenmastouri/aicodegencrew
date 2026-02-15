@@ -103,7 +103,7 @@ class SymbolQueryTool(BaseTool):
         # Parse JSONL
         records = []
         try:
-            with open(symbols_path, "r", encoding="utf-8") as f:
+            with open(symbols_path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line:
@@ -134,12 +134,14 @@ class SymbolQueryTool(BaseTool):
         symbols = self._load_symbols()
 
         if not symbols:
-            return json.dumps({
-                "query": query,
-                "result_count": 0,
-                "results": [],
-                "note": "Symbol index not available. Run Phase 0 (discover) first.",
-            })
+            return json.dumps(
+                {
+                    "query": query,
+                    "result_count": 0,
+                    "results": [],
+                    "note": "Symbol index not available. Run Phase 0 (discover) first.",
+                }
+            )
 
         query_lower = query.lower()
         results = []
