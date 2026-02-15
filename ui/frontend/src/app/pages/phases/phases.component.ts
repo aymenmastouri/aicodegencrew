@@ -16,6 +16,7 @@ import { ApiService, PhaseInfo, PresetInfo, PipelineStatus } from '../../service
 import { PipelineService, ResetPreview } from '../../services/pipeline.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 import { humanizePhaseId } from '../../shared/phase-utils';
+import { isTerminal } from '../../shared/status';
 
 @Component({
   selector: 'app-phases',
@@ -105,7 +106,7 @@ import { humanizePhaseId } from '../../shared/phase-utils';
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let p">
                   <button mat-icon-button color="warn"
-                    [disabled]="getPhaseStatus(p.id) !== 'completed' && getPhaseStatus(p.id) !== 'partial' && getPhaseStatus(p.id) !== 'failed'"
+                    [disabled]="!isPhaseTerminal(getPhaseStatus(p.id))"
                     (click)="resetPhase(p.id)"
                     matTooltip="Reset this phase">
                     <mat-icon>restart_alt</mat-icon>
@@ -272,6 +273,10 @@ export class PhasesComponent implements OnInit, OnDestroy {
     return humanizePhaseId(phaseId);
   }
 
+  isPhaseTerminal(status: string): boolean {
+    return isTerminal(status);
+  }
+
   getPhaseStatus(phaseId: string): string {
     if (!this.pipeline) return 'idle';
     const phase = this.pipeline.phases.find((p) => p.id === phaseId);
@@ -286,7 +291,7 @@ export class PhasesComponent implements OnInit, OnDestroy {
   hasResettablePhases(): boolean {
     if (!this.pipeline) return false;
     return this.pipeline.phases.some(
-      (p) => (p.status === 'completed' || p.status === 'partial' || p.status === 'failed') && p.id !== 'discover',
+      (p) => isTerminal(p.status) && p.id !== 'discover',
     );
   }
 

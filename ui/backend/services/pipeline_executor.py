@@ -15,6 +15,17 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from aicodegencrew.pipeline_contract import (
+    PHASE_PROGRESS_COMPLETED,
+    PHASE_PROGRESS_FAILED,
+    PHASE_PROGRESS_PENDING,
+    PHASE_PROGRESS_RUNNING,
+    PHASE_PROGRESS_SKIPPED,
+    compute_run_outcome,
+    is_phase_progress_complete,
+    normalize_phase_progress_status,
+)
+
 from ..config import settings
 
 logger = logging.getLogger(__name__)
@@ -175,7 +186,7 @@ class PipelineExecutor:
 
     def _mark_running_phases_cancelled(self) -> None:
         """After cancel, update phase_state.json so running phases show as failed."""
-        state_path = settings.project_root / "logs" / "phase_state.json"
+        state_path = settings.logs_dir / "phase_state.json"
         try:
             if not state_path.exists():
                 return
@@ -226,9 +237,17 @@ class PipelineExecutor:
 
         # Compute progress percent
         total = len(self.current_run.phases) if self.current_run else 0
-        completed = sum(1 for p in phase_progress if p.get("status") in ("completed", "partial", "skipped"))
-        skipped = sum(1 for p in phase_progress if p.get("status") == "skipped")
-        running = sum(1 for p in phase_progress if p.get("status") == "running")
+        completed = sum(1 for p in phase_progress if is_phase_progress_complete(p.get("status")))
+        skipped = sum(
+            1
+            for p in phase_progress
+            if normalize_phase_progress_status(p.get("status"), default=PHASE_PROGRESS_PENDING) == PHASE_PROGRESS_SKIPPED
+        )
+        running = sum(
+            1
+            for p in phase_progress
+            if normalize_phase_progress_status(p.get("status"), default=PHASE_PROGRESS_PENDING) == PHASE_PROGRESS_RUNNING
+        )
         if phase_progress:
             observed = len(phase_progress)
             if total == 0:
@@ -434,7 +453,7 @@ class PipelineExecutor:
         if proc is None or proc.pid is None:
             return None
 
-        state_path = settings.project_root / "logs" / "phase_state.json"
+        state_path = settings.logs_dir / "phase_state.json"
         if not state_path.exists():
             return None
 
@@ -514,7 +533,7 @@ class PipelineExecutor:
                     progress[phase_id] = {
                         "phase_id": phase_id,
                         "name": data.get("name", phase_id),
-                        "status": "running",
+                        "status": PHASE_PROGRESS_RUNNING,
                         "started_at": event.get("ts"),
                         "duration_seconds": None,
                         "sub_phases": [],
@@ -524,13 +543,12 @@ class PipelineExecutor:
                     phase_id = data.get("phase") or data.get("phase_id", "")
                     if not phase_id:
                         continue
-                    raw_complete_status = str(data.get("status", "")).lower()
-                    if raw_complete_status == "partial":
-                        completed_status = "partial"
-                    elif raw_complete_status == "skipped":
-                        completed_status = "skipped"
-                    else:
-                        completed_status = "completed"
+                    completed_status = normalize_phase_progress_status(
+                        data.get("status"),
+                        default=PHASE_PROGRESS_COMPLETED,
+                    )
+                    if completed_status in (PHASE_PROGRESS_PENDING, PHASE_PROGRESS_RUNNING):
+                        completed_status = PHASE_PROGRESS_COMPLETED
                     if phase_id in progress:
                         progress[phase_id]["status"] = completed_status
                         progress[phase_id]["duration_seconds"] = data.get("duration_seconds")
@@ -549,12 +567,12 @@ class PipelineExecutor:
                     if not phase_id:
                         continue
                     if phase_id in progress:
-                        progress[phase_id]["status"] = "failed"
+                        progress[phase_id]["status"] = PHASE_PROGRESS_FAILED
                     else:
                         progress[phase_id] = {
                             "phase_id": phase_id,
                             "name": data.get("name", phase_id),
-                            "status": "failed",
+                            "status": PHASE_PROGRESS_FAILED,
                             "started_at": None,
                             "duration_seconds": None,
                             "sub_phases": [],
@@ -567,7 +585,7 @@ class PipelineExecutor:
                     progress[phase_id] = {
                         "phase_id": phase_id,
                         "name": data.get("name", phase_id),
-                        "status": "skipped",
+                        "status": PHASE_PROGRESS_SKIPPED,
                         "started_at": None,
                         "duration_seconds": None,
                         "sub_phases": [],
@@ -579,7 +597,7 @@ class PipelineExecutor:
                     tokens = data.get("total_tokens", 0) or data.get("tokens", 0) or 0
                     sub = {
                         "name": data.get("crew_name", crew_type),
-                        "status": "completed" if event_name == "mini_crew_complete" else "failed",
+                        "status": PHASE_PROGRESS_COMPLETED if event_name == "mini_crew_complete" else PHASE_PROGRESS_FAILED,
                         "duration_seconds": data.get("duration_seconds"),
                         "total_tokens": tokens,
                         "tasks": data.get("tasks", []),
@@ -622,23 +640,7 @@ class PipelineExecutor:
 
         Returns one of: 'success', 'all_skipped', 'partial', 'failed'.
         """
-        if not phase_progress:
-            return "failed"
-
-        has_failed = any(p.get("status") == "failed" for p in phase_progress)
-        if has_failed:
-            return "failed"
-
-        all_skipped = all(p.get("status") == "skipped" for p in phase_progress)
-        if all_skipped:
-            return "all_skipped"
-
-        has_completed = any(p.get("status") in ("completed", "partial") for p in phase_progress)
-        has_skipped = any(p.get("status") == "skipped" for p in phase_progress)
-        if has_completed and has_skipped:
-            return "partial"
-
-        return "success"
+        return compute_run_outcome(p.get("status") for p in phase_progress)
 
     def _read_live_metrics(self) -> dict | None:
         """Aggregate live token usage and crew completions from metrics.jsonl."""
@@ -685,7 +687,7 @@ class PipelineExecutor:
             {
                 "phase_id": phase_id,
                 "name": phase_id.replace("_", " ").title(),
-                "status": "pending",
+                "status": PHASE_PROGRESS_PENDING,
                 "started_at": None,
                 "duration_seconds": None,
                 "sub_phases": [],
@@ -698,7 +700,7 @@ class PipelineExecutor:
         """Check phase_state.json for an external CLI run in progress."""
         import os as _os
 
-        state_path = settings.project_root / "logs" / "phase_state.json"
+        state_path = settings.logs_dir / "phase_state.json"
         if not state_path.exists():
             return None
 
@@ -712,7 +714,10 @@ class PipelineExecutor:
         phases = data.get("phases", {})
 
         # Check if any phase is running and PID is alive
-        has_running = any(e.get("status") == "running" for e in phases.values())
+        has_running = any(
+            normalize_phase_progress_status(entry.get("status"), default=PHASE_PROGRESS_PENDING) == PHASE_PROGRESS_RUNNING
+            for entry in phases.values()
+        )
         if not has_running:
             return None
 
@@ -726,11 +731,15 @@ class PipelineExecutor:
         run_id = data.get("run_id", "cli")
         phase_progress = []
         for phase_id, entry in phases.items():
+            normalized_status = normalize_phase_progress_status(
+                entry.get("status"),
+                default=PHASE_PROGRESS_PENDING,
+            )
             phase_progress.append(
                 {
                     "phase_id": phase_id,
                     "name": phase_id.replace("_", " ").title(),
-                    "status": entry.get("status", "pending"),
+                    "status": normalized_status,
                     "started_at": entry.get("started_at"),
                     "duration_seconds": entry.get("duration_seconds"),
                     "sub_phases": [],
@@ -738,7 +747,7 @@ class PipelineExecutor:
                 }
             )
 
-        completed = sum(1 for p in phase_progress if p["status"] == "completed")
+        completed = sum(1 for phase in phase_progress if is_phase_progress_complete(phase["status"]))
         total = len(phase_progress) if phase_progress else 1
         progress = round(completed / total * 100, 1)
 

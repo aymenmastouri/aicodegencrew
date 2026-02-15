@@ -48,7 +48,7 @@ def _clear_phase_state(phase_ids: list[str]) -> None:
     """Remove phase entries from logs/phase_state.json after reset."""
     import json
 
-    state_path = settings.project_root / "logs" / "phase_state.json"
+    state_path = settings.logs_dir / "phase_state.json"
     if not state_path.exists():
         return
     try:

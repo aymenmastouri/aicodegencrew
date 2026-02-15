@@ -20,7 +20,7 @@ class PhaseInfo(BaseModel):
 class PhaseStatus(BaseModel):
     id: str
     name: str
-    status: str = "idle"  # idle | ready | running | completed | skipped | failed | planned
+    status: str = "idle"  # idle | ready | running | completed | partial | skipped | failed | planned
     enabled: bool = True
     last_run: str | None = None
     duration_seconds: float | None = None
@@ -128,7 +128,7 @@ class RunResponse(BaseModel):
 
 class SubPhaseProgress(BaseModel):
     name: str
-    status: str = "completed"  # completed | failed
+    status: str = "completed"  # pending | running | completed | failed
     duration_seconds: float | None = None
     total_tokens: int = 0
     tasks: list[str] = []
@@ -142,7 +142,7 @@ class LiveMetrics(BaseModel):
 class PhaseProgress(BaseModel):
     phase_id: str
     name: str
-    status: str = "pending"  # pending | running | completed | failed | skipped
+    status: str = "pending"  # pending | running | completed | partial | failed | skipped
     started_at: str | None = None
     duration_seconds: float | None = None
     sub_phases: list[SubPhaseProgress] = []

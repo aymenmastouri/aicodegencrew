@@ -15,12 +15,22 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-_STATE_FILE = Path("logs") / "phase_state.json"
+_STATE_DIR: Path | None = None
 _STALE_THRESHOLD_SECONDS = 3600  # 1 hour
 
 
+def configure_state_dir(path: Path | None) -> None:
+    """Set the directory for phase_state.json.
+
+    None = default (CWD/logs). Used by tests for isolation.
+    """
+    global _STATE_DIR
+    _STATE_DIR = path
+
+
 def _state_path() -> Path:
-    return _STATE_FILE
+    base = _STATE_DIR if _STATE_DIR is not None else Path("logs")
+    return base / "phase_state.json"
 
 
 def _read_raw() -> dict:

@@ -1,10 +1,13 @@
-# Orchestration & State
+﻿# Orchestration and State
 
 How SDLC phases are scheduled, executed, and tracked.
 
 > **Reference Diagrams:**
-> - [pipeline-flow.drawio](../diagrams/pipeline-flow.drawio) — Phase execution flow
-> - [orchestration-state.drawio](../diagrams/orchestration-state.drawio) — State lifecycle & crash recovery
+> - [pipeline-flow.drawio](../diagrams/pipeline-flow.drawio) - Phase execution flow
+> - [orchestration-state.drawio](../diagrams/orchestration-state.drawio) - State lifecycle and crash recovery
+>
+> **Related Docs:**
+> - [pipeline-contract.md](./pipeline-contract.md) - Central phase/preset/status contract used by orchestrator, CLI, and dashboard backend
 
 ## SDLCOrchestrator
 
@@ -43,6 +46,8 @@ Phases are resolved in priority order:
 1. **Explicit list** (`--phases extract analyze`) - validated against config
 2. **Preset** (`--preset document`) - expanded from `phases_config.yaml`
 3. **Default** - all enabled phases sorted by order
+
+Phase and preset resolution is driven by `PipelineContract` (`src/aicodegencrew/pipeline_contract.py`), which merges static phase metadata with runtime config.
 
 ### Dependency Checking
 
@@ -85,7 +90,7 @@ stateDiagram-v2
 
 The state file includes the process PID. On startup, if a phase is marked `"running"`:
 1. Check if the PID is still alive (`os.kill(pid, 0)`)
-2. If dead, mark as `"failed"` with "Process terminated unexpectedly"
+2. If dead, mark as `"failed"` with `"Process terminated unexpectedly"`
 3. Staleness threshold: 1 hour (phases running longer are assumed crashed)
 
 ### Atomic Writes
@@ -99,9 +104,9 @@ All state updates use `tempfile` + `os.replace()` to prevent corruption from cra
 When the dashboard starts a pipeline run, it spawns the CLI as a subprocess:
 
 ```
-Dashboard → POST /api/pipeline/run → PipelineExecutor.start()
-    → subprocess.Popen(["python", "-m", "aicodegencrew", "run", ...])
-    → SSE stream: poll phase_state.json → push events to frontend
+Dashboard -> POST /api/pipeline/run -> PipelineExecutor.start()
+    -> subprocess.Popen(["python", "-m", "aicodegencrew", "run", ...])
+    -> SSE stream: poll phase_state.json -> push events to frontend
 ```
 
 This provides process isolation: the CLI runs independently, and the dashboard monitors via the shared state file.

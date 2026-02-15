@@ -16,6 +16,7 @@ import { ApiService, PipelineStatus, HealthResponse, SetupStatus } from '../../s
 import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as formatDurationUtil } from '../../shared/phase-utils';
+import { statusLabel, isTerminal } from '../../shared/status';
 
 @Component({
   selector: 'app-dashboard',
@@ -154,7 +155,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                   } @else if (step.status === 'failed') {
                     <mat-icon class="step-fail">close</mat-icon>
                   } @else if (step.status === 'skipped') {
-                    <mat-icon class="step-skip">skip_next</mat-icon>
+                    <mat-icon class="step-check-alt">check_circle</mat-icon>
                   } @else {
                     <span class="step-num">{{ i + 1 }}</span>
                   }
@@ -210,8 +211,8 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
               </div>
               <div class="phase-bottom">
                 <span class="status-dot" [class]="'dot-' + phase.status"></span>
-                <span class="status-label">{{ phase.status }}</span>
-                @if (phase.status === 'completed' || phase.status === 'partial' || phase.status === 'skipped' || phase.status === 'failed') {
+                <span class="status-label">{{ getStatusLabel(phase.status) }}</span>
+                @if (isPhaseTerminal(phase.status)) {
                   <button class="reset-btn" (click)="resetPhase(phase.id); $event.stopPropagation(); $event.preventDefault()"
                     [disabled]="executionState === 'running'"
                     [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset'">
@@ -345,7 +346,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         background: linear-gradient(135deg, #fff 0%, rgba(0, 112, 173, 0.02) 100%);
       }
       .stepper-completed { border-color: rgba(40, 167, 69, 0.2); }
-      .stepper-all-skipped { border-color: rgba(158, 158, 158, 0.3); }
+      .stepper-all-skipped { border-color: rgba(40, 167, 69, 0.2); }
       .stepper-failed { border-color: rgba(220, 53, 69, 0.2); }
       .stepper-header {
         display: flex;
@@ -370,7 +371,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         animation: pulse-stepper-logo 1.5s ease-in-out infinite;
       }
       .logo-completed { background: var(--cg-success, #28a745); }
-      .logo-skipped { background: var(--cg-gray-400, #9e9e9e); }
+      .logo-skipped { background: var(--cg-success, #28a745); opacity: 0.7; }
       .logo-failed { background: var(--cg-error, #dc3545); }
       @keyframes pulse-stepper-logo {
         0%, 100% { opacity: 1; }
@@ -475,14 +476,14 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         border-color: var(--cg-error, #dc3545);
       }
       .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      /* Skipped */
+      /* Skipped (up to date) */
       .step-skipped .step-circle {
-        background: var(--cg-gray-100);
-        border-color: var(--cg-gray-200);
+        background: var(--cg-success, #28a745);
+        border-color: var(--cg-success, #28a745);
         opacity: 0.7;
       }
-      .step-skip { font-size: 18px; width: 18px; height: 18px; color: var(--cg-gray-400); }
-      .step-skipped .step-label { color: var(--cg-gray-400); text-decoration: line-through; }
+      .step-check-alt { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      .step-skipped .step-label { color: var(--cg-success); opacity: 0.8; }
       /* Labels */
       .step-label {
         margin-top: 8px;
@@ -587,7 +588,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
       .phase-failed { border-left-color: var(--cg-error); }
       .phase-running { border-left-color: var(--cg-blue); }
       .phase-ready { border-left-color: var(--cg-vibrant); }
-      .phase-skipped { border-left-color: var(--cg-gray-300); opacity: 0.7; }
+      .phase-skipped { border-left-color: var(--cg-success); opacity: 0.85; }
       .phase-planned { border-left-color: var(--cg-gray-200); opacity: 0.55; }
       .phase-top {
         display: flex;
@@ -976,7 +977,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   hasCompletedPhases(): boolean {
-    return !!this.pipeline?.phases.some((p) => p.status === 'completed');
+    return !!this.pipeline?.phases.some((p) => isTerminal(p.status));
   }
 
   private phaseDisplayName(phaseId: string): string {
@@ -1052,7 +1053,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   resetAll(): void {
     this.pipelineSvc.previewReset(
-      this.pipeline?.phases.filter((p) => (p.status === 'completed' || p.status === 'partial' || p.status === 'failed') && p.id !== 'discover').map((p) => p.id) || [],
+      this.pipeline?.phases.filter((p) => isTerminal(p.status) && p.id !== 'discover').map((p) => p.id) || [],
     ).subscribe({
       next: (preview: ResetPreview) => {
         const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
@@ -1104,9 +1105,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return humanizePhaseId(phaseId);
   }
 
+  getStatusLabel(status: string): string {
+    return statusLabel(status);
+  }
+
+  isPhaseTerminal(status: string): boolean {
+    return isTerminal(status);
+  }
+
   runOutcomeTitle(): string {
     switch (this.runOutcome) {
-      case 'all_skipped': return 'All Phases Up To Date';
+      case 'all_skipped': return 'Run Completed — Already Current';
       case 'partial': return 'Run Completed (Partial)';
       case 'failed': return 'Run Failed';
       default: return 'Run Completed';
