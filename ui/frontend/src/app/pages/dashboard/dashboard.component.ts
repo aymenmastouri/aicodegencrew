@@ -169,7 +169,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
               </div>
               @if (!last) {
                 <div class="stepper-line" [class.line-done]="step.status === 'completed' || step.status === 'partial'"
-                     [class.line-active]="step.status === 'running'"
+                     [class.line-active]="step.status === 'running'">
                 </div>
               }
             }
