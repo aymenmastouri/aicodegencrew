@@ -13,6 +13,10 @@ Duration: 2-5 seconds (RAG + scoring)
 NO LLM REQUIRED
 """
 
+import os
+import queue
+import threading
+import time
 from pathlib import Path
 from typing import Any
 
@@ -75,11 +79,40 @@ class ComponentDiscoveryStage:
         labels = task.labels
 
         # Multi-signal scoring
-        semantic_scores = self._semantic_search(query, n=20)
+        semantic_scores: dict[str, float] = {}
+        semantic_timeout_s = int(os.getenv("STAGE2_SEMANTIC_TIMEOUT_S", "12"))
+        semantic_queue: "queue.Queue[dict[str, float] | BaseException]" = queue.Queue(maxsize=1)
+
+        if semantic_timeout_s > 0:
+            semantic_start = time.monotonic()
+
+            def _semantic_worker() -> None:
+                try:
+                    semantic_queue.put(self._semantic_search(query, n=20))
+                except BaseException as exc:  # noqa: BLE001 - best-effort signal, never fail stage 2
+                    semantic_queue.put(exc)
+
+            threading.Thread(
+                target=_semantic_worker,
+                name=f"stage2-semantic-{task.task_id}",
+                daemon=True,
+            ).start()
+
         name_scores = self._name_matching(query)
         package_scores = self._package_matching(labels) if labels else {}
         stereotype_scores = self._stereotype_matching(query)
         symbol_scores = self._symbol_matching(query)
+
+        if semantic_timeout_s > 0:
+            remaining = max(0.0, semantic_timeout_s - (time.monotonic() - semantic_start))
+            try:
+                result = semantic_queue.get(timeout=remaining)
+                if isinstance(result, BaseException):
+                    logger.warning(f"[Stage2] Semantic search failed: {result}")
+                else:
+                    semantic_scores = result
+            except queue.Empty:
+                logger.warning(f"[Stage2] Semantic search timed out after {semantic_timeout_s}s, continuing without it")
 
         # Combine scores (weighted average)
         combined_scores = self._combine_scores(
@@ -183,10 +216,13 @@ class ComponentDiscoveryStage:
             if not query_embedding:
                 logger.warning("[Stage2] Query embedding failed, skipping semantic search")
                 return scores
+            logger.debug("[Stage2] Query embedding ready (dims=%s)", len(query_embedding))
 
+            logger.debug("[Stage2] Running ChromaDB query (n_results=%s)", n)
             results = collection.query(
                 query_embeddings=[query_embedding], n_results=n, include=["metadatas", "distances"]
             )
+            logger.debug("[Stage2] ChromaDB query returned")
 
             if results and results.get("metadatas"):
                 metadatas = results["metadatas"][0]
@@ -487,7 +523,12 @@ class ComponentDiscoveryStage:
 
             client = chromadb.PersistentClient(
                 path=str(chroma_path),
-                settings=Settings(anonymized_telemetry=False),
+                # Semantic search is a best-effort signal; keep Chroma calls bounded.
+                settings=Settings(
+                    anonymized_telemetry=False,
+                    chroma_query_request_timeout_seconds=10,
+                    chroma_sysdb_request_timeout_seconds=5,
+                ),
             )
 
             # No embedding function - embeddings were stored externally by indexing pipeline.
@@ -506,7 +547,12 @@ class ComponentDiscoveryStage:
         try:
             from ....shared.utils.ollama_client import OllamaClient
 
-            client = OllamaClient()
+            # Stage 2 is expected to finish in a few seconds; use a short, single-attempt
+            # embed call so we fail fast instead of hanging the entire pipeline when
+            # Ollama is slow or unreachable. Semantic search will be skipped if this
+            # returns None, and deterministic signals will still run.
+            client = OllamaClient(timeout=10, max_retries=1)
+            logger.debug("[Stage2] Embedding query via Ollama (timeout=10s, retries=1)")
             return client.embed_text(text)
         except Exception as e:
             logger.warning(f"[Stage2] Failed to embed query: {e}")

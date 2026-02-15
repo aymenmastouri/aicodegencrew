@@ -525,7 +525,8 @@ class BuildVerifierStage:
 
             for file_path, file_errors in files_with_errors.items():
                 gf = gen_file_map[file_path]
-                healed_code = self._heal_file(gf, file_errors, plan_input)
+                other_gen_files = [g for fp, g in gen_file_map.items() if fp != file_path]
+                healed_code = self._heal_file(gf, file_errors, plan_input, other_gen_files)
 
                 if healed_code and healed_code != gf.content:
                     # Validate healed code with basic syntax check
@@ -639,25 +640,58 @@ class BuildVerifierStage:
         errors: list[BuildError],
         gen_file_map: dict[str, GeneratedFile],
     ) -> dict[str, list[BuildError]]:
-        """Match build errors to generated files. Only returns matches."""
+        """Match build errors to generated files.
+
+        Errors in non-generated files (e.g. app.module.ts failing because a
+        generated component exports the wrong thing) are distributed to ALL
+        generated files so the healer sees the full picture.
+        """
         result: dict[str, list[BuildError]] = {}
+        unmatched: list[BuildError] = []
+
+        # Pre-compute normalized paths
+        gen_paths: dict[str, str] = {}
+        for fp in gen_file_map:
+            try:
+                rp = str(Path(fp).relative_to(self.repo_path)).replace("\\", "/")
+            except ValueError:
+                rp = fp.replace("\\", "/")
+            gen_paths[fp] = rp
 
         for error in errors:
-            for file_path in gen_file_map:
-                try:
-                    repo_relative = str(Path(file_path).relative_to(self.repo_path)).replace("\\", "/")
-                except ValueError:
-                    repo_relative = file_path
+            error_norm = error.file_path.replace("\\", "/")
+            best_match: str | None = None
 
-                error_normalized = error.file_path.replace("\\", "/")
-
-                if (
-                    repo_relative.endswith(error_normalized)
-                    or error_normalized.endswith(repo_relative)
-                    or Path(error_normalized).name == Path(repo_relative).name
-                ):
-                    result.setdefault(file_path, []).append(error)
+            # Phase 1: strong path match (endswith)
+            for fp, rp in gen_paths.items():
+                if rp.endswith(error_norm) or error_norm.endswith(rp):
+                    best_match = fp
                     break
+
+            # Phase 2: weak filename-only match (fallback)
+            if not best_match:
+                error_basename = Path(error_norm).name
+                for fp, rp in gen_paths.items():
+                    if Path(rp).name == error_basename:
+                        best_match = fp
+                        break
+
+            if best_match:
+                result.setdefault(best_match, []).append(error)
+            else:
+                unmatched.append(error)
+
+        # Distribute unmatched errors to ALL generated files — they are likely
+        # caused by cross-file issues (wrong exports, missing imports, etc.)
+        if unmatched:
+            logger.info(
+                f"[Stage4b] {len(unmatched)} error(s) in non-generated files — "
+                f"distributing as context to all {len(gen_file_map)} generated files"
+            )
+            for e in unmatched:
+                logger.info(f"[Stage4b]   Unmatched: {e.file_path}:{e.line} — {e.message[:120]}")
+            for fp in gen_file_map:
+                result.setdefault(fp, []).extend(unmatched)
 
         return result
 
@@ -680,9 +714,21 @@ class BuildVerifierStage:
         gf: GeneratedFile,
         errors: list[BuildError],
         plan_input: CodegenPlanInput,
+        other_gen_files: list[GeneratedFile] | None = None,
     ) -> str | None:
         """Use LLM to fix build errors in a generated file."""
         error_text = "\n".join(f"  Line {e.line}: {e.code + ': ' if e.code else ''}{e.message}" for e in errors)
+
+        # Build cross-file context (paths + first 30 lines of each sibling gen file)
+        cross_file_context = ""
+        if other_gen_files:
+            parts = []
+            for ogf in other_gen_files[:8]:  # cap at 8 files to avoid prompt bloat
+                lines = (ogf.content or "").split("\n")
+                preview = "\n".join(lines[:30])
+                suffix = f"\n  ... ({len(lines) - 30} more lines)" if len(lines) > 30 else ""
+                parts.append(f"### {ogf.file_path}\n```{ogf.language}\n{preview}{suffix}\n```")
+            cross_file_context = "\n\n## Other Generated Files (for cross-file context)\n" + "\n\n".join(parts)
 
         prompt = f"""You are a code-repair assistant. Fix ONLY the compilation errors in the code below.
 Do NOT change functionality, do NOT add features, do NOT refactor.
@@ -703,12 +749,14 @@ Language: {gf.language}
 
 ## Original Code (before generation)
 {gf.original_content if gf.original_content else "(new file)"}
+{cross_file_context}
 
 ## Instructions
 1. Fix ALL compilation errors listed above
-2. Preserve the intended functionality from the task
-3. Keep all imports, annotations, and structure intact
-4. Return the COMPLETE file — not a partial diff
+2. If errors reference imports from other generated files, ensure exports/imports are consistent
+3. Preserve the intended functionality from the task
+4. Keep all imports, annotations, and structure intact
+5. Return the COMPLETE file — not a partial diff
 """
 
         try:

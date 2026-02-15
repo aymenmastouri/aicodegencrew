@@ -25,8 +25,16 @@ export default defineConfig({
     { name: 'chromium', use: { browserName: 'chromium' } },
     {
       name: 'demo',
+      retries: 0,
+      timeout: 3_600_000,
       use: {
         browserName: 'chromium',
+        viewport: { width: 1920, height: 1080 },
+        deviceScaleFactor: 2,
+        video: {
+          mode: 'on',
+          size: { width: 1920, height: 1080 },
+        },
         launchOptions: { slowMo: 400 },
       },
     },
