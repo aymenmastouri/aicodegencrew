@@ -7,7 +7,8 @@ Dynamically reads .gitignore rules for exclusion.
 
 import fnmatch
 import os
-from pathlib import Path
+import re
+from pathlib import Path, PurePosixPath
 
 # Global code & doc extensions (like Continue plugin RAG config)
 # ALL production code - batch embeddings make this fast!
@@ -42,6 +43,19 @@ INDEXABLE_EXTENSIONS = {
     ".bash",
     ".feature",
     ".sql",
+}
+
+CONFIG_EXTENSIONS = {
+    ".yml",
+    ".yaml",
+    ".json",
+    ".xml",
+    ".toml",
+    ".ini",
+    ".cfg",
+    ".conf",
+    ".properties",
+    ".gradle",
 }
 
 # Directories to skip (faster than pattern matching)
@@ -83,6 +97,11 @@ SKIP_DIRS = {
     ".tox",
     "htmlcov",
     ".m2",
+    "bin",
+    "generated",
+    "_generated",
+    "deployment",
+    "html",
 }
 
 # Special files to always include
@@ -102,11 +121,9 @@ SPECIAL_FILES = {
     "gradle.properties",
 }
 
-# Backwards-compatible defaults used by tests and callers that rely on glob patterns.
-# Note: the current implementation is extension-driven for speed, but we still expose
-# these pattern lists and accept overrides in `should_include_file`.
-DEFAULT_INCLUDE_PATTERNS = [f"**/*{ext}" for ext in sorted(INDEXABLE_EXTENSIONS)]
-DEFAULT_EXCLUDE_PATTERNS = [f"**/{d}/**" for d in sorted(SKIP_DIRS)] + [
+DEFAULT_SKIP_FILE_PATTERNS = [
+    "**/*.min.js",
+    "**/*.map",
     "**/*.class",
     "**/*.jar",
     "**/*.war",
@@ -114,7 +131,36 @@ DEFAULT_EXCLUDE_PATTERNS = [f"**/{d}/**" for d in sorted(SKIP_DIRS)] + [
     "**/*.exe",
     "**/*.dll",
     "**/*.so",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.jpeg",
+    "**/*.gif",
+    "**/*.pdf",
 ]
+
+DEFAULT_KEEP_GLOBS = [
+    "README*",
+    "docs/**",
+    "adr/**",
+    "architecture/**",
+    "**/src/**",
+    "package.json",
+    "pom.xml",
+    "build.gradle*",
+    "Dockerfile*",
+    "docker-compose*.yml",
+    "docker-compose*.yaml",
+    "helm/**",
+    "k8s/**",
+    "**/*.yml",
+    "**/*.yaml",
+]
+
+# Backwards-compatible defaults used by tests and callers that rely on glob patterns.
+# Note: the current implementation is extension-driven for speed, but we still expose
+# these pattern lists and accept overrides in `should_include_file`.
+DEFAULT_INCLUDE_PATTERNS = [f"**/*{ext}" for ext in sorted(INDEXABLE_EXTENSIONS)]
+DEFAULT_EXCLUDE_PATTERNS = [f"**/{d}/**" for d in sorted(SKIP_DIRS)] + DEFAULT_SKIP_FILE_PATTERNS
 
 
 def _env_csv_set(name: str) -> set[str]:
@@ -123,6 +169,41 @@ def _env_csv_set(name: str) -> set[str]:
     if not raw:
         return set()
     return {item.strip().lower() for item in raw.split(",") if item.strip()}
+
+
+def _env_csv_list(name: str) -> list[str]:
+    """Read a comma-separated env var preserving order and case."""
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return []
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _match_path(path_posix: str, pattern: str) -> bool:
+    """Match with glob semantics supporting ** for directories."""
+    try:
+        if PurePosixPath(path_posix).match(pattern):
+            return True
+    except Exception:
+        pass
+
+    # Fallbacks for common ** patterns and simple substring contains
+    if fnmatch.fnmatch(path_posix, pattern) or fnmatch.fnmatch(os.path.basename(path_posix), pattern):
+        return True
+
+    if "**" in pattern:
+        core = pattern.replace("**/", "").replace("/**", "").strip("/")
+        if core and f"/{core}/" in f"/{path_posix}/":
+            return True
+
+    return False
 
 
 def _get_indexable_extensions() -> set[str]:
@@ -146,9 +227,60 @@ def _get_skip_dirs() -> set[str]:
 
     Env:
       - INDEX_EXTRA_SKIP_DIRS: comma-separated list (e.g. "docs,dist,out")
+      - SKIP_DIRS: comma-separated list (supports names or globs)
     """
     extra = _env_csv_set("INDEX_EXTRA_SKIP_DIRS")
-    return {d.lower() for d in SKIP_DIRS} | extra
+    skip_dirs_env = _env_csv_list("SKIP_DIRS")
+
+    normalized_env: set[str] = set()
+    for token in skip_dirs_env:
+        t = token.strip().lower().replace("\\", "/")
+        t = t.removeprefix("**/").removesuffix("/**").strip("/")
+        if not t or any(ch in t for ch in "*?[]"):
+            continue
+        if "/" in t:
+            t = t.split("/")[-1]
+        normalized_env.add(t)
+
+    return {d.lower() for d in SKIP_DIRS} | extra | normalized_env
+
+
+def _get_skip_file_patterns() -> list[str]:
+    """Return skip-file glob patterns from env or defaults.
+
+    Env:
+      - SKIP_FILES: comma-separated glob list
+    """
+    from_env = _env_csv_list("SKIP_FILES")
+    return from_env if from_env else DEFAULT_SKIP_FILE_PATTERNS
+
+
+def _get_keep_globs() -> list[str]:
+    """Return keep-globs allowlist.
+
+    Env:
+      - KEEP_GLOBS: comma-separated glob list
+    """
+    keep_env = _env_csv_list("KEEP_GLOBS")
+    return keep_env if keep_env else DEFAULT_KEEP_GLOBS
+
+
+def _is_config_file(file_path: Path) -> bool:
+    if file_path.name.lower() in SPECIAL_FILES:
+        return True
+    return file_path.suffix.lower() in CONFIG_EXTENSIONS
+
+
+def _looks_like_test_path(file_path: Path) -> bool:
+    parts_lower = [part.lower() for part in file_path.parts]
+    if {"test", "tests", "__tests__", "test-results"} & set(parts_lower):
+        return True
+
+    path_posix = file_path.as_posix().lower()
+    if "/src/test/" in path_posix or "/src/tests/" in path_posix:
+        return True
+
+    return bool(re.search(r"(^|[._-])(test|tests|spec)([._-]|$)", file_path.stem.lower()))
 
 
 def should_include_file(
@@ -169,19 +301,35 @@ def should_include_file(
     if any(part in skip_dirs for part in parts_lower):
         return False
 
+    # Optional mode switches
+    if not _env_flag("ENABLE_TEST_INDEX", True) and _looks_like_test_path(file_path):
+        return False
+    if not _env_flag("ENABLE_CONFIG_PARSER", True) and _is_config_file(file_path):
+        return False
+
     # Normalize path for glob matching
     path_posix = file_path.as_posix()
 
-    # 2) Optional pattern-based filtering (used by tests + power users)
-    effective_excludes = exclude_patterns or DEFAULT_EXCLUDE_PATTERNS
+    # 2) Skip-file patterns + optional excludes
+    effective_excludes = list(DEFAULT_EXCLUDE_PATTERNS)
+    effective_excludes.extend(_get_skip_file_patterns())
+    if exclude_patterns:
+        effective_excludes.extend(exclude_patterns)
     for pat in effective_excludes:
-        if fnmatch.fnmatch(path_posix, pat) or fnmatch.fnmatch(file_path.name, pat):
+        if _match_path(path_posix, pat) or _match_path(file_path.name, pat):
             return False
 
+    # 3) Allowlist
     if include_patterns is not None:
-        return any(fnmatch.fnmatch(path_posix, pat) or fnmatch.fnmatch(file_path.name, pat) for pat in include_patterns)
+        include_match = any(_match_path(path_posix, pat) or _match_path(file_path.name, pat) for pat in include_patterns)
+        return include_match
+    else:
+        keep_patterns = _get_keep_globs()
+        if keep_patterns:
+            if not any(_match_path(path_posix, pat) or _match_path(file_path.name, pat) for pat in keep_patterns):
+                return False
 
-    # 3) Extension/special-file rules (fast, env-overridable)
+    # 4) Extension/special-file rules (fast, env-overridable)
     file_name = file_path.name.lower()
     if file_name in SPECIAL_FILES:
         return True
@@ -247,16 +395,13 @@ def collect_files(
 ) -> list[Path]:
     """Fast file collection using os.walk() instead of pathlib recursion.
 
-    Indexes only code/doc files (like Continue plugin), skips all
-    binary/cache/node_modules directories.
+    Indexes only relevant code/doc/config files, skips binary/cache directories.
     ALSO reads .gitignore and applies those exclusion rules dynamically.
-
-    Based on RAG config: generic, no backend/frontend split.
 
     Args:
         root_path: Root directory to scan
-        include_patterns: Ignored (uses INDEXABLE_EXTENSIONS)
-        exclude_patterns: Ignored (uses SKIP_DIRS + .gitignore)
+        include_patterns: Optional include globs (overrides default allowlist)
+        exclude_patterns: Optional extra exclude globs
         max_depth: Maximum directory depth (None for unlimited)
 
     Returns:

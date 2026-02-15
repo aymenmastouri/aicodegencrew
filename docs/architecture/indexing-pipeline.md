@@ -448,14 +448,16 @@ Example: Task "Fix login endpoint in AuthController"
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `INDEX_MODE` | `auto` | Indexing mode: off, auto, smart, force |
-| `INDEX_CHUNK_SIZE` | `1500` | Characters per chunk |
-| `INDEX_CHUNK_OVERLAP` | `200` | Overlap between chunks |
+| `INDEX_CHUNK_SIZE` | `1500` | Characters per chunk (alias of `CHUNK_CHARS`) |
+| `INDEX_CHUNK_OVERLAP` | `200` | Overlap between chunks (alias of `CHUNK_OVERLAP`) |
 | `INDEX_BATCH_SIZE` | `50` | Files per processing batch |
 | `INDEX_ENABLE_BUDGET` | `true` | Enable A/B/C priority reordering |
 | `INDEX_PRIORITY_A_PCT` | `40` | Tier A allocation percentage |
 | `INDEX_PRIORITY_B_PCT` | `40` | Tier B allocation percentage |
 | `EMBEDDING_MODEL` | `nomic-embed-text` | Ollama embedding model |
 | `EMBEDDING_BASE_URL` | `http://localhost:11434` | Ollama server URL |
+
+**Zero-env defaults:** All indexing settings are optional; built-in skip/keep policy, budgets, symbols, embeddings, and chunking run without any env vars. Only the repository path is required (CLI/param). Use env overrides only when you need to change the defaults.
 
 ---
 
