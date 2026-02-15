@@ -211,34 +211,16 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         <!-- Celebration Banner -->
         @if (showCelebration && celebrationType) {
           <div class="celebration-banner" [class]="'celebration-' + celebrationType">
-            @if (celebrationType === 'success') {
-              <div class="celebration-content">
-                <mat-icon class="celebration-icon">check_circle</mat-icon>
-                <div class="celebration-text">
-                  <span class="celebration-title">Pipeline Completed Successfully</span>
-                  <span class="celebration-sub">
-                    {{ status.completed_phase_count || 0 }} phases in {{ formatDuration(status.elapsed_seconds || 0) }}
-                  </span>
-                </div>
-                <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
-                  <mat-icon>close</mat-icon>
-                </button>
+            <div class="celebration-content">
+              <mat-icon class="celebration-icon">{{ celebrationIcon() }}</mat-icon>
+              <div class="celebration-text">
+                <span class="celebration-title">{{ celebrationTitle() }}</span>
+                <span class="celebration-sub">{{ celebrationSubtitle() }}</span>
               </div>
-            } @else {
-              <div class="celebration-content">
-                <mat-icon class="celebration-icon">error_outline</mat-icon>
-                <div class="celebration-text">
-                  <span class="celebration-title">Pipeline Failed</span>
-                  <span class="celebration-sub">
-                    Check logs for details
-                    <a routerLink="/logs" class="logs-link">Open Logs</a>
-                  </span>
-                </div>
-                <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-            }
+              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
           </div>
         }
 
@@ -547,6 +529,14 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         background: linear-gradient(135deg, var(--cg-success, #28a745) 0%, #20c997 100%);
         color: #fff;
       }
+      .celebration-partial {
+        background: linear-gradient(135deg, var(--cg-success, #28a745) 0%, var(--cg-warn, #f57c00) 100%);
+        color: #fff;
+      }
+      .celebration-all_skipped {
+        background: linear-gradient(135deg, var(--cg-gray-400, #9e9e9e) 0%, var(--cg-gray-500, #757575) 100%);
+        color: #fff;
+      }
       .celebration-failure {
         background: linear-gradient(135deg, var(--cg-error, #dc3545) 0%, #e85d75 100%);
         color: #fff;
@@ -736,7 +726,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
   // Celebration
   showCelebration = false;
-  celebrationType: 'success' | 'failure' | null = null;
+  celebrationType: 'success' | 'partial' | 'all_skipped' | 'failure' | null = null;
   private celebrationTimer?: ReturnType<typeof setTimeout>;
 
   private sseSub?: Subscription;
@@ -887,7 +877,47 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
   }
 
-  private triggerCelebration(type: 'success' | 'failure'): void {
+  celebrationIcon(): string {
+    switch (this.celebrationType) {
+      case 'success': return 'check_circle';
+      case 'partial': return 'check_circle';
+      case 'all_skipped': return 'skip_next';
+      case 'failure': return 'error_outline';
+      default: return 'info';
+    }
+  }
+
+  celebrationTitle(): string {
+    switch (this.celebrationType) {
+      case 'success': return 'Run Completed Successfully';
+      case 'partial': return 'Run Completed (Partial)';
+      case 'all_skipped': return 'All Phases Up To Date';
+      case 'failure': return 'Run Failed';
+      default: return '';
+    }
+  }
+
+  celebrationSubtitle(): string {
+    if (!this.status) return '';
+    const elapsed = this.formatDuration(this.status.elapsed_seconds || 0);
+    const completed = this.status.completed_phase_count || 0;
+    const skipped = this.status.skipped_phase_count || 0;
+
+    switch (this.celebrationType) {
+      case 'success':
+        return `${completed} phases in ${elapsed}`;
+      case 'partial':
+        return `${completed} phases completed, ${skipped} skipped in ${elapsed}`;
+      case 'all_skipped':
+        return 'No changes detected';
+      case 'failure':
+        return 'Check logs for details';
+      default:
+        return '';
+    }
+  }
+
+  private triggerCelebration(type: 'success' | 'partial' | 'all_skipped' | 'failure'): void {
     this.celebrationType = type;
     this.showCelebration = true;
     this.cdr.markForCheck();
@@ -916,7 +946,16 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
           this.status = event.data as ExecutionStatus;
           const finalState = this.status?.state || 'completed';
           if (finalState !== 'cancelled') {
-            this.triggerCelebration(finalState === 'failed' ? 'failure' : 'success');
+            const outcome = this.status?.run_outcome;
+            if (outcome === 'all_skipped') {
+              this.triggerCelebration('all_skipped');
+            } else if (outcome === 'partial') {
+              this.triggerCelebration('partial');
+            } else if (finalState === 'failed' || outcome === 'failed') {
+              this.triggerCelebration('failure');
+            } else {
+              this.triggerCelebration('success');
+            }
           }
         }
         this.cdr.markForCheck();

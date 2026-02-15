@@ -74,6 +74,9 @@ def _resolve_status(
         if st == "failed":
             return "failed", duration, error
 
+        if st == "skipped":
+            return "skipped", duration, None
+
         if st in ("completed", "partial"):
             if output_exists:
                 return st, duration, None

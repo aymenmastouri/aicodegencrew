@@ -193,7 +193,7 @@ class TestPhase0ToPhase1:
         pipeline = IndexingPipeline(repo_path=str(repo), index_mode="off")
         result = pipeline.kickoff()
 
-        assert result["status"] == "success"
+        assert result["status"] == "skipped"
         assert result["skipped"] is True
         assert result["index_mode"] == "off"
         assert result["phase"] == "discover"

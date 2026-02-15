@@ -47,9 +47,11 @@ export interface ExecutionStatus {
   phase_progress: PhaseProgress[];
   progress_percent?: number;
   completed_phase_count?: number;
+  skipped_phase_count?: number;
   total_phase_count?: number;
   eta_seconds?: number;
   live_metrics?: LiveMetrics;
+  run_outcome?: string; // 'success' | 'all_skipped' | 'partial' | 'failed'
 }
 
 export interface RunHistoryEntry {

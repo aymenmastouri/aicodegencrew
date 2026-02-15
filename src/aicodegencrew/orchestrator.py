@@ -71,6 +71,9 @@ class PipelineResult:
     message: str
     phases: list[PhaseResult] = field(default_factory=list)
     total_duration: str = ""
+    run_outcome: str = ""  # 'success', 'all_skipped', 'partial', 'failed'
+    skipped_phase_count: int = 0
+    completed_phase_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -78,6 +81,9 @@ class PipelineResult:
             "message": self.message,
             "phases": [p.to_dict() for p in self.phases],
             "total_duration": self.total_duration,
+            "run_outcome": self.run_outcome,
+            "skipped_phase_count": self.skipped_phase_count,
+            "completed_phase_count": self.completed_phase_count,
         }
 
 
@@ -380,6 +386,29 @@ class SDLCOrchestrator:
 
         return True
 
+    def _compute_run_outcome(self) -> str:
+        """Compute the aggregate run outcome from individual phase results.
+
+        Returns one of: 'success', 'all_skipped', 'partial', 'failed'.
+        """
+        if not self.results:
+            return "failed"
+
+        has_failed = any(r.status == "failed" for r in self.results.values())
+        if has_failed:
+            return "failed"
+
+        all_skipped = all(r.status == "skipped" for r in self.results.values())
+        if all_skipped:
+            return "all_skipped"
+
+        has_completed = any(r.status in ("success", "partial") for r in self.results.values())
+        has_skipped = any(r.status == "skipped" for r in self.results.values())
+        if has_completed and has_skipped:
+            return "partial"
+
+        return "success"
+
     def _build_result(self, status: str, message: str) -> PipelineResult:
         """Build final pipeline result."""
         total_duration = ""
@@ -389,17 +418,25 @@ class SDLCOrchestrator:
             total_duration = str(delta).split(".")[0]  # Remove microseconds
             total_seconds = delta.total_seconds()
 
+        run_outcome = self._compute_run_outcome()
+
         logger.info("=" * 60)
         logger.info(f"[Orchestrator] Pipeline {status.upper()}: {message}")
+        logger.info(f"[Orchestrator] Run outcome: {run_outcome}")
         logger.info(f"[Orchestrator] Duration: {total_duration}")
         logger.info("=" * 60)
+
+        skipped_count = sum(1 for r in self.results.values() if r.status == "skipped")
+        completed_count = sum(1 for r in self.results.values() if r.status in ("success", "partial"))
 
         log_metric(
             "pipeline_complete",
             status=status,
+            run_outcome=run_outcome,
             total_duration=round(total_seconds, 2),
             phases_run=len(self.results),
             phases_succeeded=sum(1 for r in self.results.values() if r.is_success()),
+            phases_skipped=skipped_count,
         )
 
         return PipelineResult(
@@ -407,6 +444,9 @@ class SDLCOrchestrator:
             message=message,
             phases=list(self.results.values()),
             total_duration=total_duration,
+            run_outcome=run_outcome,
+            skipped_phase_count=skipped_count,
+            completed_phase_count=completed_count,
         )
 
     def _load_config(self) -> dict[str, Any]:

@@ -438,10 +438,10 @@ class IndexingPipeline:
 
         if self.index_mode == "off":
             logger.info("[SKIP] INDEX_MODE=off")
-            log_metric("phase_complete", phase="discover", status="success", skipped=True)
+            log_metric("phase_complete", phase="discover", status="skipped", skipped=True)
             return {
                 "phase": "discover",
-                "status": "success",
+                "status": "skipped",
                 "message": "Skipped (INDEX_MODE=off)",
                 "skipped": True,
                 "index_mode": self.index_mode,
