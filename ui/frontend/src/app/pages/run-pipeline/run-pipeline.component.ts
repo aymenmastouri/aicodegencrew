@@ -28,6 +28,7 @@ import {
 import { NotificationService } from '../../services/notification.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
 import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../shared/phase-utils';
+import { statusIcon } from '../../shared/status';
 
 @Component({
   selector: 'app-run-pipeline',
@@ -307,7 +308,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
                       } @else if (pp.status === 'failed') {
                         <mat-icon class="step-fail">close</mat-icon>
                       } @else if (pp.status === 'skipped') {
-                        <mat-icon class="step-skip">skip_next</mat-icon>
+                        <mat-icon class="step-check-alt">check_circle</mat-icon>
                       } @else {
                         <span class="step-num">{{ i + 1 }}</span>
                       }
@@ -320,7 +321,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
                       <div class="step-time step-time-active">running</div>
                     }
                     @if (pp.status === 'skipped') {
-                      <div class="step-time step-time-skipped">skipped</div>
+                      <div class="step-time step-time-uptodate">up to date</div>
                     }
                     @if (pp.status === 'running' && pp.sub_phases?.length) {
                       <div class="sub-phase-chips">
@@ -534,7 +535,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         color: #fff;
       }
       .celebration-all_skipped {
-        background: linear-gradient(135deg, var(--cg-gray-400, #9e9e9e) 0%, var(--cg-gray-500, #757575) 100%);
+        background: linear-gradient(135deg, #20c997 0%, var(--cg-success, #28a745) 100%);
         color: #fff;
       }
       .celebration-failure {
@@ -608,14 +609,14 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
         background: var(--cg-error, #dc3545); border-color: var(--cg-error, #dc3545);
       }
       .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      /* Skipped */
+      /* Skipped (up to date) */
       .step-skipped .step-circle {
-        background: var(--cg-gray-100); border-color: var(--cg-gray-200);
+        background: var(--cg-success, #28a745); border-color: var(--cg-success, #28a745);
         opacity: 0.7;
       }
-      .step-skip { font-size: 18px; width: 18px; height: 18px; color: var(--cg-gray-400); }
-      .step-skipped .step-label { color: var(--cg-gray-400); text-decoration: line-through; }
-      .step-time-skipped { color: var(--cg-gray-400); font-style: italic; }
+      .step-check-alt { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      .step-skipped .step-label { color: var(--cg-success); opacity: 0.8; }
+      .step-time-uptodate { color: var(--cg-success); font-style: italic; opacity: 0.8; }
       .step-label {
         margin-top: 8px; font-size: 11px; font-weight: 500;
         color: var(--cg-gray-500); text-align: center;
@@ -881,7 +882,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     switch (this.celebrationType) {
       case 'success': return 'check_circle';
       case 'partial': return 'check_circle';
-      case 'all_skipped': return 'skip_next';
+      case 'all_skipped': return 'check_circle';
       case 'failure': return 'error_outline';
       default: return 'info';
     }
@@ -891,7 +892,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     switch (this.celebrationType) {
       case 'success': return 'Run Completed Successfully';
       case 'partial': return 'Run Completed (Partial)';
-      case 'all_skipped': return 'All Phases Up To Date';
+      case 'all_skipped': return 'Run Completed — Already Current';
       case 'failure': return 'Run Failed';
       default: return '';
     }
@@ -902,14 +903,19 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     const elapsed = this.formatDuration(this.status.elapsed_seconds || 0);
     const completed = this.status.completed_phase_count || 0;
     const skipped = this.status.skipped_phase_count || 0;
+    const total = this.status.total_phase_count || 0;
 
     switch (this.celebrationType) {
       case 'success':
-        return `${completed} phases in ${elapsed}`;
+        return `${completed} phase${completed !== 1 ? 's' : ''} in ${elapsed}`;
       case 'partial':
-        return `${completed} phases completed, ${skipped} skipped in ${elapsed}`;
+        return `${completed} completed, ${skipped} already current in ${elapsed}`;
       case 'all_skipped':
-        return 'No changes detected';
+        if (total === 1) {
+          const name = this.status.phase_progress?.[0]?.name || 'Phase';
+          return `${name} already up to date — no changes detected`;
+        }
+        return `All ${total} phases already up to date — no changes detected`;
       case 'failure':
         return 'Check logs for details';
       default:
@@ -990,13 +996,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   stateIcon(state: string): string {
-    switch (state) {
-      case 'completed': return 'check_circle';
-      case 'failed': return 'error';
-      case 'running': return 'sync';
-      case 'cancelled': return 'cancel';
-      default: return 'radio_button_unchecked';
-    }
+    return statusIcon(state);
   }
 
   humanize(phaseId: string): string {

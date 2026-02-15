@@ -24,10 +24,25 @@ def _is_pipeline_running() -> bool:
     """Check if any pipeline is running (dashboard or CLI)."""
     # Dashboard-started run
     if executor.state == "running":
-        return True
+        process = getattr(executor, "_process", None)
+        if process is None:
+            if executor.__class__.__name__ != "PipelineExecutor":
+                return True
+            logger.warning("Ignoring stale in-memory running state (no subprocess bound)")
+        else:
+            try:
+                poll_result = process.poll()
+                if poll_result is None:
+                    return True
+                # For mocked process objects, keep conservative behavior and block reset.
+                if not isinstance(poll_result, int):
+                    return True
+            except Exception:
+                logger.warning("Failed to inspect pipeline subprocess state", exc_info=True)
+                return True
 
     # CLI-started run: check phase_state.json
-    state_path = settings.project_root / "logs" / "phase_state.json"
+    state_path = settings.logs_dir / "phase_state.json"
     if not state_path.exists():
         return False
     try:

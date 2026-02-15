@@ -41,8 +41,10 @@ warnings.filterwarnings("ignore", message=".*LangChain.*")
 
 from dotenv import load_dotenv
 
-# load_dotenv moved into main() to support --env flag
 from .phase_registry import PHASES, get_cleanup_targets
+
+# load_dotenv moved into main() to support --env flag
+from .pipeline_contract import build_pipeline_contract
 from .shared.utils.logger import logger
 
 # =============================================================================
@@ -257,10 +259,12 @@ def _resolve_phases_to_run(
     Uses phases_config.yaml as single source of truth instead of fragile
     string matching.
     """
+    contract = build_pipeline_contract(orchestrator.config, config_path=orchestrator.config_path)
+
     if phases:
         # Validate explicit phase names against config
-        known_phases = set(orchestrator.config.get("phases", {}).keys())
-        unknown = set(phases) - known_phases
+        known_phases = set(contract.get_phase_ids())
+        unknown = set(contract.get_unknown_phases(phases))
         if unknown:
             raise ValueError(
                 f"Unknown phase(s): {', '.join(sorted(unknown))}. Valid phases: {', '.join(sorted(known_phases))}"
@@ -269,14 +273,14 @@ def _resolve_phases_to_run(
 
     if preset:
         # Validate preset name against config
-        preset_phases = orchestrator.get_preset_phases(preset)
+        preset_phases = contract.get_preset_phases(preset)
         if not preset_phases:
-            known_presets = list(orchestrator.config.get("presets", {}).keys())
+            known_presets = contract.get_preset_names()
             raise ValueError(f"Unknown preset: '{preset}'. Valid presets: {', '.join(known_presets)}")
         return set(preset_phases)
 
     # Default: all enabled phases
-    return set(orchestrator.get_enabled_phases())
+    return set(contract.get_enabled_phases())
 
 
 def _export_run_report(

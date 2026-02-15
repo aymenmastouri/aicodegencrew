@@ -17,9 +17,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
 
-import yaml
-
 from .phase_registry import outputs_exist
+from .pipeline_contract import (
+    PhaseContext,
+    PipelineContract,
+    build_pipeline_contract,
+    compute_run_outcome,
+    is_phase_result_success,
+    load_pipeline_contract,
+    normalize_phase_result_status,
+    phase_result_to_phase_state_status,
+)
 from .shared.utils.logger import log_metric, logger
 from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_failed, set_phase_running
 
@@ -52,7 +60,7 @@ class PhaseResult:
     duration_seconds: float = 0.0
 
     def is_success(self) -> bool:
-        return self.status in ("success", "partial", "skipped")
+        return is_phase_result_success(self.status)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -109,8 +117,10 @@ class SDLCOrchestrator:
         """Initialize with optional config path."""
         self.config_path = config_path or self._default_config_path()
         self.config = self._load_config()
+        self.contract: PipelineContract = build_pipeline_contract(self.config, config_path=self.config_path)
         self.phases: dict[str, PhaseExecutable] = {}
         self.results: dict[str, PhaseResult] = {}
+        self.phase_context = PhaseContext()
         self._start_time: datetime | None = None
 
         logger.info("[Orchestrator] Initialized")
@@ -155,14 +165,22 @@ class SDLCOrchestrator:
         """
         self._start_time = datetime.now()
         self.results.clear()
+        self.contract = self._contract_from_current_config()
 
         # Initialize phase state tracking
         import uuid as _uuid
 
-        init_run(_uuid.uuid4().hex[:8])
+        run_id = _uuid.uuid4().hex[:8]
+        init_run(run_id)
 
         # Determine phases to run
         phases_to_run = self._resolve_phases(preset, phases)
+        self.phase_context = PhaseContext(
+            run_id=run_id,
+            preset_id=preset,
+            requested_phases=list(phases or []),
+            resolved_phases=list(phases_to_run),
+        )
 
         if not phases_to_run:
             return PipelineResult(
@@ -186,11 +204,11 @@ class SDLCOrchestrator:
 
     def get_presets(self) -> list[str]:
         """Get available preset names."""
-        return list(self.config.get("presets", {}).keys())
+        return self._contract_from_current_config().get_preset_names()
 
     def get_phase_config(self, phase_id: str) -> dict[str, Any]:
         """Get configuration for a specific phase."""
-        return self.config.get("phases", {}).get(phase_id, {})
+        return self._contract_from_current_config().get_phase_config(phase_id)
 
     def is_phase_enabled(self, phase_id: str) -> bool:
         """Check if a phase is enabled in configuration."""
@@ -198,14 +216,11 @@ class SDLCOrchestrator:
 
     def get_enabled_phases(self) -> list[str]:
         """Get enabled phases sorted by order."""
-        return self._get_enabled_phases()
+        return self._contract_from_current_config().get_enabled_phases()
 
     def get_preset_phases(self, preset_name: str) -> list[str]:
         """Get phases for a preset execution mode."""
-        value = self.config.get("presets", {}).get(preset_name, [])
-        if isinstance(value, dict):
-            return value.get("phases", [])
-        return value
+        return self._contract_from_current_config().get_preset_phases(preset_name)
 
     # -------------------------------------------------------------------------
     # CONTEXT (Backward Compatibility)
@@ -218,6 +233,7 @@ class SDLCOrchestrator:
             "phases": {pid: {"status": r.status, "output": r.output} for pid, r in self.results.items()},
             "knowledge": {},
             "shared": {},
+            "pipeline_context": self.phase_context.to_dict(),
         }
 
     # -------------------------------------------------------------------------
@@ -226,19 +242,15 @@ class SDLCOrchestrator:
 
     def _resolve_phases(self, preset: str | None, explicit_phases: list[str] | None) -> list[str]:
         """Resolve which phases to run."""
-        if explicit_phases:
-            phases = explicit_phases
-        elif preset:
-            preset_value = self.config.get("presets", {}).get(preset, [])
-            phases = preset_value.get("phases", []) if isinstance(preset_value, dict) else preset_value
-            if not phases:
-                logger.warning(f"[Orchestrator] Unknown preset: {preset}")
-        else:
-            # Default: return enabled phases in order
-            phases = self._get_enabled_phases()
+        phases = self._contract_from_current_config().resolve_requested_phases(
+            preset=preset,
+            explicit_phases=explicit_phases,
+        )
+        if preset and not phases:
+            logger.warning(f"[Orchestrator] Unknown preset: {preset}")
 
         # Filter out unregistered phases (e.g., phase0 when INDEX_MODE=off)
-        filtered = []
+        filtered: list[str] = []
         for phase_id in phases:
             if phase_id in self.phases:
                 filtered.append(phase_id)
@@ -250,14 +262,12 @@ class SDLCOrchestrator:
 
     def _get_enabled_phases(self) -> list[str]:
         """Get enabled phases sorted by order."""
-        phases_config = self.config.get("phases", {})
-        enabled = [(cfg.get("order", 999), pid) for pid, cfg in phases_config.items() if cfg.get("enabled", False)]
-        enabled.sort(key=lambda x: x[0])
-        return [pid for _, pid in enabled]
+        return self._contract_from_current_config().get_enabled_phases()
 
     def _execute_phase(self, phase_id: str) -> PhaseResult:
         """Execute a single phase."""
         start = datetime.now()
+        self.phase_context.current_phase = phase_id
 
         # Check if registered
         if phase_id not in self.phases:
@@ -286,12 +296,15 @@ class SDLCOrchestrator:
 
         try:
             executable = self.phases[phase_id]
-            config = self.get_phase_config(phase_id).get("config", {})
+            config = self._contract_from_current_config().phases.get(phase_id)
+            phase_config = dict(config.config) if config else {}
 
             # Build inputs
             inputs = {
-                "config": config,
+                "config": phase_config,
                 "previous_results": {pid: r.output for pid, r in self.results.items() if r.is_success()},
+                "phase_context": self.phase_context.to_dict(),
+                "context": self.context,
             }
 
             # Handle different execution styles
@@ -299,29 +312,32 @@ class SDLCOrchestrator:
 
             # Phase implementations may report their own status in returned dict.
             phase_status = "success"
-            metric_status = "success"
             phase_message = "Completed"
             if isinstance(output, dict):
-                raw_status = str(output.get("status", "")).lower()
+                raw_status = output.get("status")
+                phase_status = normalize_phase_result_status(raw_status, default="success")
                 raw_message = output.get("message")
-                if raw_status in ("failed", "error"):
+                if phase_status == "failed":
                     raise RuntimeError(str(raw_message or f"Phase {phase_id} reported failure"))
-                if raw_status == "partial":
-                    phase_status = "partial"
-                    metric_status = "partial"
+                if phase_status == "partial":
                     phase_message = str(raw_message or "Completed with degradations")
-                elif raw_status == "skipped":
-                    phase_status = "skipped"
-                    metric_status = "skipped"
+                elif phase_status == "skipped":
                     phase_message = str(raw_message or "Skipped")
-                elif raw_status in ("completed", "success", "dry_run"):
+                elif phase_status == "success":
                     phase_message = str(raw_message or "Completed")
 
             duration = (datetime.now() - start).total_seconds()
+            metric_status = phase_result_to_phase_state_status(phase_status)
+            phase_state_status = phase_result_to_phase_state_status(phase_status)
 
             logger.info(f"[Phase] {phase_id} - {phase_status.capitalize()} in {duration:.2f}s")
             log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status=metric_status)
-            set_phase_completed(phase_id, duration, status=phase_status)
+            set_phase_completed(phase_id, duration, status=phase_state_status)
+            self.phase_context.metrics[phase_id] = {
+                "duration_seconds": round(duration, 2),
+                "status": metric_status,
+            }
+            self.phase_context.set_phase_result(phase_id=phase_id, status=phase_status, output=output, message=phase_message)
 
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
@@ -339,6 +355,8 @@ class SDLCOrchestrator:
             logger.error(f"[Phase] {phase_id} - Failed: {e}", exc_info=True)
             log_metric("phase_failed", phase_id=phase_id, duration_seconds=round(duration, 2), error=str(e)[:500])
             set_phase_failed(phase_id, duration, str(e))
+            self.phase_context.errors.append(f"{phase_id}: {e}")
+            self.phase_context.set_phase_result(phase_id=phase_id, status="failed", output=None, message=str(e))
 
             return PhaseResult(
                 phase_id=phase_id,
@@ -359,8 +377,7 @@ class SDLCOrchestrator:
         """Check if phase dependencies are satisfied (existence + validation)."""
         from .shared.validation import PhaseOutputValidator
 
-        phase_config = self.get_phase_config(phase_id)
-        dependencies = phase_config.get("dependencies", [])
+        dependencies = self._contract_from_current_config().get_dependencies(phase_id)
 
         validator = PhaseOutputValidator()
 
@@ -391,23 +408,7 @@ class SDLCOrchestrator:
 
         Returns one of: 'success', 'all_skipped', 'partial', 'failed'.
         """
-        if not self.results:
-            return "failed"
-
-        has_failed = any(r.status == "failed" for r in self.results.values())
-        if has_failed:
-            return "failed"
-
-        all_skipped = all(r.status == "skipped" for r in self.results.values())
-        if all_skipped:
-            return "all_skipped"
-
-        has_completed = any(r.status in ("success", "partial") for r in self.results.values())
-        has_skipped = any(r.status == "skipped" for r in self.results.values())
-        if has_completed and has_skipped:
-            return "partial"
-
-        return "success"
+        return compute_run_outcome(result.status for result in self.results.values())
 
     def _build_result(self, status: str, message: str) -> PipelineResult:
         """Build final pipeline result."""
@@ -450,16 +451,14 @@ class SDLCOrchestrator:
         )
 
     def _load_config(self) -> dict[str, Any]:
-        """Load configuration from YAML."""
-        try:
-            with open(self.config_path, encoding="utf-8") as f:
-                return yaml.safe_load(f) or {}
-        except FileNotFoundError:
-            logger.warning(f"[Orchestrator] Config not found: {self.config_path}")
-            return self._default_config()
-        except Exception as e:
-            logger.error(f"[Orchestrator] Config load error: {e}")
-            return self._default_config()
+        """Load configuration from YAML via the central pipeline contract."""
+        contract = load_pipeline_contract(self.config_path, fallback_config=self._default_config())
+        return dict(contract.raw_config)
+
+    def _contract_from_current_config(self) -> PipelineContract:
+        """Build contract from mutable runtime config (respects CLI toggles)."""
+        self.contract = build_pipeline_contract(self.config, config_path=self.config_path)
+        return self.contract
 
     def _default_config_path(self) -> str:
         """Get default config path."""

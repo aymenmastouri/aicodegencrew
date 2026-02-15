@@ -322,3 +322,13 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "phase5: Phase 5 tests (implement)")
     config.addinivalue_line("markers", "e2e: End-to-end tests")
     config.addinivalue_line("markers", "slow: Slow tests (>10 seconds)")
+
+
+@pytest.fixture(autouse=True)
+def _isolate_phase_state(tmp_path):
+    """Redirect phase_state.json to tmp dir for every test."""
+    from aicodegencrew.shared.utils.phase_state import configure_state_dir
+
+    configure_state_dir(tmp_path)
+    yield
+    configure_state_dir(None)
