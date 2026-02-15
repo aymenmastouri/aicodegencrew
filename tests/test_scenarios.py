@@ -476,8 +476,12 @@ class TestScenario3ErrorRecovery:
         failed = PhaseResult(phase_id="p1", status="failed", message="err")
         assert failed.is_success() is False
 
+        # skipped and partial are treated as non-blocking (pipeline continues)
         skipped = PhaseResult(phase_id="p1", status="skipped", message="skip")
-        assert skipped.is_success() is False
+        assert skipped.is_success() is True
+
+        partial = PhaseResult(phase_id="p1", status="partial", message="degraded")
+        assert partial.is_success() is True
 
 
 # =============================================================================

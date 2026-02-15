@@ -93,12 +93,12 @@ def set_phase_running(phase_id: str) -> None:
     _write_atomic(data)
 
 
-def set_phase_completed(phase_id: str, duration: float) -> None:
-    """Mark a phase as completed."""
+def set_phase_completed(phase_id: str, duration: float, status: str = "completed") -> None:
+    """Mark a phase as completed (or partial)."""
     data = _read_raw()
     phases = data.setdefault("phases", {})
     entry = phases.get(phase_id, {})
-    entry["status"] = "completed"
+    entry["status"] = status if status in ("completed", "partial") else "completed"
     entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
     entry["duration_seconds"] = round(duration, 2)
     entry["error"] = None

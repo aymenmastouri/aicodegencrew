@@ -45,6 +45,7 @@ class OutputWriterStage:
         llm_calls: int = 0,
         total_tokens: int = 0,
         build_verification: BuildVerificationResult | None = None,
+        degradation_reasons: list[str] | None = None,
     ) -> CodegenReport:
         """
         Write files to target repo and generate report.
@@ -78,6 +79,7 @@ class OutputWriterStage:
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
                 build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
             )
 
         if self.dry_run:
@@ -92,6 +94,7 @@ class OutputWriterStage:
                 total_tokens=total_tokens,
                 dry_run=True,
                 build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
             )
             self._write_report(report)
             return report
@@ -108,6 +111,7 @@ class OutputWriterStage:
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
                 build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
             )
 
         if not self._is_clean_working_tree():
@@ -121,6 +125,7 @@ class OutputWriterStage:
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
                 build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
             )
 
         # Create branch
@@ -134,6 +139,7 @@ class OutputWriterStage:
                 duration_seconds=duration_seconds,
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
+                degradation_reasons=degradation_reasons,
             )
 
         # Write files
@@ -168,6 +174,7 @@ class OutputWriterStage:
             llm_calls=llm_calls,
             total_tokens=total_tokens,
             build_verification=build_verification,
+            degradation_reasons=degradation_reasons,
         )
 
         # Write report JSON
@@ -228,6 +235,7 @@ class OutputWriterStage:
         llm_calls: int = 0,
         total_tokens: int = 0,
         build_verification: BuildVerificationResult | None = None,
+        degradation_reasons: list[str] | None = None,
     ) -> CodegenReport:
         """
         Write files and commit for a single task in cascade mode.
@@ -258,6 +266,7 @@ class OutputWriterStage:
                 llm_calls=llm_calls,
                 total_tokens=total_tokens,
                 build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
             )
 
         if self.dry_run:
@@ -276,6 +285,7 @@ class OutputWriterStage:
                 total_tokens=total_tokens,
                 dry_run=True,
                 build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
             )
             self._write_report(report)
             return report
@@ -313,6 +323,7 @@ class OutputWriterStage:
             llm_calls=llm_calls,
             total_tokens=total_tokens,
             build_verification=build_verification,
+            degradation_reasons=degradation_reasons,
         )
 
         self._write_report(report)
@@ -351,6 +362,7 @@ class OutputWriterStage:
         total_tokens: int = 0,
         dry_run: bool = False,
         build_verification: BuildVerificationResult | None = None,
+        degradation_reasons: list[str] | None = None,
     ) -> CodegenReport:
         """Build a CodegenReport with cascade fields populated."""
         validation_errors = []
@@ -376,6 +388,7 @@ class OutputWriterStage:
             cascade_position=cascade_position,
             cascade_total=cascade_total,
             prior_task_ids=prior_task_ids or [],
+            degradation_reasons=degradation_reasons or [],
         )
 
     # =========================================================================
@@ -539,12 +552,16 @@ class OutputWriterStage:
         total_tokens: int = 0,
         dry_run: bool = False,
         build_verification: BuildVerificationResult | None = None,
+        degradation_reasons: list[str] | None = None,
     ) -> CodegenReport:
         """Build a CodegenReport."""
         validation_errors = []
         if validation:
             for r in validation.file_results:
                 validation_errors.extend(f"{r.file_path}: {e}" for e in r.errors)
+
+        if degradation_reasons and status == "success":
+            status = "partial"
 
         return CodegenReport(
             task_id=task_id,
@@ -560,4 +577,5 @@ class OutputWriterStage:
             total_tokens=total_tokens,
             dry_run=dry_run,
             build_verification=build_verification,
+            degradation_reasons=degradation_reasons or [],
         )
