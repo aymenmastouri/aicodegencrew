@@ -9,7 +9,7 @@ variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/ui/frontend/.cache/npm"
   NODE_VERSION: "20"
-  PYTHON_VERSION: "3.12"
+  PYTHON_VERSION: "3.11"
 
 # ---------------------------------------------------------------------------
 # Cache templates
