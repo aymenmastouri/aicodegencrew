@@ -90,17 +90,26 @@ def write_env(values: dict[str, str], path: Path | None = None) -> None:
 
 
 def get_env_schema() -> list[EnvVariable]:
-    """Return variable metadata from .env.example with current values from .env."""
+    """Return variable metadata combining .env.example (descriptions) and .env (values/extra keys)."""
     example_vars = _parse_example_file()
     current_values = read_env()
 
+    # Build map from example for fast lookup and description reuse
+    example_map: dict[str, str] = {name: desc for name, desc in example_vars}
+
+    # Preserve order: example keys first, then any additional keys found in .env
+    ordered_keys: list[str] = list(example_map.keys())
+    for key in current_values.keys():
+        if key not in example_map:
+            ordered_keys.append(key)
+
     variables: list[EnvVariable] = []
-    for name, description in example_vars:
+    for name in ordered_keys:
         variables.append(
             EnvVariable(
                 name=name,
                 value=current_values.get(name, ""),
-                description=description,
+                description=example_map.get(name, ""),
                 group=_classify_group(name),
                 required=name in _REQUIRED_KEYS,
             )
