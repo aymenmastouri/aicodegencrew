@@ -74,9 +74,9 @@ def _resolve_status(
         if st == "failed":
             return "failed", duration, error
 
-        if st == "completed":
+        if st in ("completed", "partial"):
             if output_exists:
-                return "completed", duration, None
+                return st, duration, None
             elif enabled:
                 # Output deleted (reset happened after completion)
                 return "ready", None, None
