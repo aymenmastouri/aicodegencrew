@@ -108,25 +108,27 @@ const NUMERIC_FIELDS = new Set([
               <ng-template matTabContent>
                 <div class="tab-content">
                   <div class="tab-description">Repository path, output directories, and general settings</div>
-                  @for (v of getTabVars('general'); track v.name) {
-                    <mat-form-field appearance="outline" class="field-full">
-                      <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                      @if (getOptions(v.name); as opts) {
-                        <mat-select [(ngModel)]="v.value">
-                          @for (opt of opts; track opt.value) {
-                            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                          }
-                        </mat-select>
-                      } @else if (isNumeric(v.name)) {
-                        <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                      } @else {
-                        <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                      }
-                      @if (v.description) {
-                        <mat-hint>{{ v.description }}</mat-hint>
-                      }
-                    </mat-form-field>
-                  }
+                  <div class="field-grid">
+                    @for (v of getTabVars('general'); track v.name) {
+                      <mat-form-field appearance="outline" class="field-full">
+                        <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
+                        @if (getOptions(v.name); as opts) {
+                          <mat-select [(ngModel)]="v.value">
+                            @for (opt of opts; track opt.value) {
+                              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                            }
+                          </mat-select>
+                        } @else if (isNumeric(v.name)) {
+                          <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                        } @else {
+                          <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                        }
+                        @if (v.description) {
+                          <mat-hint>{{ v.description }}</mat-hint>
+                        }
+                      </mat-form-field>
+                    }
+                  </div>
                   <div class="tab-actions">
                     <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
                       <mat-icon>restart_alt</mat-icon> Reset to defaults
@@ -148,32 +150,34 @@ const NUMERIC_FIELDS = new Set([
               <ng-template matTabContent>
                 <div class="tab-content">
                   <div class="tab-description">Language model provider, API keys, embeddings, and token limits</div>
-                  @for (v of getTabVars('llm'); track v.name) {
-                    <mat-form-field appearance="outline" class="field-full">
-                      <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                      @if (getOptions(v.name); as opts) {
-                        <mat-select [(ngModel)]="v.value">
-                          @for (opt of opts; track opt.value) {
-                            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                  <div class="field-grid">
+                    @for (v of getTabVars('llm'); track v.name) {
+                      <mat-form-field appearance="outline" class="field-full">
+                        <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
+                        @if (getOptions(v.name); as opts) {
+                          <mat-select [(ngModel)]="v.value">
+                            @for (opt of opts; track opt.value) {
+                              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                            }
+                          </mat-select>
+                        } @else if (isNumeric(v.name)) {
+                          <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                        } @else {
+                          <input matInput [(ngModel)]="v.value"
+                            [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
+                            [placeholder]="v.description || ''" />
+                          @if (isSecret(v.name)) {
+                            <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
+                              <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
+                            </button>
                           }
-                        </mat-select>
-                      } @else if (isNumeric(v.name)) {
-                        <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                      } @else {
-                        <input matInput [(ngModel)]="v.value"
-                          [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
-                          [placeholder]="v.description || ''" />
-                        @if (isSecret(v.name)) {
-                          <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
-                            <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
-                          </button>
                         }
-                      }
-                      @if (v.description) {
-                        <mat-hint>{{ v.description }}</mat-hint>
-                      }
-                    </mat-form-field>
-                  }
+                        @if (v.description) {
+                          <mat-hint>{{ v.description }}</mat-hint>
+                        }
+                      </mat-form-field>
+                    }
+                  </div>
                   <div class="tab-actions">
                     <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
                       <mat-icon>restart_alt</mat-icon> Reset to defaults
@@ -240,25 +244,27 @@ const NUMERIC_FIELDS = new Set([
               <ng-template matTabContent>
                 <div class="tab-content">
                   <div class="tab-description">Logging, tracing, skip flags, and directory overrides</div>
-                  @for (v of getTabVars('advanced'); track v.name) {
-                    <mat-form-field appearance="outline" class="field-full">
-                      <mat-label>{{ v.name }}</mat-label>
-                      @if (getOptions(v.name); as opts) {
-                        <mat-select [(ngModel)]="v.value">
-                          @for (opt of opts; track opt.value) {
-                            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                          }
-                        </mat-select>
-                      } @else if (isNumeric(v.name)) {
-                        <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                      } @else {
-                        <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                      }
-                      @if (v.description) {
-                        <mat-hint>{{ v.description }}</mat-hint>
-                      }
-                    </mat-form-field>
-                  }
+                  <div class="field-grid">
+                    @for (v of getTabVars('advanced'); track v.name) {
+                      <mat-form-field appearance="outline" class="field-full">
+                        <mat-label>{{ v.name }}</mat-label>
+                        @if (getOptions(v.name); as opts) {
+                          <mat-select [(ngModel)]="v.value">
+                            @for (opt of opts; track opt.value) {
+                              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                            }
+                          </mat-select>
+                        } @else if (isNumeric(v.name)) {
+                          <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                        } @else {
+                          <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
+                        }
+                        @if (v.description) {
+                          <mat-hint>{{ v.description }}</mat-hint>
+                        }
+                      </mat-form-field>
+                    }
+                  </div>
                   <div class="tab-actions">
                     <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
                       <mat-icon>restart_alt</mat-icon> Reset to defaults
@@ -278,6 +284,11 @@ const NUMERIC_FIELDS = new Set([
   styles: [
     `
       /* Uses global .page-header, .page-icon, .page-title, .page-subtitle, .loading-center */
+      .page-container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 16px 24px;
+      }
       .settings-tabs {
         background: #fff;
         border-radius: 12px;
@@ -292,6 +303,11 @@ const NUMERIC_FIELDS = new Set([
       }
       .tab-content {
         padding: 24px;
+      }
+      .field-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px 16px;
       }
       .tab-description {
         font-size: 13px;
