@@ -105,7 +105,7 @@ import { humanizePhaseId } from '../../shared/phase-utils';
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let p">
                   <button mat-icon-button color="warn"
-                    [disabled]="getPhaseStatus(p.id) !== 'completed' && getPhaseStatus(p.id) !== 'failed'"
+                    [disabled]="getPhaseStatus(p.id) !== 'completed' && getPhaseStatus(p.id) !== 'partial' && getPhaseStatus(p.id) !== 'failed'"
                     (click)="resetPhase(p.id)"
                     matTooltip="Reset this phase">
                     <mat-icon>restart_alt</mat-icon>
@@ -286,7 +286,7 @@ export class PhasesComponent implements OnInit, OnDestroy {
   hasResettablePhases(): boolean {
     if (!this.pipeline) return false;
     return this.pipeline.phases.some(
-      (p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover',
+      (p) => (p.status === 'completed' || p.status === 'partial' || p.status === 'failed') && p.id !== 'discover',
     );
   }
 
