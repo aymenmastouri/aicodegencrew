@@ -255,27 +255,27 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                   </h3>
                   <div class="phase-timeline">
                     @for (phase of detail.phase_results; track $index) {
-                      <div class="timeline-item" [class]="'tl-' + (phase['status'] || 'unknown')">
+                      <div class="timeline-item" [class]="'tl-' + (phase.status || 'unknown')">
                         <div class="tl-dot">
                           <mat-icon class="tl-icon">
-                            {{ phase['status'] === 'completed' ? 'check_circle' :
-                               phase['status'] === 'failed' ? 'error' :
-                               phase['status'] === 'skipped' ? 'skip_next' : 'radio_button_unchecked' }}
+                            {{ phase.status === 'completed' ? 'check_circle' :
+                               phase.status === 'failed' ? 'error' :
+                               phase.status === 'skipped' ? 'skip_next' : 'radio_button_unchecked' }}
                           </mat-icon>
                         </div>
                         <div class="tl-content">
                           <div class="tl-header">
-                            <span class="tl-name">{{ phase['name'] || humanize(phase['phase_id']) || 'Phase ' + $index }}</span>
-                            <span class="status-chip status-sm" [class]="'status-' + (phase['status'] || 'unknown')">
-                              {{ phase['status'] || 'unknown' }}
+                            <span class="tl-name">{{ phase.name || humanize(phase.phase_id || '') || 'Phase ' + $index }}</span>
+                            <span class="status-chip status-sm" [class]="'status-' + (phase.status || 'unknown')">
+                              {{ phase.status || 'unknown' }}
                             </span>
-                            @if (phase['duration'] || phase['duration_seconds']) {
-                              <span class="tl-duration">{{ phase['duration'] || (phase['duration_seconds'] + 's') }}</span>
+                            @if (phase.duration || phase.duration_seconds) {
+                              <span class="tl-duration">{{ phase.duration || (phase.duration_seconds + 's') }}</span>
                             }
                           </div>
-                          @if (phase['output_files'] && phase['output_files'].length > 0) {
+                          @if (phase.output_files && phase.output_files.length > 0) {
                             <div class="tl-files">
-                              @for (file of phase['output_files']; track file) {
+                              @for (file of phase.output_files; track file) {
                                 <span class="file-chip">
                                   <mat-icon class="chip-icon">description</mat-icon>
                                   {{ getFileName(file) }}
@@ -283,8 +283,8 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                               }
                             </div>
                           }
-                          @if (phase['error']) {
-                            <div class="tl-error">{{ phase['error'] }}</div>
+                          @if (phase.error) {
+                            <div class="tl-error">{{ phase.error }}</div>
                           }
                         </div>
                       </div>
@@ -871,7 +871,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
     return path.split('/').pop() || path.split('\\').pop() || path;
   }
 
-  objectKeys(obj: Record<string, any>): string[] {
+  objectKeys(obj: Record<string, unknown>): string[] {
     return Object.keys(obj);
   }
 }

@@ -67,6 +67,23 @@ export interface RunHistoryEntry {
   total_tokens?: number;
 }
 
+export interface PhaseResultEntry {
+  phase_id?: string;
+  name?: string;
+  status?: string;
+  duration?: string;
+  duration_seconds?: number;
+  output_files?: string[];
+  error?: string;
+  [key: string]: unknown;
+}
+
+export interface MetricEventEntry {
+  event?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+}
+
 export interface HistoryStats {
   total_runs: number;
   total_resets: number;
@@ -91,9 +108,9 @@ export interface RunDetail {
   duration?: string;
   duration_seconds?: number;
   trigger: string;
-  phase_results: any[];
-  metrics_events: any[];
-  environment: Record<string, any>;
+  phase_results: PhaseResultEntry[];
+  metrics_events: MetricEventEntry[];
+  environment: Record<string, unknown>;
 }
 
 export interface ResetPreview {

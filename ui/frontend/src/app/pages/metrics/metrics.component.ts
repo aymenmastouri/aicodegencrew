@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FormsModule } from '@angular/forms';
 
-import { ApiService, MetricEvent, MetricsSummary } from '../../services/api.service';
+import { ApiService, MetricsSummary } from '../../services/api.service';
 
 @Component({
   selector: 'app-metrics',

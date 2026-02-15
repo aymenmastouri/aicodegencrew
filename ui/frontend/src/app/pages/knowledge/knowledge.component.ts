@@ -12,8 +12,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 
 import { marked } from 'marked';
-import { ApiService, KnowledgeFile, KnowledgeSummary } from '../../services/api.service';
-import { humanizePhaseId, formatBytes as formatBytesUtil } from '../../shared/phase-utils';
+import { ApiService, KnowledgeFile } from '../../services/api.service';
+import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
 /** A group of files within a section. */
 interface FileGroup {
@@ -130,7 +130,15 @@ interface FileGroup {
                 } @else {
                   <div class="doc-list">
                     @for (file of g.files; track file.path) {
-                      <div class="doc-row" [class.doc-active]="selectedFile === file" (click)="viewFile(file)">
+                      <div
+                        class="doc-row"
+                        [class.doc-active]="selectedFile === file"
+                        role="button"
+                        tabindex="0"
+                        (click)="viewFile(file)"
+                        (keydown.enter)="viewFile(file)"
+                        (keydown.space)="viewFile(file); $event.preventDefault()"
+                      >
                         <mat-icon class="doc-icon" [class]="'type-' + file.type">{{ fileIcon(file.type) }}</mat-icon>
                         <div class="doc-info">
                           <span class="doc-name">{{ cleanDocName(file.name) }}</span>
@@ -164,7 +172,14 @@ interface FileGroup {
             <div class="data-groups">
               @for (g of dataGroups; track g.id) {
                 <div class="data-group">
-                  <div class="dg-header" (click)="toggleDataGroup(g.id)">
+                  <div
+                    class="dg-header"
+                    role="button"
+                    tabindex="0"
+                    (click)="toggleDataGroup(g.id)"
+                    (keydown.enter)="toggleDataGroup(g.id)"
+                    (keydown.space)="toggleDataGroup(g.id); $event.preventDefault()"
+                  >
                     <mat-icon class="dg-icon">{{ g.icon }}</mat-icon>
                     <span class="dg-label">{{ g.label }}</span>
                     <span class="dg-phase">{{ g.phase }}</span>
@@ -174,7 +189,15 @@ interface FileGroup {
                   @if (expandedDataGroups.has(g.id)) {
                     <div class="dg-files">
                       @for (file of g.files; track file.path) {
-                        <div class="dg-file" [class.doc-active]="selectedFile === file" (click)="viewFile(file)">
+                        <div
+                          class="dg-file"
+                          [class.doc-active]="selectedFile === file"
+                          role="button"
+                          tabindex="0"
+                          (click)="viewFile(file)"
+                          (keydown.enter)="viewFile(file)"
+                          (keydown.space)="viewFile(file); $event.preventDefault()"
+                        >
                           <mat-icon class="dg-file-icon" [class]="'type-' + file.type">{{ fileIcon(file.type) }}</mat-icon>
                           <span class="dg-file-name">{{ file.name }}</span>
                           <span class="dg-file-size">{{ formatBytes(file.size_bytes) }}</span>
@@ -202,7 +225,15 @@ interface FileGroup {
             </div>
             <div class="doc-list">
               @for (file of otherFiles; track file.path) {
-                <div class="doc-row" [class.doc-active]="selectedFile === file" (click)="viewFile(file)">
+                <div
+                  class="doc-row"
+                  [class.doc-active]="selectedFile === file"
+                  role="button"
+                  tabindex="0"
+                  (click)="viewFile(file)"
+                  (keydown.enter)="viewFile(file)"
+                  (keydown.space)="viewFile(file); $event.preventDefault()"
+                >
                   <mat-icon class="doc-icon" [class]="'type-' + file.type">{{ fileIcon(file.type) }}</mat-icon>
                   <div class="doc-info">
                     <span class="doc-name">{{ file.name }}</span>
@@ -761,7 +792,7 @@ export class KnowledgeComponent implements OnInit {
         const text = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
         this.selectedContent = text;
         if (this.canRender(file)) {
-          this.renderContent(file, text, content);
+          this.renderContent(file, text);
         }
         this.fileLoading = false;
         this.cdr.markForCheck();
@@ -812,7 +843,7 @@ export class KnowledgeComponent implements OnInit {
 
   // ─── Rendering ──────────────────────────────────────────────────
 
-  private renderContent(file: KnowledgeFile, text: string, raw: unknown): void {
+  private renderContent(file: KnowledgeFile, text: string): void {
     if (file.type === 'md') {
       const html = marked.parse(text) as string;
       this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(html);
