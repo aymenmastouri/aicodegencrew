@@ -130,7 +130,7 @@ Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
 
 | Name | LLM | Description |
 |------|:---:|-------------|
-| Discover | No | Vector-index repository into ChromaDB |
+| Discover | No | Vector-index into ChromaDB + symbol extraction, evidence store, repo manifest, budget prioritization |
 | Extract | No | Deterministic extraction: components, relations, interfaces |
 | Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
 | Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
@@ -144,7 +144,7 @@ Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
 ### Data Flow
 
 ```
-Repository ─► Discover   ─► knowledge/discover/    (ChromaDB)
+Repository ─► Discover   ─► knowledge/discover/    (ChromaDB + symbols.jsonl + evidence.jsonl + repo_manifest.json)
              Extract    ─► knowledge/extract/     (architecture_facts.json)
              Analyze    ─► knowledge/analyze/     (analyzed_architecture.json)
              Document   ─► knowledge/document/    (C4 + arc42 + DrawIO)
@@ -178,6 +178,7 @@ Copy `.env.example` to `.env` and configure. Key variables:
 | `MODEL` | LLM model identifier | `gpt-oss-120b` |
 | `API_BASE` | LLM API endpoint URL | `http://localhost:11434/v1` |
 | `INDEX_MODE` | `off` / `auto` / `smart` / `force` | `auto` |
+| `INDEX_ENABLE_BUDGET` | Enable A/B/C priority-based file ordering | `true` |
 | `CODEGEN_BUILD_VERIFY` | Enable build verification after code gen | `true` |
 | `CODEGEN_BUILD_MAX_RETRIES` | Max self-healing attempts per container | `3` |
 
@@ -244,7 +245,11 @@ Output: `knowledge/plan/{task_id}_plan.json` with affected components, implement
 ```
 ./
 ├── knowledge/
-│   ├── discover/            # Discover: ChromaDB vector store
+│   ├── discover/            # Discover: ChromaDB + symbol index + evidence + manifest
+│   │   ├── chroma.sqlite3   #   Vector store
+│   │   ├── symbols.jsonl    #   Symbol index (classes, methods, endpoints)
+│   │   ├── evidence.jsonl   #   Chunk evidence (line numbers, types, linked symbols)
+│   │   └── repo_manifest.json # Repo stats, frameworks, modules
 │   ├── extract/             # Extract: architecture_facts.json, evidence_map.json
 │   ├── analyze/             # Analyze: analyzed_architecture.json
 │   ├── document/            # Document: c4/, arc42/ (C4 diagrams + arc42 chapters)
@@ -280,7 +285,7 @@ python scripts/build_release.py --bump patch --tag --docker
 
 ## Testing
 
-780+ tests, no LLM or network required (except `tests/e2e/`).
+789+ tests, no LLM or network required (except `tests/e2e/`).
 
 ```bash
 pip install -e ".[dev]"
@@ -315,10 +320,10 @@ aicodegencrew/
 │   ├── orchestrator.py          # Phase orchestration
 │   ├── crews/                   # AI Agent Workflows (Analyze + Document)
 │   ├── pipelines/               # Hybrid Pipelines (Discover, Extract, Plan, Implement + Build Verify)
-│   ├── shared/                  # Validation, models, utilities
+│   ├── shared/                  # Validation, models, tools (RAGQueryTool, SymbolQueryTool), utilities
 │   └── mcp/                     # Model Context Protocol server
 ├── config/phases_config.yaml
-├── tests/                       # 780+ tests
+├── tests/                       # 789+ tests
 ├── docs/                        # Architecture docs + diagrams
 ├── Dockerfile                   # Multi-stage (no source in final image)
 └── docker-compose.yml

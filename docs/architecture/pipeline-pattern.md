@@ -43,9 +43,25 @@ Stages pass data forward via a shared `context` dict. Each stage reads what it n
 ### 1. Indexing Pipeline (Discover)
 **File:** `src/aicodegencrew/pipelines/indexing/`
 
-Indexes repository files into ChromaDB for RAG queries.
-- Single stage: walk files, chunk, embed, upsert
+Indexes repository files into ChromaDB for RAG queries, plus builds a symbol index, evidence store, and repo manifest.
+
+```
+Step 1:  Discover files              (RepoDiscoveryTool)
+Step 1b: Build repo manifest         (ManifestBuilder → repo_manifest.json)
+Step 2:  Read files                  (RepoReaderTool)
+Step 2b: Extract symbols per file    (SymbolExtractor → symbols accumulator)
+Step 2c: Apply budget prioritization (BudgetEngine, A/B/C tiers)
+Step 3:  Chunk                       (ChunkerTool + content_type metadata)
+Step 4:  Embed                       (OllamaEmbeddingsTool)
+Step 5:  Store in ChromaDB           (ChromaIndexTool + content_type in metadata)
+Step 6:  Write artifacts             (symbols.jsonl, evidence.jsonl)
+```
+
 - Modes: off, auto (skip if exists), force (re-index), smart (incremental)
+- Budget engine reorders files so high-value files (docs, controllers, configs) are indexed first
+- Symbol extractor supports Java, TypeScript, Python (regex-based, no LLM)
+- Evidence records link each chunk to its line range, content type, and contained symbols
+- Downstream phases consume `symbols.jsonl` via `SymbolQueryTool` and `evidence.jsonl` via `RAGQueryTool` enrichment
 
 ### 2. Architecture Facts Pipeline (Extract)
 **File:** `src/aicodegencrew/pipelines/architecture_facts/`

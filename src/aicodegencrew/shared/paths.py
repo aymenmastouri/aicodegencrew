@@ -30,3 +30,8 @@ PHASE2_ANALYSIS = "knowledge/analyze/analyzed_architecture.json"
 
 # ChromaDB lives inside discover phase
 CHROMA_DIR = "knowledge/discover"
+
+# Discover phase artifacts (new in v0.6)
+DISCOVER_SYMBOLS = "knowledge/discover/symbols.jsonl"
+DISCOVER_EVIDENCE = "knowledge/discover/evidence.jsonl"
+DISCOVER_MANIFEST = "knowledge/discover/repo_manifest.json"

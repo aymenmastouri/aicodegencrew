@@ -469,7 +469,7 @@ your-workspace/              ← Your chosen directory
 │   └── reference/           ← Mockups, diagrams (REFERENCE_DIR)
 ├── knowledge/               ← Tool outputs (auto-created)
 │   ├── run_report.json      ← Status of last run (legacy)
-│   ├── discover/            ← Phase 0: Vector database (ChromaDB index)
+│   ├── discover/            ← Phase 0: ChromaDB + symbols.jsonl + evidence.jsonl + repo_manifest.json
 │   ├── extract/
 │   │   ├── architecture_facts.json    ← Phase 1 output
 │   │   └── evidence_map.json          ← Phase 1 evidence map
@@ -1056,6 +1056,9 @@ aicodegencrew run --preset <preset_name>
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `INDEX_MODE` | `auto` | Indexing mode (`off`/`auto`/`force`/`smart`) |
+| `INDEX_ENABLE_BUDGET` | `true` | Enable A/B/C priority-based file ordering during indexing |
+| `INDEX_PRIORITY_A_PCT` | `40` | Percentage of budget for tier A files (docs, controllers, configs) |
+| `INDEX_PRIORITY_B_PCT` | `40` | Percentage of budget for tier B files (services, entities, components) |
 | `SKIP_SYNTHESIS` | `false` | Skip Phase 3 (C4/arc42 generation) |
 | `LOG_LEVEL` | `INFO` | Logging level |
 | `OUTPUT_BASE_DIR` | `.` | Base directory for ALL outputs (`knowledge/`, `logs/`, `run_report.json`) |

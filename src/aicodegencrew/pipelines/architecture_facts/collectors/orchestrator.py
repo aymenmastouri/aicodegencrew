@@ -152,9 +152,36 @@ class CollectorOrchestrator:
         # Evidence aggregator
         self.evidence_collector = EvidenceCollector(self.repo_path)
 
+        # Load repo manifest from Discover phase (if available)
+        self.repo_manifest = self._load_repo_manifest()
+
         # Create output dir if specified
         if self.output_dir:
             self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def _load_repo_manifest(self) -> dict | None:
+        """Load repo_manifest.json from Discover phase (best-effort).
+
+        Provides framework/module hints to skip re-scanning when available.
+        """
+        from ....shared.paths import DISCOVER_MANIFEST
+
+        manifest_path = Path(DISCOVER_MANIFEST)
+        if not manifest_path.exists():
+            return None
+
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            frameworks = manifest.get("frameworks", [])
+            modules = manifest.get("modules", [])
+            logger.info(
+                f"[Orchestrator] Loaded repo manifest: "
+                f"{len(frameworks)} frameworks, {len(modules)} modules"
+            )
+            return manifest
+        except Exception as e:
+            logger.debug(f"[Orchestrator] Could not load repo manifest: {e}")
+            return None
 
     def _write_json(self, filename: str, data: Any) -> None:
         """Write JSON file to output directory if configured."""

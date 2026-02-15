@@ -15,14 +15,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import CHROMA_DIR, DISCOVER_EVIDENCE, DISCOVER_MANIFEST, DISCOVER_SYMBOLS
 from ...shared.utils.file_filters import collect_files
 from ...shared.utils.logger import log_metric, setup_logger
+from .budget_engine import BudgetEngine, is_budget_enabled
 from .chroma_index_tool import ChromaIndexTool
 from .chunker_tool import ChunkerTool
 from .embeddings_tool import OllamaEmbeddingsTool
+from .manifest_builder import ManifestBuilder
+from .models import EvidenceRecord, SymbolRecord
 from .repo_discovery_tool import RepoDiscoveryTool
 from .repo_reader_tool import RepoReaderTool
+from .symbol_extractor import SymbolExtractor
 
 logger = setup_logger(__name__)
 
@@ -138,6 +142,9 @@ class IndexingState:
     chunk_count: int = 0
     timestamp: float = 0.0
     repo_path: str = ""
+    symbols_count: int = 0
+    evidence_count: int = 0
+    manifest_generated: bool = False
 
     _STATE_FILENAME = ".indexing_state.json"
 
@@ -158,6 +165,9 @@ class IndexingState:
                 chunk_count=data.get("chunk_count", 0),
                 timestamp=data.get("timestamp", 0.0),
                 repo_path=data.get("repo_path", ""),
+                symbols_count=data.get("symbols_count", 0),
+                evidence_count=data.get("evidence_count", 0),
+                manifest_generated=data.get("manifest_generated", False),
             )
         except Exception as e:
             logger.warning(f"Could not load indexing state: {e}")
@@ -172,6 +182,9 @@ class IndexingState:
             "chunk_count": self.chunk_count,
             "timestamp": self.timestamp,
             "repo_path": self.repo_path,
+            "symbols_count": self.symbols_count,
+            "evidence_count": self.evidence_count,
+            "manifest_generated": self.manifest_generated,
         }
         path.write_text(json.dumps(data, indent=2), encoding="utf-8")
         logger.debug(f"Saved indexing state to {path}")
@@ -372,6 +385,14 @@ class IndexingPipeline:
         self._embeddings_tool = None
         self._chroma_tool = None
 
+        # Enhanced discover accumulators (symbols, evidence, manifest)
+        self._all_symbols: list[SymbolRecord] = []
+        self._all_evidence: list[EvidenceRecord] = []
+        self._symbol_extractor = SymbolExtractor(self.repo_path)
+        self._manifest_builder = ManifestBuilder(self.repo_path)
+        self._budget_engine = BudgetEngine()
+        self._symbols_by_path: dict[str, list[SymbolRecord]] = {}
+
         logger.info(f"[CONFIG] IndexingPipeline INDEX_MODE={self.index_mode}")
 
     # -- Lazy tool accessors ------------------------------------------------
@@ -515,6 +536,9 @@ class IndexingPipeline:
                 chunk_count=self.metrics.total_chunks_indexed,
                 timestamp=time.time(),
                 repo_path=str(self.repo_path),
+                symbols_count=len(self._all_symbols),
+                evidence_count=len(self._all_evidence),
+                manifest_generated=Path(DISCOVER_MANIFEST).exists(),
             )
             state.save(self._cache_dir)
 
@@ -634,10 +658,19 @@ class IndexingPipeline:
     # -- Indexing process ---------------------------------------------------
 
     def _run_indexing_process(self, fingerprint: str, fp_type: str) -> str:
-        """Run the core indexing process: Discover -> Read -> Chunk -> Embed -> Store."""
-        logger.info("Step 1/5: Discovering files...")
+        """Run the core indexing process: Discover -> Manifest -> Read -> Symbols -> Budget -> Chunk -> Embed -> Store -> Artifacts."""
+        logger.info("Step 1/6: Discovering files...")
         all_file_paths = self._discover_files()
         self.metrics.total_files_discovered = len(all_file_paths)
+
+        # Step 1b: Build repo manifest
+        logger.info("Step 1b/6: Building repo manifest...")
+        try:
+            manifest = self._manifest_builder.build(all_file_paths)
+            manifest_path = Path(DISCOVER_MANIFEST)
+            self._manifest_builder.write(manifest, manifest_path)
+        except Exception as e:
+            logger.warning(f"Manifest build failed (non-fatal): {e}")
 
         estimated_s = self._estimate_duration(len(all_file_paths))
         hours, minutes = int(estimated_s // 3600), int((estimated_s % 3600) // 60)
@@ -646,10 +679,27 @@ class IndexingPipeline:
         logger.info(f"Estimated duration: {hours}h {minutes}m")
         logger.info(f"   - Batch size: {self.config.batch_size}  Total batches: {total_batches}")
 
-        logger.info(f"Step 2-5: Processing {len(all_file_paths)} files in batches of {self.config.batch_size}...")
+        # Step 2c: Budget reorder (if enabled and symbols available later)
+        # Budget reorder happens per-batch after symbol extraction in _process_batch.
+        # Pre-reorder at the file-path level using path-only heuristics:
+        if is_budget_enabled():
+            logger.info("Step 2c/6: Applying budget prioritization...")
+            all_file_paths = self._budget_engine.reorder(all_file_paths)
+
+        logger.info(f"Step 2-5/6: Processing {len(all_file_paths)} files in batches of {self.config.batch_size}...")
         self._process_batches(all_file_paths, fingerprint, fp_type)
 
-        return f"Indexed {self.metrics.total_files_processed} files ({self.metrics.total_chunks_indexed} chunks)"
+        # Step 6: Write artifacts (symbols.jsonl, evidence.jsonl)
+        logger.info("Step 6/6: Writing discover artifacts...")
+        self._write_artifacts()
+
+        sym_count = len(self._all_symbols)
+        ev_count = len(self._all_evidence)
+        return (
+            f"Indexed {self.metrics.total_files_processed} files "
+            f"({self.metrics.total_chunks_indexed} chunks, "
+            f"{sym_count} symbols, {ev_count} evidence records)"
+        )
 
     def _discover_files(self) -> list[str]:
         discovery = self.discovery_tool._run(
@@ -731,6 +781,20 @@ class IndexingPipeline:
 
         self.metrics.total_files_processed += len(files_batch)
 
+        # Step 2b: Extract symbols per file
+        for file_info in files_batch:
+            content = file_info.get("content") or ""
+            fpath = file_info.get("path", "")
+            if content and fpath:
+                try:
+                    symbols = self._symbol_extractor.extract_file(fpath, content)
+                    self._all_symbols.extend(symbols)
+                    self._symbols_by_path[fpath] = symbols
+                    file_info["_symbols"] = symbols
+                except Exception as e:
+                    logger.debug(f"Symbol extraction failed for {fpath}: {e}")
+                    file_info["_symbols"] = []
+
         # Chunk
         chunk_res = self.chunker_tool._run(
             files_batch,
@@ -755,10 +819,62 @@ class IndexingPipeline:
             )
             for f in files_batch
         }
+        # Build content-by-path for evidence line calculation
+        content_by_path = {f.get("path", ""): f.get("content", "") for f in files_batch}
+        symbols_by_path_local = {f.get("path", ""): f.get("_symbols", []) for f in files_batch}
+
         for chunk in chunks_batch:
             fp = chunk.get("file_path", "")
             chunk["file_hash"] = file_hash_by_path.get(fp, "")
             chunk["repo_path"] = repo_path_str
+
+            # Add content_type for ChromaDB metadata
+            ext = Path(fp).suffix.lower()
+            if ext in (".md", ".rst", ".txt", ".adoc"):
+                chunk["content_type"] = "doc"
+            elif ext in (".yml", ".yaml", ".json", ".xml", ".toml", ".ini", ".properties", ".env"):
+                chunk["content_type"] = "config"
+            else:
+                chunk["content_type"] = "code"
+
+        # Build evidence records
+        for chunk in chunks_batch:
+            fp = chunk.get("file_path", "")
+            content = content_by_path.get(fp, "")
+            start_char = chunk.get("start_char", 0)
+            end_char = chunk.get("end_char", 0)
+
+            # Calculate line numbers from char offsets
+            start_line = content[:start_char].count("\n") + 1 if content else 0
+            end_line = content[:end_char].count("\n") + 1 if content else 0
+
+            # Find symbols within this chunk's line range
+            chunk_symbols = []
+            for sym in symbols_by_path_local.get(fp, []):
+                if isinstance(sym, SymbolRecord) and sym.line >= start_line and sym.line <= end_line:
+                    chunk_symbols.append(sym.symbol)
+
+            try:
+                rel_path = str(Path(fp).relative_to(self.config.repo_path)).replace("\\", "/")
+            except ValueError:
+                rel_path = fp.replace("\\", "/")
+
+            parts = rel_path.split("/")
+            module = parts[0] if len(parts) > 1 else ""
+            ext = Path(fp).suffix.lower()
+
+            evidence = EvidenceRecord(
+                chunk_id=chunk.get("chunk_id", ""),
+                path=rel_path,
+                type=chunk.get("content_type", "code"),
+                module=module,
+                start_line=start_line,
+                end_line=end_line,
+                hash=chunk.get("file_hash", ""),
+                symbols=chunk_symbols,
+                language=ext.lstrip("."),
+            )
+            self._all_evidence.append(evidence)
 
         # Embed
         logger.info(f"   Embedding {len(chunks_batch)} chunks...")
@@ -803,6 +919,33 @@ class IndexingPipeline:
             raise RuntimeError("Indexing failed")
 
         self.metrics.total_chunks_indexed += int(index_res.get("upserted_count", 0) or 0)
+
+    # -- Artifact writing ---------------------------------------------------
+
+    def _write_artifacts(self) -> None:
+        """Write symbols.jsonl and evidence.jsonl to knowledge/discover/."""
+        discover_dir = Path(DISCOVER_SYMBOLS).parent
+        discover_dir.mkdir(parents=True, exist_ok=True)
+
+        # Write symbols.jsonl
+        try:
+            symbols_path = Path(DISCOVER_SYMBOLS)
+            with open(symbols_path, "w", encoding="utf-8") as f:
+                for sym in self._all_symbols:
+                    f.write(json.dumps(sym.to_dict(), ensure_ascii=False) + "\n")
+            logger.info(f"[Artifacts] Wrote {len(self._all_symbols)} symbols to {symbols_path}")
+        except Exception as e:
+            logger.warning(f"[Artifacts] Failed to write symbols.jsonl: {e}")
+
+        # Write evidence.jsonl
+        try:
+            evidence_path = Path(DISCOVER_EVIDENCE)
+            with open(evidence_path, "w", encoding="utf-8") as f:
+                for ev in self._all_evidence:
+                    f.write(json.dumps(ev.to_dict(), ensure_ascii=False) + "\n")
+            logger.info(f"[Artifacts] Wrote {len(self._all_evidence)} evidence records to {evidence_path}")
+        except Exception as e:
+            logger.warning(f"[Artifacts] Failed to write evidence.jsonl: {e}")
 
     # -- Smart-mode per-file filter -----------------------------------------
 

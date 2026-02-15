@@ -16,7 +16,7 @@ NO LLM REQUIRED
 from pathlib import Path
 from typing import Any
 
-from ....shared.paths import CHROMA_DIR
+from ....shared.paths import CHROMA_DIR, DISCOVER_SYMBOLS
 from ....shared.utils.logger import setup_logger
 from ..schemas import ComponentMatch, DependencyRelation, InterfaceMatch, TaskInput
 
@@ -48,6 +48,7 @@ class ComponentDiscoveryStage:
         self.relations = facts.get("relations", [])
 
         self.collection = None  # Lazy init
+        self._symbol_index: list[dict] | None = None  # Lazy init
 
     def run(self, task: TaskInput, top_k: int = 10) -> dict[str, Any]:
         """
@@ -78,6 +79,7 @@ class ComponentDiscoveryStage:
         name_scores = self._name_matching(query)
         package_scores = self._package_matching(labels) if labels else {}
         stereotype_scores = self._stereotype_matching(query)
+        symbol_scores = self._symbol_matching(query)
 
         # Combine scores (weighted average)
         combined_scores = self._combine_scores(
@@ -85,6 +87,7 @@ class ComponentDiscoveryStage:
             name_scores,
             package_scores,
             stereotype_scores,
+            symbol_scores,
         )
 
         # Get top K components
@@ -286,22 +289,43 @@ class ComponentDiscoveryStage:
         name: dict[str, float],
         package: dict[str, float],
         stereotype: dict[str, float],
+        symbol: dict[str, float] | None = None,
     ) -> dict[str, float]:
-        """Combine scores with weights."""
-        weights = {
-            "semantic": 0.4,
-            "name": 0.3,
-            "package": 0.2,
-            "stereotype": 0.1,
-        }
+        """Combine scores with weights.
 
-        all_ids = set(semantic.keys()) | set(name.keys()) | set(package.keys()) | set(stereotype.keys())
+        When symbol index is available, weights are re-balanced:
+        semantic=0.30, name=0.25, symbol=0.20, package=0.15, stereotype=0.10
+        """
+        symbol = symbol or {}
+
+        if symbol:
+            weights = {
+                "semantic": 0.30,
+                "name": 0.25,
+                "symbol": 0.20,
+                "package": 0.15,
+                "stereotype": 0.10,
+            }
+        else:
+            weights = {
+                "semantic": 0.4,
+                "name": 0.3,
+                "symbol": 0.0,
+                "package": 0.2,
+                "stereotype": 0.1,
+            }
+
+        all_ids = (
+            set(semantic.keys()) | set(name.keys()) | set(package.keys())
+            | set(stereotype.keys()) | set(symbol.keys())
+        )
 
         combined = {}
         for comp_id in all_ids:
             score = (
                 semantic.get(comp_id, 0) * weights["semantic"]
                 + name.get(comp_id, 0) * weights["name"]
+                + symbol.get(comp_id, 0) * weights["symbol"]
                 + package.get(comp_id, 0) * weights["package"]
                 + stereotype.get(comp_id, 0) * weights["stereotype"]
             )
@@ -392,6 +416,60 @@ class ComponentDiscoveryStage:
 
         max_source = max(scores.items(), key=lambda x: x[1])
         return max_source[0] if max_source[1] > 0 else "unknown"
+
+    def _load_symbol_index(self) -> list[dict]:
+        """Lazy-load symbols.jsonl for deterministic matching."""
+        if self._symbol_index is not None:
+            return self._symbol_index
+
+        import json
+
+        symbols_path = Path(DISCOVER_SYMBOLS)
+        if not symbols_path.exists():
+            self._symbol_index = []
+            return self._symbol_index
+
+        records = []
+        try:
+            with open(symbols_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        records.append(json.loads(line))
+            logger.info(f"[Stage2] Loaded {len(records)} symbols for matching")
+        except Exception as e:
+            logger.debug(f"[Stage2] Could not load symbol index: {e}")
+
+        self._symbol_index = records
+        return self._symbol_index
+
+    def _symbol_matching(self, query: str) -> dict[str, float]:
+        """Match components by deterministic symbol index lookup."""
+        symbols = self._load_symbol_index()
+        if not symbols:
+            return {}
+
+        query_lower = query.lower()
+        query_words = [w for w in query_lower.split() if len(w) > 3]
+
+        # Find symbols matching query words
+        matched_paths: dict[str, float] = {}
+        for sym in symbols:
+            sym_name = sym.get("symbol", "").lower()
+            for word in query_words:
+                if word in sym_name:
+                    path = sym.get("path", "")
+                    matched_paths[path] = max(matched_paths.get(path, 0), 0.8)
+                    break
+
+        # Map paths back to component IDs
+        scores: dict[str, float] = {}
+        for path, path_score in matched_paths.items():
+            comp_id = self._find_component_by_path(path)
+            if comp_id:
+                scores[comp_id] = max(scores.get(comp_id, 0), path_score)
+
+        return scores
 
     def _get_collection(self):
         """Get ChromaDB collection (lazy init)."""

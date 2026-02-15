@@ -33,6 +33,9 @@ class RAGQueryInput(BaseModel):
     file_filter: str = Field(
         default="", description="Optional: filter by file path pattern (e.g., 'Service.java', 'Controller')"
     )
+    content_type: str = Field(
+        default="", description="Optional: filter by content type ('code', 'doc', 'config')"
+    )
 
 
 class RAGQueryTool(BaseTool):
@@ -64,6 +67,7 @@ class RAGQueryTool(BaseTool):
 
     _client: Any | None = None
     _collection: Any | None = None
+    _evidence_index: dict[str, dict] | None = None
 
     # Standard locations for ChromaDB (ClassVar = not a Pydantic field)
     CHROMA_PATHS: ClassVar[list[str]] = [
@@ -149,11 +153,41 @@ class RAGQueryTool(BaseTool):
             logger.error(f"ChromaDB error: {e}")
             return None
 
+    def _load_evidence_index(self) -> dict[str, dict]:
+        """Lazy-load evidence.jsonl as dict[chunk_id -> record]."""
+        if self._evidence_index is not None:
+            return self._evidence_index
+
+        base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
+        evidence_path = base_dir / "knowledge" / "discover" / "evidence.jsonl"
+
+        if not evidence_path.exists():
+            self._evidence_index = {}
+            return self._evidence_index
+
+        index = {}
+        try:
+            with open(evidence_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        rec = json.loads(line)
+                        cid = rec.get("chunk_id", "")
+                        if cid:
+                            index[cid] = rec
+            logger.info(f"Loaded {len(index)} evidence records")
+        except Exception as e:
+            logger.debug(f"Could not load evidence.jsonl: {e}")
+
+        self._evidence_index = index
+        return self._evidence_index
+
     def _run(
         self,
         query: str,
         limit: int = 10,
         file_filter: str = "",
+        content_type: str = "",
     ) -> str:
         """
         Execute semantic search.
@@ -162,6 +196,7 @@ class RAGQueryTool(BaseTool):
             query: Natural language search query
             limit: Max results (capped at 10)
             file_filter: Optional file path filter
+            content_type: Optional content type filter ('code', 'doc', 'config')
 
         Returns:
             JSON string with matching code snippets
@@ -175,10 +210,18 @@ class RAGQueryTool(BaseTool):
             # Hard cap limit - reduced to prevent context overflow
             limit = min(limit, 10)
 
-            # Build where filter if file_filter is specified
-            where_filter = None
+            # Build where filter
+            where_clauses = []
             if file_filter:
-                where_filter = {"file_path": {"$contains": file_filter}}
+                where_clauses.append({"file_path": {"$contains": file_filter}})
+            if content_type and content_type in ("code", "doc", "config"):
+                where_clauses.append({"content_type": content_type})
+
+            where_filter = None
+            if len(where_clauses) == 1:
+                where_filter = where_clauses[0]
+            elif len(where_clauses) > 1:
+                where_filter = {"$and": where_clauses}
 
             # Execute semantic search
             results = collection.query(
@@ -188,6 +231,9 @@ class RAGQueryTool(BaseTool):
                 include=["documents", "metadatas", "distances"],
             )
 
+            # Load evidence index for enrichment
+            evidence_index = self._load_evidence_index()
+
             # Format results with TOKEN BUDGET
             formatted_results = []
 
@@ -195,27 +241,38 @@ class RAGQueryTool(BaseTool):
                 documents = results["documents"][0]
                 metadatas = results.get("metadatas", [[]])[0]
                 distances = results.get("distances", [[]])[0]
+                ids = results.get("ids", [[]])[0]
 
                 for i, doc in enumerate(documents):
                     metadata = metadatas[i] if i < len(metadatas) else {}
                     distance = distances[i] if i < len(distances) else 0
+                    chunk_id = ids[i] if i < len(ids) else ""
 
                     # Truncate content to MAX_SNIPPET_LENGTH
                     content = doc[:MAX_SNIPPET_LENGTH] if doc else ""
                     if doc and len(doc) > MAX_SNIPPET_LENGTH:
                         content += "..."
 
-                    formatted_results.append(
-                        {
-                            "file_path": metadata.get("file_path", "unknown"),
-                            "relevance_score": round(1 - distance, 3) if distance else 0,
-                            "content": content,
-                        }
-                    )
+                    result_entry = {
+                        "file_path": metadata.get("file_path", "unknown"),
+                        "relevance_score": round(1 - distance, 3) if distance else 0,
+                        "content": content,
+                    }
+
+                    # Enrich with evidence metadata if available
+                    evidence = evidence_index.get(chunk_id)
+                    if evidence:
+                        result_entry["start_line"] = evidence.get("start_line", 0)
+                        result_entry["end_line"] = evidence.get("end_line", 0)
+                        result_entry["content_type"] = evidence.get("type", "")
+                        result_entry["symbols"] = evidence.get("symbols", [])
+
+                    formatted_results.append(result_entry)
 
             output = {
                 "query": query,
                 "file_filter": file_filter,
+                "content_type": content_type,
                 "result_count": len(formatted_results),
                 "results": formatted_results,
             }

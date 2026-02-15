@@ -83,6 +83,15 @@ PHASES: dict[str, PhaseDescriptor] = {
 }
 
 
+# ── Discover phase artifact paths (relative to project root) ─────────────────
+
+DISCOVER_ARTIFACTS: dict[str, str] = {
+    "symbols": "knowledge/discover/symbols.jsonl",
+    "evidence": "knowledge/discover/evidence.jsonl",
+    "manifest": "knowledge/discover/repo_manifest.json",
+}
+
+
 # ── Convenience helpers ──────────────────────────────────────────────────────
 
 

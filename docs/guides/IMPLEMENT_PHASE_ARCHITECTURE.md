@@ -630,7 +630,7 @@ class BuildError(BaseModel):
 ### What Stays Unchanged
 
 - `stage1_plan_reader.py` — deterministic, fast, no LLM
-- `stage2_context_collector.py` — deterministic, fast, no LLM
+- `stage2_context_collector.py` — deterministic, fast, no LLM; now uses symbol index for targeted content extraction (reads class/method body instead of truncating entire files)
 - `stage4_code_validator.py` — deterministic validation
 - `stage5_output_writer.py` — git operations, file writes, report generation
 - `schemas.py` — extended, not replaced

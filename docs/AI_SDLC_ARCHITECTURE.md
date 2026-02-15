@@ -81,7 +81,7 @@ Establish a fully automated SDLC pipeline that covers:
 
 | Phase | Layer | Capability | Implementation |
 |-------|-------|------------|----------------|
-| Discover | Knowledge | Repository analysis, vector storage | Pipeline (ChromaDB) |
+| Discover | Knowledge | Repository analysis, vector storage, symbol index, evidence store, repo manifest | Pipeline (ChromaDB + JSONL artifacts) |
 | Extract | Knowledge | Deterministic code analysis | Pipeline (31 Collectors) |
 | Analyze | Reasoning | Multi-agent architecture analysis | Crew (MapReduce) |
 | Document | Reasoning | C4 + arc42 documentation | Crew (Mini-Crews) |
@@ -107,7 +107,7 @@ The implementation covers deterministic facts extraction through code generation
 
 | Area | Implementation | Status |
 |------|----------------|--------|
-| **Discover** | ChromaDB vector storage | IMPLEMENTED |
+| **Discover** | ChromaDB vectors + symbol index + evidence store + repo manifest + budget engine | IMPLEMENTED |
 | **Extract** | 31 Collectors | IMPLEMENTED |
 | **Analyze** | MapReduce multi-agent analysis | IMPLEMENTED |
 | **Document** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
@@ -480,7 +480,7 @@ src/aicodegencrew/
 | Type | Pipeline (deterministic) |
 | Module | `pipelines/indexing/indexing_pipeline.py` |
 | LLM Requirement | None (embeddings only) |
-| Output | `knowledge/discover/` (ChromaDB) + `knowledge/discover/.indexing_state.json` |
+| Output | `knowledge/discover/` (ChromaDB, `symbols.jsonl`, `evidence.jsonl`, `repo_manifest.json`, `.indexing_state.json`) |
 | Dependency | None |
 | Status | Implemented |
 
@@ -489,10 +489,51 @@ src/aicodegencrew/
 | Step | Component | Function |
 |------|-----------|----------|
 | 1 | RepoDiscoveryTool | Filesystem traversal with filtering |
+| 1b | ManifestBuilder | Framework detection, file stats, git commit hash → `repo_manifest.json` |
 | 2 | RepoReaderTool | Content extraction |
-| 3 | ChunkerTool | Semantic segmentation |
+| 2b | SymbolExtractor | Regex-based symbol extraction per file (classes, methods, endpoints, decorators) |
+| 2c | BudgetEngine | A/B/C priority reorder (docs/controllers first, tests/utils last) |
+| 3 | ChunkerTool | Semantic segmentation with `content_type` classification (code/doc/config) |
 | 4 | OllamaEmbeddingsTool | Vector generation (Ollama) |
-| 5 | ChromaIndexTool | Vector persistence |
+| 5 | ChromaIndexTool | Vector persistence (now includes `content_type` metadata) |
+| 6 | Artifact Writer | Write `symbols.jsonl` + `evidence.jsonl` |
+
+#### Output Artifacts
+
+| File | Format | Content |
+|------|--------|---------|
+| `chroma.sqlite3` | ChromaDB | Vector embeddings with file, hash, `content_type` metadata |
+| `symbols.jsonl` | JSONL | One record per symbol: name, kind, path, line range, language, module |
+| `evidence.jsonl` | JSONL | One record per chunk: chunk_id, path, type, line range, linked symbols |
+| `repo_manifest.json` | JSON | Repo stats, detected frameworks, modules, noise folders, git commit |
+| `.indexing_state.json` | JSON | Fingerprint, chunk/symbol/evidence counts, timestamp |
+
+#### Symbol Extractor
+
+Regex-based MVP per language:
+- **Java**: classes, methods, annotations (`@RestController`, `@Service`...), Spring endpoints (`@GetMapping`, etc.)
+- **TypeScript/JavaScript**: classes, interfaces, functions, Angular/NestJS decorators (`@Component`, `@Injectable`...)
+- **Python**: classes, functions/methods, decorators
+
+#### Budget Engine
+
+Classifies files into 3 priority tiers to ensure high-value files are indexed first:
+
+| Tier | Default % | Contents |
+|------|-----------|----------|
+| **A** (high) | 40% | docs/ADRs/READMEs, API controllers, root configs, Angular modules |
+| **B** (medium) | 40% | services, repositories, entities, components, files with 3+ symbols |
+| **C** (low) | 20% | tests, utilities, generated code, remaining |
+
+Controlled by: `INDEX_ENABLE_BUDGET` (default: true), `INDEX_PRIORITY_A_PCT`, `INDEX_PRIORITY_B_PCT`.
+
+#### Downstream Integration
+
+- **Extract (Phase 1)**: `CollectorOrchestrator` loads `repo_manifest.json` for framework/module context
+- **Plan (Phase 4)**: `ComponentDiscoveryStage` uses symbol index as a 5th scoring signal (re-balanced weights: semantic 30%, name 25%, symbol 20%, package 15%, stereotype 10%)
+- **Implement (Phase 5)**: `ContextCollectorStage` uses symbol index for targeted content extraction (reads only the relevant class/method body instead of truncating entire files)
+- **Shared**: `SymbolQueryTool` — CrewAI tool for deterministic lookups (exact/substring match, filter by kind/path/module). Graceful degradation if `symbols.jsonl` is missing.
+- **Shared**: `RAGQueryTool` — enriched with evidence metadata (line numbers, content type, linked symbols) and `content_type` filter
 
 ---
 
