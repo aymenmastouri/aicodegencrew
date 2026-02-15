@@ -1319,13 +1319,11 @@ To reset completed phases and start fresh:
 
 The dashboard reads variable descriptions from `.env.example` and groups them into categories:
 
-- **Repository** — `PROJECT_PATH`, `INCLUDE_SUBMODULES`
-- **LLM** — `LLM_PROVIDER`, `MODEL`, `API_BASE`, token limits
-- **Embeddings** — Ollama settings, batch sizes
-- **Indexing** — Index mode, ChromaDB settings, chunking
+- **Repository** — `PROJECT_PATH`
+- **LLM** — `LLM_PROVIDER`, `MODEL`, `API_BASE`, `OPENAI_API_KEY`
+- **Embeddings** — `OLLAMA_BASE_URL`, `EMBED_MODEL`
 - **Phase Control** — Input directories, skip flags
-- **Output** — Output directories, arc42 language
-- **Logging** — Log level, tracing
+- **Output** — `DOCS_OUTPUT_DIR`
 
 Changes made in the UI are either applied as overrides for the current run (temporary) or saved directly to your `.env` file.
 

@@ -23,7 +23,6 @@ interface PhaseToggle {
   enabled: boolean;
 }
 
-/** Map backend group names to our tab names */
 const GROUP_TO_TAB: Record<string, string> = {
   Repository: 'general',
   Output: 'general',
@@ -36,36 +35,11 @@ const GROUP_TO_TAB: Record<string, string> = {
 
 const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
 
-/** Fields that should render as dropdowns */
 const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
   LLM_PROVIDER: [
     { label: 'On-Prem', value: 'onprem' },
   ],
-  LOG_LEVEL: [
-    { label: 'DEBUG', value: 'DEBUG' },
-    { label: 'INFO', value: 'INFO' },
-    { label: 'WARNING', value: 'WARNING' },
-    { label: 'ERROR', value: 'ERROR' },
-  ],
-  ARC42_LANGUAGE: [
-    { label: 'Auto-detect', value: '' },
-    { label: 'English', value: 'en' },
-    { label: 'Deutsch', value: 'de' },
-  ],
-  INCLUDE_SUBMODULES: [
-    { label: 'Yes', value: 'true' },
-    { label: 'No', value: 'false' },
-  ],
-  CREWAI_TRACING_ENABLED: [
-    { label: 'Enabled', value: 'true' },
-    { label: 'Disabled', value: 'false' },
-  ],
 };
-
-/** Fields that should render as number inputs */
-const NUMERIC_FIELDS = new Set([
-  'MAX_LLM_INPUT_TOKENS', 'MAX_LLM_OUTPUT_TOKENS', 'LLM_CONTEXT_WINDOW',
-]);
 
 @Component({
   selector: 'app-settings',
@@ -100,40 +74,43 @@ const NUMERIC_FIELDS = new Set([
         </div>
       } @else {
         <mat-tab-group animationDuration="200ms" class="settings-tabs">
+
           @if (hasTabVars('general')) {
             <mat-tab>
               <ng-template mat-tab-label>
                 <mat-icon class="tab-icon">folder</mat-icon> General
               </ng-template>
               <ng-template matTabContent>
-                <div class="tab-content">
-                  <div class="tab-description">Repository path, output directories, and general settings</div>
-                  <div class="field-grid">
+                <div class="tab-body">
+                  <p class="tab-description">Repository path, output directories, and general settings</p>
+                  <div class="field-list">
                     @for (v of getTabVars('general'); track v.name) {
-                      <mat-form-field appearance="outline" class="field-full">
-                        <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                        @if (getOptions(v.name); as opts) {
-                          <mat-select [(ngModel)]="v.value">
-                            @for (opt of opts; track opt.value) {
-                              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                            }
-                          </mat-select>
-                        } @else if (isNumeric(v.name)) {
-                          <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                        } @else {
-                          <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                        }
-                        @if (v.description) {
-                          <mat-hint>{{ v.description }}</mat-hint>
-                        }
-                      </mat-form-field>
+                      <div class="field-item">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                          <mat-label>{{ v.name }}</mat-label>
+                          @if (getOptions(v.name); as opts) {
+                            <mat-select [(ngModel)]="v.value" [required]="v.required">
+                              @for (opt of opts; track opt.value) {
+                                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                              }
+                            </mat-select>
+                          } @else {
+                            <input matInput [(ngModel)]="v.value" [required]="v.required" />
+                          }
+                          @if (v.required) {
+                            <mat-error>{{ v.name }} is required</mat-error>
+                          }
+                        </mat-form-field>
+                      </div>
                     }
                   </div>
                   <div class="tab-actions">
                     <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
-                      <mat-icon>restart_alt</mat-icon> Reset to defaults
+                      <mat-icon>restart_alt</mat-icon> Reset
                     </button>
-                    <button mat-flat-button color="primary" (click)="saveTab('general')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                    <button mat-flat-button color="primary" (click)="saveTab('general')"
+                      [disabled]="saving || isRunning"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -148,41 +125,43 @@ const NUMERIC_FIELDS = new Set([
                 <mat-icon class="tab-icon">smart_toy</mat-icon> LLM
               </ng-template>
               <ng-template matTabContent>
-                <div class="tab-content">
-                  <div class="tab-description">Language model provider, API keys, embeddings, and token limits</div>
-                  <div class="field-grid">
+                <div class="tab-body">
+                  <p class="tab-description">Language model provider, API keys, and embeddings</p>
+                  <div class="field-list">
                     @for (v of getTabVars('llm'); track v.name) {
-                      <mat-form-field appearance="outline" class="field-full">
-                        <mat-label>{{ v.name }}{{ v.required ? ' *' : '' }}</mat-label>
-                        @if (getOptions(v.name); as opts) {
-                          <mat-select [(ngModel)]="v.value">
-                            @for (opt of opts; track opt.value) {
-                              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                      <div class="field-item">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                          <mat-label>{{ v.name }}</mat-label>
+                          @if (getOptions(v.name); as opts) {
+                            <mat-select [(ngModel)]="v.value" [required]="v.required">
+                              @for (opt of opts; track opt.value) {
+                                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                              }
+                            </mat-select>
+                          } @else {
+                            <input matInput [(ngModel)]="v.value"
+                              [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
+                              [required]="v.required" />
+                            @if (isSecret(v.name)) {
+                              <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
+                                <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
+                              </button>
                             }
-                          </mat-select>
-                        } @else if (isNumeric(v.name)) {
-                          <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                        } @else {
-                          <input matInput [(ngModel)]="v.value"
-                            [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
-                            [placeholder]="v.description || ''" />
-                          @if (isSecret(v.name)) {
-                            <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
-                              <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
-                            </button>
                           }
-                        }
-                        @if (v.description) {
-                          <mat-hint>{{ v.description }}</mat-hint>
-                        }
-                      </mat-form-field>
+                          @if (v.required) {
+                            <mat-error>{{ v.name }} is required</mat-error>
+                          }
+                        </mat-form-field>
+                      </div>
                     }
                   </div>
                   <div class="tab-actions">
                     <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
-                      <mat-icon>restart_alt</mat-icon> Reset to defaults
+                      <mat-icon>restart_alt</mat-icon> Reset
                     </button>
-                    <button mat-flat-button color="primary" (click)="saveTab('llm')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                    <button mat-flat-button color="primary" (click)="saveTab('llm')"
+                      [disabled]="saving || isRunning"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -191,17 +170,16 @@ const NUMERIC_FIELDS = new Set([
             </mat-tab>
           }
 
-          <!-- Phases Tab -->
           <mat-tab>
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">account_tree</mat-icon> Phases
             </ng-template>
             <ng-template matTabContent>
-              <div class="tab-content">
-                <div class="tab-description">Enable or disable pipeline phases. Available presets are shown below.</div>
+              <div class="tab-body">
+                <p class="tab-description">Enable or disable pipeline phases. Available presets are shown below.</p>
 
                 @if (phaseToggles.length > 0) {
-                  <div class="phase-section-label">Phase Toggles</div>
+                  <div class="section-label">Phase Toggles</div>
                   <div class="phase-toggle-grid">
                     @for (p of phaseToggles; track p.id) {
                       <div class="phase-toggle-card">
@@ -218,7 +196,7 @@ const NUMERIC_FIELDS = new Set([
                 }
 
                 @if (presets.length > 0) {
-                  <div class="phase-section-label">Presets</div>
+                  <div class="section-label">Presets</div>
                   <div class="preset-grid">
                     @for (preset of presets; track preset.name) {
                       <div class="preset-card">
@@ -242,34 +220,33 @@ const NUMERIC_FIELDS = new Set([
                 <mat-icon class="tab-icon">tune</mat-icon> Advanced
               </ng-template>
               <ng-template matTabContent>
-                <div class="tab-content">
-                  <div class="tab-description">Logging, tracing, skip flags, and directory overrides</div>
-                  <div class="field-grid">
+                <div class="tab-body">
+                  <p class="tab-description">Logging, tracing, skip flags, and directory overrides</p>
+                  <div class="field-list">
                     @for (v of getTabVars('advanced'); track v.name) {
-                      <mat-form-field appearance="outline" class="field-full">
-                        <mat-label>{{ v.name }}</mat-label>
-                        @if (getOptions(v.name); as opts) {
-                          <mat-select [(ngModel)]="v.value">
-                            @for (opt of opts; track opt.value) {
-                              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-                            }
-                          </mat-select>
-                        } @else if (isNumeric(v.name)) {
-                          <input matInput type="number" [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                        } @else {
-                          <input matInput [(ngModel)]="v.value" [placeholder]="v.description || ''" />
-                        }
-                        @if (v.description) {
-                          <mat-hint>{{ v.description }}</mat-hint>
-                        }
-                      </mat-form-field>
+                      <div class="field-item">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                          <mat-label>{{ v.name }}</mat-label>
+                          @if (getOptions(v.name); as opts) {
+                            <mat-select [(ngModel)]="v.value">
+                              @for (opt of opts; track opt.value) {
+                                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                              }
+                            </mat-select>
+                          } @else {
+                            <input matInput [(ngModel)]="v.value" />
+                          }
+                        </mat-form-field>
+                      </div>
                     }
                   </div>
                   <div class="tab-actions">
                     <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
-                      <mat-icon>restart_alt</mat-icon> Reset to defaults
+                      <mat-icon>restart_alt</mat-icon> Reset
                     </button>
-                    <button mat-flat-button color="primary" (click)="saveTab('advanced')" [disabled]="saving || isRunning" [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                    <button mat-flat-button color="primary" (click)="saveTab('advanced')"
+                      [disabled]="saving || isRunning"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -277,147 +254,145 @@ const NUMERIC_FIELDS = new Set([
               </ng-template>
             </mat-tab>
           }
+
         </mat-tab-group>
       }
     </div>
   `,
-  styles: [
-    `
-      /* Uses global .page-header, .page-icon, .page-title, .page-subtitle, .loading-center */
-      .page-container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0 16px 24px;
-      }
-      .settings-tabs {
-        background: #fff;
-        border-radius: 12px;
-        overflow: hidden;
-      }
-      .tab-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        margin-right: 6px;
-        vertical-align: middle;
-      }
-      .tab-content {
-        padding: 24px;
-      }
-      .field-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 12px 16px;
-      }
-      .tab-description {
-        font-size: 13px;
-        color: var(--cg-gray-500);
-        margin-bottom: 20px;
-      }
-      .field-full {
-        width: 100%;
-        margin-bottom: 4px;
-      }
-      .empty-tab {
-        text-align: center;
-        padding: 32px 0;
-        color: var(--cg-gray-400);
-        font-size: 13px;
-      }
-      .tab-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid var(--cg-gray-100, #f0f0f0);
-      }
-      .btn-reset {
-        color: var(--cg-gray-500) !important;
-      }
-      .btn-reset mat-icon,
-      .tab-actions button mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        margin-right: 4px;
-        vertical-align: middle;
-      }
-
-      /* Phase toggles */
-      .phase-section-label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--cg-gray-700);
-        margin: 8px 0 12px;
-      }
-      .phase-toggle-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 10px;
-        margin-bottom: 24px;
-      }
-      .phase-toggle-card {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 16px;
-        border-radius: 8px;
-        background: var(--cg-gray-50, #f8f9fa);
-        border: 1px solid var(--cg-gray-100, #f0f0f0);
-      }
-      .phase-toggle-name {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--cg-gray-900);
-      }
-      .phase-toggle-id {
-        display: block;
-        font-size: 11px;
-        color: var(--cg-gray-400);
-        font-family: monospace;
-      }
-
-      /* Preset cards */
-      .preset-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 10px;
-      }
-      .preset-card {
-        display: flex;
-        gap: 12px;
-        padding: 14px 16px;
-        border-radius: 8px;
-        background: var(--cg-gray-50, #f8f9fa);
-        border: 1px solid var(--cg-gray-100, #f0f0f0);
-      }
-      .preset-icon {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
-        color: var(--cg-blue);
-        flex-shrink: 0;
-        margin-top: 2px;
-      }
-      .preset-name {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--cg-gray-900);
-      }
-      .preset-desc {
-        font-size: 12px;
-        color: var(--cg-gray-500);
-        margin-top: 2px;
-      }
-      .preset-phases {
-        font-size: 11px;
-        color: var(--cg-gray-400);
-        font-family: monospace;
-        margin-top: 4px;
-      }
-    `,
-  ],
+  styles: [`
+    .settings-tabs {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .tab-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .tab-body {
+      padding: 28px 32px;
+    }
+    .tab-description {
+      font-size: 13px;
+      color: var(--cg-gray-500);
+      margin: 0 0 24px;
+    }
+    .field-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 640px;
+    }
+    .field-item mat-form-field {
+      width: 100%;
+    }
+    .tab-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--cg-gray-100, #eee);
+    }
+    .btn-reset {
+      color: var(--cg-gray-500) !important;
+    }
+    .btn-reset mat-icon,
+    .tab-actions button mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .empty-tab {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--cg-gray-400);
+      font-size: 13px;
+    }
+    .section-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--cg-gray-700);
+      margin: 8px 0 12px;
+    }
+    .phase-toggle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .phase-toggle-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--cg-gray-50, #f8f9fa);
+      border: 1px solid var(--cg-gray-100, #eee);
+      transition: border-color 0.15s;
+    }
+    .phase-toggle-card:hover {
+      border-color: var(--cg-gray-200);
+    }
+    .phase-toggle-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--cg-gray-900);
+    }
+    .phase-toggle-id {
+      display: block;
+      font-size: 11px;
+      color: var(--cg-gray-400);
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      margin-top: 2px;
+    }
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+    }
+    .preset-card {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: var(--cg-gray-50, #f8f9fa);
+      border: 1px solid var(--cg-gray-100, #eee);
+      transition: border-color 0.15s;
+    }
+    .preset-card:hover {
+      border-color: var(--cg-gray-200);
+    }
+    .preset-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: var(--cg-blue);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .preset-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--cg-gray-900);
+    }
+    .preset-desc {
+      font-size: 12px;
+      color: var(--cg-gray-500);
+      margin-top: 2px;
+    }
+    .preset-phases {
+      font-size: 11px;
+      color: var(--cg-gray-400);
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      margin-top: 4px;
+    }
+  `],
 })
 export class SettingsComponent implements OnInit {
   loading = true;
@@ -481,7 +456,6 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  /** Use the backend group field to sort variables into tabs */
   getTabVars(tab: string): EnvVariable[] {
     return this.allVars.filter((v) => {
       const mappedTab = GROUP_TO_TAB[v.group] || 'general';
@@ -489,20 +463,16 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  isSecret(name: string): boolean {
-    return SECRET_KEYS.has(name);
-  }
-
   hasTabVars(tab: string): boolean {
     return this.getTabVars(tab).length > 0;
   }
 
-  getOptions(name: string): { label: string; value: string }[] | null {
-    return FIELD_OPTIONS[name] || null;
+  isSecret(name: string): boolean {
+    return SECRET_KEYS.has(name);
   }
 
-  isNumeric(name: string): boolean {
-    return NUMERIC_FIELDS.has(name);
+  getOptions(name: string): { label: string; value: string }[] | null {
+    return FIELD_OPTIONS[name] || null;
   }
 
   saveTab(tab: string): void {

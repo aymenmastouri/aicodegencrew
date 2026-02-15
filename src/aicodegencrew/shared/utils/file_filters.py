@@ -1,7 +1,7 @@
 """File filtering and pattern matching utilities - FAST VERSION.
 
 Uses os.walk() instead of pathlib for speed.
-Only indexes code/documentation files based on RAG config.
+Blocklist-based: indexes all text files, excludes known binary/generated extensions.
 Dynamically reads .gitignore rules for exclusion.
 """
 
@@ -10,39 +10,30 @@ import os
 import re
 from pathlib import Path, PurePosixPath
 
-# Global code & doc extensions (like Continue plugin RAG config)
-# ALL production code - batch embeddings make this fast!
-# SQL excluded - too large
-INDEXABLE_EXTENSIONS = {
-    ".py",
-    ".java",
-    ".kt",
-    ".xml",
-    ".properties",
-    ".yml",
-    ".yaml",
-    ".md",
-    ".ts",
-    ".tsx",
-    ".html",
-    ".scss",
-    ".css",
-    ".json",
-    ".gradle",
-    ".toml",
-    ".js",
-    ".jsx",
-    ".go",
-    ".rs",
-    ".cs",
-    ".cpp",
-    ".c",
-    ".h",
-    ".hpp",
-    ".sh",
-    ".bash",
-    ".feature",
-    ".sql",
+# Binary/generated extensions to EXCLUDE (blocklist approach).
+# Everything else is treated as text and indexed.
+BINARY_EXTENSIONS = {
+    # Compiled / bytecode
+    ".class", ".jar", ".war", ".ear", ".pyc", ".pyo",
+    ".o", ".obj", ".a", ".lib", ".so", ".dll", ".dylib", ".exe",
+    # Archives
+    ".zip", ".tar", ".gz", ".bz2", ".7z", ".rar", ".xz",
+    # Images
+    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg", ".webp", ".tiff",
+    # Media
+    ".mp3", ".mp4", ".avi", ".mov", ".wav", ".flac", ".ogg", ".webm",
+    # Fonts
+    ".woff", ".woff2", ".ttf", ".eot", ".otf",
+    # Documents (binary)
+    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+    # Data (binary/large)
+    ".db", ".sqlite", ".sqlite3", ".mdb",
+    # Lock files (auto-generated, often huge)
+    ".lock",
+    # Source maps (generated)
+    ".map",
+    # Minified bundles (generated, not useful for RAG)
+    ".min.js", ".min.css",
 }
 
 CONFIG_EXTENSIONS = {
@@ -156,11 +147,13 @@ DEFAULT_KEEP_GLOBS = [
     "**/*.yaml",
 ]
 
-# Backwards-compatible defaults used by tests and callers that rely on glob patterns.
-# Note: the current implementation is extension-driven for speed, but we still expose
-# these pattern lists and accept overrides in `should_include_file`.
-DEFAULT_INCLUDE_PATTERNS = [f"**/*{ext}" for ext in sorted(INDEXABLE_EXTENSIONS)]
-DEFAULT_EXCLUDE_PATTERNS = [f"**/{d}/**" for d in sorted(SKIP_DIRS)] + DEFAULT_SKIP_FILE_PATTERNS
+# Defaults used by tests and callers that rely on glob patterns.
+# Blocklist: include everything, exclude skip-dirs + binary extensions.
+DEFAULT_INCLUDE_PATTERNS = ["**/*"]
+DEFAULT_EXCLUDE_PATTERNS = (
+    [f"**/{d}/**" for d in sorted(SKIP_DIRS)]
+    + [f"*{ext}" for ext in sorted(BINARY_EXTENSIONS)]
+)
 
 
 def _env_csv_set(name: str) -> set[str]:
@@ -204,22 +197,6 @@ def _match_path(path_posix: str, pattern: str) -> bool:
             return True
 
     return False
-
-
-def _get_indexable_extensions() -> set[str]:
-    """Return indexable extensions, optionally overridden via env.
-
-    Env:
-      - INDEX_EXTENSIONS: comma-separated list (e.g. ".py,.java,.md")
-    """
-    override = _env_csv_set("INDEX_EXTENSIONS")
-    if override:
-        # Normalize: ensure leading dot for extensions
-        normalized = set()
-        for ext in override:
-            normalized.add(ext if ext.startswith(".") else f".{ext}")
-        return normalized
-    return INDEXABLE_EXTENSIONS
 
 
 def _get_skip_dirs() -> set[str]:
@@ -290,10 +267,10 @@ def should_include_file(
 ) -> bool:
     """Return True if a file should be indexed.
 
-    Fast path:
+    Blocklist approach:
     - Exclude any file under known skip directories (e.g. node_modules, .git)
     - If include/exclude patterns are provided, apply them using fnmatch
-    - Otherwise, fall back to extension/special-file rules (env-overridable)
+    - Otherwise, exclude files with BINARY_EXTENSIONS; include everything else
     """
     # 1) Directory-based skip (case-insensitive on Windows)
     skip_dirs = _get_skip_dirs()
@@ -329,12 +306,12 @@ def should_include_file(
             if not any(_match_path(path_posix, pat) or _match_path(file_path.name, pat) for pat in keep_patterns):
                 return False
 
-    # 4) Extension/special-file rules (fast, env-overridable)
+    # 4) Extension/special-file rules (blocklist: exclude known binary)
     file_name = file_path.name.lower()
     if file_name in SPECIAL_FILES:
         return True
 
-    return file_path.suffix.lower() in _get_indexable_extensions()
+    return file_path.suffix.lower() not in BINARY_EXTENSIONS
 
 
 def _load_gitignore_patterns(root_path: Path) -> set[str]:
@@ -395,8 +372,8 @@ def collect_files(
 ) -> list[Path]:
     """Fast file collection using os.walk() instead of pathlib recursion.
 
-    Indexes only relevant code/doc/config files, skips binary/cache directories.
-    ALSO reads .gitignore and applies those exclusion rules dynamically.
+    Blocklist-based: indexes all text files, excludes BINARY_EXTENSIONS blocklist.
+    Skips binary/cache directories. Reads .gitignore and applies exclusion rules.
 
     Args:
         root_path: Root directory to scan
