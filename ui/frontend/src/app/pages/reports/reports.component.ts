@@ -87,8 +87,15 @@ interface ParsedComponent {
                     </div>
                     <div class="doc-group-files">
                       @for (file of docGroups[groupKey]; track file['_file']) {
-                        <div class="doc-file-card" (click)="toggleDocPreview($any(file['_file']))">
-                          <div class="doc-file-row">
+                        <div class="doc-file-card">
+                          <div
+                            class="doc-file-row"
+                            role="button"
+                            tabindex="0"
+                            (click)="toggleDocPreview($any(file['_file']))"
+                            (keydown.enter)="toggleDocPreview($any(file['_file']))"
+                            (keydown.space)="toggleDocPreview($any(file['_file'])); $event.preventDefault()"
+                          >
                             <mat-icon class="doc-file-icon">{{ file['_type'] === 'md' ? 'article' : file['_type'] === 'drawio' ? 'draw' : 'data_object' }}</mat-icon>
                             <div class="doc-file-info">
                               <span class="doc-file-name">{{ formatDocName($any(file['_name'])) }}</span>
@@ -103,7 +110,7 @@ interface ParsedComponent {
                             </mat-icon>
                           </div>
                           @if (docPreviewOpen[$any(file['_file'])]) {
-                            <div class="doc-preview" (click)="$event.stopPropagation()">
+                            <div class="doc-preview">
                               @if (fileLoading[$any(file['_file'])]) {
                                 <div class="loading-center"><mat-spinner diameter="24"></mat-spinner></div>
                               } @else if (fileContents[$any(file['_file'])]) {
@@ -648,7 +655,11 @@ interface ParsedComponent {
                             @for (file of $any(report['generated_files']); track file['path']) {
                               <div
                                 class="file-entry"
+                                role="button"
+                                tabindex="0"
                                 (click)="toggleFile($any(report['task_id']) + ':' + file['path'])"
+                                (keydown.enter)="toggleFile($any(report['task_id']) + ':' + file['path'])"
+                                (keydown.space)="toggleFile($any(report['task_id']) + ':' + file['path']); $event.preventDefault()"
                                 [class.expanded]="expandedFiles[$any(report['task_id']) + ':' + file['path']]"
                               >
                                 <div class="file-header">
@@ -732,6 +743,10 @@ interface ParsedComponent {
                               matTooltip="View codegen report"
                               style="cursor:pointer"
                               (click)="goToReport(branch.task_id)"
+                              role="button"
+                              tabindex="0"
+                              (keydown.enter)="goToReport(branch.task_id)"
+                              (keydown.space)="goToReport(branch.task_id); $event.preventDefault()"
                             >
                               Has Report
                             </span>
@@ -1714,7 +1729,7 @@ export class ReportsComponent implements OnInit {
     });
   }
 
-  goToReport(taskId: string): void {
+  goToReport(_taskId: string): void {
     this.activeTabIndex = 2; // Code Generation tab
   }
 

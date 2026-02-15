@@ -15,17 +15,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ScrollingModule } from '@angular/cdk/scrolling';
+import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
 import { Subscription } from 'rxjs';
 
 import { ApiService, PresetInfo, PhaseInfo } from '../../services/api.service';
 import {
   PipelineService,
   ExecutionStatus,
-  RunHistoryEntry,
   EnvVariable,
   SSEEvent,
-  PhaseProgress,
 } from '../../services/pipeline.service';
 import { NotificationService } from '../../services/notification.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
@@ -219,7 +217,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
                 <div class="celebration-text">
                   <span class="celebration-title">Pipeline Completed Successfully</span>
                   <span class="celebration-sub">
-                    {{ status?.completed_phase_count || 0 }} phases in {{ formatDuration(status?.elapsed_seconds || 0) }}
+                    {{ status.completed_phase_count || 0 }} phases in {{ formatDuration(status.elapsed_seconds || 0) }}
                   </span>
                 </div>
                 <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
@@ -258,7 +256,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
               @if (status.elapsed_seconds) {
                 | Elapsed: {{ formatDuration(status.elapsed_seconds) }}
               }
-              @if (status.eta_seconds != null && status.eta_seconds > 0) {
+              @if (status.eta_seconds !== null && status.eta_seconds !== undefined && status.eta_seconds > 0) {
                 | ETA: ~{{ formatDuration(status.eta_seconds) }}
               }
             </mat-card-subtitle>
@@ -269,7 +267,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
             <div class="exec-bar">
               <div class="progress-section">
                 <mat-progress-bar
-                  [mode]="status.progress_percent != null ? 'determinate' : 'indeterminate'"
+                  [mode]="status.progress_percent !== null && status.progress_percent !== undefined ? 'determinate' : 'indeterminate'"
                   [value]="status.progress_percent || 0"
                   class="run-progress">
                 </mat-progress-bar>
@@ -303,7 +301,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
                 <span class="metric-value">{{ status.live_metrics.crew_completions }}</span>
                 <span class="metric-label">Crews</span>
               </div>
-              @if (status.eta_seconds != null && status.eta_seconds > 0) {
+              @if (status.eta_seconds !== null && status.eta_seconds !== undefined && status.eta_seconds > 0) {
                 <div class="metric-item metric-eta">
                   <mat-icon>schedule</mat-icon>
                   <span class="metric-value">~{{ formatDuration(status.eta_seconds) }}</span>
@@ -711,7 +709,7 @@ import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../sha
   ],
 })
 export class RunPipelineComponent implements OnInit, OnDestroy {
-  @ViewChild('logViewport') logViewportRef?: any;
+  @ViewChild('logViewport') logViewportRef?: CdkVirtualScrollViewport;
 
   // Config
   presets: PresetInfo[] = [];
@@ -821,7 +819,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
   /** Reset execution state so the config form shows again */
   resetToConfig(): void {
-    this.status = { state: 'idle', phase_progress: [] } as any;
+    this.status = { state: 'idle', phases: [], phase_progress: [] };
     this.logLines = [];
     this.filteredLogLines = [];
     this.showCelebration = false;

@@ -8,7 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { InputsService, CategoryDetail, InputFile } from '../../services/inputs.service';
+import { InputsService, InputFile } from '../../services/inputs.service';
 import { NotificationService } from '../../services/notification.service';
 import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
@@ -100,10 +100,14 @@ interface CategoryView {
                 [class.drag-over]="cat.dragOver"
                 [class.has-error]="cat.error"
                 [class.drop-disabled]="isRunning"
+                role="button"
+                [attr.tabindex]="isRunning ? -1 : 0"
                 (dragover)="!isRunning && onDragOver($event, cat)"
                 (dragleave)="onDragLeave(cat)"
                 (drop)="!isRunning && onDrop($event, cat)"
                 (click)="!isRunning && fileInput.click()"
+                (keydown.enter)="!isRunning && fileInput.click()"
+                (keydown.space)="!isRunning && fileInput.click(); $event.preventDefault()"
               >
                 <input
                   #fileInput
