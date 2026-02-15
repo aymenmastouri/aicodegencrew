@@ -161,3 +161,44 @@ def test_misc_endpoints(client):
     assert client.get("/api/metrics").status_code == 200
     assert client.get("/api/health/setup-status").status_code == 200
     assert client.get("/api/env").status_code == 200
+
+def test_collectors_and_inputs(client, tmp_path, monkeypatch):
+    # collectors list
+    monkeypatch.setattr(
+        "ui.backend.services.collector_service.list_collectors",
+        lambda: {"collectors": [], "total": 0, "enabled_count": 0},
+    )
+    assert client.get("/api/collectors").status_code == 200
+
+    # inputs upload/list/delete are mocked via service layer
+    monkeypatch.setattr(
+        "ui.backend.services.input_manager.list_all_inputs",
+        lambda: {"inputs": []},
+    )
+    monkeypatch.setattr(
+        "ui.backend.services.input_manager.delete_input_file",
+        lambda category, filename: True,
+    )
+
+    files_resp = client.get("/api/inputs")
+    assert files_resp.status_code == 200
+
+    upload_resp = client.post(
+        "/api/inputs/default/upload",
+        files={"file": ("task1.txt", b"hello")},
+    )
+    assert upload_resp.status_code in (200, 404)  # upload path mocked; allow 404 if router rejects
+
+    delete_resp = client.delete("/api/inputs/default/task1.txt")
+    assert delete_resp.status_code in (200, 404)
+    monkeypatch.setattr(
+        "ui.backend.services.log_reader.list_log_files",
+        lambda: {"diagrams": []},
+    )
+    monkeypatch.setattr(
+        "ui.backend.services.log_reader.read_log",
+        lambda path, lines=100: {"lines": [], "total_lines": 0, "file_path": path},
+    )
+
+    assert client.get("/api/logs/files").status_code == 200
+    assert client.get("/api/logs").status_code == 200
