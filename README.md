@@ -50,6 +50,16 @@ npm run stop
 
 > **Manual start** (if needed): `npm run dev:backend` and `npm run dev:frontend` in separate terminals.
 
+#### Start/Stop Cheat Sheet
+
+| Action | Command |
+|--------|---------|
+| **Start everything** | `npm run dev` |
+| **Stop everything** | `Ctrl+C` or `npm run stop` |
+| **Backend only** | `npm run dev:backend` (port 8001) |
+| **Frontend only** | `npm run dev:frontend` (port 4200, requires backend) |
+| **Kill stuck port** | `netstat -ano \| findstr :8001` then `taskkill /F /PID <pid>` |
+
 ### 3. Upload Input Files
 
 Go to **Input Files** in the sidebar and drag-and-drop your JIRA XML, DOCX, or Excel files into the matching category card. The `.env` is auto-configured.
@@ -130,7 +140,7 @@ Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
 
 | Name | LLM | Description |
 |------|:---:|-------------|
-| Discover | No | Vector-index into ChromaDB + symbol extraction, evidence store, repo manifest, budget prioritization |
+| Discover | No | 10-step deterministic pipeline: vector-index into ChromaDB, symbol extraction (classes/methods/endpoints), evidence traceability (chunk-to-source linking), repo manifest (framework/module detection), budget-based file prioritization. Outputs feed all downstream phases via `RAGQueryTool` and `SymbolQueryTool`. See [Indexing Pipeline](docs/architecture/indexing-pipeline.md). |
 | Extract | No | Deterministic extraction: components, relations, interfaces |
 | Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
 | Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
@@ -300,6 +310,7 @@ pytest tests/ --ignore=tests/e2e    # Unit + integration only
 | Document | Description |
 |----------|-------------|
 | [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md) | Full architecture specification |
+| [Indexing Pipeline](docs/architecture/indexing-pipeline.md) | Discover phase: concept, artifacts, downstream consumers |
 | [User Guide](docs/guides/USER_GUIDE.md) | Installation, configuration, CLI, troubleshooting |
 | [Delivery Guide](docs/guides/DELIVERY_GUIDE.md) | Release process and deployment |
 | [Phase Configuration](config/phases_config.yaml) | Phase definitions and presets |
