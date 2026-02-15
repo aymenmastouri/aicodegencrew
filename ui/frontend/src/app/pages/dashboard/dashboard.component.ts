@@ -110,18 +110,18 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
 
       <!-- Live Pipeline Stepper -->
       @if (phaseProgress.length > 0 && executionState !== 'idle') {
-        <div class="stepper-card" [class]="'stepper-' + executionState">
+        <div class="stepper-card" [class]="'stepper-' + executionState + (runOutcome === 'all_skipped' ? ' stepper-all-skipped' : '')">
           <div class="stepper-header">
             <div class="stepper-left">
-              <mat-icon class="stepper-logo" [class]="'logo-' + executionState">rocket_launch</mat-icon>
+              <mat-icon class="stepper-logo" [class]="'logo-' + (runOutcome === 'all_skipped' ? 'skipped' : executionState)">rocket_launch</mat-icon>
               <div>
                 <div class="stepper-title">
                   @if (executionState === 'running') {
-                    Pipeline Running
+                    Run In Progress
                   } @else if (executionState === 'completed') {
-                    Pipeline Completed
+                    {{ runOutcomeTitle() }}
                   } @else if (executionState === 'failed') {
-                    Pipeline Failed
+                    Run Failed
                   }
                 </div>
                 @if (executionRunId) {
@@ -211,7 +211,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
               <div class="phase-bottom">
                 <span class="status-dot" [class]="'dot-' + phase.status"></span>
                 <span class="status-label">{{ phase.status }}</span>
-                @if (phase.status === 'completed' || phase.status === 'partial' || phase.status === 'failed') {
+                @if (phase.status === 'completed' || phase.status === 'partial' || phase.status === 'skipped' || phase.status === 'failed') {
                   <button class="reset-btn" (click)="resetPhase(phase.id); $event.stopPropagation(); $event.preventDefault()"
                     [disabled]="executionState === 'running'"
                     [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset'">
@@ -345,6 +345,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         background: linear-gradient(135deg, #fff 0%, rgba(0, 112, 173, 0.02) 100%);
       }
       .stepper-completed { border-color: rgba(40, 167, 69, 0.2); }
+      .stepper-all-skipped { border-color: rgba(158, 158, 158, 0.3); }
       .stepper-failed { border-color: rgba(220, 53, 69, 0.2); }
       .stepper-header {
         display: flex;
@@ -369,6 +370,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
         animation: pulse-stepper-logo 1.5s ease-in-out infinite;
       }
       .logo-completed { background: var(--cg-success, #28a745); }
+      .logo-skipped { background: var(--cg-gray-400, #9e9e9e); }
       .logo-failed { background: var(--cg-error, #dc3545); }
       @keyframes pulse-stepper-logo {
         0%, 100% { opacity: 1; }
@@ -585,6 +587,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
       .phase-failed { border-left-color: var(--cg-error); }
       .phase-running { border-left-color: var(--cg-blue); }
       .phase-ready { border-left-color: var(--cg-vibrant); }
+      .phase-skipped { border-left-color: var(--cg-gray-300); opacity: 0.7; }
       .phase-planned { border-left-color: var(--cg-gray-200); opacity: 0.55; }
       .phase-top {
         display: flex;
@@ -628,6 +631,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
       .dot-failed { background: var(--cg-error); }
       .dot-running { background: var(--cg-blue); }
       .dot-ready { background: var(--cg-vibrant); }
+      .dot-skipped { background: var(--cg-gray-300); }
       .dot-planned { background: var(--cg-gray-300); }
       .dot-idle { background: var(--cg-gray-300); }
       .dot-cancelled { background: #e0a800; }
@@ -866,6 +870,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   executionState: string = 'idle';
   executionRunId: string = '';
+  runOutcome: string = '';
   phaseProgress: PhaseProgress[] = [];
   executionElapsed = 0;
 
@@ -1099,6 +1104,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return humanizePhaseId(phaseId);
   }
 
+  runOutcomeTitle(): string {
+    switch (this.runOutcome) {
+      case 'all_skipped': return 'All Phases Up To Date';
+      case 'partial': return 'Run Completed (Partial)';
+      case 'failed': return 'Run Failed';
+      default: return 'Run Completed';
+    }
+  }
+
   formatDuration(seconds?: number): string {
     return formatDurationUtil(seconds);
   }
@@ -1174,6 +1188,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const prevState = this.executionState;
     this.executionState = s.state;
     this.executionRunId = s.run_id || '';
+    this.runOutcome = s.run_outcome || '';
     // Only overwrite stepper data if the backend has real progress info
     if (s.phase_progress && s.phase_progress.length > 0) {
       this.phaseProgress = s.phase_progress;

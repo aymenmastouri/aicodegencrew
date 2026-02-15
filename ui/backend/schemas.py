@@ -20,7 +20,7 @@ class PhaseInfo(BaseModel):
 class PhaseStatus(BaseModel):
     id: str
     name: str
-    status: str = "idle"  # idle | ready | running | completed | failed | planned
+    status: str = "idle"  # idle | ready | running | completed | skipped | failed | planned
     enabled: bool = True
     last_run: str | None = None
     duration_seconds: float | None = None
@@ -159,9 +159,11 @@ class ExecutionStatus(BaseModel):
     phase_progress: list[PhaseProgress] = []
     progress_percent: float = 0
     completed_phase_count: int = 0
+    skipped_phase_count: int = 0
     total_phase_count: int = 0
     eta_seconds: float | None = None
     live_metrics: LiveMetrics | None = None
+    run_outcome: str | None = None  # success | all_skipped | partial | failed
 
 
 class RunHistoryEntry(BaseModel):

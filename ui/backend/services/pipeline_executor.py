@@ -227,6 +227,7 @@ class PipelineExecutor:
         # Compute progress percent
         total = len(self.current_run.phases) if self.current_run else 0
         completed = sum(1 for p in phase_progress if p.get("status") in ("completed", "partial", "skipped"))
+        skipped = sum(1 for p in phase_progress if p.get("status") == "skipped")
         running = sum(1 for p in phase_progress if p.get("status") == "running")
         if phase_progress:
             observed = len(phase_progress)
@@ -244,6 +245,9 @@ class PipelineExecutor:
         # ETA estimation
         eta = self._estimate_eta(elapsed) if self.state == "running" and elapsed else None
 
+        # Compute run_outcome for terminal states
+        run_outcome = self._compute_run_outcome(phase_progress) if self.state in ("completed", "failed") else None
+
         return {
             "state": self.state,
             "run_id": self.current_run.run_id if self.current_run else None,
@@ -254,9 +258,11 @@ class PipelineExecutor:
             "phase_progress": phase_progress,
             "progress_percent": progress,
             "completed_phase_count": completed,
+            "skipped_phase_count": skipped,
             "total_phase_count": total,
             "eta_seconds": eta,
             "live_metrics": live_metrics,
+            "run_outcome": run_outcome,
         }
 
     def get_log_lines(self, since: int = 0) -> list[str]:
@@ -609,6 +615,30 @@ class PipelineExecutor:
             return ordered
 
         return list(progress.values())
+
+    @staticmethod
+    def _compute_run_outcome(phase_progress: list[dict]) -> str:
+        """Compute aggregate run outcome from phase progress.
+
+        Returns one of: 'success', 'all_skipped', 'partial', 'failed'.
+        """
+        if not phase_progress:
+            return "failed"
+
+        has_failed = any(p.get("status") == "failed" for p in phase_progress)
+        if has_failed:
+            return "failed"
+
+        all_skipped = all(p.get("status") == "skipped" for p in phase_progress)
+        if all_skipped:
+            return "all_skipped"
+
+        has_completed = any(p.get("status") in ("completed", "partial") for p in phase_progress)
+        has_skipped = any(p.get("status") == "skipped" for p in phase_progress)
+        if has_completed and has_skipped:
+            return "partial"
+
+        return "success"
 
     def _read_live_metrics(self) -> dict | None:
         """Aggregate live token usage and crew completions from metrics.jsonl."""
