@@ -222,16 +222,17 @@ class ChromaIndexTool(BaseTool):
 
                 ids.append(chunk_id)
                 texts.append(text)
-                metadatas.append(
-                    {
-                        "file_path": chunk.get("file_path", ""),
-                        "file_hash": chunk.get("file_hash", ""),
-                        "repo_path": chunk.get("repo_path", ""),
-                        "chunk_index": chunk.get("chunk_index", 0),
-                        "start_char": chunk.get("start_char", 0),
-                        "end_char": chunk.get("end_char", 0),
-                    }
-                )
+                meta = {
+                    "file_path": chunk.get("file_path", ""),
+                    "file_hash": chunk.get("file_hash", ""),
+                    "repo_path": chunk.get("repo_path", ""),
+                    "chunk_index": chunk.get("chunk_index", 0),
+                    "start_char": chunk.get("start_char", 0),
+                    "end_char": chunk.get("end_char", 0),
+                }
+                if chunk.get("content_type"):
+                    meta["content_type"] = chunk["content_type"]
+                metadatas.append(meta)
                 valid_embeddings.append(embedding)
 
             if not ids:

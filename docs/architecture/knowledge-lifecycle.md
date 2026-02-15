@@ -12,7 +12,7 @@ How architecture knowledge flows through SDLC phases, from raw code to generated
 
 ```mermaid
 graph TD
-    R[Source Repository] --> D[Discover<br/>ChromaDB vectors]
+    R[Source Repository] --> D[Discover<br/>ChromaDB + symbols + evidence + manifest]
     R --> E[Extract<br/>architecture_facts.json]
     D --> E
     E --> A[Analyze<br/>analyzed_architecture.json]
@@ -24,6 +24,7 @@ graph TD
     D --> P
     P --> I[Implement<br/>Generated code + report]
     E --> I
+    D --> I
     I --> V[Verify<br/>Generated tests]
     V --> DEL[Deliver<br/>PR + merge]
 
@@ -37,13 +38,19 @@ graph TD
     style DEL fill:#e3f2fd
 ```
 
+> **Note:** Discover now feeds directly into Plan (symbol-based component scoring) and Implement (symbol-targeted context extraction), not just via ChromaDB vectors.
+
 ## Knowledge Directory Structure
 
 ```
 knowledge/
-├── discover/          # ChromaDB vector store (excluded from UI file browser)
-│   ├── chroma.sqlite3
-│   └── ...
+├── discover/          # ChromaDB + symbol index + evidence + manifest
+│   ├── chroma.sqlite3          # Vector embeddings (with content_type metadata)
+│   ├── symbols.jsonl           # Symbol index (class/method/endpoint per line)
+│   ├── evidence.jsonl          # Chunk evidence (line range, type, linked symbols)
+│   ├── repo_manifest.json      # Repo stats, frameworks, modules, noise folders
+│   ├── .indexing_state.json    # Fingerprint, counts, timestamp
+│   └── ...                     # ChromaDB internal files
 ├── extract/           # Deterministic facts (single source of truth)
 │   ├── architecture_facts.json    # Aggregated 16-dimension model
 │   └── evidence_map.json          # File→entity evidence mapping

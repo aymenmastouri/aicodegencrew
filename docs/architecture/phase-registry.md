@@ -70,6 +70,20 @@ graph LR
 3. Register the phase executable in `cli.py` `cmd_run()`
 4. (Optional) Add to relevant presets in `phases_config.yaml`
 
+## DISCOVER_ARTIFACTS
+
+The phase registry also defines artifact paths for the enhanced Discover phase:
+
+```python
+DISCOVER_ARTIFACTS = {
+    "symbols": "knowledge/discover/symbols.jsonl",
+    "evidence": "knowledge/discover/evidence.jsonl",
+    "manifest": "knowledge/discover/repo_manifest.json",
+}
+```
+
+These paths are also available as constants in `shared/paths.py`: `DISCOVER_SYMBOLS`, `DISCOVER_EVIDENCE`, `DISCOVER_MANIFEST`.
+
 ## Convenience Functions
 
 | Function | Replaces |

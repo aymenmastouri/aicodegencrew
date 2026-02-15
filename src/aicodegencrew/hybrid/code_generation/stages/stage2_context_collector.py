@@ -7,8 +7,10 @@ for each affected component.
 Duration: 2-5s (file I/O only, no LLM)
 """
 
+import json
 from pathlib import Path
 
+from ....shared.paths import DISCOVER_SYMBOLS
 from ....shared.utils.logger import setup_logger
 from ..schemas import CodegenPlanInput, CollectedContext, ComponentTarget, FileContext
 
@@ -36,6 +38,7 @@ class ContextCollectorStage:
 
     def __init__(self, repo_path: str):
         self.repo_path = Path(repo_path)
+        self._symbol_index: list[dict] | None = None
 
     def run(self, plan: CodegenPlanInput) -> CollectedContext:
         """
@@ -93,10 +96,8 @@ class ContextCollectorStage:
             logger.warning(f"[Stage2] Could not read: {file_path}")
             return None
 
-        # Truncate if too large
-        if len(content) > MAX_FILE_CHARS:
-            logger.info(f"[Stage2] Truncating {file_path.name}: {len(content)} -> {MAX_FILE_CHARS} chars")
-            content = content[:MAX_FILE_CHARS] + "\n// ... (truncated)"
+        # Use symbol index for targeted extraction, or fall back to truncation
+        content = self._extract_targeted_content(content, str(file_path), comp.name)
 
         return FileContext(
             file_path=str(file_path),
@@ -168,6 +169,91 @@ class ContextCollectorStage:
                 return None
         except Exception:
             return None
+
+    def _load_symbol_index(self) -> list[dict]:
+        """Lazy-load symbols.jsonl for targeted context extraction."""
+        if self._symbol_index is not None:
+            return self._symbol_index
+
+        symbols_path = Path(DISCOVER_SYMBOLS)
+        if not symbols_path.exists():
+            self._symbol_index = []
+            return self._symbol_index
+
+        records = []
+        try:
+            with open(symbols_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        records.append(json.loads(line))
+            logger.info(f"[Stage2] Loaded {len(records)} symbols for context targeting")
+        except Exception as e:
+            logger.debug(f"[Stage2] Could not load symbol index: {e}")
+            records = []
+
+        self._symbol_index = records
+        return self._symbol_index
+
+    def _get_target_line_range(self, file_path: str, comp_name: str) -> tuple[int, int] | None:
+        """Use symbol index to find the exact line range for a component.
+
+        Returns (start_line, end_line) or None if not found.
+        """
+        symbols = self._load_symbol_index()
+        if not symbols:
+            return None
+
+        # Normalize path for comparison
+        norm_path = file_path.replace("\\", "/")
+
+        best = None
+        for sym in symbols:
+            sym_path = sym.get("path", "").replace("\\", "/")
+            if sym_path not in norm_path and norm_path not in sym_path:
+                continue
+            if sym.get("kind") in ("class", "interface") and sym.get("symbol", "") == comp_name:
+                start = sym.get("line", 0)
+                end = sym.get("end_line", 0)
+                if start and end:
+                    best = (start, end)
+                    break
+
+        return best
+
+    def _extract_targeted_content(
+        self, content: str, file_path: str, comp_name: str
+    ) -> str:
+        """Extract only the relevant method/class body using symbol index.
+
+        Falls back to full-file truncation if symbol index is unavailable.
+        """
+        line_range = self._get_target_line_range(file_path, comp_name)
+        if not line_range:
+            # Fall back to truncation
+            if len(content) > MAX_FILE_CHARS:
+                return content[:MAX_FILE_CHARS] + "\n// ... (truncated)"
+            return content
+
+        start, end = line_range
+        lines = content.splitlines()
+
+        # Add some context lines around the target range
+        context_padding = 5
+        start_idx = max(0, start - 1 - context_padding)
+        end_idx = min(len(lines), end + context_padding)
+
+        targeted = "\n".join(lines[start_idx:end_idx])
+
+        # If the targeted section is still too large, truncate
+        if len(targeted) > MAX_FILE_CHARS:
+            targeted = targeted[:MAX_FILE_CHARS] + "\n// ... (truncated)"
+
+        logger.info(
+            f"[Stage2] Symbol-targeted: {comp_name} in {Path(file_path).name} "
+            f"lines {start}-{end} ({len(targeted)} chars vs {len(content)} total)"
+        )
+        return targeted
 
     @staticmethod
     def _extract_related_patterns(comp: ComponentTarget, plan: CodegenPlanInput) -> list[str]:

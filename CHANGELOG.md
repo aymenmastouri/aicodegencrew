@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.6.0] - 2026-02-15
+
+### Added
+
+**Enhanced Discover Phase — Symbol Index, Evidence Store, Repo Manifest, Budget Engine**
+
+- **Symbol Extractor** (`symbol_extractor.py`): regex-based extraction of classes, methods, functions, interfaces, endpoints, and decorators for Java, TypeScript, and Python. Outputs `knowledge/discover/symbols.jsonl` (one JSONL record per symbol with name, kind, path, line range, language, module)
+- **Evidence Store**: each chunk now has traceability metadata — line range, content type (code/doc/config), linked symbols. Written to `knowledge/discover/evidence.jsonl`
+- **Repo Manifest** (`manifest_builder.py`): detects frameworks via marker files (pom.xml → Spring, angular.json → Angular, etc.), computes file stats by extension/module, captures git commit hash. Written to `knowledge/discover/repo_manifest.json`
+- **Budget Engine** (`budget_engine.py`): classifies files into A/B/C priority tiers (docs/controllers → A, services/entities → B, tests/utils → C) and reorders indexing so high-value files are processed first. Controlled by `INDEX_ENABLE_BUDGET`, `INDEX_PRIORITY_A_PCT`, `INDEX_PRIORITY_B_PCT`
+- **SymbolQueryTool** (`shared/tools/symbol_query_tool.py`): CrewAI tool for deterministic symbol lookups — exact/substring match with kind, path, and module filters. Returns empty gracefully when `symbols.jsonl` is missing
+- **ChromaDB `content_type` metadata**: chunks now tagged as `code`, `doc`, or `config` in ChromaDB for filtered retrieval
+- **RAG evidence enrichment**: `RAGQueryTool` now enriches search results with line numbers, content type, and linked symbols from `evidence.jsonl`. New `content_type` filter parameter
+- **Data models** (`models.py`): `SymbolRecord`, `EvidenceRecord`, `RepoManifest`, `ModuleStats` dataclasses
+- **Path constants**: `DISCOVER_SYMBOLS`, `DISCOVER_EVIDENCE`, `DISCOVER_MANIFEST` in `shared/paths.py`
+- **Phase registry**: `DISCOVER_ARTIFACTS` dict in `phase_registry.py`
+- **IndexingState**: new `symbols_count`, `evidence_count`, `manifest_generated` fields (backward-compatible)
+
+**Downstream Phase Integration**
+
+- **Plan (Phase 4)**: `ComponentDiscoveryStage` uses symbol index as 5th scoring signal — re-balanced weights (semantic 30%, name 25%, symbol 20%, package 15%, stereotype 10%)
+- **Implement (Phase 5)**: `ContextCollectorStage` uses symbol index for targeted content extraction — reads only the relevant class/method body instead of truncating entire files at 12K chars
+- **Extract (Phase 1)**: `CollectorOrchestrator` loads `repo_manifest.json` as supplementary framework/module context
+
+---
+
 ## [0.5.0] - 2026-02-13
 
 ### Added
