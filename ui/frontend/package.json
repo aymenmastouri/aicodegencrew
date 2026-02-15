@@ -14,7 +14,9 @@
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\"",
     "e2e": "playwright test",
-    "e2e:ui": "playwright test --ui"
+    "e2e:ui": "playwright test --ui",
+    "e2e:demo": "playwright test --project=demo e2e/demo-showcase.spec.ts",
+    "e2e:videos": "playwright test --project=demo"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",

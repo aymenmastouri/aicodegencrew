@@ -18,8 +18,17 @@ export default defineConfig({
     headless: true,
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
+    video: 'on',
+    viewport: { width: 1440, height: 900 },
   },
   projects: [
     { name: 'chromium', use: { browserName: 'chromium' } },
+    {
+      name: 'demo',
+      use: {
+        browserName: 'chromium',
+        launchOptions: { slowMo: 400 },
+      },
+    },
   ],
 });
