@@ -193,7 +193,7 @@ phases:
     enabled: true
     name: "Implement"
     description: "Generate code from plans using hybrid architecture"
-    type: pipeline
+    type: hybrid
     required: false
     order: 5
     dependencies: [plan]
