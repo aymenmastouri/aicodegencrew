@@ -86,7 +86,7 @@ Establish a fully automated SDLC pipeline that covers:
 | Analyze | Reasoning | Multi-agent architecture analysis | Crew (MapReduce) |
 | Document | Reasoning | C4 + arc42 documentation | Crew (Mini-Crews) |
 | Plan | Reasoning | Parse tasks + create implementation plans | Hybrid Pipeline (IMPLEMENTED) |
-| Implement | Execution | Feature implementation | Hybrid Pipeline (IMPLEMENTED) |
+| Implement | Execution | Feature implementation | Hierarchical CrewAI (IMPLEMENTED) |
 | Verify | Execution | Test creation | Crew (Planned) |
 | Deliver | Execution | CI/CD integration | Pipeline (Planned) |
 
@@ -112,7 +112,7 @@ The implementation covers deterministic facts extraction through code generation
 | **Analyze** | MapReduce multi-agent analysis | IMPLEMENTED |
 | **Document** | C4 + arc42 Crews (Mini-Crews pattern) | IMPLEMENTED |
 | **Plan** | Hybrid pipeline (4 deterministic + 1 LLM stage) | IMPLEMENTED |
-| **Implement** | Hybrid pipeline (6 stages: 4 deterministic + LLM gen + build verify with self-heal) | IMPLEMENTED |
+| **Implement** | Hierarchical CrewAI (4 agents: Manager + Developer + Builder + Tester, dual-model routing, preflight + post-crew) | IMPLEMENTED |
 | **SDLC Dashboard** | Angular 21 + FastAPI web UI with SSE streaming, file upload, doc rendering | IMPLEMENTED |
 | **Evidence Traceability** | evidence_map.json | IMPLEMENTED |
 
@@ -411,27 +411,33 @@ src/aicodegencrew/
                 breaking_changes.py    # Breaking change detection
                 migration_steps.py     # Migration step generation
 
-        code_generation/                # Implement: Code Generation (HYBRID)
+        code_generation/                # Implement: Code Generation (HIERARCHICAL CREW)
             __init__.py
-            pipeline.py                # CodeGenerationPipeline (6 stages)
-            schemas.py                 # Pydantic schemas (10 models)
+            crew.py                    # ImplementCrew (hierarchical crew orchestrator)
+            agents.py                  # 4 agents with dual-model routing
+            tasks.py                   # 3 CrewAI tasks (implement, build, test)
+            schemas.py                 # Pydantic schemas (10+ models)
+            output_writer.py           # Git branch + file writes + report
 
-            stages/                    # 6-stage hybrid architecture
+            preflight/                 # Deterministic pre-crew modules (0 LLM tokens)
                 __init__.py
-                stage1_plan_reader.py      # Read Plan output + resolve file paths
-                stage2_context_collector.py # Collect source code from target repo
-                stage3_code_generator.py   # LLM call per file (primary LLM stage)
-                stage4_code_validator.py   # Syntax, security, pattern validation
-                stage4b_build_verifier.py  # Build verification + self-healing (LLM)
-                stage5_output_writer.py    # Git branch + file writes + report
+                plan_reader.py         # Read Plan output + resolve file paths
+                import_index.py        # ImportIndex + language-filtered resolve()
+                dependency_graph.py    # Topological sort (Kahn's algorithm)
+                import_fixer.py        # Deterministic post-crew import correction
+                validator.py           # Preflight gate (plan valid? files exist? build system?)
 
-            strategies/                # Task-type-specific strategies
+            tools/                     # CrewAI tool wrappers (8 existing + 3 new)
                 __init__.py
-                base.py                # BaseStrategy ABC
-                feature_strategy.py    # New feature implementation
-                bugfix_strategy.py     # Targeted bug fixes
-                upgrade_strategy.py    # Framework migration (Angular, Spring)
-                refactoring_strategy.py # Code restructuring
+                code_reader_tool.py    # Read source files
+                code_writer_tool.py    # Write to staging dict
+                build_runner_tool.py   # Execute builds per container
+                build_error_parser_tool.py # Parse javac/tsc errors
+                test_pattern_tool.py   # Query test patterns from facts
+                test_writer_tool.py    # Write test files to staging
+                import_index_tool.py   # Language-filtered import lookup (NEW)
+                dependency_tool.py     # Dependency graph queries (NEW)
+                plan_reader_tool.py    # Read plan JSON (NEW)
 
         merge/                         # Pipeline merge utilities
             __init__.py
@@ -1488,127 +1494,110 @@ Plan Hybrid Pipeline uses **ALL** outputs from previous phases:
 
 ---
 
-### 4.6 Implement Phase (HYBRID PIPELINE - IMPLEMENTED)
+### 4.6 Implement Phase (HIERARCHICAL CREWAI - IMPLEMENTED)
+
+> **Reference Diagrams:**
+> - [code-generation-pipeline.drawio](diagrams/code-generation-pipeline.drawio) — Full architecture overview
+> - [implement-phase-crew.drawio](diagrams/implement-phase-crew.drawio) — Agent detail view with tools and workflows
 
 | Attribute | Specification |
 |-----------|---------------|
-| Type | Pipeline (Hybrid: Deterministic + LLM per file + Build Verification) |
-| Module | `pipelines/code_generation/` |
-| LLM Requirement | Yes (Stage 3: generation, Stage 4b: optional self-healing) |
+| Type | Hierarchical CrewAI (4 Agents, Dual-Model Routing) |
+| Module | `hybrid/code_generation/` |
+| LLM Requirement | Yes (Developer + Tester: Coder-14B, Manager + Builder: 120B) |
 | Input | `knowledge/plan/{task_id}_plan.json` (Plan) |
 | | Target repository source code (`PROJECT_PATH`) |
-| | `architecture_facts.json` (Extract, for file path resolution) |
+| | `architecture_facts.json` (Extract, for file path resolution + facts queries) |
+| | ChromaDB index (semantic code search via RAGQuery) |
 | Output | Git branch `codegen/batch-{timestamp}` (multi-task) or `codegen/{task_id}` (single) |
 | | `knowledge/implement/{task_id}_report.json` |
 | Dependency | Plan |
 | Status | **IMPLEMENTED** |
 
-#### Architecture: Hybrid Pipeline
+#### Architecture: Hierarchical CrewAI
 
-**Why Hybrid?** Code generation needs precision, not creativity. Each modified file has a clear context (existing code + plan + patterns), and the LLM's job is to produce valid code that fits. Multi-agent crews waste tokens on inter-agent coordination and produce inconsistent style across files. One LLM call per file with a strategy-specific prompt (feature/bugfix/upgrade/refactoring) gives predictable, reviewable output that developers trust.
+**Why CrewAI?** The previous pipeline approach (1 LLM call per file) was too rigid — no cross-file reasoning, no iterative improvement, no self-healing with architectural context. The new approach treats the LLM as a developer with tools, not a code template engine. A Manager Agent coordinates specialized workers (Developer, Builder, Tester) who use tools to read code, query architecture, generate code, build, and fix errors autonomously.
 
-**6-Stage Pipeline:**
+**3-Phase Flow:**
 
 ```
-Stage 1: Plan Reader (Deterministic, <1s) - IMPLEMENTED
-  └─ Read Plan output JSON → CodegenPlanInput
-  └─ Resolve missing file paths from architecture_facts.json
-  └─ Select strategy (feature/bugfix/upgrade/refactoring)
+Phase A: PREFLIGHT (Deterministic, 0 LLM tokens, 5-15s)
+  └─ PlanReader: Read plan JSON → CodegenPlanInput (resolve file paths from facts)
+  └─ ImportIndexBuilder: Scan repo → 2266 symbols, 1984 files (language-filtered)
+  └─ DependencyGraphBuilder: Topological sort → tier-based generation order
+  └─ PreflightValidator: Plan valid? Files exist? Build system? Index >0 symbols?
+  └─ GATE: Any failure → abort BEFORE LLM tokens are spent
 
-Stage 2: Context Collector (File I/O, 2-5s) - IMPLEMENTED
-  └─ Read current source files from target repo
-  └─ Detect language, find sibling files, extract related patterns
-  └─ Truncate large files (>12K chars) to fit LLM context
+Phase B: CREW EXECUTION (CrewAI Process.hierarchical, LLM-powered)
+  └─ Manager Agent (120B): Reads plan, groups files by container, delegates work
+     └─ Task 1 → Developer: Implement all code changes (dependency order)
+     └─ Task 2 → Builder: Verify builds per container
+     └─ On build errors → Manager delegates fix back to Developer (max 3x heal)
+     └─ Task 3 → Tester: Generate unit tests for changed files
+  └─ Tool guardrails: max 50 total calls, max 3 identical (prevents infinite loops)
 
-Stage 3: Code Generator (LLM, 10-30s per file) - IMPLEMENTED ← PRIMARY LLM CALLS
-  └─ Strategy-specific prompt per file (feature/bugfix/upgrade/refactoring)
-  └─ Retry with backoff on failure (configurable CODEGEN_MAX_RETRIES)
-  └─ Rate limiting between calls (configurable CODEGEN_CALL_DELAY)
+Phase C: POST-CREW (Deterministic, 0 LLM tokens)
+  └─ ImportFixer: Deterministic import correction (language-filtered, no cross-language)
+  └─ Build Verification: Compile per container (backup → build → restore)
+  └─ Safety Gate: >50% files failed → no commit; build failed → no commit
 
-Stage 4: Code Validator (Deterministic, 1-3s) - IMPLEMENTED
-  └─ Syntax validation (balanced braces/parens, class declarations)
-  └─ Security scan (hardcoded secrets, SQL injection, XSS, eval)
-  └─ Pattern compliance (class name matches file, exports present)
-  └─ Unified diff generation for modified files
-
-Stage 4b: Build Verifier (Subprocess + LLM heal, 30s-5min) - IMPLEMENTED
-  └─ Group generated files by target container (backend/frontend/import_schema)
-  └─ Backup-and-restore: write files to disk, build, always restore
-  └─ Per-container build: gradlew compileJava (backend), ng build (frontend)
-  └─ Self-healing loop: parse errors → LLM fix → re-validate → retry (max 3x)
-  └─ Error parsers: javac (File.java:42: error:) and tsc (file.ts:42:10 - error TS2345:)
-  └─ Configurable: CODEGEN_BUILD_VERIFY (on/off), CODEGEN_BUILD_MAX_RETRIES
-  └─ Works identically in dry_run and normal mode (Stage 5 does final writes)
-
-Stage 5: Output Writer (Git + File I/O, 2-5s) - IMPLEMENTED
+Phase D: OUTPUT WRITER (Git + File I/O, 2-5s)
   └─ Safety: abort if working tree dirty, never push, never touch main
   └─ Single task: branch codegen/{task_id}, write files, commit, switch back
   └─ Multi-task cascade: single branch codegen/batch-{timestamp}, sequential commits
-  └─ >50% failure threshold → abort entire task
-  └─ Write JSON report to knowledge/implement/ (includes build_verification results)
-
-Total: 30s-10min depending on file count and build times
-
-Cascade Mode (Multi-Task):
-  When multiple plan files exist, tasks are processed sequentially on ONE branch.
-  Each task sees cumulative file changes from all prior tasks.
-  └─ setup_cascade_branch() → codegen/batch-YYYYMMDD-HHMMSS
-  └─ cascade_write_and_commit() per task (no branch switching)
-  └─ teardown_cascade() → switch back to original branch
+  └─ Write JSON report to knowledge/implement/
 ```
 
-#### Build Verification Flow
+#### Agent Architecture
+
+| Agent | LLM | Role | Tools | Delegation |
+|-------|-----|------|-------|------------|
+| **Manager** | MODEL (gpt-oss-120B) | Technical Project Lead | PlanReader, CodeReader, ImportIndex, DependencyLookup, FactsQuery, RAGQuery, MCP | `allow_delegation=True` |
+| **Developer** | CODEGEN_MODEL (Coder-14B) | Senior Full-Stack Dev | CodeReader, CodeWriter, ImportIndex, DependencyLookup, FactsQuery, RAGQuery, MCP | `allow_delegation=False` |
+| **Builder** | MODEL (gpt-oss-120B) | DevOps & Build Engineer | BuildRunner, BuildErrorParser, FactsQuery | `allow_delegation=False` |
+| **Tester** | CODEGEN_MODEL (Coder-14B) | Senior Test Engineer | TestPattern, TestWriter, CodeReader, RAGQuery, MCP | `allow_delegation=False` |
+
+#### Dual-Model Routing
 
 ```
-For each container (backend, frontend, import_schema):
-  1. backup.apply()   — write ALL generated files to disk, save originals
-  2. Run build command (subprocess, with timeout)
-  3. If success → done
-  4. If fail → parse errors (javac/tsc patterns)
-     └─ Match errors to generated files
-     └─ For each failing file: LLM heal prompt → fix code → re-validate syntax
-     └─ Retry build (up to CODEGEN_BUILD_MAX_RETRIES times)
-  5. backup.restore() — ALWAYS restore originals (Stage 5 handles final writes)
+create_llm()         → MODEL (gpt-oss-120B)       → Manager, Builder
+create_codegen_llm() → CODEGEN_MODEL (Coder-14B)  → Developer, Tester
+
+Env vars: CODEGEN_MODEL, CODEGEN_API_BASE, CODEGEN_API_KEY
+Fallback: If CODEGEN_MODEL unavailable → falls back to MODEL
 ```
 
-| Container | Build Command | Timeout |
-|-----------|--------------|---------|
-| `container.backend` | `gradlew.bat compileJava -q` | 120s |
-| `container.frontend` | `npx ng build --configuration=development` | 180s |
-| `container.import_schema` | `gradlew.bat compileJava -q` | 120s |
+#### Task-Type Instructions
 
-#### Strategy Pattern
+Instead of strategy classes, the task description includes type-specific instructions:
 
-| Strategy | Task Type | Key Behavior |
-|----------|-----------|-------------|
-| `FeatureStrategy` | feature | Add new code following existing patterns |
-| `BugfixStrategy` | bugfix | Minimal targeted changes only |
-| `UpgradeStrategy` | upgrade | Apply migration rules per file |
-| `RefactoringStrategy` | refactoring | Restructure while preserving behavior |
+| Task Type | Key Instructions |
+|-----------|-----------------|
+| `upgrade` | Apply migration rules, preserve existing behavior, update imports |
+| `bugfix` | Minimal targeted changes only, no refactoring |
+| `feature` | Follow existing patterns, add new code where appropriate |
+| `refactoring` | Restructure while preserving public API and behavior |
 
 #### Safety Features
 
 | Feature | Description |
 |---------|-------------|
-| **Dry-run mode** | `--dry-run` runs Stages 1-4b but skips file writes and git (Stage 4b still builds to verify) |
+| **Preflight gate** | Validates plan, files, build system BEFORE spending LLM tokens |
 | **Dirty tree check** | Aborts if target repo has uncommitted changes |
 | **Branch isolation** | Single: `codegen/{task_id}`, Multi: `codegen/batch-{timestamp}`, never touches main/develop |
 | **No push** | Never pushes to remote — user reviews and pushes manually |
 | **Failure threshold** | Aborts if >50% of files fail generation/validation |
-| **Security scan** | Blocks hardcoded secrets, SQL injection, XSS, eval/exec |
+| **Tool guardrails** | Max 50 total tool calls, max 3 identical calls (prevents infinite loops) |
 | **Explicit git add** | Only stages files explicitly written (no `git add -A`) |
-| **Build verification** | Compiles generated code per container before committing (Stage 4b) |
-| **Self-healing** | On build failure, parses errors and uses LLM to fix (max 3 retries) |
-| **Backup-restore** | Stage 4b always restores files after build verification (even on crash) |
+| **Build verification** | Post-crew deterministic build per container (backup → build → restore) |
+| **Import fixer** | Deterministic post-crew import correction (language-filtered) |
+| **Cascade mode** | Multi-task on single integration branch with cumulative changes |
 
 #### CLI: `codegen` Command
 
 ```bash
-# Generate code for all pending plans
+# Generate code for all pending plans (cascade mode)
 aicodegencrew codegen
-
-# Single task
-aicodegencrew codegen --task-id PROJ-123
 
 # Preview mode (no file writes)
 aicodegencrew codegen --dry-run
