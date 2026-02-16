@@ -6,7 +6,7 @@ All stage inputs/outputs are strongly typed.
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # =============================================================================
 # Stage 1: Plan Reader Schemas
@@ -85,6 +85,49 @@ class GenerationOrder(BaseModel):
 # =============================================================================
 # Stage 3: Code Generator Schemas
 # =============================================================================
+
+
+class FileProcessingResult(BaseModel):
+    """Result of processing a single file (for CrewAI structured output)."""
+
+    file_path: str = Field(..., description="Relative path to the file")
+    status: Literal["SUCCESS", "ERROR", "SKIPPED"] = Field(..., description="Processing status")
+    action: Literal["modify", "create", "delete"] = Field(default="modify", description="Action taken")
+    message: str = Field(default="", description="Success message or error details")
+
+
+class ImplementationResult(BaseModel):
+    """Structured output for implement_task (CrewAI output_pydantic)."""
+
+    task_id: str = Field(..., description="Task ID")
+    files_processed: list[FileProcessingResult] = Field(default_factory=list, description="Processing results per file")
+    total_files: int = Field(default=0, description="Total files in dependency order")
+    succeeded: int = Field(default=0, description="Number of files successfully processed")
+    failed: int = Field(default=0, description="Number of files that failed")
+    summary: str = Field(default="", description="Human-readable summary")
+
+    @field_validator("succeeded", "failed", mode="before")
+    @classmethod
+    def compute_counts(cls, v, info):
+        """Auto-compute counts from files_processed if not provided."""
+        if v == 0 and "files_processed" in info.data:
+            files = info.data["files_processed"]
+            if info.field_name == "succeeded":
+                return sum(1 for f in files if f.status == "SUCCESS")
+            elif info.field_name == "failed":
+                return sum(1 for f in files if f.status == "ERROR")
+        return v
+
+
+class BuildFixResult(BaseModel):
+    """Structured output for fix_task (CrewAI output_pydantic)."""
+
+    task_id: str = Field(..., description="Task ID")
+    files_fixed: list[FileProcessingResult] = Field(default_factory=list, description="Fix results per file")
+    total_failed: int = Field(default=0, description="Total files that had build errors")
+    fixed: int = Field(default=0, description="Number of files successfully fixed")
+    still_failing: int = Field(default=0, description="Number of files still failing")
+    summary: str = Field(default="", description="Human-readable summary")
 
 
 class GeneratedFile(BaseModel):

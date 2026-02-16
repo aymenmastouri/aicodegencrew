@@ -327,7 +327,7 @@ class ImplementCrew:
 
         task_source_snapshot = self._task_source_snapshot(plan.task_id)
 
-        impl_desc, impl_expected = implement_task(
+        impl_desc, impl_expected, impl_output_model = implement_task(
             task_id=plan.task_id,
             summary=plan.summary,
             description=plan.description,
@@ -338,7 +338,13 @@ class ImplementCrew:
             task_source_snapshot=task_source_snapshot,
         )
 
-        task = Task(description=impl_desc, expected_output=impl_expected, agent=developer, human_input=False)
+        task = Task(
+            description=impl_desc,
+            expected_output=impl_expected,
+            output_pydantic=impl_output_model,
+            agent=developer,
+            human_input=False,
+        )
 
         crew = Crew(
             agents=[developer],
@@ -408,14 +414,20 @@ class ImplementCrew:
 
         developer = create_agent("developer", developer_tools, _MCP_SERVER_PATH, _VERBOSE)
 
-        fix_desc, fix_expected = fix_task(
+        fix_desc, fix_expected, fix_output_model = fix_task(
             task_id=plan.task_id,
             build_errors=build_errors,
             failed_files=failed_files,
             dependency_order=dependency_order_paths,
         )
 
-        task = Task(description=fix_desc, expected_output=fix_expected, agent=developer, human_input=False)
+        task = Task(
+            description=fix_desc,
+            expected_output=fix_expected,
+            output_pydantic=fix_output_model,
+            agent=developer,
+            human_input=False,
+        )
 
         crew = Crew(
             agents=[developer],
