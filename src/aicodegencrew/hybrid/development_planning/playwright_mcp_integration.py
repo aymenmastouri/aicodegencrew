@@ -6,41 +6,42 @@ Auto-starts MCP server when Phase 4 needs to fetch web content.
 """
 
 from crewai import Agent, Task, Crew
-from crewai.mcp import MCPServerStdio
 from crewai.process import Process
+
+from ...shared.mcp import get_phase4_mcps
 
 
 def create_web_fetch_agent() -> Agent:
     """
-    Create a CrewAI agent with Playwright MCP for web fetching.
+    Create a CrewAI agent with multiple MCPs for web fetching and reasoning.
 
-    The agent can fetch Angular upgrade guides and other web content
-    using the official Microsoft Playwright MCP server.
+    The agent has access to:
+    - Playwright: Web navigation and content extraction
+    - Sequential Thinking: Complex reasoning
+    - Memory: Learning from previous fetches
+    - Brave Search: Searching for additional context
 
     Returns:
-        Agent configured with Playwright MCP tools
+        Agent configured with Phase 4 MCP tools
     """
-    # Configure Playwright MCP server
-    playwright_mcp = MCPServerStdio(
-        command="npx",
-        args=[
-            "@playwright/mcp@latest",
-            "--headless",  # Run in headless mode
-            "--timeout-action", "30000",  # 30s timeout for actions
-            "--isolated",  # Don't persist profile
-        ],
-        cache_tools_list=True,
-    )
+    # Get all Phase 4 MCPs (Playwright, Sequential Thinking, Memory, Brave Search)
+    mcps = get_phase4_mcps()
 
     agent = Agent(
-        role="Web Content Researcher",
-        goal="Fetch and extract structured information from web pages, especially Angular upgrade guides",
-        backstory=(
-            "You are a web research specialist who fetches official documentation "
-            "from framework websites. You use Playwright to navigate pages, wait for "
-            "content to load, and extract structured information accurately."
+        role="Web Content Researcher & Analyzer",
+        goal=(
+            "Fetch Angular upgrade guides from official sources, analyze migration patterns, "
+            "and extract structured migration rules. Learn from previous fetches and use "
+            "web search to find additional context when needed."
         ),
-        mcps=[playwright_mcp],
+        backstory=(
+            "You are an expert web research analyst specializing in technical documentation. "
+            "You use Playwright to navigate modern SPAs, Sequential Thinking to analyze complex "
+            "migration patterns, Memory to remember user preferences and past findings, and "
+            "Brave Search to find additional context. You always verify information from "
+            "official sources and provide structured, accurate results."
+        ),
+        mcps=mcps,
         verbose=True,
         allow_delegation=False,
     )
