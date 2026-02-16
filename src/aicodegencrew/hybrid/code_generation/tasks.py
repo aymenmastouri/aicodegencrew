@@ -120,26 +120,26 @@ IMPLEMENTATION STEPS:
 WORKFLOW — for EACH file in the dependency order below:
 1. Re-check task intent with read_task_source(task_id) when scope is unclear
 2. Read current file content with read_file(file_path)
-3. Identify which imports are framework imports (e.g., @angular/core) vs. internal imports
+3. Identify which imports are external dependencies (node_modules, Maven jars) vs. internal project imports
 4. For internal imports, use lookup_import(symbol, from_file, language)
-5. For framework imports, preserve them from the original file
+5. For external dependency imports, preserve them from the original file
 6. Check dependencies with lookup_dependencies(file_path)
 7. Query architecture facts and RAG search as needed
-8. Generate modified file content with BOTH preserved framework imports AND looked-up internal imports
+8. Generate modified file content with BOTH preserved external imports AND looked-up internal imports
 9. Write COMPLETE file via write_code(file_path, content, action="modify")
 10. REPEAT steps 2-9 for EVERY file in the list below
 
-DO NOT skip files just because framework imports can't be resolved - preserve existing framework imports!
+DO NOT skip files just because external dependency imports can't be resolved - preserve existing external imports!
 
 IMPORT RULES (CRITICAL - SMART IMPORT HANDLING):
 - ALWAYS use lookup_import(symbol, from_file, language) for project-internal imports
-- For framework imports (Angular, RxJS, etc.), preserve existing imports from the original file
+- For external dependencies (node_modules, Maven dependencies, etc.), preserve existing imports from the original file
 - NEVER write absolute paths like "import X from '/full/path/to/file'"
 - NEVER write parent-traversal paths like "import X from '../../../../../../../file'"
 - TypeScript: Use the EXACT import statement returned by lookup_import() for internal symbols
 - Java: Use the EXACT qualified name returned by lookup_import() for internal classes
 - If lookup_import() returns nothing for an INTERNAL symbol, query RAG before guessing
-- For external framework symbols (NgModule, HttpClient, etc.), READ the existing file and PRESERVE its imports
+- For external dependency symbols (framework classes, 3rd-party libraries), READ the existing file and PRESERVE its imports
 
 FILES IN DEPENDENCY ORDER (process ALL of these in order):
 {ordered}
