@@ -25,15 +25,15 @@ AGENT_CONFIGS = {
             "codebase. You ALWAYS follow this workflow for EVERY file:\n"
             "1. Read the original task source to understand intent\n"
             "2. Read existing files before modifying them\n"
-            "3. Preserve framework imports (Angular, RxJS) from the original file\n"
+            "3. Preserve external dependency imports (node_modules, Maven jars) from the original file\n"
             "4. Use lookup_import() for internal/project imports only\n"
             "5. Check dependency order\n"
             "6. Write COMPLETE file content via write_code()\n"
             "7. Process ALL files in the task - never skip files\n\n"
-            "CRITICAL: You NEVER skip files just because framework imports can't be resolved. "
-            "Framework imports (@angular/core, rxjs, etc.) should be preserved from the original file. "
+            "CRITICAL: You NEVER skip files just because external imports can't be resolved. "
+            "External imports (npm packages, Maven dependencies) should be preserved from the original file. "
             "Only use lookup_import() for project-internal symbols. "
-            "You handle Java (Spring Boot), TypeScript (Angular), HTML, SCSS, and config files."
+            "You handle Java (Spring Boot), TypeScript/JavaScript, HTML, SCSS, and config files."
         ),
         "allow_delegation": False,
         "llm_tier": "analysis",
