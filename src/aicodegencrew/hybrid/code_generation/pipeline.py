@@ -2,12 +2,20 @@
 Code Generation Pipeline (Phase 5)
 
 HYBRID ARCHITECTURE:
-- Stages 1, 2, 4: Deterministic (plan reading, context, validation)
-- Stage 3: LLM (code generation, 1 call per file)
-- Stage 5: Deterministic (git operations, file writing)
+- Stage 1: Plan Reader (deterministic — parse + validate plan JSON)
+- Stage 2: Context Collector (file I/O — read source + symbol index)
+           For upgrade tasks: full-file context (no symbol targeting)
+- Stage 3: Code Generator (LLM — 1 call per file, direct OpenAI)
+- Stage 4: Code Validator (deterministic — syntax + structure checks)
+- Stage 4b: Build Verifier (subprocess — compile in target repo)
+            Self-healing loop: parse errors → LLM heal → retry (max 3x)
+            CrewAI fallback: BuildFixerCrew with full repo access (if pipeline healer fails)
+- Stage 5: Output Writer (git — branch, commit, build-gate)
 
-Total Duration: 30s-5min (depending on file count)
-LLM Calls: 1 per affected file
+Pipeline path (default):   1 → 2 → 3 → 4 → 4b → 5
+Crew path (USE_CREW=true): 1 → 2 → ImplementCrew → 4 → 5
+
+LLM Calls: 1 per affected file (Stage 3) + 0-N heal calls (Stage 4b)
 """
 
 import time
@@ -35,12 +43,14 @@ class CodeGenerationPipeline:
     """
     Phase 5: Code Generation Pipeline.
 
-    Hybrid architecture with 5 stages:
-    1. Plan Reader (deterministic)
-    2. Context Collector (file I/O)
-    3. Code Generator (LLM, 1 call per file)
-    4. Code Validator (deterministic)
-    5. Output Writer (git + file I/O)
+    Hybrid architecture with 6 stages (1 → 2 → 3 → 4 → 4b → 5):
+    1. Plan Reader — parse + validate plan JSON
+    2. Context Collector — read source files (full file for upgrades, symbol-targeted otherwise)
+    3. Code Generator — LLM generates code (1 call per file)
+    4. Code Validator — syntax + structure checks
+    4b. Build Verifier — compile in target repo, self-heal loop (max 3x),
+                          then CrewAI BuildFixerCrew fallback with full repo access
+    5. Output Writer — git branch, commit (with build-gate)
     """
 
     def __init__(

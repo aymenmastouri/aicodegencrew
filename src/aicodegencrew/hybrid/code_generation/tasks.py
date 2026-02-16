@@ -2,7 +2,7 @@
 Implement Crew - Task Templates
 ================================
 Dynamic task descriptions for code generation, build verification,
-build healing, and test generation.
+build healing, test generation, and build fixer (CrewAI fallback).
 
 Each function returns (description, expected_output) for CrewAI Task construction.
 """
@@ -291,6 +291,131 @@ IMPORTANT:
         f"Summary of test files generated for '{container_name}': "
         f"list of test file paths written via write_test(), "
         f"components tested, and test count per file."
+    )
+
+    return description, expected_output
+
+
+# =============================================================================
+# BUILD FIXER: Developer fix iteration (CrewAI fallback)
+# =============================================================================
+
+
+def build_fixer_fix_task(
+    container_name: str,
+    container_id: str,
+    plan: "CodegenPlanInput",
+    staged_files: list[str],
+    build_errors: str,
+    iteration: int,
+    max_iterations: int,
+) -> tuple[str, str]:
+    """Build task description for the fixer developer agent.
+
+    The fixer has FULL repo access — it can read/write any file,
+    not just the ones in the original scope.
+
+    Args:
+        container_name: Human-readable container name.
+        container_id: Container identifier.
+        plan: The plan context (task_id, summary, upgrade_plan).
+        staged_files: File paths currently in staging.
+        build_errors: Raw build error output (truncated to 4000 chars).
+        iteration: Current fixer iteration (1-based).
+        max_iterations: Maximum fixer iterations.
+
+    Returns:
+        (description, expected_output) tuple for CrewAI Task.
+    """
+    changed_files = "\n".join(f"  - {fp}" for fp in staged_files)
+    error_text = build_errors[:4000]
+
+    upgrade_context = ""
+    if plan.upgrade_plan:
+        up = plan.upgrade_plan
+        upgrade_context = (
+            f"\nUPGRADE CONTEXT: {up.get('framework', '?')} "
+            f"{up.get('from_version', '?')} -> {up.get('to_version', '?')}\n"
+        )
+
+    description = f"""\
+Fix build errors for container "{container_name}" ({container_id}).
+Task: {plan.task_id} — {plan.summary}
+{upgrade_context}
+This is fixer iteration {iteration}/{max_iterations}.
+The build failed AFTER the pipeline already attempted to heal the errors.
+The remaining errors are likely in files OUTSIDE the original scope.
+
+FILES ALREADY MODIFIED (in staging):
+{changed_files}
+
+BUILD ERRORS TO FIX:
+{error_text}
+
+WORKFLOW:
+1. Read the error output carefully — identify WHICH files have errors
+2. For EACH file with errors:
+   a. Call read_file(file_path) to read the current source
+   b. If the file is already in staging, the read will include staged changes
+   c. Fix the compilation/build error
+   d. Call write_code(file_path, content, action="modify") with the COMPLETE fixed file
+3. If errors reference files NOT in staging (cascading breakage):
+   a. Read those files too — they may need imports or declarations updated
+   b. Fix them and write_code() them as well
+4. Use rag_query() to find correct import paths or API usage if unsure
+
+IMPORTANT:
+- You have FULL repo access — you are NOT limited to the original file scope
+- Fix ONLY build errors — do not refactor or add features
+- Generate COMPLETE file content, not fragments
+- Pay attention to import statements and module declarations"""
+
+    expected_output = (
+        f"Summary of all files fixed via write_code() for {container_name}, "
+        f"including newly-discovered files outside original scope."
+    )
+
+    return description, expected_output
+
+
+# =============================================================================
+# BUILD FIXER: DevOps build check (CrewAI fallback)
+# =============================================================================
+
+
+def build_fixer_verify_task(
+    container_name: str,
+    container_id: str,
+    iteration: int,
+) -> tuple[str, str]:
+    """Build task description for the fixer DevOps build check.
+
+    Args:
+        container_name: Human-readable container name.
+        container_id: Container identifier.
+        iteration: Current fixer iteration (1-based).
+
+    Returns:
+        (description, expected_output) tuple for CrewAI Task.
+    """
+    description = f"""\
+Verify the build for container "{container_name}" ({container_id}).
+This is build check after fixer iteration {iteration}.
+
+WORKFLOW:
+1. Call run_build(container_id="{container_id}") to build with ALL staged changes
+2. If build FAILS: call parse_build_errors(build_output) to get structured errors
+3. Report results clearly
+
+OUTPUT FORMAT:
+- build_passed: true/false
+- exit_code: <number>
+- error_count: <number>
+- error_summary: <detailed errors with file paths and line numbers>"""
+
+    expected_output = (
+        f"Build result for {container_name}: build_passed (true/false), "
+        f"exit code, and error summary if failed."
     )
 
     return description, expected_output

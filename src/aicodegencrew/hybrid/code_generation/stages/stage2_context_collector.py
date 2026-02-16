@@ -96,8 +96,13 @@ class ContextCollectorStage:
             logger.warning(f"[Stage2] Could not read: {file_path}")
             return None
 
-        # Use symbol index for targeted extraction, or fall back to truncation
-        content = self._extract_targeted_content(content, str(file_path), comp.name)
+        # For upgrade tasks, skip symbol-targeting — the LLM needs the full file
+        # (imports, decorators, module structure) to apply migration patterns.
+        # For normal tasks, use symbol index for targeted extraction.
+        if not plan.upgrade_plan:
+            content = self._extract_targeted_content(content, str(file_path), comp.name)
+        elif len(content) > MAX_FILE_CHARS:
+            content = content[:MAX_FILE_CHARS] + "\n// ... (truncated)"
 
         return FileContext(
             file_path=str(file_path),
