@@ -127,7 +127,7 @@ class ImportIndex:
             for entry in entries:
                 entry_parts = Path(entry.file_path).parts
                 common = 0
-                for a, b in zip(from_parts, entry_parts):
+                for a, b in zip(from_parts, entry_parts, strict=False):
                     if a == b:
                         common += 1
                     else:

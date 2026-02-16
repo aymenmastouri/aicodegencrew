@@ -13,6 +13,7 @@ Tools:
 - ImportIndexTool: Resolve exact imports (language-aware)
 - DependencyLookupTool: Query dependency order/relations for a file
 - PlanReaderTool: Read normalized plan context for manager agent
+- TaskSourceTool: Read original JIRA XML task content from TASK_INPUT_DIR
 - FactsQueryTool: (reused) Query architecture facts
 - RAGQueryTool: (reused) ChromaDB semantic search
 """
@@ -26,6 +27,7 @@ from .code_writer_tool import CodeWriterTool
 from .dependency_tool import DependencyLookupTool
 from .import_index_tool import ImportIndexTool
 from .plan_reader_tool import PlanReaderTool
+from .task_source_tool import TaskSourceTool
 from .test_pattern_tool import TestPatternTool
 from .test_writer_tool import TestWriterTool
 
@@ -39,6 +41,7 @@ __all__ = [
     "ImportIndexTool",
     "PlanReaderTool",
     "RAGQueryTool",
+    "TaskSourceTool",
     "TestPatternTool",
     "TestWriterTool",
 ]

@@ -58,6 +58,8 @@ def _detect_containers(repo_path: Path, facts_path: Path) -> list[ContainerConfi
         cid = container.get("id", "")
         ctype = container.get("type", "")
         root = container.get("root_path", "").replace("\\", "/").strip("/")
+        if root in (".", "./"):
+            root = ""
 
         if ctype in skip_types or "e2e" in cid.lower():
             continue
@@ -75,9 +77,9 @@ def _detect_containers(repo_path: Path, facts_path: Path) -> list[ContainerConfi
         configs.append(
             ContainerConfig(
                 container_id=cid,
-                name=container.get("name", root),
-                root_path=root + "/",
-                build_cwd=root,
+                name=container.get("name", root or "."),
+                root_path=f"{root}/" if root else "",
+                build_cwd=root or ".",
                 build_command=build_cmd,
                 build_tool=build_tool,
             )
@@ -291,7 +293,8 @@ class BuildRunnerTool(BaseTool):
     def _apply_staging(self, config: ContainerConfig) -> dict[str, str | None]:
         """Apply staged files to disk, returning backup of originals."""
         backup: dict[str, str | None] = {}
-        repo = Path(self.repo_path)
+        repo = Path(self.repo_path).resolve()
+        container_prefix = config.root_path.rstrip("/")
 
         for file_path, staged in self._staging.items():
             # Only apply files belonging to this container
@@ -300,10 +303,16 @@ class BuildRunnerTool(BaseTool):
             except ValueError:
                 rel = file_path.replace("\\", "/")
 
-            if not rel.startswith(config.root_path):
+            if container_prefix and rel != container_prefix and not rel.startswith(config.root_path):
                 continue
 
-            p = Path(file_path) if Path(file_path).is_absolute() else repo / file_path
+            raw_path = Path(file_path)
+            p = (raw_path if raw_path.is_absolute() else (repo / raw_path)).resolve()
+            try:
+                p.relative_to(repo)
+            except ValueError:
+                logger.warning("[BuildRunner] Skipping staged file outside repo: %s", file_path)
+                continue
 
             # Backup original
             if p.exists():

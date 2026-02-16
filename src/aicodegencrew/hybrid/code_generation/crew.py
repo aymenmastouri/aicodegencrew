@@ -1,18 +1,20 @@
-"""Implement Crew: Sequential CrewAI team for Phase 5.
+"""Implement Crew: Hierarchical CrewAI team for Phase 5.
 
 Architecture:
-  Preflight (deterministic) -> Crew (sequential) -> Post-crew (deterministic)
+  Preflight (deterministic) -> Crew (hierarchical) -> Post-crew (deterministic)
 
+  Manager   -- coordinates delegation and retries
   Developer -- reads code, resolves imports, writes code
   Builder   -- runs builds, parses errors, reports diagnostics
   Tester    -- generates unit tests matching repo patterns
 
-Process: Process.sequential — each agent executes its task directly with tools.
+Process: Process.hierarchical, manager coordinates workers and retry loops.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -27,14 +29,13 @@ from .output_writer import OutputWriter
 from .preflight import (
     DependencyGraphBuilder,
     ImportFixer,
-    ImportIndexBuilder,
     PlanReader,
     PreflightValidator,
+    TaskSourceReader,
 )
 from .schemas import (
     BuildVerificationResult,
     CodegenPlanInput,
-    CodegenReport,
     ContainerBuildResult,
     GeneratedFile,
 )
@@ -49,6 +50,7 @@ from .tools import (
     ImportIndexTool,
     PlanReaderTool,
     RAGQueryTool,
+    TaskSourceTool,
     TestPatternTool,
     TestWriterTool,
 )
@@ -61,11 +63,11 @@ logger = setup_logger(__name__)
 
 
 class ImplementCrew:
-    """Sequential crew for implementation, build verification and tests.
+    """Hierarchical crew for implementation, build verification and tests.
 
     Full flow:
     1. Preflight: plan reading, import index, dependency graph, validation
-    2. Crew: sequential execution (developer → builder → tester)
+    2. Crew: hierarchical execution (manager delegates to workers)
     3. Post-crew: import fixer, safety gate, output writer
     """
 
@@ -76,6 +78,7 @@ class ImplementCrew:
         chroma_dir: str | None = None,
         plans_dir: str = "knowledge/plan",
         output_dir: str = "knowledge/implement",
+        task_input_dir: str | None = None,
         *,
         build_verify: bool = True,
         test_enabled: bool = True,
@@ -86,6 +89,7 @@ class ImplementCrew:
         self.chroma_dir = chroma_dir or CHROMA_DIR
         self.plans_dir = plans_dir
         self.output_dir = Path(output_dir)
+        self.task_input_dir = (task_input_dir or os.getenv("TASK_INPUT_DIR", "")).strip()
         self.build_verify = build_verify
         self.test_enabled = test_enabled
         self.dry_run = dry_run
@@ -93,7 +97,7 @@ class ImplementCrew:
         self.total_tokens = 0
         self._containers: list[dict[str, str]] | None = None
 
-    # ── Container helpers ─────────────────────────────────────────────────
+    # â”€â”€ Container helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def _load_containers(self) -> list[dict[str, str]]:
         if self._containers is not None:
@@ -142,7 +146,7 @@ class ImplementCrew:
 
         return [cid for cid in ids if cid]
 
-    # ── Staging conversion ────────────────────────────────────────────────
+    # â”€â”€ Staging conversion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @staticmethod
     def _staging_to_generated_files(staging: dict[str, dict[str, Any]]) -> list[GeneratedFile]:
@@ -157,7 +161,7 @@ class ImplementCrew:
             ))
         return generated
 
-    # ── Deterministic build verification (post-crew) ──────────────────────
+    # â”€â”€ Deterministic build verification (post-crew) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def _verify_builds(
         self, plan: CodegenPlanInput, staging: dict[str, dict[str, Any]]
@@ -190,9 +194,9 @@ class ImplementCrew:
             if not baseline.get("success", False):
                 results.append(ContainerBuildResult(
                     container_id=cid, container_name=cname,
-                    build_command=bcmd, success=True,
+                    build_command=bcmd, success=False,
                     exit_code=int(baseline.get("exit_code", -1)),
-                    error_summary="Baseline broken (pre-existing)", attempts=0,
+                    error_summary="Baseline broken (pre-existing); staged build not executed", attempts=0,
                 ))
                 continue
 
@@ -246,7 +250,22 @@ class ImplementCrew:
         except Exception:
             return {}
 
-    # ── Core: sequential crew execution ──────────────────────────────────
+    def _task_source_snapshot(self, task_id: str) -> str:
+        """Load deterministic task-source context for prompt grounding."""
+        source = TaskSourceReader(task_input_dir=self.task_input_dir).run(task_id=task_id)
+        if not source.get("found", False):
+            return f"(not found: {source.get('error', 'unknown')})"
+
+        summary = str(source.get("summary", "") or "")
+        description = str(source.get("description", "") or "")
+        source_file = str(source.get("source_file", "") or "")
+        excerpt = description[:800] if description else ""
+        return (
+            f"- source_file: {source_file}\n"
+            f"- summary: {summary}\n"
+            f"- description_excerpt: {excerpt}"
+        ).strip()
+    # Core: crew execution
 
     def _execute_crew(
         self,
@@ -256,12 +275,7 @@ class ImplementCrew:
         import_index,
         generation_order,
     ) -> None:
-        """Build agents, tasks, crew and kick off sequential execution.
-
-        Sequential process: each task is assigned directly to its worker agent.
-        No manager overhead — agents use their tools directly.
-        Order: Developer (implement) → Builder (verify) → Tester (tests).
-        """
+        """Build agents, tasks, crew and kick off hierarchical execution."""
 
         # Shared tool instances bound to preflight artifacts
         import_tool = ImportIndexTool(
@@ -270,7 +284,17 @@ class ImplementCrew:
             import_index=import_index,
         )
         dependency_tool = DependencyLookupTool(generation_order=generation_order)
+        task_source_tool = TaskSourceTool(task_input_dir=self.task_input_dir)
 
+        manager_tools = [
+            PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
+            task_source_tool,
+            CodeReaderTool(repo_path=str(self.repo_path)),
+            FactsQueryTool(facts_dir=str(self.facts_path.parent)),
+            RAGQueryTool(chroma_dir=self.chroma_dir),
+            import_tool,
+            dependency_tool,
+        ]
         developer_tools = [
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
@@ -278,7 +302,14 @@ class ImplementCrew:
             RAGQueryTool(chroma_dir=self.chroma_dir),
             import_tool,
             dependency_tool,
+            task_source_tool,
             PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
+        ]
+        tester_tools = [
+            TestPatternTool(facts_dir=str(self.facts_path.parent)),
+            TestWriterTool(repo_path=str(self.repo_path), staging=staging),
+            CodeReaderTool(repo_path=str(self.repo_path)),
+            RAGQueryTool(chroma_dir=self.chroma_dir),
         ]
         builder_tools = [
             BuildRunnerTool(
@@ -290,10 +321,13 @@ class ImplementCrew:
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
         ]
 
+        manager = create_agent("manager", manager_tools, _MCP_SERVER_PATH, _VERBOSE)
         developer = create_agent("developer", developer_tools, _MCP_SERVER_PATH, _VERBOSE)
+        tester = create_agent("tester", tester_tools, _MCP_SERVER_PATH, _VERBOSE)
         builder = create_agent("builder", builder_tools, _MCP_SERVER_PATH, _VERBOSE)
 
         container_ids = self._container_ids_for_plan(plan)
+        task_source_snapshot = self._task_source_snapshot(plan.task_id)
 
         impl_desc, impl_expected = implement_task(
             task_id=plan.task_id,
@@ -303,36 +337,25 @@ class ImplementCrew:
             implementation_steps=plan.implementation_steps,
             upgrade_plan=plan.upgrade_plan,
             dependency_order=dependency_order_paths,
+            task_source_snapshot=task_source_snapshot,
         )
         build_desc, build_expected = build_task(container_ids=container_ids)
+        test_desc, test_expected = test_task(changed_files=dependency_order_paths)
 
-        # Sequential: each task directly assigned to its worker agent.
-        # No manager delegation — agents use tools directly.
         tasks = [
-            Task(description=impl_desc, expected_output=impl_expected, agent=developer, human_input=False),
-            Task(description=build_desc, expected_output=build_expected, agent=builder, human_input=False),
+            Task(description=impl_desc, expected_output=impl_expected, agent=manager, human_input=False),
+            Task(description=build_desc, expected_output=build_expected, agent=manager, human_input=False),
         ]
-
-        agents = [developer, builder]
-
         if self.test_enabled:
-            tester_tools = [
-                TestPatternTool(facts_dir=str(self.facts_path.parent)),
-                TestWriterTool(repo_path=str(self.repo_path), staging=staging),
-                CodeReaderTool(repo_path=str(self.repo_path)),
-                RAGQueryTool(chroma_dir=self.chroma_dir),
-            ]
-            tester = create_agent("tester", tester_tools, _MCP_SERVER_PATH, _VERBOSE)
-            test_desc, test_expected = test_task(changed_files=dependency_order_paths)
             tasks.append(
-                Task(description=test_desc, expected_output=test_expected, agent=tester, human_input=False),
+                Task(description=test_desc, expected_output=test_expected, agent=manager, human_input=False),
             )
-            agents.append(tester)
 
         crew = Crew(
-            agents=agents,
+            agents=[developer, tester, builder],
             tasks=tasks,
-            process=Process.sequential,
+            process=Process.hierarchical,
+            manager_agent=manager,
             verbose=_VERBOSE,
             memory=False,
             planning=False,
@@ -348,6 +371,8 @@ class ImplementCrew:
                     "task_type": plan.task_type,
                     "summary": plan.summary,
                     "description": plan.description,
+                    "task_input_dir": self.task_input_dir,
+                    "task_source_snapshot": task_source_snapshot,
                     "implementation_steps": plan.implementation_steps,
                     "affected_components": [c.model_dump() for c in plan.affected_components],
                     "dependency_order": dependency_order_paths,
@@ -365,8 +390,7 @@ class ImplementCrew:
                 self.total_calls += 1
         finally:
             uninstall_guardrails(tracker)
-
-    # ── Public run (single task) ──────────────────────────────────────────
+    # â”€â”€ Public run (single task) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def run(
         self,
@@ -375,7 +399,7 @@ class ImplementCrew:
         """Run the full implement flow for a single plan.
 
         1. Preflight: validate, build import index + dependency graph
-        2. Crew: sequential execution (developer → builder → tester)
+        2. Crew: hierarchical execution (manager delegates to workers)
         3. Post-crew: import fixer, build verification
 
         Returns:
@@ -384,7 +408,7 @@ class ImplementCrew:
         logger.info("[Implement] Starting hierarchical crew for task %s", plan.task_id)
         start_time = time.time()
 
-        # ── 1. Preflight ──────────────────────────────────────────────────
+        # â”€â”€ 1. Preflight â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         preflight = PreflightValidator(
             repo_path=str(self.repo_path), facts_path=str(self.facts_path),
         )
@@ -398,12 +422,12 @@ class ImplementCrew:
 
         staging: dict[str, dict[str, Any]] = {}
 
-        # ── 2. Crew execution ─────────────────────────────────────────────
+        # â”€â”€ 2. Crew execution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         self._execute_crew(plan, staging, dependency_order_paths, import_index, generation_order)
 
         generated_files = self._staging_to_generated_files(staging)
 
-        # ── 3. Post-crew: deterministic import repair ─────────────────────
+        # â”€â”€ 3. Post-crew: deterministic import repair â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         fixer = ImportFixer()
         generated_files = fixer.run(generated_files, import_index)
 
@@ -412,7 +436,7 @@ class ImplementCrew:
             if gf.file_path in staging:
                 staging[gf.file_path]["content"] = gf.content
 
-        # ── 4. Post-crew: build verification ──────────────────────────────
+        # â”€â”€ 4. Post-crew: build verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         build_result = self._verify_builds(plan, staging)
 
         duration = time.time() - start_time
@@ -423,7 +447,7 @@ class ImplementCrew:
 
         return generated_files, build_result
 
-    # ── Orchestrator-compatible kickoff ────────────────────────────────────
+    # â”€â”€ Orchestrator-compatible kickoff â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
         """Orchestrator-compatible kickoff interface.
@@ -553,7 +577,7 @@ class ImplementCrew:
             },
         }
 
-    # ── Helpers ───────────────────────────────────────────────────────────
+    # â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def _resolve_plan_files(self, inputs: dict[str, Any]) -> list[Path]:
         """Find plan files from orchestrator inputs or disk."""
@@ -595,3 +619,5 @@ class ImplementCrew:
             )
 
         return reasons
+
+

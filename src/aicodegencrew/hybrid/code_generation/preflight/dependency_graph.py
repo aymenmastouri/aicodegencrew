@@ -83,10 +83,8 @@ class DependencyGraphBuilder:
                     if target not in graph[source]:
                         graph[source].append(target)
 
-        for file_path in affected_paths:
-            file_exports = set()
-            for entry in import_index.by_file.get(file_path, []):
-                file_exports.add(entry.symbol)
+        # Reserved for future enrichment from import_index (currently deterministic facts + heuristics).
+        _ = import_index
 
         self._infer_module_dependencies(graph, affected_paths)
         return graph
@@ -113,17 +111,29 @@ class DependencyGraphBuilder:
         id_to_path: dict[str, str] = {}
         for comp in facts.get("components", []):
             comp_id = comp.get("id", "")
+            raw_paths = comp.get("file_paths") or []
+            if isinstance(raw_paths, str):
+                raw_paths = [raw_paths]
             comp_path = comp.get("file_path", "")
-            if comp_id and comp_path:
-                norm = comp_path.replace("\\", "/")
+            if comp_path:
+                raw_paths = [comp_path, *raw_paths]
+
+            if not comp_id or not raw_paths:
+                continue
+
+            for p in raw_paths:
+                norm = str(p).replace("\\", "/")
                 if norm in norm_affected:
                     id_to_path[comp_id] = norm_affected[norm]
-                elif Path(comp_path).name in norm_affected:
-                    id_to_path[comp_id] = norm_affected[Path(comp_path).name]
+                    break
+                name = Path(str(p)).name
+                if name in norm_affected:
+                    id_to_path[comp_id] = norm_affected[name]
+                    break
 
         for rel in facts.get("relations", []):
-            source_id = rel.get("source", "")
-            target_id = rel.get("target", "")
+            source_id = rel.get("from") or rel.get("source") or rel.get("from_id", "")
+            target_id = rel.get("to") or rel.get("target") or rel.get("to_id", "")
             source_path = id_to_path.get(source_id)
             target_path = id_to_path.get(target_id)
             if source_path and target_path and source_path != target_path:

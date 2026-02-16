@@ -11,7 +11,6 @@ Operations:
 """
 
 import re
-from pathlib import Path
 
 from ....shared.utils.logger import setup_logger
 from ..schemas import GeneratedFile
@@ -232,6 +231,7 @@ class ImportFixer:
             if symbol not in TS_BUILTINS:
                 referenced.add(symbol)
 
+        corrected_in_file = 0
         for symbol, current_path in list(existing_paths.items()):
             if current_path.startswith("@") or current_path.startswith("rxjs"):
                 continue
@@ -241,6 +241,7 @@ class ImportFixer:
             resolved = import_index.resolve(symbol, gf.file_path, "typescript")
             if resolved and resolved != existing_imports.get(symbol):
                 existing_imports[symbol] = resolved
+                corrected_in_file += 1
                 self.total_corrected += 1
 
         new_imports: list[str] = []
@@ -251,7 +252,7 @@ class ImportFixer:
                     new_imports.append(resolved)
                     self.total_added += 1
 
-        if not new_imports and self.total_corrected == 0:
+        if not new_imports and corrected_in_file == 0:
             return content
 
         return self._rebuild_typescript(lines, import_lines, existing_imports, new_imports)
