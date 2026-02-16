@@ -3,7 +3,14 @@
 Two tasks:
 1. implement_task — Developer implements all code changes
 2. fix_task — Developer fixes build errors from previous attempt
+
+Uses CrewAI best practices:
+- output_pydantic for structured responses (prevents tool-call validation errors)
+- Explicit expected output format
+- Clear success criteria
 """
+
+from .schemas import BuildFixResult, ImplementationResult
 
 # =============================================================================
 # TASK-TYPE INSTRUCTIONS (embedded in implement task description)
@@ -75,10 +82,11 @@ def implement_task(
     upgrade_plan: dict | None,
     dependency_order: list[str],
     task_source_snapshot: str = "",
-) -> tuple[str, str]:
+) -> tuple[str, str, type[ImplementationResult]]:
     """Developer task: implement code changes using all available tools.
 
-    Returns (description, expected_output) for CrewAI Task construction.
+    Returns (description, expected_output, output_pydantic) for CrewAI Task construction.
+    Uses Pydantic output to prevent validation errors and ensure structured responses.
     """
     ordered = "\n".join(f"  {i+1}. {p}" for i, p in enumerate(dependency_order)) if dependency_order else "  (none)"
     steps_text = "\n".join(f"  {i+1}. {s}" for i, s in enumerate(implementation_steps)) if implementation_steps else "  (none)"
@@ -136,26 +144,28 @@ CRITICAL REQUIREMENTS:
 - Preserve existing imports, annotations, and formatting
 - If a file cannot be modified, write an error note and continue to the next file
 
-FINAL RESPONSE (CRITICAL - READ CAREFULLY):
-After writing ALL files with write_code(), you MUST return a PLAIN TEXT summary.
-DO NOT return tool calls in your final response.
-DO NOT call any more tools after finishing all write_code() calls.
-JUST return text in this format:
+OUTPUT FORMAT (structured JSON):
+After writing ALL files with write_code(), return a JSON object with this structure:
+{{
+  "task_id": "{task_id}",
+  "files_processed": [
+    {{"file_path": "file1.ts", "status": "SUCCESS", "action": "modify", "message": "Updated imports"}},
+    {{"file_path": "file2.ts", "status": "SUCCESS", "action": "modify", "message": "Migrated to Angular 19"}},
+    {{"file_path": "file3.ts", "status": "ERROR", "action": "modify", "message": "Could not resolve dependency"}}
+  ],
+  "total_files": {len(dependency_order)},
+  "summary": "Processed all X files: Y succeeded, Z failed"
+}}
 
-Files processed: X/Y
-- file1.ts: SUCCESS (modified)
-- file2.ts: SUCCESS (modified)
-- file3.ts: ERROR (reason)
-
-Total: X succeeded, Y failed
+DO NOT call any more tools after finishing all write_code() calls - just return the JSON.
 """
 
     expected = (
-        f"PLAIN TEXT ONLY (not tool calls): A summary listing all {len(dependency_order)} files processed for task {task_id}. "
-        f"Format: 'Files processed: X/{len(dependency_order)}\\n- file: status\\n...'. "
-        f"DO NOT include tool calls in the final response."
+        f"A JSON object conforming to ImplementationResult schema with: task_id={task_id}, "
+        f"files_processed array with {len(dependency_order)} entries (one per file in dependency order), "
+        f"total_files={len(dependency_order)}, and a summary string."
     )
-    return task_description, expected
+    return task_description, expected, ImplementationResult
 
 
 # =============================================================================
@@ -169,10 +179,11 @@ def fix_task(
     build_errors: str,
     failed_files: list[str],
     dependency_order: list[str],
-) -> tuple[str, str]:
+) -> tuple[str, str, type[BuildFixResult]]:
     """Developer task: correct build errors in previously generated code.
 
-    Returns (description, expected_output) for CrewAI Task construction.
+    Returns (description, expected_output, output_pydantic) for CrewAI Task construction.
+    Uses Pydantic output to prevent validation errors and ensure structured responses.
     """
     files_text = "\n".join(f"  - {f}" for f in failed_files) if failed_files else "  (none)"
 
@@ -199,21 +210,22 @@ RULES:
 - Preserve all existing business logic
 - If an error is in a file you didn't generate, read it and fix it too
 
-FINAL RESPONSE (CRITICAL - READ CAREFULLY):
-After fixing ALL files with write_code(), you MUST return a PLAIN TEXT summary.
-DO NOT return tool calls in your final response.
-DO NOT call any more tools after finishing all write_code() calls.
-JUST return text in this format:
+OUTPUT FORMAT (structured JSON):
+After fixing ALL files with write_code(), return a JSON object with this structure:
+{{
+  "task_id": "{task_id}",
+  "files_fixed": [
+    {{"file_path": "file1.ts", "status": "SUCCESS", "action": "modify", "message": "Fixed import error"}},
+    {{"file_path": "file2.ts", "status": "SUCCESS", "action": "modify", "message": "Resolved type mismatch"}}
+  ],
+  "total_failed": {len(failed_files)},
+  "summary": "Fixed X of Y files with build errors"
+}}
 
-Files fixed: X/Y
-- file1.ts: FIXED (import corrected)
-- file2.ts: FIXED (type error resolved)
-
-Total: X fixed, Y failed
+DO NOT call any more tools after finishing all write_code() calls - just return the JSON.
 """
     expected = (
-        f"PLAIN TEXT ONLY (not tool calls): A summary listing all fixed files for task {task_id}. "
-        f"Format: 'Files fixed: X/Y\\n- file: status\\n...'. "
-        f"DO NOT include tool calls in the final response."
+        f"A JSON object conforming to BuildFixResult schema with: task_id={task_id}, "
+        f"files_fixed array, total_failed={len(failed_files)}, and a summary string."
     )
-    return task_description, expected
+    return task_description, expected, BuildFixResult
