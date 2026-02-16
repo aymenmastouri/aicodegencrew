@@ -94,25 +94,42 @@ ANGULAR_18_TO_19 = UpgradeRuleSet(
             affected_stereotypes=[],
             effort_per_occurrence=30,
         ),
+        # NOTE: ng19-app-initializer rule REMOVED - provideAppInitializer() does NOT exist in Angular 19
+        # APP_INITIALIZER with provider pattern is still valid in Angular 19
+        # Migration handled by ng-httpclient-module rule which includes APP_INITIALIZER guidance
         UpgradeRule(
-            id="ng19-app-initializer",
-            title="APP_INITIALIZER -> provideAppInitializer",
-            description="APP_INITIALIZER token is deprecated. Use provideAppInitializer() instead.",
-            severity=UpgradeSeverity.DEPRECATED,
+            id="ng19-http-client-migration",
+            title="HttpClientModule -> provideHttpClient",
+            description=(
+                "Angular 19 deprecates HttpClientModule. Migrate to functional provideHttpClient(). "
+                "IMPORTANT: APP_INITIALIZER still uses provider pattern - do NOT use provideAppInitializer (doesn't exist)."
+            ),
+            severity=UpgradeSeverity.BREAKING,
             category=UpgradeCategory.API_CHANGE,
             from_version="18",
             to_version="19",
             detection_patterns=[
                 CodePattern(
-                    name="app_initializer_token",
-                    file_glob="*.ts",
-                    regex=r"APP_INITIALIZER",
-                    description="APP_INITIALIZER token usage",
+                    name="httpclient_module_import",
+                    file_glob="*.module.ts",
+                    regex=r"HttpClientModule",
+                    description="HttpClientModule in imports",
+                ),
+                CodePattern(
+                    name="app_initializer_provider",
+                    file_glob="*.module.ts",
+                    regex=r"provide:\s*APP_INITIALIZER",
+                    description="APP_INITIALIZER provider (still valid, DO NOT change)",
                 ),
             ],
             migration_steps=[
-                "1. Replace { provide: APP_INITIALIZER, ... } with provideAppInitializer()",
-                "2. Update imports: remove APP_INITIALIZER, add provideAppInitializer",
+                "SEARCH FIRST: Use rag_query(query='provideHttpClient Angular', limit=10) to find migration patterns in codebase",
+                "SEARCH: Use rag_query(query='APP_INITIALIZER provide useFactory multi', limit=5) to find existing initializer patterns",
+                "In NgModule imports array, REMOVE HttpClientModule",
+                "In NgModule providers array, ADD provideHttpClient(withInterceptorsFromDi())",
+                "Import: import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'",
+                "CRITICAL: APP_INITIALIZER uses provider pattern { provide: APP_INITIALIZER, useFactory: ..., multi: true, deps: [...] }",
+                "DO NOT use provideAppInitializer() - it does NOT exist in Angular 19",
             ],
             affected_stereotypes=["module"],
             effort_per_occurrence=15,
@@ -440,30 +457,7 @@ ANGULAR_SIGNAL_MIGRATION = UpgradeRuleSet(
             affected_stereotypes=["component"],
             effort_per_occurrence=5,
         ),
-        UpgradeRule(
-            id="ng-httpclient-module",
-            title="HttpClientModule -> provideHttpClient()",
-            description="Migrate module-based HttpClient to functional provider.",
-            severity=UpgradeSeverity.RECOMMENDED,
-            category=UpgradeCategory.MIGRATION,
-            from_version="18",
-            to_version="20",
-            detection_patterns=[
-                CodePattern(
-                    name="httpclient_module",
-                    file_glob="*.module.ts",
-                    regex=r"HttpClientModule",
-                    description="HttpClientModule import",
-                ),
-            ],
-            migration_steps=[
-                "1. Replace HttpClientModule with provideHttpClient() in providers",
-                "2. Add withInterceptorsFromDi() if using class-based interceptors",
-                "3. Remove HttpClientModule from module imports array",
-            ],
-            affected_stereotypes=["module"],
-            effort_per_occurrence=15,
-        ),
+        # NOTE: ng-httpclient-module rule moved to ANGULAR_18_TO_19 with BREAKING severity and RAG search instructions
     ],
 )
 
