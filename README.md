@@ -11,114 +11,126 @@
 [![Angular 21](https://img.shields.io/badge/dashboard-Angular%2021-red.svg)](#sdlc-dashboard)
 [![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#why-on-premises)
 
-SDLC Pilot automates the full Software Development Lifecycle, from architecture extraction to code generation. Point it at any repository, operate everything through the **SDLC Dashboard**, and get:
+SDLC Pilot automates the full Software Development Lifecycle, from architecture extraction to code generation. It consists of two parts:
 
-- Architecture facts, C4 models, arc42 documentation
-- Development plans from JIRA/DOCX/Excel tasks
-- Generated code on isolated git branches
-- Live pipeline monitoring with real-time log streaming
+1. **SDLC Dashboard** (Web UI) — the primary interface for running pipelines, uploading tasks, browsing results
+2. **Core Pipeline** (CLI) — can run independently without the Dashboard
 
 Runs entirely on your infrastructure. No data leaves your network.
 
 ---
 
-## Quick Start
+## 1. Installation
 
-### 1. Install
+### Prerequisites
+
+| Service | Purpose | How to check |
+|---------|---------|--------------|
+| **Python 3.10-3.12** | Core pipeline | `python --version` |
+| **Node.js 18+** | Dashboard frontend | `node --version` |
+| **Ollama** | Embeddings | `curl http://127.0.0.1:11434/api/tags` |
+| **LLM API** | Code generation (requires VPN) | `curl $API_BASE/v1/models` |
+
+### Setup
 
 ```bash
 git clone <repo-url> aicodegencrew && cd aicodegencrew
 python -m venv .venv && .venv\Scripts\activate   # Windows
 pip install -e ".[dev,parsers]"
 cp .env.example .env                              # edit with your settings
-ollama pull all-minilm:latest && ollama serve     # embeddings
+ollama pull nomic-embed-text:latest               # embedding model
 ```
 
-### 2. Launch the Dashboard
-
+Frontend dependencies (one-time):
 ```bash
-npm install          # one-time: installs concurrently
-npm run dev          # starts backend :8001 + frontend :4200 together
-```
-
-Open **http://localhost:4200** — the SDLC Dashboard is ready.
-
-To stop both servers: `Ctrl+C` or from another terminal:
-```bash
-npm run stop
-```
-
-> **Manual start** (if needed): `npm run dev:backend` and `npm run dev:frontend` in separate terminals.
-
-#### Start/Stop Cheat Sheet
-
-| Action | Command |
-|--------|---------|
-| **Start everything** | `npm run dev` |
-| **Stop everything** | `Ctrl+C` or `npm run stop` |
-| **Backend only** | `npm run dev:backend` (port 8001) |
-| **Frontend only** | `npm run dev:frontend` (port 4200, requires backend) |
-| **Kill stuck port** | `netstat -ano \| findstr :8001` then `taskkill /F /PID <pid>` |
-
-### 3. Upload Input Files
-
-Go to **Input Files** in the sidebar and drag-and-drop your JIRA XML, DOCX, or Excel files into the matching category card. The `.env` is auto-configured.
-
-Or set paths manually in `.env`:
-```env
-TASK_INPUT_DIR=C:\work\my-project\tasks
-```
-
-### 4. Run a Pipeline
-
-From the Dashboard:
-1. Go to **Run Pipeline** — the input file summary shows what's uploaded
-2. Select a preset (e.g. `plan`) or pick individual phases
-3. Optionally adjust environment variables
-4. Click **Run Pipeline** and watch live log output
-
-Or via CLI:
-```bash
-aicodegencrew plan                                  # Development planning
-aicodegencrew run --preset document                 # C4 + arc42 docs
-aicodegencrew codegen                               # Code generation
+cd ui/frontend && npm install && cd ../..
 ```
 
 ---
 
-## SDLC Dashboard
+## 2. SDLC Dashboard (Web UI)
 
-The Dashboard is the primary interface for SDLC Pilot. Built with **Angular 21** + **FastAPI**.
+The Dashboard is the primary interface. It runs a **FastAPI backend** (port 8001) and an **Angular frontend** (port 4200).
+
+### Starting the Dashboard
+
+**Option A: npm scripts** (from project root)
+```bash
+npm run dev              # starts backend + frontend together
+```
+
+**Option B: dev.sh script** (recommended for Git Bash)
+```bash
+./scripts/dev.sh         # restart (stop + start)
+./scripts/dev.sh start   # start only
+./scripts/dev.sh status  # check if running
+```
+
+**Option C: manual** (two terminals)
+```bash
+# Terminal 1: Backend
+cd ui/backend && python main.py
+
+# Terminal 2: Frontend (MUST use npm start for proxy!)
+cd ui/frontend && npm start
+```
+
+> **IMPORTANT**: Always use `npm start` for the frontend, never `ng serve` directly.
+> `npm start` includes `--proxy-config proxy.conf.json` which routes `/api/*` to the backend.
+> Without it, API calls return Angular HTML instead of JSON.
+
+Open **http://localhost:4200** — the Dashboard is ready.
+
+### Stopping the Dashboard
+
+| Method | Command |
+|--------|---------|
+| **Ctrl+C** | If started with `npm run dev` |
+| **npm** | `npm run stop` |
+| **dev.sh** | `./scripts/dev.sh stop` |
+| **stop-dev.js** | `node scripts/stop-dev.js` |
+
+`dev.sh stop` and `stop-dev.js` also kill orphan uvicorn worker processes that can survive a normal stop.
+
+### Troubleshooting: Port Already in Use
+
+If a server didn't shut down cleanly:
+
+```bash
+# Find what's using the port
+netstat -ano | grep ":8001"      # backend
+netstat -ano | grep ":4200"      # frontend
+
+# Kill by PID
+taskkill //F //PID <pid>
+
+# Or kill all at once
+./scripts/dev.sh stop            # safest — kills ports + orphans
+node scripts/stop-dev.js         # alternative (Node.js)
+```
+
+### Troubleshooting: API Returns HTML
+
+If the Dashboard shows errors or API calls return HTML:
+- The frontend proxy is not active
+- Stop the frontend and restart with `npm start` (not `ng serve`)
+
+### Dashboard Pages
 
 | Page | Purpose |
 |------|---------|
-| **Dashboard** | System health, pipeline status with phase cards, active run banner, quick links |
-| **Run Pipeline** | Execute presets or custom phases, edit env vars, live SSE log streaming, input file summary, run history with type column (Run/Reset) |
-| **Input Files** | Drag-and-drop upload for tasks, requirements, logs, reference materials. Auto-configures `.env` |
-| **Phases** | Phase configuration, dependencies, run/reset individual phases, Reset All button |
-| **Knowledge** | Multi-tab file browser with rendered previews (JSON, Markdown, AsciiDoc, HTML, Confluence, DrawIO) |
-| **Reports** | 3-tab view: structured plan viewer (overview metrics, migration sequence, component chips), code diff viewer (colored diffs), git branch management |
-| **Metrics** | Explore `metrics.jsonl` events with filters |
-| **Logs** | Tail application logs with color-coded levels |
-| **Collectors** | Manage and configure data collectors for pipeline input |
-| **History** | Run history with stats (success rate, avg duration, token usage), phase frequency, KPI cards |
+| **Dashboard** | System health, phase status cards, active run banner |
+| **Run Pipeline** | Execute presets or custom phases, live SSE log streaming |
+| **Input Files** | Drag-and-drop upload for tasks, requirements, logs, reference |
+| **Phases** | Phase configuration, dependencies, run/reset individual phases |
+| **Knowledge** | Browse extracted facts (JSON, Markdown, AsciiDoc, HTML, Confluence, DrawIO) |
+| **Reports** | Plan viewer, code diff viewer, git branch management |
+| **Metrics** | LLM usage, token counts, event explorer |
+| **Logs** | Real-time pipeline logs with color-coded levels |
+| **Collectors** | Architecture fact collector configuration |
+| **History** | Run history with stats, KPI cards, phase frequency |
 
-**Key capabilities:**
-- **File upload** with drag-and-drop, extension validation, 4 input categories
-- **Structured plan viewer** — overview card with complexity/effort/risk metrics, implementation steps, parsed component chips, full upgrade migration sequence with severity badges and per-step affected files, test strategy, collapsible security/validation/error handling details, rendered JIRA context
-- **Code diff viewer** — per-file expandable diffs with green/red line coloring, action chips (created/modified/deleted), language badges
-- **Git branch management** — list `codegen/*` branches with file count, report links, and delete action
-- **Pipeline reset** — per-phase and full pipeline reset with cascade propagation, confirm dialog with cascade preview
-- **Persistent run history** — append-only JSONL (`logs/run_history.jsonl`) with Run/Reset type tracking
-- **Document rendering** — JSON syntax highlighting, Markdown, AsciiDoc, HTML, Confluence wiki
-- Real-time log streaming via Server-Sent Events (SSE)
-- Environment configuration editing before each run
-- Phase-level progress timeline with durations
-- Run history with Run/Reset type column, status tracking
-- Pipeline cancellation (SIGTERM with SIGKILL fallback)
-- Subprocess isolation — pipeline crash won't crash the Dashboard
-
-### Docker Deployment
+### Docker Deployment (Dashboard)
 
 ```bash
 docker-compose -f ui/docker-compose.ui.yml up --build
@@ -127,72 +139,54 @@ docker-compose -f ui/docker-compose.ui.yml up --build
 
 ---
 
-## Architecture
+## 3. Core Pipeline (CLI)
 
-3-layer pipeline with 8 phases:
+The pipeline can run **independently** without the Dashboard, directly from the command line.
 
-```
-KNOWLEDGE (no LLM)          REASONING (hybrid)           EXECUTION (hybrid)
-Discover                ->  Analyze                  ->  Implement
-Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
-                             Plan                     ->  Deliver (planned)
-```
+### Quick Examples
 
-| Name | LLM | Description |
-|------|:---:|-------------|
-| Discover | No | 10-step deterministic pipeline: vector-index into ChromaDB, symbol extraction (classes/methods/endpoints), evidence traceability (chunk-to-source linking), repo manifest (framework/module detection), budget-based file prioritization. Outputs feed all downstream phases via `RAGQueryTool` and `SymbolQueryTool`. See [Indexing Pipeline](docs/architecture/indexing-pipeline.md). |
-| Extract | No | Deterministic extraction: components, relations, interfaces |
-| Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
-| Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
-| Plan | Hybrid | 4 deterministic stages + 1 LLM call (18-40s) |
-| Implement | Hybrid | 6 stages: strategy pattern per task type, build verification with self-healing, cascade multi-task on single branch |
-| Verify | - | Planned |
-| Deliver | - | Planned |
+```bash
+# Index a repository
+aicodegencrew index --force
 
-> Full specification: [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md)
+# Generate development plans from JIRA tasks
+aicodegencrew plan
 
-### Data Flow
+# Full pipeline: index + extract + analyze + plan + implement
+aicodegencrew codegen
 
-```
-Repository ─► Discover   ─► knowledge/discover/    (ChromaDB + symbols.jsonl + evidence.jsonl + repo_manifest.json)
-             Extract    ─► knowledge/extract/     (architecture_facts.json)
-             Analyze    ─► knowledge/analyze/     (analyzed_architecture.json)
-             Document   ─► knowledge/document/    (C4 + arc42 + DrawIO)
-             Plan       ─► knowledge/plan/        (task_plan.json)
-             Implement  ─► Git branch codegen/batch-*  + knowledge/implement/
+# Run specific phases (skip indexing)
+aicodegencrew run --phases plan implement --index-mode off --no-clean
 ```
 
----
+### Commands
 
-## Why On-Premises?
+```bash
+aicodegencrew [--env <path>] <command> [options]
+```
 
-Enterprise code contains sensitive IP and customer data. SDLC Pilot runs **entirely on your infrastructure**:
+| Command | Description |
+|---------|-------------|
+| `index` | Index repository into ChromaDB |
+| `plan` | Development planning (Discover → Plan) |
+| `codegen` | Code generation (Discover → Implement) |
+| `run --preset <name>` | Run a preset combination of phases |
+| `run --phases <p1> <p2>` | Run specific phases |
+| `list` | Show available phases and presets |
 
-- **Local models** via [Ollama](https://ollama.com/) (e.g. `qwen2.5-coder`, `llama3`)
-- **On-prem API endpoints** (OpenAI-compatible: vLLM, TGI)
-- **Local embeddings** via Ollama (`all-minilm`)
+### Index Modes
 
-No data ever leaves your network.
+| Mode | Description |
+|------|-------------|
+| `auto` | Index only if repo changed (default) |
+| `off` | Skip indexing, use existing index |
+| `force` | Delete and re-index from scratch |
+| `smart` | Incremental — only re-index changed files |
 
----
-
-## Configuration
-
-Copy `.env.example` to `.env` and configure. Key variables:
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `PROJECT_PATH` | Repository to analyze | `C:\repos\my-project` |
-| `TASK_INPUT_DIR` | Folder with JIRA/DOCX/Excel tasks (outside repo) | `C:\projects\inputs` |
-| `LLM_PROVIDER` | `local` (Ollama) or `onprem` (API endpoint) | `onprem` |
-| `MODEL` | LLM model identifier | `gpt-oss-120b` |
-| `API_BASE` | LLM API endpoint URL | `http://localhost:11434/v1` |
-| `INDEX_MODE` | `off` / `auto` / `smart` / `force` | `auto` |
-| `INDEX_ENABLE_BUDGET` | Enable A/B/C priority-based file ordering | `true` |
-| `CODEGEN_BUILD_VERIFY` | Enable build verification after code gen | `true` |
-| `CODEGEN_BUILD_MAX_RETRIES` | Max self-healing attempts per container | `3` |
-
-> Full variable reference: [.env.example](.env.example)
+```bash
+aicodegencrew index --force           # force re-index
+aicodegencrew run --index-mode off    # skip indexing for this run
+```
 
 ### Presets
 
@@ -207,74 +201,162 @@ Copy `.env.example` to `.env` and configure. Key variables:
 | `architect` | Discover → Plan (no code) | Architecture + planning |
 | `full` | All phases | End-to-end |
 
----
-
-## CLI Reference
+### Run Options
 
 ```bash
-aicodegencrew [--env <path>] <command> [options]
+aicodegencrew run --preset plan \
+  --repo-path C:\other\repo \         # override target repo
+  --index-mode off \                  # skip indexing
+  --no-clean \                        # keep existing knowledge
+  --config custom_phases.yaml \       # custom phase config
+  --git-url https://... \             # clone from URL
+  --branch feature/xyz               # specific branch
 ```
 
-| Command | Description |
-|---------|-------------|
-| `plan` | Development planning (Discover → Plan) |
-| `codegen` | Code generation (Discover → Implement) |
-| `run --preset <name>` | Run a preset |
-| `run --phases <p1> <p2>` | Run specific phases |
-| `index` | Index repository only |
-| `list` | Show phases and presets |
+### Reusing Previous Phase Outputs
 
-Common options: `--repo-path`, `--index-mode`, `--git-url`, `--branch`, `--config`, `--clean`
+To skip expensive phases (e.g. extract, analyze), copy results from a previous run:
 
-> Full CLI reference: [User Guide](docs/guides/USER_GUIDE.md)
+```bash
+# List archived runs
+ls knowledge/archive/
+
+# Copy extract results from archive
+cp knowledge/archive/reset_YYYYMMDD_HHMMSS/extract/extract/* knowledge/extract/
+
+# Run only later phases
+aicodegencrew run --phases plan implement --index-mode off --no-clean
+```
+
+### Pipeline Reset
+
+```bash
+# Via Dashboard: Phases page → Reset All
+# Via API: curl -X POST http://localhost:8001/api/reset
+# Archives current knowledge/ to knowledge/archive/reset_YYYYMMDD_HHMMSS/
+```
 
 ---
 
-## Task Inputs (Plan phase)
+## 4. Configuration
 
-Two ways to provide input files:
+Copy `.env.example` to `.env` and configure:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `PROJECT_PATH` | Target repository to analyze | `C:\repos\my-project` |
+| `TASK_INPUT_DIR` | JIRA/DOCX/Excel task files | `C:\projects\inputs\tasks` |
+| `LLM_PROVIDER` | `local` (Ollama) or `onprem` (API) | `onprem` |
+| `MODEL` | LLM model identifier | `gpt-oss-120b` |
+| `API_BASE` | LLM API endpoint URL | `http://localhost:4000/v1` |
+| `OPENAI_API_KEY` | API key for LLM | `sk-...` |
+| `OLLAMA_BASE_URL` | Ollama endpoint | `http://127.0.0.1:11434` |
+| `EMBED_MODEL` | Embedding model | `nomic-embed-text:latest` |
+| `INDEX_MODE` | `off` / `auto` / `smart` / `force` | `auto` |
+| `CODEGEN_USE_CREW` | Use CrewAI agents for code gen | `false` |
+| `LOG_LEVEL` | Logging level | `INFO` |
+
+### Task Inputs
 
 | Mode | How |
 |------|-----|
-| **Dashboard** | Go to **Input Files**, drag-and-drop into category cards. `.env` auto-configured. |
+| **Dashboard** | Drag-and-drop on **Input Files** page. `.env` auto-configured. |
 | **Manual** | Set `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` in `.env` |
 
-| Category | Extensions | Purpose |
-|----------|-----------|---------|
-| **Tasks** | `.xml` `.docx` `.pdf` `.txt` `.json` | JIRA exports, tickets |
-| **Requirements** | `.xlsx` `.docx` `.pdf` `.txt` `.csv` | Requirement docs, specs |
-| **Logs** | `.log` `.txt` `.xlsx` `.csv` | Application logs |
-| **Reference** | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` | Mockups, diagrams |
+| Category | Extensions |
+|----------|-----------|
+| Tasks | `.xml` `.docx` `.pdf` `.txt` `.json` |
+| Requirements | `.xlsx` `.docx` `.pdf` `.txt` `.csv` |
+| Logs | `.log` `.txt` `.xlsx` `.csv` |
+| Reference | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` |
 
-Output: `knowledge/plan/{task_id}_plan.json` with affected components, implementation steps, test/security/validation strategies.
-
----
-
-## Output Artifacts
-
-```
-./
-├── knowledge/
-│   ├── discover/            # Discover: ChromaDB + symbol index + evidence + manifest
-│   │   ├── chroma.sqlite3   #   Vector store
-│   │   ├── symbols.jsonl    #   Symbol index (classes, methods, endpoints)
-│   │   ├── evidence.jsonl   #   Chunk evidence (line numbers, types, linked symbols)
-│   │   └── repo_manifest.json # Repo stats, frameworks, modules
-│   ├── extract/             # Extract: architecture_facts.json, evidence_map.json
-│   ├── analyze/             # Analyze: analyzed_architecture.json
-│   ├── document/            # Document: c4/, arc42/ (C4 diagrams + arc42 chapters)
-│   ├── plan/                # Plan: {task_id}_plan.json
-│   └── implement/           # Implement: {task_id}_report.json
-├── architecture-docs/       # Document export (Markdown + Confluence + AsciiDoc + HTML)
-└── logs/
-    ├── current.log
-    ├── metrics.jsonl        # Structured metrics
-    └── run_history.jsonl    # Persistent run history (append-only)
-```
+> Full variable reference: [.env.example](.env.example)
 
 ---
 
-## Deployment
+## 5. Architecture
+
+### SDLC Phases
+
+```
+KNOWLEDGE (no LLM)          REASONING (hybrid)           EXECUTION (hybrid)
+Discover                ->  Analyze                  ->  Implement
+Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
+                             Plan                     ->  Deliver (planned)
+```
+
+| # | Phase | LLM | Description |
+|---|-------|:---:|-------------|
+| 0 | Discover | No | Index codebase into ChromaDB, extract symbols, evidence traceability |
+| 1 | Extract | No | Deterministic extraction of 16 architecture dimensions |
+| 2 | Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
+| 3 | Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
+| 4 | Plan | Hybrid | 4 deterministic stages + 1 LLM call |
+| 5 | Implement | Hybrid | 6 stages: code generation + build verification with self-healing |
+| 6 | Verify | - | Planned |
+| 7 | Deliver | - | Planned |
+
+### Data Flow
+
+```
+Repository --> Discover   --> knowledge/discover/    (ChromaDB + symbols + evidence)
+               Extract    --> knowledge/extract/     (architecture_facts.json)
+               Analyze    --> knowledge/analyze/     (analyzed_architecture.json)
+               Document   --> knowledge/document/    (C4 + arc42 + DrawIO)
+               Plan       --> knowledge/plan/        ({task_id}_plan.json)
+               Implement  --> Git branch codegen/*   + knowledge/implement/
+```
+
+> Full specification: [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md)
+
+---
+
+## 6. Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Port 8001/4200 in use | `./scripts/dev.sh stop` or `node scripts/stop-dev.js` |
+| API returns HTML not JSON | Restart frontend with `npm start` (not `ng serve`) |
+| LLM Connection error | Check VPN: `curl $API_BASE/v1/models` (401 = OK, refused = no VPN) |
+| Ollama not running | `ollama serve` then `curl http://127.0.0.1:11434/api/tags` |
+| Indexing hangs | Remove stale lock: `rm knowledge/discover/.index.lock` |
+| Build fails with VPN | Known issue: VPN can break Gradle/npm builds. Run LLM phases with VPN, build without. |
+| Orphan uvicorn workers | `./scripts/dev.sh stop` kills them automatically |
+| Pipeline crash | Dashboard stays alive (subprocess isolation). Check `logs/current.log` |
+
+---
+
+## 7. Scripts Reference
+
+| Script | Description |
+|--------|-------------|
+| `scripts/dev.sh` | Start/stop/restart/status of Dashboard dev servers |
+| `scripts/stop-dev.js` | Stop Dashboard servers + kill orphan processes |
+| `scripts/build_release.py` | Build release package (wheel + changelog + Docker) |
+| `dist/release/install.sh` | Install from wheel (end-user) |
+| `dist/release/uninstall.sh` | Uninstall package |
+
+### dev.sh usage
+
+```bash
+./scripts/dev.sh              # restart (stop + start)
+./scripts/dev.sh start        # start backend + frontend
+./scripts/dev.sh stop         # stop all + kill orphans
+./scripts/dev.sh status       # check if running
+```
+
+### build_release.py usage
+
+```bash
+python scripts/build_release.py                         # build current version
+python scripts/build_release.py --bump patch            # 0.5.0 -> 0.5.1
+python scripts/build_release.py --bump minor --tag      # 0.5.0 -> 0.6.0 + git tag
+python scripts/build_release.py --bump patch --docker   # + Docker image
+```
+
+---
+
+## 8. Deployment
 
 SDLC Pilot is **proprietary** software. Three delivery modes:
 
@@ -284,35 +366,31 @@ SDLC Pilot is **proprietary** software. Three delivery modes:
 | **Docker** | `docker-compose run aicodegencrew plan` | No |
 | **Dev** | `pip install -e .` | Yes (internal) |
 
-```bash
-# Build release (wheel + Docker + changelog)
-python scripts/build_release.py --bump patch --tag --docker
-```
-
 > Details: [Delivery Guide](docs/guides/DELIVERY_GUIDE.md)
 
 ---
 
-## Testing
+## 9. Testing
 
 789+ tests, no LLM or network required (except `tests/e2e/`).
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v                    # Full suite (~17s)
-pytest tests/ --ignore=tests/e2e    # Unit + integration only
+pytest tests/ -v                    # full suite (~17s)
+pytest tests/ --ignore=tests/e2e    # unit + integration only
 ```
 
 ---
 
-## Documentation
+## 10. Documentation
 
 | Document | Description |
 |----------|-------------|
 | [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md) | Full architecture specification |
-| [Indexing Pipeline](docs/architecture/indexing-pipeline.md) | Discover phase: concept, artifacts, downstream consumers |
+| [Implement Phase](docs/guides/IMPLEMENT_PHASE_ARCHITECTURE.md) | Code generation + build verify architecture |
 | [User Guide](docs/guides/USER_GUIDE.md) | Installation, configuration, CLI, troubleshooting |
 | [Delivery Guide](docs/guides/DELIVERY_GUIDE.md) | Release process and deployment |
+| [MCP Knowledge Server](docs/guides/MCP_KNOWLEDGE_SERVER.md) | MCP server for CrewAI tools |
 | [Phase Configuration](config/phases_config.yaml) | Phase definitions and presets |
 | [Environment Template](.env.example) | All configurable variables |
 
@@ -322,22 +400,24 @@ pytest tests/ --ignore=tests/e2e    # Unit + integration only
 
 ```
 aicodegencrew/
-├── ui/                          # SDLC Dashboard (primary interface)
-│   ├── frontend/                #   Angular 21 SPA (10 pages, Material + Tailwind)
-│   ├── backend/                 #   FastAPI (11 routers, SSE streaming, file upload, reset)
+├── ui/                          # SDLC Dashboard
+│   ├── frontend/                #   Angular 21 (port 4200)
+│   ├── backend/                 #   FastAPI (port 8001)
 │   └── docker-compose.ui.yml
-├── src/aicodegencrew/
-│   ├── cli.py                   # CLI entry point
-│   ├── orchestrator.py          # Phase orchestration
-│   ├── crews/                   # AI Agent Workflows (Analyze + Document)
-│   ├── pipelines/               # Hybrid Pipelines (Discover, Extract, Plan, Implement + Build Verify)
-│   ├── shared/                  # Validation, models, tools (RAGQueryTool, SymbolQueryTool), utilities
-│   └── mcp/                     # Model Context Protocol server
-├── config/phases_config.yaml
+├── src/aicodegencrew/           # Core Pipeline
+│   ├── cli.py                   #   CLI entry point
+│   ├── orchestrator.py          #   Phase orchestration
+│   ├── pipelines/               #   Discover, Extract
+│   ├── crews/                   #   Analyze, Document
+│   ├── hybrid/                  #   Plan, Implement (pipeline + CrewAI)
+│   ├── shared/                  #   Utilities, tools, validation
+│   └── mcp/                     #   MCP knowledge server
+├── scripts/                     # Dev scripts (dev.sh, stop-dev.js, build_release.py)
+├── config/phases_config.yaml    # Phase definitions
+├── knowledge/                   # Phase outputs (auto-generated)
 ├── tests/                       # 789+ tests
-├── docs/                        # Architecture docs + diagrams
-├── Dockerfile                   # Multi-stage (no source in final image)
-└── docker-compose.yml
+├── docs/                        # Architecture docs + guides
+└── .env                         # Configuration
 ```
 
 ---
