@@ -108,16 +108,6 @@ class RAGQueryTool(BaseTool):
         try:
             import chromadb
             from chromadb.config import Settings
-            from chromadb.utils import embedding_functions
-
-            # Create Ollama embedding function matching Phase 0 indexing
-            # IMPORTANT: Must match EMBED_MODEL used during indexing (nomic-embed-text = 768-dim)
-            embed_model = os.getenv("EMBED_MODEL", "nomic-embed-text:latest")
-            ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
-
-            embedding_fn = embedding_functions.OllamaEmbeddingFunction(
-                model_name=embed_model, url=f"{ollama_base_url}/api/embeddings"
-            )
 
             http_cfg = get_chroma_http_config()
             if http_cfg is not None:
@@ -144,12 +134,14 @@ class RAGQueryTool(BaseTool):
                 )
 
             # Get collection (don't create if not exists)
+            # NOTE: Do NOT pass embedding_function to get_collection()!
+            # ChromaDB will use whatever embedding function was configured during collection creation.
+            # Passing a different embedding function here causes a conflict.
             try:
                 self._collection = self._client.get_collection(
                     name=self.collection_name,
-                    embedding_function=embedding_fn,  # FIX: Use same embedding as indexing!
                 )
-                logger.info(f"Connected to ChromaDB collection: {self.collection_name} (embed_model={embed_model})")
+                logger.info(f"Connected to ChromaDB collection: {self.collection_name}")
             except Exception as e:
                 logger.warning(f"Collection '{self.collection_name}' not found: {e}")
                 return None
