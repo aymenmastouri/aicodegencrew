@@ -169,6 +169,12 @@ class CodeGenerationPipeline:
 
         for i, plan_file in enumerate(plan_files, 1):
             task_id = plan_file.stem.replace("_plan", "")
+
+            # Safety: ensure clean working tree before each task
+            if not writer._is_clean_working_tree():
+                logger.warning(f"[Phase5] Dirty tree before {task_id} — auto-cleaning")
+                writer._git("checkout", "--", ".")
+
             logger.info(f"\n[Phase5] === Cascade {i}/{n}: {task_id} ===")
 
             try:
