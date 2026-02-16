@@ -517,23 +517,21 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         else:
             logger.warning(f"[Plan] No input files found in {input_dir}, skipping phase")
 
-    # --- Implement: Code Generation (Hybrid Pipeline) ---
+    # --- Implement: Code Generation (Hierarchical CrewAI Team) ---
     if "implement" in planned_phases:
-        from .hybrid.code_generation import CodeGenerationPipeline
+        from .hybrid.code_generation import ImplementCrew
 
         codegen_dry_run = getattr(config, "dry_run", False)
-        codegen_task = getattr(config, "task_id", None) or codegen_task_id
 
-        codegen_pipeline = CodeGenerationPipeline(
+        implement_crew = ImplementCrew(
             repo_path=str(repo_path),
-            task_id=codegen_task,
-            plans_dir=str(phase4_dir),
             facts_path=str(phase1_dir / "architecture_facts.json"),
-            report_dir=str(knowledge_dir / "implement"),
-            dry_run=codegen_dry_run,
             chroma_dir=chroma_dir,
+            plans_dir=str(phase4_dir),
+            output_dir=str(knowledge_dir / "implement"),
+            dry_run=codegen_dry_run,
         )
-        orchestrator.register_phase("implement", codegen_pipeline)
+        orchestrator.register_phase("implement", implement_crew)
 
     # Execute
     try:
