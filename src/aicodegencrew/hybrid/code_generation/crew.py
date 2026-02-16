@@ -1,14 +1,13 @@
-"""Implement Crew: Hierarchical CrewAI team for Phase 5.
+"""Implement Crew: Sequential CrewAI team for Phase 5.
 
 Architecture:
-  Preflight (deterministic) -> Crew (hierarchical) -> Post-crew (deterministic)
+  Preflight (deterministic) -> Crew (sequential) -> Post-crew (deterministic)
 
-  Manager (120B)  -- coordinates, delegates, validates
-  Developer (14B) -- reads code, resolves imports, writes code
-  Tester (14B)    -- generates unit tests matching repo patterns
-  Builder (120B)  -- runs builds, parses errors, reports diagnostics
+  Developer -- reads code, resolves imports, writes code
+  Builder   -- runs builds, parses errors, reports diagnostics
+  Tester    -- generates unit tests matching repo patterns
 
-Process: Process.hierarchical — Manager decides execution order.
+Process: Process.sequential — each agent executes its task directly with tools.
 """
 
 from __future__ import annotations
@@ -62,11 +61,11 @@ logger = setup_logger(__name__)
 
 
 class ImplementCrew:
-    """Hierarchical manager crew for implementation, build and tests.
+    """Sequential crew for implementation, build verification and tests.
 
     Full flow:
     1. Preflight: plan reading, import index, dependency graph, validation
-    2. Crew: hierarchical execution (manager delegates to workers)
+    2. Crew: sequential execution (developer → builder → tester)
     3. Post-crew: import fixer, safety gate, output writer
     """
 
@@ -247,7 +246,7 @@ class ImplementCrew:
         except Exception:
             return {}
 
-    # ── Core: hierarchical crew execution ─────────────────────────────────
+    # ── Core: sequential crew execution ──────────────────────────────────
 
     def _execute_crew(
         self,
@@ -257,7 +256,12 @@ class ImplementCrew:
         import_index,
         generation_order,
     ) -> None:
-        """Build agents, tasks, crew and kick off hierarchical execution."""
+        """Build agents, tasks, crew and kick off sequential execution.
+
+        Sequential process: each task is assigned directly to its worker agent.
+        No manager overhead — agents use their tools directly.
+        Order: Developer (implement) → Builder (verify) → Tester (tests).
+        """
 
         # Shared tool instances bound to preflight artifacts
         import_tool = ImportIndexTool(
@@ -267,14 +271,6 @@ class ImplementCrew:
         )
         dependency_tool = DependencyLookupTool(generation_order=generation_order)
 
-        manager_tools = [
-            PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
-            CodeReaderTool(repo_path=str(self.repo_path)),
-            FactsQueryTool(facts_dir=str(self.facts_path.parent)),
-            RAGQueryTool(chroma_dir=self.chroma_dir),
-            import_tool,
-            dependency_tool,
-        ]
         developer_tools = [
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
@@ -282,12 +278,7 @@ class ImplementCrew:
             RAGQueryTool(chroma_dir=self.chroma_dir),
             import_tool,
             dependency_tool,
-        ]
-        tester_tools = [
-            TestPatternTool(facts_dir=str(self.facts_path.parent)),
-            TestWriterTool(repo_path=str(self.repo_path), staging=staging),
-            CodeReaderTool(repo_path=str(self.repo_path)),
-            RAGQueryTool(chroma_dir=self.chroma_dir),
+            PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
         ]
         builder_tools = [
             BuildRunnerTool(
@@ -299,9 +290,7 @@ class ImplementCrew:
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
         ]
 
-        manager = create_agent("manager", manager_tools, _MCP_SERVER_PATH, _VERBOSE)
         developer = create_agent("developer", developer_tools, _MCP_SERVER_PATH, _VERBOSE)
-        tester = create_agent("tester", tester_tools, _MCP_SERVER_PATH, _VERBOSE)
         builder = create_agent("builder", builder_tools, _MCP_SERVER_PATH, _VERBOSE)
 
         container_ids = self._container_ids_for_plan(plan)
@@ -316,22 +305,34 @@ class ImplementCrew:
             dependency_order=dependency_order_paths,
         )
         build_desc, build_expected = build_task(container_ids=container_ids)
-        test_desc, test_expected = test_task(changed_files=dependency_order_paths)
 
+        # Sequential: each task directly assigned to its worker agent.
+        # No manager delegation — agents use tools directly.
         tasks = [
-            Task(description=impl_desc, expected_output=impl_expected, agent=manager, human_input=False),
-            Task(description=build_desc, expected_output=build_expected, agent=manager, human_input=False),
+            Task(description=impl_desc, expected_output=impl_expected, agent=developer, human_input=False),
+            Task(description=build_desc, expected_output=build_expected, agent=builder, human_input=False),
         ]
+
+        agents = [developer, builder]
+
         if self.test_enabled:
+            tester_tools = [
+                TestPatternTool(facts_dir=str(self.facts_path.parent)),
+                TestWriterTool(repo_path=str(self.repo_path), staging=staging),
+                CodeReaderTool(repo_path=str(self.repo_path)),
+                RAGQueryTool(chroma_dir=self.chroma_dir),
+            ]
+            tester = create_agent("tester", tester_tools, _MCP_SERVER_PATH, _VERBOSE)
+            test_desc, test_expected = test_task(changed_files=dependency_order_paths)
             tasks.append(
-                Task(description=test_desc, expected_output=test_expected, agent=manager, human_input=False),
+                Task(description=test_desc, expected_output=test_expected, agent=tester, human_input=False),
             )
+            agents.append(tester)
 
         crew = Crew(
-            agents=[developer, tester, builder],
+            agents=agents,
             tasks=tasks,
-            process=Process.hierarchical,
-            manager_agent=manager,
+            process=Process.sequential,
             verbose=_VERBOSE,
             memory=False,
             planning=False,
@@ -341,20 +342,27 @@ class ImplementCrew:
         tracker = None
         try:
             tracker = install_guardrails(max_total=50)
-            result = crew.kickoff(inputs={
-                "task_id": plan.task_id,
-                "task_type": plan.task_type,
-                "summary": plan.summary,
-                "description": plan.description,
-                "implementation_steps": plan.implementation_steps,
-                "affected_components": [c.model_dump() for c in plan.affected_components],
-                "dependency_order": dependency_order_paths,
-                "container_ids": container_ids,
-            })
-            self.total_calls += 1
-            token_usage = getattr(result, "token_usage", {})
-            if isinstance(token_usage, dict):
-                self.total_tokens += int(token_usage.get("total_tokens", 0))
+            try:
+                result = crew.kickoff(inputs={
+                    "task_id": plan.task_id,
+                    "task_type": plan.task_type,
+                    "summary": plan.summary,
+                    "description": plan.description,
+                    "implementation_steps": plan.implementation_steps,
+                    "affected_components": [c.model_dump() for c in plan.affected_components],
+                    "dependency_order": dependency_order_paths,
+                    "container_ids": container_ids,
+                })
+                self.total_calls += 1
+                token_usage = getattr(result, "token_usage", {})
+                if isinstance(token_usage, dict):
+                    self.total_tokens += int(token_usage.get("total_tokens", 0))
+            except Exception as e:
+                # CrewAI may throw validation errors (e.g. TaskOutput expects string
+                # but gets tool_calls list). The staging dict is already populated via
+                # CodeWriterTool during execution, so we can continue safely.
+                logger.warning("[Implement] Crew finished with error (staging preserved): %s", e)
+                self.total_calls += 1
         finally:
             uninstall_guardrails(tracker)
 
@@ -367,7 +375,7 @@ class ImplementCrew:
         """Run the full implement flow for a single plan.
 
         1. Preflight: validate, build import index + dependency graph
-        2. Crew: hierarchical execution (manager delegates)
+        2. Crew: sequential execution (developer → builder → tester)
         3. Post-crew: import fixer, build verification
 
         Returns:

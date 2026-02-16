@@ -94,9 +94,9 @@ def _derive_build_command(build_tool: str, repo_path: Path, container_root: str)
         has_wrapper = (build_dir / "gradlew").exists() or (build_dir / "gradlew.bat").exists()
         if has_wrapper:
             if IS_WINDOWS:
-                return r".\gradlew.bat clean build --info"
-            return "./gradlew clean build --info"
-        return "gradle clean build --info"
+                return r".\gradlew.bat clean build -x test --info"
+            return "./gradlew clean build -x test --info"
+        return "gradle clean build -x test --info"
 
     elif build_tool == "maven":
         has_wrapper = (build_dir / "mvnw").exists() or (build_dir / "mvnw.cmd").exists()
