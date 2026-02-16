@@ -112,25 +112,48 @@ IMPLEMENTATION STEPS:
 WORKFLOW — for EACH file in the dependency order below:
 1. Re-check task intent with read_task_source(task_id) when scope is unclear
 2. Read current file content with read_file(file_path)
-3. Look up correct imports with lookup_import(symbol, from_file, language)
+3. Look up correct imports with lookup_import(symbol, from_file, language) - THIS IS CRITICAL
 4. Check dependencies with lookup_dependencies(file_path)
 5. Query architecture facts and RAG search as needed
 6. Generate modified file content
 7. Write COMPLETE file via write_code(file_path, content, action="modify")
+8. REPEAT steps 2-7 for EVERY file in the list below
 
-FILES IN DEPENDENCY ORDER (process in this order):
+IMPORT RULES (CRITICAL - NEVER GUESS IMPORTS):
+- ALWAYS use lookup_import(symbol, from_file, language) for EVERY import
+- NEVER write absolute paths like "import X from '/full/path/to/file'"
+- NEVER write parent-traversal paths like "import X from '../../../../../../../file'"
+- TypeScript: Use the EXACT import statement returned by lookup_import()
+- Java: Use the EXACT qualified name returned by lookup_import()
+- If lookup_import() returns nothing, query RAG for similar imports before guessing
+
+FILES IN DEPENDENCY ORDER (process ALL of these in order):
 {ordered}
 
-IMPORTANT:
+CRITICAL REQUIREMENTS:
+- Process ALL {len(dependency_order)} files in the list above - DO NOT STOP EARLY
 - Generate COMPLETE file content (not fragments or patches)
 - Preserve existing imports, annotations, and formatting
-- Process ALL files — do not skip any
-- If a file cannot be modified, include an error note in the output
+- If a file cannot be modified, write an error note and continue to the next file
+
+FINAL RESPONSE (CRITICAL - READ CAREFULLY):
+After writing ALL files with write_code(), you MUST return a PLAIN TEXT summary.
+DO NOT return tool calls in your final response.
+DO NOT call any more tools after finishing all write_code() calls.
+JUST return text in this format:
+
+Files processed: X/Y
+- file1.ts: SUCCESS (modified)
+- file2.ts: SUCCESS (modified)
+- file3.ts: ERROR (reason)
+
+Total: X succeeded, Y failed
 """
 
     expected = (
-        f"Summary of all files written to staging via write_code() for task {task_id}, "
-        f"including file paths, actions taken, and any issues encountered."
+        f"PLAIN TEXT ONLY (not tool calls): A summary listing all {len(dependency_order)} files processed for task {task_id}. "
+        f"Format: 'Files processed: X/{len(dependency_order)}\\n- file: status\\n...'. "
+        f"DO NOT include tool calls in the final response."
     )
     return task_description, expected
 
@@ -168,12 +191,29 @@ WORKFLOW:
 3. Look up correct imports with lookup_import(symbol, from_file, language)
 4. Query architecture facts if needed for correct types/interfaces
 5. Write the COMPLETE fixed file via write_code(file_path, content, action="modify")
+6. REPEAT for all failed files
 
 RULES:
 - Fix ONLY the build errors — do not refactor or change functionality
 - Generate COMPLETE file content (not fragments)
 - Preserve all existing business logic
 - If an error is in a file you didn't generate, read it and fix it too
+
+FINAL RESPONSE (CRITICAL - READ CAREFULLY):
+After fixing ALL files with write_code(), you MUST return a PLAIN TEXT summary.
+DO NOT return tool calls in your final response.
+DO NOT call any more tools after finishing all write_code() calls.
+JUST return text in this format:
+
+Files fixed: X/Y
+- file1.ts: FIXED (import corrected)
+- file2.ts: FIXED (type error resolved)
+
+Total: X fixed, Y failed
 """
-    expected = f"Summary of fixed files for task {task_id} with build errors resolved."
+    expected = (
+        f"PLAIN TEXT ONLY (not tool calls): A summary listing all fixed files for task {task_id}. "
+        f"Format: 'Files fixed: X/Y\\n- file: status\\n...'. "
+        f"DO NOT include tool calls in the final response."
+    )
     return task_description, expected
