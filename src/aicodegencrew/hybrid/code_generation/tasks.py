@@ -97,11 +97,16 @@ TYPE: {task_type}
 PRIMARY INTENT SOURCE (actual task from TASK_INPUT_DIR):
 {task_source_snapshot}
 
+MANAGER RULES:
+1. You are the manager and MUST NOT call tools directly.
+2. Delegate all tool-calling work to the Developer agent.
+3. Approve work only when worker outputs include concrete evidence.
+
 SOURCE-OF-TRUTH RULES:
-1. FIRST call read_task_source(task_id="{task_id}") and use it as intent source.
+1. FIRST delegate a call to read_task_source(task_id="{task_id}") and use it as intent source.
 2. Treat read_plan() and implementation_steps as GUIDANCE, not ground truth.
 3. Resolve conflicts by prioritizing: actual task source -> architecture facts -> codebase evidence.
-4. You MUST consult facts_query and rag_query before writing code for each major change.
+4. For each major change, require delegated calls to facts_query and rag_query before code writing.
 5. Never implement requirements that are only in the plan but absent from the original task/evidence.
 
 DESCRIPTION:
@@ -111,13 +116,13 @@ IMPLEMENTATION STEPS:
 {steps_text}
 
 WORKFLOW — for EACH file in the dependency order below:
-1. Re-check task intent with read_task_source(task_id) when scope is unclear
-2. Read the current file content with read_file(file_path)
-3. Look up correct imports with lookup_import(symbol, from_file, language)
-4. Check dependencies with lookup_dependencies(file_path)
-5. Query architecture facts and RAG search as needed
-6. Generate the modified file content
-7. Write the COMPLETE file via write_code(file_path, content, action="modify")
+1. Delegate to Developer: re-check task intent with read_task_source(task_id) when scope is unclear
+2. Delegate to Developer: read current file content with read_file(file_path)
+3. Delegate to Developer: look up correct imports with lookup_import(symbol, from_file, language)
+4. Delegate to Developer: check dependencies with lookup_dependencies(file_path)
+5. Delegate to Developer: query architecture facts and RAG search as needed
+6. Delegate to Developer: generate modified file content
+7. Delegate to Developer: write COMPLETE file via write_code(file_path, content, action="modify")
 
 FILES IN DEPENDENCY ORDER (process in this order):
 {ordered}
@@ -155,10 +160,10 @@ def build_task(
 Verify the build for affected containers: {cid_list}
 
 WORKFLOW per container:
-1. Call run_build(container_id, baseline=true) to verify baseline compiles
+1. Delegate to Builder: run_build(container_id, baseline=true) to verify baseline compiles
 2. If baseline FAILS: report baseline_broken and skip staged build
-3. Call run_build(container_id, baseline=false) to build with staged changes
-4. If staged build FAILS: call parse_build_errors(build_output)
+3. Delegate to Builder: run_build(container_id, baseline=false) to build with staged changes
+4. If staged build FAILS: delegate to Builder parse_build_errors(build_output)
 
 If a staged build fails:
 - Report the structured errors back
@@ -201,13 +206,13 @@ Generate unit tests for the changed files:
 {files_text}
 
 WORKFLOW per file:
-1. Call query_test_patterns() to discover existing test framework and style
-2. Call rag_query("test for <ComponentName>") to find similar test examples
-3. Call read_file(file_path) to read the modified source file
-4. Determine the correct test file path using existing conventions:
+1. Delegate to Tester: query_test_patterns() to discover existing test framework and style
+2. Delegate to Tester: rag_query("test for <ComponentName>") to find similar test examples
+3. Delegate to Tester: read_file(file_path) to read the modified source file
+4. Delegate to Tester: determine the correct test file path using existing conventions:
    - Java: src/test/java/... (mirror the main source path)
    - TypeScript: same directory as source with .spec.ts suffix
-5. Call write_test(file_path, content, tested_component) with the complete test file
+5. Delegate to Tester: write_test(file_path, content, tested_component) with the complete test file
 
 TEST GUIDELINES:
 - Match the same test framework (JUnit 5, Jasmine, Jest, etc.)

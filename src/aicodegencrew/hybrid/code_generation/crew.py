@@ -286,15 +286,9 @@ class ImplementCrew:
         dependency_tool = DependencyLookupTool(generation_order=generation_order)
         task_source_tool = TaskSourceTool(task_input_dir=self.task_input_dir)
 
-        manager_tools = [
-            PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
-            task_source_tool,
-            CodeReaderTool(repo_path=str(self.repo_path)),
-            FactsQueryTool(facts_dir=str(self.facts_path.parent)),
-            RAGQueryTool(chroma_dir=self.chroma_dir),
-            import_tool,
-            dependency_tool,
-        ]
+        # CrewAI hierarchical manager must not have tools. The manager coordinates
+        # and delegates; worker agents execute tool calls.
+        manager_tools: list[Any] = []
         developer_tools = [
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
