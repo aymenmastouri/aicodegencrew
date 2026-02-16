@@ -49,16 +49,10 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
             "knowledge/analyze/analyzed_architecture.json",
         ],
         "schema": "analyzed_architecture",
-        # MapReduceAnalysisCrew output (current): see `crews/architecture_analysis/mapreduce_crew.py`.
-        # Legacy outputs used `architecture`/`patterns`, but the current schema is:
-        #   system, macro_architecture, micro_architecture, architecture_quality, ...
+        # Legacy-compatible required keys for Phase 2 output
         "required_keys": [
-            "system",
-            "macro_architecture",
-            "micro_architecture",
-            "architecture_quality",
-            "overall_grade",
-            "executive_summary",
+            "architecture",
+            "patterns",
         ],
         "description": "AI-analyzed architecture JSON (MapReduce crew output)",
     },

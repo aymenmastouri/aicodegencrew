@@ -169,8 +169,24 @@ class ValidatorStage:
 
                     identifiers.add(PurePosixPath(comp).stem.lower())
 
-        # Check if at least one identifier appears in any step (case-insensitive)
-        steps_text = " ".join(impl_steps).lower()
+        # Normalize steps to text and check if at least one identifier appears (case-insensitive)
+        normalized_steps = []
+        for step in impl_steps:
+            if isinstance(step, str):
+                normalized_steps.append(step)
+            elif isinstance(step, dict):
+                # Flatten common fields to string for matching
+                parts = []
+                for key in ("title", "description", "summary", "step"):
+                    if key in step and step[key]:
+                        parts.append(str(step[key]))
+                if not parts:
+                    parts.append(str(step))
+                normalized_steps.append(" ".join(parts))
+            else:
+                normalized_steps.append(str(step))
+
+        steps_text = " ".join(normalized_steps).lower()
         mentioned = any(ident in steps_text for ident in identifiers if ident)
 
         if not mentioned and identifiers:
