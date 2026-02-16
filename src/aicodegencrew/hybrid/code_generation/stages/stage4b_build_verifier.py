@@ -2,16 +2,24 @@
 Stage 4b: Build Verifier
 
 Compiles generated code in the target project to verify correctness.
-If build fails, parses errors and uses LLM to self-heal (max retries).
+Two-tier self-healing:
+  1. Pipeline healer (deterministic): parse errors → match to gen files → LLM heal → retry (max 3x)
+  2. CrewAI BuildFixerCrew (fallback): full repo access, agent-driven discovery, iterative fix+build
 
-GENERIC: Auto-detects build system from build_system.json + architecture_facts.json
+Flow:
+  Baseline check → apply gen files → build → [fail?] parse errors → LLM heal → retry
+  → [still fail after 3x?] → CrewAI BuildFixerCrew (scope-expanding, iterative)
+  → always restore originals (Stage 5 does final writes)
+
+GENERIC: Auto-detects build system from architecture_facts.json
 (produced by the Extract phase). Works with Gradle, Maven, npm, Angular — any repo.
 
-Duration: 30s-5min per container (build + optional heal)
+Duration: 30s-5min per container (build + optional heal + optional CrewAI)
 
 SAFETY:
 - Always restores original files after build (Stage 5 does final writes)
 - Baseline check: skips containers where the build was already broken before codegen
+- Path sandbox: rejects writes outside repo root
 - Works identically in dry_run and normal mode
 """
 
@@ -410,14 +418,24 @@ class BuildVerifierStage:
 
         # Build each container. Apply ALL files before each build (cross-container deps).
         backup = _FileBackup(repo_path=self.repo_path)
+        scope_expanded_files: list[GeneratedFile] = []
 
         try:
             for config, files in container_files:
-                result = self._verify_container(config, files, valid_files, backup, plan_input, strategy)
+                result, new_files = self._verify_container(config, files, valid_files, backup, plan_input, strategy)
                 container_results.append(result)
+                if new_files:
+                    scope_expanded_files.extend(new_files)
+                    # Also add to valid_files so next container's build sees them
+                    valid_files.extend(new_files)
         finally:
             # Always restore — Stage 5 handles final writes
             backup.restore()
+
+        # Merge scope-expanded files into the main generated_files list
+        if scope_expanded_files:
+            logger.info(f"[Stage4b] Scope-expanded: {len(scope_expanded_files)} new file(s) from CrewAI fixer")
+            generated_files.extend(scope_expanded_files)
 
         total_duration = time.time() - start_time
         all_passed = all(r.success for r in container_results)
@@ -455,8 +473,12 @@ class BuildVerifierStage:
         backup: _FileBackup,
         plan_input: CodegenPlanInput,
         strategy: BaseStrategy,
-    ) -> ContainerBuildResult:
-        """Build-verify a single container with self-healing retries."""
+    ) -> tuple[ContainerBuildResult, list[GeneratedFile]]:
+        """Build-verify a single container with self-healing retries.
+
+        Returns:
+            Tuple of (ContainerBuildResult, list of scope-expanded GeneratedFiles from CrewAI fixer).
+        """
         start_time = time.time()
 
         # Baseline check: build WITHOUT generated files first
@@ -476,7 +498,7 @@ class BuildVerifierStage:
                 error_summary=f"Baseline broken (pre-existing): {baseline_output[-500:]}",
                 attempts=0,
                 duration_seconds=time.time() - start_time,
-            )
+            ), []
         logger.info(f"[Stage4b] {config.name}: baseline build OK")
 
         # Map file_path → GeneratedFile for quick lookup
@@ -505,7 +527,7 @@ class BuildVerifierStage:
                     attempts=attempt,
                     healed_files=healed_files,
                     duration_seconds=time.time() - start_time,
-                )
+                ), []
 
             logger.warning(f"[Stage4b] {config.name}: BUILD FAILED (attempt {attempt}, exit={exit_code})")
 
@@ -554,10 +576,40 @@ class BuildVerifierStage:
                 logger.warning(f"[Stage4b] {config.name}: no files healed, stopping retries")
                 break
 
-        duration = time.time() - start_time
-
-        # Summarize error output — use tail (errors are usually at the end of build output)
+        # Pipeline healer exhausted — try CrewAI fixer as fallback
         error_summary = output[-2000:] if output else "Build failed with no parseable output"
+
+        fixer_result = self._try_crew_fixer(
+            config=config,
+            plan_input=plan_input,
+            all_gen_files=all_gen_files,
+            last_build_output=output,
+        )
+        if fixer_result is not None:
+            new_files, crew_build = fixer_result
+            if crew_build.success:
+                # Merge fixer's new files into the generated file map
+                for nf in new_files:
+                    gen_file_map[nf.file_path] = nf
+                duration = time.time() - start_time
+                logger.info(
+                    f"[Stage4b] {config.name}: CrewAI fixer PASSED "
+                    f"(+{len(new_files)} scope-expanded files)"
+                )
+                return ContainerBuildResult(
+                    container_id=config.container_id,
+                    container_name=config.name,
+                    build_command=config.build_command,
+                    success=True,
+                    exit_code=0,
+                    attempts=MAX_RETRIES + crew_build.attempts,
+                    healed_files=healed_files + crew_build.healed_files,
+                    duration_seconds=time.time() - start_time,
+                ), new_files
+            else:
+                error_summary = crew_build.error_summary or error_summary
+
+        duration = time.time() - start_time
 
         return ContainerBuildResult(
             container_id=config.container_id,
@@ -569,7 +621,7 @@ class BuildVerifierStage:
             attempts=min(attempt, MAX_RETRIES),
             healed_files=healed_files,
             duration_seconds=duration,
-        )
+        ), []
 
     # =========================================================================
     # Build execution
@@ -795,4 +847,52 @@ Language: {gf.language}
 
         except Exception as e:
             logger.error(f"[Stage4b] Heal LLM call failed for {gf.file_path}: {e}")
+            return None
+
+    # =========================================================================
+    # CrewAI Build Fixer (fallback after pipeline healer fails)
+    # =========================================================================
+
+    def _try_crew_fixer(
+        self,
+        config: ContainerConfig,
+        plan_input: CodegenPlanInput,
+        all_gen_files: list[GeneratedFile],
+        last_build_output: str,
+    ) -> tuple[list[GeneratedFile], ContainerBuildResult] | None:
+        """Try CrewAI BuildFixerCrew as a last resort.
+
+        Returns None if the fixer is not available (import error, etc).
+        Otherwise returns (new_files, build_result).
+        """
+        try:
+            from ..build_fixer_crew import BuildFixerCrew
+        except ImportError as e:
+            logger.warning(f"[Stage4b] BuildFixerCrew not available: {e}")
+            return None
+
+        logger.info(
+            f"[Stage4b] {config.name}: pipeline healer failed — "
+            f"launching CrewAI BuildFixerCrew as fallback"
+        )
+
+        try:
+            fixer = BuildFixerCrew(
+                repo_path=str(self.repo_path),
+                facts_path=str(self.facts_path),
+            )
+            new_files, build_result = fixer.run(
+                container_id=config.container_id,
+                container_name=config.name,
+                build_command=config.build_command,
+                plan_input=plan_input,
+                existing_generated=all_gen_files,
+                last_build_errors=last_build_output,
+            )
+            self.total_calls += fixer.total_calls
+            self.total_tokens += fixer.total_tokens
+            return new_files, build_result
+
+        except Exception as e:
+            logger.error(f"[Stage4b] BuildFixerCrew failed for {config.name}: {e}")
             return None
