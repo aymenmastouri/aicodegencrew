@@ -17,6 +17,7 @@ from typing import Any, ClassVar
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
+from ..utils.chroma_client import get_chroma_http_config
 from ..utils.logger import setup_logger
 from ..utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, truncate_response
 
@@ -109,19 +110,6 @@ class RAGQueryTool(BaseTool):
             from chromadb.config import Settings
             from chromadb.utils import embedding_functions
 
-            chroma_path = self._find_chroma_path()
-
-            if not chroma_path or not Path(chroma_path).exists():
-                logger.warning(f"ChromaDB not found. Searched paths: {self.CHROMA_PATHS}")
-                return None
-
-            self._client = chromadb.PersistentClient(
-                path=chroma_path,
-                settings=Settings(
-                    anonymized_telemetry=False,
-                ),
-            )
-
             # Create Ollama embedding function matching Phase 0 indexing
             # IMPORTANT: Must match EMBED_MODEL used during indexing (nomic-embed-text = 768-dim)
             embed_model = os.getenv("EMBED_MODEL", "nomic-embed-text:latest")
@@ -130,6 +118,30 @@ class RAGQueryTool(BaseTool):
             embedding_fn = embedding_functions.OllamaEmbeddingFunction(
                 model_name=embed_model, url=f"{ollama_base_url}/api/embeddings"
             )
+
+            http_cfg = get_chroma_http_config()
+            if http_cfg is not None:
+                host, port, ssl = http_cfg
+                logger.info(f"Connecting to ChromaDB server at {host}:{port} (ssl={ssl})")
+                self._client = chromadb.HttpClient(
+                    host=host,
+                    port=port,
+                    ssl=ssl,
+                    settings=Settings(anonymized_telemetry=False),
+                )
+            else:
+                chroma_path = self._find_chroma_path()
+
+                if not chroma_path or not Path(chroma_path).exists():
+                    logger.warning(f"ChromaDB not found. Searched paths: {self.CHROMA_PATHS}")
+                    return None
+
+                self._client = chromadb.PersistentClient(
+                    path=chroma_path,
+                    settings=Settings(
+                        anonymized_telemetry=False,
+                    ),
+                )
 
             # Get collection (don't create if not exists)
             try:
