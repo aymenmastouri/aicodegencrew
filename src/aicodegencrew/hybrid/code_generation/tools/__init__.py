@@ -1,6 +1,6 @@
 """Tools for Implement Crew - Phase 5.
 
-Custom tools for code generation, build verification, and test writing.
+Custom tools for code generation and build verification.
 Reuses FactsQueryTool and RAGQueryTool from the architecture analysis crew.
 
 Tools:
@@ -8,11 +8,9 @@ Tools:
 - CodeWriterTool: Write generated code to in-memory staging
 - BuildRunnerTool: Run build commands per container
 - BuildErrorParserTool: Parse build output into structured errors
-- TestPatternTool: Query test patterns from architecture facts
-- TestWriterTool: Write test files to staging area
 - ImportIndexTool: Resolve exact imports (language-aware)
 - DependencyLookupTool: Query dependency order/relations for a file
-- PlanReaderTool: Read normalized plan context for manager agent
+- PlanReaderTool: Read normalized plan context for developer agent
 - TaskSourceTool: Read original JIRA XML task content from TASK_INPUT_DIR
 - FactsQueryTool: (reused) Query architecture facts
 - RAGQueryTool: (reused) ChromaDB semantic search
@@ -28,8 +26,6 @@ from .dependency_tool import DependencyLookupTool
 from .import_index_tool import ImportIndexTool
 from .plan_reader_tool import PlanReaderTool
 from .task_source_tool import TaskSourceTool
-from .test_pattern_tool import TestPatternTool
-from .test_writer_tool import TestWriterTool
 
 __all__ = [
     "BuildErrorParserTool",
@@ -42,6 +38,4 @@ __all__ = [
     "PlanReaderTool",
     "RAGQueryTool",
     "TaskSourceTool",
-    "TestPatternTool",
-    "TestWriterTool",
 ]

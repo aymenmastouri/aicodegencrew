@@ -1,9 +1,8 @@
-"""Implement Crew: Task definitions for hierarchical manager-driven execution.
+"""Implement Crew: Task definitions for single-agent execution.
 
-Three tasks:
-1. implement_task — Manager delegates code changes to Developer
-2. build_task — Manager delegates build verification to Builder
-3. test_task — Manager delegates test generation to Tester
+Two tasks:
+1. implement_task — Developer implements all code changes
+2. fix_task — Developer fixes build errors from previous attempt
 """
 
 # =============================================================================
@@ -77,7 +76,7 @@ def implement_task(
     dependency_order: list[str],
     task_source_snapshot: str = "",
 ) -> tuple[str, str]:
-    """Manager task: coordinate code implementation via delegation.
+    """Developer task: implement code changes using all available tools.
 
     Returns (description, expected_output) for CrewAI Task construction.
     """
@@ -97,16 +96,11 @@ TYPE: {task_type}
 PRIMARY INTENT SOURCE (actual task from TASK_INPUT_DIR):
 {task_source_snapshot}
 
-MANAGER RULES:
-1. You are the manager and MUST NOT call tools directly.
-2. Delegate all tool-calling work to the Developer agent.
-3. Approve work only when worker outputs include concrete evidence.
-
 SOURCE-OF-TRUTH RULES:
-1. FIRST delegate a call to read_task_source(task_id="{task_id}") and use it as intent source.
+1. FIRST call read_task_source(task_id="{task_id}") and use it as intent source.
 2. Treat read_plan() and implementation_steps as GUIDANCE, not ground truth.
 3. Resolve conflicts by prioritizing: actual task source -> architecture facts -> codebase evidence.
-4. For each major change, require delegated calls to facts_query and rag_query before code writing.
+4. For each major change, call facts_query and rag_query before code writing.
 5. Never implement requirements that are only in the plan but absent from the original task/evidence.
 
 DESCRIPTION:
@@ -116,13 +110,13 @@ IMPLEMENTATION STEPS:
 {steps_text}
 
 WORKFLOW — for EACH file in the dependency order below:
-1. Delegate to Developer: re-check task intent with read_task_source(task_id) when scope is unclear
-2. Delegate to Developer: read current file content with read_file(file_path)
-3. Delegate to Developer: look up correct imports with lookup_import(symbol, from_file, language)
-4. Delegate to Developer: check dependencies with lookup_dependencies(file_path)
-5. Delegate to Developer: query architecture facts and RAG search as needed
-6. Delegate to Developer: generate modified file content
-7. Delegate to Developer: write COMPLETE file via write_code(file_path, content, action="modify")
+1. Re-check task intent with read_task_source(task_id) when scope is unclear
+2. Read current file content with read_file(file_path)
+3. Look up correct imports with lookup_import(symbol, from_file, language)
+4. Check dependencies with lookup_dependencies(file_path)
+5. Query architecture facts and RAG search as needed
+6. Generate modified file content
+7. Write COMPLETE file via write_code(file_path, content, action="modify")
 
 FILES IN DEPENDENCY ORDER (process in this order):
 {ordered}
@@ -142,89 +136,44 @@ IMPORTANT:
 
 
 # =============================================================================
-# TASK 2: BUILD VERIFICATION
+# TASK 2: FIX BUILD ERRORS
 # =============================================================================
 
 
-def build_task(
+def fix_task(
     *,
-    container_ids: list[str],
+    task_id: str,
+    build_errors: str,
+    failed_files: list[str],
+    dependency_order: list[str],
 ) -> tuple[str, str]:
-    """Manager task: coordinate build verification via Builder agent.
+    """Developer task: correct build errors in previously generated code.
 
     Returns (description, expected_output) for CrewAI Task construction.
     """
-    cid_list = ", ".join(container_ids) if container_ids else "(none)"
+    files_text = "\n".join(f"  - {f}" for f in failed_files) if failed_files else "  (none)"
 
     task_description = f"""\
-Verify the build for affected containers: {cid_list}
+Fix build errors for task {task_id}.
 
-WORKFLOW per container:
-1. Delegate to Builder: run_build(container_id, baseline=true) to verify baseline compiles
-2. If baseline FAILS: report baseline_broken and skip staged build
-3. Delegate to Builder: run_build(container_id, baseline=false) to build with staged changes
-4. If staged build FAILS: delegate to Builder parse_build_errors(build_output)
+BUILD ERRORS:
+{build_errors}
 
-If a staged build fails:
-- Report the structured errors back
-- The manager should delegate fix instructions to the Developer
-- After fix, re-run build (max 3 attempts per container)
-
-OUTPUT FORMAT per container:
-- build_passed: true/false
-- baseline_broken: true/false
-- container_id: <id>
-- exit_code: <number>
-- error_count: <number>
-- error_summary: <structured errors with file paths and line numbers>
-"""
-
-    expected = (
-        "Build verification result per container: pass/fail status, "
-        "exit codes, and structured error summaries if failed."
-    )
-    return task_description, expected
-
-
-# =============================================================================
-# TASK 3: TEST GENERATION
-# =============================================================================
-
-
-def test_task(
-    *,
-    changed_files: list[str],
-) -> tuple[str, str]:
-    """Manager task: coordinate test generation via Tester agent.
-
-    Returns (description, expected_output) for CrewAI Task construction.
-    """
-    files_text = "\n".join(f"  - {p}" for p in changed_files) if changed_files else "  (none)"
-
-    task_description = f"""\
-Generate unit tests for the changed files:
+FAILED FILES (focus on these):
 {files_text}
 
-WORKFLOW per file:
-1. Delegate to Tester: query_test_patterns() to discover existing test framework and style
-2. Delegate to Tester: rag_query("test for <ComponentName>") to find similar test examples
-3. Delegate to Tester: read_file(file_path) to read the modified source file
-4. Delegate to Tester: determine the correct test file path using existing conventions:
-   - Java: src/test/java/... (mirror the main source path)
-   - TypeScript: same directory as source with .spec.ts suffix
-5. Delegate to Tester: write_test(file_path, content, tested_component) with the complete test file
+WORKFLOW:
+1. Read each failed file with read_file(file_path) to see current content
+2. Analyze the build errors to understand what's wrong
+3. Look up correct imports with lookup_import(symbol, from_file, language)
+4. Query architecture facts if needed for correct types/interfaces
+5. Write the COMPLETE fixed file via write_code(file_path, content, action="modify")
 
-TEST GUIDELINES:
-- Match the same test framework (JUnit 5, Jasmine, Jest, etc.)
-- Follow existing assertion style and mocking patterns
-- Test both happy path and at least one error/edge case
-- Include proper imports matching the project test configuration
-
-IMPORTANT:
-- Generate tests for ALL changed files (not just one)
-- Use write_test() (not write_code()) to write test files
-- Each test file must be self-contained and compilable
+RULES:
+- Fix ONLY the build errors — do not refactor or change functionality
+- Generate COMPLETE file content (not fragments)
+- Preserve all existing business logic
+- If an error is in a file you didn't generate, read it and fix it too
 """
-
-    expected = "Summary of generated test files: file paths, components tested, and test count per file."
+    expected = f"Summary of fixed files for task {task_id} with build errors resolved."
     return task_description, expected

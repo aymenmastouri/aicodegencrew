@@ -529,6 +529,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             chroma_dir=chroma_dir,
             plans_dir=str(phase4_dir),
             output_dir=str(knowledge_dir / "implement"),
+            task_input_dir=os.getenv("TASK_INPUT_DIR", ""),
             dry_run=codegen_dry_run,
         )
         orchestrator.register_phase("implement", implement_crew)
