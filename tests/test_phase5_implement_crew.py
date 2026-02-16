@@ -245,6 +245,8 @@ def test_implement_task_prompt_requires_task_source_and_evidence() -> None:
     )
 
     assert 'read_task_source(task_id="T-123")' in description
+    assert "MUST NOT call tools directly" in description
+    assert "Delegate all tool-calling work to the Developer agent" in description
     assert "Treat read_plan() and implementation_steps as GUIDANCE" in description
     assert "facts_query and rag_query" in description
     assert "actual task source -> architecture facts -> codebase evidence" in description
