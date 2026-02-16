@@ -8,6 +8,8 @@ Rules ordered by recommended execution sequence.
 
 from .base import (
     CodePattern,
+    ConfigChange,
+    ConfigOperation,
     UpgradeCategory,
     UpgradeRule,
     UpgradeRuleSet,

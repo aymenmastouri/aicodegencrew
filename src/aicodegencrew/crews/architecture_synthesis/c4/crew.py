@@ -64,11 +64,34 @@ class C4Crew(MiniCrewBase):
         system_name = system_info.get("name", "Unknown System")
 
         arch_info = analysis.get("architecture", {})
-        style_name = arch_info.get("primary_style") or facts.get("architecture_style", {}).get(
-            "primary_style", "UNKNOWN"
-        )
-        layers = arch_info.get("layers") or facts.get("architecture_style", {}).get("layers", [])
-        patterns = analysis.get("patterns", []) or facts.get("architecture_style", {}).get("patterns", [])
+        macro_arch = analysis.get("macro_architecture", {})
+        micro_arch = analysis.get("micro_architecture", {})
+
+        # Support both legacy Phase 2 output (`architecture`/`patterns`) and the current
+        # MapReduceAnalysisCrew output (`macro_architecture`/`micro_architecture`).
+        style_name = arch_info.get("primary_style") or macro_arch.get("style") or "UNKNOWN"
+
+        layers = arch_info.get("layers") or []
+        if not layers and isinstance(micro_arch, dict):
+            derived_layers: list[str] = []
+            seen_layers: set[str] = set()
+            for container_info in micro_arch.values():
+                for layer in (container_info or {}).get("layer_structure", []) or []:
+                    if layer not in seen_layers:
+                        seen_layers.add(layer)
+                        derived_layers.append(layer)
+            layers = derived_layers
+
+        patterns = analysis.get("patterns", []) or []
+        if not patterns and isinstance(micro_arch, dict):
+            derived_patterns: list[str] = []
+            seen_patterns: set[str] = set()
+            for container_info in micro_arch.values():
+                pattern = (container_info or {}).get("primary_pattern")
+                if pattern and pattern != "Unknown" and pattern not in seen_patterns:
+                    seen_patterns.add(pattern)
+                    derived_patterns.append(pattern)
+            patterns = derived_patterns
 
         containers = facts.get("containers", [])
         components = facts.get("components", [])

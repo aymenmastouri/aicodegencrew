@@ -34,6 +34,24 @@ class CodePattern:
     description: str = ""
 
 
+class ConfigOperation(StrEnum):
+    SET = "set"  # Set or overwrite a value
+    DELETE = "delete"  # Delete a key
+    RENAME_KEY = "rename_key"  # Rename a key
+
+
+@dataclass
+class ConfigChange:
+    """A deterministic config file change (no LLM needed)."""
+
+    file_glob: str  # e.g., "package.json", "angular.json"
+    operation: ConfigOperation
+    json_path: str  # Dot-separated path, e.g. "devDependencies.typescript"
+    value: str | dict | list | None = None
+    description: str = ""
+    condition_regex: str = ""  # Only apply when current value matches this regex
+
+
 @dataclass
 class UpgradeRule:
     """A single upgrade rule (declarative)."""
@@ -51,6 +69,7 @@ class UpgradeRule:
     affected_stereotypes: list[str] = field(default_factory=list)
     reference_url: str | None = None
     effort_per_occurrence: int = 5  # minutes
+    config_changes: list[ConfigChange] = field(default_factory=list)
 
 
 @dataclass

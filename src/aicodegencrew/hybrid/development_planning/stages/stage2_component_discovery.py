@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from ....shared.paths import CHROMA_DIR, DISCOVER_SYMBOLS
+from ....shared.utils.chroma_client import create_chroma_client, get_chroma_http_config
 from ....shared.utils.logger import setup_logger
 from ..schemas import ComponentMatch, DependencyRelation, InterfaceMatch, TaskInput
 
@@ -46,15 +47,25 @@ def _semantic_search_subprocess(
         import chromadb  # noqa: local import — child process
         from chromadb.config import Settings
 
-        chroma_path = Path(chroma_dir)
-        if not chroma_path.exists():
-            result_queue.put({})
-            return
+        http_cfg = get_chroma_http_config()
+        if http_cfg is not None:
+            host, port, ssl = http_cfg
+            client = chromadb.HttpClient(
+                host=host,
+                port=port,
+                ssl=ssl,
+                settings=Settings(anonymized_telemetry=False),
+            )
+        else:
+            chroma_path = Path(chroma_dir)
+            if not chroma_path.exists():
+                result_queue.put({})
+                return
 
-        client = chromadb.PersistentClient(
-            path=str(chroma_path),
-            settings=Settings(anonymized_telemetry=False),
-        )
+            client = chromadb.PersistentClient(
+                path=str(chroma_path),
+                settings=Settings(anonymized_telemetry=False),
+            )
         collection = client.get_collection(name="repo_docs")
 
         # Embed query via Ollama (short timeout — fail fast)
@@ -590,17 +601,17 @@ class ComponentDiscoveryStage:
             return self.collection
 
         try:
-            import chromadb
             from chromadb.config import Settings
 
             chroma_path = Path(self.chroma_dir)
 
-            if not chroma_path.exists():
+            http_cfg = get_chroma_http_config()
+            if http_cfg is None and not chroma_path.exists():
                 logger.warning(f"[Stage2] ChromaDB not found at {chroma_path}")
                 return None
 
-            client = chromadb.PersistentClient(
-                path=str(chroma_path),
+            client = create_chroma_client(
+                persistent_path=str(chroma_path),
                 # Semantic search is a best-effort signal; keep Chroma calls bounded.
                 settings=Settings(
                     anonymized_telemetry=False,
@@ -613,7 +624,11 @@ class ComponentDiscoveryStage:
             # We embed queries manually via _embed_query() and use query_embeddings.
             self.collection = client.get_collection(name="repo_docs")
 
-            logger.info(f"[Stage2] Connected to ChromaDB at {chroma_path}")
+            if http_cfg is not None:
+                host, port, ssl = http_cfg
+                logger.info(f"[Stage2] Connected to ChromaDB server at {host}:{port} (ssl={ssl})")
+            else:
+                logger.info(f"[Stage2] Connected to ChromaDB at {chroma_path}")
             return self.collection
 
         except Exception as e:
