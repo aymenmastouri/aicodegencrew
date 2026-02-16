@@ -82,6 +82,23 @@ class OutputWriterStage:
                 degradation_reasons=degradation_reasons,
             )
 
+        # Build gate: skip commit if build verification failed
+        if build_verification and not build_verification.skipped and not build_verification.all_passed:
+            logger.error(
+                f"[Stage5] Build failed ({build_verification.total_containers_failed} container(s)) — aborting commit"
+            )
+            return self._build_report(
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
+            )
+
         if self.dry_run:
             logger.info("[Stage5] DRY RUN — skipping file writes and git operations")
             report = self._build_report(
@@ -156,14 +173,17 @@ class OutputWriterStage:
                     files_changed += 1
 
         # Commit only the files we wrote
-        self._git_commit(task_id, written_paths)
+        commit_ok = self._git_commit(task_id, written_paths)
 
         # Switch back to original branch
         self._git_switch_back()
 
+        if not commit_ok:
+            logger.error("[Stage5] Git commit failed — reporting as failed")
+
         report = self._build_report(
             task_id=task_id,
-            status="success" if failed_count == 0 else "partial",
+            status="failed" if not commit_ok else ("success" if failed_count == 0 else "partial"),
             branch_name=branch_name,
             generated_files=generated_files,
             validation=validation,
@@ -207,10 +227,10 @@ class OutputWriterStage:
             return None
 
         if not self._is_clean_working_tree():
-            logger.warning("[Stage5] Dirty working tree — auto-recovering")
-            self._git("checkout", "--", ".")
+            logger.warning("[Stage5] Dirty working tree — stashing changes")
+            self._git("stash", "push", "-m", "codegen-auto-stash: dirty tree before cascade")
             if not self._is_clean_working_tree():
-                logger.error("[Stage5] Auto-recovery failed — please commit or stash manually")
+                logger.error("[Stage5] Stash failed — please commit or stash manually")
                 return None
 
         # Save original branch
@@ -326,11 +346,14 @@ class OutputWriterStage:
                     files_changed += 1
 
         # Commit with task-specific message (do NOT switch back)
-        self._git_commit(task_id, written_paths)
+        commit_ok = self._git_commit(task_id, written_paths)
+
+        if not commit_ok:
+            logger.error(f"[Stage5] Git commit failed for cascade task {task_id}")
 
         report = self._build_cascade_report(
             task_id=task_id,
-            status="success" if failed_count == 0 else "partial",
+            status="failed" if not commit_ok else ("success" if failed_count == 0 else "partial"),
             branch_name=cascade_branch,
             cascade_branch=cascade_branch,
             cascade_position=cascade_position,
@@ -515,7 +538,12 @@ class OutputWriterStage:
     def _write_file(self, gf: GeneratedFile) -> bool:
         """Write a single file to the target repo."""
         try:
-            path = Path(gf.file_path)
+            path = Path(gf.file_path).resolve()
+
+            # Sandbox: reject paths outside repo root
+            if not str(path).startswith(str(self.repo_path.resolve())):
+                logger.error(f"[Stage5] BLOCKED: path outside repo root: {gf.file_path}")
+                return False
 
             if gf.action == "delete":
                 if path.exists():

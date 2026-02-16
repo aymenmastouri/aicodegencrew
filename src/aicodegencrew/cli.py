@@ -228,9 +228,6 @@ def cmd_index(config: Config) -> int:
 
     force_reindex = False
     if config.index_mode == "force":
-        if chroma_dir.exists():
-            logger.info(f"[FORCE] Clearing cache: {chroma_dir}")
-            shutil.rmtree(chroma_dir)
         force_reindex = True
     elif config.index_mode == "smart":
         logger.info("[SMART] Incremental update only")

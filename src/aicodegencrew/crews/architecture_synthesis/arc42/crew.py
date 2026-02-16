@@ -86,7 +86,21 @@ class Arc42Crew(MiniCrewBase):
         system_name = system_info.get("name", "Unknown System")
 
         arch_info = analysis.get("architecture", {})
-        patterns = analysis.get("patterns", [])
+        macro_arch = analysis.get("macro_architecture", {})
+        micro_arch = analysis.get("micro_architecture", {})
+
+        # Support both legacy Phase 2 output (`architecture`/`patterns`) and the current
+        # MapReduceAnalysisCrew output (`macro_architecture`/`micro_architecture`).
+        patterns = analysis.get("patterns", []) or []
+        if not patterns and isinstance(micro_arch, dict):
+            derived_patterns: list[str] = []
+            seen_patterns: set[str] = set()
+            for container_info in micro_arch.values():
+                pattern = (container_info or {}).get("primary_pattern")
+                if pattern and pattern != "Unknown" and pattern not in seen_patterns:
+                    seen_patterns.add(pattern)
+                    derived_patterns.append(pattern)
+            patterns = derived_patterns
 
         containers = facts.get("containers", [])
         components = facts.get("components", [])
@@ -100,7 +114,7 @@ class Arc42Crew(MiniCrewBase):
             stereo = comp.get("stereotype", "unknown")
             by_stereotype[stereo] = by_stereotype.get(stereo, 0) + 1
 
-        arch_style = arch_info.get("primary_style", "UNKNOWN - use tools to discover")
+        arch_style = arch_info.get("primary_style") or macro_arch.get("style") or "UNKNOWN - use tools to discover"
 
         system_summary = f"""SYSTEM: {system_name}
 

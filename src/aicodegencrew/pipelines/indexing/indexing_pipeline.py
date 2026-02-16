@@ -644,14 +644,53 @@ class IndexingPipeline:
     def _clear_chroma(self) -> None:
         """Delete ChromaDB directory for force re-index."""
         chroma_path = Path(self._chroma_dir_resolved)
-        if chroma_path.exists():
-            logger.info(f"[FORCE] Clearing ChromaDB: {chroma_path}")
+        if not chroma_path.exists():
+            return
+
+        from ...shared.utils.chroma_client import create_chroma_client, get_chroma_http_config
+
+        http_cfg = get_chroma_http_config()
+        if http_cfg is not None:
+            host, port, ssl = http_cfg
+            logger.info(
+                f"[FORCE] Clearing ChromaDB collection '{self.config.collection_name}' via HTTP at {host}:{port} (ssl={ssl})"
+            )
             try:
-                shutil.rmtree(chroma_path)
-                # Reset lazy tool so it re-creates the client
-                self._chroma_tool = None
+                from chromadb.config import Settings
+
+                client = create_chroma_client(
+                    persistent_path=str(chroma_path),
+                    settings=Settings(anonymized_telemetry=False),
+                )
+                try:
+                    client.delete_collection(self.config.collection_name)
+                except Exception as e:
+                    logger.warning(f"[FORCE] Could not delete collection '{self.config.collection_name}': {e}")
             except Exception as e:
-                logger.error(f"[FORCE] Failed to clear ChromaDB: {e}")
+                raise RuntimeError(f"Could not connect to ChromaDB server for force reset: {e}") from e
+
+            # Best-effort: remove local Discover artifacts/state (DB files are owned by the server process).
+            for filename in (
+                ".indexing_state.json",
+                "symbols.jsonl",
+                "evidence.jsonl",
+                "repo_manifest.json",
+            ):
+                try:
+                    (chroma_path / filename).unlink(missing_ok=True)
+                except Exception:
+                    pass
+
+            self._chroma_tool = None
+            return
+
+        logger.info(f"[FORCE] Clearing ChromaDB: {chroma_path}")
+        try:
+            shutil.rmtree(chroma_path)
+            # Reset lazy tool so it re-creates the client
+            self._chroma_tool = None
+        except Exception as e:
+            logger.error(f"[FORCE] Failed to clear ChromaDB: {e}")
 
     # -- Indexing process ---------------------------------------------------
 

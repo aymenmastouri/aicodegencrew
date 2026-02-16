@@ -299,8 +299,15 @@ class _FileBackup:
 
     def apply(self, generated_files: list[GeneratedFile]) -> None:
         """Write generated files to disk, saving originals for restore."""
+        repo_resolved = str(self.repo_path.resolve())
         for gf in generated_files:
-            path = Path(gf.file_path)
+            path = Path(gf.file_path).resolve()
+
+            # Sandbox: reject paths outside repo root
+            if not str(path).startswith(repo_resolved):
+                logger.error(f"[Stage4b] BLOCKED: path outside repo root: {gf.file_path}")
+                continue
+
             # Save original
             if path.exists():
                 try:

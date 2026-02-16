@@ -172,8 +172,8 @@ class CodeGenerationPipeline:
 
             # Safety: ensure clean working tree before each task
             if not writer._is_clean_working_tree():
-                logger.warning(f"[Phase5] Dirty tree before {task_id} — auto-cleaning")
-                writer._git("checkout", "--", ".")
+                logger.warning(f"[Phase5] Dirty tree before {task_id} — stashing changes")
+                writer._git("stash", "push", "-m", f"codegen-auto-stash: dirty tree before {task_id}")
 
             logger.info(f"\n[Phase5] === Cascade {i}/{n}: {task_id} ===")
 
