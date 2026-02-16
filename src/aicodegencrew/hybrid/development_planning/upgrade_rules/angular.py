@@ -1,10 +1,13 @@
 """
-Angular upgrade rules (declarative).
+Angular upgrade rules (dynamic from official source).
 
-Based on: https://angular.dev/update-guide
-Each UpgradeRuleSet covers one major version upgrade.
-Rules ordered by recommended execution sequence.
+IMPORTANT: Rules are fetched dynamically from https://angular.dev/update-guide
+using Microsoft Playwright MCP. No hardcoded rules.
+
+This ensures upgrade guidance is always current with official Angular documentation.
 """
+
+from pathlib import Path
 
 from .base import (
     CodePattern,
@@ -15,6 +18,9 @@ from .base import (
     UpgradeRuleSet,
     UpgradeSeverity,
 )
+
+# Flag to control whether to fetch dynamically or use fallback
+USE_DYNAMIC_FETCH = True  # Set to False to use minimal fallback rules
 
 # =============================================================================
 # Angular 18 -> 19
@@ -546,12 +552,133 @@ ANGULAR_THIRD_PARTY = UpgradeRuleSet(
 
 
 # =============================================================================
+# Dynamic Rule Fetching (NEW - uses Playwright MCP)
+# =============================================================================
+
+
+def fetch_angular_rules_dynamic(from_version: str, to_version: str) -> UpgradeRuleSet:
+    """
+    Fetch Angular upgrade rules dynamically from angular.dev using Playwright MCP.
+
+    This replaces hardcoded rules with live data from the official Angular update guide.
+
+    Args:
+        from_version: Starting version (e.g., "18")
+        to_version: Target version (e.g., "19")
+
+    Returns:
+        UpgradeRuleSet with rules fetched from angular.dev
+    """
+    if not USE_DYNAMIC_FETCH:
+        # Return minimal fallback
+        return _get_fallback_ruleset(from_version, to_version)
+
+    try:
+        from ..playwright_mcp_integration import fetch_angular_guide_with_playwright
+
+        # Fetch guide using Playwright MCP
+        guide = fetch_angular_guide_with_playwright(from_version, to_version)
+
+        if "error" in guide:
+            # Fallback on error
+            return _get_fallback_ruleset(from_version, to_version, guide.get("error"))
+
+        # Convert fetched guide to UpgradeRuleSet
+        rules = []
+        for rule_data in guide.get("migration_rules", []):
+            severity_map = {
+                "breaking": UpgradeSeverity.BREAKING,
+                "recommended": UpgradeSeverity.RECOMMENDED,
+                "info": UpgradeSeverity.DEPRECATED,
+            }
+            severity = severity_map.get(rule_data.get("severity", "info"), UpgradeSeverity.DEPRECATED)
+
+            rule = UpgradeRule(
+                id=f"ng{to_version}-{_slugify(rule_data.get('title', 'rule'))}",
+                title=rule_data.get("title", "Migration rule"),
+                description=rule_data.get("description", ""),
+                severity=severity,
+                category=UpgradeCategory.MIGRATION,
+                from_version=from_version,
+                to_version=to_version,
+                detection_patterns=[],  # Playwright doesn't provide these
+                migration_steps=rule_data.get("migration_steps", []),
+                affected_stereotypes=[],
+                effort_per_occurrence=15,
+            )
+            rules.append(rule)
+
+        return UpgradeRuleSet(
+            framework="Angular",
+            from_version=from_version,
+            to_version=to_version,
+            required_dependencies={
+                "@angular/core": f"^{to_version}.0.0",
+            },
+            verification_commands=["ng build", "ng test"],
+            rules=rules,
+        )
+
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to fetch Angular rules dynamically: {e}")
+        return _get_fallback_ruleset(from_version, to_version, str(e))
+
+
+def _slugify(text: str) -> str:
+    """Convert text to slug (lowercase, hyphenated)."""
+    import re
+    return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')[:50]
+
+
+def _get_fallback_ruleset(from_version: str, to_version: str, error: str = "") -> UpgradeRuleSet:
+    """Return minimal fallback ruleset when dynamic fetch fails."""
+    return UpgradeRuleSet(
+        framework="Angular",
+        from_version=from_version,
+        to_version=to_version,
+        verification_commands=["ng build", "ng test"],
+        rules=[
+            UpgradeRule(
+                id=f"ng{to_version}-fallback",
+                title=f"Angular {from_version} to {to_version} Upgrade",
+                description=f"Dynamic fetch failed{': ' + error if error else ''}. Use ng update and refer to official docs.",
+                severity=UpgradeSeverity.BREAKING,
+                category=UpgradeCategory.MIGRATION,
+                from_version=from_version,
+                to_version=to_version,
+                detection_patterns=[],
+                migration_steps=[
+                    f"CRITICAL: Check https://angular.dev/update-guide?v={from_version}.0-{to_version}.0&l=3 manually",
+                    f"Run: ng update @angular/core@{to_version} @angular/cli@{to_version}",
+                    "Follow prompts and fix breaking changes",
+                    "Run: ng build --configuration production",
+                    "Run: ng test",
+                ],
+                affected_stereotypes=[],
+                effort_per_occurrence=60,
+            )
+        ],
+    )
+
+
+# =============================================================================
 # Combined export
 # =============================================================================
 
-ANGULAR_UPGRADE_RULES: list = [
+# Static rules (fallback when dynamic fetch is disabled)
+ANGULAR_UPGRADE_RULES_STATIC: list = [
     ANGULAR_18_TO_19,
     ANGULAR_19_TO_20,
     ANGULAR_SIGNAL_MIGRATION,
     ANGULAR_THIRD_PARTY,
+]
+
+# Dynamic rules (fetched from angular.dev at runtime)
+ANGULAR_UPGRADE_RULES: list = [
+    fetch_angular_rules_dynamic("18", "19"),
+    fetch_angular_rules_dynamic("19", "20"),
+    ANGULAR_SIGNAL_MIGRATION,  # Keep signal migration (not version-specific)
+    ANGULAR_THIRD_PARTY,  # Keep third-party compat checks
 ]
