@@ -1,14 +1,16 @@
-"""Implement Crew: Hierarchical CrewAI team for Phase 5.
+"""Implement Crew: Single-agent CrewAI with Python-controlled build-fix loop.
 
-Architecture:
-  Preflight (deterministic) -> Crew (hierarchical) -> Post-crew (deterministic)
+Architecture (Phase 5 v3):
+  Preflight (deterministic) -> Build-Fix Loop (max 3 attempts) -> Post-crew (commit)
 
-  Manager   -- coordinates delegation and retries
-  Developer -- reads code, resolves imports, writes code
-  Builder   -- runs builds, parses errors, reports diagnostics
-  Tester    -- generates unit tests matching repo patterns
+  Build-Fix Loop:
+    - Attempt 1: Developer implements all files
+    - Import fixer runs (deterministic)
+    - Build verification runs (deterministic subprocess)
+    - If build fails: Developer fixes errors (attempts 2-3)
+    - If build passes or max attempts reached: exit loop
 
-Process: Process.hierarchical, manager coordinates workers and retry loops.
+Process: Process.sequential with 1 agent, 1 task per iteration.
 """
 
 from __future__ import annotations
@@ -39,7 +41,7 @@ from .schemas import (
     ContainerBuildResult,
     GeneratedFile,
 )
-from .tasks import build_task, implement_task, test_task
+from .tasks import fix_task, implement_task
 from .tools import (
     BuildErrorParserTool,
     BuildRunnerTool,
@@ -51,24 +53,27 @@ from .tools import (
     PlanReaderTool,
     RAGQueryTool,
     TaskSourceTool,
-    TestPatternTool,
-    TestWriterTool,
 )
 
 _MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
 _MAX_RPM = 30
 _VERBOSE = True
+MAX_BUILD_RETRIES = 3
 
 logger = setup_logger(__name__)
 
 
 class ImplementCrew:
-    """Hierarchical crew for implementation, build verification and tests.
+    """Single-agent crew with Python-controlled build-fix loop.
 
     Full flow:
     1. Preflight: plan reading, import index, dependency graph, validation
-    2. Crew: hierarchical execution (manager delegates to workers)
-    3. Post-crew: import fixer, safety gate, output writer
+    2. Build-fix loop (max 3 attempts):
+       - Crew execution (1 developer agent, 1 task)
+       - Import fixer (deterministic)
+       - Build verification (deterministic subprocess)
+       - If build fails: format errors, loop back with fix task
+    3. Output writer: commit if safety gate passes
     """
 
     def __init__(
@@ -81,7 +86,6 @@ class ImplementCrew:
         task_input_dir: str | None = None,
         *,
         build_verify: bool = True,
-        test_enabled: bool = True,
         dry_run: bool = False,
     ):
         self.repo_path = Path(repo_path)
@@ -91,13 +95,12 @@ class ImplementCrew:
         self.output_dir = Path(output_dir)
         self.task_input_dir = (task_input_dir or os.getenv("TASK_INPUT_DIR", "")).strip()
         self.build_verify = build_verify
-        self.test_enabled = test_enabled
         self.dry_run = dry_run
         self.total_calls = 0
         self.total_tokens = 0
         self._containers: list[dict[str, str]] | None = None
 
-    # â”€â”€ Container helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Container helpers ───────────────────────────────────────────────────
 
     def _load_containers(self) -> list[dict[str, str]]:
         if self._containers is not None:
@@ -146,7 +149,7 @@ class ImplementCrew:
 
         return [cid for cid in ids if cid]
 
-    # â”€â”€ Staging conversion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Staging conversion ──────────────────────────────────────────────────
 
     @staticmethod
     def _staging_to_generated_files(staging: dict[str, dict[str, Any]]) -> list[GeneratedFile]:
@@ -161,7 +164,7 @@ class ImplementCrew:
             ))
         return generated
 
-    # â”€â”€ Deterministic build verification (post-crew) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Deterministic build verification (post-crew) ───────────────────────
 
     def _verify_builds(
         self, plan: CodegenPlanInput, staging: dict[str, dict[str, Any]]
@@ -265,9 +268,33 @@ class ImplementCrew:
             f"- summary: {summary}\n"
             f"- description_excerpt: {excerpt}"
         ).strip()
-    # Core: crew execution
 
-    def _execute_crew(
+    def _format_build_errors(self, build_result: BuildVerificationResult) -> str:
+        """Format build errors for fix task prompt."""
+        lines = []
+        for cr in build_result.container_results:
+            if not cr.success:
+                lines.append(f"Container: {cr.container_name} ({cr.container_id})")
+                lines.append(f"  Command: {cr.build_command}")
+                lines.append(f"  Exit code: {cr.exit_code}")
+                lines.append(f"  Errors: {cr.error_summary}")
+        return "\n".join(lines)
+
+    def _extract_failed_files(self, build_result: BuildVerificationResult) -> list[str]:
+        """Extract file paths from build error summaries."""
+        failed = set()
+        for cr in build_result.container_results:
+            if not cr.success and cr.error_summary:
+                # Parse "file_path:line message" format
+                for line in cr.error_summary.split(";"):
+                    parts = line.strip().split(":")
+                    if len(parts) >= 2:
+                        failed.add(parts[0].strip())
+        return sorted(failed)
+
+    # ── Core: crew execution (implement or fix) ────────────────────────────
+
+    def _execute_implement(
         self,
         plan: CodegenPlanInput,
         staging: dict[str, dict[str, Any]],
@@ -275,8 +302,7 @@ class ImplementCrew:
         import_index,
         generation_order,
     ) -> None:
-        """Build agents, tasks, crew and kick off hierarchical execution."""
-
+        """Execute implement task: developer generates all files."""
         # Shared tool instances bound to preflight artifacts
         import_tool = ImportIndexTool(
             repo_path=str(self.repo_path),
@@ -286,9 +312,6 @@ class ImplementCrew:
         dependency_tool = DependencyLookupTool(generation_order=generation_order)
         task_source_tool = TaskSourceTool(task_input_dir=self.task_input_dir)
 
-        # CrewAI hierarchical manager must not have tools. The manager coordinates
-        # and delegates; worker agents execute tool calls.
-        manager_tools: list[Any] = []
         developer_tools = [
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
@@ -299,28 +322,9 @@ class ImplementCrew:
             task_source_tool,
             PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
         ]
-        tester_tools = [
-            TestPatternTool(facts_dir=str(self.facts_path.parent)),
-            TestWriterTool(repo_path=str(self.repo_path), staging=staging),
-            CodeReaderTool(repo_path=str(self.repo_path)),
-            RAGQueryTool(chroma_dir=self.chroma_dir),
-        ]
-        builder_tools = [
-            BuildRunnerTool(
-                repo_path=str(self.repo_path),
-                facts_path=str(self.facts_path),
-                staging=staging,
-            ),
-            BuildErrorParserTool(),
-            FactsQueryTool(facts_dir=str(self.facts_path.parent)),
-        ]
 
-        manager = create_agent("manager", manager_tools, _MCP_SERVER_PATH, _VERBOSE)
         developer = create_agent("developer", developer_tools, _MCP_SERVER_PATH, _VERBOSE)
-        tester = create_agent("tester", tester_tools, _MCP_SERVER_PATH, _VERBOSE)
-        builder = create_agent("builder", builder_tools, _MCP_SERVER_PATH, _VERBOSE)
 
-        container_ids = self._container_ids_for_plan(plan)
         task_source_snapshot = self._task_source_snapshot(plan.task_id)
 
         impl_desc, impl_expected = implement_task(
@@ -333,23 +337,13 @@ class ImplementCrew:
             dependency_order=dependency_order_paths,
             task_source_snapshot=task_source_snapshot,
         )
-        build_desc, build_expected = build_task(container_ids=container_ids)
-        test_desc, test_expected = test_task(changed_files=dependency_order_paths)
 
-        tasks = [
-            Task(description=impl_desc, expected_output=impl_expected, agent=manager, human_input=False),
-            Task(description=build_desc, expected_output=build_expected, agent=manager, human_input=False),
-        ]
-        if self.test_enabled:
-            tasks.append(
-                Task(description=test_desc, expected_output=test_expected, agent=manager, human_input=False),
-            )
+        task = Task(description=impl_desc, expected_output=impl_expected, agent=developer, human_input=False)
 
         crew = Crew(
-            agents=[developer, tester, builder],
-            tasks=tasks,
-            process=Process.hierarchical,
-            manager_agent=manager,
+            agents=[developer],
+            tasks=[task],
+            process=Process.sequential,
             verbose=_VERBOSE,
             memory=False,
             planning=False,
@@ -370,39 +364,112 @@ class ImplementCrew:
                     "implementation_steps": plan.implementation_steps,
                     "affected_components": [c.model_dump() for c in plan.affected_components],
                     "dependency_order": dependency_order_paths,
-                    "container_ids": container_ids,
                 })
                 self.total_calls += 1
                 token_usage = getattr(result, "token_usage", {})
                 if isinstance(token_usage, dict):
                     self.total_tokens += int(token_usage.get("total_tokens", 0))
             except Exception as e:
-                # CrewAI may throw validation errors (e.g. TaskOutput expects string
-                # but gets tool_calls list). The staging dict is already populated via
-                # CodeWriterTool during execution, so we can continue safely.
+                # CrewAI may throw validation errors but staging dict is already populated
                 logger.warning("[Implement] Crew finished with error (staging preserved): %s", e)
                 self.total_calls += 1
         finally:
             uninstall_guardrails(tracker)
-    # â”€â”€ Public run (single task) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    def _execute_fix(
+        self,
+        plan: CodegenPlanInput,
+        staging: dict[str, dict[str, Any]],
+        build_errors: str,
+        failed_files: list[str],
+        dependency_order_paths: list[str],
+        import_index,
+        generation_order,
+    ) -> None:
+        """Execute fix task: developer corrects build errors."""
+        import_tool = ImportIndexTool(
+            repo_path=str(self.repo_path),
+            facts_path=str(self.facts_path),
+            import_index=import_index,
+        )
+        dependency_tool = DependencyLookupTool(generation_order=generation_order)
+        task_source_tool = TaskSourceTool(task_input_dir=self.task_input_dir)
+
+        developer_tools = [
+            CodeReaderTool(repo_path=str(self.repo_path)),
+            CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
+            FactsQueryTool(facts_dir=str(self.facts_path.parent)),
+            RAGQueryTool(chroma_dir=self.chroma_dir),
+            import_tool,
+            dependency_tool,
+            task_source_tool,
+            PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
+        ]
+
+        developer = create_agent("developer", developer_tools, _MCP_SERVER_PATH, _VERBOSE)
+
+        fix_desc, fix_expected = fix_task(
+            task_id=plan.task_id,
+            build_errors=build_errors,
+            failed_files=failed_files,
+            dependency_order=dependency_order_paths,
+        )
+
+        task = Task(description=fix_desc, expected_output=fix_expected, agent=developer, human_input=False)
+
+        crew = Crew(
+            agents=[developer],
+            tasks=[task],
+            process=Process.sequential,
+            verbose=_VERBOSE,
+            memory=False,
+            planning=False,
+            max_rpm=_MAX_RPM,
+        )
+
+        tracker = None
+        try:
+            tracker = install_guardrails(max_total=50)
+            try:
+                result = crew.kickoff(inputs={
+                    "task_id": plan.task_id,
+                    "build_errors": build_errors,
+                    "failed_files": failed_files,
+                    "dependency_order": dependency_order_paths,
+                })
+                self.total_calls += 1
+                token_usage = getattr(result, "token_usage", {})
+                if isinstance(token_usage, dict):
+                    self.total_tokens += int(token_usage.get("total_tokens", 0))
+            except Exception as e:
+                logger.warning("[Implement] Fix crew finished with error (staging preserved): %s", e)
+                self.total_calls += 1
+        finally:
+            uninstall_guardrails(tracker)
+
+    # ── Public run (single task) ────────────────────────────────────────────
 
     def run(
         self,
         plan: CodegenPlanInput,
     ) -> tuple[list[GeneratedFile], BuildVerificationResult]:
-        """Run the full implement flow for a single plan.
+        """Run the full implement flow for a single plan with build-fix loop.
 
         1. Preflight: validate, build import index + dependency graph
-        2. Crew: hierarchical execution (manager delegates to workers)
-        3. Post-crew: import fixer, build verification
+        2. Build-fix loop (max 3 attempts):
+           - Crew: developer implements or fixes code
+           - Import fixer: deterministic import correction
+           - Build verification: deterministic subprocess
+           - If build fails: format errors, loop back with fix task
+        3. Return generated files + build result
 
         Returns:
             (generated_files, build_result)
         """
-        logger.info("[Implement] Starting hierarchical crew for task %s", plan.task_id)
+        logger.info("[Implement] Starting single-agent crew with build-fix loop for task %s", plan.task_id)
         start_time = time.time()
 
-        # â”€â”€ 1. Preflight â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        # ── 1. Preflight ────────────────────────────────────────────────────
         preflight = PreflightValidator(
             repo_path=str(self.repo_path), facts_path=str(self.facts_path),
         )
@@ -415,23 +482,43 @@ class ImplementCrew:
         dependency_order_paths = [e.file_path for e in generation_order.ordered_files]
 
         staging: dict[str, dict[str, Any]] = {}
+        build_result = BuildVerificationResult(skipped=True, skip_reason="No attempts made")
 
-        # â”€â”€ 2. Crew execution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        self._execute_crew(plan, staging, dependency_order_paths, import_index, generation_order)
+        # ── 2. Build-fix loop ───────────────────────────────────────────────
+        for attempt in range(1, MAX_BUILD_RETRIES + 1):
+            logger.info("[Implement] Build-fix attempt %d/%d", attempt, MAX_BUILD_RETRIES)
 
-        generated_files = self._staging_to_generated_files(staging)
+            # 2a. Crew execution (implement or fix)
+            if attempt == 1:
+                self._execute_implement(plan, staging, dependency_order_paths, import_index, generation_order)
+            else:
+                build_errors = self._format_build_errors(build_result)
+                failed_files = self._extract_failed_files(build_result)
+                self._execute_fix(plan, staging, build_errors, failed_files, dependency_order_paths, import_index, generation_order)
 
-        # â”€â”€ 3. Post-crew: deterministic import repair â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        fixer = ImportFixer()
-        generated_files = fixer.run(generated_files, import_index)
+            generated_files = self._staging_to_generated_files(staging)
 
-        # Sync staging with import-fixed content for build verification
-        for gf in generated_files:
-            if gf.file_path in staging:
-                staging[gf.file_path]["content"] = gf.content
+            # 2b. Import fixer (deterministic)
+            fixer = ImportFixer()
+            generated_files = fixer.run(generated_files, import_index)
 
-        # â”€â”€ 4. Post-crew: build verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-        build_result = self._verify_builds(plan, staging)
+            # Sync staging with import-fixed content
+            for gf in generated_files:
+                if gf.file_path in staging:
+                    staging[gf.file_path]["content"] = gf.content
+
+            # 2c. Build verification (deterministic subprocess)
+            build_result = self._verify_builds(plan, staging)
+
+            # 2d. Exit if build passed or skipped
+            if build_result.all_passed or build_result.skipped:
+                logger.info("[Implement] Build passed on attempt %d", attempt)
+                break
+
+            if attempt < MAX_BUILD_RETRIES:
+                logger.warning("[Implement] Build failed on attempt %d, retrying with fix task", attempt)
+            else:
+                logger.warning("[Implement] Build failed after %d attempts, exiting loop", MAX_BUILD_RETRIES)
 
         duration = time.time() - start_time
         logger.info(
@@ -441,7 +528,7 @@ class ImplementCrew:
 
         return generated_files, build_result
 
-    # â”€â”€ Orchestrator-compatible kickoff â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Orchestrator-compatible kickoff ─────────────────────────────────────
 
     def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
         """Orchestrator-compatible kickoff interface.
@@ -571,7 +658,7 @@ class ImplementCrew:
             },
         }
 
-    # â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # ── Helpers ─────────────────────────────────────────────────────────────
 
     def _resolve_plan_files(self, inputs: dict[str, Any]) -> list[Path]:
         """Find plan files from orchestrator inputs or disk."""
@@ -613,5 +700,3 @@ class ImplementCrew:
             )
 
         return reasons
-
-

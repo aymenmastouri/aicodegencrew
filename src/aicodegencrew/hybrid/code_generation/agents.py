@@ -1,7 +1,6 @@
-"""Implement Crew: Agent definitions with dual-model routing.
+"""Implement Crew: Single developer agent for Phase 5 v3.
 
-Manager + Builder  -> MODEL (gpt-oss-120B) — analysis, coordination
-Developer + Tester -> CODEGEN_MODEL (Coder 14B) — code generation
+One agent handles all code generation. Build verification is Python-controlled.
 """
 
 from __future__ import annotations
@@ -11,60 +10,23 @@ from typing import Any
 from crewai import Agent
 from crewai.mcp import MCPServerStdio
 
-from ...shared.utils.llm_factory import create_codegen_llm, create_llm
+from ...shared.utils.llm_factory import create_llm
 
 AGENT_CONFIGS = {
-    "manager": {
-        "role": "Technical Project Manager",
-        "goal": (
-            "Coordinate implementation work from plan to passing build and tests. "
-            "Delegate coding, testing and build analysis to specialist agents and "
-            "approve only coherent, buildable outputs."
-        ),
-        "backstory": (
-            "You are a senior technical lead responsible for delivery quality. "
-            "You read the development plan first, break work into concrete actions, "
-            "delegate to specialists, and enforce strict scope control. "
-            "Do not accept incomplete outputs; require concrete tool results."
-        ),
-        "allow_delegation": True,
-        "llm_tier": "analysis",
-    },
     "developer": {
         "role": "Senior Software Developer",
         "goal": (
             "Implement code changes that match existing architecture and style. "
-            "Use import and dependency lookup tools before writing code."
+            "Read the original task source first, then use import and dependency "
+            "lookup tools before writing code. Produce complete file content."
         ),
         "backstory": (
-            "You are a pragmatic full-stack developer. You always read existing files "
-            "before writing, preserve local conventions, and produce complete file content. "
-            "You do not invent APIs or imports — you look them up with the import index tool."
-        ),
-        "allow_delegation": False,
-        "llm_tier": "analysis",  # Using analysis model (120B) - codegen model lacks tool calling
-    },
-    "tester": {
-        "role": "Senior Test Engineer",
-        "goal": (
-            "Generate unit tests matching repository patterns for changed code."
-        ),
-        "backstory": (
-            "You build realistic, maintainable tests by reusing established project patterns. "
-            "You always inspect existing tests before writing new ones."
-        ),
-        "allow_delegation": False,
-        "llm_tier": "analysis",  # Using analysis model (120B) - codegen model lacks tool calling
-    },
-    "builder": {
-        "role": "DevOps Build Engineer",
-        "goal": (
-            "Run builds for affected containers, parse failures, and report actionable errors."
-        ),
-        "backstory": (
-            "You are responsible for compilation and CI readiness. "
-            "You verify baseline health, run builds with staged changes, and provide "
-            "structured diagnostics with file/line context."
+            "You are a pragmatic full-stack developer working on a large enterprise "
+            "codebase. You ALWAYS: (1) read the original task source to understand intent, "
+            "(2) read existing files before modifying them, (3) look up imports via the "
+            "import index tool - never guess, (4) check dependency order, "
+            "(5) write COMPLETE file content via write_code(). "
+            "You handle Java (Spring Boot), TypeScript (Angular), HTML, SCSS, and config files."
         ),
         "allow_delegation": False,
         "llm_tier": "analysis",
@@ -78,10 +40,10 @@ def create_agent(
     mcp_server_path: str | None = None,
     verbose: bool = True,
 ) -> Agent:
-    """Create a CrewAI Agent from config with dual-model routing.
+    """Create a CrewAI Agent from config.
 
     Args:
-        agent_key: One of 'manager', 'developer', 'tester', 'builder'.
+        agent_key: Agent config key (currently only 'developer').
         tools: List of CrewAI tool instances for this agent.
         mcp_server_path: Path to the MCP server script (optional).
         verbose: Enable verbose logging.
@@ -90,14 +52,7 @@ def create_agent(
         Configured CrewAI Agent.
     """
     cfg = AGENT_CONFIGS[agent_key]
-
-    if cfg["llm_tier"] == "codegen":
-        try:
-            llm = create_codegen_llm()
-        except Exception:
-            llm = create_llm()
-    else:
-        llm = create_llm()
+    llm = create_llm()
 
     mcps = []
     if mcp_server_path:
