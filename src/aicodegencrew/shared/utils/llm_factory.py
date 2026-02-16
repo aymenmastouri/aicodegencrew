@@ -46,6 +46,19 @@ def create_llm(
     return llm
 
 
+def _ensure_provider_prefix(model: str) -> str:
+    """Add 'openai/' prefix if model lacks a litellm provider prefix.
+
+    litellm auto-detects provider from prefixes like 'gpt-', 'claude-', etc.
+    Custom model names (e.g. 'Qwen/...') need an explicit 'openai/' prefix
+    when served via an OpenAI-compatible API.
+    """
+    _KNOWN_PREFIXES = ("openai/", "anthropic/", "azure/", "gpt-", "claude-", "o1-", "o3-")
+    if any(model.lower().startswith(p) for p in _KNOWN_PREFIXES):
+        return model
+    return f"openai/{model}"
+
+
 def create_codegen_llm(
     *,
     temperature: float = 0.1,
@@ -71,6 +84,8 @@ def create_codegen_llm(
 
     if max_tokens < 1:
         max_tokens = 4000
+
+    model = _ensure_provider_prefix(model)
 
     llm = LLM(
         model=model,

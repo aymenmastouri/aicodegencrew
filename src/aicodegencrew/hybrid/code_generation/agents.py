@@ -42,7 +42,7 @@ AGENT_CONFIGS = {
             "You do not invent APIs or imports — you look them up with the import index tool."
         ),
         "allow_delegation": False,
-        "llm_tier": "codegen",
+        "llm_tier": "analysis",  # Using analysis model (120B) - codegen model lacks tool calling
     },
     "tester": {
         "role": "Senior Test Engineer",
@@ -54,7 +54,7 @@ AGENT_CONFIGS = {
             "You always inspect existing tests before writing new ones."
         ),
         "allow_delegation": False,
-        "llm_tier": "codegen",
+        "llm_tier": "analysis",  # Using analysis model (120B) - codegen model lacks tool calling
     },
     "builder": {
         "role": "DevOps Build Engineer",
