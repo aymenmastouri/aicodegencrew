@@ -289,11 +289,11 @@ def _calculate_repo_fingerprint(
     if (repo_path / ".git").exists():
         try:
             head = _git(["rev-parse", "HEAD"])
-            status = _git(["status", "--porcelain"])
 
-            parts = [f"head={head}", f"dirty={len(status.splitlines())}"]
-            if status:
-                parts.append("changed=" + "\n".join(status.splitlines()[:500]))
+            # Only use HEAD commit — ignore dirty/untracked files.
+            # Dirty files (build artifacts, generated code) are common in
+            # target repos and should NOT trigger re-indexing.
+            parts = [f"head={head}"]
 
             if include_submodules:
                 try:
