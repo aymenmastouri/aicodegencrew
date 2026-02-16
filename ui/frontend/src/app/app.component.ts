@@ -492,6 +492,7 @@ export class AppComponent implements OnInit, OnDestroy {
         { route: '/phases', icon: 'account_tree', label: 'Phases' },
         { route: '/knowledge', icon: 'psychology', label: 'Knowledge' },
         { route: '/reports', icon: 'summarize', label: 'Reports' },
+        { route: '/mcps', icon: 'extension', label: 'MCP Servers' },
       ],
     },
     {
