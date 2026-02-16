@@ -1,5 +1,5 @@
-"""Code Generation Pipeline (Phase 5) - Hybrid Architecture."""
+"""Code Generation (Phase 5) - Team-Based CrewAI Architecture."""
 
-from .pipeline import CodeGenerationPipeline
+from .crew import ImplementCrew
 
-__all__ = ["CodeGenerationPipeline"]
+__all__ = ["ImplementCrew"]

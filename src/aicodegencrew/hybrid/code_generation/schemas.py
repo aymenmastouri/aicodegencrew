@@ -43,7 +43,117 @@ class CodegenPlanInput(BaseModel):
 
 
 # =============================================================================
-# Stage 2: Context Collector Schemas
+# Stage 2A: Import Index Builder Schemas
+# =============================================================================
+
+
+class ImportEntry(BaseModel):
+    """A resolved import mapping: symbol → exact import statement."""
+
+    symbol: str
+    qualified_name: str = ""
+    import_path: str = ""
+    file_path: str = ""
+    kind: str = "class"
+    language: str = "other"
+    container: str = ""
+    exports: list[str] = Field(default_factory=list)
+
+
+# =============================================================================
+# Stage 2B: Dependency Grapher Schemas
+# =============================================================================
+
+
+class FileGenerationEntry(BaseModel):
+    """A file in the dependency-ordered generation queue."""
+
+    file_path: str
+    component: ComponentTarget | None = None
+    depends_on: list[str] = Field(default_factory=list)
+    depended_by: list[str] = Field(default_factory=list)
+    generation_tier: int = 0
+
+
+class GenerationOrder(BaseModel):
+    """Topologically sorted file generation order."""
+
+    ordered_files: list[FileGenerationEntry] = Field(default_factory=list)
+    dependency_graph: dict[str, list[str]] = Field(default_factory=dict)
+
+
+# =============================================================================
+# Stage 2C: Context Assembler Schemas
+# =============================================================================
+
+
+class DependencySnapshot(BaseModel):
+    """Snapshot of a dependency file's exports and content preview."""
+
+    file_path: str
+    exports: list[str] = Field(default_factory=list)
+    content_preview: str = ""
+
+
+class GeneratedSnapshot(BaseModel):
+    """Snapshot of a previously generated file for progressive enrichment."""
+
+    file_path: str
+    exports: list[str] = Field(default_factory=list)
+    content_preview: str = ""
+
+
+class EnrichedFileContext(BaseModel):
+    """Rich per-file context with import data, dependencies, and progressive enrichment."""
+
+    file_path: str
+    content: str = ""
+    language: Literal["java", "typescript", "html", "scss", "json", "xml", "other"] = "other"
+    component: ComponentTarget | None = None
+
+    # Import data
+    current_imports: list[str] = Field(default_factory=list)
+    available_imports: dict[str, str] = Field(default_factory=dict)
+    imports_from_affected: dict[str, str] = Field(default_factory=dict)
+
+    # Dependency context
+    depends_on_files: list[DependencySnapshot] = Field(default_factory=list)
+    depended_by_files: list[str] = Field(default_factory=list)
+
+    # Progressive enrichment (grows with each generated file)
+    prior_generated: list[GeneratedSnapshot] = Field(default_factory=list)
+
+    # From old Stage 2
+    sibling_files: list[str] = Field(default_factory=list)
+    related_patterns: list[str] = Field(default_factory=list)
+
+
+class EnrichedContext(BaseModel):
+    """Aggregated enriched context for all targeted files."""
+
+    file_contexts: list[EnrichedFileContext] = Field(default_factory=list)
+    generation_order: GenerationOrder = Field(default_factory=GenerationOrder)
+    total_files: int = 0
+    skipped_files: int = 0
+
+
+# =============================================================================
+# Stage 3A: Change Spec Generator Schemas
+# =============================================================================
+
+
+class ChangeSpec(BaseModel):
+    """Lightweight change specification for a single file (from LLM analysis)."""
+
+    file_path: str
+    imports_to_add: list[str] = Field(default_factory=list)
+    imports_to_remove: list[str] = Field(default_factory=list)
+    body_changes: list[str] = Field(default_factory=list)
+    skip_generation: bool = False
+
+
+# =============================================================================
+# Stage 2: Context Collector Schemas (Legacy — kept for CrewAI path)
 # =============================================================================
 
 

@@ -125,9 +125,9 @@ class TestRealPhasesHaveKickoff:
         assert hasattr(DevelopmentPlanningPipeline, "kickoff")
 
     def test_codegen_pipeline_has_kickoff(self):
-        from aicodegencrew.hybrid.code_generation.pipeline import CodeGenerationPipeline
+        from aicodegencrew.hybrid.code_generation.crew import ImplementCrew
 
-        assert hasattr(CodeGenerationPipeline, "kickoff")
+        assert hasattr(ImplementCrew, "kickoff")
 
 
 # =============================================================================
