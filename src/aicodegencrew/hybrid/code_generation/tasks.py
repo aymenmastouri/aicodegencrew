@@ -6,9 +6,6 @@ Three tasks:
 3. test_task — Manager delegates test generation to Tester
 """
 
-from __future__ import annotations
-
-
 # =============================================================================
 # TASK-TYPE INSTRUCTIONS (embedded in implement task description)
 # =============================================================================
@@ -78,6 +75,7 @@ def implement_task(
     implementation_steps: list[str],
     upgrade_plan: dict | None,
     dependency_order: list[str],
+    task_source_snapshot: str = "",
 ) -> tuple[str, str]:
     """Manager task: coordinate code implementation via delegation.
 
@@ -86,6 +84,7 @@ def implement_task(
     ordered = "\n".join(f"  {i+1}. {p}" for i, p in enumerate(dependency_order)) if dependency_order else "  (none)"
     steps_text = "\n".join(f"  {i+1}. {s}" for i, s in enumerate(implementation_steps)) if implementation_steps else "  (none)"
     type_instructions = _get_type_instructions(task_type, upgrade_plan)
+    task_source_snapshot = task_source_snapshot or "(not available)"
 
     task_description = f"""\
 Implement code changes for task {task_id}.
@@ -95,6 +94,16 @@ TYPE: {task_type}
 
 {type_instructions}
 
+PRIMARY INTENT SOURCE (actual task from TASK_INPUT_DIR):
+{task_source_snapshot}
+
+SOURCE-OF-TRUTH RULES:
+1. FIRST call read_task_source(task_id="{task_id}") and use it as intent source.
+2. Treat read_plan() and implementation_steps as GUIDANCE, not ground truth.
+3. Resolve conflicts by prioritizing: actual task source -> architecture facts -> codebase evidence.
+4. You MUST consult facts_query and rag_query before writing code for each major change.
+5. Never implement requirements that are only in the plan but absent from the original task/evidence.
+
 DESCRIPTION:
 {description}
 
@@ -102,12 +111,13 @@ IMPLEMENTATION STEPS:
 {steps_text}
 
 WORKFLOW — for EACH file in the dependency order below:
-1. Read the current file content with read_file(file_path)
-2. Look up correct imports with lookup_import(symbol, from_file, language)
-3. Check dependencies with lookup_dependencies(file_path)
-4. Query architecture facts and RAG search as needed
-5. Generate the modified file content
-6. Write the COMPLETE file via write_code(file_path, content, action="modify")
+1. Re-check task intent with read_task_source(task_id) when scope is unclear
+2. Read the current file content with read_file(file_path)
+3. Look up correct imports with lookup_import(symbol, from_file, language)
+4. Check dependencies with lookup_dependencies(file_path)
+5. Query architecture facts and RAG search as needed
+6. Generate the modified file content
+7. Write the COMPLETE file via write_code(file_path, content, action="modify")
 
 FILES IN DEPENDENCY ORDER (process in this order):
 {ordered}

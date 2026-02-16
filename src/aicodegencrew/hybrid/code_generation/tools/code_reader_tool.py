@@ -124,23 +124,38 @@ class CodeReaderTool(BaseTool):
         if not file_path:
             return None
 
+        repo = Path(self.repo_path).resolve() if self.repo_path else None
+
         # Try absolute path first
         p = Path(file_path)
         if p.is_absolute() and p.exists():
-            return p
+            resolved = p.resolve()
+            if repo:
+                try:
+                    resolved.relative_to(repo)
+                except ValueError:
+                    return None
+            return resolved
 
         # Try relative to repo root
-        if self.repo_path:
-            repo = Path(self.repo_path)
-            p = repo / file_path
+        if repo:
+            p = (repo / file_path).resolve()
             if p.exists():
-                return p
+                try:
+                    p.relative_to(repo)
+                    return p
+                except ValueError:
+                    return None
 
             # Try stripping common prefixes
             for prefix in ("src/main/java/", "src/main/resources/", "src/", "app/"):
-                p = repo / prefix / file_path
+                p = (repo / prefix / file_path).resolve()
                 if p.exists():
-                    return p
+                    try:
+                        p.relative_to(repo)
+                        return p
+                    except ValueError:
+                        return None
 
         return None
 

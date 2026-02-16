@@ -7,7 +7,7 @@ Duration: 2-5s (file I/O + git)
 SAFETY:
 - Never pushes to remote
 - Never touches main/develop
-- Auto-recovers if working tree is dirty
+- Cascade mode can auto-stash local changes before branch creation
 """
 
 import json
@@ -319,8 +319,12 @@ class OutputWriter:
 
     def _write_file(self, gf: GeneratedFile) -> bool:
         try:
-            path = Path(gf.file_path).resolve()
-            if not str(path).startswith(str(self.repo_path.resolve())):
+            repo_root = self.repo_path.resolve()
+            raw_path = Path(gf.file_path)
+            path = (raw_path if raw_path.is_absolute() else (repo_root / raw_path)).resolve()
+            try:
+                path.relative_to(repo_root)
+            except ValueError:
                 logger.error("[OutputWriter] BLOCKED: path outside repo: %s", gf.file_path)
                 return False
 
