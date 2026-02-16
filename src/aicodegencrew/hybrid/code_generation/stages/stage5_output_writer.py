@@ -9,7 +9,7 @@ Duration: 2-5s (file I/O + git)
 SAFETY:
 - Never pushes to remote
 - Never touches main/develop
-- Aborts if working tree is dirty
+- Auto-recovers if working tree is dirty (git checkout -- .)
 """
 
 import json
@@ -207,8 +207,11 @@ class OutputWriterStage:
             return None
 
         if not self._is_clean_working_tree():
-            logger.error("[Stage5] Target repo has uncommitted changes. Please commit or stash first.")
-            return None
+            logger.warning("[Stage5] Dirty working tree — auto-recovering")
+            self._git("checkout", "--", ".")
+            if not self._is_clean_working_tree():
+                logger.error("[Stage5] Auto-recovery failed — please commit or stash manually")
+                return None
 
         # Save original branch
         self._original_branch = (self._git("rev-parse", "--abbrev-ref", "HEAD") or "").strip()
@@ -289,6 +292,25 @@ class OutputWriterStage:
             )
             self._write_report(report)
             return report
+
+        # Build gate: skip commit if build verification failed
+        if build_verification and not build_verification.skipped and not build_verification.all_passed:
+            logger.warning(f"[Stage5] Build failed for {task_id} — skipping commit")
+            return self._build_cascade_report(
+                task_id=task_id,
+                status="failed",
+                cascade_branch=cascade_branch,
+                cascade_position=cascade_position,
+                cascade_total=cascade_total,
+                prior_task_ids=prior_task_ids,
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
+                degradation_reasons=degradation_reasons,
+            )
 
         # Write files (no branch creation, no clean-tree check — we're on the cascade branch)
         files_changed = 0
