@@ -709,21 +709,21 @@ class IndexingPipeline:
         except Exception as e:
             logger.warning(f"Manifest build failed (non-fatal): {e}")
 
-        estimated_s = self._estimate_duration(len(all_file_paths))
-        hours, minutes = int(estimated_s // 3600), int((estimated_s % 3600) // 60)
-        total_batches = (len(all_file_paths) + self.config.batch_size - 1) // self.config.batch_size
-        logger.info(f"Found {len(all_file_paths)} files")
-        logger.info(f"Estimated duration: {hours}h {minutes}m")
-        logger.info(f"   - Batch size: {self.config.batch_size}  Total batches: {total_batches}")
-
-        # Smart mode: pre-filter to only changed files BEFORE batch processing
+        # Smart mode: pre-filter to only changed files BEFORE estimating/processing
         if self.index_mode == "smart":
+            logger.info(f"[SMART] Filtering {len(all_file_paths)} files against index (this takes ~10s)...")
             all_file_paths = self._pre_filter_changed_files(all_file_paths)
             if not all_file_paths:
                 logger.info("[SMART] No files changed since last index — nothing to re-index")
                 return f"No changes detected (0 files changed out of {self.metrics.total_files_discovered})"
-            total_batches = (len(all_file_paths) + self.config.batch_size - 1) // self.config.batch_size
-            logger.info(f"[SMART] {len(all_file_paths)} files changed, {total_batches} batches")
+
+        # Show estimate AFTER smart filter so it reflects actual workload
+        estimated_s = self._estimate_duration(len(all_file_paths))
+        hours, minutes = int(estimated_s // 3600), int((estimated_s % 3600) // 60)
+        total_batches = (len(all_file_paths) + self.config.batch_size - 1) // self.config.batch_size
+        logger.info(f"Found {len(all_file_paths)} files to process")
+        logger.info(f"Estimated duration: {hours}h {minutes}m")
+        logger.info(f"   - Batch size: {self.config.batch_size}  Total batches: {total_batches}")
 
         # Step 2c: Budget reorder (if enabled and symbols available later)
         # Budget reorder happens per-batch after symbol extraction in _process_batch.
@@ -1052,13 +1052,22 @@ class IndexingPipeline:
         changed: list[str] = []
         unchanged = 0
         for file_path in all_file_paths:
+            # Must match reader_tool exactly: strict UTF-8, fallback to latin-1
+            content = None
             try:
-                # Must match indexing: read as text (normalizes CRLF→LF) then encode to UTF-8
-                text = Path(file_path).read_text(encoding="utf-8", errors="replace")
-                disk_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+                with open(file_path, encoding="utf-8") as f:
+                    content = f.read()
+            except UnicodeDecodeError:
+                try:
+                    with open(file_path, encoding="latin-1") as f:
+                        content = f.read()
+                except Exception:
+                    changed.append(file_path)
+                    continue
             except Exception:
                 changed.append(file_path)  # Can't read = treat as changed
                 continue
+            disk_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
 
             # Convert absolute path to relative (matching ChromaDB format)
             try:

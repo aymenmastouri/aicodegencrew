@@ -329,7 +329,7 @@ class ImplementCrew:
 
         task_source_snapshot = self._task_source_snapshot(plan.task_id)
 
-        impl_desc, impl_expected, impl_output_model = implement_task(
+        impl_desc, impl_expected, _ = implement_task(
             task_id=plan.task_id,
             summary=plan.summary,
             description=plan.description,
@@ -350,7 +350,6 @@ class ImplementCrew:
         task = Task(
             description=impl_desc,
             expected_output=impl_expected,
-            output_pydantic=impl_output_model,
             agent=developer,
             human_input=False,
         )
