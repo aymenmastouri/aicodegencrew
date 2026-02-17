@@ -190,6 +190,7 @@ class ContainerBuildResult(BaseModel):
     exit_code: int = -1
     error_summary: str = ""
     attempts: int = 1
+    raw_output: str = Field(default="", description="Raw build output for report parsing")
     healed_files: list[str] = Field(default_factory=list)
     duration_seconds: float = 0.0
 
@@ -230,6 +231,7 @@ class CodegenReport(BaseModel):
     total_tokens: int = 0
     dry_run: bool = False
     build_verification: BuildVerificationResult | None = None
+    rich_verification: dict | None = Field(default=None, description="Strategy-enriched verification report")
     # Cascade mode fields (populated when processing multiple tasks sequentially)
     cascade_branch: str = ""
     cascade_position: int = 0

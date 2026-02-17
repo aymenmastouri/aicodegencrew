@@ -15,11 +15,12 @@
 4. [Tools](#4-tools)
 5. [Preflight Modules](#5-preflight-modules)
 6. [Post-Crew Processing](#6-post-crew-processing)
-7. [Data Flow](#7-data-flow)
-8. [Dual-Model Routing](#8-dual-model-routing)
-9. [Safety & Guardrails](#9-safety--guardrails)
-10. [Environment Variables](#10-environment-variables)
-11. [File Structure](#11-file-structure)
+7. [Task-Type Strategy](#7-task-type-strategy)
+8. [Data Flow](#8-data-flow)
+9. [Dual-Model Routing](#9-dual-model-routing)
+10. [Safety & Guardrails](#10-safety--guardrails)
+11. [Environment Variables](#11-environment-variables)
+12. [File Structure](#12-file-structure)
 
 ---
 
@@ -42,18 +43,24 @@ The Implement Phase uses a **hierarchical CrewAI crew** with 4 specialized agent
 
 - [code-generation-pipeline.drawio](../diagrams/code-generation-pipeline.drawio) — Full architecture overview
 - [implement-phase-crew.drawio](../diagrams/implement-phase-crew.drawio) — Agent detail view
+- [task-type-strategy.drawio](../diagrams/task-type-strategy.drawio) — Task-type strategy pattern
 
 ---
 
 ## 2. Architecture
 
-### 3-Phase + Output Writer
+### 4-Phase + Output Writer
 
 ```
 PREFLIGHT (Deterministic, 0 LLM tokens)
   PlanReader → ImportIndexBuilder → DependencyGraphBuilder → PreflightValidator
   │
   │ GATE: fail → abort before LLM tokens burn
+  ▼
+STRATEGY: pre_execute() (Deterministic, task-type-specific)          [NEW]
+  Upgrade: schematics, config changes, version bumps
+  Default: no-op
+  │
   ▼
 CREW EXECUTION (CrewAI Process.hierarchical)
   Manager Agent (120B) coordinates:
@@ -67,8 +74,13 @@ POST-CREW (Deterministic, 0 LLM tokens)
   ImportFixer → Build Verification → Safety Gate
   │
   ▼
+STRATEGY: enrich_verification() (Deterministic, task-type-specific)  [NEW]
+  All: error clustering
+  Upgrade: deprecation warnings, migration completeness
+  │
+  ▼
 OUTPUT WRITER (Git + File I/O)
-  Branch creation → File writes → Git commit → Report JSON
+  Branch creation → File writes → Git commit → Report JSON (+ rich_verification)
 ```
 
 ### Process Model
@@ -311,7 +323,83 @@ Any failure → abort with clear error message.
 
 ---
 
-## 7. Data Flow
+## 7. Task-Type Strategy
+
+> **Design doc**: [docs/design/task-type-strategy.md](../design/task-type-strategy.md)
+> **Diagram**: [task-type-strategy.drawio](../diagrams/task-type-strategy.drawio)
+
+### Overview
+
+The **Strategy pattern** allows each task type to register custom behavior for 3 pipeline hooks without any `if task_type == "upgrade"` in the core pipeline. The core pipeline dispatches to the correct strategy via a decorator-based registry.
+
+### Interface (ABC)
+
+```python
+class TaskTypeStrategy(ABC):
+    def enrich_plan(self, plan_data, facts) -> PlanEnrichment: ...
+    def pre_execute(self, plan, staging, repo_path, dry_run) -> PreExecutionResult: ...
+    def enrich_verification(self, build_result, staging, plan, raw_build_outputs, ...) -> VerificationEnrichment: ...
+```
+
+### 3 Pipeline Hooks
+
+| Hook | When | Purpose | Location |
+|------|------|---------|----------|
+| `enrich_plan()` | Phase 5 (Planning) Stage 3 | Validate feasibility, add context | `stage3_pattern_matcher.py` |
+| `pre_execute()` | Phase 6 (Implement) after Preflight | Deterministic steps before LLM | `crew.py run()` |
+| `enrich_verification()` | Phase 6 (Implement) after Build-Fix loop | Rich reporting, error clusters | `crew.py run()` |
+
+### Registered Strategies
+
+| Task Type | Strategy | Hooks |
+|-----------|----------|-------|
+| `upgrade` | `UpgradeStrategy` | All 3: dependency compat, schematics/config/bumps, migration completeness |
+| `feature` | `DefaultStrategy` | No-op for hooks 1 & 2, universal error clustering for hook 3 |
+| `bugfix` | `DefaultStrategy` | Same as feature |
+| `migration` | (future) | Codemods, tool runs, config edits |
+| `refactoring` | (future) | AST-based codemods, lint auto-fixes |
+
+### Registry
+
+```python
+from .strategies import get_strategy
+
+strategy = get_strategy(plan.task_type)  # returns UpgradeStrategy or DefaultStrategy
+det_result = strategy.pre_execute(plan, staging, repo_path, dry_run)
+```
+
+Strategies auto-register via `@register_strategy("upgrade")` decorator. Unknown task types fall back to `DefaultStrategy` (never raises).
+
+### UpgradeStrategy Details
+
+**Hook 1 — `enrich_plan()`**:
+- Loads `UpgradeRuleSet` from the rules engine
+- Validates `required_dependencies` against actual repo versions (semver comparison)
+- Returns `PlanEnrichment` with `compatibility_checks` (compatible / needs_bump / conflict)
+
+**Hook 2 — `pre_execute()`**:
+- Runs whitelisted schematics (`ng`, `npx`, `npm`, `openrewrite`) as subprocesses
+- Applies config changes (JSON path set/delete/rename)
+- Applies version bumps to `package.json` / `build.gradle`
+- All changes written to the shared `staging` dict
+
+**Hook 3 — `enrich_verification()`**:
+- Error clustering (inherited from `DefaultStrategy._cluster_errors()`)
+- Deprecation warning parsing from raw build output
+- Migration completeness tracking (re-runs scanner on staged content)
+
+### Shared Result Types
+
+| Type | Purpose |
+|------|---------|
+| `PlanEnrichment` | Compatibility checks, warnings, additional context |
+| `PreExecutionResult` | List of `PreExecutionStep` + total files + errors |
+| `ErrorCluster` | Grouped build errors by pattern/root cause |
+| `VerificationEnrichment` | Error clusters + deprecations + task-specific data |
+
+---
+
+## 8. Data Flow
 
 ```
                         Inputs
@@ -327,6 +415,11 @@ Any failure → abort with clear error message.
     CodegenPlanInput + ImportIndex + DependencyGraph + Validation
               │
               ▼
+   STRATEGY: pre_execute()                                    [NEW]
+    Upgrade: schematics + config changes + version bumps → staging
+    Default: no-op
+              │
+              ▼
         CREW EXECUTION
     Manager delegates → Developer writes staging → Builder verifies → Tester tests
               │
@@ -338,8 +431,13 @@ Any failure → abort with clear error message.
     ImportFixer → Build Verify → Safety Gate
               │
               ▼
+   STRATEGY: enrich_verification()                            [NEW]
+    All: error clustering → ErrorCluster[]
+    Upgrade: + deprecation warnings + migration completeness
+              │
+              ▼
        OUTPUT WRITER
-    Git branch + file writes + commit + report JSON
+    Git branch + file writes + commit + report JSON (+ rich_verification)
               │
     ┌─────────┴──────────┐
     │                    │
@@ -349,7 +447,7 @@ codegen/{task_id}    {task_id}_report.json
 
 ---
 
-## 8. Dual-Model Routing
+## 9. Dual-Model Routing
 
 ```python
 # In llm_factory.py
@@ -379,7 +477,7 @@ def create_codegen_llm() -> LLM:
 
 ---
 
-## 9. Safety & Guardrails
+## 10. Safety & Guardrails
 
 ### Tool Guardrails (`tool_guardrails.py`)
 
@@ -411,7 +509,7 @@ def create_codegen_llm() -> LLM:
 
 ---
 
-## 10. Environment Variables
+## 11. Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -428,7 +526,7 @@ def create_codegen_llm() -> LLM:
 
 ---
 
-## 11. File Structure
+## 12. File Structure
 
 ```
 hybrid/code_generation/
@@ -438,6 +536,11 @@ hybrid/code_generation/
 ├── tasks.py                       # 3 CrewAI tasks (implement, build, test)
 ├── schemas.py                     # Pydantic schemas (CodegenPlanInput, GeneratedFile, etc.)
 ├── output_writer.py               # Git branch + file writes + report (from stage5)
+│
+├── strategies/                    # Task-type strategy pattern (NEW)
+│   ├── __init__.py                # Registry exports + auto-register
+│   ├── base.py                    # TaskTypeStrategy ABC + DefaultStrategy + registry
+│   └── upgrade_strategy.py        # UpgradeStrategy (schematics, compat, migration)
 │
 ├── preflight/                     # Deterministic pre/post-crew modules
 │   ├── __init__.py
@@ -455,9 +558,9 @@ hybrid/code_generation/
     ├── build_error_parser_tool.py # Parse javac/tsc errors
     ├── test_pattern_tool.py       # Query test patterns
     ├── test_writer_tool.py        # Write test files
-    ├── import_index_tool.py       # Language-filtered import lookup (NEW)
-    ├── dependency_tool.py         # Dependency graph queries (NEW)
-    └── plan_reader_tool.py        # Read plan JSON (NEW)
+    ├── import_index_tool.py       # Language-filtered import lookup
+    ├── dependency_tool.py         # Dependency graph queries
+    └── plan_reader_tool.py        # Read plan JSON
 ```
 
 ### What was removed (v0.5 → v0.6)
@@ -465,6 +568,11 @@ hybrid/code_generation/
 | Removed | Reason |
 |---------|--------|
 | `stages/` (all 8 stage files) | Replaced by preflight modules + crew agents |
-| `strategies/` (4 strategy classes) | Task-type instructions embedded in task descriptions |
 | `pipeline.py` | Replaced by `crew.py` (ImplementCrew) |
 | `build_fixer_crew.py` | Integrated into main crew (Manager delegates heal to Developer) |
+
+### What was re-introduced (v0.6.1)
+
+| Added | Reason |
+|-------|--------|
+| `strategies/` (ABC + registry) | Task-type strategy pattern for 3 pipeline hooks. NOT the old v0.5 strategies — completely new architecture using `@register_strategy` decorator and shared result dataclasses. See [Section 7](#7-task-type-strategy). |

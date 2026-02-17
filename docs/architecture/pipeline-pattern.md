@@ -4,9 +4,10 @@ Deterministic stage-based execution for phases that don't need multi-agent colla
 
 > **Reference Diagrams:**
 > - [indexing-pipeline.drawio](../diagrams/indexing-pipeline.drawio) — Enhanced indexing pipeline (symbols, evidence, manifest, budget)
-> - [code-generation-pipeline.drawio](../diagrams/code-generation-pipeline.drawio) — Code generation stages + self-healing
-> - [development-planning-pipeline.drawio](../diagrams/development-planning-pipeline.drawio) — Planning pipeline stages
+> - [code-generation-pipeline.drawio](../diagrams/code-generation-pipeline.drawio) — Code generation stages + strategy hooks
+> - [development-planning-pipeline.drawio](../diagrams/development-planning-pipeline.drawio) — Planning pipeline stages + enrich_plan()
 > - [facts-collectors.drawio](../diagrams/facts-collectors.drawio) — Architecture facts collector pattern
+> - [task-type-strategy.drawio](../diagrams/task-type-strategy.drawio) — Task-type strategy pattern (ABC, registry, hooks)
 
 ## When to Use Pipeline vs Crew
 
@@ -83,14 +84,16 @@ Hybrid pipeline: 4 deterministic stages + 1 LLM call.
 - Stage 5: Pydantic validator
 
 ### 4. Code Generation Pipeline (Implement)
-**File:** `src/aicodegencrew/pipelines/code_generation/`
+**File:** `src/aicodegencrew/hybrid/code_generation/`
 
-Hybrid pipeline with self-healing build verification.
+Hierarchical CrewAI crew with task-type strategy hooks.
 
 ```
-Stage 1: Plan Reader → Stage 2: Context Collector → Stage 3: Code Generator (LLM)
-→ Stage 4: Code Validator → Stage 4b: Build Verifier (LLM heal) → Stage 5: Output Writer
+Preflight → Strategy: pre_execute() → Crew (4 agents) → Post-Crew
+→ Strategy: enrich_verification() → Output Writer
 ```
+
+The pipeline uses a **Task-Type Strategy pattern** (see below) to inject task-specific behavior at 3 points without modifying core code.
 
 ## Stage 4b: Self-Healing Build Verification
 
@@ -137,3 +140,81 @@ When multiple tasks are planned, the code generation pipeline processes them seq
 ```
 
 This ensures later tasks can build on earlier ones (e.g., a refactoring task followed by a feature that uses the refactored code).
+
+## Task-Type Strategy Pattern
+
+> **Design doc**: [docs/design/task-type-strategy.md](../design/task-type-strategy.md)
+> **Diagram**: [task-type-strategy.drawio](../diagrams/task-type-strategy.drawio)
+
+The Strategy pattern extends pipelines with **task-type-specific behavior** without modifying core pipeline code. Each task type can register custom hooks via a decorator-based registry.
+
+### Problem
+
+Different task types need different pipeline behavior:
+- **Upgrade**: schematics, config edits, version bumps (deterministic before LLM)
+- **Migration**: codemod tools, config changes
+- **Feature/Bugfix**: no special pre-processing needed
+
+Without a strategy, this leads to `if task_type == "upgrade"` scattered across the pipeline.
+
+### Solution: 3 Pipeline Hooks
+
+```python
+class TaskTypeStrategy(ABC):
+    def enrich_plan(self, plan_data, facts) -> PlanEnrichment: ...
+    def pre_execute(self, plan, staging, repo_path, dry_run) -> PreExecutionResult: ...
+    def enrich_verification(self, build_result, staging, plan, ...) -> VerificationEnrichment: ...
+```
+
+| Hook | Phase | Purpose |
+|------|-------|---------|
+| `enrich_plan()` | Planning (Stage 3) | Validate feasibility, add compatibility checks |
+| `pre_execute()` | Implement (before Crew) | Deterministic steps before LLM code generation |
+| `enrich_verification()` | Implement (after Build) | Rich reporting: error clusters, deprecations |
+
+### Registry
+
+```python
+@register_strategy("upgrade")
+class UpgradeStrategy(TaskTypeStrategy): ...
+
+@register_strategy("feature")
+@register_strategy("bugfix")
+@register_strategy("_default")
+class DefaultStrategy(TaskTypeStrategy): ...  # no-op for hooks 1 & 2
+
+# Usage in pipeline:
+strategy = get_strategy(plan.task_type)  # never raises, falls back to DefaultStrategy
+```
+
+### Integration Points
+
+```mermaid
+graph LR
+    S3[Stage 3<br/>Pattern Matcher] -->|upgrade_assessment| EP[enrich_plan]
+    EP -->|compatibility_report| S4[Stage 4<br/>Plan Generator]
+    PF[Preflight] --> PE[pre_execute]
+    PE -->|staging changes| CREW[Crew Execution]
+    CREW --> PC[Post-Crew]
+    PC --> EV[enrich_verification]
+    EV -->|rich_verification| OW[Output Writer]
+
+    style EP fill:#e8eaf6,stroke:#3949ab
+    style PE fill:#e8f5e9,stroke:#2e7d32
+    style EV fill:#fff3e0,stroke:#e65100
+```
+
+### Adding a New Task Type
+
+One file, zero pipeline changes:
+
+```python
+# strategies/migration_strategy.py
+@register_strategy("migration")
+class MigrationStrategy(TaskTypeStrategy):
+    def enrich_plan(self, plan_data, facts): ...
+    def pre_execute(self, plan, staging, repo_path, dry_run): ...
+    def enrich_verification(self, build_result, staging, plan, ...): ...
+```
+
+Then import in `strategies/__init__.py` to trigger registration.

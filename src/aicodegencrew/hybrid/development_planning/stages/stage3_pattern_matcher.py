@@ -485,6 +485,30 @@ class PatternMatcherStage:
 
             assessment = engine.scan_and_assess(rule_sets)
             assessment["upgrade_context"] = context
+
+            # Strategy enrichment: validate dependency compatibility
+            try:
+                from ...code_generation.strategies import get_strategy
+                strategy = get_strategy("upgrade")
+                enrichment = strategy.enrich_plan(
+                    plan_data={
+                        "upgrade_plan": {
+                            "framework": context.get("framework", ""),
+                            "from_version": context.get("current_version", ""),
+                            "to_version": context.get("target_version", ""),
+                        },
+                    },
+                    facts=self.facts,
+                )
+                if enrichment.compatibility_checks:
+                    assessment["compatibility_report"] = {
+                        "checks": enrichment.compatibility_checks,
+                        "warnings": enrichment.warnings,
+                        **enrichment.additional_context,
+                    }
+            except Exception as e:
+                logger.warning("[Stage3] Strategy enrichment failed: %s", e)
+
             return assessment
 
         except Exception as e:

@@ -45,6 +45,7 @@ class OutputWriter:
         total_tokens: int = 0,
         build_verification: BuildVerificationResult | None = None,
         degradation_reasons: list[str] | None = None,
+        rich_verification: dict | None = None,
     ) -> CodegenReport:
         """Write files to target repo and generate report."""
         valid_files = self._filter_valid_files(generated_files, validation)
@@ -62,6 +63,7 @@ class OutputWriter:
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification,
             )
 
         # Build gate
@@ -73,6 +75,7 @@ class OutputWriter:
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification,
             )
 
         if self.dry_run:
@@ -84,6 +87,7 @@ class OutputWriter:
                 total_tokens=total_tokens, dry_run=True,
                 build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification,
             )
             self._write_report(report)
             return report
@@ -96,6 +100,7 @@ class OutputWriter:
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification,
             )
 
         if not self._is_clean_working_tree():
@@ -106,6 +111,7 @@ class OutputWriter:
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification,
             )
 
         branch_name = self._create_branch(task_id)
@@ -115,6 +121,7 @@ class OutputWriter:
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification,
             )
 
         files_changed = 0
@@ -142,6 +149,7 @@ class OutputWriter:
             llm_calls=llm_calls, total_tokens=total_tokens,
             build_verification=build_verification,
             degradation_reasons=degradation_reasons,
+            rich_verification=rich_verification,
         )
         self._write_report(report)
         return report
@@ -185,6 +193,7 @@ class OutputWriter:
         total_tokens: int = 0,
         build_verification: BuildVerificationResult | None = None,
         degradation_reasons: list[str] | None = None,
+        rich_verification: dict | None = None,
     ) -> CodegenReport:
         valid_files = self._filter_valid_files(generated_files, validation)
         failed_count = len(generated_files) - len(valid_files)
@@ -202,7 +211,8 @@ class OutputWriter:
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, build_verification=build_verification,
-                degradation_reasons=degradation_reasons, **cascade_kwargs,
+                degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification, **cascade_kwargs,
             )
 
         if self.dry_run:
@@ -212,7 +222,8 @@ class OutputWriter:
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, dry_run=True,
                 build_verification=build_verification,
-                degradation_reasons=degradation_reasons, **cascade_kwargs,
+                degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification, **cascade_kwargs,
             )
             self._write_report(report)
             return report
@@ -223,7 +234,8 @@ class OutputWriter:
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, build_verification=build_verification,
-                degradation_reasons=degradation_reasons, **cascade_kwargs,
+                degradation_reasons=degradation_reasons,
+                rich_verification=rich_verification, **cascade_kwargs,
             )
 
         files_changed = 0
@@ -248,7 +260,8 @@ class OutputWriter:
             files_failed=failed_count, duration_seconds=duration_seconds,
             llm_calls=llm_calls, total_tokens=total_tokens,
             build_verification=build_verification,
-            degradation_reasons=degradation_reasons, **cascade_kwargs,
+            degradation_reasons=degradation_reasons,
+            rich_verification=rich_verification, **cascade_kwargs,
         )
         self._write_report(report)
         return report
@@ -370,6 +383,7 @@ class OutputWriter:
         duration_seconds: float = 0.0, llm_calls: int = 0, total_tokens: int = 0,
         dry_run: bool = False, build_verification: BuildVerificationResult | None = None,
         degradation_reasons: list[str] | None = None,
+        rich_verification: dict | None = None,
     ) -> CodegenReport:
         validation_errors = []
         if validation:
@@ -387,6 +401,7 @@ class OutputWriter:
             llm_calls=llm_calls, total_tokens=total_tokens, dry_run=dry_run,
             build_verification=build_verification,
             degradation_reasons=degradation_reasons or [],
+            rich_verification=rich_verification,
         )
 
     @staticmethod
@@ -400,6 +415,7 @@ class OutputWriter:
         duration_seconds: float = 0.0, llm_calls: int = 0, total_tokens: int = 0,
         dry_run: bool = False, build_verification: BuildVerificationResult | None = None,
         degradation_reasons: list[str] | None = None,
+        rich_verification: dict | None = None,
     ) -> CodegenReport:
         validation_errors = []
         if validation:
@@ -416,4 +432,5 @@ class OutputWriter:
             cascade_branch=cascade_branch, cascade_position=cascade_position,
             cascade_total=cascade_total, prior_task_ids=prior_task_ids or [],
             degradation_reasons=degradation_reasons or [],
+            rich_verification=rich_verification,
         )

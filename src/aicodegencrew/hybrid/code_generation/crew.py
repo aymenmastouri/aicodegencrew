@@ -207,6 +207,7 @@ class ImplementCrew:
 
             staged_raw = runner._run(container_id=cid, baseline=False)
             staged = self._safe_json(staged_raw)
+            raw_output = str(staged.get("output", ""))
 
             if staged.get("success", False):
                 results.append(ContainerBuildResult(
@@ -214,12 +215,13 @@ class ImplementCrew:
                     container_name=staged.get("container_name", cname),
                     build_command=staged.get("build_command", bcmd),
                     success=True, exit_code=int(staged.get("exit_code", 0)),
+                    raw_output=raw_output,
                     attempts=1,
                 ))
                 continue
 
             parsed_raw = parser._run(
-                build_output=str(staged.get("output", "")),
+                build_output=raw_output,
                 build_tool=str(staged.get("build_tool", "auto")),
             )
             parsed = self._safe_json(parsed_raw)
@@ -230,14 +232,14 @@ class ImplementCrew:
                     for e in errors[:8]
                 )
             else:
-                summary = str(staged.get("output", ""))[-1000:]
+                summary = raw_output[-1000:]
 
             results.append(ContainerBuildResult(
                 container_id=cid,
                 container_name=staged.get("container_name", cname),
                 build_command=staged.get("build_command", bcmd),
                 success=False, exit_code=int(staged.get("exit_code", -1)),
-                error_summary=summary, attempts=1,
+                error_summary=summary, raw_output=raw_output, attempts=1,
             ))
 
         passed = sum(1 for r in results if r.success)
@@ -471,19 +473,20 @@ class ImplementCrew:
     def run(
         self,
         plan: CodegenPlanInput,
-    ) -> tuple[list[GeneratedFile], BuildVerificationResult]:
+    ) -> tuple[list[GeneratedFile], BuildVerificationResult, Any]:
         """Run the full implement flow for a single plan with build-fix loop.
 
         1. Preflight: validate, build import index + dependency graph
+        1b. Strategy pre-execution (deterministic, task-type-specific)
         2. Build-fix loop (max 3 attempts):
            - Crew: developer implements or fixes code
            - Import fixer: deterministic import correction
            - Build verification: deterministic subprocess
            - If build fails: format errors, loop back with fix task
-        3. Return generated files + build result
+        3. Strategy verification enrichment (error clusters, deprecation warnings)
 
         Returns:
-            (generated_files, build_result)
+            (generated_files, build_result, rich_report)
         """
         logger.info("[Implement] Starting single-agent crew with build-fix loop for task %s", plan.task_id)
         start_time = time.time()
@@ -503,7 +506,18 @@ class ImplementCrew:
         staging: dict[str, dict[str, Any]] = {}
         build_result = BuildVerificationResult(skipped=True, skip_reason="No attempts made")
 
+        # ── 1b. Strategy: pre-execution (deterministic) ─────────────────
+        from .strategies import get_strategy
+        strategy = get_strategy(plan.task_type)
+        det_result = strategy.pre_execute(plan, staging, str(self.repo_path), self.dry_run)
+        if det_result.steps:
+            logger.info(
+                "[Implement] Pre-execution: %d steps, %d files, %d errors",
+                len(det_result.steps), det_result.total_files_modified, len(det_result.errors),
+            )
+
         # ── 2. Build-fix loop ───────────────────────────────────────────────
+        raw_build_outputs: list[str] = []
         for attempt in range(1, MAX_BUILD_RETRIES + 1):
             logger.info("[Implement] Build-fix attempt %d/%d", attempt, MAX_BUILD_RETRIES)
 
@@ -529,6 +543,11 @@ class ImplementCrew:
             # 2c. Build verification (deterministic subprocess)
             build_result = self._verify_builds(plan, staging)
 
+            # Collect raw build outputs for strategy verification enrichment
+            for cr in build_result.container_results:
+                if cr.raw_output:
+                    raw_build_outputs.append(cr.raw_output)
+
             # 2d. Exit if build passed or skipped
             if build_result.all_passed or build_result.skipped:
                 logger.info("[Implement] Build passed on attempt %d", attempt)
@@ -539,13 +558,23 @@ class ImplementCrew:
             else:
                 logger.warning("[Implement] Build failed after %d attempts, exiting loop", MAX_BUILD_RETRIES)
 
+        # ── 3. Strategy: verification enrichment ─────────────────────────
+        rich_report = strategy.enrich_verification(
+            build_result, staging, plan, raw_build_outputs, det_result,
+        )
+        if rich_report.error_clusters:
+            logger.info(
+                "[Implement] Report: %d error clusters, %d deprecations",
+                len(rich_report.error_clusters), len(rich_report.deprecation_warnings),
+            )
+
         duration = time.time() - start_time
         logger.info(
             "[Implement] Crew complete in %.1fs | files=%d | build_passed=%s | tokens=%d",
             duration, len(generated_files), build_result.all_passed, self.total_tokens,
         )
 
-        return generated_files, build_result
+        return generated_files, build_result, rich_report
 
     # ── Orchestrator-compatible kickoff ─────────────────────────────────────
 
@@ -567,13 +596,14 @@ class ImplementCrew:
             if not isinstance(plan, CodegenPlanInput):
                 raise ValueError("kickoff input 'plan' must be CodegenPlanInput")
 
-            generated, build = self.run(plan=plan)
+            generated, build, rich = self.run(plan=plan)
             return {
                 "status": "completed" if build.all_passed else "partial",
                 "phase": "implement",
                 "generated_files": len(generated),
                 "build_passed": build.all_passed,
                 "build_failed_containers": build.total_containers_failed,
+                "rich_verification": rich.to_dict() if rich else None,
             }
 
         # Multi-task cascade mode (reads plan files from disk)
@@ -626,7 +656,7 @@ class ImplementCrew:
 
             try:
                 plan_input = plan_reader.run(task_id=task_id, plan_path=str(plan_file))
-                generated, build = self.run(plan=plan_input)
+                generated, build, rich = self.run(plan=plan_input)
 
                 degradation_reasons = self._compute_degradations(generated, None, build)
                 report = writer.cascade_write_and_commit(
@@ -642,6 +672,7 @@ class ImplementCrew:
                     total_tokens=self.total_tokens,
                     build_verification=build,
                     degradation_reasons=degradation_reasons,
+                    rich_verification=rich.to_dict() if rich else None,
                 )
                 reports.append(report.model_dump())
                 if report.status in ("success", "partial", "dry_run"):

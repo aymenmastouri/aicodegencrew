@@ -66,6 +66,20 @@
           <mxGeometry x="252" y="380" width="176" height="26" as="geometry" />
         </mxCell>
 
+        <!-- ============ STRATEGY: PRE-EXECUTE (Between Preflight and Crew) ============ -->
+        <mxCell id="strategy-pre-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="240" y="420" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-pre-title" value="STRATEGY: pre_execute()" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="250" y="428" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-pre-new" value="NEW" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;rounded=1;fontSize=8;fontStyle=1;fontColor=#fff;" vertex="1" parent="1">
+          <mxGeometry x="415" y="420" width="24" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-pre-desc" value="&lt;b&gt;Upgrade:&lt;/b&gt; schematics, config changes,&lt;br&gt;version bumps (deterministic)&lt;br&gt;&lt;b&gt;Default:&lt;/b&gt; no-op" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#333;" vertex="1" parent="1">
+          <mxGeometry x="250" y="452" width="180" height="50" as="geometry" />
+        </mxCell>
+
         <!-- ============ PHASE 2: CREW (CrewAI Hierarchical) ============ -->
         <mxCell id="crew-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=3;" vertex="1" parent="1">
           <mxGeometry x="470" y="100" width="720" height="530" as="geometry" />
@@ -247,6 +261,20 @@
         </mxCell>
         <mxCell id="pc-gate" value="&lt;b&gt;Safety Gate&lt;/b&gt;&lt;br&gt;&gt;50% files failed &amp;rarr; no commit&lt;br&gt;Build failed &amp;rarr; no commit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="1232" y="282" width="176" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ============ STRATEGY: ENRICH_VERIFICATION (Between Post-Crew and Output Writer) ============ -->
+        <mxCell id="strategy-verify-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="380" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-verify-title" value="STRATEGY: enrich_verification()" style="text;html=1;strokeColor=none;fillColor=#e65100;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="1228" y="388" width="184" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-verify-new" value="NEW" style="text;html=1;strokeColor=none;fillColor=#e65100;align=center;rounded=1;fontSize=8;fontStyle=1;fontColor=#fff;" vertex="1" parent="1">
+          <mxGeometry x="1395" y="380" width="24" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-verify-desc" value="Error clusters + deprecation warnings&lt;br&gt;+ migration completeness&lt;br&gt;&amp;rarr; rich_verification in report" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#333;" vertex="1" parent="1">
+          <mxGeometry x="1228" y="412" width="184" height="50" as="geometry" />
         </mxCell>
 
         <!-- ============ OUTPUT WRITER ============ -->
