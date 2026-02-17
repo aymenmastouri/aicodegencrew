@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -151,7 +151,8 @@ import { ApiService, MetricsSummary } from '../../services/api.service';
     `,
   ],
 })
-export class MetricsComponent implements OnInit {
+export class MetricsComponent implements OnInit, OnDestroy {
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
   summary: MetricsSummary | null = null;
   selectedEvent: string | null = null;
   eventTypes: string[] = [];
@@ -165,6 +166,11 @@ export class MetricsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadMetrics();
+    this.refreshTimer = setInterval(() => this.loadMetrics(), 10000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
   loadMetrics(): void {

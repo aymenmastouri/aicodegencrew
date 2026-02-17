@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -303,7 +303,8 @@ import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
     `,
   ],
 })
-export class CollectorsComponent implements OnInit {
+export class CollectorsComponent implements OnInit, OnDestroy {
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
   loading = true;
   data: CollectorListResponse | null = null;
   collectors: CollectorInfo[] = [];
@@ -344,6 +345,11 @@ export class CollectorsComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.refreshTimer = setInterval(() => this.load(), 15000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
   load(): void {
