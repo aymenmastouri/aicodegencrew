@@ -24,9 +24,9 @@ from pathlib import Path
 from typing import Any
 
 from crewai import LLM, Agent, Crew, Process, Task
-from crewai.mcp import MCPServerStdio
 from crewai_tools import FileWriterTool
 
+from ...shared.mcp import get_phase3_mcps
 from ...shared.paths import CHROMA_DIR
 from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import setup_logger
@@ -41,8 +41,6 @@ from .tasks import (
 )
 from .tools import FactsQueryTool, FactsStatisticsTool, PartialResultsTool, RAGQueryTool, StereotypeListTool
 
-# MCP server script path (project root)
-_MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
 
 logger = setup_logger(__name__)
 
@@ -78,9 +76,6 @@ class ArchitectureAnalysisCrew:
         self._analysis_dir = self.output_dir / "analysis"
         self._checkpoint_file = self.output_dir / ".checkpoint_analysis.json"
 
-        # MCP server path (resolved once)
-        self._mcp_server_path = _MCP_SERVER_PATH
-
     # =========================================================================
     # LLM FACTORY
     # =========================================================================
@@ -95,7 +90,10 @@ class ArchitectureAnalysisCrew:
     # =========================================================================
 
     def _create_agent(self, agent_key: str, tools: list) -> Agent:
-        """Create a fresh agent with fresh LLM context."""
+        """Create a fresh agent with fresh LLM context.
+
+        MCPs provide tools automatically — CrewAI handles tool discovery.
+        """
         config = AGENT_CONFIGS[agent_key]
         return Agent(
             role=config["role"],
@@ -103,13 +101,7 @@ class ArchitectureAnalysisCrew:
             backstory=config["backstory"],
             llm=self._create_llm(),
             tools=tools,
-            mcps=[
-                MCPServerStdio(
-                    command="python",
-                    args=[self._mcp_server_path],
-                    cache_tools_list=True,
-                )
-            ],
+            mcps=get_phase3_mcps(),
             verbose=True,
             max_iter=25,
             max_retry_limit=3,
