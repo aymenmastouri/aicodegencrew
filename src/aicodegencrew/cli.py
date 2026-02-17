@@ -526,7 +526,6 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         implement_crew = ImplementCrew(
             repo_path=str(repo_path),
             facts_path=str(phase1_dir / "architecture_facts.json"),
-            chroma_dir=chroma_dir,
             plans_dir=str(phase4_dir),
             output_dir=str(knowledge_dir / "implement"),
             task_input_dir=os.getenv("TASK_INPUT_DIR", ""),

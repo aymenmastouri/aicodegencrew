@@ -1,16 +1,16 @@
 """Implement Crew: Task definitions for single-agent execution.
 
 Two tasks:
-1. implement_task — Developer implements all code changes
-2. fix_task — Developer fixes build errors from previous attempt
+1. implement_task — Developer implements all code changes (output_pydantic=ImplementationResult)
+2. fix_task — Developer fixes build errors (no output_pydantic — fixes are via write_code() tool)
 
-Uses CrewAI best practices:
-- output_pydantic for structured responses (prevents tool-call validation errors)
-- Explicit expected output format
-- Clear success criteria
+CrewAI best practices:
+- output_pydantic for structured implement results
+- crewai_patches.py ensures max-iter handler returns text (not tool calls)
+- Code is captured via write_code() tool calls into shared staging dict
 """
 
-from .schemas import BuildFixResult, ImplementationResult
+from .schemas import ImplementationResult
 
 # =============================================================================
 # TASK-TYPE INSTRUCTIONS (embedded in implement task description)
@@ -86,7 +86,8 @@ def implement_task(
     """Developer task: implement code changes using all available tools.
 
     Returns (description, expected_output, output_pydantic) for CrewAI Task construction.
-    Uses Pydantic output to prevent validation errors and ensure structured responses.
+    Uses ImplementationResult Pydantic model (CrewAI best practice).
+    crewai_patches.py ensures max-iter handler returns text, preventing validation errors.
     """
     ordered = "\n".join(f"  {i+1}. {p}" for i, p in enumerate(dependency_order)) if dependency_order else "  (none)"
     steps_text = "\n".join(f"  {i+1}. {s}" for i, s in enumerate(implementation_steps)) if implementation_steps else "  (none)"
@@ -105,10 +106,10 @@ PRIMARY INTENT SOURCE (actual task from TASK_INPUT_DIR):
 {task_source_snapshot}
 
 SOURCE-OF-TRUTH RULES:
-1. FIRST call read_task_source(task_id="{task_id}") and use it as intent source.
-2. Treat read_plan() and implementation_steps as GUIDANCE, not ground truth.
+1. FIRST read the original task source and use it as intent source.
+2. Treat implementation_steps as GUIDANCE, not ground truth.
 3. Resolve conflicts by prioritizing: actual task source -> architecture facts -> codebase evidence.
-4. For each major change, call facts_query and rag_query before code writing.
+4. Query architecture facts before code writing.
 5. Never implement requirements that are only in the plan but absent from the original task/evidence.
 
 DESCRIPTION:
@@ -118,28 +119,26 @@ IMPLEMENTATION STEPS:
 {steps_text}
 
 WORKFLOW — for EACH file in the dependency order below:
-1. Re-check task intent with read_task_source(task_id) when scope is unclear
-2. Read current file content with read_file(file_path)
-3. Identify which imports are external dependencies (node_modules, Maven jars) vs. internal project imports
-4. For internal imports, use lookup_import(symbol, from_file, language)
-5. For external dependency imports, preserve them from the original file
-6. Check dependencies with lookup_dependencies(file_path)
-7. Query architecture facts and RAG search as needed
-8. Generate modified file content with BOTH preserved external imports AND looked-up internal imports
-9. Write COMPLETE file via write_code(file_path, content, action="modify")
-10. REPEAT steps 2-9 for EVERY file in the list below
+1. Read the original task source when scope is unclear
+2. Read current file content before modifying
+3. Identify external dependencies (node_modules, Maven jars) vs. internal project imports
+4. Look up internal imports using your available tools
+5. Preserve external dependency imports from the original file
+6. Check file dependencies
+7. Query architecture facts and search the codebase as needed
+8. Generate COMPLETE file content with correct imports
+9. Write the complete file using your available tools
+10. REPEAT for EVERY file in the list below
 
 DO NOT skip files just because external dependency imports can't be resolved - preserve existing external imports!
 
-IMPORT RULES (CRITICAL - SMART IMPORT HANDLING):
-- ALWAYS use lookup_import(symbol, from_file, language) for project-internal imports
-- For external dependencies (node_modules, Maven dependencies, etc.), preserve existing imports from the original file
+IMPORT RULES (CRITICAL):
+- Use your import lookup tool for project-internal imports
+- For external dependencies, preserve existing imports from the original file
 - NEVER write absolute paths like "import X from '/full/path/to/file'"
-- NEVER write parent-traversal paths like "import X from '../../../../../../../file'"
-- TypeScript: Use the EXACT import statement returned by lookup_import() for internal symbols
-- Java: Use the EXACT qualified name returned by lookup_import() for internal classes
-- If lookup_import() returns nothing for an INTERNAL symbol, query RAG before guessing
-- For external dependency symbols (framework classes, 3rd-party libraries), READ the existing file and PRESERVE its imports
+- NEVER write deep parent-traversal paths
+- If import lookup returns nothing, search the codebase before guessing
+- For framework/3rd-party imports, READ the existing file and PRESERVE its imports
 
 FILES IN DEPENDENCY ORDER (process ALL of these in order):
 {ordered}
@@ -151,7 +150,7 @@ CRITICAL REQUIREMENTS:
 - If a file cannot be modified, write an error note and continue to the next file
 
 OUTPUT FORMAT (structured JSON):
-After writing ALL files with write_code(), return a JSON object with this structure:
+After writing ALL files, return a JSON object with this structure:
 {{
   "task_id": "{task_id}",
   "files_processed": [
@@ -163,7 +162,7 @@ After writing ALL files with write_code(), return a JSON object with this struct
   "summary": "Processed all X files: Y succeeded, Z failed"
 }}
 
-DO NOT call any more tools after finishing all write_code() calls - just return the JSON.
+DO NOT call any more tools after writing all files - just return the JSON.
 """
 
     expected = (
@@ -185,7 +184,7 @@ def fix_task(
     build_errors: str,
     failed_files: list[str],
     dependency_order: list[str],
-) -> tuple[str, str, type[BuildFixResult]]:
+) -> tuple[str, str, None]:
     """Developer task: correct build errors in previously generated code.
 
     Returns (description, expected_output, output_pydantic) for CrewAI Task construction.
@@ -203,11 +202,11 @@ FAILED FILES (focus on these):
 {files_text}
 
 WORKFLOW:
-1. Read each failed file with read_file(file_path) to see current content
+1. Read each failed file to see current content
 2. Analyze the build errors to understand what's wrong
-3. Look up correct imports with lookup_import(symbol, from_file, language)
+3. Look up correct imports using your available tools
 4. Query architecture facts if needed for correct types/interfaces
-5. Write the COMPLETE fixed file via write_code(file_path, content, action="modify")
+5. Write the COMPLETE fixed file
 6. REPEAT for all failed files
 
 RULES:
@@ -217,7 +216,7 @@ RULES:
 - If an error is in a file you didn't generate, read it and fix it too
 
 OUTPUT FORMAT (structured JSON):
-After fixing ALL files with write_code(), return a JSON object with this structure:
+After fixing ALL files, return a JSON object with this structure:
 {{
   "task_id": "{task_id}",
   "files_fixed": [
@@ -228,10 +227,10 @@ After fixing ALL files with write_code(), return a JSON object with this structu
   "summary": "Fixed X of Y files with build errors"
 }}
 
-DO NOT call any more tools after finishing all write_code() calls - just return the JSON.
+DO NOT call any more tools after writing all files - just return the JSON.
 """
     expected = (
-        f"A JSON object conforming to BuildFixResult schema with: task_id={task_id}, "
-        f"files_fixed array, total_failed={len(failed_files)}, and a summary string."
+        f"A summary of which files were fixed for task {task_id}. "
+        f"List each file path and what was changed."
     )
-    return task_description, expected, BuildFixResult
+    return task_description, expected, None

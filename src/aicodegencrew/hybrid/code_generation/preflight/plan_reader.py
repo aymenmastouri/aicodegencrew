@@ -127,11 +127,14 @@ class PlanReader:
         for comp in raw_components:
             try:
                 if isinstance(comp, str):
-                    file_path = self._resolve_file_path("", comp)
+                    # String could be component ID (e.g. "component.frontend.core.app_module")
+                    # or a name — try as ID first, then as name
+                    file_path = self._resolve_file_path(comp, comp)
                     if not file_path:
+                        logger.warning("[PlanReader] Could not resolve file for: %s (skipped)", comp)
                         continue
                     components.append(ComponentTarget(
-                        id="", name=comp, file_path=file_path, change_type="modify",
+                        id=comp, name=comp, file_path=file_path, change_type="modify",
                     ))
                 elif isinstance(comp, dict):
                     file_path = comp.get("file_path", "")
