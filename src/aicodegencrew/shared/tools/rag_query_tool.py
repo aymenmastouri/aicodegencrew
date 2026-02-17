@@ -149,6 +149,7 @@ class RAGQueryTool(BaseTool):
                     path=chroma_path,
                     settings=Settings(
                         anonymized_telemetry=False,
+                        allow_reset=True,
                     ),
                 )
 

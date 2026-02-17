@@ -1126,15 +1126,9 @@ class IndexingPipeline:
 
     def _generate_indexed_files_report(self) -> None:
         try:
-            from chromadb.config import Settings
-
-            from ...shared.utils.chroma_client import create_chroma_client
-
-            chroma_path = Path(self._chroma_dir_resolved)
-            client = create_chroma_client(
-                persistent_path=str(chroma_path),
-                settings=Settings(anonymized_telemetry=False),
-            )
+            # Reuse the already-initialized client from chroma_tool to avoid
+            # "different settings" singleton conflict (chroma_tool uses allow_reset=True).
+            client = self.chroma_tool._get_client()
             coll = client.get_collection(self.config.collection_name)
 
             results = coll.get(include=["metadatas"])
