@@ -23,8 +23,8 @@ from pathlib import Path
 from typing import Any
 
 from crewai import LLM, Agent, Crew, Process, Task
-from crewai.mcp import MCPServerStdio
 
+from ...shared.mcp import get_phase3_mcps
 from ...shared.paths import CHROMA_DIR
 from ...shared.tools import RAGQueryTool
 from ...shared.utils.llm_factory import create_llm
@@ -132,9 +132,6 @@ class MiniCrewBase(ABC):
         # Build template variables for tasks
         self.summaries = self._summarize_facts()
 
-        # MCP server config (resolved once, reused across mini-crews)
-        self._mcp_server_path = self._resolve_mcp_server_path()
-
         # Output directory: explicit or derived from facts_path
         self._output_dir = Path(output_dir) if output_dir else self.facts_path.parent.parent / "document"
 
@@ -229,28 +226,11 @@ class MiniCrewBase(ABC):
     # AGENT FACTORY
     # -------------------------------------------------------------------------
 
-    @staticmethod
-    def _resolve_mcp_server_path() -> str:
-        """Resolve absolute path to mcp_server.py at project root (once)."""
-        current = Path(__file__).resolve().parent
-        for _ in range(10):
-            candidate = current / "mcp_server.py"
-            if candidate.exists():
-                return str(candidate)
-            current = current.parent
-        # Fallback
-        return str(Path(__file__).resolve().parents[4] / "mcp_server.py")
-
-    def _create_mcp_config(self) -> MCPServerStdio:
-        """Create MCP server config (reuses cached path)."""
-        return MCPServerStdio(
-            command="python",
-            args=[self._mcp_server_path],
-            cache_tools_list=True,
-        )
-
     def _create_agent(self) -> Agent:
-        """Create a fresh agent with fresh LLM context."""
+        """Create a fresh agent with fresh LLM context.
+
+        MCPs provide tools automatically — CrewAI handles tool discovery.
+        """
         config = self.agent_config
         return Agent(
             role=config["role"],
@@ -258,7 +238,7 @@ class MiniCrewBase(ABC):
             backstory=config["backstory"],
             llm=self._create_llm(),
             tools=self._create_tools(),
-            mcps=[self._create_mcp_config()],
+            mcps=get_phase3_mcps(),
             verbose=True,
             max_iter=30,
             max_retry_limit=10,

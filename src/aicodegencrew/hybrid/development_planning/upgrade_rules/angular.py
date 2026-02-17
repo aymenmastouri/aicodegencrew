@@ -574,10 +574,10 @@ def fetch_angular_rules_dynamic(from_version: str, to_version: str) -> UpgradeRu
         return _get_fallback_ruleset(from_version, to_version)
 
     try:
-        from ..playwright_mcp_integration import fetch_angular_guide_with_playwright
+        from ..playwright_mcp_integration import fetch_upgrade_guide
 
-        # Fetch guide using Playwright MCP
-        guide = fetch_angular_guide_with_playwright(from_version, to_version)
+        # Fetch guide using MCP (framework-generic)
+        guide = fetch_upgrade_guide("Angular", from_version, to_version)
 
         if "error" in guide:
             # Fallback on error

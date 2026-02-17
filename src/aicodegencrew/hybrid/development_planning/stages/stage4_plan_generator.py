@@ -1,18 +1,26 @@
 """
 Stage 4: Plan Generator
 
-Uses LLM to synthesize all previous stage outputs into a complete implementation plan.
+Uses CrewAI Agent with MCPs to synthesize all previous stage outputs into a complete implementation plan.
 
-This is the ONLY stage that uses LLM.
+MCPs Available:
+- Sequential Thinking: Complex multi-step reasoning
+- Memory: Learn from past mistakes
+- Brave Search: Fetch current documentation
+- Playwright: Web scraping for migration guides
 
-Duration: 15-30 seconds (single LLM call)
+Duration: 15-30 seconds (single agent task)
 """
 
 import json
 import os
 from typing import Any
 
+from crewai import Agent, Crew, Process, Task
+
+from ....shared.mcp import get_phase4_mcps
 from ....shared.utils.logger import setup_logger
+from ....shared.utils.llm_factory import create_llm
 from ..schemas import ImplementationPlan, TaskInput
 
 logger = setup_logger(__name__)
@@ -20,7 +28,7 @@ logger = setup_logger(__name__)
 
 class PlanGeneratorStage:
     """
-    Generate implementation plan using LLM (single call).
+    Generate implementation plan using CrewAI Agent with MCPs.
     """
 
     def __init__(self, analyzed_architecture: dict = None, supplementary_context: dict = None):
@@ -34,21 +42,42 @@ class PlanGeneratorStage:
         """
         self.analyzed_architecture = analyzed_architecture or {}
         self.supplementary_context = supplementary_context or {}
-        self.llm = self._create_llm()
-
-    def _create_llm(self):
-        """Create OpenAI-compatible LLM client."""
-        from openai import OpenAI
-
-        provider = os.getenv("LLM_PROVIDER", "onprem")
         self._model = os.getenv("MODEL", "gpt-4o-mini")
-        api_base = os.getenv("API_BASE", "")
-        api_key = os.getenv("OPENAI_API_KEY", "dummy-key")
+        self.agent = self._create_agent()
 
-        client = OpenAI(base_url=api_base, api_key=api_key)
+    def _create_agent(self) -> Agent:
+        """Create planning agent with MCPs.
 
-        logger.info(f"[Stage4] Created LLM: {provider}/{self._model}")
-        return client
+        MCPs provide tools automatically - no need to list them in prompts.
+        CrewAI handles tool discovery and makes them available to the agent.
+        """
+        mcps = get_phase4_mcps()
+        llm = create_llm()
+
+        agent = Agent(
+            role="Senior Software Architect & Development Planner",
+            goal=(
+                "Create evidence-based implementation plans grounded in discovered "
+                "components, architecture facts, and best practices. "
+                "Use your available tools when you need external information."
+            ),
+            backstory=(
+                "You are a pragmatic software architect with 15+ years of experience. "
+                "You plan upgrades, bugfixes, features, and refactorings for large enterprise "
+                "codebases. You ALWAYS: (1) analyze discovered components first, "
+                "(2) use your tools to search for current best practices when needed, "
+                "(3) produce complete, actionable plans with file-level granularity."
+            ),
+            llm=llm,
+            mcps=mcps,
+            allow_delegation=False,
+            verbose=True,
+            max_iter=15,
+            respect_context_window=True,
+        )
+
+        logger.info(f"[Stage4] Created planning agent with {len(mcps)} MCPs")
+        return agent
 
     def run(
         self,
@@ -57,7 +86,7 @@ class PlanGeneratorStage:
         pattern_result: dict[str, Any],
     ) -> ImplementationPlan:
         """
-        Generate implementation plan using LLM.
+        Generate implementation plan using CrewAI agent with MCPs.
 
         Args:
             task: Task input (from Stage 1)
@@ -67,70 +96,84 @@ class PlanGeneratorStage:
         Returns:
             ImplementationPlan
         """
-        logger.info(f"[Stage4] Generating plan with LLM for task: {task.task_id}")
+        logger.info(f"[Stage4] Generating plan with agent+MCPs for task: {task.task_id}")
 
-        # Build prompt
-        prompt = self._build_prompt(task, discovery_result, pattern_result)
+        # Build task description
+        description = self._build_task_description(task, discovery_result, pattern_result)
+        expected = f"ImplementationPlan JSON object with task_id={task.task_id}, understanding, and development_plan sections"
 
-        # LLM call
+        # Create CrewAI task with Pydantic output
+        planning_task = Task(
+            name=f"Plan: {task.summary[:50]}",  # Task name from input
+            description=description,
+            expected_output=expected,
+            agent=self.agent,
+            output_pydantic=ImplementationPlan,
+        )
+
+        # Run crew
         try:
-            response = self.llm.chat.completions.create(
-                model=self._model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.2,
-                max_tokens=8000,
+            crew = Crew(
+                agents=[self.agent],
+                tasks=[planning_task],
+                process=Process.sequential,
+                verbose=False,
             )
-            plan_json = self._extract_json(response.choices[0].message.content)
 
-            # Validate structure
-            if not isinstance(plan_json, dict):
-                raise ValueError("LLM did not return valid JSON")
+            result = crew.kickoff()
 
-            # Ensure required keys
-            if "development_plan" not in plan_json:
-                plan_json = {"development_plan": plan_json}
+            # CrewAI kickoff() returns CrewOutput with .pydantic, .json_dict, .raw
+            plan = None
 
-            if "understanding" not in plan_json:
-                plan_json["understanding"] = {
-                    "summary": task.summary,
-                    "requirements": [],
-                    "acceptance_criteria": task.acceptance_criteria,
-                    "technical_notes": task.technical_notes,
-                }
+            # Path 1: Pydantic output (best case — output_pydantic worked)
+            if hasattr(result, "pydantic") and isinstance(getattr(result, "pydantic", None), ImplementationPlan):
+                plan = result.pydantic
+                logger.info("[Stage4] Got plan from CrewOutput.pydantic")
 
-            # Add metadata
-            plan_json["task_id"] = task.task_id
-            plan_json["source_files"] = [task.source_file]
+            # Path 2: JSON dict available on CrewOutput
+            elif hasattr(result, "json_dict") and result.json_dict:
+                plan_json = result.json_dict
+                plan = self._plan_from_dict(plan_json, task)
+                logger.info("[Stage4] Got plan from CrewOutput.json_dict")
 
-            # Create ImplementationPlan
-            plan = ImplementationPlan(
-                task_id=task.task_id,
-                source_files=[task.source_file],
-                understanding=plan_json.get("understanding", {}),
-                development_plan=plan_json.get("development_plan", {}),
-            )
+            # Path 3: Parse from raw string output
+            else:
+                raw = str(result).strip()
+                if not raw:
+                    raise ValueError(
+                        "Agent returned empty result — check LLM connectivity "
+                        "and ensure the model is responding."
+                    )
+                plan_json = self._extract_json(raw)
+                plan = self._plan_from_dict(plan_json, task)
+                logger.info("[Stage4] Got plan from CrewOutput.raw (parsed JSON)")
 
             logger.info("[Stage4] Generated plan successfully")
 
             return plan
 
         except Exception as e:
-            logger.error(f"[Stage4] LLM plan generation failed: {e}")
+            logger.error(f"[Stage4] Agent plan generation failed: {e}")
             raise
 
-    def _build_prompt(
+    def _build_task_description(
         self,
         task: TaskInput,
         discovery: dict[str, Any],
         patterns: dict[str, Any],
     ) -> str:
-        """Build prompt for LLM."""
+        """Build task description for CrewAI agent."""
 
         # Extract architecture context
         arch_style = self.analyzed_architecture.get("macro_architecture", {}).get("style", "Unknown")
         arch_quality = self.analyzed_architecture.get("architecture_quality", {}).get("overall_grade", "C")
 
-        prompt = f"""You are a senior software architect creating an evidence-based implementation plan.
+        prompt = f"""Create an evidence-based implementation plan for the task below.
+
+Use the discovered components, architecture context, and patterns provided.
+If you need current documentation or best practices, use your available tools.
+
+TASK TYPE: {task.task_type}
 
 TASK:
 Task ID: {task.task_id}
@@ -437,12 +480,38 @@ Generate the plan now:"""
             return "  (none)"
         return "\n".join(f"  - {cmd}" for cmd in commands)
 
+    def _plan_from_dict(self, plan_json: dict, task: "TaskInput") -> "ImplementationPlan":
+        """Build ImplementationPlan from a parsed JSON dict."""
+        if not isinstance(plan_json, dict):
+            raise ValueError(f"Expected dict, got {type(plan_json).__name__}")
+
+        if "development_plan" not in plan_json:
+            plan_json = {"development_plan": plan_json}
+
+        if "understanding" not in plan_json:
+            plan_json["understanding"] = {
+                "summary": task.summary,
+                "requirements": [],
+                "acceptance_criteria": task.acceptance_criteria,
+                "technical_notes": task.technical_notes,
+            }
+
+        return ImplementationPlan(
+            task_id=task.task_id,
+            source_files=[task.source_file],
+            understanding=plan_json.get("understanding", {}),
+            development_plan=plan_json.get("development_plan", {}),
+        )
+
     @staticmethod
     def _extract_json(content: str) -> dict:
         """Extract JSON from LLM response."""
-        # Remove markdown code blocks if present
         content = content.strip()
 
+        if not content:
+            raise ValueError("Cannot extract JSON from empty response")
+
+        # Remove markdown code blocks if present
         if content.startswith("```json"):
             content = content[7:]
         if content.startswith("```"):
@@ -452,9 +521,12 @@ Generate the plan now:"""
 
         content = content.strip()
 
+        if not content:
+            raise ValueError("Response contained only markdown fencing, no JSON content")
+
         try:
             return json.loads(content)
         except json.JSONDecodeError as e:
             logger.error(f"[Stage4] Failed to parse JSON: {e}")
-            logger.error(f"[Stage4] Content: {content[:500]}")
+            logger.error(f"[Stage4] Content (first 500 chars): {content[:500]}")
             raise
