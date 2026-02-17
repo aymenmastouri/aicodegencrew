@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
@@ -634,7 +634,8 @@ interface FileGroup {
     `,
   ],
 })
-export class KnowledgeComponent implements OnInit {
+export class KnowledgeComponent implements OnInit, OnDestroy {
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
   loading = true;
   totalFiles = 0;
   totalSize = 0;
@@ -669,6 +670,15 @@ export class KnowledgeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadKnowledge();
+    this.refreshTimer = setInterval(() => this.loadKnowledge(), 10000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+  }
+
+  private loadKnowledge(): void {
     this.api.getKnowledgeFiles().subscribe({
       next: (s) => {
         this.totalFiles = s.total_files;

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -1453,7 +1453,8 @@ interface ParsedComponent {
     `,
   ],
 })
-export class ReportsComponent implements OnInit {
+export class ReportsComponent implements OnInit, OnDestroy {
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
   reports: ReportList | null = null;
   loading = true;
   isRunning = false;
@@ -1492,6 +1493,15 @@ export class ReportsComponent implements OnInit {
       this.isRunning = n.state === 'running';
       this.cdr.markForCheck();
     });
+    this.loadReports();
+    this.refreshTimer = setInterval(() => this.loadReports(), 10000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+  }
+
+  private loadReports(): void {
     this.api.getReports().subscribe({
       next: (r) => {
         this.reports = r;
@@ -1621,8 +1631,9 @@ export class ReportsComponent implements OnInit {
   }
 
   /** Convert raw JIRA HTML/text to safe HTML for rendering */
-  cleanHtml(text: string): string {
+  cleanHtml(text: unknown): string {
     if (!text) return '';
+    if (typeof text !== 'string') return typeof text === 'object' ? JSON.stringify(text, null, 2) : String(text);
     // Convert escaped newlines to <br> for plain text sections
     let html = text.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
     // Wrap comment blocks for visual separation

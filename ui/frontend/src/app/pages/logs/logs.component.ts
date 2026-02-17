@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -126,7 +126,8 @@ import { ApiService, LogResponse } from '../../services/api.service';
     `,
   ],
 })
-export class LogsComponent implements OnInit {
+export class LogsComponent implements OnInit, OnDestroy {
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
   logFiles: string[] = [];
   selectedFile = 'current.log';
   logResponse: LogResponse | null = null;
@@ -154,6 +155,11 @@ export class LogsComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+    this.refreshTimer = setInterval(() => this.loadLog(), 5000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
   loadLog(): void {

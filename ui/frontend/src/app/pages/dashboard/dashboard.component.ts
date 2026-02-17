@@ -1154,6 +1154,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ).subscribe((s) => {
       if (!s) return;
       this.updateExecution(s);
+      // Refresh phase cards so status badges stay current
+      this.api.getPipelineStatus().subscribe((p) => {
+        this.pipeline = p;
+        this.cdr.markForCheck();
+      });
       if (s.state === 'running') {
         this.startLiveUpdates();
       }
@@ -1170,6 +1175,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ).subscribe((s) => {
       if (!s) return;
       this.updateExecution(s);
+      // Also refresh phase cards + history so dashboard stays fully live
+      this.api.getPipelineStatus().subscribe((p) => {
+        this.pipeline = p;
+        this.cdr.markForCheck();
+      });
+      this.pipelineSvc.getHistory().subscribe((h) => {
+        this.recentHistory = h.slice(0, 5);
+        this.cdr.markForCheck();
+      });
       if (s.state !== 'running') {
         this.startIdlePolling();
       }
