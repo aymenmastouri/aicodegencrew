@@ -1,7 +1,7 @@
 """Tools for Implement Crew - Phase 5.
 
 Custom tools for code generation and build verification.
-Reuses FactsQueryTool and RAGQueryTool from the architecture analysis crew.
+Reuses FactsQueryTool from the shared tools.
 
 Tools:
 - CodeReaderTool: Read source files from target repo
@@ -13,11 +13,9 @@ Tools:
 - PlanReaderTool: Read normalized plan context for developer agent
 - TaskSourceTool: Read original JIRA XML task content from TASK_INPUT_DIR
 - FactsQueryTool: (reused) Query architecture facts
-- RAGQueryTool: (reused) ChromaDB semantic search
 """
 
-# Re-export from architecture analysis crew (reuse, not copy)
-from ....shared.tools import FactsQueryTool, RAGQueryTool
+from ....shared.tools import FactsQueryTool
 from .build_error_parser_tool import BuildErrorParserTool
 from .build_runner_tool import BuildRunnerTool
 from .code_reader_tool import CodeReaderTool
@@ -36,6 +34,5 @@ __all__ = [
     "FactsQueryTool",
     "ImportIndexTool",
     "PlanReaderTool",
-    "RAGQueryTool",
     "TaskSourceTool",
 ]

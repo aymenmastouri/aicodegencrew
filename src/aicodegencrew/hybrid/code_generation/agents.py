@@ -8,7 +8,6 @@ from __future__ import annotations
 from typing import Any
 
 from crewai import Agent
-from crewai.mcp import MCPServerStdio
 
 from ...shared.utils.llm_factory import create_llm
 
@@ -44,7 +43,7 @@ AGENT_CONFIGS = {
 def create_agent(
     agent_key: str,
     tools: list[Any],
-    mcp_server_path: str | None = None,
+    mcps: list[Any] | None = None,
     verbose: bool = True,
 ) -> Agent:
     """Create a CrewAI Agent from config.
@@ -52,7 +51,7 @@ def create_agent(
     Args:
         agent_key: Agent config key (currently only 'developer').
         tools: List of CrewAI tool instances for this agent.
-        mcp_server_path: Path to the MCP server script (optional).
+        mcps: List of MCPServerStdio instances (from get_phase5_mcps()).
         verbose: Enable verbose logging.
 
     Returns:
@@ -61,23 +60,15 @@ def create_agent(
     cfg = AGENT_CONFIGS[agent_key]
     llm = create_llm()
 
-    mcps = []
-    if mcp_server_path:
-        mcps.append(MCPServerStdio(
-            command="python",
-            args=[mcp_server_path],
-            cache_tools_list=True,
-        ))
-
     return Agent(
         role=cfg["role"],
         goal=cfg["goal"],
         backstory=cfg["backstory"],
         llm=llm,
         tools=tools,
-        mcps=mcps,
+        mcps=mcps or [],
         verbose=verbose,
-        max_iter=25,
+        max_iter=40,
         max_retry_limit=3,
         allow_delegation=cfg.get("allow_delegation", False),
         respect_context_window=True,

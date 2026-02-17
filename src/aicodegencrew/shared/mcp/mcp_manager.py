@@ -251,8 +251,15 @@ def get_phase4_mcps() -> list[MCPServerStdio]:
 
 
 def get_phase5_mcps() -> list[MCPServerStdio]:
-    """MCPs for Phase 5 (Code Generation)."""
-    return get_mcp_servers(["memory", "brave_search", "filesystem", "playwright"])
+    """MCPs for Phase 5 (Code Generation).
+
+    Returns empty list: Phase 5 uses dedicated CrewAI tools (CodeReaderTool,
+    CodeWriterTool, ImportIndexTool, etc.) which are purpose-built for code
+    generation. MCP filesystem conflicts with these custom tools and causes
+    the LLM to call the wrong tool repeatedly (guardrail blocks, iterations
+    wasted). Memory/brave_search/playwright add no value for code generation.
+    """
+    return []
 
 
 def get_phase8_mcps() -> list[MCPServerStdio]:

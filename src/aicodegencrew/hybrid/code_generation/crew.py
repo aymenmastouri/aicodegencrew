@@ -23,9 +23,13 @@ from typing import Any
 
 from crewai import Crew, Process, Task
 
-from ...shared.paths import CHROMA_DIR
+from ...shared.mcp import get_phase5_mcps
+from ...shared.utils.crewai_patches import apply_patches
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
+
+# Apply CrewAI patches for on-prem LLM compatibility (idempotent)
+apply_patches()
 from .agents import create_agent
 from .output_writer import OutputWriter
 from .preflight import (
@@ -51,11 +55,10 @@ from .tools import (
     FactsQueryTool,
     ImportIndexTool,
     PlanReaderTool,
-    RAGQueryTool,
     TaskSourceTool,
 )
 
-_MCP_SERVER_PATH = str(Path(__file__).resolve().parents[4] / "mcp_server.py")
+# MCPs loaded dynamically from shared/mcp/mcp_manager.py
 _MAX_RPM = 30
 _VERBOSE = True
 MAX_BUILD_RETRIES = 3
@@ -80,7 +83,6 @@ class ImplementCrew:
         self,
         repo_path: str,
         facts_path: str = "knowledge/extract/architecture_facts.json",
-        chroma_dir: str | None = None,
         plans_dir: str = "knowledge/plan",
         output_dir: str = "knowledge/implement",
         task_input_dir: str | None = None,
@@ -90,7 +92,6 @@ class ImplementCrew:
     ):
         self.repo_path = Path(repo_path)
         self.facts_path = Path(facts_path)
-        self.chroma_dir = chroma_dir or CHROMA_DIR
         self.plans_dir = plans_dir
         self.output_dir = Path(output_dir)
         self.task_input_dir = (task_input_dir or os.getenv("TASK_INPUT_DIR", "")).strip()
@@ -316,14 +317,13 @@ class ImplementCrew:
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
-            RAGQueryTool(chroma_dir=self.chroma_dir),
             import_tool,
             dependency_tool,
             task_source_tool,
             PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
         ]
 
-        developer = create_agent("developer", developer_tools, _MCP_SERVER_PATH, _VERBOSE)
+        developer = create_agent("developer", developer_tools, get_phase5_mcps(), _VERBOSE)
 
         task_source_snapshot = self._task_source_snapshot(plan.task_id)
 
@@ -405,16 +405,15 @@ class ImplementCrew:
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
-            RAGQueryTool(chroma_dir=self.chroma_dir),
             import_tool,
             dependency_tool,
             task_source_tool,
             PlanReaderTool(plans_dir=self.plans_dir, facts_path=str(self.facts_path)),
         ]
 
-        developer = create_agent("developer", developer_tools, _MCP_SERVER_PATH, _VERBOSE)
+        developer = create_agent("developer", developer_tools, get_phase5_mcps(), _VERBOSE)
 
-        fix_desc, fix_expected, fix_output_model = fix_task(
+        fix_desc, fix_expected, _ = fix_task(
             task_id=plan.task_id,
             build_errors=build_errors,
             failed_files=failed_files,
@@ -424,7 +423,6 @@ class ImplementCrew:
         task = Task(
             description=fix_desc,
             expected_output=fix_expected,
-            output_pydantic=fix_output_model,
             agent=developer,
             human_input=False,
         )
