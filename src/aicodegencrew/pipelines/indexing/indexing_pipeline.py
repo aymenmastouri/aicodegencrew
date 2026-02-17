@@ -1068,9 +1068,33 @@ class IndexingPipeline:
         # ChromaDB stores relative paths (e.g. "backend/build.gradle")
         # but all_file_paths are absolute (e.g. "C:\uvz\backend\build.gradle")
         repo_root = Path(repo_path_str)
+        max_file_bytes = self.config.max_file_bytes
         changed: list[str] = []
         unchanged = 0
+        skipped = 0
         for file_path in all_file_paths:
+            # Skip files that the reader tool would skip — these can never be
+            # indexed, so counting them as "changed" causes phantom re-processing
+            # on every smart run.
+            try:
+                fsize = os.path.getsize(file_path)
+                if fsize > max_file_bytes:
+                    skipped += 1
+                    continue
+            except OSError:
+                changed.append(file_path)
+                continue
+
+            # Binary check: null bytes in first 8KB (matches RepoReaderTool._is_likely_binary)
+            try:
+                with open(file_path, "rb") as bf:
+                    if b"\x00" in bf.read(8192):
+                        skipped += 1
+                        continue
+            except Exception:
+                changed.append(file_path)
+                continue
+
             # Must match reader_tool exactly: strict UTF-8, fallback to latin-1
             content = None
             try:
@@ -1104,7 +1128,8 @@ class IndexingPipeline:
                 changed.append(file_path)
 
         logger.info(
-            f"[SMART] Pre-filter: {len(changed)} changed, {unchanged} unchanged "
+            f"[SMART] Pre-filter: {len(changed)} changed, {unchanged} unchanged, "
+            f"{skipped} skipped (reader-incompatible) "
             f"(out of {len(all_file_paths)} total)"
         )
         return changed
