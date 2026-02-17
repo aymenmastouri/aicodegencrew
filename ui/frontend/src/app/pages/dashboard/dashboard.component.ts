@@ -1216,6 +1216,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.runOutcome = s.run_outcome || '';
     // Only overwrite stepper data if the backend has real progress info
     if (s.phase_progress && s.phase_progress.length > 0) {
+      // For running phases, compute elapsed from started_at so the timer
+      // doesn't reset to 0 on every SSE update.
+      for (const pp of s.phase_progress) {
+        if (pp.status === 'running' && pp.started_at && !pp.duration_seconds) {
+          const started = new Date(pp.started_at).getTime();
+          pp.duration_seconds = Math.round((Date.now() - started) / 1000);
+        }
+      }
       this.phaseProgress = s.phase_progress;
     }
     if (s.elapsed_seconds != null) {

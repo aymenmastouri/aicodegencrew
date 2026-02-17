@@ -25,21 +25,21 @@ from ..utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, tru
 logger = setup_logger(__name__)
 
 
-class OllamaEmbeddingFunction:
-    """ChromaDB-compatible embedding function using Ollama.
+class _OllamaEmbedder:
+    """Thin wrapper around OllamaClient for query-time embedding.
 
-    Matches the embedding model used during indexing (Phase 0) to prevent
-    dimension mismatches. ChromaDB calls __call__(input) during query().
+    Instead of passing an embedding_function to ChromaDB (which conflicts
+    with collections created without one), we embed queries ourselves and
+    pass ``query_embeddings`` to ``collection.query()``.
     """
 
     def __init__(self):
         self._client = OllamaClient()
 
-    def __call__(self, input: list[str]) -> list[list[float]]:
-        """Embed a list of texts using Ollama (same model as indexing)."""
-        if not input:
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
             return []
-        return self._client.embed_batch(input)
+        return self._client.embed_batch(texts)
 
 
 class RAGQueryInput(BaseModel):
@@ -84,6 +84,7 @@ class RAGQueryTool(BaseTool):
 
     _client: Any | None = None
     _collection: Any | None = None
+    _embedder: Any | None = None
     _evidence_index: dict[str, dict] | None = None
 
     # Standard locations for ChromaDB (ClassVar = not a Pydantic field)
@@ -151,17 +152,17 @@ class RAGQueryTool(BaseTool):
                     ),
                 )
 
-            # Get collection with Ollama embedding function.
-            # The indexing pipeline pre-computes embeddings via Ollama (nomic-embed-text, 768-dim)
-            # but does NOT set an embedding_function on the collection. Without passing the
-            # matching function here, ChromaDB defaults to all-MiniLM-L6-v2 (384-dim) for
-            # query_texts, causing a dimension mismatch.
+            # Open collection WITHOUT an embedding_function.
+            # The indexing pipeline (Phase 0) creates the collection without one
+            # and upserts pre-computed Ollama embeddings directly.  Passing an
+            # embedding_function here causes a ChromaDB conflict error.
+            # Instead, we embed queries ourselves via _OllamaEmbedder and pass
+            # query_embeddings to collection.query().
             try:
-                embed_fn = OllamaEmbeddingFunction()
                 self._collection = self._client.get_collection(
                     name=self.collection_name,
-                    embedding_function=embed_fn,
                 )
+                self._embedder = _OllamaEmbedder()
                 logger.info(f"Connected to ChromaDB collection: {self.collection_name}")
             except Exception as e:
                 logger.warning(f"Collection '{self.collection_name}' not found: {e}")
@@ -233,26 +234,36 @@ class RAGQueryTool(BaseTool):
             # Hard cap limit - reduced to prevent context overflow
             limit = min(limit, 10)
 
-            # Build where filter
-            where_clauses = []
-            if file_filter:
-                where_clauses.append({"file_path": {"$contains": file_filter}})
-            if content_type and content_type in ("code", "doc", "config"):
-                where_clauses.append({"content_type": content_type})
-
+            # Build where filter (ChromaDB supports $eq, $ne, $in, $nin for strings)
             where_filter = None
-            if len(where_clauses) == 1:
-                where_filter = where_clauses[0]
-            elif len(where_clauses) > 1:
-                where_filter = {"$and": where_clauses}
+            if content_type and content_type in ("code", "doc", "config"):
+                where_filter = {"content_type": content_type}
 
-            # Execute semantic search
+            # Fetch extra results when file_filter is set (post-query filtering)
+            fetch_limit = limit * 3 if file_filter else limit
+
+            # Embed query ourselves (avoids ChromaDB embedding function conflict)
+            query_embedding = self._embedder.embed([query])
             results = collection.query(
-                query_texts=[query],
-                n_results=limit,
+                query_embeddings=query_embedding,
+                n_results=fetch_limit,
                 where=where_filter,
                 include=["documents", "metadatas", "distances"],
             )
+
+            # Post-query filter by file_path substring (ChromaDB lacks $contains)
+            if file_filter and results and results.get("documents"):
+                filtered = {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
+                for i, meta in enumerate(results["metadatas"][0]):
+                    fp = meta.get("file_path", "")
+                    if file_filter.lower() in fp.lower():
+                        filtered["documents"][0].append(results["documents"][0][i])
+                        filtered["metadatas"][0].append(meta)
+                        filtered["distances"][0].append(results["distances"][0][i])
+                        filtered["ids"][0].append(results["ids"][0][i])
+                        if len(filtered["documents"][0]) >= limit:
+                            break
+                results = filtered
 
             # Load evidence index for enrichment
             evidence_index = self._load_evidence_index()

@@ -11,6 +11,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
+
 import { ApiService, ReportList, BranchList } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
@@ -73,7 +76,12 @@ interface ParsedComponent {
               <div class="doc-groups">
                 @for (groupKey of docGroupKeys; track groupKey) {
                   <div class="doc-group">
-                    <div class="doc-group-header">
+                    <div class="doc-group-header"
+                         role="button"
+                         tabindex="0"
+                         (click)="toggleDocGroup(groupKey)"
+                         (keydown.enter)="toggleDocGroup(groupKey)"
+                         (keydown.space)="toggleDocGroup(groupKey); $event.preventDefault()">
                       <div class="doc-group-icon-wrap" [class]="'group-' + groupKey">
                         <mat-icon>{{ docGroupMeta[groupKey]?.icon || 'description' }}</mat-icon>
                       </div>
@@ -84,7 +92,9 @@ interface ParsedComponent {
                           <span class="doc-group-count">{{ docGroups[groupKey].length }} files</span>
                         </p>
                       </div>
+                      <mat-icon class="doc-group-chevron">{{ expandedDocGroups[groupKey] ? 'expand_less' : 'expand_more' }}</mat-icon>
                     </div>
+                    @if (expandedDocGroups[groupKey]) {
                     <div class="doc-group-files">
                       @for (file of docGroups[groupKey]; track file['_file']) {
                         <div class="doc-file-card">
@@ -114,13 +124,18 @@ interface ParsedComponent {
                               @if (fileLoading[$any(file['_file'])]) {
                                 <div class="loading-center"><mat-spinner diameter="24"></mat-spinner></div>
                               } @else if (fileContents[$any(file['_file'])]) {
-                                <pre class="code-viewer doc-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                                @if (file['_type'] === 'md') {
+                                  <div class="rendered-md markdown-body" [innerHTML]="renderMarkdown(fileContents[$any(file['_file'])])"></div>
+                                } @else {
+                                  <pre class="code-viewer doc-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                                }
                               }
                             </div>
                           }
                         </div>
                       }
                     </div>
+                    }
                   </div>
                 }
               </div>
@@ -319,6 +334,21 @@ interface ParsedComponent {
                                     <span class="comp-package">{{ comp.package }}</span>
                                   }
                                 </div>
+                              }
+                            </div>
+                          </div>
+                        }
+
+                        <!-- ==================== ALL AFFECTED FILES ==================== -->
+                        @if (collectAffectedFiles(plan).length) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>insert_drive_file</mat-icon>
+                              All Affected Files ({{ collectAffectedFiles(plan).length }})
+                            </h3>
+                            <div class="affected-files">
+                              @for (f of collectAffectedFiles(plan); track f) {
+                                <div class="file-chip mono">{{ shortenPath(f) }}</div>
                               }
                             </div>
                           </div>
@@ -830,6 +860,14 @@ interface ParsedComponent {
       .doc-groups { margin-top: 16px; display: flex; flex-direction: column; gap: 24px; }
       .doc-group-header {
         display: flex; align-items: center; gap: 14px; margin-bottom: 12px;
+        cursor: pointer; border-radius: 10px; padding: 6px 8px; margin: -6px -8px 12px;
+        transition: background 0.15s;
+      }
+      .doc-group-header:hover { background: var(--cg-gray-50, #f8f9fa); }
+      .doc-group-chevron {
+        color: var(--cg-gray-400);
+        font-size: 22px; width: 22px; height: 22px;
+        flex-shrink: 0;
       }
       .doc-group-icon-wrap {
         width: 44px; height: 44px; border-radius: 12px;
@@ -889,6 +927,55 @@ interface ParsedComponent {
         border-radius: 0 0 10px 10px;
         max-height: 400px;
       }
+      .rendered-md {
+        padding: 20px 24px;
+        max-height: 500px;
+        overflow: auto;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--cg-gray-900);
+      }
+      .rendered-md :is(h1, h2, h3, h4) {
+        margin-top: 1.2em;
+        margin-bottom: 0.4em;
+        color: var(--cg-gray-900);
+      }
+      .rendered-md h1 { font-size: 20px; border-bottom: 1px solid var(--cg-gray-100); padding-bottom: 6px; }
+      .rendered-md h2 { font-size: 17px; }
+      .rendered-md h3 { font-size: 15px; }
+      .rendered-md p { margin: 0.5em 0; }
+      .rendered-md ul, .rendered-md ol { padding-left: 24px; margin: 0.5em 0; }
+      .rendered-md li { margin: 2px 0; }
+      .rendered-md code {
+        background: var(--cg-gray-50);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      .rendered-md pre {
+        background: var(--cg-dark);
+        color: #eeffff;
+        padding: 12px 16px;
+        border-radius: 6px;
+        overflow: auto;
+        font-size: 12px;
+      }
+      .rendered-md pre code {
+        background: none;
+        padding: 0;
+      }
+      .rendered-md table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 0.5em 0;
+      }
+      .rendered-md th, .rendered-md td {
+        border: 1px solid var(--cg-gray-200);
+        padding: 6px 10px;
+        font-size: 13px;
+        text-align: left;
+      }
+      .rendered-md th { background: var(--cg-gray-50); font-weight: 600; }
 
       .tab-icon {
         margin-right: 6px;
@@ -1518,6 +1605,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   /** Architecture doc grouping */
   docPreviewOpen: Record<string, boolean> = {};
+  expandedDocGroups: Record<string, boolean> = {};
   docGroups: Record<string, Record<string, unknown>[]> = {};
   docGroupKeys: string[] = [];
   docGroupMeta: Record<string, { label: string; icon: string; description: string }> = {
@@ -1527,12 +1615,15 @@ export class ReportsComponent implements OnInit, OnDestroy {
     other: { label: 'Other Documents', icon: 'description', description: 'Additional documentation artifacts' },
   };
 
+  private mdCache: Record<string, SafeHtml> = {};
+
   constructor(
     private api: ApiService,
     private notifSvc: NotificationService,
     private cdr: ChangeDetectorRef,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
@@ -1581,6 +1672,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
       ...Object.keys(groups).filter((k) => !order.includes(k)).sort(),
     ];
     this.docGroups = groups;
+  }
+
+  toggleDocGroup(groupKey: string): void {
+    this.expandedDocGroups[groupKey] = !this.expandedDocGroups[groupKey];
   }
 
   toggleDocPreview(filePath: string): void {
@@ -1650,6 +1745,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
   }
 
+  renderMarkdown(text: string): SafeHtml {
+    if (this.mdCache[text]) return this.mdCache[text];
+    const html = marked.parse(text) as string;
+    const safe = this.sanitizer.bypassSecurityTrustHtml(html);
+    this.mdCache[text] = safe;
+    return safe;
+  }
+
   formatBytes(bytes: number): string {
     return formatBytesUtil(bytes);
   }
@@ -1703,6 +1806,24 @@ export class ReportsComponent implements OnInit, OnDestroy {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  }
+
+  /** Collect all unique affected files from migration rules */
+  collectAffectedFiles(plan: Record<string, unknown>): string[] {
+    const dp = plan['development_plan'] as Record<string, unknown> | undefined;
+    if (!dp) return [];
+    const up = dp['upgrade_plan'] as Record<string, unknown> | undefined;
+    if (!up) return [];
+    const seq = up['migration_sequence'] as Record<string, unknown>[] | undefined;
+    if (!seq?.length) return [];
+    const seen = new Set<string>();
+    for (const rule of seq) {
+      const files = rule['affected_files'] as string[] | undefined;
+      if (files) {
+        for (const f of files) seen.add(f);
+      }
+    }
+    return [...seen].sort();
   }
 
   /** Shorten file paths for display */

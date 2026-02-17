@@ -27,7 +27,7 @@ class ArchitectureSynthesisCrew:
 
     Reverse Engineering Documentation:
     1. C4 Crew - Creates 4 C4 diagrams with DrawIO files
-    2. Arc42 Crew - Creates 12 arc42 chapters (50+ pages)
+    2. Arc42 Crew - Creates 12 arc42 chapters
 
     Data Sources:
     - architecture_facts.json: Components, relations, interfaces, containers (Phase 1)
@@ -129,7 +129,7 @@ class ArchitectureSynthesisCrew:
 
         Sequence:
         1. C4: Facts + Analysis -> 4 C4 diagrams + DrawIO
-        2. Arc42: Facts + Analysis -> 12 deep chapters (50+ pages)
+        2. Arc42: Facts + Analysis -> 12 deep chapters
 
         Returns dict with status and result summary.
         """
@@ -169,7 +169,7 @@ class ArchitectureSynthesisCrew:
 
         # Phase 3b: Arc42 Documentation
         logger.info("=" * 60)
-        logger.info("PHASE 3b: ARC42 CREW - Creating Deep arc42 Documentation (50+ pages)")
+        logger.info("PHASE 3b: ARC42 CREW - Creating Deep arc42 Documentation")
         logger.info("=" * 60)
 
         self.arc42_crew = Arc42Crew(

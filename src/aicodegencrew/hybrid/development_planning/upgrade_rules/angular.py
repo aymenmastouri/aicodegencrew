@@ -19,8 +19,10 @@ from .base import (
     UpgradeSeverity,
 )
 
-# Flag to control whether to fetch dynamically or use fallback
-USE_DYNAMIC_FETCH = True  # Set to False to use minimal fallback rules
+# Flag to control whether to fetch dynamically or use fallback.
+# Dynamic fetch requires Playwright MCP + working LLM auth.
+# When disabled, uses comprehensive static rules with regex detection patterns.
+USE_DYNAMIC_FETCH = False
 
 # =============================================================================
 # Angular 18 -> 19
@@ -570,8 +572,8 @@ def fetch_angular_rules_dynamic(from_version: str, to_version: str) -> UpgradeRu
         UpgradeRuleSet with rules fetched from angular.dev
     """
     if not USE_DYNAMIC_FETCH:
-        # Return minimal fallback
-        return _get_fallback_ruleset(from_version, to_version)
+        # Return comprehensive static rules with regex detection patterns
+        return _get_static_ruleset(from_version, to_version)
 
     try:
         from ..playwright_mcp_integration import fetch_upgrade_guide
@@ -630,6 +632,19 @@ def _slugify(text: str) -> str:
     """Convert text to slug (lowercase, hyphenated)."""
     import re
     return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')[:50]
+
+
+def _get_static_ruleset(from_version: str, to_version: str) -> UpgradeRuleSet:
+    """Return the comprehensive static ruleset for a version pair."""
+    key = f"{from_version}-{to_version}"
+    static_map = {
+        "18-19": ANGULAR_18_TO_19,
+        "19-20": ANGULAR_19_TO_20,
+    }
+    if key in static_map:
+        return static_map[key]
+    # Unknown version pair — return generic fallback
+    return _get_fallback_ruleset(from_version, to_version, f"No static rules for {key}")
 
 
 def _get_fallback_ruleset(from_version: str, to_version: str, error: str = "") -> UpgradeRuleSet:

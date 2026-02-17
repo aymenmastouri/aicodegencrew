@@ -529,6 +529,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             plans_dir=str(phase4_dir),
             output_dir=str(knowledge_dir / "implement"),
             task_input_dir=os.getenv("TASK_INPUT_DIR", ""),
+            build_verify=os.getenv("CODEGEN_BUILD_VERIFY", "true").lower() not in ("false", "0", "no"),
             dry_run=codegen_dry_run,
         )
         orchestrator.register_phase("implement", implement_crew)

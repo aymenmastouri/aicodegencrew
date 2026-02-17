@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class PhaseInfo(BaseModel):
@@ -132,6 +132,15 @@ class SubPhaseProgress(BaseModel):
     duration_seconds: float | None = None
     total_tokens: int = 0
     tasks: list[str] = []
+
+    @field_validator("tasks", mode="before")
+    @classmethod
+    def _coerce_tasks(cls, v: Any) -> list[str]:
+        if isinstance(v, int):
+            return [f"{v} tasks"]
+        if isinstance(v, list):
+            return v
+        return []
 
 
 class LiveMetrics(BaseModel):

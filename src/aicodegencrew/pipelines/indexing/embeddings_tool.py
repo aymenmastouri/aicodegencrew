@@ -96,11 +96,11 @@ class OllamaEmbeddingsTool(BaseTool):
         # Configuration from environment
         max_text_length = int(os.getenv("EMBED_MAX_TEXT_LENGTH", "800"))
         use_batching = os.getenv("EMBED_USE_BATCHING", "true").lower() in {"1", "true", "yes"}
-        initial_batch_size = int(os.getenv("EMBED_BATCH_SIZE", "1"))
-        min_batch_size = int(os.getenv("EMBED_MIN_BATCH_SIZE", "1"))
-        max_batch_size = int(os.getenv("EMBED_MAX_BATCH_SIZE", "1"))
-        pause_every = int(os.getenv("EMBED_PAUSE_EVERY", "10"))
-        pause_s = float(os.getenv("EMBED_PAUSE_S", "10.0"))
+        initial_batch_size = int(os.getenv("EMBED_BATCH_SIZE", "50"))
+        min_batch_size = int(os.getenv("EMBED_MIN_BATCH_SIZE", "5"))
+        max_batch_size = int(os.getenv("EMBED_MAX_BATCH_SIZE", "100"))
+        pause_every = int(os.getenv("EMBED_PAUSE_EVERY", "200"))
+        pause_s = float(os.getenv("EMBED_PAUSE_S", "2.0"))
         log_every = int(os.getenv("EMBED_LOG_EVERY", "25"))
 
         # Truncate texts

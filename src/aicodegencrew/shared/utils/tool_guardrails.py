@@ -28,8 +28,10 @@ from .logger import log_metric
 
 logger = logging.getLogger(__name__)
 
-# Tools that are always allowed (output-producing tools)
-_OUTPUT_TOOLS = frozenset({"doc_writer", "create_drawio_diagram"})
+# Tools that are always allowed (output-producing tools).
+# Phase 3 (document): doc_writer, create_drawio_diagram
+# Phase 5 (implement): write_code
+_OUTPUT_TOOLS = frozenset({"doc_writer", "create_drawio_diagram", "write_code"})
 
 
 class ToolCallTracker:
@@ -69,7 +71,7 @@ class ToolCallTracker:
             if identical_count >= self.max_identical:
                 logger.warning(
                     f"[GUARDRAIL] Blocked: {tool_name} called {identical_count}x "
-                    f"with identical args. Synthesize and call doc_writer now."
+                    f"with identical args. Use results you have and produce output."
                 )
                 log_metric("guardrail_blocked", tool_name=tool_name, reason="identical_call")
                 return False  # Block execution
@@ -78,7 +80,7 @@ class ToolCallTracker:
         if len(self.calls) >= self.max_total and not is_output_tool:
             logger.warning(
                 f"[GUARDRAIL] Budget exhausted ({self.max_total} calls). "
-                f"Blocked: {tool_name}. Agent must call doc_writer."
+                f"Blocked: {tool_name}. Agent must produce output now."
             )
             log_metric("guardrail_blocked", tool_name=tool_name, reason="budget_exhausted")
             return False  # Block non-output tools

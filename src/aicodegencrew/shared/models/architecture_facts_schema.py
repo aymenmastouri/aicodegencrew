@@ -51,7 +51,7 @@ class Container(BaseModel):
     name: str = Field(..., description="Container name")
     type: str = Field(default="application", description="Type: application, database, infrastructure")
     technology: str = Field(..., description="Primary technology (e.g., Spring Boot, Angular)")
-    evidence: list[str] = Field(..., description="Evidence IDs (minimum 1)")
+    evidence: list[str] = Field(default_factory=list, description="Evidence IDs")
 
 
 # =============================================================================
@@ -67,7 +67,7 @@ class Component(BaseModel):
     name: str = Field(..., description="Class/module name (e.g., 'WorkflowServiceImpl')")
     stereotype: str = Field(..., description="Stereotype: controller, service, repository, component, module, etc.")
     file_path: str | None = Field(None, description="Relative file path")
-    evidence: list[str] = Field(..., description="Evidence IDs (minimum 1)")
+    evidence: list[str] = Field(default_factory=list, description="Evidence IDs")
 
 
 # =============================================================================
@@ -83,8 +83,8 @@ class Interface(BaseModel):
     type: str = Field(..., description="Type: REST, GraphQL, gRPC, Kafka, etc.")
     path: str | None = Field(None, description="URL path pattern (e.g., '/workflow/**')")
     method: str | None = Field(None, description="HTTP method for REST")
-    implemented_by: str = Field(..., description="Component name that implements this")
-    evidence: list[str] = Field(..., description="Evidence IDs (minimum 1)")
+    implemented_by: str | None = Field(None, description="Component name that implements this")
+    evidence: list[str] = Field(default_factory=list, description="Evidence IDs")
 
 
 # =============================================================================
@@ -100,7 +100,7 @@ class Relation(BaseModel):
     to_id: str = Field(..., alias="to", description="Target component ID")
     type: str = Field(default="uses", description="Relation type (always 'uses' for now)")
     method: str | None = Field(None, description="Method name if call relation")
-    evidence: list[str] = Field(..., description="Evidence IDs (minimum 1)")
+    evidence: list[str] = Field(default_factory=list, description="Evidence IDs")
 
     class Config:
         populate_by_name = True
@@ -122,7 +122,7 @@ class EndpointFlow(BaseModel):
     path: str = Field(..., description="REST path (e.g., '/workflow/create')")
     method: str = Field(..., description="HTTP method (GET, POST, etc.)")
     chain: list[str] = Field(..., description="Component IDs in call order [controller, service, repository, ...]")
-    evidence: list[str] = Field(..., description="Evidence IDs proving this flow")
+    evidence: list[str] = Field(default_factory=list, description="Evidence IDs proving this flow")
 
     class Config:
         populate_by_name = True

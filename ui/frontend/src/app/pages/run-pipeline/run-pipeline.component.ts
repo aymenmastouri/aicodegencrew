@@ -323,21 +323,6 @@ import { statusIcon } from '../../shared/status';
                     @if (pp.status === 'skipped') {
                       <div class="step-time step-time-uptodate">up to date</div>
                     }
-                    @if (pp.status === 'running' && pp.sub_phases?.length) {
-                      <div class="sub-phase-chips">
-                        @for (sp of pp.sub_phases; track sp.name) {
-                          <span class="sub-chip" [class]="'sub-' + sp.status">
-                            <mat-icon class="sub-icon">
-                              {{ sp.status === 'completed' ? 'check' : 'sync' }}
-                            </mat-icon>
-                            {{ sp.name }}
-                            @if (sp.total_tokens) {
-                              <span class="sub-tokens">{{ sp.total_tokens | number }}</span>
-                            }
-                          </span>
-                        }
-                      </div>
-                    }
                   </div>
                   @if (!last) {
                     <div class="stepper-line" [class.line-done]="pp.status === 'completed'"
@@ -649,21 +634,6 @@ import { statusIcon } from '../../shared/status';
         100% { left: 100%; }
       }
 
-      /* Sub-phase chips */
-      .sub-phase-chips {
-        display: flex; flex-wrap: wrap; gap: 4px;
-        margin-top: 6px; max-width: 160px; justify-content: center;
-      }
-      .sub-chip {
-        display: inline-flex; align-items: center; gap: 3px;
-        padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 500;
-        background: rgba(0, 112, 173, 0.08); color: var(--cg-blue);
-      }
-      .sub-completed { background: rgba(40, 167, 69, 0.08); color: var(--cg-success); }
-      .sub-failed { background: rgba(220, 53, 69, 0.08); color: var(--cg-error); }
-      .sub-icon { font-size: 12px; width: 12px; height: 12px; }
-      .sub-tokens { font-family: monospace; font-size: 9px; opacity: 0.7; }
-
       /* Log Viewer */
       .log-card { margin-bottom: 16px; }
       .log-card mat-card-header { display: flex; align-items: center; }
@@ -946,7 +916,18 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
           if (this.autoScroll) this.scrollToBottom();
         }
         if (event.type === 'status') {
-          this.status = event.data as ExecutionStatus;
+          const incoming = event.data as ExecutionStatus;
+          // For running phases, compute elapsed from started_at so the
+          // duration doesn't reset to 0 on every SSE update.
+          if (incoming.phase_progress) {
+            for (const pp of incoming.phase_progress) {
+              if (pp.status === 'running' && pp.started_at && !pp.duration_seconds) {
+                const started = new Date(pp.started_at).getTime();
+                pp.duration_seconds = Math.round((Date.now() - started) / 1000);
+              }
+            }
+          }
+          this.status = incoming;
         }
         if (event.type === 'pipeline_complete') {
           this.status = event.data as ExecutionStatus;

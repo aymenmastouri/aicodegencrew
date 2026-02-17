@@ -388,6 +388,9 @@ class DevelopmentPlanningPipeline:
             llm_call=True,
         )
 
+        # Enrich plan with discovery data if LLM omitted fields
+        plan = self._enrich_plan(plan, discovery_result, pattern_result)
+
         # Stage 5: Validation
         step_start(f"Stage 5: Validation ({task.task_id})")
         stage5_start = time.time()
@@ -439,6 +442,39 @@ class DevelopmentPlanningPipeline:
                 "validation_warnings": len(validation.warnings),
             },
         }
+
+    @staticmethod
+    def _enrich_plan(
+        plan: "ImplementationPlan",
+        discovery_result: dict[str, Any],
+        pattern_result: dict[str, Any],
+    ) -> "ImplementationPlan":
+        """Enrich plan with deterministic data from earlier stages.
+
+        The LLM sometimes omits fields that were available in the prompt.
+        This fills gaps using the authoritative data from Stage 2/3.
+        """
+        dp = plan.development_plan or {}
+
+        # Fill affected_components from discovery if LLM left it empty
+        if not dp.get("affected_components"):
+            comps = discovery_result.get("affected_components", [])
+            if comps:
+                dp["affected_components"] = [c["name"] for c in comps if isinstance(c, dict) and "name" in c]
+                logger.info(f"[Enrich] Filled affected_components from discovery: {len(dp['affected_components'])} components")
+
+        # Fill upgrade_plan.migration_sequence from pattern_result if LLM left it empty
+        upgrade = pattern_result.get("upgrade_assessment", {})
+        if upgrade.get("is_upgrade"):
+            up = dp.get("upgrade_plan")
+            if isinstance(up, dict):
+                ms = up.get("migration_sequence", [])
+                if not ms:
+                    up["migration_sequence"] = upgrade.get("migration_sequence", [])
+                    logger.info(f"[Enrich] Filled migration_sequence from scan: {len(up['migration_sequence'])} rules")
+
+        plan.development_plan = dp
+        return plan
 
     def _load_supplementary_context(self) -> dict[str, str]:
         """Load supplementary files into text snippets for LLM context."""

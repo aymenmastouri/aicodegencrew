@@ -287,119 +287,119 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
             (
                 "introduction",
                 [
-                    (CH01_INTRODUCTION, "Complete arc42 Introduction chapter (8-12 pages)"),
+                    (CH01_INTRODUCTION, "Complete arc42 Introduction chapter"),
                 ],
                 ["arc42/01-introduction.md"],
             ),
             (
                 "constraints",
                 [
-                    (CH02_CONSTRAINTS, "Complete arc42 Constraints chapter (8-10 pages)"),
+                    (CH02_CONSTRAINTS, "Complete arc42 Constraints chapter"),
                 ],
                 ["arc42/02-constraints.md"],
             ),
             (
                 "context",
                 [
-                    (CH03_CONTEXT, "Complete arc42 Context chapter (8-12 pages)"),
+                    (CH03_CONTEXT, "Complete arc42 Context chapter"),
                 ],
                 ["arc42/03-context.md"],
             ),
             (
                 "solution-strategy",
                 [
-                    (CH04_SOLUTION_STRATEGY, "Complete arc42 Solution Strategy chapter (8-12 pages)"),
+                    (CH04_SOLUTION_STRATEGY, "Complete arc42 Solution Strategy chapter"),
                 ],
                 ["arc42/04-solution-strategy.md"],
             ),
             (
                 "building-blocks-overview",
                 [
-                    (CH05_PART1_OVERVIEW, "Building Blocks overview and system whitebox (6-8 pages)"),
+                    (CH05_PART1_OVERVIEW, "Building Blocks overview and system whitebox"),
                 ],
                 ["arc42/05-part1-overview.md"],
             ),
             (
                 "building-blocks-controllers",
                 [
-                    (CH05_PART2_CONTROLLERS, "Building Blocks presentation layer (8-10 pages)"),
+                    (CH05_PART2_CONTROLLERS, "Building Blocks presentation layer"),
                 ],
                 ["arc42/05-part2-controllers.md"],
             ),
             (
                 "building-blocks-services",
                 [
-                    (CH05_PART3_SERVICES, "Building Blocks business layer (8-10 pages)"),
+                    (CH05_PART3_SERVICES, "Building Blocks business layer"),
                 ],
                 ["arc42/05-part3-services.md"],
             ),
             (
                 "building-blocks-domain",
                 [
-                    (CH05_PART4_DOMAIN, "Building Blocks domain and persistence (8-10 pages)"),
+                    (CH05_PART4_DOMAIN, "Building Blocks domain and persistence"),
                 ],
                 ["arc42/05-part4-domain.md"],
             ),
             (
                 "runtime-view-api-flows",
                 [
-                    (CH06_PART1_API_FLOWS, "Arc42 Runtime View Part 1: API flows (8-10 pages)"),
+                    (CH06_PART1_API_FLOWS, "Arc42 Runtime View Part 1: API flows"),
                 ],
                 ["arc42/06-part1-api-flows.md"],
             ),
             (
                 "runtime-view-business-flows",
                 [
-                    (CH06_PART2_BUSINESS_FLOWS, "Arc42 Runtime View Part 2: Business flows (8-10 pages)"),
+                    (CH06_PART2_BUSINESS_FLOWS, "Arc42 Runtime View Part 2: Business flows"),
                 ],
                 ["arc42/06-part2-business-flows.md"],
             ),
             (
                 "deployment",
                 [
-                    (CH07_DEPLOYMENT, "Complete arc42 Deployment View chapter (8-10 pages)"),
+                    (CH07_DEPLOYMENT, "Complete arc42 Deployment View chapter"),
                 ],
                 ["arc42/07-deployment.md"],
             ),
             (
                 "crosscutting-technical",
                 [
-                    (CH08_PART1_TECHNICAL, "Arc42 Crosscutting Part 1: Technical concepts (8-10 pages)"),
+                    (CH08_PART1_TECHNICAL, "Arc42 Crosscutting Part 1: Technical concepts"),
                 ],
                 ["arc42/08-part1-technical.md"],
             ),
             (
                 "crosscutting-patterns",
                 [
-                    (CH08_PART2_PATTERNS, "Arc42 Crosscutting Part 2: Patterns (8-10 pages)"),
+                    (CH08_PART2_PATTERNS, "Arc42 Crosscutting Part 2: Patterns"),
                 ],
                 ["arc42/08-part2-patterns.md"],
             ),
             (
                 "decisions",
                 [
-                    (CH09_DECISIONS, "Complete arc42 Decisions chapter (8-12 pages)"),
+                    (CH09_DECISIONS, "Complete arc42 Decisions chapter"),
                 ],
                 ["arc42/09-decisions.md"],
             ),
             (
                 "quality",
                 [
-                    (CH10_QUALITY, "Complete arc42 Quality chapter (8-10 pages)"),
+                    (CH10_QUALITY, "Complete arc42 Quality chapter"),
                 ],
                 ["arc42/10-quality.md"],
             ),
             (
                 "risks",
                 [
-                    (CH11_RISKS, "Complete arc42 Risks chapter (8-10 pages)"),
+                    (CH11_RISKS, "Complete arc42 Risks chapter"),
                 ],
                 ["arc42/11-risks.md"],
             ),
             (
                 "glossary",
                 [
-                    (CH12_GLOSSARY, "Complete arc42 Glossary (6-8 pages)"),
+                    (CH12_GLOSSARY, "Complete arc42 Glossary"),
                 ],
                 ["arc42/12-glossary.md"],
             ),
