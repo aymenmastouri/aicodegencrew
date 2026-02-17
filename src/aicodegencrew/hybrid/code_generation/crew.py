@@ -57,6 +57,7 @@ from .tools import (
     PlanReaderTool,
     TaskSourceTool,
 )
+from ...shared.tools import RAGQueryTool
 
 # MCPs loaded dynamically from shared/mcp/mcp_manager.py
 _MAX_RPM = 30
@@ -317,6 +318,7 @@ class ImplementCrew:
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
+            RAGQueryTool(),
             import_tool,
             dependency_tool,
             task_source_tool,
@@ -405,6 +407,7 @@ class ImplementCrew:
             CodeReaderTool(repo_path=str(self.repo_path)),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
+            RAGQueryTool(),
             import_tool,
             dependency_tool,
             task_source_tool,
