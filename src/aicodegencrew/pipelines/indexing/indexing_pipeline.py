@@ -1032,16 +1032,26 @@ class IndexingPipeline:
         logger.info(f"[SMART] Loaded {len(stored_hashes)} file hashes from index")
 
         # Step 2: Compare on-disk hashes against stored hashes
+        # ChromaDB stores relative paths (e.g. "backend/build.gradle")
+        # but all_file_paths are absolute (e.g. "C:\uvz\backend\build.gradle")
+        repo_root = Path(repo_path_str)
         changed: list[str] = []
         unchanged = 0
         for file_path in all_file_paths:
             try:
-                disk_hash = hashlib.sha256(Path(file_path).read_bytes()).hexdigest()
+                # Must match indexing: read as text (normalizes CRLF→LF) then encode to UTF-8
+                text = Path(file_path).read_text(encoding="utf-8", errors="replace")
+                disk_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
             except Exception:
                 changed.append(file_path)  # Can't read = treat as changed
                 continue
 
-            stored = stored_hashes.get(file_path, "")
+            # Convert absolute path to relative (matching ChromaDB format)
+            try:
+                rel_path = str(Path(file_path).relative_to(repo_root)).replace("\\", "/")
+            except ValueError:
+                rel_path = file_path.replace("\\", "/")
+            stored = stored_hashes.get(rel_path, "") or stored_hashes.get(file_path, "")
             if stored == disk_hash:
                 unchanged += 1
             else:
