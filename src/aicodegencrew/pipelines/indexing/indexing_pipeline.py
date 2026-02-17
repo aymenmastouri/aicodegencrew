@@ -716,6 +716,15 @@ class IndexingPipeline:
         logger.info(f"Estimated duration: {hours}h {minutes}m")
         logger.info(f"   - Batch size: {self.config.batch_size}  Total batches: {total_batches}")
 
+        # Smart mode: pre-filter to only changed files BEFORE batch processing
+        if self.index_mode == "smart":
+            all_file_paths = self._pre_filter_changed_files(all_file_paths)
+            if not all_file_paths:
+                logger.info("[SMART] No files changed since last index — nothing to re-index")
+                return f"No changes detected (0 files changed out of {self.metrics.total_files_discovered})"
+            total_batches = (len(all_file_paths) + self.config.batch_size - 1) // self.config.batch_size
+            logger.info(f"[SMART] {len(all_file_paths)} files changed, {total_batches} batches")
+
         # Step 2c: Budget reorder (if enabled and symbols available later)
         # Budget reorder happens per-batch after symbol extraction in _process_batch.
         # Pre-reorder at the file-path level using path-only heuristics:
@@ -985,6 +994,64 @@ class IndexingPipeline:
             logger.warning(f"[Artifacts] Failed to write evidence.jsonl: {e}")
 
     # -- Smart-mode per-file filter -----------------------------------------
+
+    def _pre_filter_changed_files(self, all_file_paths: list[str]) -> list[str]:
+        """Pre-filter files by comparing on-disk hashes against ChromaDB stored hashes.
+
+        This runs BEFORE batch processing to avoid reading/chunking/embedding unchanged files.
+        Much faster than the per-batch _filter_unchanged_files because:
+        1. Loads all file hashes from ChromaDB in one bulk query
+        2. Computes file hashes from disk without reading full content into memory
+        3. Only changed/new files proceed to batch processing
+        """
+        repo_path_str = str(self.config.repo_path)
+
+        # Step 1: Build hash index from ChromaDB (one bulk query)
+        logger.info("[SMART] Loading existing file hashes from ChromaDB...")
+        stored_hashes: dict[str, str] = {}  # file_path -> file_hash
+        try:
+            coll_result = self.chroma_tool._run(
+                "get",
+                collection_name=self.config.collection_name,
+                where={"repo_path": repo_path_str},
+                limit=100000,
+                include=["metadatas"],
+            )
+            if coll_result and coll_result.get("success"):
+                items = coll_result.get("items", {})
+                metadatas = items.get("metadatas", []) if isinstance(items, dict) else []
+                for meta in metadatas:
+                    if meta:
+                        fp = meta.get("file_path", "")
+                        fh = meta.get("file_hash", "")
+                        if fp and fh:
+                            stored_hashes[fp] = fh
+        except Exception as e:
+            logger.warning(f"[SMART] Could not load stored hashes: {e}")
+
+        logger.info(f"[SMART] Loaded {len(stored_hashes)} file hashes from index")
+
+        # Step 2: Compare on-disk hashes against stored hashes
+        changed: list[str] = []
+        unchanged = 0
+        for file_path in all_file_paths:
+            try:
+                disk_hash = hashlib.sha256(Path(file_path).read_bytes()).hexdigest()
+            except Exception:
+                changed.append(file_path)  # Can't read = treat as changed
+                continue
+
+            stored = stored_hashes.get(file_path, "")
+            if stored == disk_hash:
+                unchanged += 1
+            else:
+                changed.append(file_path)
+
+        logger.info(
+            f"[SMART] Pre-filter: {len(changed)} changed, {unchanged} unchanged "
+            f"(out of {len(all_file_paths)} total)"
+        )
+        return changed
 
     def _filter_unchanged_files(self, files_batch: list[dict[str, Any]], repo_path_str: str) -> list[dict[str, Any]]:
         """Filter out files whose hash hasn't changed (smart/incremental mode)."""
