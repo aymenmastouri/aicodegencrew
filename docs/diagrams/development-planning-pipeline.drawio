@@ -95,6 +95,35 @@
           <mxGeometry x="840" y="405" width="200" height="100" as="geometry" />
         </mxCell>
 
+        <!-- Strategy: enrich_plan() (NEW — after Upgrade Rules Engine) -->
+        <mxCell id="strategy-enrich" value="STRATEGY: enrich_plan()&#xa;(Dependency Compat Check)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="840" y="520" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-enrich-new" value="NEW" style="text;html=1;strokeColor=none;fillColor=#3949ab;align=center;rounded=1;fontSize=8;fontStyle=1;fontColor=#fff;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="520" width="28" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy-enrich-desc" value="• Validate required_dependencies&#xa;  vs actual repo versions (semver)&#xa;• Checks: compatible | needs_bump |&#xa;  conflict | unknown&#xa;• Output: compatibility_report{}" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="840" y="575" width="200" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Upgrade Engine -> Strategy enrich_plan (conditional) -->
+        <mxCell id="arrow-upgrade-strategy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1;strokeColor=#3949ab;" edge="1" parent="1" source="upgrade-engine" target="strategy-enrich">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: Strategy -> Stage 4 (compatibility_report) -->
+        <mxCell id="arrow-strategy-stage4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;strokeColor=#3949ab;strokeWidth=2;" edge="1" parent="1" source="strategy-enrich" target="stage4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1100" y="545" />
+              <mxPoint x="1100" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="label-compat" value="compatibility_report&#xa;(checks, warnings)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#3949ab;fontStyle=2" vertex="1" parent="1">
+          <mxGeometry x="1050" y="300" width="110" height="30" as="geometry" />
+        </mxCell>
+
         <!-- Stage 4: Plan Generator (LLM) -->
         <mxCell id="stage4" value="Stage 4: Plan Generator&#xa;(LLM Call, 15-30s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1" vertex="1" parent="1">
           <mxGeometry x="1130" y="160" width="200" height="60" as="geometry" />
@@ -205,8 +234,8 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <mxCell id="label-patterns" value="Patterns +&#xa;Upgrade Assessment" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1050" y="155" width="90" height="35" as="geometry" />
+        <mxCell id="label-patterns" value="Patterns +&#xa;Upgrade Assessment +&#xa;Compatibility Report" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="150" width="90" height="45" as="geometry" />
         </mxCell>
 
         <!-- Arrows: Phase2 -> Stage 4 -->
@@ -266,6 +295,10 @@
 
         <mxCell id="legend-final-output" value="Final Output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
           <mxGeometry x="40" y="870" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-strategy" value="Strategy Hook (NEW)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="910" width="150" height="30" as="geometry" />
         </mxCell>
 
         <!-- Performance Stats -->

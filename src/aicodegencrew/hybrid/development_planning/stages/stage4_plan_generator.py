@@ -247,7 +247,7 @@ MIGRATION SEQUENCE (ordered by severity):
 
 VERIFICATION COMMANDS:
 {self._format_verification_commands(upgrade.get("verification_commands", []))}
-"""
+{self._format_compatibility_report(upgrade.get("compatibility_report", {}))}"""
 
         # Build JSON schema section based on task type
         upgrade = patterns.get("upgrade_assessment", {})
@@ -494,6 +494,37 @@ Generate the plan now:"""
         if not commands:
             return "  (none)"
         return "\n".join(f"  - {cmd}" for cmd in commands)
+
+    @staticmethod
+    def _format_compatibility_report(compat: dict) -> str:
+        """Format dependency compatibility report for LLM prompt."""
+        checks = compat.get("checks", [])
+        if not checks:
+            return ""
+
+        lines = ["\nDEPENDENCY COMPATIBILITY:"]
+        status_icons = {
+            "compatible": "OK",
+            "needs_bump": "BUMP",
+            "conflict": "CONFLICT",
+            "unknown": "??",
+        }
+        for c in checks:
+            icon = status_icons.get(c.get("status", ""), "??")
+            lines.append(
+                f"  [{icon}] {c['name']}: current={c.get('current_version', '?')} "
+                f"required={c.get('required_spec', '?')}"
+            )
+            if c.get("message"):
+                lines.append(f"         {c['message']}")
+
+        warnings = compat.get("warnings", [])
+        if warnings:
+            lines.append("\nCOMPATIBILITY WARNINGS:")
+            for w in warnings:
+                lines.append(f"  - {w}")
+
+        return "\n".join(lines)
 
     @staticmethod
     def _extract_json_from_validation_error(ve: ValidationError) -> str | None:
