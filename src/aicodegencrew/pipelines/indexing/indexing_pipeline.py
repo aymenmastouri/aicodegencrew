@@ -392,6 +392,7 @@ class IndexingPipeline:
         self._manifest_builder = ManifestBuilder(self.repo_path)
         self._budget_engine = BudgetEngine()
         self._symbols_by_path: dict[str, list[SymbolRecord]] = {}
+        self._zero_chunk_files: dict[str, str] = {}  # rel_path -> hash, files that produced 0 chunks
 
         logger.info(f"[CONFIG] IndexingPipeline INDEX_MODE={self.index_mode}")
 
@@ -735,6 +736,10 @@ class IndexingPipeline:
         logger.info(f"Step 2-5/6: Processing {len(all_file_paths)} files in batches of {self.config.batch_size}...")
         self._process_batches(all_file_paths, fingerprint, fp_type)
 
+        # Persist hashes for files that produced 0 chunks so pre-filter skips them next run
+        if self._zero_chunk_files:
+            self._save_zero_chunk_registry(self._zero_chunk_files)
+
         # Update collection fingerprint AFTER all batches complete successfully.
         # This prevents a cancelled run from leaving a stale fingerprint that
         # causes the next run to falsely skip re-indexing.
@@ -868,18 +873,27 @@ class IndexingPipeline:
             raise RuntimeError("Chunking failed")
 
         chunks_batch = chunk_res.get("chunks", [])
-        if not chunks_batch:
-            return
-
         self.metrics.total_chunks_created += len(chunks_batch)
 
-        # Attach per-file metadata
+        # Attach per-file metadata (computed before early-return so 0-chunk files can be tracked)
         file_hash_by_path = {
             f.get("path", ""): (
                 f.get("file_hash") or hashlib.sha256((f.get("content") or "").encode("utf-8")).hexdigest()
             )
             for f in files_batch
         }
+
+        # Track files that produced 0 chunks → registry so pre-filter skips them next run
+        files_with_chunks = {chunk.get("file_path", "") for chunk in chunks_batch}
+        for file_info in files_batch:
+            fp = file_info.get("path", "")
+            if fp not in files_with_chunks:
+                fh = file_hash_by_path.get(fp, "")
+                if fp and fh:
+                    self._zero_chunk_files[fp] = fh
+
+        if not chunks_batch:
+            return
         # Build content-by-path for evidence line calculation
         content_by_path = {f.get("path", ""): f.get("content", "") for f in files_batch}
         symbols_by_path_local = {f.get("path", ""): f.get("_symbols", []) for f in files_batch}
@@ -1045,6 +1059,11 @@ class IndexingPipeline:
 
         logger.info(f"[SMART] Loaded {len(stored_hashes)} file hashes from index")
 
+        # Also load zero-chunk registry (files processed but too small to produce chunks)
+        zero_chunk_reg = self._load_zero_chunk_registry()
+        if zero_chunk_reg:
+            logger.info(f"[SMART] Loaded {len(zero_chunk_reg)} zero-chunk file hashes from registry")
+
         # Step 2: Compare on-disk hashes against stored hashes
         # ChromaDB stores relative paths (e.g. "backend/build.gradle")
         # but all_file_paths are absolute (e.g. "C:\uvz\backend\build.gradle")
@@ -1074,7 +1093,11 @@ class IndexingPipeline:
                 rel_path = str(Path(file_path).relative_to(repo_root)).replace("\\", "/")
             except ValueError:
                 rel_path = file_path.replace("\\", "/")
-            stored = stored_hashes.get(rel_path, "") or stored_hashes.get(file_path, "")
+            stored = (
+                stored_hashes.get(rel_path, "")
+                or stored_hashes.get(file_path, "")
+                or zero_chunk_reg.get(rel_path, "")
+            )
             if stored == disk_hash:
                 unchanged += 1
             else:
@@ -1085,6 +1108,32 @@ class IndexingPipeline:
             f"(out of {len(all_file_paths)} total)"
         )
         return changed
+
+    # -- Zero-chunk registry ------------------------------------------------
+
+    def _zero_chunk_registry_path(self) -> Path:
+        return Path(self._chroma_dir_resolved) / ".zero_chunk_hashes.json"
+
+    def _load_zero_chunk_registry(self) -> dict[str, str]:
+        """Load the zero-chunk file hash registry (rel_path -> hash)."""
+        path = self._zero_chunk_registry_path()
+        if not path.exists():
+            return {}
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+    def _save_zero_chunk_registry(self, new_entries: dict[str, str]) -> None:
+        """Merge new_entries into the zero-chunk registry and persist."""
+        path = self._zero_chunk_registry_path()
+        try:
+            existing = self._load_zero_chunk_registry()
+            existing.update(new_entries)
+            path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+            logger.info(f"[SMART] Saved {len(new_entries)} zero-chunk hashes to registry ({len(existing)} total)")
+        except Exception as e:
+            logger.warning(f"[SMART] Could not save zero-chunk registry: {e}")
 
     def _filter_unchanged_files(self, files_batch: list[dict[str, Any]], repo_path_str: str) -> list[dict[str, Any]]:
         """Filter out files whose hash hasn't changed (smart/incremental mode)."""
