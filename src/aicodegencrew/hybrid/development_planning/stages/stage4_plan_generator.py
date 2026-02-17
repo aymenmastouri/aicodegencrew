@@ -14,9 +14,11 @@ Duration: 15-30 seconds (single agent task)
 
 import json
 import os
+import re
 from typing import Any
 
 from crewai import Agent, Crew, Process, Task
+from pydantic import ValidationError
 
 from ....shared.mcp import get_phase4_mcps
 from ....shared.utils.logger import setup_logger
@@ -120,7 +122,20 @@ class PlanGeneratorStage:
                 verbose=False,
             )
 
-            result = crew.kickoff()
+            try:
+                result = crew.kickoff()
+            except ValidationError as ve:
+                # output_pydantic validation failed (usually truncated JSON from LLM).
+                # Extract the truncated JSON from the error, repair it, and continue.
+                logger.warning(f"[Stage4] output_pydantic validation failed, attempting JSON repair: {ve.error_count()} errors")
+                truncated_json = self._extract_json_from_validation_error(ve)
+                if truncated_json:
+                    repaired = self._repair_truncated_json(truncated_json)
+                    plan_json = self._extract_json(repaired)
+                    plan = self._plan_from_dict(plan_json, task)
+                    logger.info("[Stage4] Plan recovered via truncated JSON repair")
+                    return plan
+                raise  # Re-raise if we couldn't extract/repair
 
             # CrewAI kickoff() returns CrewOutput with .pydantic, .json_dict, .raw
             plan = None
@@ -479,6 +494,66 @@ Generate the plan now:"""
         if not commands:
             return "  (none)"
         return "\n".join(f"  - {cmd}" for cmd in commands)
+
+    @staticmethod
+    def _extract_json_from_validation_error(ve: ValidationError) -> str | None:
+        """Extract the raw truncated JSON string from a Pydantic ValidationError.
+
+        When output_pydantic validation fails on truncated JSON, Pydantic stores
+        the raw input in the error details. We extract it here for repair.
+        """
+        for error in ve.errors():
+            raw_input = error.get("input")
+            if isinstance(raw_input, str) and raw_input.strip().startswith("{"):
+                return raw_input
+        return None
+
+    @staticmethod
+    def _repair_truncated_json(content: str) -> str:
+        """Repair truncated JSON by closing open structures.
+
+        The on-prem LLM sometimes truncates output at the token limit,
+        leaving unclosed arrays, objects, or strings. This method closes
+        them to produce valid (but incomplete) JSON.
+        """
+        content = content.rstrip()
+
+        # Track open structures
+        in_string = False
+        escape_next = False
+        stack = []  # Track open { and [
+
+        for ch in content:
+            if escape_next:
+                escape_next = False
+                continue
+            if ch == '\\' and in_string:
+                escape_next = True
+                continue
+            if ch == '"':
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
+            if ch in ('{', '['):
+                stack.append(ch)
+            elif ch == '}' and stack and stack[-1] == '{':
+                stack.pop()
+            elif ch == ']' and stack and stack[-1] == '[':
+                stack.pop()
+
+        # If we're inside a string, close it
+        if in_string:
+            content += '"'
+
+        # Close trailing comma before closing brackets
+        content = re.sub(r',\s*$', '', content)
+
+        # Close open structures in reverse order
+        for opener in reversed(stack):
+            content += ']' if opener == '[' else '}'
+
+        return content
 
     def _plan_from_dict(self, plan_json: dict, task: "TaskInput") -> "ImplementationPlan":
         """Build ImplementationPlan from a parsed JSON dict."""

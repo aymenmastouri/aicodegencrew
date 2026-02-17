@@ -76,7 +76,7 @@ Do NOT write the markdown content in your response text.
 
 CORRECT execution pattern:
 1. Call 5-10 information-gathering tools (get_statistics, list_components_by_stereotype, etc.)
-2. Build your complete markdown document in memory (8-12 pages)
+2. Build your complete markdown document in memory
 3. ACTUALLY CALL: doc_writer(file_path="<path>", content="<FULL_MARKDOWN_HERE>")
 4. After the tool returns success, respond with ONLY: "Chapter completed."
 
@@ -302,6 +302,22 @@ class MiniCrewBase(ABC):
                 result_str = str(result)
                 if expected_files:
                     self._validate_and_fallback(name, result_str, expected_files, tracker)
+
+                    # Retry once if stubs were created (doc_writer not called)
+                    if attempt < _MAX_RETRIES:
+                        base = self._output_dir
+                        has_stub = any(
+                            (base / fp).exists()
+                            and "auto-generated as a stub" in (base / fp).read_text(encoding="utf-8")[:200]
+                            for fp in expected_files
+                        )
+                        if has_stub:
+                            logger.warning(
+                                f"[{self.crew_name}] {name}: Stub detected, retrying mini-crew "
+                                f"(attempt {attempt + 1}/{_MAX_RETRIES})"
+                            )
+                            uninstall_guardrails(tracker)
+                            continue
 
                 checkpoint = {
                     "crew": name,

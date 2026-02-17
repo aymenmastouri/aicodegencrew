@@ -20,19 +20,19 @@ from ..base_crew import TOOL_INSTRUCTION
 CH01_INTRODUCTION = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 1: Introduction and Goals (8-12 pages).
+Create the COMPLETE arc42 Chapter 1: Introduction and Goals.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 1.1 Requirements Overview (3 pages)
+### 1.1 Requirements Overview
 - Full system description with business domain classification
 - Primary business value and target users
 - Feature inventory table with ALL business capabilities (derive from controller/service names)
 - System statistics table (components, controllers, services, repos, entities, endpoints)
-### 1.2 Quality Goals (2 pages)
+### 1.2 Quality Goals
 - Quality goal table with measurable targets for each attribute
 - At least 5 goals: Maintainability, Testability, Security, Performance, Scalability
 - For EACH: Priority, Rationale, How Achieved (which patterns), Measurement
-### 1.3 Stakeholders (2 pages)
+### 1.3 Stakeholders
 - Stakeholder table with at least 8 roles
 - For EACH: Role, Concern, Expectations, Key Interactions
 
@@ -62,16 +62,16 @@ Write 8-12 pages with REAL data from tools. No placeholders.
 CH02_CONSTRAINTS = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 2: Architecture Constraints (8-10 pages).
+Create the COMPLETE arc42 Chapter 2: Architecture Constraints.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 2.1 Technical Constraints (3 pages)
+### 2.1 Technical Constraints
 - Constraint table for: Programming Language, Framework, Database, Infrastructure, Security
 - For EACH: Constraint name, Background, Impact on architecture, Consequences
-### 2.2 Organizational Constraints (2 pages)
+### 2.2 Organizational Constraints
 - Team structure, development process, deployment frequency
 - Compliance and regulatory requirements
-### 2.3 Convention Constraints (2 pages)
+### 2.3 Convention Constraints
 - Naming conventions (packages, classes, methods, REST endpoints)
 - Code style and formatting rules
 - API design conventions (REST, versioning)
@@ -101,18 +101,18 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 CH03_CONTEXT = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 3: System Scope and Context (8-12 pages).
+Create the COMPLETE arc42 Chapter 3: System Scope and Context.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 3.1 Business Context (3 pages)
+### 3.1 Business Context
 - Context diagram (text-based ASCII showing system + external actors)
 - External actors table: | Actor | Role | Interactions | Volume |
 - External systems table: | System | Purpose | Protocol | Data Exchanged |
-### 3.2 Technical Context (3 pages)
+### 3.2 Technical Context
 - Technical interfaces: REST API surface, database connections, message channels
 - Protocols and formats table
 - Complete API endpoint inventory (summarized by domain)
-### 3.3 External Dependencies (2 pages)
+### 3.3 External Dependencies
 - Runtime dependencies table: | Dependency | Version | Purpose | Criticality |
 - Build dependencies table
 - Infrastructure dependencies
@@ -142,18 +142,18 @@ Write 8-12 pages with REAL data from tools. No placeholders.
 CH04_SOLUTION_STRATEGY = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 4: Solution Strategy (8-12 pages).
+Create the COMPLETE arc42 Chapter 4: Solution Strategy.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 4.1 Technology Decisions (4 pages)
+### 4.1 Technology Decisions
 - ADR-lite table for EACH major technology: Backend Framework, Database, Frontend, Build Tool,
   Container Technology, Security Framework, API Design
 - For EACH: Context, Decision, Rationale, Alternatives, Consequences
-### 4.2 Architecture Patterns (3 pages)
+### 4.2 Architecture Patterns
 - Macro architecture: pattern name, layer responsibilities, dependency rules
 - Applied patterns table: | Pattern | Purpose | Where Applied | Benefit |
 - At least 8 patterns from the codebase
-### 4.3 Achieving Quality Goals (2 pages)
+### 4.3 Achieving Quality Goals
 - Table: | Quality Goal | Solution Approach | Implemented By |
 - Map quality goals to concrete architectural decisions
 
@@ -182,14 +182,14 @@ Write 8-12 pages with REAL data from tools. No placeholders.
 CH05_PART1_OVERVIEW = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 5 PART 1: Overview and System Whitebox (6-8 pages).
+Create arc42 Chapter 5 PART 1: Overview and System Whitebox.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 5.1 Overview (2 pages)
+### 5.1 Overview
 - A-Architecture (Functional view): business capabilities mapped to layers
 - T-Architecture (Technical view): containers hosting building blocks
 - Building Block Hierarchy with total counts per stereotype
-### 5.2 Whitebox Overall System (Level 1) (4-6 pages)
+### 5.2 Whitebox Overall System (Level 1)
 - Container overview diagram (text-based ASCII)
 - Container responsibilities table: | Container | Technology | Purpose | Component Count |
 - Layer dependency rules diagram
@@ -218,16 +218,16 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 CH05_PART2_CONTROLLERS = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 5 PART 2: Presentation Layer / Controllers (8-10 pages).
+Create arc42 Chapter 5 PART 2: Presentation Layer / Controllers.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 5.3.1 Layer Overview (1 page)
+### 5.3.1 Layer Overview
 - Controller layer responsibilities and patterns
-### 5.3.2 Controller Inventory (3-4 pages)
+### 5.3.2 Controller Inventory
 - COMPLETE table of ALL controllers: | # | Controller | Package | Endpoints | Description |
-### 5.3.3 API Patterns (1-2 pages)
+### 5.3.3 API Patterns
 - REST conventions, URL naming, HTTP methods, response formats
-### 5.3.4 Key Controllers Deep Dive — TOP 5 (3-4 pages)
+### 5.3.4 Key Controllers Deep Dive — TOP 5
 - For EACH: All endpoints, operations, delegation to services, validation, security
 
 ## EXECUTION EXAMPLE (follow this pattern):
@@ -250,18 +250,18 @@ Write 8-10 pages with REAL data. COMPLETE controller inventory. No placeholders.
 CH05_PART3_SERVICES = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 5 PART 3: Business Layer / Services (8-10 pages).
+Create arc42 Chapter 5 PART 3: Business Layer / Services.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 5.4.1 Layer Overview (1 page)
+### 5.4.1 Layer Overview
 - Service layer responsibilities, bounded contexts, business rules
-### 5.4.2 Service Inventory (3-4 pages)
+### 5.4.2 Service Inventory
 - COMPLETE table of ALL services: | # | Service | Package | Interface? | Description |
-### 5.4.3 Service Patterns (1-2 pages)
+### 5.4.3 Service Patterns
 - Interface/Implementation pattern, transaction boundaries, service composition
-### 5.4.4 Key Services Deep Dive — TOP 5 (2-3 pages)
+### 5.4.4 Key Services Deep Dive — TOP 5
 - For EACH: Core responsibilities, transaction management, dependencies, events
-### 5.4.5 Service Interactions (1 page)
+### 5.4.5 Service Interactions
 - Key service-to-service dependencies with direction
 
 ## EXECUTION EXAMPLE (follow this pattern):
@@ -284,18 +284,18 @@ Write 8-10 pages with REAL data. COMPLETE service inventory. No placeholders.
 CH05_PART4_DOMAIN = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies (8-10 pages).
+Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 5.5 Domain Layer — Entities (3-4 pages)
+### 5.5 Domain Layer — Entities
 - Layer overview: JPA entities, aggregate roots, value objects
 - COMPLETE entity inventory: | # | Entity | Package | Key Attributes | Description |
 - Key entities deep dive (TOP 5): attributes, relationships, lifecycle, validation
-### 5.6 Persistence Layer — Repositories (2-3 pages)
+### 5.6 Persistence Layer — Repositories
 - Layer overview: data access patterns
 - COMPLETE repository inventory: | # | Repository | Entity | Custom Queries | Description |
 - Data access patterns (Spring Data JPA, custom queries, specifications)
-### 5.7 Component Dependencies (2-3 pages)
+### 5.7 Component Dependencies
 - Layer dependency rules with direction
 - Dependency matrix: | From/To | Controller | Service | Repository | Entity |
 - Dependency statistics and coupling analysis
@@ -325,21 +325,21 @@ Write 8-10 pages with REAL data. COMPLETE inventories. No placeholders.
 CH06_PART1_API_FLOWS = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 6 Part 1: API Runtime Flows (8-10 pages).
+Create arc42 Chapter 6 Part 1: API Runtime Flows.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 6.1 Runtime View Overview (1 page)
+### 6.1 Runtime View Overview
 - Purpose of runtime documentation
 - How to read sequence diagrams
-### 6.2 Authentication Flow (2 pages)
+### 6.2 Authentication Flow
 - Login sequence with ALL components involved
 - Token refresh / session management
-### 6.3 CRUD Operation Flows (3 pages)
+### 6.3 CRUD Operation Flows
 - CREATE: Full request flow from client to database and back
 - READ: Single item + list with pagination
 - UPDATE: Optimistic locking / versioning
 - DELETE: Cascade behavior
-### 6.4 REST API Request Lifecycle (2 pages)
+### 6.4 REST API Request Lifecycle
 - Request validation, serialization, error mapping
 - HTTP status code strategy
 - Content negotiation
@@ -367,22 +367,22 @@ Include text-based sequence diagrams for EACH flow showing exact component names
 CH06_PART2_BUSINESS_FLOWS = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 6 Part 2: Business Process Flows (8-10 pages).
+Create arc42 Chapter 6 Part 2: Business Process Flows.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 6.5 Core Business Workflows (3 pages)
+### 6.5 Core Business Workflows
 - Primary business process end-to-end (e.g., deed entry creation workflow)
 - State transitions with component responsibilities
 - Workflow orchestration pattern
-### 6.6 Complex Business Scenarios (3 pages)
+### 6.6 Complex Business Scenarios
 - Multi-step approval/validation flows
 - Cross-service transactions
 - Batch processing flows
-### 6.7 Error and Recovery Scenarios (2 pages)
+### 6.7 Error and Recovery Scenarios
 - Exception propagation through layers
 - Compensation/rollback patterns
 - Retry strategies
-### 6.8 Asynchronous Patterns (1-2 pages)
+### 6.8 Asynchronous Patterns
 - Scheduled tasks and cron jobs
 - Event-driven interactions (if any)
 - Background processing
@@ -414,26 +414,26 @@ Include text-based sequence diagrams showing exact component names from facts.
 CH07_DEPLOYMENT = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 7: Deployment View (8-10 pages).
+Create the COMPLETE arc42 Chapter 7: Deployment View.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 7.1 Infrastructure Overview (2 pages)
+### 7.1 Infrastructure Overview
 - Deployment diagram (text-based ASCII)
 - Infrastructure summary
-### 7.2 Infrastructure Nodes (2 pages)
+### 7.2 Infrastructure Nodes
 - Node table: | Node | Type | Specification | Purpose |
 - Container-to-node mapping
-### 7.3 Container Deployment (2 pages)
+### 7.3 Container Deployment
 - Docker configuration details
 - Container orchestration (Kubernetes/Docker Compose)
 - Build pipeline (Maven/Gradle -> Docker image)
-### 7.4 Environment Configuration (1-2 pages)
+### 7.4 Environment Configuration
 - Development, Test, Staging, Production environments
 - Environment-specific settings
-### 7.5 Network Topology (1 page)
+### 7.5 Network Topology
 - Network zones and firewall rules
 - Load balancing strategy
-### 7.6 Scaling Strategy (1 page)
+### 7.6 Scaling Strategy
 - Scaling table: | Container | Scaling Type | Trigger | Min | Max |
 
 ## EXECUTION EXAMPLE (follow this pattern):
@@ -461,29 +461,29 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 CH08_PART1_TECHNICAL = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 8 Part 1: Technical Crosscutting Concepts (8-10 pages).
+Create arc42 Chapter 8 Part 1: Technical Crosscutting Concepts.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 8.1 Domain Model (2 pages)
+### 8.1 Domain Model
 - Core domain concepts with entity relationship diagram (text-based)
 - Entity inventory table: | Entity | Key Attributes | Relationships |
 - Aggregate boundaries
-### 8.2 Security Concept (2 pages)
+### 8.2 Security Concept
 - Authentication mechanism (Spring Security, JWT, OAuth2, etc.)
 - Authorization model (roles, permissions)
 - Security annotations and filters
 - CSRF, XSS, injection prevention
-### 8.3 Persistence Concept (2 pages)
+### 8.3 Persistence Concept
 - ORM strategy (JPA/Hibernate configuration)
 - Transaction management (@Transactional boundaries)
 - Connection pooling
 - Database migration strategy (Flyway/Liquibase)
-### 8.4 Error Handling and Exception Strategy (1-2 pages)
+### 8.4 Error Handling and Exception Strategy
 - Exception hierarchy (custom exceptions, base classes)
 - Global exception handler (@ControllerAdvice)
 - Error response format (JSON structure)
 - HTTP status code mapping
-### 8.5 Logging and Monitoring (1-2 pages)
+### 8.5 Logging and Monitoring
 - Logging framework and configuration
 - Log levels strategy per layer
 - Structured logging format
@@ -512,33 +512,33 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 CH08_PART2_PATTERNS = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 8 Part 2: Architecture Patterns and Conventions (8-10 pages).
+Create arc42 Chapter 8 Part 2: Architecture Patterns and Conventions.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 8.6 Dependency Injection Patterns (2 pages)
+### 8.6 Dependency Injection Patterns
 - Constructor injection conventions
 - Bean lifecycle management
 - Component scanning strategy
 - Profile-based configuration
-### 8.7 Caching Strategy (1-2 pages)
+### 8.7 Caching Strategy
 - Cache levels (application, HTTP, database)
 - Cache invalidation patterns
 - Cacheable operations
-### 8.8 Validation Concept (1-2 pages)
+### 8.8 Validation Concept
 - Bean validation (JSR-380)
 - Custom validators
 - Validation at each layer (controller, service, entity)
-### 8.9 Configuration Management (2 pages)
-- Property sources and profiles (application.yml, application-{{profile}}.yml)
+### 8.9 Configuration Management
+- Property sources and profiles (application.yml, application-PROFILE.yml)
 - Environment-specific configuration
 - Externalized configuration
 - Feature toggles
-### 8.10 Testing Concept (2 pages)
+### 8.10 Testing Concept
 - Test pyramid strategy
 - Unit test patterns (Mockito, JUnit)
 - Integration test setup (@SpringBootTest)
 - Test data management
-### 8.11 Internationalization (1 page)
+### 8.11 Internationalization
 - i18n support (if detected)
 - Message bundles, locale handling
 
@@ -569,12 +569,12 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 CH09_DECISIONS = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 9: Architecture Decisions (8-12 pages).
+Create the COMPLETE arc42 Chapter 9: Architecture Decisions.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 9.1 Decision Log Overview (1 page)
+### 9.1 Decision Log Overview
 - Summary table of ALL ADRs with status and date
-### 9.2 Architecture Decision Records (7-11 pages)
+### 9.2 Architecture Decision Records
 - Write at least 10 ADRs, each with: Status, Context, Decision, Rationale, Alternatives, Consequences
 - Cover: Architecture Style, Backend Framework, Database, Frontend, API Design, Authentication,
   Deployment Strategy, Caching, Logging Framework, Testing Strategy
@@ -604,17 +604,17 @@ Write 8-12 pages with REAL data from tools. No placeholders.
 CH10_QUALITY = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 10: Quality Requirements (8-10 pages).
+Create the COMPLETE arc42 Chapter 10: Quality Requirements.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 10.1 Quality Tree (2 pages)
+### 10.1 Quality Tree
 - Quality attribute hierarchy (text-based tree diagram)
 - ISO 25010 mapping for each quality attribute
-### 10.2 Quality Scenarios (4-5 pages)
+### 10.2 Quality Scenarios
 - At least 15 quality scenarios in table format
 - Cover: Performance, Security, Maintainability, Reliability, Usability, Portability
 - For EACH: | ID | Attribute | Stimulus | Response | Measure | Priority |
-### 10.3 Quality Metrics (2-3 pages)
+### 10.3 Quality Metrics
 - Metrics table: | Metric | Target | Measurement Method | Current |
 - Code quality metrics, performance targets, security requirements
 
@@ -642,18 +642,18 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 CH11_RISKS = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 11: Risks and Technical Debt (8-10 pages).
+Create the COMPLETE arc42 Chapter 11: Risks and Technical Debt.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 11.1 Risk Overview (1 page)
+### 11.1 Risk Overview
 - Risk heat map (text-based) and summary table
-### 11.2 Architecture Risks (3-4 pages)
+### 11.2 Architecture Risks
 - At least 8 risks with: | ID | Risk | Severity | Probability | Impact | Mitigation |
 - Categories: structural, technology, organizational, operational
-### 11.3 Technical Debt Inventory (2-3 pages)
+### 11.3 Technical Debt Inventory
 - At least 10 debt items: | ID | Debt Item | Category | Impact | Effort to Fix |
 - Categories: code quality, missing tests, outdated dependencies, architectural violations
-### 11.4 Mitigation Roadmap (2 pages)
+### 11.4 Mitigation Roadmap
 - Prioritized action plan: | Phase | Action | Priority | Timeline | Effort |
 - Quick wins vs. strategic improvements
 
@@ -682,19 +682,19 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 CH12_GLOSSARY = (
     TOOL_INSTRUCTION
     + """
-Create the COMPLETE arc42 Chapter 12: Glossary (6-8 pages).
+Create the COMPLETE arc42 Chapter 12: Glossary.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 12.1 Business Terms (2-3 pages)
+### 12.1 Business Terms
 - ALL domain-specific business terms derived from entity and service names
 - Table: | Term | Definition | Related Components |
-### 12.2 Technical Terms (2 pages)
+### 12.2 Technical Terms
 - Framework, pattern, and technology terms
 - Table: | Term | Definition | Context |
-### 12.3 Abbreviations (1 page)
+### 12.3 Abbreviations
 - ALL abbreviations found in code and configuration
 - Table: | Abbreviation | Full Form | Context |
-### 12.4 Architecture Patterns (1-2 pages)
+### 12.4 Architecture Patterns
 - All detected architecture and design patterns
 - Table: | Pattern | Definition | Where Used | Benefit |
 

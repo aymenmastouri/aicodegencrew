@@ -595,12 +595,14 @@ class PipelineExecutor:
                     crew_type = data.get("crew_type", "")
                     parent_phase = self._CREW_PHASE_MAP.get(crew_type, "")
                     tokens = data.get("total_tokens", 0) or data.get("tokens", 0) or 0
+                    raw_tasks = data.get("tasks", [])
+                    tasks_list = raw_tasks if isinstance(raw_tasks, list) else []
                     sub = {
                         "name": data.get("crew_name", crew_type),
                         "status": PHASE_PROGRESS_COMPLETED if event_name == "mini_crew_complete" else PHASE_PROGRESS_FAILED,
                         "duration_seconds": data.get("duration_seconds"),
                         "total_tokens": tokens,
-                        "tasks": data.get("tasks", []),
+                        "tasks": tasks_list,
                     }
                     if parent_phase not in sub_phases:
                         sub_phases[parent_phase] = []

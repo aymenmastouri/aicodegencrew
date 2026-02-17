@@ -204,7 +204,7 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
             (
                 "context",
                 CONTEXT_DOC_DESCRIPTION,
-                "Complete C4 Context document (6-8 pages)",
+                "Complete C4 Context document",
                 CONTEXT_DIAGRAM_DESCRIPTION,
                 "C4 Context DrawIO diagram created",
                 ["c4/c4-context.md", "c4/c4-context.drawio"],
@@ -212,7 +212,7 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
             (
                 "container",
                 CONTAINER_DOC_DESCRIPTION,
-                "Complete C4 Container document (6-8 pages)",
+                "Complete C4 Container document",
                 CONTAINER_DIAGRAM_DESCRIPTION,
                 "C4 Container DrawIO diagram created",
                 ["c4/c4-container.md", "c4/c4-container.drawio"],
@@ -220,7 +220,7 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
             (
                 "component",
                 COMPONENT_DOC_DESCRIPTION,
-                "Complete C4 Component document (6-8 pages)",
+                "Complete C4 Component document",
                 COMPONENT_DIAGRAM_DESCRIPTION,
                 "C4 Component DrawIO diagram created",
                 ["c4/c4-component.md", "c4/c4-component.drawio"],
@@ -228,7 +228,7 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
             (
                 "deployment",
                 DEPLOYMENT_DOC_DESCRIPTION,
-                "Complete C4 Deployment document (4-6 pages)",
+                "Complete C4 Deployment document",
                 DEPLOYMENT_DIAGRAM_DESCRIPTION,
                 "C4 Deployment DrawIO diagram created",
                 ["c4/c4-deployment.md", "c4/c4-deployment.drawio"],

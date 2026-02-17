@@ -9,7 +9,7 @@ from ..schemas import KnowledgeFile, KnowledgeSummary
 
 # Directories excluded from the Knowledge Explorer UI.
 # discover contains ChromaDB binary data (not human-readable).
-_EXCLUDED_DIRS = {"discover"}
+_EXCLUDED_DIRS = {"discover", "archive"}
 
 # File types recognized for rendering.
 _FILE_TYPES = {

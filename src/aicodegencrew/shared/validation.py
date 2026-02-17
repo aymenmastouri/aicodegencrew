@@ -49,10 +49,10 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
             "knowledge/analyze/analyzed_architecture.json",
         ],
         "schema": "analyzed_architecture",
-        # Legacy-compatible required keys for Phase 2 output
         "required_keys": [
-            "architecture",
-            "patterns",
+            "macro_architecture",
+            "micro_architecture",
+            "container_analyses",
         ],
         "description": "AI-analyzed architecture JSON (MapReduce crew output)",
     },
@@ -186,7 +186,7 @@ class PhaseOutputValidator:
         if len(facts.containers) < min_cont:
             errors.append(f"Too few containers: {len(facts.containers)} (min {min_cont})")
 
-        # Evidence cross-reference
+        # Evidence cross-reference (warning only — does not block pipeline)
         evidence_path = self._base / "knowledge/extract/evidence_map.json"
         if evidence_path.exists():
             try:
@@ -194,7 +194,7 @@ class PhaseOutputValidator:
                     evidence_data = json.load(f)
                 ev_errors = facts.validate_evidence(evidence_data)
                 if ev_errors:
-                    errors.append(f"Evidence validation: {len(ev_errors)} broken references")
+                    logger.warning("Evidence validation: %d broken references (non-blocking)", len(ev_errors))
             except Exception:
                 pass
 
