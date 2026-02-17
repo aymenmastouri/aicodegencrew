@@ -735,6 +735,21 @@ class IndexingPipeline:
         logger.info(f"Step 2-5/6: Processing {len(all_file_paths)} files in batches of {self.config.batch_size}...")
         self._process_batches(all_file_paths, fingerprint, fp_type)
 
+        # Update collection fingerprint AFTER all batches complete successfully.
+        # This prevents a cancelled run from leaving a stale fingerprint that
+        # causes the next run to falsely skip re-indexing.
+        try:
+            coll = self.chroma_tool._get_client().get_collection(name=self.config.collection_name)
+            coll.modify(metadata={
+                "repo_fingerprint": fingerprint,
+                "repo_fingerprint_type": fp_type,
+                "repo_path": str(self.config.repo_path),
+                "description": "Repository documentation chunks",
+            })
+            logger.info(f"[INDEX] Updated collection fingerprint to {fingerprint[:8]}")
+        except Exception as e:
+            logger.warning(f"Could not update collection fingerprint: {e}")
+
         # Step 6: Write artifacts (symbols.jsonl, evidence.jsonl)
         logger.info("Step 6/6: Writing discover artifacts...")
         self._write_artifacts()
@@ -947,15 +962,14 @@ class IndexingPipeline:
             if pct > 5:
                 logger.warning(f"Embedding failure rate {pct:.1f}% ({none_count}/{len(embeddings_batch)} None)")
 
-        # Store
+        # Store (fingerprint is updated AFTER all batches complete, not per-batch,
+        # so a cancelled run doesn't leave a stale fingerprint in metadata)
         index_res = self.chroma_tool._run(
             "upsert",
             chunks=chunks_batch,
             embeddings=embeddings_batch,
             collection_name=self.config.collection_name,
             collection_metadata={
-                "repo_fingerprint": fingerprint,
-                "repo_fingerprint_type": fp_type,
                 "repo_path": repo_path_str,
             },
         )
