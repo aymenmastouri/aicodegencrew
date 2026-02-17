@@ -19,9 +19,27 @@ from pydantic import BaseModel, Field
 
 from ..utils.chroma_client import get_chroma_http_config
 from ..utils.logger import setup_logger
+from ..utils.ollama_client import OllamaClient
 from ..utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, truncate_response
 
 logger = setup_logger(__name__)
+
+
+class OllamaEmbeddingFunction:
+    """ChromaDB-compatible embedding function using Ollama.
+
+    Matches the embedding model used during indexing (Phase 0) to prevent
+    dimension mismatches. ChromaDB calls __call__(input) during query().
+    """
+
+    def __init__(self):
+        self._client = OllamaClient()
+
+    def __call__(self, input: list[str]) -> list[list[float]]:
+        """Embed a list of texts using Ollama (same model as indexing)."""
+        if not input:
+            return []
+        return self._client.embed_batch(input)
 
 
 class RAGQueryInput(BaseModel):
@@ -133,13 +151,16 @@ class RAGQueryTool(BaseTool):
                     ),
                 )
 
-            # Get collection (don't create if not exists)
-            # NOTE: Do NOT pass embedding_function to get_collection()!
-            # ChromaDB will use whatever embedding function was configured during collection creation.
-            # Passing a different embedding function here causes a conflict.
+            # Get collection with Ollama embedding function.
+            # The indexing pipeline pre-computes embeddings via Ollama (nomic-embed-text, 768-dim)
+            # but does NOT set an embedding_function on the collection. Without passing the
+            # matching function here, ChromaDB defaults to all-MiniLM-L6-v2 (384-dim) for
+            # query_texts, causing a dimension mismatch.
             try:
+                embed_fn = OllamaEmbeddingFunction()
                 self._collection = self._client.get_collection(
                     name=self.collection_name,
+                    embedding_function=embed_fn,
                 )
                 logger.info(f"Connected to ChromaDB collection: {self.collection_name}")
             except Exception as e:
