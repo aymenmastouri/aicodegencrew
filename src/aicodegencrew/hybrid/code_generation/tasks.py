@@ -1,16 +1,14 @@
 """Implement Crew: Task definitions for single-agent execution.
 
 Two tasks:
-1. implement_task — Developer implements all code changes (output_pydantic=ImplementationResult)
-2. fix_task — Developer fixes build errors (no output_pydantic — fixes are via write_code() tool)
+1. implement_task — Developer implements all code changes via write_code() tool calls
+2. fix_task — Developer fixes build errors via write_code() tool calls
 
-CrewAI best practices:
-- output_pydantic for structured implement results
-- crewai_patches.py ensures max-iter handler returns text (not tool calls)
-- Code is captured via write_code() tool calls into shared staging dict
+NOTE: Neither task uses output_pydantic. The implement task's value is in its
+SIDE EFFECTS (write_code() calls into the shared staging dict), not in the
+output JSON. Using output_pydantic would make the LLM skip tool calls and
+produce JSON directly, resulting in 0 files generated.
 """
-
-from .schemas import ImplementationResult
 
 # =============================================================================
 # TASK-TYPE INSTRUCTIONS (embedded in implement task description)
@@ -89,12 +87,11 @@ def implement_task(
     risks: list[str] | None = None,
     estimated_complexity: str = "",
     architecture_context: dict | None = None,
-) -> tuple[str, str, type[ImplementationResult]]:
+) -> tuple[str, str, None]:
     """Developer task: implement code changes using all available tools.
 
-    Returns (description, expected_output, output_pydantic) for CrewAI Task construction.
-    Uses ImplementationResult Pydantic model (CrewAI best practice).
-    crewai_patches.py ensures max-iter handler returns text, preventing validation errors.
+    Returns (description, expected_output, None) for CrewAI Task construction.
+    No output_pydantic — the task's value is in write_code() side effects, not output JSON.
     """
     ordered = "\n".join(f"  {i+1}. {p}" for i, p in enumerate(dependency_order)) if dependency_order else "  (none)"
     steps_text = "\n".join(f"  {i+1}. {s}" for i, s in enumerate(implementation_steps)) if implementation_steps else "  (none)"
@@ -207,11 +204,10 @@ DO NOT call any more tools after writing all files - just return the JSON.
 """
 
     expected = (
-        f"A JSON object conforming to ImplementationResult schema with: task_id={task_id}, "
-        f"files_processed array with {len(dependency_order)} entries (one per file in dependency order), "
-        f"total_files={len(dependency_order)}, and a summary string."
+        f"After writing ALL {len(dependency_order)} files using write_code(), return a brief JSON summary: "
+        f"task_id={task_id}, files_processed (one entry per file with status), total_files, and summary string."
     )
-    return task_description, expected, ImplementationResult
+    return task_description, expected, None
 
 
 # =============================================================================

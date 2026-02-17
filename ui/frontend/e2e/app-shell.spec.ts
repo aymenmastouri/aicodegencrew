@@ -19,9 +19,9 @@ test.describe('App Shell', () => {
     await expect(page.locator('.nav-group-label').nth(2)).toContainText('Monitor');
   });
 
-  test('should render all 11 nav items', async ({ page }) => {
+  test('should render all 12 nav items', async ({ page }) => {
     const navItems = page.locator('mat-nav-list a[mat-list-item]');
-    await expect(navItems).toHaveCount(11);
+    await expect(navItems).toHaveCount(12);
   });
 
   test('should show version badge in sidenav footer', async ({ page }) => {

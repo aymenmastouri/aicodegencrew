@@ -87,9 +87,9 @@ test.describe('Demo Showcase', () => {
       await pause(page);
     }
 
-    // ── 2. SIDENAV — 11 items ──
+    // ── 2. SIDENAV — 12 items (incl. MCP Servers) ──
     const navItems = page.locator('mat-nav-list a[mat-list-item]');
-    await expect(navItems).toHaveCount(11);
+    await expect(navItems).toHaveCount(12);
     await pause(page, LONG_PAUSE);
 
     // ── 3. KNOWLEDGE — empty state ──
@@ -158,6 +158,33 @@ test.describe('Demo Showcase', () => {
     await page.evaluate(() => window.scrollTo(0, 0));
     await pause(page);
 
+    // ── 6b. UPLOAD JIRA TASK FILE (BNUVZ-12529.xml) ──
+    const taskCard = page.locator('.category-card:has-text("Task Files")');
+    await taskCard.scrollIntoViewIfNeeded();
+    await pause(page, LONG_PAUSE);
+
+    // Clean up any leftover BNUVZ files from previous runs
+    const existingFiles = taskCard.locator('.file-row:has-text("BNUVZ-12529")');
+    let leftoverCount = await existingFiles.count();
+    while (leftoverCount > 0) {
+      await existingFiles.first().locator('button').click();
+      await pause(page, PAUSE);
+      leftoverCount = await existingFiles.count();
+    }
+
+    const fileInput = taskCard.locator('input[type="file"]');
+    await fileInput.setInputFiles('C:\\projects\\BNUVZ-12529.xml');
+
+    // Wait for upload success snackbar
+    const uploadSnackbar = page.locator('.mat-mdc-snack-bar-container');
+    await expect(uploadSnackbar).toBeVisible({ timeout: 10_000 });
+    await pause(page, READ_PAUSE);
+
+    // Show uploaded file in the list
+    const uploadedFile = taskCard.locator('.file-name:has-text("BNUVZ-12529.xml")');
+    await expect(uploadedFile).toBeVisible({ timeout: 5_000 });
+    await pause(page, LONG_PAUSE);
+
     // ── 7. COLLECTORS ──
     await navigateTo(page, 'Collectors', '/collectors');
     await expect(page.locator('.collectors-table')).toBeVisible({ timeout: 10_000 });
@@ -187,6 +214,20 @@ test.describe('Demo Showcase', () => {
     for (let i = Math.min(3, presetCount) - 1; i >= 0; i--) {
       await presetPanels.nth(i).locator('mat-expansion-panel-header').click();
       await pause(page, 400);
+    }
+
+    // ── 8b. MCP SERVERS ──
+    await navigateTo(page, 'MCP Servers', '/mcps');
+    const mcpGrid = page.locator('.grid');
+    if (await mcpGrid.isVisible({ timeout: 10_000 }).catch(() => false)) {
+      await pause(page, LONG_PAUSE);
+      // Scroll through MCP cards
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+      await pause(page, LONG_PAUSE);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await pause(page, LONG_PAUSE);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await pause(page);
     }
 
     // ════════════════════════════════════════════════
@@ -311,10 +352,10 @@ test.describe('Demo Showcase', () => {
       await pause(page, LONG_PAUSE);
     }
 
-    // WAIT FOR COMPLETION (up to 30 min, poll every 30s with log scroll)
+    // WAIT FOR COMPLETION (up to 60 min, poll every 30s with log scroll)
     const completed = page.locator('.status-card.state-completed');
     const failed = page.locator('.status-card.state-failed');
-    const maxWaitMs = 1_800_000;
+    const maxWaitMs = 3_600_000;
     const pollMs = 30_000;
     const startTime = Date.now();
     let pipelineDone = false;
@@ -436,22 +477,34 @@ test.describe('Demo Showcase', () => {
     await expect(page.locator('mat-tab-group')).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    // Architecture tab — expand doc groups, preview files
+    // Architecture tab — expand doc groups (collapsed by default), preview files
     const archTab = page.getByRole('tab', { name: /Architecture/i });
     if (await archTab.isVisible().catch(() => false)) {
       await archTab.click();
       await pause(page);
 
-      const docFileCards = page.locator('.doc-file-card');
-      const archCardCount = await docFileCards.count();
-      for (let i = 0; i < Math.min(archCardCount, 5); i++) {
-        await docFileCards.nth(i).click();
-        const preview = page.locator('.doc-preview').first();
-        if (await preview.isVisible({ timeout: 5_000 }).catch(() => false)) {
-          await pause(page, READ_PAUSE);
-          await preview.evaluate((el) => el.scrollTo(0, el.scrollHeight / 2));
-          await pause(page, LONG_PAUSE);
+      // Doc groups are collapsed by default — expand each, then preview files
+      const docGroupHeaders = page.locator('.doc-group-header');
+      const groupCount = await docGroupHeaders.count();
+      for (let g = 0; g < groupCount; g++) {
+        await docGroupHeaders.nth(g).click();
+        await pause(page);
+
+        const docFileCards = page.locator('.doc-group-files:visible .doc-file-card');
+        const cardCount = await docFileCards.count();
+        for (let i = 0; i < Math.min(cardCount, 3); i++) {
+          await docFileCards.nth(i).click();
+          const preview = page.locator('.doc-preview').first();
+          if (await preview.isVisible({ timeout: 5_000 }).catch(() => false)) {
+            await pause(page, g === 0 && i === 0 ? READ_PAUSE : PAUSE);
+            await preview.evaluate((el) => el.scrollTo(0, el.scrollHeight / 2));
+            await pause(page, LONG_PAUSE);
+          }
         }
+
+        // Collapse group before opening next
+        await docGroupHeaders.nth(g).click();
+        await pause(page, 400);
       }
     }
 
@@ -503,6 +556,12 @@ test.describe('Demo Showcase', () => {
       if (await branchGrid.isVisible({ timeout: 5_000 }).catch(() => false)) {
         await pause(page, READ_PAUSE);
       }
+    }
+
+    // ── 11b. MCP SERVERS (post-run) ──
+    await navigateTo(page, 'MCP Servers', '/mcps');
+    if (await page.locator('.grid').isVisible({ timeout: 10_000 }).catch(() => false)) {
+      await pause(page, LONG_PAUSE);
     }
 
     // ── 12. METRICS ──
@@ -594,6 +653,29 @@ test.describe('Demo Showcase', () => {
 
     // Back to desktop
     await page.setViewportSize({ width: 1920, height: 1080 });
+    await pause(page, LONG_PAUSE);
+
+    // ════════════════════════════════════════════════
+    // EPILOGUE: CLEANUP — delete inputs + reset all
+    // ════════════════════════════════════════════════
+
+    // Delete uploaded BNUVZ file(s) from Task Files
+    await page.goto('/inputs');
+    await expect(page.locator('.category-card')).toHaveCount(4, { timeout: 10_000 });
+    await pause(page);
+
+    const cleanupTaskCard = page.locator('.category-card:has-text("Task Files")');
+    const cleanupFiles = cleanupTaskCard.locator('.file-row:has-text("BNUVZ-12529")');
+    let cleanupCount = await cleanupFiles.count();
+    while (cleanupCount > 0) {
+      await cleanupFiles.first().locator('button').click();
+      await pause(page, PAUSE);
+      cleanupCount = await cleanupFiles.count();
+    }
+    await pause(page);
+
+    // Reset all phase data
+    await page.request.post('http://localhost:4200/api/reset/all').catch(() => {});
     await pause(page, LONG_PAUSE);
 
     // ════════════════════════════════════════════════
