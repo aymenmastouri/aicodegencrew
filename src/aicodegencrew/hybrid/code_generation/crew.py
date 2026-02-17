@@ -338,6 +338,13 @@ class ImplementCrew:
             upgrade_plan=plan.upgrade_plan,
             dependency_order=dependency_order_paths,
             task_source_snapshot=task_source_snapshot,
+            source_files=plan.source_files,
+            requirements=plan.requirements,
+            acceptance_criteria=plan.acceptance_criteria,
+            technical_notes=plan.technical_notes,
+            risks=plan.risks,
+            estimated_complexity=plan.estimated_complexity,
+            architecture_context=plan.architecture_context,
         )
 
         task = Task(

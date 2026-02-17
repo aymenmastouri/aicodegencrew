@@ -82,6 +82,13 @@ def implement_task(
     upgrade_plan: dict | None,
     dependency_order: list[str],
     task_source_snapshot: str = "",
+    source_files: list[str] | None = None,
+    requirements: list[str] | None = None,
+    acceptance_criteria: list[str] | None = None,
+    technical_notes: list[str] | None = None,
+    risks: list[str] | None = None,
+    estimated_complexity: str = "",
+    architecture_context: dict | None = None,
 ) -> tuple[str, str, type[ImplementationResult]]:
     """Developer task: implement code changes using all available tools.
 
@@ -94,11 +101,29 @@ def implement_task(
     type_instructions = _get_type_instructions(task_type, upgrade_plan)
     task_source_snapshot = task_source_snapshot or "(not available)"
 
+    # Format full plan context sections
+    source_files_text = "\n".join(f"  - {f}" for f in (source_files or [])) or "  (none)"
+    requirements_text = "\n".join(f"  - {r}" for r in (requirements or [])) or "  (none)"
+    acceptance_text = "\n".join(f"  - {a}" for a in (acceptance_criteria or [])) or "  (none)"
+    notes_text = "\n".join(f"  - {n}" for n in (technical_notes or [])) or "  (none)"
+    risks_text = "\n".join(f"  - {r}" for r in (risks or [])) or "  (none)"
+
+    arch_ctx_text = ""
+    if architecture_context:
+        arch_ctx_text = (
+            f"\nARCHITECTURE CONTEXT:\n"
+            f"  Style: {architecture_context.get('style', 'unknown')}\n"
+            f"  Layer pattern: {architecture_context.get('layer_pattern', 'unknown')}\n"
+            f"  Quality grade: {architecture_context.get('quality_grade', 'unknown')}\n"
+            f"  Layer compliance: {architecture_context.get('layer_compliance', 'unknown')}"
+        )
+
     task_description = f"""\
 Implement code changes for task {task_id}.
 
 TASK: {summary}
 TYPE: {task_type}
+COMPLEXITY: {estimated_complexity or 'unknown'}
 
 {type_instructions}
 
@@ -112,8 +137,24 @@ SOURCE-OF-TRUTH RULES:
 4. Query architecture facts before code writing.
 5. Never implement requirements that are only in the plan but absent from the original task/evidence.
 
+REQUIREMENTS (from task understanding):
+{requirements_text}
+
+ACCEPTANCE CRITERIA:
+{acceptance_text}
+
+TECHNICAL NOTES:
+{notes_text}
+
 DESCRIPTION:
 {description}
+
+SOURCE FILES (identified by Phase 4 plan):
+{source_files_text}
+
+RISKS:
+{risks_text}
+{arch_ctx_text}
 
 IMPLEMENTATION STEPS:
 {steps_text}
