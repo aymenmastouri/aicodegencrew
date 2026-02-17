@@ -75,10 +75,20 @@ class PlanReader:
         summary = understanding.get("summary", "")
         description = understanding.get("description", "")
 
+        # Understanding fields
+        source_files = raw.get("source_files", [])
+        requirements = understanding.get("requirements", [])
+        acceptance_criteria = understanding.get("acceptance_criteria", [])
+        technical_notes = understanding.get("technical_notes", [])
+        if isinstance(technical_notes, str):
+            technical_notes = [technical_notes] if technical_notes else []
+
         task_type = self._detect_task_type(raw, dev_plan)
         components = self._parse_components(dev_plan.get("affected_components", []))
         steps = dev_plan.get("implementation_steps", [])
         upgrade_plan = dev_plan.get("upgrade_plan")
+        risks = dev_plan.get("risks", [])
+        estimated_complexity = dev_plan.get("estimated_complexity", "")
 
         patterns = {
             "test_strategy": dev_plan.get("test_strategy", {}),
@@ -94,9 +104,15 @@ class PlanReader:
             task_type=task_type,
             summary=summary,
             description=description,
+            source_files=source_files,
+            requirements=requirements,
+            acceptance_criteria=acceptance_criteria,
+            technical_notes=technical_notes,
             affected_components=components,
             implementation_steps=steps,
             upgrade_plan=upgrade_plan,
+            risks=risks,
+            estimated_complexity=estimated_complexity,
             patterns=patterns,
             architecture_context=arch_ctx,
         )

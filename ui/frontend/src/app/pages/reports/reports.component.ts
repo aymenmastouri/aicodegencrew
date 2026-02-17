@@ -229,6 +229,53 @@ interface ParsedComponent {
                           }
                         </div>
 
+                        <!-- ==================== REQUIREMENTS ==================== -->
+                        @if ($any(plan['understanding'])?.['requirements']?.length) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>assignment</mat-icon>
+                              Requirements
+                            </h3>
+                            <ul class="detail-list">
+                              @for (req of $any(plan['understanding'])['requirements']; track $index) {
+                                <li>{{ req }}</li>
+                              }
+                            </ul>
+                          </div>
+                        }
+
+                        <!-- ==================== ACCEPTANCE CRITERIA ==================== -->
+                        @if ($any(plan['understanding'])?.['acceptance_criteria']?.length) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>check_circle</mat-icon>
+                              Acceptance Criteria
+                            </h3>
+                            <ul class="detail-list">
+                              @for (ac of $any(plan['understanding'])['acceptance_criteria']; track $index) {
+                                <li>{{ ac }}</li>
+                              }
+                            </ul>
+                          </div>
+                        }
+
+                        <!-- ==================== SOURCE FILES ==================== -->
+                        @if ($any(plan['source_files'])?.length) {
+                          <div class="section">
+                            <h3 class="section-title">
+                              <mat-icon>source</mat-icon>
+                              Source Files ({{ $any(plan['source_files']).length }})
+                            </h3>
+                            <div class="component-grid">
+                              @for (file of $any(plan['source_files']); track $index) {
+                                <div class="component-chip">
+                                  <span class="comp-name mono">{{ file }}</span>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
+
                         <!-- ==================== IMPLEMENTATION STEPS ==================== -->
                         @if ($any(plan['development_plan'])?.['implementation_steps']?.length) {
                           <div class="section">

@@ -32,9 +32,15 @@ class CodegenPlanInput(BaseModel):
     task_type: Literal["upgrade", "feature", "bugfix", "refactoring"]
     summary: str
     description: str = ""
+    source_files: list[str] = Field(default_factory=list, description="Files identified by Phase 4 for changes")
+    requirements: list[str] = Field(default_factory=list, description="Requirements from task understanding")
+    acceptance_criteria: list[str] = Field(default_factory=list, description="Acceptance criteria from task understanding")
+    technical_notes: list[str] = Field(default_factory=list, description="Technical notes from task understanding")
     affected_components: list[ComponentTarget] = Field(default_factory=list)
     implementation_steps: list[str] = Field(default_factory=list)
     upgrade_plan: dict | None = Field(default=None, description="Migration rules for upgrade tasks")
+    risks: list[str] = Field(default_factory=list, description="Identified risks from Phase 4")
+    estimated_complexity: str = Field(default="", description="Complexity estimate (low/medium/high)")
     patterns: dict = Field(
         default_factory=dict,
         description="Test/security/validation patterns from Phase 4",
