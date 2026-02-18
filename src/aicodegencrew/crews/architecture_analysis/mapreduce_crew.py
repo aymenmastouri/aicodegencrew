@@ -263,18 +263,68 @@ class MapReduceAnalysisCrew:
 
         return str(output_file)
 
+    def _is_cache_fresh(self, cache_file: Path) -> bool:
+        """Return True when cache was produced for current or newer facts input."""
+        try:
+            cache_mtime = cache_file.stat().st_mtime_ns
+        except OSError:
+            return False
+
+        try:
+            facts_mtime = self.facts_path.stat().st_mtime_ns
+        except OSError:
+            # Facts timestamp unavailable - keep backward-compatible behavior.
+            return True
+
+        if cache_mtime < facts_mtime:
+            logger.info(
+                "[MAP] Cache stale (%s older than %s), re-analyzing",
+                cache_file.name,
+                self.facts_path.name,
+            )
+            return False
+        return True
+
+    def _is_valid_cached_container(self, name: str, payload: Any) -> bool:
+        """Validate minimum schema required by reduce phase."""
+        if not isinstance(payload, dict):
+            return False
+        if payload.get("container") != name:
+            return False
+
+        for key in ("component_count", "relation_count", "interface_count"):
+            if key not in payload or not isinstance(payload[key], (int, float)):
+                return False
+
+        analysis = payload.get("analysis")
+        if not isinstance(analysis, dict):
+            return False
+        if "stereotype_distribution" not in analysis:
+            return False
+        return True
+
     def _load_cached_container(self, name: str) -> dict | None:
-        """Load existing container analysis from disk if available."""
+        """Load existing container analysis from disk if available and valid."""
         cache_file = self.container_dir / f"container_{name}.json"
-        if cache_file.exists():
-            try:
-                with open(cache_file, encoding="utf-8") as f:
-                    result = json.load(f)
-                logger.info(f"[MAP] Container {name}: loaded from cache (skipping LLM)")
-                return result
-            except Exception as e:
-                logger.warning(f"[MAP] Container {name}: cache read failed ({e}), re-analyzing")
-        return None
+        if not cache_file.exists():
+            return None
+
+        if not self._is_cache_fresh(cache_file):
+            return None
+
+        try:
+            with open(cache_file, encoding="utf-8") as f:
+                result = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"[MAP] Container {name}: cache read failed ({e}), re-analyzing")
+            return None
+
+        if not self._is_valid_cached_container(name, result):
+            logger.info(f"[MAP] Container {name}: cache invalid schema, re-analyzing")
+            return None
+
+        logger.info(f"[MAP] Container {name}: loaded from cache (skipping LLM)")
+        return result
 
     def _map_phase(self, container_names: list[str]) -> list[dict[str, Any]]:
         """MAP: Analyze each container (optionally in parallel)."""
