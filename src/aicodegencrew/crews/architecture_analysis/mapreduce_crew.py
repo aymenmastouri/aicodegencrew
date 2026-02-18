@@ -263,6 +263,19 @@ class MapReduceAnalysisCrew:
 
         return str(output_file)
 
+    def _load_cached_container(self, name: str) -> dict | None:
+        """Load existing container analysis from disk if available."""
+        cache_file = self.container_dir / f"container_{name}.json"
+        if cache_file.exists():
+            try:
+                with open(cache_file, encoding="utf-8") as f:
+                    result = json.load(f)
+                logger.info(f"[MAP] Container {name}: loaded from cache (skipping LLM)")
+                return result
+            except Exception as e:
+                logger.warning(f"[MAP] Container {name}: cache read failed ({e}), re-analyzing")
+        return None
+
     def _map_phase(self, container_names: list[str]) -> list[dict[str, Any]]:
         """MAP: Analyze each container (optionally in parallel)."""
         results = []
@@ -273,6 +286,10 @@ class MapReduceAnalysisCrew:
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 futures = {}
                 for name in container_names:
+                    cached = self._load_cached_container(name)
+                    if cached is not None:
+                        results.append(cached)
+                        continue
                     analyzer = ContainerAnalyzer(
                         facts_path=str(self.facts_path),
                         container_name=name,
@@ -298,6 +315,10 @@ class MapReduceAnalysisCrew:
         else:
             logger.info("[MAP] Sequential execution")
             for name in container_names:
+                cached = self._load_cached_container(name)
+                if cached is not None:
+                    results.append(cached)
+                    continue
                 analyzer = ContainerAnalyzer(
                     facts_path=str(self.facts_path),
                     container_name=name,
