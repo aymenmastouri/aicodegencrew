@@ -14,6 +14,7 @@ Output -> tech_versions in system.json
 """
 
 import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -107,23 +108,13 @@ class TechStackVersionCollector(DimensionCollector):
 
     def _collect_gradle_versions(self):
         """Collect versions from Gradle files."""
-        # build.gradle and build.gradle.kts
-        for pattern in ["build.gradle", "build.gradle.kts"]:
-            for gradle_file in self.repo_path.rglob(pattern):
-                if self._should_skip(gradle_file):
-                    continue
-                self._parse_gradle_file(gradle_file)
+        for gradle_file in self._find_files("build.gradle") + self._find_files("build.gradle.kts"):
+            self._parse_gradle_file(gradle_file)
 
-        # gradle-wrapper.properties
-        for wrapper_file in self.repo_path.rglob("gradle-wrapper.properties"):
-            if self._should_skip(wrapper_file):
-                continue
+        for wrapper_file in self._find_files("gradle-wrapper.properties"):
             self._parse_gradle_wrapper(wrapper_file)
 
-        # gradle.properties
-        for props_file in self.repo_path.rglob("gradle.properties"):
-            if self._should_skip(props_file):
-                continue
+        for props_file in self._find_files("gradle.properties"):
             self._parse_gradle_properties(props_file)
 
     def _parse_gradle_file(self, file_path: Path):
@@ -210,9 +201,7 @@ class TechStackVersionCollector(DimensionCollector):
 
     def _collect_maven_versions(self):
         """Collect versions from Maven pom.xml files."""
-        for pom_file in self.repo_path.rglob("pom.xml"):
-            if self._should_skip(pom_file):
-                continue
+        for pom_file in self._find_files("pom.xml"):
             self._parse_pom_file(pom_file)
 
     def _parse_pom_file(self, file_path: Path):
@@ -269,9 +258,7 @@ class TechStackVersionCollector(DimensionCollector):
 
     def _collect_java_version_files(self):
         """Collect Java version from .java-version files."""
-        for version_file in self.repo_path.rglob(".java-version"):
-            if self._should_skip(version_file):
-                continue
+        for version_file in self._find_files(".java-version"):
             try:
                 version = version_file.read_text(encoding="utf-8").strip()
                 if version:
@@ -285,9 +272,7 @@ class TechStackVersionCollector(DimensionCollector):
 
     def _collect_npm_versions(self):
         """Collect versions from package.json files."""
-        for package_file in self.repo_path.rglob("package.json"):
-            if self._should_skip(package_file):
-                continue
+        for package_file in self._find_files("package.json"):
             self._parse_package_json(package_file)
 
     def _parse_package_json(self, file_path: Path):
@@ -341,9 +326,7 @@ class TechStackVersionCollector(DimensionCollector):
 
     def _collect_angular_versions(self):
         """Collect Angular CLI version from angular.json."""
-        for angular_file in self.repo_path.rglob("angular.json"):
-            if self._should_skip(angular_file):
-                continue
+        for angular_file in self._find_files("angular.json"):
             try:
                 content = angular_file.read_text(encoding="utf-8")
                 pkg = json.loads(content)
@@ -361,9 +344,7 @@ class TechStackVersionCollector(DimensionCollector):
     def _collect_node_version_files(self):
         """Collect Node.js version from version files."""
         for pattern in [".node-version", ".nvmrc"]:
-            for version_file in self.repo_path.rglob(pattern):
-                if self._should_skip(version_file):
-                    continue
+            for version_file in self._find_files(pattern):
                 try:
                     version = version_file.read_text(encoding="utf-8").strip()
                     if version:
@@ -379,9 +360,7 @@ class TechStackVersionCollector(DimensionCollector):
 
     def _collect_dockerfile_versions(self):
         """Collect base image versions from Dockerfiles."""
-        for dockerfile in self.repo_path.rglob("Dockerfile*"):
-            if self._should_skip(dockerfile):
-                continue
+        for dockerfile in self._find_files_glob("Dockerfile*"):
             self._parse_dockerfile(dockerfile)
 
     def _parse_dockerfile(self, file_path: Path):
@@ -413,6 +392,35 @@ class TechStackVersionCollector(DimensionCollector):
     # =========================================================================
     # Helpers
     # =========================================================================
+
+    def _find_files(self, filename: str) -> list[Path]:
+        """Walk repo, pruning SKIP_DIRS at directory level (faster than rglob on large trees).
+
+        Using os.walk with in-place dir list modification avoids descending into
+        node_modules, dist, target etc. — critical when VPN slows filesystem ops 10-20x.
+        """
+        results = []
+        for dirpath, dirnames, filenames in os.walk(self.repo_path):
+            # Prune skip directories IN PLACE so os.walk doesn't descend into them
+            dirnames[:] = [
+                d for d in dirnames if d.lower() not in self.SKIP_DIRS
+            ]
+            if filename in filenames:
+                results.append(Path(dirpath) / filename)
+        return results
+
+    def _find_files_glob(self, pattern: str) -> list[Path]:
+        """Like _find_files but matches a glob pattern (e.g. 'Dockerfile*', '*.gradle')."""
+        import fnmatch
+        results = []
+        for dirpath, dirnames, filenames in os.walk(self.repo_path):
+            dirnames[:] = [
+                d for d in dirnames if d.lower() not in self.SKIP_DIRS
+            ]
+            for fname in filenames:
+                if fnmatch.fnmatch(fname, pattern):
+                    results.append(Path(dirpath) / fname)
+        return results
 
     def _should_skip(self, path: Path) -> bool:
         """Check if path should be skipped."""
