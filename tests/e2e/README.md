@@ -317,7 +317,7 @@ def test_new_feature(temp_workspace, orchestrator):
 - **pytest Documentation**: https://docs.pytest.org/
 - **CrewAI Testing**: https://docs.crewai.com/testing/
 - **Test Pyramids**: Unit (70%) -> Integration (20%) -> E2E (10%)
-- **Evidence-First Architecture**: [AI_SDLC_ARCHITECTURE.md](../../AI_SDLC_ARCHITECTURE.md)
+- **Evidence-First Architecture**: [SDLC_ARCHITECTURE.md](../../docs/SDLC_ARCHITECTURE.md)
 
 ## Support
 
