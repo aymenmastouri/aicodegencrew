@@ -17,7 +17,7 @@ from typing import Any, Optional
 
 from ...shared.paths import CHROMA_DIR, DISCOVER_EVIDENCE, DISCOVER_MANIFEST, DISCOVER_SYMBOLS
 from ...shared.utils.file_filters import collect_files
-from ...shared.utils.logger import log_metric, setup_logger
+from ...shared.utils.logger import setup_logger
 from .budget_engine import BudgetEngine, is_budget_enabled
 from .chroma_index_tool import ChromaIndexTool
 from .chunker_tool import ChunkerTool
@@ -432,14 +432,10 @@ class IndexingPipeline:
 
     def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
         """Execute the indexing pipeline (orchestrator Protocol)."""
-        logger.info("[START] Repository Indexing Pipeline")
-        logger.info(f"[CONFIG] INDEX_MODE={self.index_mode}  repo={self.repo_path}")
-
-        log_metric("phase_start", phase="discover", index_mode=self.index_mode)
+        logger.info(f"[Discover] INDEX_MODE={self.index_mode}  repo={self.repo_path}")
 
         if self.index_mode == "off":
-            logger.info("[SKIP] INDEX_MODE=off")
-            log_metric("phase_complete", phase="discover", status="skipped", skipped=True)
+            logger.info("[Discover] Skipped (INDEX_MODE=off)")
             return {
                 "phase": "discover",
                 "status": "skipped",
@@ -452,14 +448,6 @@ class IndexingPipeline:
             result_msg = self._run()
             skipped = result_msg.startswith("Skipped:")
             phase_status = "skipped" if skipped else "success"
-            log_metric(
-                "phase_complete",
-                phase="discover",
-                status=phase_status,
-                skipped=skipped,
-                duration_seconds=round(self.metrics.duration_seconds, 2),
-                chunks_indexed=self.metrics.total_chunks_indexed,
-            )
             return {
                 "phase": "discover",
                 "status": phase_status,
@@ -470,8 +458,7 @@ class IndexingPipeline:
                 "index_mode": self.index_mode,
             }
         except Exception as e:
-            logger.error(f"[ERROR] Indexing failed: {e}", exc_info=True)
-            log_metric("phase_failed", phase="discover", error=str(e)[:500])
+            logger.error(f"[Discover] Indexing failed: {e}", exc_info=True)
             return {
                 "phase": "discover",
                 "status": "failed",

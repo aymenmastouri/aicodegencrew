@@ -300,6 +300,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             console.setFormatter(
                 logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
             )
+            console.addFilter(lambda r: not hasattr(r, "metric_data"))
             logger.addHandler(console)
 
         # ==========================================================================
@@ -311,6 +312,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             session.setFormatter(
                 logging.Formatter("%(asctime)s.%(msecs)03d | %(levelname)-5s | %(message)s", datefmt="%H:%M:%S")
             )
+            session.addFilter(lambda r: not hasattr(r, "metric_data"))
             # Unbuffered for real-time viewing
             session.stream.reconfigure(write_through=True)
             logger.addHandler(session)
@@ -405,10 +407,10 @@ def log_phase_start(phase: str) -> None:
 
 def log_phase_end(phase: str, status: str = "success", duration: float = 0) -> None:
     """Log phase end."""
-    if status == "success":
-        step_done(phase)
+    if status in ("success", "completed", "partial", "skipped"):
+        step_done(phase, f"{status} in {duration:.2f}s" if duration else "")
     else:
-        step_fail(phase)
+        step_fail(phase, status)
 
 
 def log_metric(event: str, **data) -> None:

@@ -17,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
 
-from .phase_registry import outputs_exist
+from .phase_registry import PHASES, outputs_exist
 from .pipeline_contract import (
     PhaseContext,
     PipelineContract,
@@ -28,7 +28,7 @@ from .pipeline_contract import (
     normalize_phase_result_status,
     phase_result_to_phase_state_status,
 )
-from .shared.utils.logger import log_metric, logger
+from .shared.utils.logger import RUN_ID, log_metric, logger
 from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_failed, set_phase_running
 
 # =============================================================================
@@ -167,10 +167,9 @@ class SDLCOrchestrator:
         self.results.clear()
         self.contract = self._contract_from_current_config()
 
-        # Initialize phase state tracking
-        import uuid as _uuid
-
-        run_id = _uuid.uuid4().hex[:8]
+        # Use the logger's RUN_ID so that phase_state.json and metrics.jsonl
+        # share the same run_id (avoids mismatch in executor progress tracking).
+        run_id = RUN_ID
         init_run(run_id)
 
         # Determine phases to run
@@ -255,8 +254,9 @@ class SDLCOrchestrator:
             if phase_id in self.phases:
                 filtered.append(phase_id)
             else:
-                logger.info(f"[Orchestrator] Skipping unregistered phase: {phase_id}")
+                logger.info(f"[Orchestrator] Phase '{phase_id}' not registered — nothing to do")
                 log_metric("phase_skipped", phase_id=phase_id, reason="unregistered")
+                set_phase_completed(phase_id, duration=0.0, status="skipped")
 
         return filtered
 
@@ -287,9 +287,8 @@ class SDLCOrchestrator:
             )
 
         # Execute
-        logger.info(f"\n{'=' * 60}")
-        logger.info(f"[Phase] {phase_id} - Starting")
-        logger.info(f"{'=' * 60}")
+        display = PHASES[phase_id].display_name if phase_id in PHASES else phase_id
+        logger.info(f"[Phase] {display} ({phase_id})")
 
         log_metric("phase_start", phase_id=phase_id)
         set_phase_running(phase_id)
@@ -330,7 +329,7 @@ class SDLCOrchestrator:
             metric_status = phase_result_to_phase_state_status(phase_status)
             phase_state_status = phase_result_to_phase_state_status(phase_status)
 
-            logger.info(f"[Phase] {phase_id} - {phase_status.capitalize()} in {duration:.2f}s")
+            logger.info(f"[Phase] {display} — {phase_status} in {duration:.2f}s")
             log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status=metric_status)
             set_phase_completed(phase_id, duration, status=phase_state_status)
             self.phase_context.metrics[phase_id] = {
@@ -352,7 +351,7 @@ class SDLCOrchestrator:
 
         except Exception as e:
             duration = (datetime.now() - start).total_seconds()
-            logger.error(f"[Phase] {phase_id} - Failed: {e}", exc_info=True)
+            logger.error(f"[Phase] {display} — failed: {e}", exc_info=True)
             log_metric("phase_failed", phase_id=phase_id, duration_seconds=round(duration, 2), error=str(e)[:500])
             set_phase_failed(phase_id, duration, str(e))
             self.phase_context.errors.append(f"{phase_id}: {e}")
