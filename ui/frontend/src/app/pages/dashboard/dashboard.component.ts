@@ -1130,17 +1130,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!entry) return 'unknown';
     if (entry.status !== 'completed') return entry.status ?? 'unknown';
     if (entry.run_outcome === 'partial') return 'partial';
-    if (entry.run_outcome === 'all_skipped') return 'skipped';
+    if (entry.run_outcome === 'all_skipped') return 'success'; // green dot — "already current" is a success
     return entry.status;
   }
 
   entryStatusLabel(entry: RunHistoryEntry): string {
     if (!entry) return 'Unknown';
-    const status = this.entryDisplayStatus(entry);
-    if (status === 'skipped' && entry.run_outcome === 'all_skipped') {
-      return 'already current';
-    }
-    return statusLabel(status);
+    if (entry.run_outcome === 'all_skipped') return 'already current';
+    return statusLabel(this.entryDisplayStatus(entry));
   }
   formatDuration(seconds?: number): string {
     return formatDurationUtil(seconds);

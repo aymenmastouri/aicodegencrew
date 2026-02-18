@@ -732,17 +732,14 @@ export class HistoryComponent implements OnInit, OnDestroy {
     if (!entry) return 'unknown';
     if (entry.status !== 'completed') return entry.status ?? 'unknown';
     if (entry.run_outcome === 'partial') return 'partial';
-    if (entry.run_outcome === 'all_skipped') return 'skipped';
+    if (entry.run_outcome === 'all_skipped') return 'success'; // green — "already current" is a success
     return entry.status;
   }
 
   displayStatusLabel(entry: { status: string; run_outcome?: string }): string {
     if (!entry) return 'Unknown';
-    const normalized = this.displayStatus(entry);
-    if (normalized === 'skipped' && entry.run_outcome === 'all_skipped') {
-      return 'already current';
-    }
-    return statusLabel(normalized);
+    if (entry.run_outcome === 'all_skipped') return 'already current';
+    return statusLabel(this.displayStatus(entry));
   }
 
   displayPhaseStatus(status: string): string {

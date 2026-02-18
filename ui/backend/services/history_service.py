@@ -287,10 +287,23 @@ def _read_legacy_history() -> list[dict]:
 
 def _format_legacy(data: dict) -> dict:
     """Convert a legacy run_report.json entry to history format."""
+    from aicodegencrew.pipeline_contract import compute_run_outcome
+
+    run_outcome = data.get("run_outcome")
+    # Legacy run_report.json may not have run_outcome — compute from phases.
+    if run_outcome is None:
+        phase_statuses = [p.get("status") for p in data.get("phases", [])]
+        if phase_statuses:
+            run_outcome = compute_run_outcome(iter(phase_statuses))
+        elif data.get("status") == "completed":
+            run_outcome = "success"
+        elif data.get("status") == "failed":
+            run_outcome = "failed"
+
     return {
         "run_id": data.get("run_id", "unknown"),
         "status": data.get("status", "unknown"),
-        "run_outcome": data.get("run_outcome"),
+        "run_outcome": run_outcome,
         "preset": data.get("environment", {}).get("preset"),
         "phases": data.get("planned_phases", []),
         "started_at": data.get("timestamp"),

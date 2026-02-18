@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, field_validator
+
+RunOutcome = Literal["success", "all_skipped", "partial", "failed"] | None
 
 
 class PhaseInfo(BaseModel):
@@ -172,13 +174,13 @@ class ExecutionStatus(BaseModel):
     total_phase_count: int = 0
     eta_seconds: float | None = None
     live_metrics: LiveMetrics | None = None
-    run_outcome: str | None = None  # success | all_skipped | partial | failed
+    run_outcome: RunOutcome = None
 
 
 class RunHistoryEntry(BaseModel):
     run_id: str
     status: str
-    run_outcome: str | None = None  # success | all_skipped | partial | failed
+    run_outcome: RunOutcome = None
     preset: str | None = None
     phases: list[str] = []
     started_at: str | None = None
@@ -196,7 +198,7 @@ class RunDetail(BaseModel):
 
     run_id: str
     status: str
-    run_outcome: str | None = None
+    run_outcome: RunOutcome = None
     preset: str | None = None
     phases: list[str] = []
     started_at: str | None = None
