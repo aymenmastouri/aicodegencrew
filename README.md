@@ -307,7 +307,7 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + symbols + evide
                Implement  --> Git branch codegen/*   + knowledge/implement/
 ```
 
-> Full specification: [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md)
+> Full specification: [SDLC Architecture](docs/SDLC_ARCHITECTURE.md)
 
 ---
 
@@ -386,8 +386,8 @@ pytest tests/ --ignore=tests/e2e    # unit + integration only
 
 | Document | Description |
 |----------|-------------|
-| [AI SDLC Architecture](docs/AI_SDLC_ARCHITECTURE.md) | Full architecture specification |
-| [Implement Phase](docs/guides/IMPLEMENT_PHASE_ARCHITECTURE.md) | Code generation + build verify architecture |
+| [SDLC Architecture](docs/SDLC_ARCHITECTURE.md) | Cross-architecture parent + links to all phase docs |
+| [Phase 5 — Implement](docs/phases/phase-5-implement/README.md) | Code generation + build verify architecture |
 | [User Guide](docs/guides/USER_GUIDE.md) | Installation, configuration, CLI, troubleshooting |
 | [Delivery Guide](docs/guides/DELIVERY_GUIDE.md) | Release process and deployment |
 | [MCP Knowledge Server](docs/guides/MCP_KNOWLEDGE_SERVER.md) | MCP server for CrewAI tools |
