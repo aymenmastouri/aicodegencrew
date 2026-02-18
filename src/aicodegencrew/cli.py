@@ -309,10 +309,18 @@ def _export_run_report(
         detail["output_files"] = [f for f in expected if Path(f).exists()]
         phases_detail.append(detail)
 
+    from .pipeline_contract import compute_run_outcome
+
+    phase_statuses = [pr.status for pr in result.phases]
+    run_outcome = compute_run_outcome(iter(phase_statuses)) if phase_statuses else (
+        "success" if result.status == "completed" else "failed"
+    )
+
     report = {
         "run_id": RUN_ID,
         "timestamp": datetime.now().isoformat(),
         "status": result.status,
+        "run_outcome": run_outcome,
         "message": result.message,
         "total_duration": result.total_duration,
         "planned_phases": sorted(planned_phases),

@@ -761,7 +761,7 @@ class PipelineExecutor:
         status = normalize_phase_progress_status(phase.get("status"), default=PHASE_PROGRESS_PENDING)
         if status != PHASE_PROGRESS_SKIPPED:
             return False
-        return str(phase.get("skip_reason", "")).strip().lower() == "unregistered"
+        return str(phase.get("skip_reason") or "").strip().lower() == "unregistered"
 
     @staticmethod
     def _is_completed_phase(phase: dict) -> bool:
