@@ -3,9 +3,9 @@
 Multi-agent AI collaboration for phases requiring analysis, interpretation, and synthesis.
 
 > **Reference Diagrams:**
-> - [analysis-crew.drawio](../diagrams/analysis-crew.drawio) — Analysis crew agent architecture
-> - [analysis-crew-schema.drawio](../diagrams/analysis-crew-schema.drawio) — Analysis output schemas
-> - [synthesis-crew.drawio](../diagrams/synthesis-crew.drawio) — Synthesis crew flow
+> - [phase-2-analyze-architecture.drawio](../phases/phase-2-analyze/phase-2-analyze-architecture.drawio) — Analysis crew agent architecture
+> - [analysis-crew-schema.drawio](../phases/phase-2-analyze/analysis-crew-schema.drawio) — Analysis output schemas
+> - [phase-3-document-architecture.drawio](../phases/phase-3-document/phase-3-document-architecture.drawio) — Synthesis crew flow
 
 ## MiniCrew Architecture
 
@@ -111,11 +111,13 @@ Each crew task specifies an `expected_output` with a Pydantic schema. After the 
 ## 2 Crew Phases
 
 ### Analyze (Architecture Analysis)
-- 5 mini-crews, 4 agents, 17 tasks
-- Input: `architecture_facts.json` + ChromaDB
-- Output: `knowledge/analyze/analyzed_architecture.json`
+
+**Full docs:** [Phase 2 — Analyze](../phases/phase-2-analyze/README.md)
+
+5 mini-crews, 4 agent types, 17 tasks. MapReduce for large repos (≥300 components).
 
 ### Document (Architecture Synthesis)
-- Generates C4 diagrams, Arc42 documentation, quality reports
-- Input: `architecture_facts.json` + `analyzed_architecture.json`
-- Output: `knowledge/document/c4/`, `knowledge/document/arc42/`
+
+**Full docs:** [Phase 3 — Document](../phases/phase-3-document/README.md)
+
+C4Crew (5 mini-crews) + Arc42Crew (18 mini-crews). Both inherit from `MiniCrewBase`.
