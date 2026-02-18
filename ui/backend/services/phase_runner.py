@@ -66,6 +66,10 @@ def _resolve_status(
         if st in (PHASE_PROGRESS_COMPLETED, PHASE_PROGRESS_PARTIAL):
             if output_exists:
                 return st, duration, None
+            if st == PHASE_PROGRESS_COMPLETED and (duration or 0) <= 0:
+                # Backward compatibility for historical no-op runs that were
+                # marked completed without producing artifacts.
+                return PHASE_PROGRESS_SKIPPED, duration, None
             if enabled:
                 # Output deleted (reset happened after completion)
                 return PIPELINE_PHASE_READY, None, None

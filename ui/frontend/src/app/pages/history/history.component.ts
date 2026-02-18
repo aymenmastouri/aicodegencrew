@@ -13,6 +13,7 @@ import { RouterLink } from '@angular/router';
 
 import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../../services/pipeline.service';
 import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as formatDurationUtil, formatNumber as formatNumberUtil } from '../../shared/phase-utils';
+import { statusLabel } from '../../shared/status';
 
 @Component({
   selector: 'app-history',
@@ -163,7 +164,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
             <ng-container matColumnDef="status">
               <th mat-header-cell *matHeaderCellDef>Status</th>
               <td mat-cell *matCellDef="let row">
-                <span class="status-chip" [class]="'status-' + row.status">{{ row.status }}</span>
+                <span class="status-chip" [class]="'status-' + displayStatus(row)">{{ displayStatusLabel(row) }}</span>
               </td>
             </ng-container>
 
@@ -239,7 +240,7 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                     </div>
                   </div>
                   <div class="detail-header-right">
-                    <span class="status-chip status-lg" [class]="'status-' + detail.status">{{ detail.status }}</span>
+                    <span class="status-chip status-lg" [class]="'status-' + displayStatus(detail)">{{ displayStatusLabel(detail) }}</span>
                     @if (detail.duration) {
                       <span class="detail-duration">{{ detail.duration }}</span>
                     }
@@ -255,19 +256,17 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
                   </h3>
                   <div class="phase-timeline">
                     @for (phase of detail.phase_results; track $index) {
-                      <div class="timeline-item" [class]="'tl-' + (phase.status || 'unknown')">
+                      <div class="timeline-item" [class]="'tl-' + displayPhaseStatus(phase.status || 'unknown')">
                         <div class="tl-dot">
                           <mat-icon class="tl-icon">
-                            {{ phase.status === 'completed' ? 'check_circle' :
-                               phase.status === 'failed' ? 'error' :
-                               phase.status === 'skipped' ? 'skip_next' : 'radio_button_unchecked' }}
+                            {{ phaseStatusIcon(phase.status || 'unknown') }}
                           </mat-icon>
                         </div>
                         <div class="tl-content">
                           <div class="tl-header">
                             <span class="tl-name">{{ phase.name || humanize(phase.phase_id || '') || 'Phase ' + $index }}</span>
-                            <span class="status-chip status-sm" [class]="'status-' + (phase.status || 'unknown')">
-                              {{ phase.status || 'unknown' }}
+                            <span class="status-chip status-sm" [class]="'status-' + displayPhaseStatus(phase.status || 'unknown')">
+                              {{ displayPhaseStatus(phase.status || 'unknown') }}
                             </span>
                             @if (phase.duration || phase.duration_seconds) {
                               <span class="tl-duration">{{ phase.duration || (phase.duration_seconds + 's') }}</span>
@@ -585,6 +584,9 @@ import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as format
       .tl-completed .tl-icon {
         color: var(--cg-success, #28a745);
       }
+      .tl-partial .tl-icon {
+        color: var(--cg-warn, #f57c00);
+      }
       .tl-failed .tl-icon {
         color: var(--cg-error, #dc3545);
       }
@@ -726,6 +728,35 @@ export class HistoryComponent implements OnInit, OnDestroy {
     return humanizePhaseId(phaseId);
   }
 
+  displayStatus(entry: { status: string; run_outcome?: string }): string {
+    if (entry.status !== 'completed') return entry.status;
+    if (entry.run_outcome === 'partial') return 'partial';
+    if (entry.run_outcome === 'all_skipped') return 'skipped';
+    return entry.status;
+  }
+
+  displayStatusLabel(entry: { status: string; run_outcome?: string }): string {
+    const normalized = this.displayStatus(entry);
+    if (normalized === 'skipped' && entry.run_outcome === 'all_skipped') {
+      return 'already current';
+    }
+    return statusLabel(normalized);
+  }
+
+  displayPhaseStatus(status: string): string {
+    if (status === 'success') return 'completed';
+    return status;
+  }
+
+  phaseStatusIcon(status: string): string {
+    const normalized = this.displayPhaseStatus(status);
+    if (normalized === 'completed') return 'check_circle';
+    if (normalized === 'partial') return 'warning';
+    if (normalized === 'failed') return 'error';
+    if (normalized === 'skipped') return 'skip_next';
+    return 'radio_button_unchecked';
+  }
+
   ngOnInit(): void {
     this.loadHistory();
     this.loadStats();
@@ -845,6 +876,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
         this.detail = {
           run_id: row.run_id,
           status: row.status,
+          run_outcome: row.run_outcome,
           preset: row.preset,
           phases: row.phases,
           started_at: row.started_at,

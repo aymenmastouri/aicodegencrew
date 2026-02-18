@@ -178,6 +178,7 @@ class ExecutionStatus(BaseModel):
 class RunHistoryEntry(BaseModel):
     run_id: str
     status: str
+    run_outcome: str | None = None  # success | all_skipped | partial | failed
     preset: str | None = None
     phases: list[str] = []
     started_at: str | None = None
@@ -195,6 +196,7 @@ class RunDetail(BaseModel):
 
     run_id: str
     status: str
+    run_outcome: str | None = None
     preset: str | None = None
     phases: list[str] = []
     started_at: str | None = None

@@ -233,7 +233,7 @@ class PipelineExecutor:
             # Show elapsed since run started (not growing endlessly)
             elapsed = round((self._finished_at or time.monotonic()) - self._started_at, 1)
 
-        phase_progress = self._read_phase_progress() if self.state in ("running", "completed", "failed") else []
+        phase_progress = self._read_phase_progress() if self.state in ("running", "completed", "failed", "cancelled") else []
 
         # Compute progress percent
         total = len(self.current_run.phases) if self.current_run else 0
@@ -265,7 +265,11 @@ class PipelineExecutor:
         eta = self._estimate_eta(elapsed) if self.state == "running" and elapsed else None
 
         # Compute run_outcome for terminal states
-        run_outcome = self._compute_run_outcome(phase_progress) if self.state in ("completed", "failed") else None
+        run_outcome = None
+        if self.state in ("completed", "failed"):
+            run_outcome = self._compute_run_outcome(phase_progress) if phase_progress else (
+                "success" if self.state == "completed" else "failed"
+            )
 
         return {
             "state": self.state,
@@ -330,6 +334,7 @@ class PipelineExecutor:
         return {
             "run_id": data.get("run_id", "unknown"),
             "status": data.get("status", "unknown"),
+            "run_outcome": data.get("run_outcome"),
             "preset": data.get("environment", {}).get("preset"),
             "phases": data.get("planned_phases", []),
             "started_at": data.get("timestamp"),
@@ -400,11 +405,18 @@ class PipelineExecutor:
             from .history_service import append_run_to_history
 
             duration = round(time.monotonic() - self._started_at, 1) if self._started_at else None
+            phase_progress = self._read_phase_progress() if self.state in ("completed", "failed", "cancelled") else []
+            run_outcome = None
+            if self.state in ("completed", "failed"):
+                run_outcome = self._compute_run_outcome(phase_progress) if phase_progress else (
+                    "success" if self.state == "completed" else "failed"
+                )
             append_run_to_history(
                 {
                     "run_id": self.current_run.run_id,
                     "engine_run_id": self._engine_run_id,
                     "status": self.state,
+                    "run_outcome": run_outcome,
                     "trigger": "pipeline",
                     "preset": self.current_run.preset,
                     "phases": self.current_run.phases,

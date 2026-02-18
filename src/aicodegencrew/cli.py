@@ -520,7 +520,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             class _NoopPlan:
                 def kickoff(self, inputs=None):
                     logger.info("[Plan] Nothing to do — no task files found")
-                    return {"status": "completed", "message": f"No task files in {input_dir}"}
+                    # No tasks means no artifacts by design. Report as skipped so
+                    # dashboard/status cards do not show a misleading "ready" phase.
+                    return {"status": "skipped", "message": f"No task files in {input_dir}"}
 
             orchestrator.register_phase("plan", _NoopPlan())
 

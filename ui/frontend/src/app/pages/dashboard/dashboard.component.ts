@@ -41,7 +41,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
         <div class="hero-logo-placeholder"></div>
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
-          <p class="hero-subtitle">AI-Powered Development Lifecycle Automation — Discover, Extract, Analyze, Document, Plan, Implement</p>
+          <p class="hero-subtitle">AI-Powered Development Lifecycle Automation - Discover, Extract, Analyze, Document, Plan, Implement</p>
         </div>
         <div class="hero-stats">
           @if (health) {
@@ -169,7 +169,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
                 }
               </div>
               @if (!last) {
-                <div class="stepper-line" [class.line-done]="step.status === 'completed' || step.status === 'partial'"
+                <div class="stepper-line" [class.line-done]="step.status === 'completed' || step.status === 'partial' || step.status === 'skipped'"
                      [class.line-active]="step.status === 'running'">
                 </div>
               }
@@ -206,7 +206,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
           @for (phase of pipeline.phases; track phase.id; let i = $index) {
             <div class="phase-card" [class]="'phase-' + phase.status" [routerLink]="'/phases'">
               <div class="phase-top">
-                <span class="phase-index">{{ i }}</span>
+                <span class="phase-index">{{ i + 1 }}</span>
                 <span class="phase-name">{{ phase.name }}</span>
               </div>
               <div class="phase-bottom">
@@ -250,8 +250,8 @@ import { statusLabel, isTerminal } from '../../shared/status';
                 }
               </span>
               <span class="flex-1"></span>
-              <span class="status-dot sm" [class]="'dot-' + entry.status"></span>
-              <span class="activity-status">{{ entry.status }}</span>
+              <span class="status-dot sm" [class]="'dot-' + entryDisplayStatus(entry)"></span>
+              <span class="activity-status">{{ entryStatusLabel(entry) }}</span>
               <span class="activity-time">{{ entry.started_at | date: 'short' }}</span>
             </div>
           }
@@ -567,7 +567,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       }
       .view-all:hover { text-decoration: underline; }
 
-      /* Phase Cards — Clean & Minimal */
+      /* Phase Cards - Clean & Minimal */
       .phase-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -585,6 +585,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       }
       .phase-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
       .phase-completed { border-left-color: var(--cg-success); }
+      .phase-partial { border-left-color: var(--cg-warn, #f57c00); }
       .phase-failed { border-left-color: var(--cg-error); }
       .phase-running { border-left-color: var(--cg-blue); }
       .phase-ready { border-left-color: var(--cg-vibrant); }
@@ -628,6 +629,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       }
       .status-dot.sm { width: 6px; height: 6px; }
       .dot-completed { background: var(--cg-success); }
+      .dot-partial { background: var(--cg-warn, #f57c00); }
       .dot-success { background: var(--cg-success); }
       .dot-failed { background: var(--cg-error); }
       .dot-running { background: var(--cg-blue); }
@@ -636,6 +638,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .dot-planned { background: var(--cg-gray-300); }
       .dot-idle { background: var(--cg-gray-300); }
       .dot-cancelled { background: #e0a800; }
+      .dot-reset { background: var(--cg-error); }
       .status-label {
         font-size: 12px;
         color: var(--cg-gray-500);
@@ -669,7 +672,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .empty-icon { font-size: 40px; width: 40px; height: 40px; color: var(--cg-gray-200); margin-bottom: 8px; }
       .empty-state p { color: var(--cg-gray-500); margin-bottom: 14px; font-size: 14px; }
 
-      /* Recent Activity — Clean rows */
+      /* Recent Activity - Clean rows */
       .activity-card {
         background: #fff;
         border-radius: 10px;
@@ -708,7 +711,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .activity-status { font-size: 12px; color: var(--cg-gray-500); text-transform: capitalize; }
       .activity-time { font-size: 11px; color: var(--cg-gray-400); white-space: nowrap; }
 
-      /* Quick Actions — Simpler */
+      /* Quick Actions - Simpler */
       .action-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1117,13 +1120,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   runOutcomeTitle(): string {
     switch (this.runOutcome) {
-      case 'all_skipped': return 'Run Completed — Already Current';
+      case 'all_skipped': return 'Run Completed - Already Current';
       case 'partial': return 'Run Completed (Partial)';
       case 'failed': return 'Run Failed';
       default: return 'Run Completed';
     }
   }
+  entryDisplayStatus(entry: RunHistoryEntry): string {
+    if (entry.status !== 'completed') return entry.status;
+    if (entry.run_outcome === 'partial') return 'partial';
+    if (entry.run_outcome === 'all_skipped') return 'skipped';
+    return entry.status;
+  }
 
+  entryStatusLabel(entry: RunHistoryEntry): string {
+    const status = this.entryDisplayStatus(entry);
+    if (status === 'skipped' && entry.run_outcome === 'all_skipped') {
+      return 'already current';
+    }
+    return statusLabel(status);
+  }
   formatDuration(seconds?: number): string {
     return formatDurationUtil(seconds);
   }
@@ -1144,7 +1160,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Slow polling (every 5s) while idle — detects pipeline starts from other pages. */
+  /** Slow polling (every 5s) while idle - detects pipeline starts from other pages. */
   private startIdlePolling(): void {
     this.stopLiveUpdates();
 
@@ -1264,3 +1280,4 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.pollStatus();
   }
 }
+

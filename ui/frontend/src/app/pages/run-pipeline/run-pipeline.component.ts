@@ -303,6 +303,8 @@ import { statusIcon } from '../../shared/status';
                     <div class="step-circle">
                       @if (pp.status === 'completed') {
                         <mat-icon class="step-check">check</mat-icon>
+                      } @else if (pp.status === 'partial') {
+                        <mat-icon class="step-warn">warning</mat-icon>
                       } @else if (pp.status === 'running') {
                         <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
                       } @else if (pp.status === 'failed') {
@@ -314,7 +316,7 @@ import { statusIcon } from '../../shared/status';
                       }
                     </div>
                     <div class="step-label">{{ pp.name || humanize(pp.phase_id) }}</div>
-                    @if (pp.status === 'completed' && pp.duration_seconds) {
+                    @if ((pp.status === 'completed' || pp.status === 'partial') && pp.duration_seconds) {
                       <div class="step-time">{{ formatDuration(pp.duration_seconds) }}</div>
                     }
                     @if (pp.status === 'running') {
@@ -325,7 +327,7 @@ import { statusIcon } from '../../shared/status';
                     }
                   </div>
                   @if (!last) {
-                    <div class="stepper-line" [class.line-done]="pp.status === 'completed'"
+                    <div class="stepper-line" [class.line-done]="pp.status === 'completed' || pp.status === 'partial' || pp.status === 'skipped'"
                          [class.line-active]="pp.status === 'running'">
                     </div>
                   }
@@ -590,6 +592,10 @@ import { statusIcon } from '../../shared/status';
         background: var(--cg-success, #28a745); border-color: var(--cg-success, #28a745);
       }
       .step-check { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      .step-partial .step-circle {
+        background: var(--cg-warn, #f57c00); border-color: var(--cg-warn, #f57c00);
+      }
+      .step-warn { font-size: 18px; width: 18px; height: 18px; color: #fff; }
       .step-failed .step-circle {
         background: var(--cg-error, #dc3545); border-color: var(--cg-error, #dc3545);
       }
@@ -609,6 +615,7 @@ import { statusIcon } from '../../shared/status';
       }
       .step-running .step-label { color: var(--cg-blue); font-weight: 600; }
       .step-completed .step-label { color: var(--cg-success); }
+      .step-partial .step-label { color: var(--cg-warn, #f57c00); }
       .step-failed .step-label { color: var(--cg-error); }
       .step-time {
         margin-top: 3px; font-size: 10px;
@@ -862,7 +869,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     switch (this.celebrationType) {
       case 'success': return 'Run Completed Successfully';
       case 'partial': return 'Run Completed (Partial)';
-      case 'all_skipped': return 'Run Completed — Already Current';
+      case 'all_skipped': return 'Run Completed - Already Current';
       case 'failure': return 'Run Failed';
       default: return '';
     }
@@ -883,9 +890,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
       case 'all_skipped':
         if (total === 1) {
           const name = this.status.phase_progress?.[0]?.name || 'Phase';
-          return `${name} already up to date — no changes detected`;
+          return `${name} already up to date - no changes detected`;
         }
-        return `All ${total} phases already up to date — no changes detected`;
+        return `All ${total} phases already up to date - no changes detected`;
       case 'failure':
         return 'Check logs for details';
       default:
@@ -995,3 +1002,4 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     return '';
   }
 }
+
