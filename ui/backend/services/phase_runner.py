@@ -66,9 +66,11 @@ def _resolve_status(
         if st in (PHASE_PROGRESS_COMPLETED, PHASE_PROGRESS_PARTIAL):
             if output_exists:
                 return st, duration, None
-            if st == PHASE_PROGRESS_COMPLETED and (duration or 0) <= 0:
-                # Backward compatibility for historical no-op runs that were
-                # marked completed without producing artifacts.
+            if st == PHASE_PROGRESS_COMPLETED and duration is None:
+                # Backward compatibility: a phase with no measured duration was
+                # never actually executed (old NoopPlan stored as "completed").
+                # Only triggers when duration is truly absent — not for fast
+                # phases that measured ~0 s, which store duration=0.0.
                 return PHASE_PROGRESS_SKIPPED, duration, None
             if enabled:
                 # Output deleted (reset happened after completion)
