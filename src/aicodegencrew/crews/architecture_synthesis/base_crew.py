@@ -27,7 +27,7 @@ from crewai import LLM, Agent, Crew, Process, Task
 from ...shared.mcp import get_phase3_mcps
 from ...shared.paths import CHROMA_DIR
 from ...shared.tools import RAGQueryTool
-from ...shared.utils.llm_factory import create_llm
+from ...shared.utils.llm_factory import create_codegen_llm, create_llm
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 from .tools import (
@@ -198,6 +198,15 @@ class MiniCrewBase(ABC):
         """Create LLM instance from environment variables."""
         return create_llm()
 
+    def _create_fast_llm(self) -> LLM:
+        """Create a fast/cheap LLM for simpler tasks.
+
+        Uses CODEGEN_MODEL (typically smaller/faster) with fallback to MODEL.
+        Quality gates, glossary, and other formulaic mini-crews can use this
+        to reduce cost and latency without sacrificing output quality.
+        """
+        return create_codegen_llm()
+
     # -------------------------------------------------------------------------
     # TOOL FACTORY
     # -------------------------------------------------------------------------
@@ -226,17 +235,22 @@ class MiniCrewBase(ABC):
     # AGENT FACTORY
     # -------------------------------------------------------------------------
 
-    def _create_agent(self) -> Agent:
+    def _create_agent(self, *, use_fast_model: bool = False) -> Agent:
         """Create a fresh agent with fresh LLM context.
 
         MCPs provide tools automatically — CrewAI handles tool discovery.
+
+        Args:
+            use_fast_model: Use the fast/cheap LLM (CODEGEN_MODEL) instead of
+                the default MODEL. Suitable for formulaic chapters and quality gates.
         """
         config = self.agent_config
+        llm = self._create_fast_llm() if use_fast_model else self._create_llm()
         return Agent(
             role=config["role"],
             goal=config["goal"],
             backstory=config["backstory"],
-            llm=self._create_llm(),
+            llm=llm,
             tools=self._create_tools(),
             mcps=get_phase3_mcps(),
             verbose=True,
@@ -303,20 +317,31 @@ class MiniCrewBase(ABC):
                 if expected_files:
                     self._validate_and_fallback(name, result_str, expected_files, tracker)
 
-                    # Retry once if stubs were created (doc_writer not called)
+                    # Check tool compliance: retry if doc_writer was not called
                     if attempt < _MAX_RETRIES:
-                        base = self._output_dir
-                        has_stub = any(
-                            (base / fp).exists()
-                            and "auto-generated as a stub" in (base / fp).read_text(encoding="utf-8")[:200]
-                            for fp in expected_files
+                        needs_retry, reason = self._check_tool_compliance(
+                            name, tracker, expected_files
                         )
-                        if has_stub:
+                        if needs_retry:
                             logger.warning(
-                                f"[{self.crew_name}] {name}: Stub detected, retrying mini-crew "
+                                f"[{self.crew_name}] {name}: {reason}, "
+                                f"retrying with reinforced instructions "
                                 f"(attempt {attempt + 1}/{_MAX_RETRIES})"
                             )
+                            from ...shared.utils.logger import log_metric as _lm
+
+                            _lm(
+                                "tool_compliance_retry",
+                                crew_type=self.crew_name,
+                                crew_name=name,
+                                reason=reason,
+                                attempt=attempt,
+                            )
+                            self._reinforce_tasks_for_retry(tasks)
                             uninstall_guardrails(tracker)
+                            new_agent = self._create_agent()
+                            for t in tasks:
+                                t.agent = new_agent
                             continue
 
                 checkpoint = {
@@ -332,6 +357,11 @@ class MiniCrewBase(ABC):
 
                 from ...shared.utils.logger import log_metric
 
+                # Track tool compliance for diagnostics
+                writer_called = tracker and any(
+                    "doc_writer:" in c or "chunked_writer:" in c
+                    for c in tracker.calls
+                )
                 log_metric(
                     "mini_crew_complete",
                     crew_type=self.crew_name,
@@ -341,6 +371,8 @@ class MiniCrewBase(ABC):
                     attempts=attempt,
                     total_tokens=token_info.get("total_tokens", 0),
                     estimated=token_info.get("estimated", token_info.get("total_tokens", 0) == 0),
+                    doc_writer_called=bool(writer_called),
+                    total_tool_calls=len(tracker.calls) if tracker else 0,
                 )
                 return result_str
 
@@ -365,6 +397,26 @@ class MiniCrewBase(ABC):
                 return None  # Recovery done in _handle_crew_failure
 
             except Exception as e:
+                # litellm wraps transient connection errors in InternalServerError —
+                # detect by message and retry the same way as native ConnectionError.
+                err_msg = str(e).lower()
+                is_transient = any(k in err_msg for k in (
+                    "connection error", "connection reset", "connection refused",
+                    "timeout", "timed out", "remote end closed", "broken pipe",
+                ))
+                if is_transient and attempt < _MAX_RETRIES:
+                    delay = _RETRY_DELAY_BASE * (2 ** (attempt - 1))
+                    logger.warning(
+                        f"[{self.crew_name}] {name}: Transient LLM error "
+                        f"(attempt {attempt}/{_MAX_RETRIES}), "
+                        f"retrying in {delay}s: {e}"
+                    )
+                    time.sleep(delay)
+                    new_agent = self._create_agent()
+                    for t in tasks:
+                        t.agent = new_agent
+                    continue
+
                 # Non-retryable: Pydantic validation, unexpected errors
                 self._handle_crew_failure(name, tasks, e, start_time, expected_files)
                 return None  # Recovery done in _handle_crew_failure
@@ -429,6 +481,56 @@ class MiniCrewBase(ABC):
             }
         )
         self._save_checkpoint()
+
+    # -------------------------------------------------------------------------
+    # TOOL COMPLIANCE
+    # -------------------------------------------------------------------------
+
+    def _check_tool_compliance(
+        self,
+        name: str,
+        tracker,
+        expected_files: list[str],
+    ) -> tuple[bool, str]:
+        """Check if doc_writer/chunked_writer was called and files are not stubs.
+
+        Returns (needs_retry, reason) tuple.
+        """
+        # Check 1: Was a writing tool actually called?
+        writer_used = tracker and any(
+            "doc_writer:" in c or "chunked_writer:" in c
+            for c in tracker.calls
+        )
+        if not writer_used:
+            return True, "doc_writer not called"
+
+        # Check 2: Are any output files stubs?
+        base = self._output_dir
+        for fp in expected_files:
+            full = base / fp
+            if full.exists():
+                try:
+                    header = full.read_text(encoding="utf-8")[:200]
+                    if "auto-generated as a stub" in header:
+                        return True, f"stub output in {fp}"
+                except Exception:
+                    pass
+
+        return False, ""
+
+    @staticmethod
+    def _reinforce_tasks_for_retry(tasks: list[Task]) -> None:
+        """Prepend failure feedback to task descriptions for retry."""
+        retry_prefix = (
+            "**RETRY — PREVIOUS ATTEMPT FAILED**: You did NOT call the "
+            "doc_writer tool correctly. Your output was LOST because you "
+            "wrote content in your response instead of calling the tool. "
+            "You MUST call doc_writer(file_path=..., content=...) to write "
+            "the file. Do NOT write markdown in your response text.\n\n"
+        )
+        for t in tasks:
+            if "RETRY —" not in t.description:
+                t.description = retry_prefix + t.description
 
     # -------------------------------------------------------------------------
     # OUTPUT VALIDATION
