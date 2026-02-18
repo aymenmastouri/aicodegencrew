@@ -16,6 +16,7 @@ def create_llm(
     *,
     temperature: float = 0.1,
     timeout: int = 300,
+    model_override: str | None = None,
 ) -> LLM:
     """Create a CrewAI LLM instance from environment variables.
 
@@ -24,8 +25,9 @@ def create_llm(
     Args:
         temperature: LLM temperature (default 0.1 for deterministic output).
         timeout: Request timeout in seconds.
+        model_override: If provided, use this model instead of MODEL env var.
     """
-    model = os.getenv("MODEL", _DEFAULT_MODEL)
+    model = model_override or os.getenv("MODEL", _DEFAULT_MODEL)
     api_base = os.getenv("API_BASE", "")
     max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))

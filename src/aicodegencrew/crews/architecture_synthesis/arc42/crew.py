@@ -408,10 +408,13 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
         # Get template data for filling {system_summary} placeholders
         template_data = self._summarize_facts()
 
+        # Simple/formulaic chapters that can use the fast (cheaper) model
+        _fast_model_crews = {"introduction", "constraints", "glossary"}
+
         for name, task_specs, expected_files in mini_crews:
             if not self.should_skip(name, completed):
                 try:
-                    agent = self._create_agent()
+                    agent = self._create_agent(use_fast_model=(name in _fast_model_crews))
                     tasks = [
                         Task(description=desc.format(**template_data), expected_output=output, agent=agent)
                         for desc, output in task_specs
@@ -426,10 +429,10 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
         self._merge_runtime_view()
         self._merge_crosscutting()
 
-        # Quality Gate
+        # Quality Gate (validation only — use fast model)
         if not self.should_skip("quality-gate", completed):
             try:
-                agent = self._create_agent()
+                agent = self._create_agent(use_fast_model=True)
                 self._run_mini_crew(
                     "quality-gate",
                     [
