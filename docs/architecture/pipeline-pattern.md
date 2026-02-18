@@ -3,11 +3,12 @@
 Deterministic stage-based execution for phases that don't need multi-agent collaboration.
 
 > **Reference Diagrams:**
-> - [indexing-pipeline.drawio](../diagrams/indexing-pipeline.drawio) — Enhanced indexing pipeline (symbols, evidence, manifest, budget)
-> - [code-generation-pipeline.drawio](../diagrams/code-generation-pipeline.drawio) — Code generation stages + strategy hooks
-> - [development-planning-pipeline.drawio](../diagrams/development-planning-pipeline.drawio) — Planning pipeline stages + enrich_plan()
-> - [facts-collectors.drawio](../diagrams/facts-collectors.drawio) — Architecture facts collector pattern
-> - [task-type-strategy.drawio](../diagrams/task-type-strategy.drawio) — Task-type strategy pattern (ABC, registry, hooks)
+> - [phase-0-discover-architecture.drawio](../phases/phase-0-discover/phase-0-discover-architecture.drawio) — Indexing pipeline
+> - [phase-1-extract-architecture.drawio](../phases/phase-1-extract/phase-1-extract-architecture.drawio) — Facts collector pattern
+> - [phase-4-plan-architecture.drawio](../phases/phase-4-plan/phase-4-plan-architecture.drawio) — Planning pipeline stages
+> - [phase-5-implement-architecture.drawio](../phases/phase-5-implement/phase-5-implement-architecture.drawio) — Code generation crew
+> - [code-generation-pipeline.drawio](../phases/phase-5-implement/code-generation-pipeline.drawio) — Code generation stages + strategy hooks
+> - [task-type-strategy.drawio](../phases/phase-5-implement/task-type-strategy.drawio) — Task-type strategy pattern
 
 ## When to Use Pipeline vs Crew
 
@@ -43,57 +44,28 @@ Stages pass data forward via a shared `context` dict. Each stage reads what it n
 ## 4 Pipelines
 
 ### 1. Indexing Pipeline (Discover)
-**File:** `src/aicodegencrew/pipelines/indexing/`
 
-Indexes repository files into ChromaDB for RAG queries, plus builds a symbol index, evidence store, and repo manifest.
+**Full docs:** [Phase 0 — Discover](../phases/phase-0-discover/README.md)
 
-```
-Step 1:  Discover files              (RepoDiscoveryTool)
-Step 1b: Build repo manifest         (ManifestBuilder → repo_manifest.json)
-Step 2:  Read files                  (RepoReaderTool)
-Step 2b: Extract symbols per file    (SymbolExtractor → symbols accumulator)
-Step 2c: Apply budget prioritization (BudgetEngine, A/B/C tiers)
-Step 3:  Chunk                       (ChunkerTool + content_type metadata)
-Step 4:  Embed                       (OllamaEmbeddingsTool)
-Step 5:  Store in ChromaDB           (ChromaIndexTool + content_type in metadata)
-Step 6:  Write artifacts             (symbols.jsonl, evidence.jsonl)
-```
-
-- Modes: off, auto (skip if exists), force (re-index), smart (incremental)
-- Budget engine reorders files so high-value files (docs, controllers, configs) are indexed first
-- Symbol extractor supports Java, TypeScript, Python (regex-based, no LLM)
-- Evidence records link each chunk to its line range, content type, and contained symbols
-- Downstream phases consume `symbols.jsonl` via `SymbolQueryTool` and `evidence.jsonl` via `RAGQueryTool` enrichment
+Indexes repository files into ChromaDB + symbol index + evidence store + repo manifest. 10 steps, 0 LLM calls. Modes: off/auto/smart/force.
 
 ### 2. Architecture Facts Pipeline (Extract)
-**File:** `src/aicodegencrew/pipelines/architecture_facts/`
 
-Deterministic extraction of 16 architecture dimensions. No LLM.
-- Collector pattern: one collector per dimension
-- Canonical model normalizes all outputs
-- Every entity has evidence (file, line, confidence)
+**Full docs:** [Phase 1 — Extract](../phases/phase-1-extract/README.md)
+
+Deterministic extraction of 16 architecture dimensions via modular collector pattern. No LLM.
 
 ### 3. Development Planning Pipeline (Plan)
-**File:** `src/aicodegencrew/pipelines/development_planning/`
 
-Hybrid pipeline: 4 deterministic stages + 1 LLM call.
-- Stage 1: Input parser (JIRA XML, DOCX, Excel)
-- Stage 2: Component discovery (RAG + scoring)
-- Stage 3: Pattern matcher (TF-IDF + rules)
-- Stage 4: Plan generator (single LLM call)
-- Stage 5: Pydantic validator
+**Full docs:** [Phase 4 — Plan](../phases/phase-4-plan/README.md)
+
+Hybrid pipeline: 4 deterministic stages + 1 LLM call. 18–40 seconds vs 5–7 min with CrewAI.
 
 ### 4. Code Generation Pipeline (Implement)
-**File:** `src/aicodegencrew/hybrid/code_generation/`
 
-Hierarchical CrewAI crew with task-type strategy hooks.
+**Full docs:** [Phase 5 — Implement](../phases/phase-5-implement/README.md)
 
-```
-Preflight → Strategy: pre_execute() → Crew (4 agents) → Post-Crew
-→ Strategy: enrich_verification() → Output Writer
-```
-
-The pipeline uses a **Task-Type Strategy pattern** (see below) to inject task-specific behavior at 3 points without modifying core code.
+Hierarchical CrewAI crew (4 agents) with preflight, task-type strategy hooks, and post-crew verification.
 
 ## Stage 4b: Self-Healing Build Verification
 
@@ -143,8 +115,8 @@ This ensures later tasks can build on earlier ones (e.g., a refactoring task fol
 
 ## Task-Type Strategy Pattern
 
-> **Design doc**: [docs/design/task-type-strategy.md](../design/task-type-strategy.md)
-> **Diagram**: [task-type-strategy.drawio](../diagrams/task-type-strategy.drawio)
+> **Full docs**: [Phase 5 — Implement](../phases/phase-5-implement/README.md#task-type-strategy-pattern)
+> **Diagram**: [task-type-strategy.drawio](../phases/phase-5-implement/task-type-strategy.drawio)
 
 The Strategy pattern extends pipelines with **task-type-specific behavior** without modifying core pipeline code. Each task type can register custom hooks via a decorator-based registry.
 

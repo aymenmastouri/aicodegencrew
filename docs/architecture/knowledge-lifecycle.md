@@ -3,10 +3,10 @@
 How architecture knowledge flows through SDLC phases, from raw code to generated artifacts.
 
 > **Reference Diagrams:**
-> - [indexing-pipeline.drawio](../diagrams/indexing-pipeline.drawio) — Enhanced indexing pipeline (symbols, evidence, manifest, budget)
+> - [phase-0-discover-architecture.drawio](../phases/phase-0-discover/phase-0-discover-architecture.drawio) — Indexing pipeline
 > - [knowledge-structure.drawio](../diagrams/knowledge-structure.drawio) — Knowledge directory layout
-> - [evidence-flow.drawio](../diagrams/evidence-flow.drawio) — Evidence chain from code to docs
-> - [facts-collectors.drawio](../diagrams/facts-collectors.drawio) — 16-dimension collector architecture
+> - [evidence-flow.drawio](../phases/phase-0-discover/evidence-flow.drawio) — Evidence chain from code to docs
+> - [phase-1-extract-architecture.drawio](../phases/phase-1-extract/phase-1-extract-architecture.drawio) — 16-dimension collector architecture
 > - [reset-cascade.drawio](../diagrams/reset-cascade.drawio) — Reset cascade & archive flow
 
 ## Data Flow
