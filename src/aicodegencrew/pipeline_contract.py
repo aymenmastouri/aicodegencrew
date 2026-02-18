@@ -154,9 +154,10 @@ def compute_run_outcome(statuses: Iterable[str | None]) -> str:
     if all(status == PHASE_PROGRESS_SKIPPED for status in normalized):
         return RUN_OUTCOME_ALL_SKIPPED
 
-    has_completed = any(status in {PHASE_PROGRESS_COMPLETED, PHASE_PROGRESS_PARTIAL} for status in normalized)
-    has_skipped = any(status == PHASE_PROGRESS_SKIPPED for status in normalized)
-    if has_completed and has_skipped:
+    # A phase explicitly reporting 'partial' (degraded output) → partial run.
+    # Legitimately skipped phases (discover=unchanged, implement=no tasks) are
+    # expected behaviour and must NOT pollute the outcome with 'partial'.
+    if any(status == PHASE_PROGRESS_PARTIAL for status in normalized):
         return RUN_OUTCOME_PARTIAL
 
     return RUN_OUTCOME_SUCCESS
