@@ -194,8 +194,16 @@ class MiniCrewBase(ABC):
     # LLM FACTORY
     # -------------------------------------------------------------------------
 
-    def _create_llm(self) -> LLM:
-        """Create LLM instance from environment variables."""
+    def _create_llm(self, *, use_fast_model: bool = False) -> LLM:
+        """Create LLM instance from environment variables.
+
+        When use_fast_model=True, reads FAST_MODEL env var (falls back to MODEL)
+        for cheaper/faster model on simple, formulaic tasks.
+        """
+        if use_fast_model:
+            fast_model = os.getenv("FAST_MODEL")
+            if fast_model:
+                return create_llm(model_override=fast_model)
         return create_llm()
 
     # -------------------------------------------------------------------------
@@ -226,17 +234,18 @@ class MiniCrewBase(ABC):
     # AGENT FACTORY
     # -------------------------------------------------------------------------
 
-    def _create_agent(self) -> Agent:
+    def _create_agent(self, *, use_fast_model: bool = False) -> Agent:
         """Create a fresh agent with fresh LLM context.
 
         MCPs provide tools automatically — CrewAI handles tool discovery.
+        When use_fast_model=True, uses the FAST_MODEL env var for simple tasks.
         """
         config = self.agent_config
         return Agent(
             role=config["role"],
             goal=config["goal"],
             backstory=config["backstory"],
-            llm=self._create_llm(),
+            llm=self._create_llm(use_fast_model=use_fast_model),
             tools=self._create_tools(),
             mcps=get_phase3_mcps(),
             verbose=True,

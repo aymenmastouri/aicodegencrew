@@ -256,10 +256,10 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
                     logger.error(f"[C4] Mini-crew {name} failed, continuing: {e}")
             results.append(f"{name.title()}: Done")
 
-        # Quality Gate
+        # Quality Gate (validation only — use fast model)
         if not self.should_skip("quality", completed):
             try:
-                agent = self._create_agent()
+                agent = self._create_agent(use_fast_model=True)
                 self._run_mini_crew(
                     "quality",
                     [

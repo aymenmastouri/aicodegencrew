@@ -515,7 +515,14 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
             )
             orchestrator.register_phase("plan", planning_pipeline)
         else:
-            logger.warning(f"[Plan] No input files found in {input_dir}, skipping phase")
+            logger.info(f"[Plan] No task files in {input_dir} — nothing to plan")
+
+            class _NoopPlan:
+                def kickoff(self, inputs=None):
+                    logger.info("[Plan] Nothing to do — no task files found")
+                    return {"status": "completed", "message": f"No task files in {input_dir}"}
+
+            orchestrator.register_phase("plan", _NoopPlan())
 
     # --- Implement: Code Generation (Hierarchical CrewAI Team) ---
     if "implement" in planned_phases:
