@@ -65,28 +65,42 @@ def pipeline_status():
 
 
 @router.get("/stream")
-async def pipeline_stream():
-    """SSE endpoint for real-time pipeline events."""
+async def pipeline_stream(start_idx: int = 0):
+    """SSE endpoint for real-time pipeline events.
+
+    Args:
+        start_idx: Resume log stream from this index (avoids duplicate lines
+                   when the client reconnects mid-run).
+    """
 
     async def event_generator() -> AsyncGenerator[str, None]:
-        idx = 0
+        idx = start_idx
         while True:
-            lines = executor.get_log_lines(since=idx)
-            idx += len(lines)
+            try:
+                lines = executor.get_log_lines(since=idx)
+                idx += len(lines)
 
-            for line in lines:
-                yield f"data: {json.dumps({'type': 'log_line', 'data': line})}\n\n"
+                for line in lines:
+                    yield f"data: {json.dumps({'type': 'log_line', 'data': line})}\n\n"
 
-            # Send status update
-            status = executor.get_status()
-            yield f"data: {json.dumps({'type': 'status', 'data': status})}\n\n"
+                # Send status update
+                status = executor.get_status()
+                yield f"data: {json.dumps({'type': 'status', 'data': status})}\n\n"
 
-            # If pipeline is no longer running, send final event and stop
-            if status["state"] not in ("running", "idle"):
-                yield f"data: {json.dumps({'type': 'pipeline_complete', 'data': status})}\n\n"
+                # If pipeline is no longer running, send final event and stop
+                if status["state"] not in ("running", "idle"):
+                    yield f"data: {json.dumps({'type': 'pipeline_complete', 'data': status})}\n\n"
+                    break
+
+                await asyncio.sleep(0.5)
+
+            except Exception as exc:
+                logger.warning("SSE generator error: %s", exc)
+                try:
+                    yield f"data: {json.dumps({'type': 'error', 'data': str(exc)})}\n\n"
+                except Exception:
+                    pass
                 break
-
-            await asyncio.sleep(0.5)
 
     return StreamingResponse(
         event_generator(),

@@ -201,9 +201,12 @@ export class PipelineService {
   }
 
   // SSE stream
-  connectSSE(): Observable<SSEEvent> {
+  connectSSE(startIdx = 0): Observable<SSEEvent> {
     return new Observable<SSEEvent>((observer) => {
-      const eventSource = new EventSource(`${this.base}/pipeline/stream`);
+      const url = startIdx > 0
+        ? `${this.base}/pipeline/stream?start_idx=${startIdx}`
+        : `${this.base}/pipeline/stream`;
+      const eventSource = new EventSource(url);
 
       eventSource.onmessage = (event) => {
         this.zone.run(() => {
