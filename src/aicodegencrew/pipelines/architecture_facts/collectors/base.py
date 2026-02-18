@@ -8,6 +8,8 @@ Design Principles:
 4. IDs are assigned by the Model Builder, not collectors
 """
 
+import fnmatch
+import os
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -322,13 +324,23 @@ class DimensionCollector(ABC):
         return bool(set(path.parts) & self.SKIP_DIRS)
 
     def _find_files(self, pattern: str, root: Path | None = None) -> list[Path]:
-        """Find files matching glob pattern."""
+        """Find files matching glob pattern, pruning SKIP_DIRS at directory level.
+
+        Uses os.walk() with in-place dirnames modification so skip directories
+        (node_modules, dist, target, .git, etc.) are never traversed at all.
+        This is critical on VPN/slow filesystems where rglob over node_modules
+        (thousands of files) causes 10-20x slowdowns.
+        """
         search_root = root or self.repo_path
-        files = []
-        for path in search_root.rglob(pattern):
-            if path.is_file() and not self._should_skip(path):
-                files.append(path)
-        return files
+        results = []
+        skip_lower = {d.lower() for d in self.SKIP_DIRS}
+        for dirpath, dirnames, filenames in os.walk(search_root):
+            # Prune skip dirs in-place so os.walk never descends into them
+            dirnames[:] = [d for d in dirnames if d.lower() not in skip_lower]
+            for fname in filenames:
+                if fnmatch.fnmatch(fname, pattern):
+                    results.append(Path(dirpath) / fname)
+        return results
 
     def _read_file(self, path: Path) -> list[str]:
         """Read file lines (cached)."""
