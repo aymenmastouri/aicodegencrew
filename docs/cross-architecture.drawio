@@ -1,0 +1,162 @@
+<mxfile host="app.diagrams.net" modified="2026-02-18T00:00:00.000Z" agent="SDLC Pilot" version="24.0.0" type="device">
+  <diagram id="sdlc-e2e-pipeline" name="E2E Pipeline">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="SDLC Pilot — End-to-End Pipeline" style="text;html=1;align=center;verticalAlign=middle;fontSize=18;fontStyle=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Layer labels -->
+        <mxCell id="layer_knowledge" value="KNOWLEDGE LAYER" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#1565C0;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="layer_reasoning" value="REASONING LAYER" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#E65100;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="290" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="layer_execution" value="EXECUTION LAYER" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontStyle=1;fontColor=#2E7D32;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="160" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 0: Discover -->
+        <mxCell id="p0" value="&lt;b&gt;Phase 0: Discover&lt;/b&gt;&lt;br&gt;Repository Indexing&lt;br&gt;&lt;i&gt;Pipeline (no LLM)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="80" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p0_out" value="ChromaDB&lt;br&gt;symbols.jsonl&lt;br&gt;evidence.jsonl&lt;br&gt;repo_manifest.json" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="200" y="155" width="180" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 1: Extract -->
+        <mxCell id="p1" value="&lt;b&gt;Phase 1: Extract&lt;/b&gt;&lt;br&gt;Architecture Facts&lt;br&gt;&lt;i&gt;Pipeline (no LLM)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="80" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_out" value="architecture_facts.json&lt;br&gt;evidence_map.json" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="155" width="180" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 2: Analyze -->
+        <mxCell id="p2" value="&lt;b&gt;Phase 2: Analyze&lt;/b&gt;&lt;br&gt;Architecture Analysis&lt;br&gt;&lt;i&gt;Crew (5 mini-crews)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="280" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_out" value="analyzed_architecture.json" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="200" y="355" width="180" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 3: Document -->
+        <mxCell id="p3" value="&lt;b&gt;Phase 3: Document&lt;/b&gt;&lt;br&gt;Architecture Synthesis&lt;br&gt;&lt;i&gt;Crew (23 mini-crews)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="480" y="280" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_out" value="C4 diagrams + Arc42 docs" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="355" width="180" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 4: Plan -->
+        <mxCell id="p4" value="&lt;b&gt;Phase 4: Plan&lt;/b&gt;&lt;br&gt;Development Planning&lt;br&gt;&lt;i&gt;Hybrid (4 det + 1 LLM)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="760" y="280" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_out" value="{task_id}_plan.json" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="760" y="355" width="180" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 5: Implement -->
+        <mxCell id="p5" value="&lt;b&gt;Phase 5: Implement&lt;/b&gt;&lt;br&gt;Code Generation&lt;br&gt;&lt;i&gt;Hierarchical Crew (4 agents)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="520" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_out" value="Git branch + report JSON" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="200" y="595" width="180" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 6: Verify -->
+        <mxCell id="p6" value="&lt;b&gt;Phase 6: Verify&lt;/b&gt;&lt;br&gt;Test Generation&lt;br&gt;&lt;i&gt;Crew (planned)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;strokeDashPattern=8 4;" vertex="1" parent="1">
+          <mxGeometry x="480" y="520" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 7: Deliver -->
+        <mxCell id="p7" value="&lt;b&gt;Phase 7: Deliver&lt;/b&gt;&lt;br&gt;Review &amp; Deploy&lt;br&gt;&lt;i&gt;Pipeline (planned)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;strokeDashPattern=8 4;" vertex="1" parent="1">
+          <mxGeometry x="760" y="520" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Arrows -->
+        <mxCell id="a01" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p0" target="p1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a02" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p0" target="p2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a12" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p1" target="p2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a13" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p1" target="p3" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a23" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p2" target="p3" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a24" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p2" target="p4" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a14" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p1" target="p4" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a04" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="p0" target="p4" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a45" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p4" target="p5" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a05" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="p0" target="p5" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a15" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="p1" target="p5" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a56" style="edgeStyle=orthogonalEdgeStyle;strokeDashPattern=8 4;" edge="1" source="p5" target="p6" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a67" style="edgeStyle=orthogonalEdgeStyle;strokeDashPattern=8 4;" edge="1" source="p6" target="p7" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Source repo input -->
+        <mxCell id="repo" value="Source&lt;br&gt;Repository" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;size=15;fillColor=#F5F5F5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="90" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ar0" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="repo" target="p0" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend_title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;fontSize=10;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="80" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=1;fillColor=#BBDEFB;strokeColor=#1565C0;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="105" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="leg1t" value="Knowledge Layer (no LLM)" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="103" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2" value="" style="rounded=1;fillColor=#FFE0B2;strokeColor=#E65100;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="130" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2t" value="Reasoning Layer (LLM)" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="128" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3" value="" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="155" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3t" value="Execution Layer (LLM)" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="153" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="leg4" value="" style="rounded=1;fillColor=none;strokeColor=#666666;strokeDashPattern=8 4;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="180" width="20" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="leg4t" value="Planned (not implemented)" style="text;html=1;fontSize=9;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1085" y="178" width="150" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
