@@ -328,6 +328,10 @@ class MiniCrewBase(ABC):
                             uninstall_guardrails(tracker)
                             continue
 
+                # Retry succeeded — clear degraded markers from earlier attempts
+                if attempt > 1:
+                    self._unmark_degraded_for(name)
+
                 checkpoint = {
                     "crew": name,
                     "status": "completed",
@@ -645,6 +649,12 @@ This chapter requires manual completion or re-running with a more capable LLM.
         """Record a degradation reason once."""
         if reason not in self._degradation_reasons:
             self._degradation_reasons.append(reason)
+
+    def _unmark_degraded_for(self, crew_name: str) -> None:
+        """Remove all degradation reasons for a crew that succeeded on retry."""
+        self._degradation_reasons = [
+            r for r in self._degradation_reasons if not r.startswith(f"{crew_name}:")
+        ]
 
     def has_degraded_outputs(self) -> bool:
         """Whether this crew produced degraded output."""
