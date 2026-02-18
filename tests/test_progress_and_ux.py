@@ -899,3 +899,40 @@ class TestEmptyDirectoryNotCompleted:
             assert planning is not None
             assert planning.output_exists is True
             assert planning.status == "completed"
+
+    def test_zero_duration_completed_without_output_maps_to_skipped(self, tmp_project):
+        """Historical no-op completion (0s, no artifacts) should display as skipped."""
+        from aicodegencrew.shared.utils.phase_state import configure_state_dir
+
+        configure_state_dir(tmp_project / "logs")
+        state_path = tmp_project / "logs" / "phase_state.json"
+        state_path.write_text(
+            json.dumps(
+                {
+                    "run_id": "r1",
+                    "pid": 1,
+                    "phases": {
+                        "plan": {
+                            "status": "completed",
+                            "started_at": "2026-01-01T00:00:00",
+                            "completed_at": "2026-01-01T00:00:00",
+                            "duration_seconds": 0.0,
+                            "error": None,
+                        }
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with patch("ui.backend.services.phase_runner.settings") as s:
+            s.project_root = tmp_project
+            s.phases_config = tmp_project / "config" / "phases_config.yaml"
+
+            from ui.backend.services.phase_runner import get_pipeline_status
+
+            status = get_pipeline_status()
+            planning = next((p for p in status.phases if p.id == "plan"), None)
+            assert planning is not None
+            assert planning.output_exists is False
+            assert planning.status == "skipped"

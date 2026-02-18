@@ -57,6 +57,7 @@ export interface ExecutionStatus {
 export interface RunHistoryEntry {
   run_id: string;
   status: string;
+  run_outcome?: string;
   preset?: string;
   phases: string[];
   started_at?: string;
@@ -103,6 +104,7 @@ export interface HistoryStats {
 export interface RunDetail {
   run_id: string;
   status: string;
+  run_outcome?: string;
   preset?: string;
   phases: string[];
   started_at?: string;

@@ -224,6 +224,7 @@ def get_run_detail(run_id: str) -> dict | None:
                 if str(report.get("run_id", "")) in candidate_ids:
                     entry["phase_results"] = report.get("phases", [])
                     entry["environment"] = report.get("environment", {})
+                    entry.setdefault("run_outcome", report.get("run_outcome"))
             except (json.JSONDecodeError, OSError):
                 pass
 
@@ -289,6 +290,7 @@ def _format_legacy(data: dict) -> dict:
     return {
         "run_id": data.get("run_id", "unknown"),
         "status": data.get("status", "unknown"),
+        "run_outcome": data.get("run_outcome"),
         "preset": data.get("environment", {}).get("preset"),
         "phases": data.get("planned_phases", []),
         "started_at": data.get("timestamp"),
