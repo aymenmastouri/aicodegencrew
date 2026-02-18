@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import platform
 import re
 import subprocess
 import sys
@@ -181,8 +182,9 @@ class PipelineExecutor:
                 return False
 
             try:
-                self._process.terminate()
-                # Give it 5 seconds to terminate gracefully
+                pid = self._process.pid
+                self._kill_process_tree(pid)
+                # Give it 5 seconds to terminate gracefully after tree kill
                 try:
                     self._process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
@@ -199,24 +201,68 @@ class PipelineExecutor:
                 logger.error("Failed to cancel pipeline: %s", exc)
                 return False
 
+    @staticmethod
+    def _kill_process_tree(pid: int) -> None:
+        """Kill a process and all its children (Windows-compatible)."""
+        if platform.system() == "Windows":
+            # taskkill /T kills the entire process tree; /F forces termination
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(pid)],
+                capture_output=True,
+                check=False,
+            )
+        else:
+            import os
+            import signal
+            try:
+                os.killpg(os.getpgid(pid), signal.SIGTERM)
+            except (ProcessLookupError, OSError):
+                pass
+
     def _mark_running_phases_cancelled(self) -> None:
-        """After cancel, update phase_state.json so running phases show as failed."""
+        """After cancel, update phase_state.json so running phases show as failed.
+
+        Also creates 'cancelled' entries for phases in the current run that never
+        reached 'running' status (early cancel before orchestrator wrote the entry).
+        """
         state_path = settings.logs_dir / "phase_state.json"
+        now = datetime.now(UTC).isoformat(timespec="seconds")
         try:
-            if not state_path.exists():
-                return
-            with open(state_path, encoding="utf-8") as f:
-                data = json.load(f)
-            phases = data.get("phases", {})
+            data: dict = {}
+            if state_path.exists():
+                try:
+                    with open(state_path, encoding="utf-8") as f:
+                        data = json.load(f)
+                except Exception:
+                    pass
+
+            phases = data.setdefault("phases", {})
             modified = False
+
+            # Mark any currently-running phases as failed
             for entry in phases.values():
                 if entry.get("status") == "running":
                     entry["status"] = "failed"
                     entry["error"] = "Cancelled by user"
-                    entry["completed_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+                    entry["completed_at"] = now
                     modified = True
+
+            # Create 'cancelled' entries for phases that never started
+            if self.current_run and self.current_run.phases:
+                for phase_id in self.current_run.phases:
+                    if phase_id not in phases:
+                        phases[phase_id] = {
+                            "status": "skipped",
+                            "started_at": None,
+                            "completed_at": now,
+                            "duration_seconds": None,
+                            "error": "Cancelled before phase started",
+                        }
+                        modified = True
+
             if modified:
-                data["updated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+                data["updated_at"] = now
+                state_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(state_path, "w", encoding="utf-8") as f:
                     json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as exc:

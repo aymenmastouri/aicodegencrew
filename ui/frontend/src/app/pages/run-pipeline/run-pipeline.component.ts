@@ -250,7 +250,7 @@ import { statusIcon } from '../../shared/status';
             <div class="exec-bar">
               <div class="progress-section">
                 <mat-progress-bar
-                  [mode]="status.progress_percent !== null && status.progress_percent !== undefined ? 'determinate' : 'indeterminate'"
+                  [mode]="(status.progress_percent !== null && status.progress_percent !== undefined && status.progress_percent > 0) ? 'determinate' : 'indeterminate'"
                   [value]="status.progress_percent || 0"
                   class="run-progress">
                 </mat-progress-bar>
