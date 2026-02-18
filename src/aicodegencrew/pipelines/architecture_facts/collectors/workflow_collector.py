@@ -224,8 +224,7 @@ class WorkflowCollector(DimensionCollector):
 
     def _collect_java_workflows(self):
         """Collect Java-based workflows and state machines."""
-        java_files = list(self.repo_path.rglob("*.java"))
-        java_files = [f for f in java_files if not self._should_skip(f)]
+        java_files = self._find_files("*.java")
 
         logger.info(f"[WorkflowCollector] Scanning {len(java_files)} Java files for workflows")
 
@@ -566,8 +565,7 @@ class WorkflowCollector(DimensionCollector):
 
     def _collect_typescript_workflows(self):
         """Collect TypeScript-based workflows (XState, NgRx, RxJS)."""
-        ts_files = list(self.repo_path.rglob("*.ts"))
-        ts_files = [f for f in ts_files if not self._should_skip(f) and ".spec." not in str(f)]
+        ts_files = [f for f in self._find_files("*.ts") if ".spec." not in str(f)]
 
         logger.info(f"[WorkflowCollector] Scanning {len(ts_files)} TypeScript files for workflows")
 

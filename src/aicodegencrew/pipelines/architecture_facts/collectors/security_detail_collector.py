@@ -66,8 +66,7 @@ class SecurityDetailCollector(DimensionCollector):
 
     def _collect_java_security(self):
         """Collect method-level security from Java/Kotlin files."""
-        java_files = list(self.repo_path.rglob("*.java")) + list(self.repo_path.rglob("*.kt"))
-        java_files = [f for f in java_files if not self._should_skip(f)]
+        java_files = self._find_files("*.java") + self._find_files("*.kt")
 
         logger.info(f"[SecurityDetailCollector] Scanning {len(java_files)} Java/Kotlin files")
 
@@ -199,9 +198,9 @@ class SecurityDetailCollector(DimensionCollector):
 
     def _collect_angular_security(self):
         """Collect Angular route guard facts."""
-        ts_files = list(self.repo_path.rglob("*.ts"))
         ts_files = [
-            f for f in ts_files if (not self._should_skip(f) and "guard" in str(f).lower()) or "auth" in str(f).lower()
+            f for f in self._find_files("*.ts")
+            if "guard" in str(f).lower() or "auth" in str(f).lower()
         ]
 
         for ts_file in ts_files:

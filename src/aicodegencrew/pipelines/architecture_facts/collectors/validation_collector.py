@@ -97,8 +97,7 @@ class ValidationCollector(DimensionCollector):
 
     def _collect_java_validation(self):
         """Collect Bean Validation annotations from Java/Kotlin files."""
-        java_files = list(self.repo_path.rglob("*.java")) + list(self.repo_path.rglob("*.kt"))
-        java_files = [f for f in java_files if not self._should_skip(f)]
+        java_files = self._find_files("*.java") + self._find_files("*.kt")
 
         logger.info(f"[ValidationCollector] Scanning {len(java_files)} Java/Kotlin files")
 
@@ -199,8 +198,7 @@ class ValidationCollector(DimensionCollector):
 
     def _collect_angular_validation(self):
         """Collect Angular form validators."""
-        ts_files = list(self.repo_path.rglob("*.ts"))
-        ts_files = [f for f in ts_files if not self._should_skip(f) and ".spec." not in str(f)]
+        ts_files = [f for f in self._find_files("*.ts") if ".spec." not in str(f)]
 
         for ts_file in ts_files:
             try:

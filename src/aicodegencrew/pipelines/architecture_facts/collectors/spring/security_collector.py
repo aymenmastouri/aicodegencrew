@@ -26,9 +26,7 @@ class SpringSecurityCollector(DimensionCollector):
         relations: list[RelationHint] = []
 
         # Find Java and Kotlin files
-        java_files = list(self.repo_path.rglob("*.java"))
-        kotlin_files = list(self.repo_path.rglob("*.kt"))
-        all_files = java_files + kotlin_files
+        all_files = self._find_files("*.java") + self._find_files("*.kt")
 
         for src_file in all_files:
             try:
@@ -51,9 +49,9 @@ class SpringSecurityCollector(DimensionCollector):
 
         # Check for security properties (YAML and properties)
         for props_file in (
-            list(self.repo_path.rglob("application*.yml"))
-            + list(self.repo_path.rglob("application*.yaml"))
-            + list(self.repo_path.rglob("application*.properties"))
+            self._find_files("application*.yml")
+            + self._find_files("application*.yaml")
+            + self._find_files("application*.properties")
         ):
             try:
                 content = props_file.read_text(encoding="utf-8", errors="ignore")

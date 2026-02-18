@@ -70,8 +70,7 @@ class TestCollector(DimensionCollector):
 
     def _collect_feature_files(self):
         """Collect Cucumber/Gherkin .feature files."""
-        feature_files = list(self.repo_path.rglob("*.feature"))
-        feature_files = [f for f in feature_files if not self._should_skip(f)]
+        feature_files = self._find_files("*.feature")
 
         logger.info(f"[TestCollector] Scanning {len(feature_files)} .feature files")
 
@@ -122,8 +121,7 @@ class TestCollector(DimensionCollector):
         test_patterns = ["*Test.java", "*IT.java", "*Tests.java", "*Spec.java", "*Test.kt", "*IT.kt"]
         test_files = []
         for pattern in test_patterns:
-            test_files.extend(self.repo_path.rglob(pattern))
-        test_files = [f for f in test_files if not self._should_skip(f)]
+            test_files.extend(self._find_files(pattern))
 
         logger.info(f"[TestCollector] Scanning {len(test_files)} Java/Kotlin test files")
 
@@ -194,8 +192,7 @@ class TestCollector(DimensionCollector):
 
     def _collect_typescript_tests(self):
         """Collect TypeScript test files (.spec.ts, .e2e-spec.ts)."""
-        spec_files = list(self.repo_path.rglob("*.spec.ts")) + list(self.repo_path.rglob("*.e2e-spec.ts"))
-        spec_files = [f for f in spec_files if not self._should_skip(f)]
+        spec_files = self._find_files("*.spec.ts") + self._find_files("*.e2e-spec.ts")
 
         logger.info(f"[TestCollector] Scanning {len(spec_files)} TypeScript spec files")
 
