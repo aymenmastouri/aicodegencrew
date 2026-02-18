@@ -914,8 +914,10 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
   private connectSSE(): void {
     this.sseSub?.unsubscribe();
+    // Resume from last received log line to avoid duplicate entries on reconnect
+    const resumeFrom = this.logLines.length;
 
-    this.sseSub = this.pipeline.connectSSE().subscribe({
+    this.sseSub = this.pipeline.connectSSE(resumeFrom).subscribe({
       next: (event: SSEEvent) => {
         if (event.type === 'log_line') {
           this.logLines = [...this.logLines, event.data as string];

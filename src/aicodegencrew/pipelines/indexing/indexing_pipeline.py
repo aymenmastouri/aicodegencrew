@@ -222,13 +222,26 @@ def _acquire_index_lock(lock_path: Path, timeout_s: int) -> bool:
     if lock_path.exists():
         try:
             content = lock_path.read_text(encoding="utf-8")
+            old_pid: int | None = None
+            lock_started: int | None = None
             for line in content.splitlines():
                 if line.startswith("pid="):
                     old_pid = int(line.split("=", 1)[1])
-                    if not _is_pid_alive(old_pid):
-                        logger.warning(f"Stale lock detected (pid={old_pid} not alive). Removing.")
-                        lock_path.unlink(missing_ok=True)
-                    break
+                elif line.startswith("started="):
+                    lock_started = int(line.split("=", 1)[1])
+
+            if old_pid is not None:
+                pid_alive = _is_pid_alive(old_pid)
+                # Guard against PID reuse: if the lock was written more than
+                # 1 hour ago, the original process is gone regardless of PID.
+                lock_age = time.time() - (lock_started or 0)
+                is_stale = not pid_alive or lock_age > 3600
+                if is_stale:
+                    logger.warning(
+                        f"Stale lock detected (pid={old_pid}, alive={pid_alive}, "
+                        f"age={int(lock_age)}s). Removing."
+                    )
+                    lock_path.unlink(missing_ok=True)
         except Exception as e:
             logger.debug(f"Could not check stale lock: {e}")
 
