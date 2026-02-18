@@ -17,7 +17,7 @@ Usage:
 from pathlib import Path
 from typing import Any
 
-from ...shared.utils.logger import log_metric, logger
+from ...shared.utils.logger import logger
 from .collectors.fact_adapter import DimensionResultsAdapter
 from .collectors.orchestrator import CollectorOrchestrator, DimensionResults
 from .dimension_writers import CanonicalModelWriter
@@ -61,9 +61,9 @@ class ArchitectureFactsPipeline:
         if not self.repo_path.exists():
             raise ValueError(f"Repository path does not exist: {self.repo_path}")
 
-        logger.info("[Phase1] ArchitectureFactsPipeline initialized")
-        logger.info(f"[Phase1] Repository: {self.repo_path}")
-        logger.info(f"[Phase1] Output: {self.output_dir}")
+        logger.info("[Extract] ArchitectureFactsPipeline initialized")
+        logger.info(f"[Extract] Repository: {self.repo_path}")
+        logger.info(f"[Extract] Output: {self.output_dir}")
 
     def _fact_to_dict(self, fact) -> dict[str, Any]:
         """Convert a RawFact to dictionary."""
@@ -154,31 +154,26 @@ class ArchitectureFactsPipeline:
         Returns:
             Dictionary with extraction results
         """
-        logger.info("=" * 60)
-        logger.info("[Phase1] Starting Architecture Facts Extraction")
-        logger.info("[Phase1] Mode: DETERMINISTIC (no LLM)")
-        logger.info("=" * 60)
-
-        log_metric("phase_start", phase="extract")
+        logger.info("[Extract] Mode: DETERMINISTIC (no LLM)")
 
         # Step 0: Clean old outputs
-        logger.info("[Phase1] Step 0: Clean old outputs...")
+        logger.info("[Extract] Step 0: Clean old outputs...")
         self._clean_old_outputs()
 
         try:
             # Step 1: Run all collectors via orchestrator
             # Pass output_dir so each collector writes JSON immediately after completion
-            logger.info("\n[Phase1] Step 1: Running collectors...")
+            logger.info("\n[Extract] Step 1: Running collectors...")
             orchestrator = CollectorOrchestrator(self.repo_path, output_dir=self.output_dir)
             results: DimensionResults = orchestrator.run_all()
 
             # Step 2: Adapt raw facts to model format
-            logger.info("\n[Phase1] Step 2: Adapting facts to model format...")
+            logger.info("\n[Extract] Step 2: Adapting facts to model format...")
             adapter = DimensionResultsAdapter(self.repo_path)
             adapted = adapter.convert(results)
 
             # Step 3: Build canonical architecture model
-            logger.info("\n[Phase1] Step 3: Building canonical architecture model...")
+            logger.info("\n[Extract] Step 3: Building canonical architecture model...")
             model_builder = ArchitectureModelBuilder(system_name=results.system_name)
 
             # Add containers
@@ -214,14 +209,14 @@ class ArchitectureFactsPipeline:
             canonical_model.build_system = [self._fact_to_dict(b) for b in getattr(results, "build_system", [])]
 
             stats = canonical_model.get_statistics()
-            logger.info(f"[Phase1] Canonical model: {stats['components']} components, {stats['relations']} relations")
-            logger.info(f"[Phase1] Dependencies: {stats['dependencies']}, Workflows: {stats['workflows']}")
+            logger.info(f"[Extract] Canonical model: {stats['components']} components, {stats['relations']} relations")
+            logger.info(f"[Extract] Dependencies: {stats['dependencies']}, Workflows: {stats['workflows']}")
             logger.info(
-                f"[Phase1] Security: {stats.get('security_details', 0)}, Validation: {stats.get('validation', 0)}, Tests: {stats.get('tests', 0)}, Errors: {stats.get('error_handling', 0)}"
+                f"[Extract] Security: {stats.get('security_details', 0)}, Validation: {stats.get('validation', 0)}, Tests: {stats.get('tests', 0)}, Errors: {stats.get('error_handling', 0)}"
             )
 
             # Step 4: Build endpoint flows
-            logger.info("\n[Phase1] Step 4: Building endpoint flows...")
+            logger.info("\n[Extract] Step 4: Building endpoint flows...")
             flow_builder = EndpointFlowBuilder(
                 components=adapted["components"],
                 interfaces=adapted["interfaces"],
@@ -229,10 +224,10 @@ class ArchitectureFactsPipeline:
                 evidence=adapted["evidence"],
             )
             endpoint_flows = flow_builder.build_flows()
-            logger.info(f"[Phase1] Built {len(endpoint_flows)} endpoint flows")
+            logger.info(f"[Extract] Built {len(endpoint_flows)} endpoint flows")
 
             # Step 5: Write dimension files
-            logger.info("\n[Phase1] Step 5: Writing dimension files...")
+            logger.info("\n[Extract] Step 5: Writing dimension files...")
             self.output_dir.mkdir(parents=True, exist_ok=True)
 
             dimension_writer = CanonicalModelWriter(self.output_dir)
@@ -241,32 +236,19 @@ class ArchitectureFactsPipeline:
             # Write combined architecture_facts.json (aggregated)
             combined_path = dimension_writer.write_combined(canonical_model, endpoint_flows)
 
-            logger.info("\n" + "=" * 60)
-            logger.info("[Phase1] Architecture Facts Extraction COMPLETE")
-            logger.info("=" * 60)
-            logger.info(f"[Phase1] System: {results.system_name}")
-            logger.info(f"[Phase1] Containers: {stats['containers']}")
-            logger.info(f"[Phase1] Components: {stats['components']}")
-            logger.info(f"[Phase1] Interfaces: {stats['interfaces']}")
-            logger.info(f"[Phase1] Relations: {stats['relations']}")
-            logger.info(f"[Phase1] Evidence: {stats['evidence']}")
-            logger.info(f"[Phase1] Dependencies: {stats['dependencies']}")
-            logger.info(f"[Phase1] Workflows: {stats['workflows']}")
-            logger.info(f"[Phase1] Entities: {len(results.entities)}")
-            logger.info(f"[Phase1] Tables: {len(results.tables)}")
-            logger.info(f"[Phase1] Migrations: {len(results.migrations)}")
-            logger.info(f"[Phase1] Infrastructure: {len(results.infrastructure)}")
-            logger.info(f"[Phase1] Output: {combined_path}")
-
-            log_metric(
-                "phase_complete",
-                phase="extract",
-                status="success",
-                components=stats["components"],
-                relations=stats["relations"],
-                interfaces=stats["interfaces"],
-                containers=stats["containers"],
-            )
+            logger.info(f"[Extract] System: {results.system_name}")
+            logger.info(f"[Extract] Containers: {stats['containers']}")
+            logger.info(f"[Extract] Components: {stats['components']}")
+            logger.info(f"[Extract] Interfaces: {stats['interfaces']}")
+            logger.info(f"[Extract] Relations: {stats['relations']}")
+            logger.info(f"[Extract] Evidence: {stats['evidence']}")
+            logger.info(f"[Extract] Dependencies: {stats['dependencies']}")
+            logger.info(f"[Extract] Workflows: {stats['workflows']}")
+            logger.info(f"[Extract] Entities: {len(results.entities)}")
+            logger.info(f"[Extract] Tables: {len(results.tables)}")
+            logger.info(f"[Extract] Migrations: {len(results.migrations)}")
+            logger.info(f"[Extract] Infrastructure: {len(results.infrastructure)}")
+            logger.info(f"[Extract] Output: {combined_path}")
 
             return {
                 "phase": "extract",
@@ -283,8 +265,7 @@ class ArchitectureFactsPipeline:
             }
 
         except Exception as e:
-            logger.error(f"[Phase1] Error: {e}", exc_info=True)
-            log_metric("phase_failed", phase="extract", error=str(e)[:500])
+            logger.error(f"[Extract] Error: {e}", exc_info=True)
             return {
                 "phase": "extract",
                 "status": "failed",
