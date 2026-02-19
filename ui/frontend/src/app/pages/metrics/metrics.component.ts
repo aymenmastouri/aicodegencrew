@@ -166,16 +166,23 @@ export class MetricsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadMetrics();
-    this.refreshTimer = setInterval(() => this.loadMetrics(), 10000);
+    // Background refresh: never show spinner — data updates silently
+    this.refreshTimer = setInterval(() => this._fetchMetrics(), 10000);
   }
 
   ngOnDestroy(): void {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
+  /** Public: called by template (filter change) — shows spinner. */
   loadMetrics(): void {
     this.loading = true;
     this.cdr.markForCheck();
+    this._fetchMetrics();
+  }
+
+  /** Private: fetches data without touching loading state (background refresh). */
+  private _fetchMetrics(): void {
     this.api.getMetrics(500, this.selectedEvent || undefined).subscribe({
       next: (s) => {
         this.summary = s;

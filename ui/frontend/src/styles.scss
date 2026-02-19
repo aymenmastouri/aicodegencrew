@@ -155,7 +155,7 @@ $cg-theme: mat.m2-define-light-theme(
   --cg-gray-900: #212529;
   --cg-success: #28a745;
   --cg-error: #dc3545;
-  --cg-warn: #ffc107;
+  --cg-warn: #f57c00;
 }
 
 // ---------------------------------------------------------------------------
@@ -318,8 +318,14 @@ body {
 }
 
 .status-cancelled {
-  background: rgba(255, 193, 7, 0.15);
-  color: #d4a017;
+  background: rgba(245, 124, 0, 0.12);
+  color: var(--cg-warn);
+}
+
+.status-skipped {
+  background: rgba(40, 167, 69, 0.08);
+  color: var(--cg-success);
+  font-style: italic;
 }
 
 .status-reset {

@@ -15,6 +15,11 @@ import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../..
 import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as formatDurationUtil, formatNumber as formatNumberUtil } from '../../shared/phase-utils';
 import { statusLabel } from '../../shared/status';
 
+/** Keys whose values are masked by default in the run-detail environment panel. */
+const SECRET_KEY_PATTERNS = [
+  /api[_-]?key/i, /secret/i, /password/i, /token/i, /credential/i, /private[_-]?key/i,
+];
+
 @Component({
   selector: 'app-history',
   standalone: true,
@@ -329,7 +334,21 @@ import { statusLabel } from '../../shared/status';
                     @for (key of objectKeys(detail.environment); track key) {
                       <div class="env-item">
                         <span class="env-key">{{ key }}</span>
-                        <span class="env-value">{{ detail.environment[key] }}</span>
+                        <span class="env-value env-value-row">
+                          @if (isSecretKey(key) && !revealedKeys.has(key)) {
+                            <span class="env-masked">••••••••••••</span>
+                            <button class="env-reveal-btn" matTooltip="Reveal value" (click)="toggleReveal(key)">
+                              <mat-icon class="env-reveal-icon">visibility</mat-icon>
+                            </button>
+                          } @else {
+                            <span>{{ detail.environment[key] }}</span>
+                            @if (isSecretKey(key)) {
+                              <button class="env-reveal-btn" matTooltip="Hide value" (click)="toggleReveal(key)">
+                                <mat-icon class="env-reveal-icon">visibility_off</mat-icon>
+                              </button>
+                            }
+                          }
+                        </span>
                       </div>
                     }
                   </div>
@@ -406,7 +425,7 @@ import { statusLabel } from '../../shared/status';
       .table-card {
         background: #fff;
         border-radius: 12px;
-        overflow: hidden;
+        overflow-x: auto;
       }
       .history-table {
         width: 100%;
@@ -691,6 +710,29 @@ import { statusLabel } from '../../shared/status';
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+      .env-value-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex: 1;
+        min-width: 0;
+      }
+      .env-masked {
+        letter-spacing: 2px;
+        color: var(--cg-gray-400);
+      }
+      .env-reveal-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        color: var(--cg-gray-400);
+        flex-shrink: 0;
+      }
+      .env-reveal-btn:hover { color: var(--cg-blue); }
+      .env-reveal-icon { font-size: 14px; width: 14px; height: 14px; }
     `,
   ],
 })
@@ -714,6 +756,9 @@ export class HistoryComponent implements OnInit, OnDestroy {
   selectedRun: RunHistoryEntry | null = null;
   detail: RunDetail | null = null;
   detailLoading = false;
+
+  /** Keys currently revealed in the environment panel (populated by user click). */
+  revealedKeys = new Set<string>();
 
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -861,6 +906,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
     }
     this.selectedRun = row;
     this.detail = null;
+    this.revealedKeys.clear();
     this.detailLoading = true;
     this.cdr.markForCheck();
 
@@ -904,5 +950,18 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   objectKeys(obj: Record<string, unknown>): string[] {
     return Object.keys(obj);
+  }
+
+  isSecretKey(key: string): boolean {
+    return SECRET_KEY_PATTERNS.some((re) => re.test(key));
+  }
+
+  toggleReveal(key: string): void {
+    if (this.revealedKeys.has(key)) {
+      this.revealedKeys.delete(key);
+    } else {
+      this.revealedKeys.add(key);
+    }
+    this.cdr.markForCheck();
   }
 }
