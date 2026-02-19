@@ -75,8 +75,14 @@ def _resolve_status(
                 # (None) or zero duration (0.0 from old NoopPlan) was never
                 # actually executed.  No output + no real duration = skipped.
                 return PHASE_PROGRESS_SKIPPED, duration, None
+            if st == PHASE_PROGRESS_PARTIAL:
+                # A partial run may leave no detectable output (e.g. safety
+                # gate rejected all commits, or only checkpoint files exist).
+                # Trust phase_state.json — demoting to "ready" hides the fact
+                # that the phase ran and produced partial results.
+                return PHASE_PROGRESS_PARTIAL, duration, None
             if enabled:
-                # Output deleted (reset happened after completion)
+                # completed + no output = phase was reset after completion
                 return PIPELINE_PHASE_READY, None, None
 
         if st in (PIPELINE_PHASE_READY, PIPELINE_PHASE_PLANNED):
