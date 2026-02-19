@@ -551,6 +551,18 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         )
         orchestrator.register_phase("implement", implement_crew)
 
+    # --- Verify: Test Generation (Phase 6) ---
+    if "verify" in planned_phases:
+        from .crews.testing import TestingCrew
+
+        testing_crew = TestingCrew(
+            repo_path=str(repo_path),
+            implement_dir=str(knowledge_dir / "implement"),
+            output_dir=str(knowledge_dir / "verify"),
+            dry_run=getattr(config, "dry_run", False),
+        )
+        orchestrator.register_phase("verify", testing_crew)
+
     # Execute
     try:
         result = orchestrator.run(preset=preset, phases=phases)
