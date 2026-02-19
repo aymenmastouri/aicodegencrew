@@ -98,14 +98,17 @@ def _valid_evidence_json():
 
 
 def _valid_analysis_json():
-    """Return a minimal valid analyzed_architecture.json payload."""
+    """Return a minimal valid analyzed_architecture.json payload (current schema)."""
     return {
-        "architecture": {
+        "macro_architecture": {
             "style": "layered",
-            "containers": [],
+            "layers": [],
         },
-        "patterns": [
-            {"name": "MVC", "evidence": "controllers + services"},
+        "micro_architecture": {
+            "layers": {},
+        },
+        "container_analyses": [
+            {"container": "backend", "style": "MVC"},
         ],
     }
 
@@ -378,15 +381,15 @@ class TestPhase2Validation:
         analyze_dir = tmp_path / "knowledge" / "analyze"
         analyze_dir.mkdir(parents=True)
 
-        # JSON is valid but missing 'architecture' and 'patterns' keys
+        # JSON is valid but missing all current required keys
         incomplete_data = {"summary": "just a summary"}
         analysis_path = analyze_dir / "analyzed_architecture.json"
         analysis_path.write_text(json.dumps(incomplete_data), encoding="utf-8")
 
         errors = validator.validate_phase("analyze")
         assert len(errors) >= 1
-        assert any("architecture" in e for e in errors)
-        assert any("patterns" in e for e in errors)
+        assert any("macro_architecture" in e for e in errors)
+        assert any("micro_architecture" in e for e in errors)
 
     def test_valid_analysis_returns_no_errors(self, validator, tmp_path, monkeypatch):
         """Valid analysis JSON with all required keys should pass."""
@@ -401,18 +404,19 @@ class TestPhase2Validation:
         assert errors == [], f"Unexpected errors: {errors}"
 
     def test_partial_keys_returns_specific_errors(self, validator, tmp_path, monkeypatch):
-        """JSON with only 'architecture' but missing 'patterns' returns error for 'patterns'."""
+        """JSON with only 'macro_architecture' but missing others returns errors for missing keys."""
         monkeypatch.chdir(tmp_path)
         analyze_dir = tmp_path / "knowledge" / "analyze"
         analyze_dir.mkdir(parents=True)
 
-        partial = {"architecture": {"style": "microservice"}}
+        partial = {"macro_architecture": {"style": "microservice"}}
         analysis_path = analyze_dir / "analyzed_architecture.json"
         analysis_path.write_text(json.dumps(partial), encoding="utf-8")
 
         errors = validator.validate_phase("analyze")
-        assert len(errors) == 1
-        assert "patterns" in errors[0]
+        assert len(errors) == 2  # micro_architecture + container_analyses missing
+        assert any("micro_architecture" in e for e in errors)
+        assert any("container_analyses" in e for e in errors)
 
 
 # =============================================================================

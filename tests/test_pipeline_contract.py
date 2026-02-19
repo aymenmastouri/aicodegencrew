@@ -30,9 +30,11 @@ def test_normalize_phase_progress_status_maps_success_to_completed() -> None:
     assert normalize_phase_progress_status("skipped") == PHASE_PROGRESS_SKIPPED
 
 
-def test_compute_run_outcome_with_mixed_skipped_and_completed_is_partial() -> None:
+def test_compute_run_outcome_with_mixed_skipped_and_completed_is_success() -> None:
+    # Legitimately skipped phases do NOT downgrade the outcome to partial.
+    # A skipped phase means "already up-to-date" or "no work needed".
     outcome = compute_run_outcome(["completed", "skipped"])
-    assert outcome == "partial"
+    assert outcome == "success"
 
 
 def test_load_pipeline_contract_empty_file_keeps_empty_raw_config(tmp_path: Path) -> None:

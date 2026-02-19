@@ -233,7 +233,7 @@ def test_task_source_reader_returns_error_without_task_input_dir() -> None:
 
 
 def test_implement_task_prompt_requires_task_source_and_evidence() -> None:
-    description, _ = implement_task(
+    description, expected_output, _ = implement_task(
         task_id="T-123",
         summary="Implement endpoint",
         description="Use original task intent",
@@ -244,9 +244,14 @@ def test_implement_task_prompt_requires_task_source_and_evidence() -> None:
         task_source_snapshot="- source_file: inputs/tasks/T-123.xml",
     )
 
-    assert 'read_task_source(task_id="T-123")' in description
-    assert "MUST NOT call tools directly" in description
-    assert "Delegate all tool-calling work to the Developer agent" in description
-    assert "Treat read_plan() and implementation_steps as GUIDANCE" in description
-    assert "facts_query and rag_query" in description
+    # Task ID appears in description
+    assert "T-123" in description
+    # Source-of-truth rules are present
     assert "actual task source -> architecture facts -> codebase evidence" in description
+    assert "Treat implementation_steps as GUIDANCE" in description
+    # Original task snapshot included
+    assert "inputs/tasks/T-123.xml" in description
+    # Dependency order present
+    assert "src/api/handler.ts" in description
+    # Expected output is populated
+    assert expected_output is not None

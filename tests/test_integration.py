@@ -458,16 +458,11 @@ class TestPhase2ToPhase3:
     """Validates analyzed_architecture.json and MiniCrewBase._load_json."""
 
     def _create_mock_analyzed(self, output_dir: Path) -> dict:
-        """Create a minimal analyzed_architecture.json."""
+        """Create a minimal analyzed_architecture.json matching the current schema."""
         analyzed = {
-            "architecture": {
+            "macro_architecture": {
                 "style": "Layered + Modular",
                 "layers": ["Presentation", "Application", "Domain", "Data Access"],
-                "patterns": ["MVC", "Repository Pattern"],
-            },
-            "patterns": {
-                "design_patterns": ["Singleton", "Factory"],
-                "architectural_patterns": ["Event-Driven"],
             },
             "micro_architecture": {
                 "layers": {
@@ -477,6 +472,9 @@ class TestPhase2ToPhase3:
                     "data_access": {"components": 8},
                 },
             },
+            "container_analyses": [
+                {"container": "backend", "style": "MVC", "patterns": ["Repository Pattern"]},
+            ],
             "quality": {
                 "grade": "B",
                 "metrics": {
@@ -490,15 +488,16 @@ class TestPhase2ToPhase3:
         return analyzed
 
     def test_analyzed_json_has_required_keys(self, tmp_path):
-        """analyzed_architecture.json must have 'architecture' and 'patterns'."""
+        """analyzed_architecture.json must have current required keys."""
         analyzed = self._create_mock_analyzed(tmp_path)
-        assert "architecture" in analyzed
-        assert "patterns" in analyzed
+        assert "macro_architecture" in analyzed
+        assert "micro_architecture" in analyzed
+        assert "container_analyses" in analyzed
 
     def test_analyzed_json_architecture_has_style(self, tmp_path):
-        """architecture section must have style field."""
+        """macro_architecture section must have style field."""
         analyzed = self._create_mock_analyzed(tmp_path)
-        assert "style" in analyzed["architecture"]
+        assert "style" in analyzed["macro_architecture"]
 
     def test_analyzed_json_readable_by_load_json(self, tmp_path):
         """MiniCrewBase._load_json can read analyzed JSON."""
@@ -508,17 +507,18 @@ class TestPhase2ToPhase3:
         path = tmp_path / "analyzed_architecture.json"
 
         loaded = MiniCrewBase._load_json(path)
-        assert loaded["architecture"]["style"] == "Layered + Modular"
-        assert "patterns" in loaded
+        assert loaded["macro_architecture"]["style"] == "Layered + Modular"
+        assert "container_analyses" in loaded
 
     def test_phase_validation_analyzed_structure(self, tmp_path, monkeypatch):
-        """PhaseOutputValidator rejects analyzed JSON missing required keys."""
+        """PhaseOutputValidator spec has current required keys for analyzed JSON."""
         from aicodegencrew.shared.validation import PHASE_OUTPUT_SPECS
 
         spec = PHASE_OUTPUT_SPECS["analyze"]
         assert "required_keys" in spec
-        assert "architecture" in spec["required_keys"]
-        assert "patterns" in spec["required_keys"]
+        assert "macro_architecture" in spec["required_keys"]
+        assert "micro_architecture" in spec["required_keys"]
+        assert "container_analyses" in spec["required_keys"]
 
     def test_synthesis_crew_detects_missing_prerequisites(self, tmp_path):
         """ArchitectureSynthesisCrew raises FileNotFoundError on missing inputs."""

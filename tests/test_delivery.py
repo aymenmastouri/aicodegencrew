@@ -488,8 +488,8 @@ class TestCodeQuality:
                 # Skip lines that are purely string literals (docstrings, etc.)
                 if stripped.startswith(('"""', "'''", '"', "'", "- ")):
                     continue
-                # Detect bare print( calls
-                if re.search(r"\bprint\s*\(", stripped):
+                # Detect bare print( calls — exclude obj.print() method calls
+                if re.search(r"(?<!\.)\bprint\s*\(", stripped):
                     violations.append(f"{py_file.relative_to(PROJECT_ROOT)}:{i}: {stripped[:100]}")
 
         # Core library modules (crews, pipelines, shared) should have zero print().
