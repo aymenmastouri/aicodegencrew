@@ -109,6 +109,42 @@ def get_phases() -> list[PhaseInfo]:
     return sorted(phases, key=lambda phase: phase.order)
 
 
+def toggle_phase(phase_id: str, enabled: bool) -> PhaseInfo:
+    """Toggle a phase's enabled state in phases_config.yaml.
+
+    Raises ValueError if the phase is not found or is required (cannot disable).
+    """
+    import yaml  # lazy import — only needed here
+
+    config_path = settings.phases_config
+    with open(config_path, encoding="utf-8") as f:
+        raw = yaml.safe_load(f)
+
+    phases_section = raw.get("phases", {})
+    if phase_id not in phases_section:
+        raise ValueError(f"Unknown phase: {phase_id}")
+
+    definition = phases_section[phase_id]
+    if definition.get("required") and not enabled:
+        raise ValueError(f"Phase '{phase_id}' is required and cannot be disabled")
+
+    definition["enabled"] = enabled
+    with open(config_path, "w", encoding="utf-8") as f:
+        yaml.dump(raw, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+    contract = _load_contract()
+    defn = contract.phases[phase_id]
+    return PhaseInfo(
+        id=phase_id,
+        name=defn.name,
+        order=defn.order,
+        enabled=defn.enabled,
+        required=defn.required,
+        type=defn.phase_type,
+        dependencies=list(defn.dependencies),
+    )
+
+
 def get_presets() -> list[PresetInfo]:
     """Get all configured presets."""
     contract = _load_contract()

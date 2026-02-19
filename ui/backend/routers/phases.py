@@ -1,11 +1,16 @@
 """Phase management API routes."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 from ..schemas import PhaseInfo, PipelineStatus, PresetInfo
-from ..services.phase_runner import get_phases, get_pipeline_status, get_presets
+from ..services.phase_runner import get_phases, get_pipeline_status, get_presets, toggle_phase
 
 router = APIRouter(prefix="/api/phases", tags=["phases"])
+
+
+class PhaseToggleRequest(BaseModel):
+    enabled: bool
 
 
 @router.get("", response_model=list[PhaseInfo])
@@ -24,3 +29,12 @@ def list_presets():
 def pipeline_status():
     """Get current pipeline status."""
     return get_pipeline_status()
+
+
+@router.put("/{phase_id}/toggle", response_model=PhaseInfo)
+def toggle_phase_endpoint(phase_id: str, body: PhaseToggleRequest):
+    """Enable or disable a phase in phases_config.yaml."""
+    try:
+        return toggle_phase(phase_id, body.enabled)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
