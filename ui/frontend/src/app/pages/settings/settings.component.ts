@@ -21,6 +21,7 @@ interface PhaseToggle {
   id: string;
   name: string;
   enabled: boolean;
+  required: boolean;
 }
 
 const GROUP_TO_TAB: Record<string, string> = {
@@ -33,11 +34,29 @@ const GROUP_TO_TAB: Record<string, string> = {
   General: 'general',
 };
 
-const SECRET_KEYS = new Set(['OPENAI_API_KEY']);
+const SECRET_KEYS = new Set(['OPENAI_API_KEY', 'CODEGEN_API_KEY']);
+
+// Fields hidden from user-facing settings (internal tuning params)
+const HIDDEN_KEYS = new Set(['MAX_LLM_INPUT_TOKENS', 'LLM_CONTEXT_WINDOW']);
 
 const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
   LLM_PROVIDER: [
     { label: 'On-Prem', value: 'onprem' },
+    { label: 'OpenAI', value: 'openai' },
+    { label: 'Azure', value: 'azure' },
+  ],
+  INDEX_MODE: [
+    { label: 'Auto (re-index when changed)', value: 'auto' },
+    { label: 'Smart (incremental updates only)', value: 'smart' },
+    { label: 'Force (always re-index)', value: 'force' },
+    { label: 'Off (skip re-indexing)', value: 'off' },
+  ],
+  LOG_LEVEL: [
+    { label: 'INFO', value: 'INFO' },
+    { label: 'DEBUG', value: 'DEBUG' },
+    { label: 'WARNING', value: 'WARNING' },
+    { label: 'ERROR', value: 'ERROR' },
+    { label: 'CRITICAL', value: 'CRITICAL' },
   ],
 };
 
@@ -182,14 +201,29 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                   <div class="section-label">Phase Toggles</div>
                   <div class="phase-toggle-grid">
                     @for (p of phaseToggles; track p.id) {
-                      <div class="phase-toggle-card">
+                      <div class="phase-toggle-card" [class.phase-disabled]="!p.enabled">
                         <div class="phase-toggle-info">
                           <span class="phase-toggle-name">{{ p.name }}</span>
                           <span class="phase-toggle-id">{{ p.id }}</span>
                         </div>
-                        <mat-slide-toggle [(ngModel)]="p.enabled" color="primary"></mat-slide-toggle>
+                        <mat-slide-toggle [(ngModel)]="p.enabled" color="primary"
+                          [disabled]="p.required || isRunning"
+                          [matTooltip]="p.required ? 'Required phase — cannot disable' : (isRunning ? 'Pipeline is running' : '')">
+                        </mat-slide-toggle>
                       </div>
                     }
+                  </div>
+                  <div class="tab-actions">
+                    <button mat-flat-button color="primary" (click)="savePhases()"
+                      [disabled]="savingPhases || isRunning"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      @if (savingPhases) {
+                        <mat-spinner diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
+                      } @else {
+                        <mat-icon>save</mat-icon>
+                      }
+                      Save Phases
+                    </button>
                   </div>
                 } @else {
                   <div class="empty-tab">No phases loaded.</div>
@@ -339,6 +373,9 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
     .phase-toggle-card:hover {
       border-color: var(--cg-gray-200);
     }
+    .phase-disabled {
+      opacity: 0.55;
+    }
     .phase-toggle-name {
       font-size: 13px;
       font-weight: 500;
@@ -397,6 +434,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
 export class SettingsComponent implements OnInit {
   loading = true;
   saving = false;
+  savingPhases = false;
   isRunning = false;
   allVars: EnvVariable[] = [];
   defaults: Record<string, string> = {};
@@ -443,6 +481,7 @@ export class SettingsComponent implements OnInit {
           id: p.id,
           name: p.name,
           enabled: p.enabled,
+          required: p.required ?? false,
         }));
         this.cdr.markForCheck();
       },
@@ -458,6 +497,7 @@ export class SettingsComponent implements OnInit {
 
   getTabVars(tab: string): EnvVariable[] {
     return this.allVars.filter((v) => {
+      if (HIDDEN_KEYS.has(v.name)) return false;
       const mappedTab = GROUP_TO_TAB[v.group] || 'general';
       return mappedTab === tab;
     });
@@ -504,6 +544,36 @@ export class SettingsComponent implements OnInit {
         this.saving = false;
         this.cdr.markForCheck();
       },
+    });
+  }
+
+  savePhases(): void {
+    this.savingPhases = true;
+    const requests = this.phaseToggles
+      .filter((p) => !p.required)
+      .map((p) =>
+        this.http.put(`/api/phases/${p.id}/toggle`, { enabled: p.enabled })
+      );
+
+    if (requests.length === 0) {
+      this.snackBar.open('No phases to save', 'OK', { duration: 2000 });
+      this.savingPhases = false;
+      return;
+    }
+
+    import('rxjs').then(({ forkJoin }) => {
+      forkJoin(requests).subscribe({
+        next: () => {
+          this.snackBar.open('Phase settings saved', 'OK', { duration: 3000 });
+          this.savingPhases = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.snackBar.open('Failed to save phase settings', 'OK', { duration: 4000 });
+          this.savingPhases = false;
+          this.cdr.markForCheck();
+        },
+      });
     });
   }
 

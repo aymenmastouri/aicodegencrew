@@ -255,7 +255,7 @@ import { statusIcon } from '../../shared/status';
                   class="run-progress">
                 </mat-progress-bar>
                 <span class="progress-label">
-                  {{ status.completed_phase_count || 0 }}/{{ status.total_phase_count || 0 }} phases
+                  {{ (status.completed_phase_count || 0) + (status.skipped_phase_count || 0) }}/{{ status.total_phase_count || 0 }} phases
                   <span class="progress-pct">{{ status.progress_percent | number:'1.0-0' }}%</span>
                 </span>
               </div>
