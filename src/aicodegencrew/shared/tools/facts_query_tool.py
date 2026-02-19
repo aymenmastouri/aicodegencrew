@@ -501,7 +501,6 @@ class FactsQueryTool(BaseTool):
         def get_priority(component: dict[str, Any]) -> tuple:
             name = component.get("name", "").lower()
             package = (component.get("package") or component.get("module") or "").lower()
-            component.get("stereotype", "").lower()
 
             layer_priority = DEFAULT_PRIORITY
 
