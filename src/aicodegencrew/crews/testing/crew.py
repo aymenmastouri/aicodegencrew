@@ -15,7 +15,6 @@ Supported languages: Java (JUnit 5 + Mockito) and TypeScript (Angular TestBed / 
 """
 
 import json
-import logging
 import os
 import time
 from pathlib import Path

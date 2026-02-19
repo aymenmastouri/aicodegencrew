@@ -466,7 +466,6 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         orchestrator.register_phase("document", synthesis_crew)
 
     # --- Plan: Development Planning (Hybrid Pipeline) ---
-    codegen_task_id = None  # For Implement single-task mode
     if "plan" in planned_phases:
         from .hybrid.development_planning import DevelopmentPlanningPipeline
 

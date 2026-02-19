@@ -47,8 +47,6 @@ def _patch_max_iterations_handler() -> None:
     """
     from crewai.utilities import agent_utils
 
-    original_handler = agent_utils.handle_max_iterations_exceeded
-
     def patched_handler(formatted_answer, printer, i18n, messages, llm, callbacks, verbose=True):
         """Patched: forces tools=[] on final LLM call to prevent tool-call responses."""
         from crewai.utilities.agent_utils import (

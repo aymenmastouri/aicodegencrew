@@ -7,12 +7,9 @@ using Microsoft Playwright MCP. No hardcoded rules.
 This ensures upgrade guidance is always current with official Angular documentation.
 """
 
-from pathlib import Path
 
 from .base import (
     CodePattern,
-    ConfigChange,
-    ConfigOperation,
     UpgradeCategory,
     UpgradeRule,
     UpgradeRuleSet,

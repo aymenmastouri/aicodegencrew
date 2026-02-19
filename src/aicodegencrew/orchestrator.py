@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
 
-from .phase_registry import PHASES, outputs_exist
+from .phase_registry import PHASES
 from .pipeline_contract import (
     PhaseContext,
     PipelineContract,

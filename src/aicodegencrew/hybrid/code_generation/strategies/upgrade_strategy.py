@@ -16,7 +16,6 @@ from typing import Any
 
 from ....shared.utils.logger import setup_logger
 from .base import (
-    ErrorCluster,
     PlanEnrichment,
     PreExecutionResult,
     PreExecutionStep,
@@ -363,7 +362,7 @@ class UpgradeStrategy(TaskTypeStrategy):
                 continue
 
             # Only apply to JSON files
-            if not file_path.suffix.lower() in (".json",):
+            if file_path.suffix.lower() not in (".json",):
                 errors.append(f"Config change only supports JSON files, got: {rel_path}")
                 continue
 
