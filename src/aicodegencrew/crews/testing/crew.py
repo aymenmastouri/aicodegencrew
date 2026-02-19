@@ -401,22 +401,27 @@ class TestingCrew:
 
     def _write_task_report(self, task_id: str, result: dict) -> None:
         """Write per-task verify report to knowledge/verify/."""
+        from ...shared.schema_version import add_schema_version
+
         self.output_dir.mkdir(parents=True, exist_ok=True)
         report_path = self.output_dir / f"{task_id}_verify.json"
         try:
             report_path.write_text(
-                json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8"
+                json.dumps(add_schema_version(result, "verify"), indent=2, ensure_ascii=False),
+                encoding="utf-8",
             )
         except Exception as e:
             logger.error("[TestingCrew] Failed writing verify report: %s", e)
 
     def _write_summary(self, all_results: list[dict]) -> None:
         """Write combined verify summary to knowledge/verify/summary.json."""
+        from ...shared.schema_version import add_schema_version
+
         self.output_dir.mkdir(parents=True, exist_ok=True)
         summary_path = self.output_dir / "summary.json"
         try:
             summary_path.write_text(
-                json.dumps({"tasks": all_results}, indent=2, ensure_ascii=False),
+                json.dumps(add_schema_version({"tasks": all_results}, "verify"), indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
         except Exception as e:

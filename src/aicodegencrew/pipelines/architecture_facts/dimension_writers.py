@@ -19,6 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from ...shared.schema_version import add_schema_version
 from ...shared.utils.logger import logger
 from .model_builder import ArchitectureLayer, ArchitectureModel, CanonicalComponent
 
@@ -643,7 +644,7 @@ class CanonicalModelWriter:
         path = self.output_dir / "architecture_facts.json"
 
         with open(path, "w", encoding="utf-8") as f:
-            json.dump(combined, f, indent=2, ensure_ascii=False)
+            json.dump(add_schema_version(combined, "extract"), f, indent=2, ensure_ascii=False)
 
         logger.info(f"[CanonicalModelWriter] Written: architecture_facts.json ({path.stat().st_size / 1024:.1f} KB)")
 
