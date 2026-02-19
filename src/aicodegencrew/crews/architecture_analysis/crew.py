@@ -113,11 +113,66 @@ class ArchitectureAnalysisCrew:
             respect_context_window=True,
         )
 
-    def _create_analysis_tools(self) -> list:
-        """Create tools for analysis agents (tech, func, quality)."""
+    def _preload_dimension_cache(self, dimension_names: list[str]) -> dict:
+        """Pre-load the heaviest dimension files once for sharing across mini-crews (PERF-3).
+
+        Returns a plain dict keyed by dimension name that can be passed to
+        FactsQueryTool(preloaded_cache=...) — each mini-crew gets its own
+        FactsQueryTool instance initialised with a copy of this data, avoiding
+        repeated disk I/O for the same files.
+        """
+        import json as _json
+        from pathlib import Path as _Path
+
+        facts_dir = self.facts_path.parent
+        dimension_file_map = {
+            "components": "components.json",
+            "relations": "relations.json",
+            "interfaces": "interfaces.json",
+            "containers": "containers.json",
+            "data_model": "data_model.json",
+            "runtime": "runtime.json",
+            "evidence": "evidence_map.json",
+        }
+
+        preloaded: dict = {}
+        for name in dimension_names:
+            filename = dimension_file_map.get(name)
+            if not filename:
+                continue
+            path = facts_dir / filename
+            if not path.exists():
+                logger.debug("[Phase2] Preload skip (not found): %s", path.name)
+                continue
+            try:
+                raw = _json.loads(path.read_text(encoding="utf-8"))
+                # Normalise to list for component/relation/interface/container categories
+                if isinstance(raw, dict) and name in raw:
+                    raw = raw[name]
+                preloaded[name] = raw
+                size = len(raw) if isinstance(raw, (list, dict)) else "?"
+                logger.debug("[Phase2] Preloaded dimension %s: %s items", name, size)
+            except Exception as e:
+                logger.warning("[Phase2] Could not preload dimension %s: %s", name, e)
+
+        if preloaded:
+            logger.info(
+                "[Phase2] Preloading dimension cache: %s",
+                ", ".join(preloaded.keys()),
+            )
+        return preloaded
+
+    def _create_analysis_tools(self, preloaded_cache: dict | None = None) -> list:
+        """Create tools for analysis agents (tech, func, quality).
+
+        Args:
+            preloaded_cache: Optional pre-loaded dimension data to inject into
+                FactsQueryTool, avoiding repeated disk reads across parallel
+                mini-crews (PERF-3).
+        """
         return [
             FactsStatisticsTool(facts_path=str(self.facts_path)),
-            FactsQueryTool(facts_path=str(self.facts_path)),
+            FactsQueryTool(facts_path=str(self.facts_path), preloaded_cache=preloaded_cache),
             RAGQueryTool(chroma_dir=self.chroma_dir),
             StereotypeListTool(facts_path=str(self.facts_path)),
         ]
@@ -584,10 +639,16 @@ class ArchitectureAnalysisCrew:
                 "[Phase2] Launching %d analysis mini-crews in parallel: %s",
                 len(pending), [n for n, _, _ in pending],
             )
+            # PERF-3: Preload the three heaviest dimension files once; each
+            # parallel mini-crew receives a copy via FactsQueryTool(preloaded_cache=…)
+            # — 4 tool instances × ~500 KB each is <<10 MB and saves 4 disk reads.
+            shared_preloaded = self._preload_dimension_cache(
+                ["components", "relations", "interfaces"]
+            )
             with ThreadPoolExecutor(max_workers=len(pending)) as executor:
                 futures: dict = {}
                 for name, agent_key, task_defs in pending:
-                    agent = self._create_agent(agent_key, self._create_analysis_tools())
+                    agent = self._create_agent(agent_key, self._create_analysis_tools(shared_preloaded))
                     tasks = self._build_tasks(task_defs, agent, self._analysis_dir)
                     futures[executor.submit(self._run_mini_crew, name, tasks)] = name
 

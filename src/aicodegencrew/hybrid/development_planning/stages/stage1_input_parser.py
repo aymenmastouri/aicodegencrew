@@ -14,6 +14,104 @@ from ..schemas import TaskInput
 
 logger = setup_logger(__name__)
 
+# ---------------------------------------------------------------------------
+# Configurable task-type detection rules (ARCH-4)
+# ---------------------------------------------------------------------------
+# Extend by adding new entries without touching _detect_task_type() logic.
+# Example: add "kotlin_feature": {"keywords": ["kotlin", "coroutine"]} to
+# detect Kotlin-specific tasks.
+TASK_TYPE_RULES: dict[str, dict] = {
+    # Build-tool migrations that look like upgrades but are NOT version bumps.
+    # Matched against task SUMMARY only (to avoid false positives from comments).
+    "build_migration": {
+        "summary_exclusions": [
+            "sass compiler",
+            "sass migration",
+            "scss migration",
+            "builder migration",
+            "build tool migration",
+            "webpack migration",
+            "migration des sass",
+            "sass import deprecation",
+        ],
+    },
+    # Version upgrade detection uses a three-tier score system.
+    "upgrade": {
+        # Strong signals (weight=3): direct framework+action combos
+        "strong_patterns": [
+            # Angular
+            "angular upgrade",
+            "upgrade angular",
+            "angular update",
+            "update angular",
+            "ng update",
+            "angular migration",
+            "migrate angular",
+            # Spring
+            "spring boot upgrade",
+            "upgrade spring",
+            "spring migration",
+            "spring boot update",
+            "spring security upgrade",
+            # Java / JDK
+            "java upgrade",
+            "upgrade java",
+            "jdk upgrade",
+            "upgrade jdk",
+            "java 17",
+            "java 21",
+            "java 25",
+            "openjdk upgrade",
+            # Playwright
+            "playwright upgrade",
+            "upgrade playwright",
+            "playwright update",
+            # React / Vue
+            "react upgrade",
+            "upgrade react",
+            "vue upgrade",
+            "upgrade vue",
+        ],
+        # Medium signals (weight=2)
+        "medium_patterns": [
+            "version bump",
+            "breaking changes",
+            "upgrade to v",
+            "upgrade von",
+            "upgrade auf",
+            "migration guide",
+            "ng update",
+            "update guide",
+        ],
+        # Framework keywords used for weak signal detection
+        "framework_keywords": [
+            "angular",
+            "spring",
+            "react",
+            "vue",
+            "typescript",
+            "@angular",
+            "spring-boot",
+            "spring boot",
+            "playwright",
+            "java ",
+            "jdk",
+            "openjdk",
+        ],
+        # Upgrade verbs for weak signal detection
+        "upgrade_verbs": ["upgrade", "migrate", "migration"],
+        # Minimum score to classify as upgrade
+        "min_score": 3,
+    },
+    "bugfix": {
+        "keywords": ["fix", "bug", "error", "crash", "regression", "defect"],
+    },
+    "refactoring": {
+        "keywords": ["refactor", "clean up", "technical debt", "restructure"],
+    },
+    # "feature" is the default fallback — no keywords needed
+}
+
 
 class InputParserStage:
     """
@@ -84,123 +182,61 @@ class InputParserStage:
         return task
 
     def _detect_task_type(self, task: TaskInput) -> TaskInput:
-        """Detect task type from semantic content analysis (score-based)."""
+        """Detect task type from semantic content analysis (score-based).
+
+        Driven by TASK_TYPE_RULES — add new task types there without modifying
+        this method.
+        """
         text = f"{task.summary} {task.description} {task.technical_notes}".lower()
         labels_text = " ".join(task.labels).lower()
         combined = f"{text} {labels_text}"
-
-        # Exclusion patterns: NOT version upgrades, but build/tool migrations
-        # Check ONLY summary/title to avoid false positives from comments
         summary_lower = task.summary.lower()
-        exclusion_patterns = [
-            "sass compiler",
-            "sass migration",
-            "scss migration",
-            "builder migration",
-            "build tool migration",
-            "webpack migration",
-            "migration des sass",
-            "sass import deprecation",
-        ]
-        is_build_tool_migration = any(pat in summary_lower for pat in exclusion_patterns)
 
-        # Score-based upgrade detection:
-        # Strong signals (framework + upgrade intent) vs weak signals
+        # 1. Check build-tool migrations first (summary only → avoids false positives)
+        build_migration_rules = TASK_TYPE_RULES.get("build_migration", {})
+        is_build_tool_migration = any(
+            pat in summary_lower
+            for pat in build_migration_rules.get("summary_exclusions", [])
+        )
+        if is_build_tool_migration:
+            task.task_type = "refactoring"
+            logger.info("[Stage1] Build-tool migration detected (not version upgrade)")
+            return task
+
+        # 2. Score-based upgrade detection driven by TASK_TYPE_RULES["upgrade"]
+        upgrade_rules = TASK_TYPE_RULES.get("upgrade", {})
         upgrade_score = 0
 
-        # Strong: framework-specific upgrade patterns (weight=3)
-        framework_upgrade_patterns = [
-            # Angular
-            "angular upgrade",
-            "upgrade angular",
-            "angular update",
-            "update angular",
-            "ng update",
-            "angular migration",
-            "migrate angular",
-            # Spring
-            "spring boot upgrade",
-            "upgrade spring",
-            "spring migration",
-            "spring boot update",
-            "spring security upgrade",
-            # Java
-            "java upgrade",
-            "upgrade java",
-            "jdk upgrade",
-            "upgrade jdk",
-            "java 17",
-            "java 21",
-            "java 25",
-            "openjdk upgrade",
-            # Playwright
-            "playwright upgrade",
-            "upgrade playwright",
-            "playwright update",
-            # React / Vue
-            "react upgrade",
-            "upgrade react",
-            "vue upgrade",
-            "upgrade vue",
-        ]
-        for pat in framework_upgrade_patterns:
+        for pat in upgrade_rules.get("strong_patterns", []):
             if pat in combined:
                 upgrade_score += 3
 
-        # Medium: version upgrade intent (weight=2)
-        version_intent_patterns = [
-            "version bump",
-            "breaking changes",
-            "upgrade to v",
-            "upgrade von",
-            "upgrade auf",
-            "migration guide",
-            "ng update",
-            "update guide",
-        ]
-        for pat in version_intent_patterns:
+        for pat in upgrade_rules.get("medium_patterns", []):
             if pat in combined:
                 upgrade_score += 2
 
-        # Weak: generic upgrade words - only count if combined (weight=1)
-        has_upgrade_verb = any(w in combined for w in ["upgrade", "migrate", "migration"])
-        has_framework = any(
-            w in combined
-            for w in [
-                "angular",
-                "spring",
-                "react",
-                "vue",
-                "typescript",
-                "@angular",
-                "spring-boot",
-                "spring boot",
-                "playwright",
-                "java ",
-                "jdk",
-                "openjdk",
-            ]
-        )
+        has_upgrade_verb = any(w in combined for w in upgrade_rules.get("upgrade_verbs", []))
+        has_framework = any(w in combined for w in upgrade_rules.get("framework_keywords", []))
         if has_upgrade_verb and has_framework:
             upgrade_score += 2
         elif has_upgrade_verb:
             upgrade_score += 1
 
-        # Threshold: need score >= 3 to be classified as upgrade
-        # BUT: exclude build-tool migrations (webpack→esbuild, SASS compiler, etc.)
-        if upgrade_score >= 3 and not is_build_tool_migration:
+        min_score = upgrade_rules.get("min_score", 3)
+        if upgrade_score >= min_score:
             task.task_type = "upgrade"
             logger.info(f"[Stage1] Upgrade detected (score={upgrade_score})")
-        elif is_build_tool_migration:
-            task.task_type = "refactoring"
-            logger.info("[Stage1] Build-tool migration detected (not version upgrade)")
-        elif any(kw in text for kw in ["fix", "bug", "error", "crash", "regression", "defect"]):
-            task.task_type = "bugfix"
-        elif any(kw in text for kw in ["refactor", "clean up", "technical debt", "restructure"]):
-            task.task_type = "refactoring"
-        else:
-            task.task_type = "feature"
+            return task
 
+        # 3. Keyword-based detection for remaining types (bugfix, refactoring)
+        for type_name in ("bugfix", "refactoring"):
+            type_rules = TASK_TYPE_RULES.get(type_name, {})
+            if any(kw in text for kw in type_rules.get("keywords", [])):
+                task.task_type = type_name
+                return task
+
+        # 4. Default fallback
+        task.task_type = "feature"
         return task
 
     def _parse_xml(self, file_path: Path) -> TaskInput:

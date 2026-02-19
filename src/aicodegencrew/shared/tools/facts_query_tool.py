@@ -107,12 +107,21 @@ class FactsQueryTool(BaseTool):
     # Cache per dimension (lazy loading) — PrivateAttr ensures each instance gets its own dict
     _dimension_cache: dict[str, Any] = PrivateAttr(default_factory=dict)
 
-    def __init__(self, facts_dir: str = None, **kwargs):
-        """Initialize with optional facts directory override."""
+    def __init__(self, facts_dir: str = None, preloaded_cache: dict | None = None, **kwargs):
+        """Initialize with optional facts directory and pre-populated dimension cache.
+
+        Args:
+            facts_dir: Base directory for dimension files (overrides default).
+            preloaded_cache: Optional dict of already-loaded dimension data keyed by
+                category name (e.g. {"components": [...], "api_endpoints": [...]}).
+                Used by PERF-3 to share a single I/O pass across parallel mini-crews.
+        """
         super().__init__(**kwargs)
         if facts_dir:
             self.facts_dir = facts_dir
         self._dimension_cache = {}
+        if preloaded_cache:
+            self._dimension_cache.update(preloaded_cache)
 
     def _load_dimension(self, category: str) -> Any:
         """Load a specific dimension file with caching.

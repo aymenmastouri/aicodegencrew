@@ -136,17 +136,34 @@ class DevelopmentPlanningPipeline:
             encoding="utf-8",
         )
 
-    def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
+    def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Execute pipeline (Orchestrator-compatible interface).
 
         Args:
-            inputs: Optional inputs (not used, input_files from __init__)
+            inputs: Optional inputs from orchestrator. Reads
+                    previous_results["analyze"] to forward quality hints.
 
         Returns:
             Dict with status, output_files, metrics
         """
-        return self.run()
+        inputs = inputs or {}
+        previous = inputs.get("previous_results", {})
+        analyze_out = previous.get("analyze", {})
+        quality_hints: dict = {}
+        if isinstance(analyze_out, dict):
+            quality_hints = {
+                "architecture_quality": analyze_out.get("architecture_quality", {}),
+                "critical_issues": analyze_out.get("critical_issues", []),
+            }
+        if quality_hints.get("architecture_quality") or quality_hints.get("critical_issues"):
+            logger.info(
+                "[Phase4] Received quality_hints from analyze phase: "
+                "architecture_quality=%s, critical_issues=%d",
+                bool(quality_hints.get("architecture_quality")),
+                len(quality_hints.get("critical_issues", [])),
+            )
+        return self.run(quality_hints=quality_hints)
 
     def _ensure_stages(self) -> None:
         """Load data and create stages on first run (deferred from __init__)."""
@@ -168,16 +185,22 @@ class DevelopmentPlanningPipeline:
         self.stage5 = ValidatorStage(analyzed_architecture=self.analyzed_architecture)
         self._stages_initialized = True
 
-    def run(self) -> dict[str, Any]:
+    def run(self, quality_hints: dict | None = None) -> dict[str, Any]:
         """
         Run pipeline for all input files.
 
         Single file: run directly.
         Multiple files: parse all (Stage 1), sort by priority, process each sequentially.
 
+        Args:
+            quality_hints: Optional quality context from analyze phase
+                (architecture_quality, critical_issues). Stored in
+                self._quality_hints for potential use by sub-stages.
+
         Returns:
             Dict with status, output_files, duration, metrics, results
         """
+        self._quality_hints = quality_hints or {}
         self._ensure_stages()
         if len(self.input_files) == 1:
             result = self._run_single(self.input_files[0])
