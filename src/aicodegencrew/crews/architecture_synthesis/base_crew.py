@@ -569,9 +569,8 @@ class MiniCrewBase(ABC):
         """
         chapter_name = file_path.split("/")[-1].replace(".md", "").replace("-", " ").title()
 
-        stats = self.facts.get("statistics", {})
-        total_components = stats.get("total_components", 0)
-        total_containers = stats.get("total_containers", 0)
+        total_components = len(self.facts.get("components", []))
+        total_containers = len(self.facts.get("containers", []))
 
         return f"""# {chapter_name}
 

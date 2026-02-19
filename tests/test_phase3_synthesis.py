@@ -254,8 +254,8 @@ class TestArc42CrewConfig:
         assert "goal" in ARC42_AGENT_CONFIG
         assert "backstory" in ARC42_AGENT_CONFIG
 
-    def test_agent_config_role_mentions_seaguide(self):
-        assert "SEAGuide" in ARC42_AGENT_CONFIG["role"]
+    def test_agent_config_role_mentions_architect(self):
+        assert "Architect" in ARC42_AGENT_CONFIG["role"]
 
     def test_arc42_crew_name(self, tmp_path):
         """Arc42Crew.crew_name returns 'Arc42'."""

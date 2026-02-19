@@ -21,6 +21,7 @@ CH01_INTRODUCTION = (
     TOOL_INSTRUCTION
     + """
 Create the COMPLETE arc42 Chapter 1: Introduction and Goals.
+Document generation date: {current_date}
 
 ## REQUIRED SECTIONS (do NOT skip any):
 ### 1.1 Requirements Overview
@@ -82,8 +83,9 @@ Create the COMPLETE arc42 Chapter 2: Architecture Constraints.
 3. query_architecture_facts(category="containers") -> get container technologies
 4. rag_query(query="naming convention package structure") -> naming patterns
 5. rag_query(query="configuration properties spring") -> framework constraints
-6. doc_writer(file_path="arc42/02-constraints.md", content="# 02 - Architecture Constraints\\n...")
-7. Respond: "File arc42/02-constraints.md written successfully."
+6. rag_query(query="Oracle datasource database connection jdbc") -> database technology
+7. doc_writer(file_path="arc42/02-constraints.md", content="# 02 - Architecture Constraints\\n...")
+8. Respond: "File arc42/02-constraints.md written successfully."
 
 Summary data:
 {system_summary}
@@ -290,10 +292,13 @@ Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies.
 ### 5.5 Domain Layer — Entities
 - Layer overview: JPA entities, aggregate roots, value objects
 - COMPLETE entity inventory: | # | Entity | Package | Key Attributes | Description |
+  IMPORTANT: Include ONLY JPA @Entity classes (names ending in "Entity" or "Eto").
+  EXCLUDE: Flyway migration scripts, SQL files, and any non-Java class items.
 - Key entities deep dive (TOP 5): attributes, relationships, lifecycle, validation
 ### 5.6 Persistence Layer — Repositories
 - Layer overview: data access patterns
 - COMPLETE repository inventory: | # | Repository | Entity | Custom Queries | Description |
+  Include DAO interfaces, JpaRepository extensions, and custom implementations.
 - Data access patterns (Spring Data JPA, custom queries, specifications)
 ### 5.7 Component Dependencies
 - Layer dependency rules with direction
@@ -301,14 +306,20 @@ Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies.
 - Dependency statistics and coupling analysis
 
 ## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="entity") -> get ALL entities
+1. list_components_by_stereotype(stereotype="entity") -> get JPA entity classes
 2. list_components_by_stereotype(stereotype="repository") -> get ALL repositories
 3. query_architecture_facts(category="relations") -> get dependency data
 4. get_statistics() -> get component counts
-5. rag_query(query="entity JPA relationship mapping") -> entity details
-6. rag_query(query="repository custom query specification") -> repo patterns
-7. doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer\\n...")
-8. Respond: "File arc42/05-part4-domain.md written successfully."
+5. rag_query(query="@Entity @Table JPA annotation mapping") -> JPA entity details
+6. rag_query(query="repository JpaRepository CrudRepository DAO") -> repo patterns
+7. rag_query(query="Oracle datasource database connection spring") -> database technology
+8. doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer\\n...")
+9. Respond: "File arc42/05-part4-domain.md written successfully."
+
+IMPORTANT NOTES:
+- Entity inventory: ONLY classes annotated with @Entity (JPA). Skip migration files.
+- Repository inventory: Include all DAO/Repository classes (JPA + custom implementations).
+- Use rag_query to confirm the actual production database (Oracle/H2/PostgreSQL — don't assume).
 
 Summary data:
 {system_summary}
@@ -722,6 +733,7 @@ Write 6-8 pages. Include ALL domain-specific terms from the system. No placehold
 
 QUALITY_GATE_DESCRIPTION = """
 Quality review of all arc42 chapters.
+Generated on: {current_date}
 
 READ all chapter files using safe_file_read tool and validate:
 1. knowledge/document/arc42/01-introduction.md

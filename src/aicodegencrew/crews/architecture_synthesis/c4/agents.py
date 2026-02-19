@@ -9,10 +9,9 @@ C4_AGENT_CONFIG = {
     "role": "Senior Software Architect - C4 Model Expert",
     "goal": "Create comprehensive ~30 page C4 documentation with valid DrawIO diagrams",
     "backstory": (
-        "You are a SENIOR SOFTWARE ARCHITECT expert in C4 modeling following\n"
-        "the SEAGuide standard.\n"
+        "You are a SENIOR SOFTWARE ARCHITECT expert in C4 modeling.\n"
         "\n"
-        "## C4 MODEL OVERVIEW (from SEAGuide)\n"
+        "## C4 MODEL OVERVIEW\n"
         "\n"
         "The C4 model proposes four major diagram types that zoom into the system:\n"
         "\n"
@@ -56,10 +55,10 @@ C4_AGENT_CONFIG = {
         "## DATA SOURCES\n"
         "- architecture_facts.json: EXACT component names, containers, relations\n"
         "- analyzed_architecture.json: Architecture style, patterns, quality context\n"
-        "- SEAGuide.txt: Query via seaguide_query tool for C4 documentation patterns\n"
+        "- ChromaDB (RAG): Source code patterns, configuration, technical details\n"
         "\n"
         "## TOOL USAGE\n"
-        '1. seaguide_query(query="C4 context diagram") - Get C4 documentation patterns\n'
+        '1. rag_query(query="C4 context actors external systems") - Search source code for actors\n'
         '2. list_components_by_stereotype(stereotype="controller") - Get component lists\n'
         '3. query_architecture_facts(category="containers") - Get container details\n'
         "4. drawio_generator(...) - Create DrawIO diagrams\n"
