@@ -85,6 +85,7 @@ class PlanGeneratorStage:
             allow_delegation=False,
             verbose=True,
             max_iter=15,
+            max_retry_limit=2,
             respect_context_window=True,
         )
 

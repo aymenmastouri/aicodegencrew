@@ -36,7 +36,8 @@ from .tasks import (
     CH06_PART1_API_FLOWS,
     CH06_PART2_BUSINESS_FLOWS,
     CH07_DEPLOYMENT,
-    CH08_PART1_TECHNICAL,
+    CH08_PART1A_DOMAIN_SECURITY,
+    CH08_PART1B_PERSISTENCE_OPS,
     CH08_PART2_PATTERNS,
     CH09_DECISIONS,
     CH10_QUALITY,
@@ -59,11 +60,11 @@ class Arc42Crew(MiniCrewBase):
     1-8. Chapters 1-5 (ch05 split into 4 sub-crews)
     9-10. Chapter 6 (runtime view split into 2 sub-crews)
     11. Chapter 7 (deployment)
-    12-13. Chapter 8 (crosscutting split into 2 sub-crews)
-    14-17. Chapters 9-12
-    18. Quality Gate (validation)
+    12-14. Chapter 8 (crosscutting split into 3 sub-crews)
+    15-18. Chapters 9-12
+    19. Quality Gate (validation)
 
-    Total: 18 mini-crews (was 16 before ch06/ch08 splitting)
+    Total: 19 mini-crews (was 18 before ch08 part1 splitting)
     """
 
     @property
@@ -237,10 +238,11 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     # -------------------------------------------------------------------------
 
     def _merge_crosscutting(self) -> None:
-        """Merge 2 crosscutting part files into 08-crosscutting.md."""
+        """Merge 3 crosscutting part files into 08-crosscutting.md."""
         base = self._output_dir / "arc42"
         parts = [
-            "08-part1-technical.md",
+            "08-part1a-domain-security.md",
+            "08-part1b-persistence-ops.md",
             "08-part2-patterns.md",
         ]
 
@@ -364,11 +366,18 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
                 ["arc42/07-deployment.md"],
             ),
             (
-                "crosscutting-technical",
+                "crosscutting-technical-a",
                 [
-                    (CH08_PART1_TECHNICAL, "Arc42 Crosscutting Part 1: Technical concepts"),
+                    (CH08_PART1A_DOMAIN_SECURITY, "Arc42 Crosscutting Part 1A: Domain + Security"),
                 ],
-                ["arc42/08-part1-technical.md"],
+                ["arc42/08-part1a-domain-security.md"],
+            ),
+            (
+                "crosscutting-technical-b",
+                [
+                    (CH08_PART1B_PERSISTENCE_OPS, "Arc42 Crosscutting Part 1B: Persistence + Ops"),
+                ],
+                ["arc42/08-part1b-persistence-ops.md"],
             ),
             (
                 "crosscutting-patterns",

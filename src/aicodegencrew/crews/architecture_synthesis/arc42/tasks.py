@@ -466,57 +466,53 @@ Write 8-10 pages with REAL data from tools. No placeholders.
 )
 
 # =============================================================================
-# Chapter 8: Crosscutting Concepts (split into 2 sub-crews)
+# Chapter 8: Crosscutting Concepts (split into 3 sub-crews)
 # =============================================================================
 
-CH08_PART1_TECHNICAL = (
+CH08_PART1A_DOMAIN_SECURITY = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 8 Part 1: Technical Crosscutting Concepts.
+Create arc42 Chapter 8 Part 1A: Domain Model and Security.
 
-## REQUIRED SECTIONS (do NOT skip any):
-### 8.1 Domain Model
-- Core domain concepts with entity relationship diagram (text-based)
-- Entity inventory table: | Entity | Key Attributes | Relationships |
-- Aggregate boundaries
-### 8.2 Security Concept
-- Authentication mechanism (Spring Security, JWT, OAuth2, etc.)
-- Authorization model (roles, permissions)
-- Security annotations and filters
-- CSRF, XSS, injection prevention
-### 8.3 Persistence Concept
-- ORM strategy (JPA/Hibernate configuration)
-- Transaction management (@Transactional boundaries)
-- Connection pooling
-- Database migration strategy (Flyway/Liquibase)
-### 8.4 Error Handling and Exception Strategy
-- Exception hierarchy (custom exceptions, base classes)
-- Global exception handler (@ControllerAdvice)
-- Error response format (JSON structure)
-- HTTP status code mapping
-### 8.5 Logging and Monitoring
-- Logging framework and configuration
-- Log levels strategy per layer
-- Structured logging format
-- Health checks and metrics endpoints
+REQUIRED SECTIONS:
+8.1 Domain Model: entity relationship diagram, entity inventory table (Entity|Attributes|Relationships), aggregate boundaries.
+8.2 Security Concept: authentication mechanism, authorization model (roles/permissions), security annotations, CSRF/XSS prevention.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_architecture_summary() -> get architecture patterns
-2. list_components_by_stereotype(stereotype="entity") -> get ALL entities
-3. search_components(query="security") -> find security components
-4. search_components(query="exception") -> find error handling
-5. rag_query(query="security authentication authorization") -> security details
-6. rag_query(query="logging slf4j logback") -> logging config
-7. rag_query(query="exception handling ControllerAdvice") -> error handling
-8. rag_query(query="transaction management Transactional") -> persistence
-9. doc_writer(file_path="arc42/08-part1-technical.md", content="# 08 - Crosscutting Concepts\\n\\n## 8.1 Domain Model\\n...")
-10. Respond: "File arc42/08-part1-technical.md written successfully."
+EXECUTION EXAMPLE:
+1. list_components_by_stereotype(stereotype="entity") -> entities
+2. search_components(query="security") -> security components
+3. rag_query(query="security authentication authorization JWT") -> auth details
+4. rag_query(query="@Entity JPA domain model") -> domain details
+5. doc_writer(file_path="arc42/08-part1a-domain-security.md", content="# 08 - Part 1A\\n...")
+6. Respond: "File arc42/08-part1a-domain-security.md written successfully."
 
-Summary data:
 {system_summary}
 
-Write to file: arc42/08-part1-technical.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
+Write to: arc42/08-part1a-domain-security.md. 6-8 pages. REAL data. No placeholders.
+"""
+)
+
+CH08_PART1B_PERSISTENCE_OPS = (
+    TOOL_INSTRUCTION
+    + """
+Create arc42 Chapter 8 Part 1B: Persistence, Error Handling, Logging.
+
+REQUIRED SECTIONS:
+8.3 Persistence: JPA/ORM config, @Transactional, pooling, Flyway migrations.
+8.4 Error Handling: exception hierarchy, @ControllerAdvice, error response, HTTP codes.
+8.5 Logging: framework config, log levels, structured format, health endpoints.
+
+EXECUTION EXAMPLE:
+1. list_components_by_stereotype(stereotype="repository") -> repos
+2. rag_query(query="Transactional JPA") -> persistence details
+3. rag_query(query="ControllerAdvice exception") -> error handling
+4. rag_query(query="slf4j logback logging") -> logging
+5. doc_writer(file_path="arc42/08-part1b-persistence-ops.md", content="## 8.3\\n...")
+6. Respond: "File arc42/08-part1b-persistence-ops.md written successfully."
+
+{system_summary}
+
+Write to: arc42/08-part1b-persistence-ops.md. 6-8 pages. REAL data. No placeholders.
 """
 )
 
