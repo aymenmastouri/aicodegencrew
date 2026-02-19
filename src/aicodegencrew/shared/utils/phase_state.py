@@ -67,7 +67,16 @@ def _write_atomic(data: dict) -> None:
 
 
 def _is_pid_alive(pid: int) -> bool:
-    """Check if a process is still running."""
+    """Check if a process is still running (cross-platform).
+
+    os.kill(pid, 0) is unreliable on Windows — signal 0 may call
+    TerminateProcess() instead of just probing. Use psutil when available.
+    """
+    try:
+        import psutil  # optional dep; always present in our env
+        return psutil.pid_exists(pid)
+    except ImportError:
+        pass
     try:
         os.kill(pid, 0)
         return True

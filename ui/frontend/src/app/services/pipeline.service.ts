@@ -219,8 +219,8 @@ export class PipelineService {
               eventSource.close();
               observer.complete();
             }
-          } catch {
-            // Ignore parse errors
+          } catch (e) {
+            console.warn('[SSE] Failed to parse event data:', e, event.data?.slice(0, 120));
           }
         });
       };

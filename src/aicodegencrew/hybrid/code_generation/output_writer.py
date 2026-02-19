@@ -55,7 +55,7 @@ class OutputWriter:
         # Safety gate: 0 files generated (LLM wrote nothing)
         if len(generated_files) == 0:
             logger.error("[OutputWriter] 0 files generated — aborting commit")
-            return self._build_report(
+            report = self._build_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -63,14 +63,16 @@ class OutputWriter:
                 degradation_reasons=["0 files generated"],
                 rich_verification=rich_verification,
             )
+            self._write_report(report)
+            return report
 
-        # Safety gate: >50% failure threshold
-        if failed_count / len(generated_files) > 0.5:
+        # Safety gate: >=50% failure threshold
+        if failed_count / len(generated_files) >= 0.5:
             logger.error(
-                "[OutputWriter] >50%% files failed (%d/%d), aborting",
+                "[OutputWriter] >=50%% files failed (%d/%d), aborting",
                 failed_count, len(generated_files),
             )
-            return self._build_report(
+            report = self._build_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -78,11 +80,13 @@ class OutputWriter:
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
+            self._write_report(report)
+            return report
 
         # Build gate
         if build_verification and not build_verification.skipped and not build_verification.all_passed:
             logger.error("[OutputWriter] Build failed — aborting commit")
-            return self._build_report(
+            report = self._build_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -90,6 +94,8 @@ class OutputWriter:
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
+            self._write_report(report)
+            return report
 
         if self.dry_run:
             logger.info("[OutputWriter] DRY RUN — skipping file writes and git")
@@ -107,7 +113,7 @@ class OutputWriter:
 
         if not self._is_git_repo():
             logger.error("[OutputWriter] %s is not a git repository", self.repo_path)
-            return self._build_report(
+            report = self._build_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -115,10 +121,12 @@ class OutputWriter:
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
+            self._write_report(report)
+            return report
 
         if not self._is_clean_working_tree():
             logger.error("[OutputWriter] Target repo has uncommitted changes")
-            return self._build_report(
+            report = self._build_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -126,16 +134,20 @@ class OutputWriter:
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
+            self._write_report(report)
+            return report
 
         branch_name = self._create_branch(task_id)
         if not branch_name:
-            return self._build_report(
+            report = self._build_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
                 total_tokens=total_tokens, degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
+            self._write_report(report)
+            return report
 
         files_changed = 0
         files_created = 0
@@ -223,7 +235,7 @@ class OutputWriter:
         # Safety gate: 0 files generated
         if len(generated_files) == 0:
             logger.error("[OutputWriter] Cascade task %s: 0 files generated — aborting commit", task_id)
-            return self._build_cascade_report(
+            report = self._build_cascade_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -231,10 +243,12 @@ class OutputWriter:
                 degradation_reasons=["0 files generated"],
                 rich_verification=rich_verification, **cascade_kwargs,
             )
+            self._write_report(report)
+            return report
 
-        # Safety gate: >50% failure threshold
-        if failed_count / len(generated_files) > 0.5:
-            return self._build_cascade_report(
+        # Safety gate: >=50% failure threshold
+        if failed_count / len(generated_files) >= 0.5:
+            report = self._build_cascade_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -242,6 +256,8 @@ class OutputWriter:
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification, **cascade_kwargs,
             )
+            self._write_report(report)
+            return report
 
         if self.dry_run:
             report = self._build_cascade_report(
@@ -257,7 +273,7 @@ class OutputWriter:
             return report
 
         if build_verification and not build_verification.skipped and not build_verification.all_passed:
-            return self._build_cascade_report(
+            report = self._build_cascade_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
                 duration_seconds=duration_seconds, llm_calls=llm_calls,
@@ -265,6 +281,8 @@ class OutputWriter:
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification, **cascade_kwargs,
             )
+            self._write_report(report)
+            return report
 
         files_changed = 0
         files_created = 0
