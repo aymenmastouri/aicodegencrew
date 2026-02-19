@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from ....shared.utils.logger import setup_logger
 from ....shared.utils.token_budget import truncate_response
@@ -202,10 +202,10 @@ class BuildRunnerTool(BaseTool):
     facts_path: str = "knowledge/extract/architecture_facts.json"
 
     # Shared staging dict (for applying files before build)
-    _staging: dict = {}
+    _staging: dict = PrivateAttr(default_factory=dict)
 
     # Cached container configs
-    _container_configs: list[ContainerConfig] | None = None
+    _container_configs: list[ContainerConfig] | None = PrivateAttr(default=None)
 
     def __init__(
         self,
