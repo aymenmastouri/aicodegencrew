@@ -171,6 +171,7 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   /** Private: fetches log without touching loading state (background refresh). */
   private _fetchLog(): void {
+    if (!this.selectedFile || !this.logFiles.length) return;
     this.api.getLogs(this.selectedFile, 500).subscribe({
       next: (r) => {
         this.logResponse = r;

@@ -124,13 +124,16 @@ def toggle_phase(phase_id: str, enabled: bool) -> PhaseInfo:
 
     config_path = settings.phases_config
     with open(config_path, encoding="utf-8") as f:
-        raw = yaml.safe_load(f)
+        raw = yaml.safe_load(f) or {}
 
     phases_section = raw.get("phases", {})
     if phase_id not in phases_section:
         raise ValueError(f"Unknown phase: {phase_id}")
 
     definition = phases_section[phase_id]
+    if not isinstance(definition, dict):
+        definition = {}
+        phases_section[phase_id] = definition
     if definition.get("required") and not enabled:
         raise ValueError(f"Phase '{phase_id}' is required and cannot be disabled")
 

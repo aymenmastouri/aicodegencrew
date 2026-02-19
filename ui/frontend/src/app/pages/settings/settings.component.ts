@@ -532,6 +532,7 @@ export class SettingsComponent implements OnInit {
   }
 
   isDirty(tab: string): boolean {
+    if (!Object.keys(this.originalValues).length) return false;
     return this.getTabVars(tab).some((v) => v.value !== this.originalValues[v.name]);
   }
 
@@ -602,6 +603,10 @@ export class SettingsComponent implements OnInit {
   }
 
   resetTab(tab: string): void {
+    if (!Object.keys(this.defaults).length) {
+      this.snackBar.open('Defaults not loaded — please wait and try again', 'OK', { duration: 3000 });
+      return;
+    }
     const vars = this.getTabVars(tab);
     let count = 0;
     for (const v of vars) {

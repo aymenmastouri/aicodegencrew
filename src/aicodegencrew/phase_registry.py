@@ -164,7 +164,10 @@ def outputs_exist(phase_id: str, base: Path) -> bool:
 
     path = base / desc.primary_output
     if path.is_dir():
-        return any(path.rglob("*"))
+        try:
+            return next(path.rglob("*"), None) is not None
+        except (OSError, PermissionError):
+            return False
     return path.exists()
 
 
