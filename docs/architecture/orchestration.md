@@ -51,12 +51,21 @@ Phase and preset resolution is driven by `PipelineContract` (`src/aicodegencrew/
 
 ### Dependency Checking
 
-Before executing a phase, the orchestrator checks each dependency:
-1. Did it succeed in this session? (in-memory results)
-2. Do its output files exist from a previous run? (via `phase_registry.outputs_exist()`)
-3. Are outputs valid? (via `PhaseOutputValidator`)
+Before executing a phase, the orchestrator delegates to `DependencyChecker`
+(`src/aicodegencrew/shared/dependency_checker.py`):
 
-If any dependency fails, the phase is skipped with status `"failed"`.
+```python
+from .shared.dependency_checker import DependencyChecker
+return DependencyChecker(contract, self.results).check(phase_id)
+```
+
+`DependencyChecker.check()` applies a two-tier resolution:
+1. **Tier 1 — in-session results**: did the dependency succeed earlier in this run?
+2. **Tier 2 — disk artifacts**: do output files exist from a previous run? (via `phase_registry.outputs_exist()` + `PhaseOutputValidator`)
+
+ARCH-5 contract violations (dependency present in `PHASE_CONTRACTS` but not yet satisfied) are logged as warnings — observational only, never blocking.
+
+If any required dependency fails both tiers, the phase is skipped with status `"failed"`.
 
 ### Protocol-Based Polymorphism
 
@@ -113,7 +122,15 @@ This provides process isolation: the CLI runs independently, and the dashboard m
 
 ## Auto-Commit
 
-After each successful phase, the orchestrator commits `knowledge/` to git:
+After each successful phase, the orchestrator delegates to `PhaseGitHandler`
+(`src/aicodegencrew/shared/phase_git_handler.py`):
+
+```python
+from .shared.phase_git_handler import PhaseGitHandler
+PhaseGitHandler().commit_knowledge(phase_id)
+```
+
+`PhaseGitHandler.commit_knowledge()` stages and commits `knowledge/` to git:
 
 ```
 git add knowledge/
@@ -121,3 +138,22 @@ git commit -m "[aicodegencrew] {phase_id} completed - {timestamp}"
 ```
 
 This creates a checkpoint after each phase, enabling `git diff` to see exactly what changed.
+
+> **Guard:** Set `CODEGEN_COMMIT_KNOWLEDGE=false` to disable auto-commit (useful in CI or when you want to control commits manually).
+
+## Schema Versioning
+
+All phase JSON outputs include a `_schema_version` field injected by
+`src/aicodegencrew/shared/schema_version.py`:
+
+```python
+from .shared.schema_version import add_schema_version, check_schema_version
+
+# Writers inject the version as the first key
+json.dump(add_schema_version(data, "plan"), f)
+
+# Readers log a warning on mismatch — never raises, fully backward-compatible
+check_schema_version(loaded_data, "plan")
+```
+
+Current versions: `extract=1.0`, `analyze=1.0`, `plan=1.0`, `implement=1.0`, `verify=1.0`.

@@ -281,7 +281,7 @@ Copy `.env.example` to `.env` and configure:
 ```
 KNOWLEDGE (no LLM)          REASONING (hybrid)           EXECUTION (hybrid)
 Discover                ->  Analyze                  ->  Implement
-Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
+Extract                 ->  Document (C4 + arc42)    ->  Verify
                              Plan                     ->  Deliver (planned)
 ```
 
@@ -292,8 +292,8 @@ Extract                 ->  Document (C4 + arc42)    ->  Verify (planned)
 | 2 | Analyze | Yes | Multi-agent analysis (domain, workflow, quality) |
 | 3 | Document | Yes | C4 diagrams + arc42 chapters + DrawIO |
 | 4 | Plan | Hybrid | 4 deterministic stages + 1 LLM call |
-| 5 | Implement | Hybrid | 6 stages: code generation + build verification with self-healing |
-| 6 | Verify | - | Planned |
+| 5 | Implement | Hybrid | Team-based CrewAI: code generation + build verification with self-healing |
+| 6 | Verify | Yes | Single-agent test generation per file (JUnit 5 / Angular TestBed + Jasmine) |
 | 7 | Deliver | - | Planned |
 
 ### Data Flow
@@ -305,6 +305,7 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + symbols + evide
                Document   --> knowledge/document/    (C4 + arc42 + DrawIO)
                Plan       --> knowledge/plan/        ({task_id}_plan.json)
                Implement  --> Git branch codegen/*   + knowledge/implement/
+               Verify     --> knowledge/verify/      ({task_id}_verify.json + summary.json)
 ```
 
 > Full specification: [SDLC Architecture](docs/SDLC_ARCHITECTURE.md)
@@ -372,12 +373,13 @@ SDLC Pilot is **proprietary** software. Three delivery modes:
 
 ## 9. Testing
 
-789+ tests, no LLM or network required (except `tests/e2e/`).
+815+ tests, no LLM or network required (except `tests/e2e/`).
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v                    # full suite (~17s)
-pytest tests/ --ignore=tests/e2e    # unit + integration only
+pytest tests/ -v                          # full suite (~20s)
+pytest tests/ --ignore=tests/e2e          # unit + integration only
+pytest tests/unit/collectors/ -v          # collector unit tests only (~5s)
 ```
 
 ---
@@ -408,14 +410,21 @@ aicodegencrew/
 │   ├── cli.py                   #   CLI entry point
 │   ├── orchestrator.py          #   Phase orchestration
 │   ├── pipelines/               #   Discover, Extract
-│   ├── crews/                   #   Analyze, Document
+│   ├── crews/                   #   Analyze, Document, Verify
 │   ├── hybrid/                  #   Plan, Implement (pipeline + CrewAI)
 │   ├── shared/                  #   Utilities, tools, validation
+│   │   ├── dependency_checker.py  #   Phase dependency resolution (extracted)
+│   │   ├── phase_git_handler.py   #   Post-phase git auto-commit (extracted)
+│   │   ├── schema_version.py      #   Phase JSON schema versioning
+│   │   └── tools/               #   CrewAI tool implementations
 │   └── mcp/                     #   MCP knowledge server
 ├── scripts/                     # Dev scripts (dev.sh, stop-dev.js, build_release.py)
 ├── config/phases_config.yaml    # Phase definitions
 ├── knowledge/                   # Phase outputs (auto-generated)
-├── tests/                       # 789+ tests
+├── tests/                       # 815+ tests
+│   ├── unit/collectors/         #   Collector unit tests (no LLM)
+│   ├── integration/             #   Phase integration tests
+│   └── e2e/                     #   End-to-end tests (requires LLM)
 ├── docs/                        # Architecture docs + guides
 └── .env                         # Configuration
 ```
