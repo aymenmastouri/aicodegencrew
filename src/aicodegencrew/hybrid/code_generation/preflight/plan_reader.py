@@ -156,6 +156,12 @@ class PlanReader:
                     file_path = comp.get("file_path", "")
                     if not file_path:
                         file_path = self._resolve_file_path(comp.get("id", ""), comp.get("name", ""))
+                    if not file_path:
+                        logger.warning(
+                            "[PlanReader] Skipping component (no resolvable file_path): id=%s, name=%s",
+                            comp.get("id", ""), comp.get("name", ""),
+                        )
+                        continue
 
                     components.append(ComponentTarget(
                         id=comp.get("id", ""),

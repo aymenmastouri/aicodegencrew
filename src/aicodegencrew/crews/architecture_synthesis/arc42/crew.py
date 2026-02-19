@@ -10,7 +10,7 @@ Architecture Fix:
 Chapters 5, 6, and 8 are split into sub-crews for maximum output quality:
 - Chapter 5: 4 sub-crews (overview, controllers, services, domain)
 - Chapter 6: 2 sub-crews (API flows, business flows)
-- Chapter 8: 2 sub-crews (technical concepts, patterns)
+- Chapter 8: 3 sub-crews (domain+security, persistence+ops, patterns)
 
 Each Mini-Crew starts with a fresh LLM context window.
 Data is passed via template variables (summaries), not inter-task context.
@@ -237,6 +237,22 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     # MERGE CROSSCUTTING
     # -------------------------------------------------------------------------
 
+    def _migrate_crosscutting_part1(self) -> None:
+        """Backward-compat: rename old 08-part1-technical.md to part1a if new files absent.
+
+        Wave 3 split the old single Part 1 into Part 1A (domain+security) and
+        Part 1B (persistence+ops). If existing knowledge/ still has the old file
+        and the new files don't exist yet, rename it so _merge_crosscutting()
+        can include its content instead of producing an empty chapter.
+        """
+        base = self._output_dir / "arc42"
+        old = base / "08-part1-technical.md"
+        new_a = base / "08-part1a-domain-security.md"
+        new_b = base / "08-part1b-persistence-ops.md"
+        if old.exists() and not new_a.exists() and not new_b.exists():
+            old.rename(new_a)
+            logger.info("[Arc42] Migrated 08-part1-technical.md → 08-part1a-domain-security.md")
+
     def _merge_crosscutting(self) -> None:
         """Merge 3 crosscutting part files into 08-crosscutting.md."""
         base = self._output_dir / "arc42"
@@ -438,6 +454,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
         # Merge part files into final chapter files
         self._merge_building_blocks()
         self._merge_runtime_view()
+        self._migrate_crosscutting_part1()
         self._merge_crosscutting()
 
         # Quality Gate (validation only — use fast model)
