@@ -42,7 +42,7 @@ from .tasks import (
     TECH_ANALYSIS_TASKS,
     WORKFLOW_ANALYSIS_TASKS,
 )
-from .tools import FactsQueryTool, FactsStatisticsTool, PartialResultsTool, RAGQueryTool, StereotypeListTool
+from .tools import FactsQueryTool, FactsStatisticsTool, PartialResultsTool, RAGQueryTool, StereotypeListTool, SymbolQueryTool
 
 
 logger = setup_logger(__name__)
@@ -174,6 +174,7 @@ class ArchitectureAnalysisCrew:
             FactsQueryTool(facts_path=str(self.facts_path), preloaded_cache=preloaded_cache),
             RAGQueryTool(chroma_dir=self.chroma_dir),
             StereotypeListTool(facts_path=str(self.facts_path)),
+            SymbolQueryTool(),
         ]
 
     def _create_synthesis_tools(self) -> list:

@@ -26,7 +26,7 @@ from crewai import LLM, Agent, Crew, Process, Task
 
 from ...shared.mcp import get_phase3_mcps
 from ...shared.paths import CHROMA_DIR
-from ...shared.tools import RAGQueryTool
+from ...shared.tools import RAGQueryTool, SymbolQueryTool
 from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
@@ -220,6 +220,7 @@ class MiniCrewBase(ABC):
             FactsQueryTool(facts_path=str(self.facts_path)),
             StereotypeListTool(facts_path=str(self.facts_path)),
             RAGQueryTool(chroma_dir=self.chroma_dir),
+            SymbolQueryTool(),
         ]
 
     def _get_extra_tools(self) -> list:

@@ -2,7 +2,7 @@
 
 from crewai import Agent
 
-from ...shared.tools import FactsQueryTool, RAGQueryTool
+from ...shared.tools import FactsQueryTool, RAGQueryTool, SymbolQueryTool
 from ...shared.utils.llm_factory import create_llm
 
 
@@ -32,6 +32,7 @@ def create_quality_reviewer(facts_dir: str, chroma_dir: str) -> Agent:
         tools=[
             FactsQueryTool(facts_dir=facts_dir),
             RAGQueryTool(chroma_dir=chroma_dir),
+            SymbolQueryTool(),
         ],
         llm=create_llm(temperature=0.2),
         verbose=True,
