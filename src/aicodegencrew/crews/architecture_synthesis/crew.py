@@ -123,7 +123,7 @@ class ArchitectureSynthesisCrew:
         else:
             logger.info("   [OK] No old outputs to clean (first run)")
 
-    def run(self) -> dict:
+    def run(self, quality_context: dict | None = None) -> dict:
         """
         Execute both crews sequentially.
 
@@ -131,8 +131,12 @@ class ArchitectureSynthesisCrew:
         1. C4: Facts + Analysis -> 4 C4 diagrams + DrawIO
         2. Arc42: Facts + Analysis -> 12 deep chapters
 
+        Args:
+            quality_context: Optional quality metrics forwarded from analyze phase.
+
         Returns dict with status and result summary.
         """
+        self._quality_context = quality_context or {}
         # Validate prerequisites before running
         self._validate_prerequisites()
 
@@ -230,14 +234,26 @@ class ArchitectureSynthesisCrew:
         )
         return self.arc42_crew.run()
 
-    def kickoff(self, inputs: dict = None) -> dict:
+    def kickoff(self, inputs: dict | None = None) -> dict:
         """
         Execute crews - compatible with orchestrator interface.
 
         Args:
-            inputs: Optional inputs dict (ignored, we use facts_path)
+            inputs: Optional inputs dict from orchestrator. Reads
+                    previous_results["analyze"] to forward quality_context.
 
         Returns:
             Dict with status and result.
         """
-        return self.run()
+        inputs = inputs or {}
+        previous = inputs.get("previous_results", {})
+        analyze_out = previous.get("analyze", {})
+        quality_context = analyze_out.get("quality_metrics", {}) if isinstance(analyze_out, dict) else {}
+        if quality_context:
+            logger.info(
+                "[Phase3] Received quality_context from analyze phase: %d keys",
+                len(quality_context),
+            )
+        else:
+            logger.debug("[Phase3] No quality_context from previous results")
+        return self.run(quality_context=quality_context)

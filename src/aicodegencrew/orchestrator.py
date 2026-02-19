@@ -11,6 +11,9 @@ Design Principles:
 - Dependency Injection: Phases are registered, not hardcoded
 """
 
+import concurrent.futures as _cf
+import json as _json
+import os
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -30,6 +33,27 @@ from .pipeline_contract import (
 )
 from .shared.utils.logger import RUN_ID, log_metric, logger
 from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_failed, set_phase_running
+
+# =============================================================================
+# PHASE CONTRACTS (ARCH-5)
+# =============================================================================
+# Declares what each phase requires and provides. Used by _check_dependencies()
+# to log contract violations (observational — not a hard gate; the existing
+# get_dependencies() system already handles blocking).
+PHASE_CONTRACTS: dict[str, dict] = {
+    "discover":  {"requires": [],              "provides": ["discover"]},
+    "extract":   {"requires": ["discover"],    "provides": ["extract"]},
+    "analyze":   {"requires": ["extract"],     "provides": ["analyze"]},
+    "document":  {"requires": ["analyze"],     "provides": ["document"]},
+    "plan":      {"requires": ["extract"],     "provides": ["plan"]},
+    "implement": {"requires": ["plan"],        "provides": ["implement"]},
+    "verify":    {"requires": ["implement"],   "provides": ["verify"]},
+    "deliver":   {"requires": ["implement"],   "provides": ["deliver"]},
+}
+
+# Phase-level wall-clock timeout (ARCH-6). Thread-based — compatible with Windows.
+# Override with PHASE_TIMEOUT_SECONDS env var (default: 3600s = 1 hour).
+_PHASE_TIMEOUT_S: int = int(os.getenv("PHASE_TIMEOUT_SECONDS", "3600"))
 
 # =============================================================================
 # PROTOCOLS (Interfaces)
@@ -122,6 +146,10 @@ class SDLCOrchestrator:
         self.results: dict[str, PhaseResult] = {}
         self.phase_context = PhaseContext()
         self._start_time: datetime | None = None
+        # PERF-2: architecture_facts.json cached after extract phase completes.
+        # Downstream phases can read from inputs["previous_results"]["facts"]
+        # instead of re-loading the 2.8 MB file from disk.
+        self._facts_cache: dict = {}
 
         logger.info("[Orchestrator] Initialized")
 
@@ -298,10 +326,13 @@ class SDLCOrchestrator:
             config = self._contract_from_current_config().phases.get(phase_id)
             phase_config = dict(config.config) if config else {}
 
-            # Build inputs
+            # Build inputs (PERF-2: include cached facts if available)
+            previous_results = {pid: r.output for pid, r in self.results.items() if r.is_success()}
+            if self._facts_cache:
+                previous_results["facts"] = self._facts_cache
             inputs = {
                 "config": phase_config,
-                "previous_results": {pid: r.output for pid, r in self.results.items() if r.is_success()},
+                "previous_results": previous_results,
                 "phase_context": self.phase_context.to_dict(),
                 "context": self.context,
             }
@@ -338,6 +369,21 @@ class SDLCOrchestrator:
             }
             self.phase_context.set_phase_result(phase_id=phase_id, status=phase_status, output=output, message=phase_message)
 
+            # PERF-2: Cache architecture_facts.json after extract phase so downstream
+            # phases can read from inputs["previous_results"]["facts"] without I/O.
+            if phase_id == "extract" and phase_status in ("success", "partial"):
+                facts_path = Path("knowledge/extract/architecture_facts.json")
+                if facts_path.exists():
+                    try:
+                        self._facts_cache = _json.loads(facts_path.read_text(encoding="utf-8"))
+                        logger.info(
+                            "[Orchestrator] facts.json cached: %d top-level keys",
+                            len(self._facts_cache),
+                        )
+                    except Exception as cache_err:
+                        logger.warning("[Orchestrator] Could not cache facts.json: %s", cache_err)
+                        self._facts_cache = {}
+
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
 
@@ -365,15 +411,37 @@ class SDLCOrchestrator:
             )
 
     def _invoke_executable(self, executable: PhaseExecutable, inputs: dict[str, Any]) -> Any:
-        """
-        Invoke an executable via the unified kickoff() interface.
+        """Invoke phase with a wall-clock timeout (ARCH-6).
 
-        All phases implement kickoff(inputs) -> Dict[str, Any].
+        Uses a thread-based timeout that is compatible with Windows (no SIGALRM).
+        If the phase exceeds _PHASE_TIMEOUT_S seconds, TimeoutError is raised and
+        the orchestrator records a failure — the background thread may continue
+        running until the process exits (acceptable; Gradle/LLM timeouts are a
+        separate concern handled by their own subprocess kill logic).
         """
-        return executable.kickoff(inputs)
+        with _cf.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(executable.kickoff, inputs)
+            try:
+                return future.result(timeout=_PHASE_TIMEOUT_S)
+            except _cf.TimeoutError:
+                phase_id = inputs.get("config", {}).get("phase_id", "unknown")
+                logger.error(
+                    "[Orchestrator] Phase '%s' timed out after %ds. "
+                    "Set PHASE_TIMEOUT_SECONDS env var to increase.",
+                    phase_id, _PHASE_TIMEOUT_S,
+                )
+                raise TimeoutError(
+                    f"Phase '{phase_id}' timed out after {_PHASE_TIMEOUT_S}s. "
+                    f"Set PHASE_TIMEOUT_SECONDS env var to increase."
+                )
 
     def _check_dependencies(self, phase_id: str) -> bool:
-        """Check if phase dependencies are satisfied (existence + validation)."""
+        """Check if phase dependencies are satisfied (existence + validation).
+
+        Also performs ARCH-5 contract validation: logs a warning if required
+        phase outputs are absent (observational only — blocking is handled by
+        the existing dependency system above).
+        """
         from .shared.validation import PhaseOutputValidator
 
         dependencies = self._contract_from_current_config().get_dependencies(phase_id)
@@ -399,6 +467,15 @@ class SDLCOrchestrator:
 
             logger.error(f"[Orchestrator] Dependency not met: {phase_id} requires {dep}")
             return False
+
+        # ARCH-5: Log phase contract violations (observational — not a hard block)
+        contract = PHASE_CONTRACTS.get(phase_id, {})
+        for required in contract.get("requires", []):
+            if required not in self.results and not outputs_exist(required, Path(".")):
+                logger.warning(
+                    "[Orchestrator] Contract violation: %s requires '%s' output but it is absent",
+                    phase_id, required,
+                )
 
         return True
 

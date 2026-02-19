@@ -18,7 +18,6 @@ import re
 from typing import Any
 
 from crewai import Agent, Crew, Process, Task
-from pydantic import ValidationError
 
 from ....shared.mcp import get_phase4_mcps
 from ....shared.utils.logger import setup_logger
@@ -104,13 +103,14 @@ class PlanGeneratorStage:
         description = self._build_task_description(task, discovery_result, pattern_result)
         expected = f"ImplementationPlan JSON object with task_id={task.task_id}, understanding, and development_plan sections"
 
-        # Create CrewAI task with Pydantic output
+        # Create CrewAI task (no output_pydantic — on-prem LLMs can truncate output,
+        # causing CrewAI to raise ValidationError before our repair code runs).
+        # Paths 2 and 3 below handle JSON parsing from json_dict / raw string.
         planning_task = Task(
             name=f"Plan: {task.summary[:50]}",  # Task name from input
             description=description,
             expected_output=expected,
             agent=self.agent,
-            output_pydantic=ImplementationPlan,
         )
 
         # Run crew
@@ -122,25 +122,12 @@ class PlanGeneratorStage:
                 verbose=False,
             )
 
-            try:
-                result = crew.kickoff()
-            except ValidationError as ve:
-                # output_pydantic validation failed (usually truncated JSON from LLM).
-                # Extract the truncated JSON from the error, repair it, and continue.
-                logger.warning(f"[Stage4] output_pydantic validation failed, attempting JSON repair: {ve.error_count()} errors")
-                truncated_json = self._extract_json_from_validation_error(ve)
-                if truncated_json:
-                    repaired = self._repair_truncated_json(truncated_json)
-                    plan_json = self._extract_json(repaired)
-                    plan = self._plan_from_dict(plan_json, task)
-                    logger.info("[Stage4] Plan recovered via truncated JSON repair")
-                    return plan
-                raise  # Re-raise if we couldn't extract/repair
+            result = crew.kickoff()
 
             # CrewAI kickoff() returns CrewOutput with .pydantic, .json_dict, .raw
             plan = None
 
-            # Path 1: Pydantic output (best case — output_pydantic worked)
+            # Path 1: Pydantic attribute present on result (rare — some CrewAI versions populate it)
             if hasattr(result, "pydantic") and isinstance(getattr(result, "pydantic", None), ImplementationPlan):
                 plan = result.pydantic
                 logger.info("[Stage4] Got plan from CrewOutput.pydantic")
@@ -525,19 +512,6 @@ Generate the plan now:"""
                 lines.append(f"  - {w}")
 
         return "\n".join(lines)
-
-    @staticmethod
-    def _extract_json_from_validation_error(ve: ValidationError) -> str | None:
-        """Extract the raw truncated JSON string from a Pydantic ValidationError.
-
-        When output_pydantic validation fails on truncated JSON, Pydantic stores
-        the raw input in the error details. We extract it here for repair.
-        """
-        for error in ve.errors():
-            raw_input = error.get("input")
-            if isinstance(raw_input, str) and raw_input.strip().startswith("{"):
-                return raw_input
-        return None
 
     @staticmethod
     def _repair_truncated_json(content: str) -> str:

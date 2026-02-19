@@ -36,6 +36,8 @@ from .output_writer import OutputWriter
 from .preflight import (
     DependencyGraphBuilder,
     ImportFixer,
+    ImportIndex,
+    ImportIndexBuilder,
     PlanReader,
     PreflightValidator,
     TaskSourceReader,
@@ -542,6 +544,7 @@ class ImplementCrew:
         self,
         plan: CodegenPlanInput,
         shared_baseline_cache: dict[str, dict] | None = None,
+        shared_import_index: ImportIndex | None = None,
     ) -> tuple[list[GeneratedFile], BuildVerificationResult, Any]:
         """Run the full implement flow for a single plan with build-fix loop.
 
@@ -559,6 +562,9 @@ class ImplementCrew:
             shared_baseline_cache: Optional dict shared across cascade tasks (BUG-Y5).
                 When provided, baseline build results are reused across tasks on the
                 same containers — avoids redundant baseline builds per cascade task.
+            shared_import_index: Optional ImportIndex built once before the cascade
+                loop (BUG-Y6). When provided, preflight skips rebuilding the index
+                — avoids N full source-tree scans for N cascade tasks.
 
         Returns:
             (generated_files, build_result, rich_report)
@@ -567,10 +573,11 @@ class ImplementCrew:
         start_time = time.time()
 
         # ── 1. Preflight ────────────────────────────────────────────────────
+        # Pass shared_import_index so preflight skips rebuild when already available.
         preflight = PreflightValidator(
             repo_path=str(self.repo_path), facts_path=str(self.facts_path),
         )
-        preflight_result, import_index = preflight.run(plan)
+        preflight_result, import_index = preflight.run(plan, import_index=shared_import_index)
         if not preflight_result.ok:
             raise ValueError("Preflight failed: " + "; ".join(preflight_result.errors))
 
@@ -771,6 +778,26 @@ class ImplementCrew:
         # BUG-Y5: single baseline cache shared across all cascade tasks
         shared_baseline_cache: dict[str, dict] = {}
 
+        # BUG-Y6: build ImportIndex ONCE before the task loop.
+        # Each call to run() previously triggered a full source-tree scan inside
+        # PreflightValidator — for 10 cascade tasks that is 10 × 3-10s of I/O.
+        # Passing the pre-built index lets preflight skip the rebuild entirely.
+        shared_import_index: ImportIndex | None = None
+        try:
+            shared_import_index = ImportIndexBuilder(
+                repo_path=str(self.repo_path),
+                facts_path=str(self.facts_path),
+            ).run()
+            logger.info(
+                "[Implement] Shared ImportIndex built: %d symbols — reusing across %d cascade tasks",
+                shared_import_index.total_symbols, n,
+            )
+        except Exception as idx_err:
+            logger.warning(
+                "[Implement] Could not build shared ImportIndex: %s — will build per-task",
+                idx_err,
+            )
+
         plan_reader = PlanReader(
             plans_dir=self.plans_dir, facts_path=str(self.facts_path),
         )
@@ -794,7 +821,9 @@ class ImplementCrew:
 
                 plan_input = plan_reader.run(task_id=task_id, plan_path=str(plan_file))
                 generated, build, rich = self.run(
-                    plan=plan_input, shared_baseline_cache=shared_baseline_cache
+                    plan=plan_input,
+                    shared_baseline_cache=shared_baseline_cache,
+                    shared_import_index=shared_import_index,
                 )
 
                 task_duration = time.time() - task_start
