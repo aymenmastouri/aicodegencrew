@@ -108,7 +108,8 @@ import { isTerminal } from '../../shared/status';
                   <button mat-icon-button color="warn"
                     [disabled]="!isPhaseTerminal(getPhaseStatus(p.id))"
                     (click)="resetPhase(p.id)"
-                    matTooltip="Reset this phase">
+                    matTooltip="Reset this phase"
+                    aria-label="Reset this phase">
                     <mat-icon>restart_alt</mat-icon>
                   </button>
                 </td>

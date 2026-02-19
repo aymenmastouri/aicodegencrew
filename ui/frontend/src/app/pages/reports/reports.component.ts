@@ -111,7 +111,7 @@ interface ParsedComponent {
                               <span class="doc-file-name">{{ formatDocName($any(file['_name'])) }}</span>
                               <span class="doc-file-meta">{{ $any(file['_type']) | uppercase }} &middot; {{ formatBytes($any(file['_size'])) }}</span>
                             </div>
-                            <button mat-icon-button class="dl-btn" matTooltip="Download"
+                            <button mat-icon-button class="dl-btn" matTooltip="Download" aria-label="Download"
                                     (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
                               <mat-icon>download</mat-icon>
                             </button>

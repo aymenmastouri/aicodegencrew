@@ -268,13 +268,13 @@ interface FileGroup {
                     <mat-icon>code</mat-icon> Source
                   </button>
                 }
-                <button mat-icon-button (click)="copyContent()" matTooltip="Copy to clipboard">
+                <button mat-icon-button (click)="copyContent()" matTooltip="Copy to clipboard" aria-label="Copy to clipboard">
                   <mat-icon>content_copy</mat-icon>
                 </button>
-                <button mat-icon-button (click)="downloadContent()" matTooltip="Download file">
+                <button mat-icon-button (click)="downloadContent()" matTooltip="Download file" aria-label="Download file">
                   <mat-icon>download</mat-icon>
                 </button>
-                <button mat-icon-button (click)="closeViewer()" matTooltip="Close (Esc)">
+                <button mat-icon-button (click)="closeViewer()" matTooltip="Close (Esc)" aria-label="Close viewer">
                   <mat-icon>close</mat-icon>
                 </button>
               </div>

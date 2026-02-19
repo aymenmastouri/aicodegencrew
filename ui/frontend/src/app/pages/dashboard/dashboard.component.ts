@@ -40,7 +40,9 @@ import { statusLabel, isTerminal } from '../../shared/status';
     <div class="page-container">
       <!-- Hero -->
       <div class="hero">
-        <div class="hero-logo-placeholder"></div>
+        <div class="hero-logo" aria-hidden="true">
+          <mat-icon class="hero-icon">bolt</mat-icon>
+        </div>
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
           <p class="hero-subtitle">AI-Powered Development Lifecycle Automation - Discover, Extract, Analyze, Document, Plan, Implement</p>
@@ -274,6 +276,12 @@ import { statusLabel, isTerminal } from '../../shared/status';
         right: 24px;
         height: 32px;
         opacity: 0.5;
+      }
+      .hero-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: var(--cg-vibrant);
       }
       .hero-title {
         font-size: 28px;

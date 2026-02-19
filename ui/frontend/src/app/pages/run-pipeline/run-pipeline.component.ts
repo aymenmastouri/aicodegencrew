@@ -220,7 +220,8 @@ import { statusIcon } from '../../shared/status';
                 <span class="celebration-title">{{ celebrationTitle() }}</span>
                 <span class="celebration-sub">{{ celebrationSubtitle() }}</span>
               </div>
-              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()">
+              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()"
+                matTooltip="Dismiss" aria-label="Dismiss">
                 <mat-icon>close</mat-icon>
               </button>
             </div>
@@ -338,10 +339,11 @@ import { statusIcon } from '../../shared/status';
             </mat-form-field>
             <button mat-icon-button (click)="autoScroll = !autoScroll"
                     [matTooltip]="autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'"
+                    [attr.aria-label]="autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'"
                     [class.active-toggle]="autoScroll">
               <mat-icon>{{ autoScroll ? 'vertical_align_bottom' : 'pause' }}</mat-icon>
             </button>
-            <button mat-icon-button (click)="scrollToTop()" matTooltip="Scroll to top">
+            <button mat-icon-button (click)="scrollToTop()" matTooltip="Scroll to top" aria-label="Scroll to top">
               <mat-icon>vertical_align_top</mat-icon>
             </button>
           </mat-card-header>
