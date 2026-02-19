@@ -562,6 +562,15 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         )
         orchestrator.register_phase("verify", testing_crew)
 
+    # --- Deliver: Review & Consistency Guard (Phase 7) ---
+    if "deliver" in planned_phases:
+        from .crews.review import ReviewCrew
+
+        review_crew = ReviewCrew(
+            knowledge_dir=str(knowledge_dir),
+        )
+        orchestrator.register_phase("deliver", review_crew)
+
     # Execute
     try:
         result = orchestrator.run(preset=preset, phases=phases)
