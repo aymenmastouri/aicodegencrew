@@ -41,11 +41,13 @@ from .tasks import create_synthesis_task
 
 logger = setup_logger(__name__)
 
-# Required arc42 chapters — stem prefix (lowercase)
+# Required arc42 chapters — stem prefix (lowercase).
+# These must match the actual file stems produced by Arc42Crew:
+#   01-introduction.md, 03-context.md, 05-building-blocks.md, 06-runtime-view.md
 _ARC42_REQUIRED: list[str] = [
     "01-introduction",
-    "03-system-scope",
-    "05-building-block-view",
+    "03-context",
+    "05-building-blocks",
     "06-runtime-view",
 ]
 

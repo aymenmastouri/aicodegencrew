@@ -51,6 +51,19 @@ _TS_DEFAULT_IMPORT_RE = re.compile(
     r"^(import\s+(\w+)\s+from\s+['\"]([^'\"]+)['\"];?)\s*$",
     re.MULTILINE,
 )
+# Barrel / re-export patterns (index.ts)
+_TS_NAMESPACE_IMPORT_RE = re.compile(
+    r"^(import\s+\*\s+as\s+(\w+)\s+from\s+['\"]([^'\"]+)['\"];?)\s*$",
+    re.MULTILINE,
+)
+_TS_REEXPORT_NAMED_RE = re.compile(
+    r"^(export\s+(?:type\s+)?\{([^}]+)\}\s+from\s+['\"]([^'\"]+)['\"];?)\s*$",
+    re.MULTILINE,
+)
+_TS_REEXPORT_STAR_RE = re.compile(
+    r"^(export\s+\*(?:\s+as\s+\w+)?\s+from\s+['\"]([^'\"]+)['\"];?)\s*$",
+    re.MULTILINE,
+)
 
 # ── Symbol reference regexes ──────────────────────────────────────────────────
 _JAVA_SYMBOL_REF_RE = re.compile(
@@ -211,6 +224,42 @@ class ImportFixer:
                 path = m.group(3)
                 existing_imports[symbol] = line.strip()
                 existing_paths[symbol] = path
+                continue
+
+            # Barrel: import * as Namespace from '...'
+            m = _TS_NAMESPACE_IMPORT_RE.match(line)
+            if m:
+                import_lines.add(i)
+                symbol = m.group(2)
+                path = m.group(3)
+                existing_imports[symbol] = line.strip()
+                existing_paths[symbol] = path
+                continue
+
+            # Barrel: export { A, B } from '...'
+            m = _TS_REEXPORT_NAMED_RE.match(line)
+            if m:
+                import_lines.add(i)
+                symbols_str = m.group(2)
+                path = m.group(3)
+                for sym_part in symbols_str.split(","):
+                    sym = sym_part.strip()
+                    if " as " in sym:
+                        sym = sym.split(" as ")[0].strip()
+                    if sym:
+                        existing_imports[sym] = line.strip()
+                        existing_paths[sym] = path
+                continue
+
+            # Barrel: export * from '...' — track path keyed by the full statement
+            m = _TS_REEXPORT_STAR_RE.match(line)
+            if m:
+                import_lines.add(i)
+                path = m.group(2)
+                # No named symbol — key by path to allow path correction
+                key = f"__star__{path}"
+                existing_imports[key] = line.strip()
+                existing_paths[key] = path
 
         first_non_import = 0
         for i, line in enumerate(lines):
@@ -237,6 +286,9 @@ class ImportFixer:
                 continue
             if not current_path.startswith("."):
                 continue
+            # __star__ keys are export * — no named symbol to resolve via index
+            if symbol.startswith("__star__"):
+                continue
 
             resolved = import_index.resolve(symbol, gf.file_path, "typescript")
             if resolved and resolved != existing_imports.get(symbol):
@@ -246,6 +298,9 @@ class ImportFixer:
 
         new_imports: list[str] = []
         for symbol in referenced:
+            # Skip internal barrel keys — they are not resolvable named symbols
+            if symbol.startswith("__star__"):
+                continue
             if symbol not in existing_imports:
                 resolved = import_index.resolve(symbol, gf.file_path, "typescript")
                 if resolved:
