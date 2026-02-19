@@ -32,6 +32,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
   template: `
     <mat-toolbar class="app-toolbar sticky top-0 z-[1000]">
       <button mat-icon-button (click)="toggleSidenav()"
+              [attr.aria-label]="sidenavLayout === 'hidden' ? 'Show menu' : sidenavLayout === 'rail' ? 'Hide menu' : 'Collapse menu'"
               [matTooltip]="sidenavLayout === 'hidden' ? 'Show menu' : sidenavLayout === 'rail' ? 'Hide menu' : 'Collapse menu'">
         <mat-icon class="text-white">{{ sidenavLayout === 'hidden' ? 'menu_open' : 'menu' }}</mat-icon>
       </button>
@@ -105,7 +106,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
             <div class="footer-row">
               <span class="footer-legal">&copy; 2026 Aymen Mastouri</span>
               <span class="footer-sep"></span>
-              <span class="footer-version">v0.5.0</span>
+              <span class="footer-version">v0.6.2</span>
             </div>
           </div>
         </div>

@@ -153,6 +153,7 @@ interface CategoryView {
                       </div>
                       <button mat-icon-button color="warn"
                         [matTooltip]="isRunning ? 'Pipeline is running' : 'Delete file'"
+                        [attr.aria-label]="isRunning ? 'Pipeline is running' : 'Delete file'"
                         [disabled]="isRunning"
                         (click)="deleteFile(cat, file)">
                         <mat-icon>delete_outline</mat-icon>

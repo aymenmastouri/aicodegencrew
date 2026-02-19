@@ -148,7 +148,7 @@ import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let c">
                 @if (c.fact_count !== null) {
-                  <button mat-icon-button matTooltip="View output" (click)="toggleOutput(c); $event.stopPropagation()">
+                  <button mat-icon-button matTooltip="View output" aria-label="View output" (click)="toggleOutput(c); $event.stopPropagation()">
                     <mat-icon>{{ expandedId === c.id ? 'expand_less' : 'visibility' }}</mat-icon>
                   </button>
                 }

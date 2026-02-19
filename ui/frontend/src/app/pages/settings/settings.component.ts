@@ -12,6 +12,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClient } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 import { PipelineService, EnvVariable } from '../../services/pipeline.service';
 import { ApiService, PresetInfo } from '../../services/api.service';
@@ -130,8 +131,8 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                       <mat-icon>restart_alt</mat-icon> Reset
                     </button>
                     <button mat-flat-button color="primary" (click)="saveTab('general')"
-                      [disabled]="saving || isRunning"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      [disabled]="saving || isRunning || !isDirty('general')"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isDirty('general') ? 'No changes' : '')">
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -164,7 +165,10 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                               [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
                               [required]="v.required" />
                             @if (isSecret(v.name)) {
-                              <button mat-icon-button matSuffix (click)="showSecrets[v.name] = !showSecrets[v.name]">
+                              <button mat-icon-button matSuffix
+                                [attr.aria-label]="showSecrets[v.name] ? 'Hide value' : 'Show value'"
+                                [matTooltip]="showSecrets[v.name] ? 'Hide' : 'Show'"
+                                (click)="showSecrets[v.name] = !showSecrets[v.name]">
                                 <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
                               </button>
                             }
@@ -184,8 +188,8 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                       <mat-icon>restart_alt</mat-icon> Reset
                     </button>
                     <button mat-flat-button color="primary" (click)="saveTab('llm')"
-                      [disabled]="saving || isRunning"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      [disabled]="saving || isRunning || !isDirty('llm')"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isDirty('llm') ? 'No changes' : '')">
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -220,8 +224,8 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                   </div>
                   <div class="tab-actions">
                     <button mat-flat-button color="primary" (click)="savePhases()"
-                      [disabled]="savingPhases || isRunning"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      [disabled]="savingPhases || isRunning || !isPhaseDirty()"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isPhaseDirty() ? 'No changes' : '')">
                       @if (savingPhases) {
                         <mat-spinner diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
                       } @else {
@@ -287,8 +291,8 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                       <mat-icon>restart_alt</mat-icon> Reset
                     </button>
                     <button mat-flat-button color="primary" (click)="saveTab('advanced')"
-                      [disabled]="saving || isRunning"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : ''">
+                      [disabled]="saving || isRunning || !isDirty('advanced')"
+                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isDirty('advanced') ? 'No changes' : '')">
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -446,6 +450,8 @@ export class SettingsComponent implements OnInit {
   isRunning = false;
   allVars: EnvVariable[] = [];
   defaults: Record<string, string> = {};
+  originalValues: Record<string, string> = {};
+  originalPhaseEnabled: Record<string, boolean> = {};
   showSecrets: Record<string, boolean> = {};
   phaseToggles: PhaseToggle[] = [];
   presets: PresetInfo[] = [];
@@ -467,6 +473,7 @@ export class SettingsComponent implements OnInit {
     this.pipelineSvc.getEnvSchema().subscribe({
       next: (vars) => {
         this.allVars = vars;
+        for (const v of vars) { this.originalValues[v.name] = v.value; }
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -491,6 +498,7 @@ export class SettingsComponent implements OnInit {
           enabled: p.enabled,
           required: p.required ?? false,
         }));
+        for (const p of this.phaseToggles) { this.originalPhaseEnabled[p.id] = p.enabled; }
         this.cdr.markForCheck();
       },
     });
@@ -523,6 +531,14 @@ export class SettingsComponent implements OnInit {
     return FIELD_OPTIONS[name] || null;
   }
 
+  isDirty(tab: string): boolean {
+    return this.getTabVars(tab).some((v) => v.value !== this.originalValues[v.name]);
+  }
+
+  isPhaseDirty(): boolean {
+    return this.phaseToggles.some((p) => p.enabled !== this.originalPhaseEnabled[p.id]);
+  }
+
   saveTab(tab: string): void {
     const vars = this.getTabVars(tab);
     const values: Record<string, string> = {};
@@ -543,6 +559,7 @@ export class SettingsComponent implements OnInit {
     this.saving = true;
     this.pipelineSvc.updateEnv(values).subscribe({
       next: () => {
+        for (const v of vars) { this.originalValues[v.name] = v.value; }
         this.snackBar.open('Settings saved', 'OK', { duration: 3000 });
         this.saving = false;
         this.cdr.markForCheck();
@@ -569,19 +586,18 @@ export class SettingsComponent implements OnInit {
       return;
     }
 
-    import('rxjs').then(({ forkJoin }) => {
-      forkJoin(requests).subscribe({
-        next: () => {
-          this.snackBar.open('Phase settings saved', 'OK', { duration: 3000 });
-          this.savingPhases = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.snackBar.open('Failed to save phase settings', 'OK', { duration: 4000 });
-          this.savingPhases = false;
-          this.cdr.markForCheck();
-        },
-      });
+    forkJoin(requests).subscribe({
+      next: () => {
+        for (const p of this.phaseToggles) { this.originalPhaseEnabled[p.id] = p.enabled; }
+        this.snackBar.open('Phase settings saved', 'OK', { duration: 3000 });
+        this.savingPhases = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.snackBar.open('Failed to save phase settings', 'OK', { duration: 4000 });
+        this.savingPhases = false;
+        this.cdr.markForCheck();
+      },
     });
   }
 

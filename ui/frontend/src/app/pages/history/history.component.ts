@@ -207,7 +207,9 @@ const SECRET_KEY_PATTERNS = [
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row">
-                <button mat-icon-button matTooltip="View details" (click)="toggleDetail(row); $event.stopPropagation()">
+                <button mat-icon-button matTooltip="View details"
+                  [attr.aria-label]="selectedRun?.run_id === row.run_id ? 'Collapse details' : 'View details'"
+                  (click)="toggleDetail(row); $event.stopPropagation()">
                   <mat-icon>{{ selectedRun?.run_id === row.run_id ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
               </td>
