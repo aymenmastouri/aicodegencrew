@@ -1,118 +1,68 @@
-"""Phase 3: Review Crew Tasks.
-
-Tasks for consistency validation and quality reporting.
-
-Status: PLANNED - Template only
-"""
+"""Phase 7: Review Crew Task."""
 
 from crewai import Agent, Task
 
 
-def create_consistency_check_task(agent: Agent) -> Task:
-    """Create consistency check task.
+def create_synthesis_task(
+    agent: Agent,
+    findings_summary: str,
+    output_path: str,
+) -> Task:
+    """Create the synthesis task that turns deterministic findings into a Markdown report.
 
-    Validates:
-    - All containers in facts appear in C4 container diagram
-    - All components in facts appear in C4 component diagrams
-    - All relations in facts are represented in diagrams
-    - No invented elements in outputs
+    The deterministic findings are injected directly into the task description so
+    the agent has the full context without needing to read from disk.
+
+    Args:
+        agent:            The quality reviewer agent.
+        findings_summary: Pre-computed consistency + quality findings (JSON text).
+        output_path:      Absolute path where the Markdown report will be written
+                          by the crew (informational — actual write is done by
+                          ReviewCrew._run_llm_synthesis after crew.kickoff()).
     """
     return Task(
-        description="""
-        TASK: Consistency Validation
+        description=f"""TASK: Generate Architecture Quality Report
 
-        Compare architecture_facts.json with generated outputs:
+You have been provided with pre-computed consistency and quality findings below.
+Your job is to synthesise them into a professional architecture quality report.
 
-        1. CONTAINER CONSISTENCY
-           - Check all containers from facts appear in c4/c4-container.md
-           - Verify container names match exactly
-           - Flag any containers in output not in facts (hallucinations)
+--- DETERMINISTIC FINDINGS ---
+{findings_summary}
+--- END FINDINGS ---
 
-        2. COMPONENT CONSISTENCY
-           - Check all components from facts appear in c4/c4-components-*.md
-           - Verify component-container assignments match
-           - Flag any components in output not in facts
+STEPS:
+1. Use query_facts(category="containers") to verify the container names from
+   source facts and enrich the coverage analysis.
+2. Use query_facts(category="components", limit=20) to spot-check component
+   coverage in the generated documentation.
+3. (Optional) Use rag_query to find specific code evidence for critical gaps.
+4. Write a complete Markdown report with the following sections:
 
-        3. RELATION CONSISTENCY
-           - Check all relations from facts are represented
-           - Verify relation types match (uses, implements, etc.)
+   ## Executive Summary
+   - Overall quality score (given in findings above)
+   - Top 3 findings by severity (high / medium / low)
 
-        4. EVIDENCE CONSISTENCY
-           - Verify all evidence IDs referenced in outputs exist in evidence_map.json
+   ## Consistency Analysis
+   - Container coverage: missing vs. extra containers
+   - Component coverage: spot-check result
+   - Arc42 chapter completeness
 
-        OUTPUT: JSON report with:
-        - missing_in_output: elements from facts not in outputs
-        - hallucinations: elements in outputs not in facts
-        - mismatches: elements with different values
-        """,
-        expected_output="JSON consistency report",
+   ## Quality Findings
+   - Placeholder / TODO count and locations
+   - Documentation gaps
+
+   ## Recommendations
+   - **High severity** — Immediate fixes required
+   - **Medium severity** — Short-term improvements
+   - **Low severity** — Long-term enhancements
+
+IMPORTANT: Produce the full Markdown report as your final answer.
+The report will be saved to: {output_path}
+""",
+        expected_output=(
+            "A complete Markdown architecture quality report covering "
+            "executive summary, consistency analysis, quality findings, "
+            "and prioritised recommendations."
+        ),
         agent=agent,
-    )
-
-
-def create_quality_audit_task(agent: Agent) -> Task:
-    """Create quality audit task.
-
-    Audits documentation quality and completeness.
-    """
-    return Task(
-        description="""
-        TASK: Documentation Quality Audit
-
-        Audit the generated documentation for quality:
-
-        1. C4 DIAGRAMS
-           - Check all required diagrams exist (context, container, components)
-           - Verify Draw.io XML is valid
-           - Check diagram descriptions are present
-
-        2. ARC42 CHAPTERS
-           - Check all required chapters exist (01, 03, 05, 06)
-           - Verify each chapter has required sections
-           - Check evidence references are present
-
-        3. CONTENT QUALITY
-           - Check for placeholder text or TODOs
-           - Verify no empty sections
-           - Check for UNKNOWN markers (acceptable but tracked)
-
-        OUTPUT: Quality score (0-100) with detailed findings
-        """,
-        expected_output="Quality audit report with score",
-        agent=agent,
-    )
-
-
-def create_report_generation_task(agent: Agent, context: list[Task]) -> Task:
-    """Create report generation task.
-
-    Synthesizes all findings into a comprehensive report.
-    """
-    return Task(
-        description="""
-        TASK: Generate Quality Report
-
-        Synthesize all validation findings into a comprehensive report:
-
-        1. EXECUTIVE SUMMARY
-           - Overall quality score
-           - Key findings summary
-           - Recommendation priority
-
-        2. DETAILED FINDINGS
-           - Consistency issues with severity
-           - Quality gaps with impact
-           - Evidence coverage metrics
-
-        3. RECOMMENDATIONS
-           - Immediate fixes required
-           - Improvements for next iteration
-           - Process improvements
-
-        OUTPUT FILE: quality/synthesis-report.md
-        """,
-        expected_output="Comprehensive quality report in Markdown",
-        agent=agent,
-        context=context,
-        output_file="quality/synthesis-report.md",
     )

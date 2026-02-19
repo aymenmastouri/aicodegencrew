@@ -1,60 +1,41 @@
-"""Phase 3: Review Crew Agents.
-
-Agents for consistency validation and quality assurance.
-
-Status: PLANNED - Template only
-"""
+"""Phase 7: Review Crew Agent."""
 
 from crewai import Agent
 
+from ...shared.tools import FactsQueryTool, RAGQueryTool
+from ...shared.utils.llm_factory import create_llm
 
-def create_consistency_validator() -> Agent:
-    """Create Consistency Validator agent.
 
-    Role: Cross-reference architecture_facts.json with generated outputs.
-    Goal: Ensure no invented elements, all facts are represented.
+def create_quality_reviewer(facts_dir: str, chroma_dir: str) -> Agent:
+    """Create the Architecture Quality Reviewer agent.
+
+    Queries architecture facts and codebase snippets via tools, then
+    synthesises all deterministic findings into a Markdown quality report.
+
+    Args:
+        facts_dir:  Path to dimension files (e.g. ``knowledge/extract``).
+        chroma_dir: Path to ChromaDB directory (e.g. ``knowledge/discover``).
     """
     return Agent(
-        role="Senior Quality Assurance Architect",
-        goal="Validate consistency between architecture facts and generated documentation",
-        backstory="""You are a senior QA architect with expertise in architecture
-        documentation validation. You ensure that all generated C4 diagrams and
-        arc42 chapters accurately reflect the source architecture facts without
-        any invented or missing elements.""",
+        role="Architecture Quality Reviewer",
+        goal=(
+            "Synthesise consistency-check results and quality findings into a "
+            "comprehensive, actionable architecture quality report in Markdown."
+        ),
+        backstory=(
+            "You are a senior architecture quality engineer with deep expertise in "
+            "C4 model and arc42 documentation standards. "
+            "You analyse consistency between architecture facts and generated "
+            "documentation, identify gaps, hallucinations, and placeholder text, "
+            "and produce a clear quality report with prioritised recommendations."
+        ),
+        tools=[
+            FactsQueryTool(facts_dir=facts_dir),
+            RAGQueryTool(chroma_dir=chroma_dir),
+        ],
+        llm=create_llm(temperature=0.2),
         verbose=True,
         allow_delegation=False,
-    )
-
-
-def create_quality_auditor() -> Agent:
-    """Create Quality Auditor agent.
-
-    Role: Check documentation completeness and quality.
-    Goal: Ensure all required sections are present and well-documented.
-    """
-    return Agent(
-        role="Documentation Quality Auditor",
-        goal="Audit documentation completeness and quality standards",
-        backstory="""You are a documentation quality expert who ensures that
-        architecture documentation meets professional standards. You check for
-        completeness, clarity, and adherence to C4 and arc42 conventions.""",
-        verbose=True,
-        allow_delegation=False,
-    )
-
-
-def create_report_generator() -> Agent:
-    """Create Report Generator agent.
-
-    Role: Generate quality reports and recommendations.
-    Goal: Produce actionable quality improvement reports.
-    """
-    return Agent(
-        role="Quality Report Specialist",
-        goal="Generate comprehensive quality reports with actionable recommendations",
-        backstory="""You are a technical writer specialized in quality reporting.
-        You synthesize validation findings into clear, actionable reports that
-        help teams improve their architecture documentation.""",
-        verbose=True,
-        allow_delegation=False,
+        max_iter=6,
+        max_retry_limit=1,
     )

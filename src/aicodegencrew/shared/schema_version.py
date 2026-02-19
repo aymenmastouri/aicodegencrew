@@ -36,6 +36,7 @@ SCHEMA_VERSIONS: dict[str, str] = {
     "plan":      "1.0",
     "implement": "1.0",
     "verify":    "1.0",
+    "deliver":   "1.0",
 }
 
 
