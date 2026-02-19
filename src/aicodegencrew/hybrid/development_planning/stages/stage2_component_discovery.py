@@ -507,10 +507,24 @@ class ComponentDiscoveryStage:
         return None
 
     def _find_component_by_path(self, file_path: str) -> str | None:
-        """Find component ID by file path."""
+        """Find component ID by file path.
+
+        Handles two path formats:
+        - symbols.jsonl: relative paths  (e.g. src/main/java/.../Foo.java)
+        - architecture_facts.json: absolute paths (e.g. C:/uvz/src/.../Foo.java)
+
+        Uses bidirectional substring check with forward-slash normalization so
+        that either format finds a match against the stored absolute paths.
+        """
+        # Normalise to forward slashes for cross-platform comparison
+        norm_fp = file_path.replace("\\", "/")
         for comp in self.components:
             comp_file = comp.get("file_path", "")
-            if comp_file and comp_file in file_path:
+            if not comp_file:
+                continue
+            norm_comp = comp_file.replace("\\", "/")
+            # Accept if either path is a suffix/substring of the other
+            if norm_fp in norm_comp or norm_comp in norm_fp:
                 return comp["id"]
         return None
 
@@ -589,10 +603,20 @@ class ComponentDiscoveryStage:
 
         # Map paths back to component IDs
         scores: dict[str, float] = {}
+        unmatched = 0
         for path, path_score in matched_paths.items():
             comp_id = self._find_component_by_path(path)
             if comp_id:
                 scores[comp_id] = max(scores.get(comp_id, 0), path_score)
+            else:
+                unmatched += 1
+
+        if unmatched and not scores:
+            logger.warning(
+                "[Stage2] Symbol matching: %d symbol paths found in index but none "
+                "matched a component. symbols.jsonl may be stale (run Phase 0 to reindex).",
+                unmatched,
+            )
 
         return scores
 
