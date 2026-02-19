@@ -96,7 +96,8 @@ def _semantic_search_subprocess(
                         break
 
         result_queue.put(scores)
-    except Exception:
+    except Exception as e:
+        logger.error("[Stage2] Semantic search subprocess failed: %s", e)
         result_queue.put({})
 
 
@@ -267,7 +268,7 @@ class ComponentDiscoveryStage:
             container = comp.get("container", "")
             if target_container and target_container not in container:
                 continue
-            file_paths = comp.get("file_paths", [])
+            file_path = comp.get("file_path", "")
             affected.append(
                 ComponentMatch(
                     id=comp.get("id", ""),
@@ -275,7 +276,7 @@ class ComponentDiscoveryStage:
                     stereotype=comp.get("stereotype", "unknown"),
                     layer=comp.get("layer", "unknown"),
                     package=comp.get("module", ""),
-                    file_path=file_paths[0] if file_paths else "",
+                    file_path=file_path,
                     relevance_score=1.0,
                     change_type="modify",
                     source="upgrade_scan",

@@ -277,6 +277,12 @@ class RAGQueryTool(BaseTool):
                 distances = results.get("distances", [[]])[0]
                 ids = results.get("ids", [[]])[0]
 
+                if not (len(documents) == len(metadatas) == len(distances) == len(ids)):
+                    logger.warning(
+                        "[RAGQuery] Mismatched result arrays: docs=%d, meta=%d, dist=%d, ids=%d",
+                        len(documents), len(metadatas), len(distances), len(ids),
+                    )
+
                 for i, doc in enumerate(documents):
                     metadata = metadatas[i] if i < len(metadatas) else {}
                     distance = distances[i] if i < len(distances) else 0
