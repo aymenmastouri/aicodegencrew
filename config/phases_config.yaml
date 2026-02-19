@@ -211,7 +211,7 @@ phases:
   # Output:    JUnit/Jest test files
   # =========================================================================
   verify:
-    enabled: false
+    enabled: true
     name: "Verify"
     description: "Generate tests matching existing patterns"
     type: crew
@@ -222,23 +222,23 @@ phases:
       output_dir: "./knowledge/verify"
 
   # =========================================================================
-  # PIPELINE: Deliver - Review + Deploy (PLANNED)
+  # CREW: Deliver - Review & Consistency Guard (IMPLEMENTED v0.6.2)
   # =========================================================================
-  # Type:      Pipeline (deterministic)
-  # Location:  pipelines/review_deploy/ (planned)
-  # Purpose:   Build validation, CI/CD integration, PR merge
-  # Tasks:     Compile check, run tests, create PR, merge
-  # Input:     Generated code + tests from Implement-Verify
-  # Output:    Merged PR, deployed code
+  # Type:      Crew (deterministic scan + LLM synthesis)
+  # Location:  crews/review/crew.py → ReviewCrew
+  # Purpose:   Consistency check facts vs C4/arc42 docs + quality report
+  # Tasks:     Container coverage, arc42 chapters, placeholder scan, score
+  # Input:     knowledge/extract/ + knowledge/document/
+  # Output:    knowledge/deliver/ (consistency.json, quality.json, synthesis-report.md)
   # =========================================================================
   deliver:
-    enabled: false
+    enabled: true
     name: "Deliver"
-    description: "Build validation, CI/CD integration, PR merge"
-    type: pipeline
+    description: "Architecture consistency review and quality report"
+    type: crew
     required: false
     order: 7
-    dependencies: [verify]
+    dependencies: [implement]
     config:
       output_dir: "./knowledge/deliver"
 
