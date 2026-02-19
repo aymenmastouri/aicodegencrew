@@ -601,6 +601,24 @@ class ArchitectureAnalysisCrew:
         except Exception as e:
             logger.warning(f"   [WARN] Could not format {json_file.name}: {e}")
 
+    def _inject_schema_version(self) -> None:
+        """Inject _schema_version into analyzed_architecture.json if absent."""
+        from ...shared.schema_version import add_schema_version
+
+        output_file = self.output_dir / "analyzed_architecture.json"
+        if not output_file.exists():
+            return
+        try:
+            data = json.loads(output_file.read_text(encoding="utf-8"))
+            if "_schema_version" not in data:
+                versioned = add_schema_version(data, "analyze")
+                output_file.write_text(
+                    json.dumps(versioned, indent=2, ensure_ascii=False), encoding="utf-8"
+                )
+                logger.info("[Phase2] Schema version injected into analyzed_architecture.json")
+        except Exception as e:
+            logger.warning("[Phase2] Could not inject schema version: %s", e)
+
     # =========================================================================
     # MAIN EXECUTION
     # =========================================================================
@@ -677,6 +695,7 @@ class ArchitectureAnalysisCrew:
 
         # Post-processing
         self._format_json_outputs()
+        self._inject_schema_version()
 
         output_path = str(self.output_dir / "analyzed_architecture.json")
 

@@ -627,8 +627,10 @@ class DevelopmentPlanningPipeline:
 
     def _write_plan(self, plan: ImplementationPlan, output_file: Path):
         """Write plan to JSON file."""
+        from ...shared.schema_version import add_schema_version
+
         try:
-            plan_dict = plan.model_dump()
+            plan_dict = add_schema_version(plan.model_dump(), "plan")
 
             with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(plan_dict, f, indent=2, ensure_ascii=False)

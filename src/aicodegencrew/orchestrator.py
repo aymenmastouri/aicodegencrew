@@ -14,7 +14,6 @@ Design Principles:
 import concurrent.futures as _cf
 import json as _json
 import os
-import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -380,6 +379,8 @@ class SDLCOrchestrator:
                             "[Orchestrator] facts.json cached: %d top-level keys",
                             len(self._facts_cache),
                         )
+                        from .shared.schema_version import check_schema_version
+                        check_schema_version(self._facts_cache, "extract")
                     except Exception as cache_err:
                         logger.warning("[Orchestrator] Could not cache facts.json: %s", cache_err)
                         self._facts_cache = {}
@@ -438,46 +439,14 @@ class SDLCOrchestrator:
     def _check_dependencies(self, phase_id: str) -> bool:
         """Check if phase dependencies are satisfied (existence + validation).
 
-        Also performs ARCH-5 contract validation: logs a warning if required
-        phase outputs are absent (observational only — blocking is handled by
-        the existing dependency system above).
+        Delegates to DependencyChecker which also performs ARCH-5 contract
+        validation: logs a warning if required phase outputs are absent
+        (observational only — blocking is handled by the existing dependency
+        system above).
         """
-        from .shared.validation import PhaseOutputValidator
+        from .shared.dependency_checker import DependencyChecker
 
-        dependencies = self._contract_from_current_config().get_dependencies(phase_id)
-
-        validator = PhaseOutputValidator()
-
-        for dep in dependencies:
-            # Check if ran successfully in this session
-            if dep in self.results and self.results[dep].is_success():
-                continue
-
-            # Check if output files exist from previous run (CWD-relative)
-            if outputs_exist(dep, Path(".")):
-                # Validate output quality
-                errors = validator.validate_phase(dep)
-                if errors:
-                    logger.warning(f"[Orchestrator] Dependency {dep} has validation warnings:")
-                    for err in errors[:5]:
-                        logger.warning(f"   - {err}")
-                else:
-                    logger.info(f"[Orchestrator] Dependency {dep} satisfied (output valid)")
-                continue
-
-            logger.error(f"[Orchestrator] Dependency not met: {phase_id} requires {dep}")
-            return False
-
-        # ARCH-5: Log phase contract violations (observational — not a hard block)
-        contract = PHASE_CONTRACTS.get(phase_id, {})
-        for required in contract.get("requires", []):
-            if required not in self.results and not outputs_exist(required, Path(".")):
-                logger.warning(
-                    "[Orchestrator] Contract violation: %s requires '%s' output but it is absent",
-                    phase_id, required,
-                )
-
-        return True
+        return DependencyChecker(self._contract_from_current_config(), self.results).check(phase_id)
 
     def _compute_run_outcome(self) -> str:
         """Compute the aggregate run outcome from individual phase results.
@@ -556,67 +525,18 @@ class SDLCOrchestrator:
     # -------------------------------------------------------------------------
 
     def _git_commit_after_phase(self, phase_id: str) -> bool:
-        """
-        Auto-commit knowledge/ after successful phase.
+        """Auto-commit knowledge/ after successful phase.
 
-        BUG-C5 fix: Guard with CODEGEN_COMMIT_KNOWLEDGE env var (default: true).
-        Set CODEGEN_COMMIT_KNOWLEDGE=false to disable auto-commits (useful when
-        knowledge/ is in .gitignore or when running without a clean git state).
+        Delegates to PhaseGitHandler which guards with CODEGEN_COMMIT_KNOWLEDGE
+        (default: true). Set CODEGEN_COMMIT_KNOWLEDGE=false to disable auto-commits
+        (useful when knowledge/ is in .gitignore or without a clean git state).
 
         Args:
-            phase_id: The completed phase ID
+            phase_id: The completed phase ID.
 
         Returns:
-            True if commit successful, False otherwise
+            True if commit successful, False otherwise.
         """
-        import os
-        if os.getenv("CODEGEN_COMMIT_KNOWLEDGE", "true").lower() in ("false", "0", "no"):
-            logger.debug("[Orchestrator] CODEGEN_COMMIT_KNOWLEDGE=false — skipping knowledge/ commit")
-            return False
+        from .shared.phase_git_handler import PhaseGitHandler
 
-        try:
-            # Check if git repo
-            result = subprocess.run(
-                ["git", "rev-parse", "--git-dir"],
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode != 0:
-                logger.debug("[Orchestrator] Not a git repository, skipping commit")
-                return False
-
-            # Stage knowledge/ directory
-            subprocess.run(
-                ["git", "add", "knowledge/"],
-                capture_output=True,
-                check=True,
-            )
-
-            # Check if there are staged changes
-            result = subprocess.run(
-                ["git", "diff", "--cached", "--quiet"],
-                capture_output=True,
-            )
-            if result.returncode == 0:
-                logger.debug("[Orchestrator] No changes to commit")
-                return True
-
-            # Commit with descriptive message
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            commit_msg = f"[aicodegencrew] {phase_id} completed - {timestamp}"
-
-            subprocess.run(
-                ["git", "commit", "-m", commit_msg],
-                capture_output=True,
-                check=True,
-            )
-
-            logger.info(f"[Orchestrator] Git commit: {commit_msg}")
-            return True
-
-        except subprocess.CalledProcessError as e:
-            logger.warning(f"[Orchestrator] Git commit failed: {e}")
-            return False
-        except FileNotFoundError:
-            logger.debug("[Orchestrator] Git not found, skipping commit")
-            return False
+        return PhaseGitHandler().commit_knowledge(phase_id)

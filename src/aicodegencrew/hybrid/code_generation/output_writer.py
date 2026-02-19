@@ -390,11 +390,13 @@ class OutputWriter:
             return False
 
     def _write_report(self, report: CodegenReport) -> None:
+        from ...shared.schema_version import add_schema_version
+
         self.report_dir.mkdir(parents=True, exist_ok=True)
         report_path = self.report_dir / f"{report.task_id}_report.json"
         try:
             with open(report_path, "w", encoding="utf-8") as f:
-                json.dump(report.model_dump(), f, indent=2, ensure_ascii=False)
+                json.dump(add_schema_version(report.model_dump(), "implement"), f, indent=2, ensure_ascii=False)
         except Exception as e:
             logger.error("[OutputWriter] Failed to write report: %s", e)
 
