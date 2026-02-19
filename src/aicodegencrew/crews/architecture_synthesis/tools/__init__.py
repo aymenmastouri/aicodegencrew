@@ -5,11 +5,12 @@ CrewAI Best Practice Tools:
 - DocWriterTool: Write markdown documents
 - DrawioDiagramTool: Create DrawIO diagrams
 - FactsQueryTool: Architecture facts query — from shared module (ARCH-7 consolidation)
+- SymbolQueryTool: Deterministic exact/substring lookup in symbols.jsonl (from shared)
 - ChunkedWriterTool: Chunked doc generation (Strategy 7)
 - StereotypeListTool: Get components by stereotype (Strategy 2)
 """
 
-from ....shared.tools import FactsQueryTool
+from ....shared.tools import FactsQueryTool, SymbolQueryTool
 from .chunked_writer_tool import ChunkedWriterTool, StereotypeListTool
 from .doc_writer_tool import DocWriterTool
 from .drawio_tool import DrawioDiagramTool
@@ -22,4 +23,5 @@ __all__ = [
     "FactsQueryTool",
     "FileReadTool",
     "StereotypeListTool",
+    "SymbolQueryTool",
 ]
