@@ -122,7 +122,6 @@ class ArchitectureAnalysisCrew:
         repeated disk I/O for the same files.
         """
         import json as _json
-        from pathlib import Path as _Path
 
         facts_dir = self.facts_path.parent
         dimension_file_map = {

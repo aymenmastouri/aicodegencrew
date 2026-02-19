@@ -44,7 +44,7 @@ def _semantic_search_subprocess(
 ) -> None:
     """Run ChromaDB semantic search in an isolated subprocess."""
     try:
-        import chromadb  # noqa: local import — child process
+        import chromadb  # noqa: E402
         from chromadb.config import Settings
 
         http_cfg = get_chroma_http_config()
