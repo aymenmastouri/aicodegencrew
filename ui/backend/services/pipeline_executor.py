@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from aicodegencrew.pipeline_contract import (
+    PHASE_PROGRESS_CANCELLED,
     PHASE_PROGRESS_COMPLETED,
     PHASE_PROGRESS_FAILED,
     PHASE_PROGRESS_PENDING,
@@ -239,26 +240,13 @@ class PipelineExecutor:
             phases = data.setdefault("phases", {})
             modified = False
 
-            # Mark any currently-running phases as failed
+            # Mark any currently-running phases as cancelled
             for entry in phases.values():
                 if entry.get("status") == "running":
-                    entry["status"] = "failed"
+                    entry["status"] = "cancelled"
                     entry["error"] = "Cancelled by user"
                     entry["completed_at"] = now
                     modified = True
-
-            # Create 'cancelled' entries for phases that never started
-            if self.current_run and self.current_run.phases:
-                for phase_id in self.current_run.phases:
-                    if phase_id not in phases:
-                        phases[phase_id] = {
-                            "status": "skipped",
-                            "started_at": None,
-                            "completed_at": now,
-                            "duration_seconds": None,
-                            "error": "Cancelled before phase started",
-                        }
-                        modified = True
 
             if modified:
                 data["updated_at"] = now
@@ -270,36 +258,50 @@ class PipelineExecutor:
 
     def get_status(self) -> dict:
         """Get current execution status."""
-        # Auto-reset to idle after 120s in a terminal state
-        if self.state in ("completed", "failed", "cancelled") and self._finished_at:
-            if time.monotonic() - self._finished_at > 120:
-                with self._state_lock:
+        # Auto-reset to idle after 120s in a terminal state.
+        # Entire check+reset under lock to prevent race with start().
+        # Snapshot mutable fields under lock to avoid TOCTOU races with
+        # monitor/cancel threads that write outside this method.
+        with self._state_lock:
+            if self.state in ("completed", "failed", "cancelled") and self._finished_at:
+                if time.monotonic() - self._finished_at > 120:
                     self.state = "idle"
                     self._finished_at = None
                     self._started_at = None
                     self.current_run = None
                     self._engine_run_id = None
                     self._run_started_wall = None
+            state = self.state
+            started_at = self._started_at
+            finished_at = self._finished_at
+            current_run = self.current_run
 
         # Detect external CLI runs when executor is idle
-        if self.state == "idle":
+        if state == "idle":
             ext = self._check_external_run()
             if ext:
                 return ext
 
         elapsed = None
-        if self._started_at and self.state == "running":
-            elapsed = round(time.monotonic() - self._started_at, 1)
-        elif self._started_at and self.state in ("completed", "failed", "cancelled"):
+        if started_at and state == "running":
+            elapsed = round(time.monotonic() - started_at, 1)
+        elif started_at and state in ("completed", "failed", "cancelled"):
             # Show elapsed since run started (not growing endlessly)
-            elapsed = round((self._finished_at or time.monotonic()) - self._started_at, 1)
+            elapsed = round((finished_at or time.monotonic()) - started_at, 1)
 
         raw_phase_progress = (
-            self._read_phase_progress() if self.state in ("running", "completed", "failed", "cancelled") else []
+            self._read_phase_progress() if state in ("running", "completed", "failed", "cancelled") else []
         )
+
+        # After cancel, any phase still marked "running" is actually dead
+        if state == "cancelled":
+            for p in raw_phase_progress:
+                if normalize_phase_progress_status(p.get("status")) == PHASE_PROGRESS_RUNNING:
+                    p["status"] = PHASE_PROGRESS_CANCELLED
+
         phase_progress = [p for p in raw_phase_progress if not self._is_unregistered_skip(p)]
-        if self.current_run and self.current_run.phases:
-            current_phase_ids = set(self.current_run.phases)
+        if current_run and current_run.phases:
+            current_phase_ids = set(current_run.phases)
             unregistered_count = sum(
                 1
                 for phase in raw_phase_progress
@@ -309,7 +311,7 @@ class PipelineExecutor:
             unregistered_count = len(raw_phase_progress) - len(phase_progress)
 
         # Compute progress percent
-        total = len(self.current_run.phases) if self.current_run else 0
+        total = len(current_run.phases) if current_run else 0
         completed = sum(1 for p in phase_progress if self._is_completed_phase(p))
         skipped = sum(
             1
@@ -329,30 +331,30 @@ class PipelineExecutor:
                 total = observed
             # Full preset may include phases that are intentionally unregistered/skipped
             # (e.g., verify/deliver planned but not implemented). Show 100% on success.
-            elif self.state == "completed" and (completed + skipped) == observed:
+            elif state == "completed" and (completed + skipped) == observed:
                 total = observed
         done = completed + skipped
         progress = round((done + running * 0.5) / total * 100, 1) if total > 0 else 0
 
         # Live metrics
-        live_metrics = self._read_live_metrics() if self.state == "running" else None
+        live_metrics = self._read_live_metrics() if state == "running" else None
 
         # ETA estimation
-        eta = self._estimate_eta(elapsed) if self.state == "running" and elapsed else None
+        eta = self._estimate_eta(elapsed) if state == "running" and elapsed else None
 
         # Compute run_outcome for terminal states
         run_outcome = None
-        if self.state in ("completed", "failed"):
+        if state in ("completed", "failed", "cancelled"):
             run_outcome = self._compute_run_outcome(phase_progress) if phase_progress else (
-                "success" if self.state == "completed" else "failed"
+                "success" if state == "completed" else "failed"
             )
 
         return {
-            "state": self.state,
-            "run_id": self.current_run.run_id if self.current_run else None,
-            "preset": self.current_run.preset if self.current_run else None,
-            "phases": self.current_run.phases if self.current_run else [],
-            "started_at": self.current_run.started_at if self.current_run else None,
+            "state": state,
+            "run_id": current_run.run_id if current_run else None,
+            "preset": current_run.preset if current_run else None,
+            "phases": current_run.phases if current_run else [],
+            "started_at": current_run.started_at if current_run else None,
             "elapsed_seconds": elapsed,
             "phase_progress": phase_progress,
             "progress_percent": progress,
@@ -449,21 +451,23 @@ class PipelineExecutor:
                 with self._log_lock:
                     self._log_lines.append(line)
 
-            self._exit_code = proc.wait()
+            exit_code = proc.wait()
 
             with self._state_lock:
+                self._exit_code = exit_code
                 if self.state == "running":
-                    self.state = "completed" if self._exit_code == 0 else "failed"
+                    self.state = "completed" if exit_code == 0 else "failed"
                     self._finished_at = time.monotonic()
                     logger.info(
                         "Pipeline finished: run_id=%s, exit_code=%d, state=%s",
                         self.current_run.run_id if self.current_run else "?",
-                        self._exit_code,
+                        exit_code,
                         self.state,
                     )
+                snapshot = self._snapshot_for_history()
 
-            # Append to JSONL run history
-            self._append_history_entry()
+            # Append to JSONL run history (outside lock to avoid I/O under lock)
+            self._append_history_entry(snapshot)
 
         except Exception as exc:
             logger.error("Monitor thread error: %s", exc)
@@ -471,7 +475,8 @@ class PipelineExecutor:
                 if self.state == "running":
                     self.state = "failed"
                     self._finished_at = time.monotonic()
-            self._append_history_entry()
+                snapshot = self._snapshot_for_history()
+            self._append_history_entry(snapshot)
 
     _RUN_ID_RE = re.compile(r"\brun_id=([0-9a-f]{8})\b")
 
@@ -483,18 +488,40 @@ class PipelineExecutor:
             return match.group(1)
         return None
 
-    def _append_history_entry(self) -> None:
-        """Append a run entry to the JSONL history."""
+    def _snapshot_for_history(self) -> dict | None:
+        """Capture mutable fields under _state_lock for history writing.
+
+        Must be called while holding self._state_lock.
+        """
         if not self.current_run:
+            return None
+        return {
+            "run_id": self.current_run.run_id,
+            "engine_run_id": self._engine_run_id,
+            "state": self.state,
+            "preset": self.current_run.preset,
+            "phases": list(self.current_run.phases),
+            "started_at": self.current_run.started_at,
+            "mono_started_at": self._started_at,
+        }
+
+    def _append_history_entry(self, snapshot: dict | None) -> None:
+        """Append a run entry to the JSONL history.
+
+        Uses a pre-captured snapshot to avoid reading mutable executor
+        state outside the lock.
+        """
+        if not snapshot:
             return
         try:
             from .history_service import append_run_to_history
 
-            duration = round(time.monotonic() - self._started_at, 1) if self._started_at else None
-            raw_phase_progress = self._read_phase_progress() if self.state in ("completed", "failed", "cancelled") else []
+            state = snapshot["state"]
+            duration = round(time.monotonic() - snapshot["mono_started_at"], 1) if snapshot["mono_started_at"] else None
+            raw_phase_progress = self._read_phase_progress() if state in ("completed", "failed", "cancelled") else []
             phase_progress = [p for p in raw_phase_progress if not self._is_unregistered_skip(p)]
             run_outcome = None
-            if self.state in ("completed", "failed"):
+            if state in ("completed", "failed", "cancelled"):
                 if phase_progress:
                     run_outcome = self._compute_run_outcome(phase_progress)
                 else:
@@ -511,17 +538,17 @@ class PipelineExecutor:
                     except Exception:
                         pass
                     if run_outcome is None:
-                        run_outcome = "success" if self.state == "completed" else "failed"
+                        run_outcome = "success" if state == "completed" else "failed"
             append_run_to_history(
                 {
-                    "run_id": self.current_run.run_id,
-                    "engine_run_id": self._engine_run_id,
-                    "status": self.state,
+                    "run_id": snapshot["run_id"],
+                    "engine_run_id": snapshot["engine_run_id"],
+                    "status": state,
                     "run_outcome": run_outcome,
                     "trigger": "pipeline",
-                    "preset": self.current_run.preset,
-                    "phases": self.current_run.phases,
-                    "started_at": self.current_run.started_at,
+                    "preset": snapshot["preset"],
+                    "phases": snapshot["phases"],
+                    "started_at": snapshot["started_at"],
                     "completed_at": datetime.now(UTC).isoformat(),
                     "duration_seconds": duration,
                 }

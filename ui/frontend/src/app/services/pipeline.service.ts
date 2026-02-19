@@ -92,6 +92,7 @@ export interface HistoryStats {
   total_resets: number;
   success_count: number;
   failed_count: number;
+  cancelled_count: number;
   success_rate: number;
   avg_duration_seconds: number;
   total_tokens: number;

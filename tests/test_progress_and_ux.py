@@ -284,6 +284,109 @@ class TestProgressComputation:
         assert status["total_phase_count"] == 2
         assert status["progress_percent"] == 100.0
 
+    def test_unregistered_skips_are_hidden_from_progress_and_totals(self, mock_settings, metrics_file):
+        from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
+
+        write_metrics(
+            metrics_file,
+            [
+                {
+                    "msg": "phase_skipped",
+                    "data": {"event": "phase_skipped", "phase": "verify", "reason": "unregistered"},
+                },
+                {
+                    "msg": "phase_skipped",
+                    "data": {"event": "phase_skipped", "phase": "deliver", "reason": "unregistered"},
+                },
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "discover", "name": "Discover"}},
+            ],
+        )
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.state = "running"
+        executor.current_run = RunInfo(
+            run_id="test",
+            preset="full",
+            phases=["discover", "extract", "analyze", "document", "plan", "implement", "verify", "deliver"],
+            started_at="T0",
+        )
+        executor._started_at = time.monotonic() - 5
+
+        status = executor.get_status()
+        phase_ids = [p["phase_id"] for p in status["phase_progress"]]
+        assert "verify" not in phase_ids
+        assert "deliver" not in phase_ids
+        assert status["total_phase_count"] == 6
+        assert status["completed_phase_count"] == 0
+        assert status["skipped_phase_count"] == 0
+        assert status["progress_percent"] == pytest.approx(8.3, abs=0.2)
+
+    def test_completed_count_excludes_skipped(self, mock_settings, metrics_file):
+        from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
+
+        write_metrics(
+            metrics_file,
+            [
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p1", "name": "Phase 1"}},
+                {
+                    "msg": "phase_complete",
+                    "data": {"event": "phase_complete", "phase": "p1", "duration_seconds": 10, "status": "completed"},
+                },
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "p2", "name": "Phase 2"}},
+                {
+                    "msg": "phase_complete",
+                    "data": {"event": "phase_complete", "phase": "p2", "duration_seconds": 2, "status": "skipped"},
+                },
+            ],
+        )
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.state = "completed"
+        executor.current_run = RunInfo(run_id="test", preset=None, phases=["p1", "p2"], started_at="T0")
+        executor._started_at = time.monotonic() - 20
+
+        status = executor.get_status()
+        assert status["completed_phase_count"] == 1
+        assert status["skipped_phase_count"] == 1
+        assert status["total_phase_count"] == 2
+        assert status["progress_percent"] == 100.0
+
+    def test_unregistered_skips_do_not_double_reduce_total(self, mock_settings, metrics_file):
+        from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
+
+        write_metrics(
+            metrics_file,
+            [
+                {
+                    "msg": "phase_skipped",
+                    "data": {"event": "phase_skipped", "phase": "verify", "reason": "unregistered"},
+                },
+                {
+                    "msg": "phase_skipped",
+                    "data": {"event": "phase_skipped", "phase": "deliver", "reason": "unregistered"},
+                },
+                {"msg": "phase_start", "data": {"event": "phase_start", "phase": "discover", "name": "Discover"}},
+            ],
+        )
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.state = "running"
+        # start() now filters disabled phases for display (verify/deliver removed).
+        executor.current_run = RunInfo(
+            run_id="test",
+            preset="full",
+            phases=["discover", "extract", "analyze", "document", "plan", "implement"],
+            started_at="T0",
+        )
+        executor._started_at = time.monotonic() - 5
+
+        status = executor.get_status()
+        assert status["total_phase_count"] == 6
+        assert status["progress_percent"] == pytest.approx(8.3, abs=0.2)
+
     def test_progress_one_running(self, mock_settings, metrics_file):
         from ui.backend.services.pipeline_executor import PipelineExecutor, RunInfo
 
