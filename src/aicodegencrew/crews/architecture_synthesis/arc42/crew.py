@@ -17,6 +17,7 @@ Data is passed via template variables (summaries), not inter-task context.
 """
 
 import logging
+from datetime import date
 
 from crewai import Task
 
@@ -160,6 +161,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
             "relations_summary": self.escape_braces(relations_summary),
             "interfaces_summary": self.escape_braces(interfaces_summary),
             "building_blocks_data": self.escape_braces(building_blocks_data),
+            "current_date": date.today().isoformat(),
         }
 
     # -------------------------------------------------------------------------
