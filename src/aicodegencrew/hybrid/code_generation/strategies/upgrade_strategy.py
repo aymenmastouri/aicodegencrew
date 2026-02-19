@@ -146,8 +146,8 @@ class UpgradeStrategy(TaskTypeStrategy):
             if current_parts[0] == spec_parts[0]:
                 return "needs_bump", f"{current} → {spec} (minor/patch bump needed)"
 
-            # Major version mismatch
-            return "needs_bump", f"{current} → {spec} (major version bump needed)"
+            # Major version mismatch — incompatible, flag as conflict
+            return "conflict", f"{current} → {spec} (major version conflict)"
 
         except (ValueError, IndexError):
             return "unknown", f"Could not parse versions: current={current}, spec={spec}"

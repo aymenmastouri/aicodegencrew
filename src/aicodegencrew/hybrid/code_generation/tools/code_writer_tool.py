@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Literal
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from ....shared.utils.logger import setup_logger
 from ....shared.utils.token_budget import truncate_response
@@ -59,7 +59,7 @@ class CodeWriterTool(BaseTool):
     repo_path: str = ""
 
     # Shared staging dict (injected at instantiation)
-    _staging: StagingDict = {}
+    _staging: StagingDict = PrivateAttr(default_factory=dict)
 
     def __init__(self, repo_path: str = "", staging: StagingDict | None = None, **kwargs):
         """Initialize with repo path and shared staging dict."""

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -64,6 +65,13 @@ _MAX_RPM = 30
 _VERBOSE = True
 MAX_BUILD_RETRIES = 3
 
+# Matches file paths ending with a known extension followed by :line_number
+# Handles Windows absolute paths (C:\...) where ":" appears in the drive letter
+_FAILED_FILE_RE = re.compile(
+    r"(.+?\.(?:java|kt|ts|tsx|html|scss|css|json|xml|gradle|properties)):\d+",
+    re.IGNORECASE,
+)
+
 logger = setup_logger(__name__)
 
 
@@ -103,6 +111,15 @@ class ImplementCrew:
         self._containers: list[dict[str, str]] | None = None
 
     # ── Container helpers ───────────────────────────────────────────────────
+
+    def _load_facts(self) -> dict:
+        """Load architecture_facts.json; returns empty dict on failure."""
+        if not self.facts_path.exists():
+            return {}
+        try:
+            return json.loads(self.facts_path.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
 
     def _load_containers(self) -> list[dict[str, str]]:
         if self._containers is not None:
@@ -169,7 +186,10 @@ class ImplementCrew:
     # ── Deterministic build verification (post-crew) ───────────────────────
 
     def _verify_builds(
-        self, plan: CodegenPlanInput, staging: dict[str, dict[str, Any]]
+        self,
+        plan: CodegenPlanInput,
+        staging: dict[str, dict[str, Any]],
+        baseline_cache: dict[str, dict] | None = None,
     ) -> BuildVerificationResult:
         if not self.build_verify:
             return BuildVerificationResult(skipped=True, skip_reason="build_verify=False")
@@ -190,8 +210,14 @@ class ImplementCrew:
         results: list[ContainerBuildResult] = []
 
         for cid in container_ids:
-            baseline_raw = runner._run(container_id=cid, baseline=True)
-            baseline = self._safe_json(baseline_raw)
+            # Use cached baseline result to avoid re-running on fix attempts
+            if baseline_cache is not None and cid in baseline_cache:
+                baseline = baseline_cache[cid]
+            else:
+                baseline_raw = runner._run(container_id=cid, baseline=True)
+                baseline = self._safe_json(baseline_raw)
+                if baseline_cache is not None:
+                    baseline_cache[cid] = baseline
 
             cname = baseline.get("container_name") or cid
             bcmd = baseline.get("build_command", "")
@@ -285,15 +311,18 @@ class ImplementCrew:
         return "\n".join(lines)
 
     def _extract_failed_files(self, build_result: BuildVerificationResult) -> list[str]:
-        """Extract file paths from build error summaries."""
+        """Extract file paths from build error summaries.
+
+        Uses regex instead of split(":") to correctly handle Windows absolute
+        paths (e.g. C:\\path\\to\\File.java:42) where ":" appears in the drive letter.
+        """
         failed = set()
         for cr in build_result.container_results:
             if not cr.success and cr.error_summary:
-                # Parse "file_path:line message" format
-                for line in cr.error_summary.split(";"):
-                    parts = line.strip().split(":")
-                    if len(parts) >= 2:
-                        failed.add(parts[0].strip())
+                for segment in cr.error_summary.split(";"):
+                    m = _FAILED_FILE_RE.search(segment.strip())
+                    if m:
+                        failed.add(m.group(1).strip())
         return sorted(failed)
 
     # ── Core: crew execution (implement or fix) ────────────────────────────
@@ -368,7 +397,9 @@ class ImplementCrew:
 
         tracker = None
         try:
-            tracker = install_guardrails(max_total=50)
+            # Scale budget: at least 50, or 4 tool calls per file in the dependency order
+            guardrail_budget = max(50, len(dependency_order_paths) * 4)
+            tracker = install_guardrails(max_total=guardrail_budget)
             try:
                 result = crew.kickoff(inputs={
                     "task_id": plan.task_id,
@@ -382,9 +413,13 @@ class ImplementCrew:
                     "dependency_order": dependency_order_paths,
                 })
                 self.total_calls += 1
-                token_usage = getattr(result, "token_usage", {})
-                if isinstance(token_usage, dict):
-                    self.total_tokens += int(token_usage.get("total_tokens", 0))
+                token_usage = getattr(result, "token_usage", None)
+                if token_usage is not None:
+                    if isinstance(token_usage, dict):
+                        self.total_tokens += int(token_usage.get("total_tokens", 0))
+                    else:
+                        # CrewAI UsageMetrics object (total_tokens attribute)
+                        self.total_tokens += int(getattr(token_usage, "total_tokens", 0))
             except Exception as e:
                 # CrewAI may throw validation errors but staging dict is already populated
                 logger.warning("[Implement] Crew finished with error (staging preserved): %s", e)
@@ -450,7 +485,9 @@ class ImplementCrew:
 
         tracker = None
         try:
-            tracker = install_guardrails(max_total=50)
+            # Scale budget: at least 50, or 4 tool calls per file in the dependency order
+            guardrail_budget = max(50, len(dependency_order_paths) * 4)
+            tracker = install_guardrails(max_total=guardrail_budget)
             try:
                 result = crew.kickoff(inputs={
                     "task_id": plan.task_id,
@@ -459,9 +496,13 @@ class ImplementCrew:
                     "dependency_order": dependency_order_paths,
                 })
                 self.total_calls += 1
-                token_usage = getattr(result, "token_usage", {})
-                if isinstance(token_usage, dict):
-                    self.total_tokens += int(token_usage.get("total_tokens", 0))
+                token_usage = getattr(result, "token_usage", None)
+                if token_usage is not None:
+                    if isinstance(token_usage, dict):
+                        self.total_tokens += int(token_usage.get("total_tokens", 0))
+                    else:
+                        # CrewAI UsageMetrics object (total_tokens attribute)
+                        self.total_tokens += int(getattr(token_usage, "total_tokens", 0))
             except Exception as e:
                 logger.warning("[Implement] Fix crew finished with error (staging preserved): %s", e)
                 self.total_calls += 1
@@ -505,10 +546,26 @@ class ImplementCrew:
 
         staging: dict[str, dict[str, Any]] = {}
         build_result = BuildVerificationResult(skipped=True, skip_reason="No attempts made")
+        # Cache baseline build results so repeated fix attempts skip re-running the baseline
+        baseline_cache: dict[str, dict] = {}
 
-        # ── 1b. Strategy: pre-execution (deterministic) ─────────────────
+        # ── 1b. Strategy: enrich plan + pre-execution (deterministic) ────
         from .strategies import get_strategy
         strategy = get_strategy(plan.task_type)
+
+        facts = self._load_facts()
+        plan_enrichment = strategy.enrich_plan(plan.model_dump(), facts)
+        if plan_enrichment.warnings:
+            logger.warning(
+                "[Implement] Plan enrichment warnings: %s",
+                "; ".join(plan_enrichment.warnings),
+            )
+        if plan_enrichment.additional_context:
+            logger.info(
+                "[Implement] Plan enrichment context keys: %s",
+                list(plan_enrichment.additional_context.keys()),
+            )
+
         det_result = strategy.pre_execute(plan, staging, str(self.repo_path), self.dry_run)
         if det_result.steps:
             logger.info(
@@ -541,7 +598,7 @@ class ImplementCrew:
                     staging[gf.file_path]["content"] = gf.content
 
             # 2c. Build verification (deterministic subprocess)
-            build_result = self._verify_builds(plan, staging)
+            build_result = self._verify_builds(plan, staging, baseline_cache)
 
             # Collect raw build outputs for strategy verification enrichment
             for cr in build_result.container_results:
@@ -596,13 +653,34 @@ class ImplementCrew:
             if not isinstance(plan, CodegenPlanInput):
                 raise ValueError("kickoff input 'plan' must be CodegenPlanInput")
 
+            task_start = time.time()
             generated, build, rich = self.run(plan=plan)
+            duration = time.time() - task_start
+
+            writer = OutputWriter(
+                repo_path=str(self.repo_path),
+                report_dir=str(self.output_dir),
+                dry_run=self.dry_run,
+            )
+            degradation_reasons = self._compute_degradations(generated, None, build)
+            report = writer.run(
+                task_id=plan.task_id,
+                generated_files=generated,
+                validation=None,
+                duration_seconds=duration,
+                llm_calls=self.total_calls,
+                total_tokens=self.total_tokens,
+                build_verification=build,
+                degradation_reasons=degradation_reasons,
+                rich_verification=rich.to_dict() if rich else None,
+            )
             return {
-                "status": "completed" if build.all_passed else "partial",
+                "status": report.status,
                 "phase": "implement",
                 "generated_files": len(generated),
                 "build_passed": build.all_passed,
                 "build_failed_containers": build.total_containers_failed,
+                "branch_name": report.branch_name,
                 "rich_verification": rich.to_dict() if rich else None,
             }
 
@@ -655,8 +733,17 @@ class ImplementCrew:
             logger.info("\n[Implement] === Cascade %d/%d: %s ===", i, n, task_id)
 
             try:
+                # Capture per-task baseline metrics so reports reflect this task only
+                task_start = time.time()
+                calls_before = self.total_calls
+                tokens_before = self.total_tokens
+
                 plan_input = plan_reader.run(task_id=task_id, plan_path=str(plan_file))
                 generated, build, rich = self.run(plan=plan_input)
+
+                task_duration = time.time() - task_start
+                task_calls = self.total_calls - calls_before
+                task_tokens = self.total_tokens - tokens_before
 
                 degradation_reasons = self._compute_degradations(generated, None, build)
                 report = writer.cascade_write_and_commit(
@@ -667,9 +754,9 @@ class ImplementCrew:
                     cascade_position=i,
                     cascade_total=n,
                     prior_task_ids=list(completed_task_ids),
-                    duration_seconds=time.time() - start_time,
-                    llm_calls=self.total_calls,
-                    total_tokens=self.total_tokens,
+                    duration_seconds=task_duration,
+                    llm_calls=task_calls,
+                    total_tokens=task_tokens,
                     build_verification=build,
                     degradation_reasons=degradation_reasons,
                     rich_verification=rich.to_dict() if rich else None,

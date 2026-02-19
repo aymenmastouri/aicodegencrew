@@ -34,6 +34,7 @@ class OutputWriter:
         self.report_dir = Path(report_dir)
         self.dry_run = dry_run
         self._original_branch: str = ""
+        self._auto_stashed: bool = False
 
     def run(
         self,
@@ -51,8 +52,20 @@ class OutputWriter:
         valid_files = self._filter_valid_files(generated_files, validation)
         failed_count = len(generated_files) - len(valid_files)
 
+        # Safety gate: 0 files generated (LLM wrote nothing)
+        if len(generated_files) == 0:
+            logger.error("[OutputWriter] 0 files generated — aborting commit")
+            return self._build_report(
+                task_id=task_id, status="failed",
+                generated_files=generated_files, validation=validation,
+                duration_seconds=duration_seconds, llm_calls=llm_calls,
+                total_tokens=total_tokens, build_verification=build_verification,
+                degradation_reasons=["0 files generated"],
+                rich_verification=rich_verification,
+            )
+
         # Safety gate: >50% failure threshold
-        if len(generated_files) > 0 and failed_count / len(generated_files) > 0.5:
+        if failed_count / len(generated_files) > 0.5:
             logger.error(
                 "[OutputWriter] >50%% files failed (%d/%d), aborting",
                 failed_count, len(generated_files),
@@ -167,7 +180,9 @@ class OutputWriter:
 
         if not self._is_clean_working_tree():
             self._git("stash", "push", "-m", "codegen-auto-stash")
+            self._auto_stashed = True
             if not self._is_clean_working_tree():
+                self._auto_stashed = False  # stash failed or incomplete
                 return None
 
         self._original_branch = (self._git("rev-parse", "--abbrev-ref", "HEAD") or "").strip()
@@ -205,7 +220,20 @@ class OutputWriter:
             prior_task_ids=prior_task_ids,
         )
 
-        if len(generated_files) > 0 and failed_count / len(generated_files) > 0.5:
+        # Safety gate: 0 files generated
+        if len(generated_files) == 0:
+            logger.error("[OutputWriter] Cascade task %s: 0 files generated — aborting commit", task_id)
+            return self._build_cascade_report(
+                task_id=task_id, status="failed",
+                generated_files=generated_files, validation=validation,
+                duration_seconds=duration_seconds, llm_calls=llm_calls,
+                total_tokens=total_tokens, build_verification=build_verification,
+                degradation_reasons=["0 files generated"],
+                rich_verification=rich_verification, **cascade_kwargs,
+            )
+
+        # Safety gate: >50% failure threshold
+        if failed_count / len(generated_files) > 0.5:
             return self._build_cascade_report(
                 task_id=task_id, status="failed",
                 generated_files=generated_files, validation=validation,
@@ -269,6 +297,9 @@ class OutputWriter:
     def teardown_cascade(self) -> None:
         if self._original_branch and self._original_branch != "HEAD":
             self._git("checkout", self._original_branch)
+        if self._auto_stashed:
+            self._git("stash", "pop")
+            self._auto_stashed = False
 
     # ── Git ───────────────────────────────────────────────────────────────
 
@@ -294,12 +325,19 @@ class OutputWriter:
         return branch_name
 
     def _git_commit(self, task_id: str, file_paths: list[str]) -> bool:
+        if not file_paths:
+            return False
+
         for fp in file_paths:
             self._git("add", "--", fp)
 
+        # git diff --cached --quiet: exit 0 = nothing staged, exit 1 = something staged
+        # _git() returns "" (stdout) on exit 0, None on non-zero exit
         result = self._git("diff", "--cached", "--quiet")
         if result is not None:
-            return True
+            # Nothing staged despite git add — all files unchanged on disk
+            logger.warning("[OutputWriter] git add staged nothing for %d file(s)", len(file_paths))
+            return False
 
         msg = (
             f"[codegen] {task_id}: Auto-generated code changes\n\n"
@@ -321,8 +359,6 @@ class OutputWriter:
                 capture_output=True, text=True, timeout=30,
             )
             if result.returncode != 0:
-                if args[:2] == ("diff", "--cached"):
-                    return None
                 return None
             return result.stdout
         except Exception:
