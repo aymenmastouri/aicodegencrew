@@ -61,6 +61,10 @@ def _resolve_status(
             return PHASE_PROGRESS_FAILED, duration, error
 
         if st == PHASE_PROGRESS_SKIPPED:
+            # Disabled phases marked "skipped" are not "up to date" — they
+            # were never meant to run.  Show them as "planned" (not available).
+            if not enabled:
+                return PIPELINE_PHASE_PLANNED, None, None
             return PHASE_PROGRESS_SKIPPED, duration, None
 
         if st in (PHASE_PROGRESS_COMPLETED, PHASE_PROGRESS_PARTIAL):

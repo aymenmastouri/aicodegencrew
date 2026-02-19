@@ -9,6 +9,7 @@ export const PHASE_STATUS = {
   PARTIAL: 'partial',
   SKIPPED: 'skipped',
   FAILED: 'failed',
+  CANCELLED: 'cancelled',
 } as const;
 
 export const DISPLAY_STATUS = {
@@ -45,7 +46,7 @@ export function statusLabel(status: string): string {
 
 /** Whether status is terminal (phase done). */
 export function isTerminal(status: string): boolean {
-  return ['completed', 'partial', 'skipped', 'failed'].includes(status);
+  return ['completed', 'partial', 'skipped', 'failed', 'cancelled'].includes(status);
 }
 
 /** Whether status counts as successful. */

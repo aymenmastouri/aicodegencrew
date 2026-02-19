@@ -31,6 +31,7 @@ PHASE_PROGRESS_COMPLETED = "completed"
 PHASE_PROGRESS_PARTIAL = "partial"
 PHASE_PROGRESS_SKIPPED = "skipped"
 PHASE_PROGRESS_FAILED = "failed"
+PHASE_PROGRESS_CANCELLED = "cancelled"
 
 # Pipeline card status (phase runner)
 PIPELINE_PHASE_IDLE = "idle"
@@ -97,7 +98,9 @@ def normalize_phase_progress_status(value: str | None, default: str = PHASE_PROG
 
     if token in {"running", "in_progress", "in-progress", "active"}:
         return PHASE_PROGRESS_RUNNING
-    if token in {"failed", "failure", "error", "exception", "cancelled", "canceled"}:
+    if token in {"cancelled", "canceled"}:
+        return PHASE_PROGRESS_CANCELLED
+    if token in {"failed", "failure", "error", "exception"}:
         return PHASE_PROGRESS_FAILED
     if token in {"partial", "degraded", "warning", "warn"}:
         return PHASE_PROGRESS_PARTIAL
@@ -123,6 +126,7 @@ def normalize_pipeline_phase_status(value: str | None, default: str = PIPELINE_P
         PHASE_PROGRESS_PARTIAL,
         PHASE_PROGRESS_SKIPPED,
         PHASE_PROGRESS_FAILED,
+        PHASE_PROGRESS_CANCELLED,
     }:
         return token
 
@@ -148,7 +152,7 @@ def compute_run_outcome(statuses: Iterable[str | None]) -> str:
     if not normalized:
         return RUN_OUTCOME_FAILED
 
-    if any(status == PHASE_PROGRESS_FAILED for status in normalized):
+    if any(status in (PHASE_PROGRESS_FAILED, PHASE_PROGRESS_CANCELLED) for status in normalized):
         return RUN_OUTCOME_FAILED
 
     if all(status == PHASE_PROGRESS_SKIPPED for status in normalized):

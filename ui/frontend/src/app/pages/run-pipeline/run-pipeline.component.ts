@@ -309,6 +309,8 @@ import { statusIcon } from '../../shared/status';
                         <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
                       } @else if (pp.status === 'failed') {
                         <mat-icon class="step-fail">close</mat-icon>
+                      } @else if (pp.status === 'cancelled') {
+                        <mat-icon class="step-cancel">stop</mat-icon>
                       } @else if (pp.status === 'skipped') {
                         <mat-icon class="step-check-alt">check_circle</mat-icon>
                       } @else {
@@ -324,6 +326,9 @@ import { statusIcon } from '../../shared/status';
                     }
                     @if (pp.status === 'skipped') {
                       <div class="step-time step-time-uptodate">up to date</div>
+                    }
+                    @if (pp.status === 'cancelled') {
+                      <div class="step-time step-time-cancelled">cancelled</div>
                     }
                   </div>
                   @if (!last) {
@@ -600,6 +605,14 @@ import { statusIcon } from '../../shared/status';
         background: var(--cg-error, #dc3545); border-color: var(--cg-error, #dc3545);
       }
       .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Cancelled */
+      .step-cancelled .step-circle {
+        background: var(--cg-warn, #f57c00);
+        border-color: var(--cg-warn, #f57c00);
+      }
+      .step-cancel { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      .step-cancelled .step-label { color: var(--cg-warn, #f57c00); }
+      .step-time-cancelled { color: var(--cg-warn, #f57c00); font-style: italic; }
       /* Skipped (up to date) */
       .step-skipped .step-circle {
         background: var(--cg-success, #28a745); border-color: var(--cg-success, #28a745);
@@ -817,6 +830,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     this.filteredLogLines = [];
     this.showCelebration = false;
     this.celebrationType = null;
+    if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
     this.pipeline.startPipeline(request).subscribe({
       next: () => {
         this.notifSvc.refreshNow();
@@ -834,6 +848,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   cancelPipeline(): void {
     this.pipeline.cancelPipeline().subscribe({
       next: () => {
+        // Immediately disconnect SSE so stale status events can't overwrite
+        this.sseSub?.unsubscribe();
+        this.sseSub = undefined;
         this.notifSvc.refreshNow();
         this.refreshStatus();
       },
@@ -957,6 +974,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       complete: () => {
+        this.sseSub = undefined;
         this.refreshStatus();
       },
     });

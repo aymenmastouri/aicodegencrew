@@ -76,6 +76,7 @@ def get_history_stats() -> dict:
 
     success_count = sum(1 for r in runs if r.get("status") == "completed")
     failed_count = sum(1 for r in runs if r.get("status") == "failed")
+    cancelled_count = sum(1 for r in runs if r.get("status") == "cancelled")
     total_runs = len(runs)
 
     # Average duration of completed runs
@@ -110,7 +111,8 @@ def get_history_stats() -> dict:
         "total_resets": len(resets),
         "success_count": success_count,
         "failed_count": failed_count,
-        "success_rate": round(success_count / total_runs * 100, 1) if total_runs else 0.0,
+        "cancelled_count": cancelled_count,
+        "success_rate": round(success_count / (total_runs - cancelled_count) * 100, 1) if (total_runs - cancelled_count) > 0 else 0.0,
         "avg_duration_seconds": round(avg_duration, 1),
         "total_tokens": total_tokens,
         "total_deleted_files": total_deleted,

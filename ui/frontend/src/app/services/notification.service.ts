@@ -127,20 +127,15 @@ export class NotificationService implements OnDestroy {
             return;
           }
 
-          // Adjust poll frequency: 3s when running, 5s otherwise
-          const targetInterval = newState === 'running' ? 3000 : 5000;
-          if (targetInterval !== this.pollInterval) {
-            this.restartPoll(targetInterval);
-            return; // restartPoll re-subscribes, so we return
-          }
-
-          // Detect transitions
+          // Detect transitions (must run BEFORE restartPoll which re-subscribes)
           if (this.previousState === 'running' && newState === 'completed') {
             this.success('Pipeline completed successfully');
             this.sendBrowserNotification('Pipeline Completed', 'Your pipeline run has finished successfully.');
           } else if (this.previousState === 'running' && newState === 'failed') {
             this.error('Pipeline failed');
             this.sendBrowserNotification('Pipeline Failed', 'Your pipeline run has failed.');
+          } else if (this.previousState === 'running' && newState === 'cancelled') {
+            this.info('Pipeline cancelled');
           }
 
           this.previousState = newState;
@@ -151,6 +146,8 @@ export class NotificationService implements OnDestroy {
             this.fadeTimer = setTimeout(() => this.dismiss(), 10000);
           } else if (newState === 'failed') {
             this.fadeTimer = setTimeout(() => this.dismiss(), 30000);
+          } else if (newState === 'cancelled') {
+            this.fadeTimer = setTimeout(() => this.dismiss(), 5000);
           }
 
           this.state$.next({
@@ -162,6 +159,13 @@ export class NotificationService implements OnDestroy {
             elapsedSeconds: status.elapsed_seconds ?? 0,
             etaSeconds: status.eta_seconds ?? null,
           });
+
+          // Adjust poll frequency: 3s when running, 5s otherwise.
+          // Done AFTER processing so transitions/fade/state are never skipped.
+          const targetInterval = newState === 'running' ? 3000 : 5000;
+          if (targetInterval !== this.pollInterval) {
+            this.restartPoll(targetInterval);
+          }
         },
       });
   }

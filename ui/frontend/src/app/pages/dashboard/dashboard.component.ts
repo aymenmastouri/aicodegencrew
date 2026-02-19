@@ -123,6 +123,8 @@ import { statusLabel, isTerminal } from '../../shared/status';
                     {{ runOutcomeTitle() }}
                   } @else if (executionState === 'failed') {
                     Run Failed
+                  } @else if (executionState === 'cancelled') {
+                    Run Cancelled
                   }
                 </div>
                 @if (executionRunId) {
@@ -154,6 +156,8 @@ import { statusLabel, isTerminal } from '../../shared/status';
                     <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
                   } @else if (step.status === 'failed') {
                     <mat-icon class="step-fail">close</mat-icon>
+                  } @else if (step.status === 'cancelled') {
+                    <mat-icon class="step-cancel">stop</mat-icon>
                   } @else if (step.status === 'skipped') {
                     <mat-icon class="step-check-alt">check_circle</mat-icon>
                   } @else {
@@ -166,6 +170,9 @@ import { statusLabel, isTerminal } from '../../shared/status';
                 }
                 @if (step.status === 'running') {
                   <div class="step-time step-time-active">{{ formatDuration(step.duration_seconds) }}</div>
+                }
+                @if (step.status === 'cancelled') {
+                  <div class="step-time step-time-cancelled">cancelled</div>
                 }
               </div>
               @if (!last) {
@@ -348,6 +355,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .stepper-completed { border-color: rgba(40, 167, 69, 0.2); }
       .stepper-all-skipped { border-color: rgba(40, 167, 69, 0.2); }
       .stepper-failed { border-color: rgba(220, 53, 69, 0.2); }
+      .stepper-cancelled { border-color: rgba(224, 168, 0, 0.3); }
       .stepper-header {
         display: flex;
         justify-content: space-between;
@@ -373,6 +381,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .logo-completed { background: var(--cg-success, #28a745); }
       .logo-skipped { background: var(--cg-success, #28a745); opacity: 0.7; }
       .logo-failed { background: var(--cg-error, #dc3545); }
+      .logo-cancelled { background: var(--cg-warn, #f57c00); }
       @keyframes pulse-stepper-logo {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.6; }
@@ -476,6 +485,13 @@ import { statusLabel, isTerminal } from '../../shared/status';
         border-color: var(--cg-error, #dc3545);
       }
       .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      /* Cancelled */
+      .step-cancelled .step-circle {
+        background: var(--cg-warn, #f57c00);
+        border-color: var(--cg-warn, #f57c00);
+      }
+      .step-cancel { font-size: 18px; width: 18px; height: 18px; color: #fff; }
+      .step-cancelled .step-label { color: var(--cg-warn, #f57c00); }
       /* Skipped (up to date) */
       .step-skipped .step-circle {
         background: var(--cg-success, #28a745);
@@ -508,6 +524,10 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .step-time-active {
         color: var(--cg-blue);
         font-weight: 600;
+      }
+      .step-time-cancelled {
+        color: var(--cg-warn, #f57c00);
+        font-style: italic;
       }
       /* Connector Lines */
       .stepper-line {
@@ -587,6 +607,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .phase-completed { border-left-color: var(--cg-success); }
       .phase-partial { border-left-color: var(--cg-warn, #f57c00); }
       .phase-failed { border-left-color: var(--cg-error); }
+      .phase-cancelled { border-left-color: var(--cg-warn, #f57c00); }
       .phase-running { border-left-color: var(--cg-blue); }
       .phase-ready { border-left-color: var(--cg-vibrant); }
       .phase-skipped { border-left-color: var(--cg-success); opacity: 0.85; }
@@ -1229,6 +1250,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.executionState = s.state;
     this.executionRunId = s.run_id || '';
     this.runOutcome = s.run_outcome || '';
+
+    // When backend reports idle, clear stale execution data
+    if (s.state === 'idle') {
+      this.phaseProgress = [];
+      this.runOutcome = '';
+      this.executionRunId = '';
+      this.executionElapsed = 0;
+    }
+
     // Only overwrite stepper data if the backend has real progress info
     if (s.phase_progress && s.phase_progress.length > 0) {
       // For running phases, compute elapsed from started_at so the timer
@@ -1245,14 +1275,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.executionElapsed = Math.round(s.elapsed_seconds);
     }
 
-    // Auto-dismiss stepper after terminal states
-    if (this.dismissTimer) {
-      clearTimeout(this.dismissTimer);
-      this.dismissTimer = null;
-    }
-    if (s.state === 'completed' || s.state === 'failed' || s.state === 'cancelled') {
-      const delay = s.state === 'completed' ? 15000 : 30000;
+    // Auto-dismiss stepper after terminal states — only on state *transition*
+    // to avoid resetting the timer on every poll cycle.
+    const isTerminal = s.state === 'completed' || s.state === 'failed' || s.state === 'cancelled';
+    if (isTerminal && prevState !== s.state && !this.dismissTimer) {
+      const delay = s.state === 'cancelled' ? 5000 : s.state === 'completed' ? 15000 : 30000;
       this.dismissTimer = setTimeout(() => {
+        this.dismissTimer = null;
         this.executionState = 'idle';
         this.phaseProgress = [];
         this.cdr.markForCheck();
