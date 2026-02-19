@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
@@ -15,6 +16,7 @@ import { ApiService, LogResponse } from '../../services/api.service';
   standalone: true,
   imports: [
     CommonModule,
+    ScrollingModule,
     MatCardModule,
     MatIconModule,
     MatSelectModule,
@@ -59,14 +61,12 @@ import { ApiService, LogResponse } from '../../services/api.service';
       } @else if (logResponse) {
         <mat-card>
           <mat-card-content>
-            <div class="log-viewer">
-              @for (line of logResponse.lines; track $index) {
-                <div class="log-line" [class]="lineClass(line)">
-                  <span class="log-num">{{ $index + 1 }}</span
-                  >{{ line }}
-                </div>
-              }
-            </div>
+            <cdk-virtual-scroll-viewport itemSize="20" class="log-viewer">
+              <div *cdkVirtualFor="let line of logResponse.lines; let i = index"
+                   class="log-line" [class]="lineClass(line)">
+                <span class="log-num">{{ i + 1 }}</span>{{ line }}
+              </div>
+            </cdk-virtual-scroll-viewport>
           </mat-card-content>
         </mat-card>
       } @else if (logFiles.length === 0) {
@@ -92,8 +92,7 @@ import { ApiService, LogResponse } from '../../services/api.service';
         font-size: 13px;
       }
       .log-viewer {
-        max-height: calc(100vh - 320px);
-        overflow: auto;
+        height: calc(100vh - 320px);
         background: var(--cg-dark);
         padding: 12px;
         border-radius: 8px;
@@ -144,7 +143,7 @@ export class LogsComponent implements OnInit, OnDestroy {
         this.logFiles = files;
         if (files.length) {
           this.selectedFile = files[0];
-          this.loadLog();
+          this.loadLog(); // first load with spinner
         } else {
           this.loading = false;
         }
@@ -155,16 +154,23 @@ export class LogsComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
-    this.refreshTimer = setInterval(() => this.loadLog(), 5000);
+    // Background refresh: never show spinner — log updates silently
+    this.refreshTimer = setInterval(() => this._fetchLog(), 5000);
   }
 
   ngOnDestroy(): void {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
+  /** Public: called by Refresh button and file-change — shows spinner. */
   loadLog(): void {
     this.loading = true;
     this.cdr.markForCheck();
+    this._fetchLog();
+  }
+
+  /** Private: fetches log without touching loading state (background refresh). */
+  private _fetchLog(): void {
     this.api.getLogs(this.selectedFile, 500).subscribe({
       next: (r) => {
         this.logResponse = r;

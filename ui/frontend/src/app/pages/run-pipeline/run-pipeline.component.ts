@@ -27,6 +27,7 @@ import {
 } from '../../services/pipeline.service';
 import { NotificationService } from '../../services/notification.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
+import { PipelineStepperComponent } from '../../shared/pipeline-stepper.component';
 import { humanizePhaseId, formatDuration as formatDurationUtil } from '../../shared/phase-utils';
 import { statusIcon } from '../../shared/status';
 
@@ -51,6 +52,7 @@ import { statusIcon } from '../../shared/status';
     MatTooltipModule,
     ScrollingModule,
     RouterLink,
+    PipelineStepperComponent,
   ],
   template: `
     <div class="page-container">
@@ -237,10 +239,10 @@ import { statusIcon } from '../../shared/status';
                 Run: {{ status.run_id }}
               }
               @if (status.elapsed_seconds) {
-                | Elapsed: {{ formatDuration(status.elapsed_seconds) }}
+                {{ status.run_id ? ' | ' : '' }}Elapsed: {{ formatDuration(status.elapsed_seconds) }}
               }
               @if (status.eta_seconds !== null && status.eta_seconds !== undefined && status.eta_seconds > 0) {
-                | ETA: ~{{ formatDuration(status.eta_seconds) }}
+                {{ (status.run_id || status.elapsed_seconds) ? ' | ' : '' }}ETA: ~{{ formatDuration(status.eta_seconds) }}
               }
             </mat-card-subtitle>
           </mat-card-header>
@@ -297,47 +299,7 @@ import { statusIcon } from '../../shared/status';
           <!-- Phase Stepper -->
           @if (status.phase_progress.length > 0) {
             <mat-card-content>
-              <div class="stepper-track">
-                @for (pp of status.phase_progress; track pp.phase_id; let i = $index; let last = $last) {
-                  <div class="stepper-step" [class]="'step-' + pp.status">
-                    <div class="step-circle">
-                      @if (pp.status === 'completed') {
-                        <mat-icon class="step-check">check</mat-icon>
-                      } @else if (pp.status === 'partial') {
-                        <mat-icon class="step-warn">warning</mat-icon>
-                      } @else if (pp.status === 'running') {
-                        <mat-spinner diameter="22" class="step-spinner"></mat-spinner>
-                      } @else if (pp.status === 'failed') {
-                        <mat-icon class="step-fail">close</mat-icon>
-                      } @else if (pp.status === 'cancelled') {
-                        <mat-icon class="step-cancel">stop</mat-icon>
-                      } @else if (pp.status === 'skipped') {
-                        <mat-icon class="step-check-alt">check_circle</mat-icon>
-                      } @else {
-                        <span class="step-num">{{ i + 1 }}</span>
-                      }
-                    </div>
-                    <div class="step-label">{{ pp.name || humanize(pp.phase_id) }}</div>
-                    @if ((pp.status === 'completed' || pp.status === 'partial') && pp.duration_seconds) {
-                      <div class="step-time">{{ formatDuration(pp.duration_seconds) }}</div>
-                    }
-                    @if (pp.status === 'running') {
-                      <div class="step-time step-time-active">running</div>
-                    }
-                    @if (pp.status === 'skipped') {
-                      <div class="step-time step-time-uptodate">up to date</div>
-                    }
-                    @if (pp.status === 'cancelled') {
-                      <div class="step-time step-time-cancelled">cancelled</div>
-                    }
-                  </div>
-                  @if (!last) {
-                    <div class="stepper-line" [class.line-done]="pp.status === 'completed' || pp.status === 'partial' || pp.status === 'skipped'"
-                         [class.line-active]="pp.status === 'running'">
-                    </div>
-                  }
-                }
-              </div>
+              <app-pipeline-stepper [steps]="status.phase_progress"></app-pipeline-stepper>
             </mat-card-content>
           }
 
@@ -562,96 +524,6 @@ import { statusIcon } from '../../shared/status';
       .exec-actions {
         padding: 8px 16px 16px !important;
         display: flex; gap: 12px;
-      }
-
-      /* Enhanced Stepper */
-      .stepper-track {
-        display: flex; align-items: flex-start;
-        overflow-x: auto; padding: 8px 0 12px;
-      }
-      .stepper-step {
-        display: flex; flex-direction: column; align-items: center;
-        flex-shrink: 0; min-width: 100px;
-      }
-      .step-circle {
-        width: 42px; height: 42px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        background: var(--cg-gray-50, #f8f9fa);
-        border: 2.5px solid var(--cg-gray-200);
-        position: relative; z-index: 1; transition: all 0.3s ease;
-      }
-      .step-num {
-        font-size: 13px; font-weight: 600; color: var(--cg-gray-400);
-      }
-      .step-running .step-circle {
-        background: rgba(0, 112, 173, 0.08); border-color: var(--cg-blue);
-        box-shadow: 0 0 0 5px rgba(0, 112, 173, 0.1);
-        animation: pulse-ring 2s ease-in-out infinite;
-      }
-      @keyframes pulse-ring {
-        0%, 100% { box-shadow: 0 0 0 5px rgba(0, 112, 173, 0.1); }
-        50% { box-shadow: 0 0 0 10px rgba(0, 112, 173, 0.04); }
-      }
-      .step-spinner ::ng-deep circle { stroke: var(--cg-blue) !important; }
-      .step-completed .step-circle {
-        background: var(--cg-success, #28a745); border-color: var(--cg-success, #28a745);
-      }
-      .step-check { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      .step-partial .step-circle {
-        background: var(--cg-warn, #f57c00); border-color: var(--cg-warn, #f57c00);
-      }
-      .step-warn { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      .step-failed .step-circle {
-        background: var(--cg-error, #dc3545); border-color: var(--cg-error, #dc3545);
-      }
-      .step-fail { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      /* Cancelled */
-      .step-cancelled .step-circle {
-        background: var(--cg-warn, #f57c00);
-        border-color: var(--cg-warn, #f57c00);
-      }
-      .step-cancel { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      .step-cancelled .step-label { color: var(--cg-warn, #f57c00); }
-      .step-time-cancelled { color: var(--cg-warn, #f57c00); font-style: italic; }
-      /* Skipped (up to date) */
-      .step-skipped .step-circle {
-        background: var(--cg-success, #28a745); border-color: var(--cg-success, #28a745);
-        opacity: 0.7;
-      }
-      .step-check-alt { font-size: 18px; width: 18px; height: 18px; color: #fff; }
-      .step-skipped .step-label { color: var(--cg-success); opacity: 0.8; }
-      .step-time-uptodate { color: var(--cg-success); font-style: italic; opacity: 0.8; }
-      .step-label {
-        margin-top: 8px; font-size: 11px; font-weight: 500;
-        color: var(--cg-gray-500); text-align: center;
-        max-width: 110px; line-height: 1.3;
-      }
-      .step-running .step-label { color: var(--cg-blue); font-weight: 600; }
-      .step-completed .step-label { color: var(--cg-success); }
-      .step-partial .step-label { color: var(--cg-warn, #f57c00); }
-      .step-failed .step-label { color: var(--cg-error); }
-      .step-time {
-        margin-top: 3px; font-size: 10px;
-        font-family: 'Cascadia Code', 'Fira Code', monospace;
-        color: var(--cg-gray-400);
-      }
-      .step-time-active { color: var(--cg-blue); font-weight: 600; }
-      .stepper-line {
-        flex: 1; min-width: 24px; height: 3px;
-        background: var(--cg-gray-200); border-radius: 2px;
-        margin-top: 21px; position: relative; overflow: hidden;
-      }
-      .line-done { background: var(--cg-success, #28a745); }
-      .line-active { background: var(--cg-gray-200); }
-      .line-active::after {
-        content: ''; position: absolute; top: 0; left: 0;
-        height: 100%; width: 40%;
-        background: linear-gradient(90deg, var(--cg-blue), rgba(0, 112, 173, 0.2));
-        border-radius: 2px; animation: line-sweep 1.5s ease-in-out infinite;
-      }
-      @keyframes line-sweep {
-        0% { left: -40%; }
-        100% { left: 100%; }
       }
 
       /* Log Viewer */
