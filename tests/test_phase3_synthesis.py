@@ -117,11 +117,8 @@ class TestMiniCrewBaseLLMFactory:
             def run(self):
                 return ""
 
-        # Mock _load_json and _resolve_mcp_server_path to avoid file I/O
-        with (
-            patch.object(MiniCrewBase, "_load_json", return_value={}),
-            patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"),
-        ):
+        # Mock _load_json to avoid file I/O; bypass __init__ with __new__
+        with patch.object(MiniCrewBase, "_load_json", return_value={}):
             crew = TestCrew.__new__(TestCrew)
             crew.facts_path = Path("fake.json")
             crew.analyzed_path = Path("fake2.json")
@@ -130,7 +127,6 @@ class TestMiniCrewBaseLLMFactory:
             crew.analysis = {}
             crew.evidence_map = {}
             crew.summaries = {}
-            crew._mcp_server_path = "/fake/mcp.py"
             crew._checkpoints = []
             crew._token_budget = 64000
             crew._token_usage = []
@@ -162,17 +158,13 @@ class TestMiniCrewBaseLLMFactory:
             def run(self):
                 return ""
 
-        with (
-            patch.object(MiniCrewBase, "_load_json", return_value={}),
-            patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"),
-        ):
+        with patch.object(MiniCrewBase, "_load_json", return_value={}):
             crew = TestCrew.__new__(TestCrew)
             crew.facts_path = Path("fake.json")
             crew.facts = {}
             crew.analysis = {}
             crew.evidence_map = {}
             crew.summaries = {}
-            crew._mcp_server_path = "/fake/mcp.py"
             crew._checkpoints = []
             crew._token_budget = 120000
             crew._token_usage = []
@@ -230,11 +222,10 @@ class TestC4CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
-            crew = C4Crew(
-                facts_path=str(tmp_path / "facts.json"),
-                analyzed_path=str(tmp_path / "analyzed.json"),
-            )
+        crew = C4Crew(
+            facts_path=str(tmp_path / "facts.json"),
+            analyzed_path=str(tmp_path / "analyzed.json"),
+        )
         assert crew.crew_name == "C4"
 
     def test_c4_crew_agent_config_matches_module(self, tmp_path):
@@ -243,11 +234,10 @@ class TestC4CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
-            crew = C4Crew(
-                facts_path=str(tmp_path / "facts.json"),
-                analyzed_path=str(tmp_path / "analyzed.json"),
-            )
+        crew = C4Crew(
+            facts_path=str(tmp_path / "facts.json"),
+            analyzed_path=str(tmp_path / "analyzed.json"),
+        )
         assert crew.agent_config == C4_AGENT_CONFIG
 
 
@@ -273,11 +263,10 @@ class TestArc42CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
-            crew = Arc42Crew(
-                facts_path=str(tmp_path / "facts.json"),
-                analyzed_path=str(tmp_path / "analyzed.json"),
-            )
+        crew = Arc42Crew(
+            facts_path=str(tmp_path / "facts.json"),
+            analyzed_path=str(tmp_path / "analyzed.json"),
+        )
         assert crew.crew_name == "Arc42"
 
     def test_arc42_crew_agent_config_matches_module(self, tmp_path):
@@ -286,11 +275,10 @@ class TestArc42CrewConfig:
         _write_json(tmp_path / "analyzed.json", MINIMAL_ANALYSIS)
         _write_json(tmp_path / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        with patch.object(MiniCrewBase, "_resolve_mcp_server_path", return_value="/fake/mcp.py"):
-            crew = Arc42Crew(
-                facts_path=str(tmp_path / "facts.json"),
-                analyzed_path=str(tmp_path / "analyzed.json"),
-            )
+        crew = Arc42Crew(
+            facts_path=str(tmp_path / "facts.json"),
+            analyzed_path=str(tmp_path / "analyzed.json"),
+        )
         assert crew.agent_config == ARC42_AGENT_CONFIG
 
 

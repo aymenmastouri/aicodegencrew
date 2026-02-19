@@ -72,7 +72,7 @@ def test_arc42_task_template_formatting_is_safe():
         interfaces_summary="Interfaces",
         building_blocks_data="Blocks",
     )
-    assert "application-{profile}.yml" in formatted
+    assert "application-PROFILE.yml" in formatted
 
 
 if __name__ == "__main__":
