@@ -1,6 +1,6 @@
 # SDLC Pilot — Architecture Overview
 
-> **Status**: v0.6.1 | **Author**: Aymen Mastouri | **Updated**: 2026-02-18
+> **Status**: v0.6.2 | **Author**: Aymen Mastouri | **Updated**: 2026-02-19
 
 ---
 
@@ -31,7 +31,7 @@
 | 3 | Document | Reasoning | Crew | IMPLEMENTED | [Phase 3](phases/phase-3-document/README.md) |
 | 4 | Plan | Reasoning | Hybrid | IMPLEMENTED | [Phase 4](phases/phase-4-plan/README.md) |
 | 5 | Implement | Execution | Hybrid | IMPLEMENTED | [Phase 5](phases/phase-5-implement/README.md) |
-| 6 | Verify | Execution | Crew | PLANNED | [Phase 6](phases/phase-6-verify/README.md) |
+| 6 | Verify | Execution | Crew | IMPLEMENTED | [Phase 6](phases/phase-6-verify/README.md) |
 | 7 | Deliver | Execution | Pipeline | PLANNED | [Phase 7](phases/phase-7-deliver/README.md) |
 
 ## 4. Core Principles
@@ -51,9 +51,12 @@
 | **Orchestrator** | `orchestrator.py` | Phase coordination (register → run), dependency validation |
 | CLI | `cli.py` | Command-line interface, repo resolution, preset validation |
 | GitRepoManager | `shared/utils/git_repo_manager.py` | Clone/pull remote Git repos |
-| Pipelines | `pipelines/` | Deterministic processes (Discover, Extract, Plan) |
-| Crews | `crews/` | AI agent workflows (Analyze, Document) |
-| Hybrid | `hybrid/` | Pipeline + CrewAI (Implement) |
+| DependencyChecker | `shared/dependency_checker.py` | Phase dependency resolution (tier 1: session, tier 2: disk) |
+| PhaseGitHandler | `shared/phase_git_handler.py` | Post-phase git auto-commit of `knowledge/` |
+| SchemaVersion | `shared/schema_version.py` | `_schema_version` injection + reader-side mismatch warnings |
+| Pipelines | `pipelines/` | Deterministic processes (Discover, Extract) |
+| Crews | `crews/` | AI agent workflows (Analyze, Document, Verify) |
+| Hybrid | `hybrid/` | Pipeline + CrewAI (Plan, Implement) |
 | Shared | `shared/` | Common utilities, models, tools |
 
 ## 6. Cross-Cutting Architecture
@@ -93,7 +96,7 @@ Phase 4: Plan ─────── {task_id}_plan.json
 Phase 5: Implement ── Git branch + {task_id}_report.json
   │
   ▼
-Phase 6: Verify ───── (planned) Generated tests
+Phase 6: Verify ───── knowledge/verify/ ({task_id}_verify.json + summary.json)
   │
   ▼
 Phase 7: Deliver ──── (planned) PR + merge
