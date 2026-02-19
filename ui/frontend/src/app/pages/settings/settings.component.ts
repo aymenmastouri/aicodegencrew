@@ -46,10 +46,9 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
     { label: 'Azure', value: 'azure' },
   ],
   INDEX_MODE: [
-    { label: 'Auto (re-index when changed)', value: 'auto' },
-    { label: 'Smart (incremental updates only)', value: 'smart' },
-    { label: 'Force (always re-index)', value: 'force' },
-    { label: 'Off (skip re-indexing)', value: 'off' },
+    { label: 'Auto', value: 'auto' },
+    { label: 'Force', value: 'force' },
+    { label: 'Off', value: 'off' },
   ],
   LOG_LEVEL: [
     { label: 'INFO', value: 'INFO' },
@@ -105,7 +104,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                   <div class="field-list">
                     @for (v of getTabVars('general'); track v.name) {
                       <div class="field-item">
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-form-field appearance="outline">
                           <mat-label>{{ v.name }}</mat-label>
                           @if (getOptions(v.name); as opts) {
                             <mat-select [(ngModel)]="v.value" [required]="v.required">
@@ -115,6 +114,9 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                             </mat-select>
                           } @else {
                             <input matInput [(ngModel)]="v.value" [required]="v.required" />
+                          }
+                          @if (v.description) {
+                            <mat-hint>{{ v.description }}</mat-hint>
                           }
                           @if (v.required) {
                             <mat-error>{{ v.name }} is required</mat-error>
@@ -149,7 +151,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                   <div class="field-list">
                     @for (v of getTabVars('llm'); track v.name) {
                       <div class="field-item">
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-form-field appearance="outline">
                           <mat-label>{{ v.name }}</mat-label>
                           @if (getOptions(v.name); as opts) {
                             <mat-select [(ngModel)]="v.value" [required]="v.required">
@@ -166,6 +168,9 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                                 <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
                               </button>
                             }
+                          }
+                          @if (v.description) {
+                            <mat-hint>{{ v.description }}</mat-hint>
                           }
                           @if (v.required) {
                             <mat-error>{{ v.name }} is required</mat-error>
@@ -259,7 +264,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                   <div class="field-list">
                     @for (v of getTabVars('advanced'); track v.name) {
                       <div class="field-item">
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-form-field appearance="outline">
                           <mat-label>{{ v.name }}</mat-label>
                           @if (getOptions(v.name); as opts) {
                             <mat-select [(ngModel)]="v.value">
@@ -269,6 +274,9 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                             </mat-select>
                           } @else {
                             <input matInput [(ngModel)]="v.value" />
+                          }
+                          @if (v.description) {
+                            <mat-hint>{{ v.description }}</mat-hint>
                           }
                         </mat-form-field>
                       </div>
