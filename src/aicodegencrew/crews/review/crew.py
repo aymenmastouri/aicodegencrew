@@ -1,11 +1,15 @@
-"""Phase 3: Review and Consistency Guard Crew.
+"""Phase 7: Review and Consistency Guard Crew.
 
 Validates consistency across:
 - architecture_facts.json vs C4 diagrams
 - architecture_facts.json vs arc42 documentation
 - Cross-references between documents
 
-Status: PLANNED - Template only
+Status: PLANNED - not yet implemented.
+
+ARCH-1 fix: kickoff() now returns a proper status dict instead of raising
+NotImplementedError, so the orchestrator can handle the 'not_implemented'
+status gracefully rather than crashing the pipeline.
 """
 
 from pathlib import Path
@@ -34,7 +38,26 @@ class ReviewCrew:
         Returns:
             Dict with review results and quality metrics
         """
-        raise NotImplementedError("Phase 3 is planned but not yet implemented")
+        raise NotImplementedError(
+            "Phase 7 (Review & Deploy) is planned but not yet implemented. "
+            "Use kickoff() via the orchestrator instead, which returns a "
+            "'not_implemented' status so the pipeline continues gracefully."
+        )
+
+    def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Orchestrator-compatible kickoff interface.
+
+        Returns a 'not_implemented' status dict so the orchestrator handles this
+        gracefully rather than raising an exception and crashing the pipeline.
+        """
+        return {
+            "status": "skipped",
+            "phase": "deliver",
+            "message": (
+                "Review & Deploy (Phase 7) is not yet implemented. "
+                "Skipping this phase."
+            ),
+        }
 
     def _create_agents(self):
         """Create review agents."""

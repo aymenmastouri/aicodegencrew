@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import Any
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from ..utils.logger import setup_logger
 from ..utils.token_budget import truncate_response
@@ -104,8 +104,8 @@ class FactsQueryTool(BaseTool):
     # Configuration - base directory for dimension files
     facts_dir: str = "knowledge/extract"
 
-    # Cache per dimension (lazy loading)
-    _dimension_cache: dict[str, Any] = {}
+    # Cache per dimension (lazy loading) — PrivateAttr ensures each instance gets its own dict
+    _dimension_cache: dict[str, Any] = PrivateAttr(default_factory=dict)
 
     def __init__(self, facts_dir: str = None, **kwargs):
         """Initialize with optional facts directory override."""

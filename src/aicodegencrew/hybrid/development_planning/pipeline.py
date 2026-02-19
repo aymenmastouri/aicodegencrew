@@ -109,6 +109,33 @@ class DevelopmentPlanningPipeline:
         self.supplementary_context: str = ""
         self._stages_initialized = False
 
+    # ── Cascade checkpoint helpers ────────────────────────────────────────────
+
+    @staticmethod
+    def _checkpoint_path() -> Path:
+        return Path("knowledge/plan/.checkpoint_plan.json")
+
+    def _load_plan_checkpoint(self) -> set[str]:
+        """Load task IDs already planned from checkpoint file."""
+        p = self._checkpoint_path()
+        if not p.exists():
+            return set()
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            return set(data.get("completed", []))
+        except Exception:
+            return set()
+
+    def _save_plan_checkpoint(self, task_id: str, completed: set[str]) -> None:
+        """Persist completed task ID to plan checkpoint file."""
+        completed.add(task_id)
+        p = self._checkpoint_path()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(
+            json.dumps({"completed": sorted(completed)}, indent=2),
+            encoding="utf-8",
+        )
+
     def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """
         Execute pipeline (Orchestrator-compatible interface).
@@ -197,17 +224,36 @@ class DevelopmentPlanningPipeline:
         for i, task in enumerate(sorted_tasks, 1):
             logger.info(f"  {i}. {task.task_id} [{task.priority}] type={task.task_type} links={task.linked_tasks}")
 
-        # Step 3: Process each task sequentially (Stages 2-5)
+        # Step 3: Process each task sequentially (Stages 2-5) with checkpoint resume
         results = []
         succeeded = 0
         failed = 0
 
+        # R7: Load cascade checkpoint — skip already-planned tasks on resume
+        cascade_completed = self._load_plan_checkpoint()
+        if cascade_completed:
+            logger.info(
+                "[Phase4] Plan checkpoint: %d task(s) already done: %s",
+                len(cascade_completed), sorted(cascade_completed),
+            )
+
         for i, task in enumerate(sorted_tasks, 1):
             logger.info(f"\n[Phase4] === Task {i}/{len(sorted_tasks)}: {task.task_id} ===")
+
+            # R7: Skip tasks already completed in a prior run
+            if task.task_id in cascade_completed:
+                logger.info(f"[Phase4] Skipping {task.task_id} (plan checkpoint)")
+                output_file = str(self.output_dir / f"{task.task_id}_plan.json")
+                results.append({"status": "skipped", "task_id": task.task_id, "output_file": output_file})
+                succeeded += 1
+                continue
+
             try:
                 result = self._run_stages_2_to_5(task)
                 results.append(result)
                 succeeded += 1
+                # R7: Persist checkpoint after successful plan generation
+                self._save_plan_checkpoint(task.task_id, cascade_completed)
             except Exception as e:
                 logger.error(f"[Phase4] Task {task.task_id} failed: {e}")
                 results.append(

@@ -482,12 +482,21 @@ class SDLCOrchestrator:
         """
         Auto-commit knowledge/ after successful phase.
 
+        BUG-C5 fix: Guard with CODEGEN_COMMIT_KNOWLEDGE env var (default: true).
+        Set CODEGEN_COMMIT_KNOWLEDGE=false to disable auto-commits (useful when
+        knowledge/ is in .gitignore or when running without a clean git state).
+
         Args:
             phase_id: The completed phase ID
 
         Returns:
             True if commit successful, False otherwise
         """
+        import os
+        if os.getenv("CODEGEN_COMMIT_KNOWLEDGE", "true").lower() in ("false", "0", "no"):
+            logger.debug("[Orchestrator] CODEGEN_COMMIT_KNOWLEDGE=false — skipping knowledge/ commit")
+            return False
+
         try:
             # Check if git repo
             result = subprocess.run(
