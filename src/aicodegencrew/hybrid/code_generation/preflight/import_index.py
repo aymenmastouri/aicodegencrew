@@ -203,6 +203,11 @@ class ImportIndexBuilder:
                     if not Path(file_path).is_absolute():
                         abs_path = str(self.repo_path / file_path)
 
+                    # Skip stale entries — file may have been deleted/moved since
+                    # the last indexing run (INDEX_MODE=off keeps old symbols.jsonl)
+                    if not Path(abs_path).exists():
+                        continue
+
                     index.add(ImportEntry(
                         symbol=symbol,
                         qualified_name=qname,
