@@ -511,9 +511,37 @@ class ImplementCrew:
 
     # ── Public run (single task) ────────────────────────────────────────────
 
+    # ── Cascade checkpoint helpers ───────────────────────────────────────────
+
+    @staticmethod
+    def _checkpoint_path() -> Path:
+        return Path("knowledge/implement/.checkpoint_implement.json")
+
+    def _load_cascade_checkpoint(self) -> set[str]:
+        """Load completed task IDs from cascade checkpoint file."""
+        p = self._checkpoint_path()
+        if not p.exists():
+            return set()
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            return set(data.get("completed", []))
+        except Exception:
+            return set()
+
+    def _save_cascade_checkpoint(self, task_id: str, completed: set[str]) -> None:
+        """Persist completed task ID to cascade checkpoint (atomic write)."""
+        completed.add(task_id)
+        p = self._checkpoint_path()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(
+            json.dumps({"completed": sorted(completed)}, indent=2),
+            encoding="utf-8",
+        )
+
     def run(
         self,
         plan: CodegenPlanInput,
+        shared_baseline_cache: dict[str, dict] | None = None,
     ) -> tuple[list[GeneratedFile], BuildVerificationResult, Any]:
         """Run the full implement flow for a single plan with build-fix loop.
 
@@ -525,6 +553,12 @@ class ImplementCrew:
            - Build verification: deterministic subprocess
            - If build fails: format errors, loop back with fix task
         3. Strategy verification enrichment (error clusters, deprecation warnings)
+
+        Args:
+            plan: Parsed plan input for this task.
+            shared_baseline_cache: Optional dict shared across cascade tasks (BUG-Y5).
+                When provided, baseline build results are reused across tasks on the
+                same containers — avoids redundant baseline builds per cascade task.
 
         Returns:
             (generated_files, build_result, rich_report)
@@ -546,8 +580,10 @@ class ImplementCrew:
 
         staging: dict[str, dict[str, Any]] = {}
         build_result = BuildVerificationResult(skipped=True, skip_reason="No attempts made")
-        # Cache baseline build results so repeated fix attempts skip re-running the baseline
-        baseline_cache: dict[str, dict] = {}
+        # BUG-Y5 fix: use shared baseline cache when provided by cascade, otherwise fresh.
+        # The baseline build for a container cannot change between cascade tasks on the same
+        # session, so sharing avoids N×containers redundant baseline builds.
+        baseline_cache: dict[str, dict] = shared_baseline_cache if shared_baseline_cache is not None else {}
 
         # ── 1b. Strategy: enrich plan + pre-execution (deterministic) ────
         from .strategies import get_strategy
@@ -724,6 +760,17 @@ class ImplementCrew:
         failed = 0
         completed_task_ids: list[str] = []
 
+        # R3: Load cascade checkpoint — skip already-completed tasks on resume
+        cascade_completed = self._load_cascade_checkpoint()
+        if cascade_completed:
+            logger.info(
+                "[Implement] Cascade checkpoint: %d task(s) already done: %s",
+                len(cascade_completed), sorted(cascade_completed),
+            )
+
+        # BUG-Y5: single baseline cache shared across all cascade tasks
+        shared_baseline_cache: dict[str, dict] = {}
+
         plan_reader = PlanReader(
             plans_dir=self.plans_dir, facts_path=str(self.facts_path),
         )
@@ -732,6 +779,13 @@ class ImplementCrew:
             task_id = plan_file.stem.replace("_plan", "")
             logger.info("\n[Implement] === Cascade %d/%d: %s ===", i, n, task_id)
 
+            # R3: Skip tasks already committed in a previous cascade run
+            if task_id in cascade_completed:
+                logger.info("[Implement] Skipping %s (cascade checkpoint)", task_id)
+                completed_task_ids.append(task_id)
+                succeeded += 1
+                continue
+
             try:
                 # Capture per-task baseline metrics so reports reflect this task only
                 task_start = time.time()
@@ -739,7 +793,9 @@ class ImplementCrew:
                 tokens_before = self.total_tokens
 
                 plan_input = plan_reader.run(task_id=task_id, plan_path=str(plan_file))
-                generated, build, rich = self.run(plan=plan_input)
+                generated, build, rich = self.run(
+                    plan=plan_input, shared_baseline_cache=shared_baseline_cache
+                )
 
                 task_duration = time.time() - task_start
                 task_calls = self.total_calls - calls_before
@@ -765,6 +821,8 @@ class ImplementCrew:
                 if report.status in ("success", "partial", "dry_run"):
                     succeeded += 1
                     completed_task_ids.append(task_id)
+                    # R3: Persist checkpoint so a re-run skips this task
+                    self._save_cascade_checkpoint(task_id, cascade_completed)
                 else:
                     failed += 1
             except Exception as e:

@@ -19,7 +19,10 @@ Mini-Crew Layout:
 """
 
 import json
+import re
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -75,6 +78,7 @@ class ArchitectureAnalysisCrew:
         self.output_dir = Path(output_dir)
         self._analysis_dir = self.output_dir / "analysis"
         self._checkpoint_file = self.output_dir / ".checkpoint_analysis.json"
+        self._checkpoint_lock = threading.Lock()  # Thread-safe checkpoint writes
 
     # =========================================================================
     # LLM FACTORY
@@ -135,21 +139,116 @@ class ArchitectureAnalysisCrew:
         agent: Agent,
         output_dir: Path,
     ) -> list[Task]:
-        """Build Task objects from task definitions."""
+        """Build Task objects from task definitions.
+
+        NOTE: output_pydantic is intentionally omitted (BUG-C3 fix).
+        On-prem LLMs can truncate output, causing CrewAI to raise Pydantic
+        ValidationError before custom repair code can run. We rely on
+        output_file + _repair_task_output_files() for JSON persistence.
+        """
         tasks = []
-        for desc, expected, pydantic_model, filename in task_defs:
+        for desc, expected, _pydantic_model, filename in task_defs:
             tasks.append(
                 Task(
                     description=desc,
                     expected_output=expected,
                     agent=agent,
                     context=[],
-                    output_pydantic=pydantic_model,
                     output_file=str(output_dir / filename),
                     human_input=False,
                 )
             )
         return tasks
+
+    @staticmethod
+    def _extract_json_from_raw(raw: str) -> dict:
+        """Extract and repair JSON from raw LLM output."""
+        text = raw.strip()
+        # Strip markdown fences if present
+        if text.startswith("```json"):
+            text = text[7:]
+        elif text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+
+        # Try direct parse first
+        try:
+            data = json.loads(text)
+            return data if isinstance(data, dict) else {"content": data}
+        except json.JSONDecodeError:
+            pass
+
+        # Try to repair truncated JSON by closing open structures
+        repaired = text.rstrip()
+        in_string = False
+        escape_next = False
+        stack = []
+        for ch in repaired:
+            if escape_next:
+                escape_next = False
+                continue
+            if ch == "\\" and in_string:
+                escape_next = True
+                continue
+            if ch == '"':
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
+            if ch in ("{", "["):
+                stack.append(ch)
+            elif ch == "}" and stack and stack[-1] == "{":
+                stack.pop()
+            elif ch == "]" and stack and stack[-1] == "[":
+                stack.pop()
+        if in_string:
+            repaired += '"'
+        repaired = re.sub(r",\s*$", "", repaired)
+        for opener in reversed(stack):
+            repaired += "]" if opener == "[" else "}"
+
+        try:
+            data = json.loads(repaired)
+            return data if isinstance(data, dict) else {"content": data}
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Could not parse or repair JSON: {e}") from e
+
+    def _repair_task_output_files(self, tasks: list[Task]) -> None:
+        """Repair partial/malformed JSON written to task output_file paths.
+
+        When output_pydantic is removed, CrewAI writes the raw LLM text to
+        output_file. This method ensures each file contains valid JSON,
+        repairing truncated output or writing a fallback if repair fails.
+        """
+        for task in tasks:
+            if not task.output_file:
+                continue
+            output_path = Path(task.output_file)
+            if not output_path.exists():
+                continue
+            try:
+                raw = output_path.read_text(encoding="utf-8")
+                json.loads(raw)  # Already valid — nothing to do
+            except json.JSONDecodeError:
+                try:
+                    repaired = self._extract_json_from_raw(raw)
+                    output_path.write_text(
+                        json.dumps(repaired, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
+                    )
+                    logger.info("[Phase2] Repaired JSON in %s", output_path.name)
+                except Exception as repair_err:
+                    fallback = {"raw_output": raw[:2000], "parse_error": True}
+                    output_path.write_text(
+                        json.dumps(fallback, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
+                    )
+                    logger.warning(
+                        "[Phase2] Could not repair %s (%s), wrote fallback",
+                        output_path.name, repair_err,
+                    )
 
     _MAX_RETRIES = 2  # transient error retries
 
@@ -175,12 +274,22 @@ class ArchitectureAnalysisCrew:
                 duration = time.time() - start_time
                 logger.info(f"[Phase2] Completed Mini-Crew: {name} ({duration:.1f}s)")
 
+                # Repair any truncated JSON in task output files (BUG-C3 companion fix)
+                self._repair_task_output_files(tasks)
+
                 # Log success metric
                 try:
                     from ...shared.utils.logger import log_metric
 
-                    tokens = getattr(result, "token_usage", {})
-                    total_tokens = tokens.get("total_tokens", 0) if isinstance(tokens, dict) else 0
+                    # BUG-C1 fix: UsageMetrics is not a dict; use getattr with dict fallback
+                    token_usage = getattr(result, "token_usage", None)
+                    if token_usage is not None:
+                        if isinstance(token_usage, dict):
+                            total_tokens = int(token_usage.get("total_tokens", 0))
+                        else:
+                            total_tokens = int(getattr(token_usage, "total_tokens", 0))
+                    else:
+                        total_tokens = 0
                     log_metric(
                         "mini_crew_complete",
                         crew_type="Phase2",
@@ -290,11 +399,12 @@ class ArchitectureAnalysisCrew:
             return set()
 
     def _save_checkpoint(self, crew_name: str):
-        """Save completed mini-crew to checkpoint."""
-        completed = self._load_checkpoint()
-        completed.add(crew_name)
-        data = {"completed_crews": sorted(completed)}
-        self._checkpoint_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        """Save completed mini-crew to checkpoint (thread-safe via lock)."""
+        with self._checkpoint_lock:
+            completed = self._load_checkpoint()
+            completed.add(crew_name)
+            data = {"completed_crews": sorted(completed)}
+            self._checkpoint_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
         logger.debug(f"[Phase2] Checkpoint saved: {crew_name}")
 
     # =========================================================================
@@ -386,7 +496,27 @@ class ArchitectureAnalysisCrew:
                     json_file.unlink()
                     logger.info(f"   [DELETED] {json_file.name}")
         else:
-            logger.info("[Phase2] Resuming — skipping clean")
+            # BUG-Y1 fix: on resume, delete stale output files for incomplete mini-crews.
+            # The synthesis crew reads ALL files from _analysis_dir; stale files from a
+            # previously failed run would corrupt the synthesis output if kept.
+            logger.info("[Phase2] Resuming — cleaning stale files for incomplete mini-crews")
+            completed_on_resume = self._load_checkpoint()
+            crew_output_files: dict[str, list[str]] = {
+                "tech_analysis": [t[3] for t in TECH_ANALYSIS_TASKS],
+                "domain_analysis": [t[3] for t in DOMAIN_ANALYSIS_TASKS],
+                "workflow_analysis": [t[3] for t in WORKFLOW_ANALYSIS_TASKS],
+                "quality_analysis": [t[3] for t in QUALITY_ANALYSIS_TASKS],
+                "synthesis": [t[3] for t in SYNTHESIS_TASKS],
+            }
+            for crew_name, filenames in crew_output_files.items():
+                if crew_name not in completed_on_resume:
+                    # Choose the correct directory for each crew type
+                    base_dir = self.output_dir if crew_name == "synthesis" else self._analysis_dir
+                    for fn in filenames:
+                        stale = base_dir / fn
+                        if stale.exists():
+                            stale.unlink()
+                            logger.info(f"   [DELETED STALE] {stale.name} ({crew_name} incomplete)")
 
         self._analysis_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"   [OK] Analysis directory ready: {self._analysis_dir}")
@@ -421,37 +551,64 @@ class ArchitectureAnalysisCrew:
     # =========================================================================
 
     def run(self) -> dict[str, Any]:
-        """Execute all 5 mini-crews sequentially with checkpoint resume."""
+        """Execute all 5 mini-crews with parallel analysis phase + sequential synthesis.
+
+        Performance (R1): Mini-Crews 1-4 (tech/domain/workflow/quality) have ZERO data
+        dependency on each other — all read the same static architecture_facts.json.
+        Running them in parallel cuts Phase 2 wall-clock time by ~4x.
+
+        Mini-Crew 5 (synthesis) runs AFTER all 4 complete, reading their output files.
+        """
         completed = self._load_checkpoint()
         is_resume = len(completed) > 0
 
         self._prepare_clean_run(is_resume=is_resume)
 
-        # Mini-Crew 1: Technical Analysis (4 tasks)
-        if "tech_analysis" not in completed:
-            agent = self._create_agent("tech_architect", self._create_analysis_tools())
-            tasks = self._build_tasks(TECH_ANALYSIS_TASKS, agent, self._analysis_dir)
-            self._run_mini_crew("tech_analysis", tasks)
+        # Re-read checkpoint after cleanup (BUG-Y1: stale files may have been deleted)
+        completed = self._load_checkpoint()
 
-        # Mini-Crew 2: Domain Analysis (4 tasks)
-        if "domain_analysis" not in completed:
-            agent = self._create_agent("func_analyst", self._create_analysis_tools())
-            tasks = self._build_tasks(DOMAIN_ANALYSIS_TASKS, agent, self._analysis_dir)
-            self._run_mini_crew("domain_analysis", tasks)
+        # ── Mini-Crews 1-4: Parallel Analysis ────────────────────────────────
+        # Each mini-crew uses fresh agent + tool instances → thread-safe.
+        # Checkpoint writes are guarded by _checkpoint_lock.
+        analysis_specs: list[tuple[str, str, list[tuple]]] = [
+            ("tech_analysis", "tech_architect", TECH_ANALYSIS_TASKS),
+            ("domain_analysis", "func_analyst", DOMAIN_ANALYSIS_TASKS),
+            ("workflow_analysis", "func_analyst", WORKFLOW_ANALYSIS_TASKS),
+            ("quality_analysis", "quality_analyst", QUALITY_ANALYSIS_TASKS),
+        ]
 
-        # Mini-Crew 3: Workflow Analysis (4 tasks)
-        if "workflow_analysis" not in completed:
-            agent = self._create_agent("func_analyst", self._create_analysis_tools())
-            tasks = self._build_tasks(WORKFLOW_ANALYSIS_TASKS, agent, self._analysis_dir)
-            self._run_mini_crew("workflow_analysis", tasks)
+        pending = [(name, key, defs) for name, key, defs in analysis_specs if name not in completed]
 
-        # Mini-Crew 4: Quality Analysis (4 tasks)
-        if "quality_analysis" not in completed:
-            agent = self._create_agent("quality_analyst", self._create_analysis_tools())
-            tasks = self._build_tasks(QUALITY_ANALYSIS_TASKS, agent, self._analysis_dir)
-            self._run_mini_crew("quality_analysis", tasks)
+        if pending:
+            logger.info(
+                "[Phase2] Launching %d analysis mini-crews in parallel: %s",
+                len(pending), [n for n, _, _ in pending],
+            )
+            with ThreadPoolExecutor(max_workers=len(pending)) as executor:
+                futures: dict = {}
+                for name, agent_key, task_defs in pending:
+                    agent = self._create_agent(agent_key, self._create_analysis_tools())
+                    tasks = self._build_tasks(task_defs, agent, self._analysis_dir)
+                    futures[executor.submit(self._run_mini_crew, name, tasks)] = name
 
-        # Mini-Crew 5: Synthesis (1 task)
+                errors: list[str] = []
+                for future in as_completed(futures):
+                    crew_name = futures[future]
+                    try:
+                        future.result()
+                    except Exception as exc:
+                        logger.error("[Phase2] Mini-crew %s failed: %s", crew_name, exc)
+                        errors.append(f"{crew_name}: {exc}")
+
+                if errors:
+                    raise RuntimeError(
+                        f"[Phase2] {len(errors)} parallel mini-crew(s) failed: {'; '.join(errors)}"
+                    )
+        else:
+            logger.info("[Phase2] All analysis mini-crews already completed (checkpoint)")
+
+        # ── Mini-Crew 5: Synthesis (sequential — depends on 1-4 output files) ──
+        completed = self._load_checkpoint()  # Re-read after parallel phase
         if "synthesis" not in completed:
             agent = self._create_agent("synthesis_lead", self._create_synthesis_tools())
             tasks = self._build_tasks(SYNTHESIS_TASKS, agent, self.output_dir)

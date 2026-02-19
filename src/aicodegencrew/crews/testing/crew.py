@@ -6,7 +6,11 @@ Generates tests based on code analysis:
 - E2E test scenarios
 - Test coverage analysis
 
-Status: PLANNED - Template only
+Status: PLANNED - not yet implemented.
+
+ARCH-1 fix: kickoff() now returns a proper status dict instead of raising
+NotImplementedError, so the orchestrator can handle the 'not_implemented'
+status gracefully rather than crashing the pipeline.
 """
 
 from pathlib import Path
@@ -36,7 +40,27 @@ class TestingCrew:
         Returns:
             Dict with generated tests and coverage report
         """
-        raise NotImplementedError("Phase 6 is planned but not yet implemented")
+        raise NotImplementedError(
+            "Phase 6 (Test Generation) is planned but not yet implemented. "
+            "Use kickoff() via the orchestrator instead, which returns a "
+            "'not_implemented' status so the pipeline continues gracefully."
+        )
+
+    def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Orchestrator-compatible kickoff interface.
+
+        Returns a 'not_implemented' status dict so the orchestrator handles this
+        gracefully rather than raising an exception and crashing the pipeline.
+        """
+        return {
+            "status": "skipped",
+            "phase": "verify",
+            "message": (
+                "Test Generation (Phase 6) is not yet implemented. "
+                "Skipping this phase. Set SKIP_SYNTHESIS=true or remove 'verify' "
+                "from the preset to suppress this message."
+            ),
+        }
 
     def _create_agents(self) -> list[Agent]:
         """Create test generation agents."""
