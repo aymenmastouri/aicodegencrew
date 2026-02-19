@@ -525,11 +525,13 @@ class DevelopmentPlanningPipeline:
         """
         dp = plan.development_plan or {}
 
-        # Fill affected_components from discovery if LLM left it empty
+        # Fill affected_components from discovery if LLM left it empty.
+        # Preserve full ComponentMatch objects (id, name, stereotype, layer, file_path,
+        # relevance_score, change_type) — Phase 5 plan_reader needs file_path to resolve files.
         if not dp.get("affected_components"):
             comps = discovery_result.get("affected_components", [])
             if comps:
-                dp["affected_components"] = [c["name"] for c in comps if isinstance(c, dict) and "name" in c]
+                dp["affected_components"] = [c for c in comps if isinstance(c, dict) and "name" in c]
                 logger.info(f"[Enrich] Filled affected_components from discovery: {len(dp['affected_components'])} components")
 
         # Fill upgrade_plan.migration_sequence from pattern_result if LLM left it empty

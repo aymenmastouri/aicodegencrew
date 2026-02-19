@@ -65,9 +65,20 @@ class PlanGeneratorStage:
             backstory=(
                 "You are a pragmatic software architect with 15+ years of experience. "
                 "You plan upgrades, bugfixes, features, and refactorings for large enterprise "
-                "codebases. You ALWAYS: (1) analyze discovered components first, "
-                "(2) use your tools to search for current best practices when needed, "
-                "(3) produce complete, actionable plans with file-level granularity."
+                "codebases.\n\n"
+                "GOLDEN RULES — follow these exactly:\n"
+                "1. COMPONENTS FIRST: Read the DISCOVERED COMPONENTS section carefully. "
+                "   Note each component's name, stereotype, layer, and file_path.\n"
+                "2. FILE-LEVEL STEPS: Every implementation_step MUST name the component "
+                "   AND its file path. Format: "
+                "   'N. Action verb + ComponentName (path/to/file.ext) — what changes'\n"
+                "   Example: '1. Modify AppModule (src/app/app.module.ts) — add StandaloneModule import'\n"
+                "3. ONLY REAL COMPONENTS: Use ONLY components from DISCOVERED COMPONENTS. "
+                "   Never invent component names or file paths.\n"
+                "4. PATTERNS: Populate test_strategy, security_considerations, and error_handling "
+                "   from the patterns provided — don't leave them empty.\n"
+                "5. TOOLS: Use Brave Search or Playwright only for external docs "
+                "   (migration guides, changelogs). Prefer the facts already provided."
             ),
             llm=llm,
             mcps=mcps,
@@ -264,61 +275,76 @@ VERIFICATION COMMANDS:
       "post_migration_checks": ["Check 1", "Check 2"]
     }},"""
 
+        # Extract actual layer pattern from analyzed architecture if available
+        layer_pattern = (
+            self.analyzed_architecture.get("macro_architecture", {}).get("layer_pattern")
+            or (arch_style if arch_style != "Unknown" else "Presentation → Service → Repository → Domain")
+        )
+
         prompt += f"""
 TASK:
-Create a COMPLETE implementation plan as JSON following this structure:
+Create a COMPLETE implementation plan as JSON following this EXACT structure.
+Replace ALL placeholder values with REAL data from DISCOVERED COMPONENTS and patterns above.
 
 {{
   "development_plan": {{
-    "affected_components": [...],  // Use discovered components above
-    "interfaces": [...],  // Use discovered interfaces above
-    "dependencies": [...],  // Use discovered dependencies above
+    "affected_components": [
+      {{
+        "id": "<ID from DISCOVERED COMPONENTS>",
+        "name": "<name from DISCOVERED COMPONENTS>",
+        "stereotype": "<stereotype from DISCOVERED COMPONENTS>",
+        "layer": "<layer from DISCOVERED COMPONENTS>",
+        "file_path": "<file_path from DISCOVERED COMPONENTS>",
+        "relevance_score": <relevance_score from DISCOVERED COMPONENTS>,
+        "change_type": "<change_type from DISCOVERED COMPONENTS>"
+      }}
+    ],
+    "interfaces": [...],
+    "dependencies": [...],
 {upgrade_plan_schema}
     "implementation_steps": [
-      "1. Concrete step (in ComponentName)",
-      "2. Concrete step (in ComponentName)"
+      "1. Action verb + ComponentName (file_path) — what changes and why",
+      "2. Action verb + ComponentName (file_path) — what changes and why",
+      "3. Run verification: <command>"
     ],
 
     "test_strategy": {{
-      "unit_tests": ["Test description"],
-      "integration_tests": ["Test description"],
-      "similar_patterns": [...]  // Use test patterns above
+      "unit_tests": ["Describe unit test for <ComponentName>"],
+      "integration_tests": ["Describe integration test for <feature>"],
+      "similar_patterns": []
     }},
 
-    "security_considerations": [...],  // Use security patterns above
-    "validation_strategy": [...],  // Use validation patterns above
-    "error_handling": [...],  // Use error patterns above
+    "security_considerations": [],
+    "validation_strategy": [],
+    "error_handling": [],
 
     "architecture_context": {{
       "style": "{arch_style}",
-      "layer_pattern": "Controller → Service → Repository",
+      "layer_pattern": "{layer_pattern}",
       "quality_grade": "{arch_quality}",
-      "layer_compliance": ["Check if changes follow layered architecture"]
+      "layer_compliance": ["Describe compliance check for this change"]
     }},
 
     "estimated_complexity": "Low|Medium|High",
-    "complexity_reasoning": "Reasoning...",
+    "complexity_reasoning": "Explain why this complexity was chosen",
     "estimated_files_changed": <number>,
     "risks": ["Risk 1", "Risk 2"],
 
     "evidence_sources": {{
       "components": "architecture_facts.json",
       "test_patterns": "architecture_facts.json",
-      "security": "architecture_facts.json",
-      "validation": "architecture_facts.json",
-      "error_handling": "architecture_facts.json",
       "architecture": "analyzed_architecture.json",
       "semantic_search": "ChromaDB"
     }}
   }}
 }}
 
-IMPORTANT:
-- Return ONLY valid JSON (no markdown, no explanations)
-- Use ONLY the components, patterns, and context provided above
-- DO NOT invent new components or patterns
-- ALL recommendations must reference the patterns above
-- Implementation steps must be concrete and actionable{"" if not is_upgrade else chr(10) + "- For upgrade tasks: include ALL data from MIGRATION SEQUENCE above (rule_id, title, severity, migration_steps, affected_files, estimated_effort_minutes, schematic)" + chr(10) + "- Copy affected_files arrays from MIGRATION SEQUENCE - do NOT leave them empty" + chr(10) + "- Order migration_sequence by severity (breaking first, then deprecated, then recommended)"}
+MANDATORY RULES:
+- Return ONLY valid JSON (no markdown, no explanations outside JSON)
+- affected_components: copy EXACT objects from DISCOVERED COMPONENTS (id, name, stereotype, layer, file_path, relevance_score, change_type)
+- implementation_steps: EVERY step must name the component AND its file path
+- DO NOT invent component names or file paths not listed in DISCOVERED COMPONENTS
+- test_strategy, security_considerations, error_handling: populate from patterns above — do NOT leave empty{"" if not is_upgrade else chr(10) + "- For upgrade tasks: include ALL data from MIGRATION SEQUENCE above (rule_id, title, severity, migration_steps, affected_files, estimated_effort_minutes, schematic)" + chr(10) + "- Copy affected_files arrays from MIGRATION SEQUENCE — do NOT leave them empty" + chr(10) + "- Order migration_sequence by severity (breaking first, then deprecated, then recommended)"}
 
 Generate the plan now:"""
 
@@ -351,15 +377,17 @@ Generate the plan now:"""
 
     @staticmethod
     def _format_components(components: list) -> str:
-        """Format components."""
+        """Format components with file paths for Phase 5 resolution."""
         if not components:
             return "  (none discovered)"
 
         lines = []
-        for comp in components[:10]:  # Limit for token efficiency
+        for comp in components[:15]:  # Slightly higher limit — file paths are critical
+            file_path = comp.get("file_path", "")
+            file_info = f", file: {file_path}" if file_path else ""
             lines.append(
                 f"  - {comp['name']} (ID: {comp['id']}, "
-                f"stereotype: {comp['stereotype']}, layer: {comp['layer']}, "
+                f"stereotype: {comp['stereotype']}, layer: {comp['layer']}{file_info}, "
                 f"relevance: {comp['relevance_score']}, change_type: {comp['change_type']})"
             )
         return "\n".join(lines)
