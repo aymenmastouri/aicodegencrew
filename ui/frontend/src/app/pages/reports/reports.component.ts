@@ -76,12 +76,14 @@ interface ParsedComponent {
               <div class="doc-groups">
                 @for (groupKey of docGroupKeys; track groupKey) {
                   <div class="doc-group">
-                    <div class="doc-group-header"
-                         role="button"
-                         tabindex="0"
-                         (click)="toggleDocGroup(groupKey)"
-                         (keydown.enter)="toggleDocGroup(groupKey)"
-                         (keydown.space)="toggleDocGroup(groupKey); $event.preventDefault()">
+                    <div
+                      class="doc-group-header"
+                      role="button"
+                      tabindex="0"
+                      (click)="toggleDocGroup(groupKey)"
+                      (keydown.enter)="toggleDocGroup(groupKey)"
+                      (keydown.space)="toggleDocGroup(groupKey); $event.preventDefault()"
+                    >
                       <div class="doc-group-icon-wrap" [class]="'group-' + groupKey">
                         <mat-icon>{{ docGroupMeta[groupKey]?.icon || 'description' }}</mat-icon>
                       </div>
@@ -92,49 +94,67 @@ interface ParsedComponent {
                           <span class="doc-group-count">{{ docGroups[groupKey].length }} files</span>
                         </p>
                       </div>
-                      <mat-icon class="doc-group-chevron">{{ expandedDocGroups[groupKey] ? 'expand_less' : 'expand_more' }}</mat-icon>
+                      <mat-icon class="doc-group-chevron">{{
+                        expandedDocGroups[groupKey] ? 'expand_less' : 'expand_more'
+                      }}</mat-icon>
                     </div>
                     @if (expandedDocGroups[groupKey]) {
-                    <div class="doc-group-files">
-                      @for (file of docGroups[groupKey]; track file['_file']) {
-                        <div class="doc-file-card">
-                          <div
-                            class="doc-file-row"
-                            role="button"
-                            tabindex="0"
-                            (click)="toggleDocPreview($any(file['_file']))"
-                            (keydown.enter)="toggleDocPreview($any(file['_file']))"
-                            (keydown.space)="toggleDocPreview($any(file['_file'])); $event.preventDefault()"
-                          >
-                            <mat-icon class="doc-file-icon">{{ file['_type'] === 'md' ? 'article' : file['_type'] === 'drawio' ? 'draw' : 'data_object' }}</mat-icon>
-                            <div class="doc-file-info">
-                              <span class="doc-file-name">{{ formatDocName($any(file['_name'])) }}</span>
-                              <span class="doc-file-meta">{{ $any(file['_type']) | uppercase }} &middot; {{ formatBytes($any(file['_size'])) }}</span>
+                      <div class="doc-group-files">
+                        @for (file of docGroups[groupKey]; track file['_file']) {
+                          <div class="doc-file-card">
+                            <div
+                              class="doc-file-row"
+                              role="button"
+                              tabindex="0"
+                              (click)="toggleDocPreview($any(file['_file']))"
+                              (keydown.enter)="toggleDocPreview($any(file['_file']))"
+                              (keydown.space)="toggleDocPreview($any(file['_file'])); $event.preventDefault()"
+                            >
+                              <mat-icon class="doc-file-icon">{{
+                                file['_type'] === 'md' ? 'article' : file['_type'] === 'drawio' ? 'draw' : 'data_object'
+                              }}</mat-icon>
+                              <div class="doc-file-info">
+                                <span class="doc-file-name">{{ formatDocName($any(file['_name'])) }}</span>
+                                <span class="doc-file-meta"
+                                  >{{ $any(file['_type']) | uppercase }} &middot;
+                                  {{ formatBytes($any(file['_size'])) }}</span
+                                >
+                              </div>
+                              <button
+                                mat-icon-button
+                                class="dl-btn"
+                                matTooltip="Download"
+                                aria-label="Download"
+                                (click)="
+                                  downloadFileContent($any(file['_file']), $any(file['_name']));
+                                  $event.stopPropagation()
+                                "
+                              >
+                                <mat-icon>download</mat-icon>
+                              </button>
+                              <mat-icon class="doc-expand-icon">
+                                {{ docPreviewOpen[$any(file['_file'])] ? 'expand_less' : 'expand_more' }}
+                              </mat-icon>
                             </div>
-                            <button mat-icon-button class="dl-btn" matTooltip="Download" aria-label="Download"
-                                    (click)="downloadFileContent($any(file['_file']), $any(file['_name'])); $event.stopPropagation()">
-                              <mat-icon>download</mat-icon>
-                            </button>
-                            <mat-icon class="doc-expand-icon">
-                              {{ docPreviewOpen[$any(file['_file'])] ? 'expand_less' : 'expand_more' }}
-                            </mat-icon>
-                          </div>
-                          @if (docPreviewOpen[$any(file['_file'])]) {
-                            <div class="doc-preview">
-                              @if (fileLoading[$any(file['_file'])]) {
-                                <div class="loading-center"><mat-spinner diameter="24"></mat-spinner></div>
-                              } @else if (fileContents[$any(file['_file'])]) {
-                                @if (file['_type'] === 'md') {
-                                  <div class="rendered-md markdown-body" [innerHTML]="renderMarkdown(fileContents[$any(file['_file'])])"></div>
-                                } @else {
-                                  <pre class="code-viewer doc-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                            @if (docPreviewOpen[$any(file['_file'])]) {
+                              <div class="doc-preview">
+                                @if (fileLoading[$any(file['_file'])]) {
+                                  <div class="loading-center"><mat-spinner diameter="24"></mat-spinner></div>
+                                } @else if (fileContents[$any(file['_file'])]) {
+                                  @if (file['_type'] === 'md') {
+                                    <div
+                                      class="rendered-md markdown-body"
+                                      [innerHTML]="renderMarkdown(fileContents[$any(file['_file'])])"
+                                    ></div>
+                                  } @else {
+                                    <pre class="code-viewer doc-viewer">{{ fileContents[$any(file['_file'])] }}</pre>
+                                  }
                                 }
-                              }
-                            </div>
-                          }
-                        </div>
-                      }
-                    </div>
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
                     }
                   </div>
                 }
@@ -736,7 +756,9 @@ interface ParsedComponent {
                                 tabindex="0"
                                 (click)="toggleFile($any(report['task_id']) + ':' + file['path'])"
                                 (keydown.enter)="toggleFile($any(report['task_id']) + ':' + file['path'])"
-                                (keydown.space)="toggleFile($any(report['task_id']) + ':' + file['path']); $event.preventDefault()"
+                                (keydown.space)="
+                                  toggleFile($any(report['task_id']) + ':' + file['path']); $event.preventDefault()
+                                "
                                 [class.expanded]="expandedFiles[$any(report['task_id']) + ':' + file['path']]"
                               >
                                 <div class="file-header">
@@ -857,68 +879,134 @@ interface ParsedComponent {
   styles: [
     `
       /* Architecture grouped docs */
-      .doc-groups { margin-top: 16px; display: flex; flex-direction: column; gap: 24px; }
+      .doc-groups {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
       .doc-group-header {
-        display: flex; align-items: center; gap: 14px; margin-bottom: 12px;
-        cursor: pointer; border-radius: 10px; padding: 6px 8px; margin: -6px -8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        border-radius: 10px;
+        padding: 6px 8px;
+        margin: -6px -8px 12px;
         transition: background 0.15s;
       }
-      .doc-group-header:hover { background: var(--cg-gray-50, #f8f9fa); }
+      .doc-group-header:hover {
+        background: var(--cg-gray-50, #f8f9fa);
+      }
       .doc-group-chevron {
         color: var(--cg-gray-400);
-        font-size: 22px; width: 22px; height: 22px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
         flex-shrink: 0;
       }
       .doc-group-icon-wrap {
-        width: 44px; height: 44px; border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
       }
-      .doc-group-icon-wrap .mat-icon { color: #fff; font-size: 22px; width: 22px; height: 22px; }
-      .group-arc42 { background: linear-gradient(135deg, #0070ad, #12abdb); }
-      .group-c4 { background: linear-gradient(135deg, #2b0a3d, #5b2d8e); }
-      .group-quality { background: linear-gradient(135deg, #28a745, #20c997); }
-      .group-other { background: linear-gradient(135deg, #6c757d, #adb5bd); }
-      .doc-group-info { flex: 1; }
+      .doc-group-icon-wrap .mat-icon {
+        color: #fff;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+      .group-arc42 {
+        background: linear-gradient(135deg, #0070ad, #12abdb);
+      }
+      .group-c4 {
+        background: linear-gradient(135deg, #2b0a3d, #5b2d8e);
+      }
+      .group-quality {
+        background: linear-gradient(135deg, #28a745, #20c997);
+      }
+      .group-other {
+        background: linear-gradient(135deg, #6c757d, #adb5bd);
+      }
+      .doc-group-info {
+        flex: 1;
+      }
       .doc-group-title {
-        margin: 0; font-size: 16px; font-weight: 600; color: var(--cg-gray-900);
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--cg-gray-900);
       }
       .doc-group-desc {
-        margin: 2px 0 0; font-size: 12px; color: var(--cg-gray-500);
+        margin: 2px 0 0;
+        font-size: 12px;
+        color: var(--cg-gray-500);
       }
       .doc-group-count {
-        display: inline-block; margin-left: 6px;
-        padding: 1px 8px; border-radius: 8px;
-        background: var(--cg-gray-100); font-weight: 600; font-size: 11px;
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 8px;
+        border-radius: 8px;
+        background: var(--cg-gray-100);
+        font-weight: 600;
+        font-size: 11px;
       }
       .doc-group-files {
-        display: flex; flex-direction: column; gap: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
       .doc-file-card {
-        background: #fff; border: 1px solid var(--cg-gray-100); border-radius: 10px;
-        cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+        background: #fff;
+        border: 1px solid var(--cg-gray-100);
+        border-radius: 10px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
         overflow: hidden;
       }
       .doc-file-card:hover {
         border-color: var(--cg-gray-200);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       }
       .doc-file-row {
-        display: flex; align-items: center; gap: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         padding: 10px 14px;
       }
       .doc-file-icon {
-        font-size: 20px; width: 20px; height: 20px; color: var(--cg-blue); flex-shrink: 0;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--cg-blue);
+        flex-shrink: 0;
       }
-      .doc-file-info { flex: 1; display: flex; flex-direction: column; }
+      .doc-file-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
       .doc-file-name {
-        font-size: 13px; font-weight: 500; color: var(--cg-gray-900);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-900);
       }
       .doc-file-meta {
-        font-size: 11px; color: var(--cg-gray-400);
+        font-size: 11px;
+        color: var(--cg-gray-400);
       }
       .doc-expand-icon {
-        font-size: 20px; width: 20px; height: 20px; color: var(--cg-gray-400);
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--cg-gray-400);
       }
       .doc-preview {
         border-top: 1px solid var(--cg-gray-100);
@@ -940,12 +1028,28 @@ interface ParsedComponent {
         margin-bottom: 0.4em;
         color: var(--cg-gray-900);
       }
-      .rendered-md h1 { font-size: 20px; border-bottom: 1px solid var(--cg-gray-100); padding-bottom: 6px; }
-      .rendered-md h2 { font-size: 17px; }
-      .rendered-md h3 { font-size: 15px; }
-      .rendered-md p { margin: 0.5em 0; }
-      .rendered-md ul, .rendered-md ol { padding-left: 24px; margin: 0.5em 0; }
-      .rendered-md li { margin: 2px 0; }
+      .rendered-md h1 {
+        font-size: 20px;
+        border-bottom: 1px solid var(--cg-gray-100);
+        padding-bottom: 6px;
+      }
+      .rendered-md h2 {
+        font-size: 17px;
+      }
+      .rendered-md h3 {
+        font-size: 15px;
+      }
+      .rendered-md p {
+        margin: 0.5em 0;
+      }
+      .rendered-md ul,
+      .rendered-md ol {
+        padding-left: 24px;
+        margin: 0.5em 0;
+      }
+      .rendered-md li {
+        margin: 2px 0;
+      }
       .rendered-md code {
         background: var(--cg-gray-50);
         padding: 1px 5px;
@@ -969,13 +1073,17 @@ interface ParsedComponent {
         width: 100%;
         margin: 0.5em 0;
       }
-      .rendered-md th, .rendered-md td {
+      .rendered-md th,
+      .rendered-md td {
         border: 1px solid var(--cg-gray-200);
         padding: 6px 10px;
         font-size: 13px;
         text-align: left;
       }
-      .rendered-md th { background: var(--cg-gray-50); font-weight: 600; }
+      .rendered-md th {
+        background: var(--cg-gray-50);
+        font-weight: 600;
+      }
 
       .tab-icon {
         margin-right: 6px;
@@ -1610,7 +1718,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
   docGroupKeys: string[] = [];
   docGroupMeta: Record<string, { label: string; icon: string; description: string }> = {
     arc42: { label: 'Arc42 Documentation', icon: 'menu_book', description: 'Standardized architecture documentation' },
-    c4: { label: 'C4 Model Diagrams', icon: 'architecture', description: 'Context, Container, Component & Deployment views' },
+    c4: {
+      label: 'C4 Model Diagrams',
+      icon: 'architecture',
+      description: 'Context, Container, Component & Deployment views',
+    },
     quality: { label: 'Quality Reports', icon: 'verified', description: 'Architecture quality assessments & reviews' },
     other: { label: 'Other Documents', icon: 'description', description: 'Additional documentation artifacts' },
   };
@@ -1669,7 +1781,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
     // Sort keys: known groups first, then alphabetical
     this.docGroupKeys = [
       ...order.filter((k) => groups[k]),
-      ...Object.keys(groups).filter((k) => !order.includes(k)).sort(),
+      ...Object.keys(groups)
+        .filter((k) => !order.includes(k))
+        .sort(),
     ];
     this.docGroups = groups;
   }
@@ -1688,10 +1802,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
   /** Format doc filename for display: "01-introduction.md" → "Introduction" */
   formatDocName(name: string): string {
     return name
-      .replace(/\.\w+$/, '')           // remove extension
-      .replace(/^\d+-/, '')             // remove leading number prefix
-      .replace(/^c4-/, 'C4 ')          // "c4-context" → "C4 context"
-      .replace(/[-_]/g, ' ')           // dashes/underscores to spaces
+      .replace(/\.\w+$/, '') // remove extension
+      .replace(/^\d+-/, '') // remove leading number prefix
+      .replace(/^c4-/, 'C4 ') // "c4-context" → "C4 context"
+      .replace(/[-_]/g, ' ') // dashes/underscores to spaces
       .replace(/\b\w/g, (c) => c.toUpperCase()); // capitalize words
   }
 
@@ -1931,13 +2045,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   /** Download a plan as JSON */
   downloadPlanJson(plan: Record<string, unknown>): void {
-    const taskId = plan['task_id'] as string || 'plan';
+    const taskId = (plan['task_id'] as string) || 'plan';
     this.triggerDownload(JSON.stringify(plan, null, 2), `${taskId}_plan.json`, 'application/json');
   }
 
   /** Download a codegen report as JSON */
   downloadReportJson(report: Record<string, unknown>): void {
-    const taskId = report['task_id'] as string || 'report';
+    const taskId = (report['task_id'] as string) || 'report';
     this.triggerDownload(JSON.stringify(report, null, 2), `${taskId}_report.json`, 'application/json');
   }
 

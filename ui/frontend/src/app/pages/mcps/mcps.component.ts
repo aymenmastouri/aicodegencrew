@@ -91,7 +91,11 @@ interface MCPListResponse {
           @for (mcp of mcps; track mcp.id) {
             <mat-card class="mcp-card">
               <mat-card-header>
-                <mat-icon mat-card-avatar [class.icon-available]="mcp.status === 'available'" [class.icon-key]="mcp.status === 'requires_api_key'">
+                <mat-icon
+                  mat-card-avatar
+                  [class.icon-available]="mcp.status === 'available'"
+                  [class.icon-key]="mcp.status === 'requires_api_key'"
+                >
                   {{ getIcon(mcp.id) }}
                 </mat-icon>
                 <mat-card-title>{{ mcp.name }}</mat-card-title>
@@ -109,7 +113,11 @@ interface MCPListResponse {
                     <mat-icon class="chip-icon">build_circle</mat-icon>
                     {{ mcp.tools.length }} tools
                   </span>
-                  <span class="chip" [class.chip-available]="mcp.status === 'available'" [class.chip-key]="mcp.status === 'requires_api_key'">
+                  <span
+                    class="chip"
+                    [class.chip-available]="mcp.status === 'available'"
+                    [class.chip-key]="mcp.status === 'requires_api_key'"
+                  >
                     <mat-icon class="chip-icon">{{ mcp.status === 'available' ? 'check_circle' : 'key' }}</mat-icon>
                     {{ mcp.status === 'available' ? 'Available' : 'API Key Required' }}
                   </span>
@@ -118,7 +126,9 @@ interface MCPListResponse {
                 @if (mcp.requires_api_key && mcp.api_key_env_var) {
                   <div class="api-key-info">
                     <mat-icon>info</mat-icon>
-                    <span>Set <code>{{ mcp.api_key_env_var }}</code> in .env</span>
+                    <span
+                      >Set <code>{{ mcp.api_key_env_var }}</code> in .env</span
+                    >
                   </div>
                 }
 
@@ -152,7 +162,9 @@ interface MCPListResponse {
 
     /* MCP Cards */
     .mcp-card {
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition:
+        transform 0.2s,
+        box-shadow 0.2s;
       cursor: pointer;
     }
     .mcp-card:hover {
@@ -311,12 +323,18 @@ export class McpsComponent implements OnInit, OnDestroy {
   }
 
   private loadMcps(): void {
-    this.http.get<MCPListResponse>('/api/mcps/')
-      .pipe(catchError((err) => {
-        console.error('Failed to load MCPs:', err);
-        return of({ mcps: [], summary: { total: 0, available: 0, requires_api_key: 0, not_installed: 0, by_phase: {} } });
-      }))
-      .subscribe(res => {
+    this.http
+      .get<MCPListResponse>('/api/mcps/')
+      .pipe(
+        catchError((err) => {
+          console.error('Failed to load MCPs:', err);
+          return of({
+            mcps: [],
+            summary: { total: 0, available: 0, requires_api_key: 0, not_installed: 0, by_phase: {} },
+          });
+        }),
+      )
+      .subscribe((res) => {
         this.mcps = res.mcps;
         this.summary = res.summary;
         this.loading = false;
@@ -326,12 +344,12 @@ export class McpsComponent implements OnInit, OnDestroy {
 
   getIcon(id: string): string {
     const icons: Record<string, string> = {
-      'sequential_thinking': 'psychology',
-      'memory': 'storage',
-      'brave_search': 'search',
-      'filesystem': 'folder',
-      'playwright': 'public',
-      'github': 'code',
+      sequential_thinking: 'psychology',
+      memory: 'storage',
+      brave_search: 'search',
+      filesystem: 'folder',
+      playwright: 'public',
+      github: 'code',
     };
     return icons[id] || 'extension';
   }
@@ -347,6 +365,6 @@ export class McpsComponent implements OnInit, OnDestroy {
       7: 'Deliver',
       8: 'Review',
     };
-    return phases.map(p => phaseMap[p] || `Phase ${p}`).join(', ');
+    return phases.map((p) => phaseMap[p] || `Phase ${p}`).join(', ');
   }
 }

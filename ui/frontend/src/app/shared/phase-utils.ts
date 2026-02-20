@@ -80,7 +80,13 @@ const SHORT_PHASE_LABELS: Record<string, string> = {
 
 /** Convert phase ID to compact label for chips and small UI elements. */
 export function shortPhase(phaseId: string): string {
-  return SHORT_PHASE_LABELS[phaseId] || phaseId.replace(/^phase\d+_/, '').replace(/_/g, ' ').slice(0, 10);
+  return (
+    SHORT_PHASE_LABELS[phaseId] ||
+    phaseId
+      .replace(/^phase\d+_/, '')
+      .replace(/_/g, ' ')
+      .slice(0, 10)
+  );
 }
 
 /** Format seconds to human-readable duration (e.g. "2m 30s"). */

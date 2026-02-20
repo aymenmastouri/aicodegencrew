@@ -94,12 +94,9 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
         </div>
       } @else {
         <mat-tab-group animationDuration="200ms" class="settings-tabs">
-
           @if (hasTabVars('general')) {
             <mat-tab>
-              <ng-template mat-tab-label>
-                <mat-icon class="tab-icon">folder</mat-icon> General
-              </ng-template>
+              <ng-template mat-tab-label> <mat-icon class="tab-icon">folder</mat-icon> General </ng-template>
               <ng-template matTabContent>
                 <div class="tab-body">
                   <p class="tab-description">Repository path, output directories, and general settings</p>
@@ -131,9 +128,13 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                     <button mat-stroked-button (click)="resetTab('general')" class="btn-reset">
                       <mat-icon>restart_alt</mat-icon> Reset
                     </button>
-                    <button mat-flat-button color="primary" (click)="saveTab('general')"
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      (click)="saveTab('general')"
                       [disabled]="saving || isRunning || !isDirty('general')"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isDirty('general') ? 'No changes' : '')">
+                      [matTooltip]="isRunning ? 'Pipeline is running' : !isDirty('general') ? 'No changes' : ''"
+                    >
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -144,9 +145,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
 
           @if (hasTabVars('llm')) {
             <mat-tab>
-              <ng-template mat-tab-label>
-                <mat-icon class="tab-icon">smart_toy</mat-icon> LLM
-              </ng-template>
+              <ng-template mat-tab-label> <mat-icon class="tab-icon">smart_toy</mat-icon> LLM </ng-template>
               <ng-template matTabContent>
                 <div class="tab-body">
                   <p class="tab-description">Language model provider, API keys, and embeddings</p>
@@ -162,14 +161,20 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                               }
                             </mat-select>
                           } @else {
-                            <input matInput [(ngModel)]="v.value"
+                            <input
+                              matInput
+                              [(ngModel)]="v.value"
                               [type]="isSecret(v.name) && !showSecrets[v.name] ? 'password' : 'text'"
-                              [required]="v.required" />
+                              [required]="v.required"
+                            />
                             @if (isSecret(v.name)) {
-                              <button mat-icon-button matSuffix
+                              <button
+                                mat-icon-button
+                                matSuffix
                                 [attr.aria-label]="showSecrets[v.name] ? 'Hide value' : 'Show value'"
                                 [matTooltip]="showSecrets[v.name] ? 'Hide' : 'Show'"
-                                (click)="showSecrets[v.name] = !showSecrets[v.name]">
+                                (click)="showSecrets[v.name] = !showSecrets[v.name]"
+                              >
                                 <mat-icon>{{ showSecrets[v.name] ? 'visibility_off' : 'visibility' }}</mat-icon>
                               </button>
                             }
@@ -188,9 +193,13 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                     <button mat-stroked-button (click)="resetTab('llm')" class="btn-reset">
                       <mat-icon>restart_alt</mat-icon> Reset
                     </button>
-                    <button mat-flat-button color="primary" (click)="saveTab('llm')"
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      (click)="saveTab('llm')"
                       [disabled]="saving || isRunning || !isDirty('llm')"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isDirty('llm') ? 'No changes' : '')">
+                      [matTooltip]="isRunning ? 'Pipeline is running' : !isDirty('llm') ? 'No changes' : ''"
+                    >
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -200,9 +209,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
           }
 
           <mat-tab>
-            <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">account_tree</mat-icon> Phases
-            </ng-template>
+            <ng-template mat-tab-label> <mat-icon class="tab-icon">account_tree</mat-icon> Phases </ng-template>
             <ng-template matTabContent>
               <div class="tab-body">
                 <p class="tab-description">Enable or disable pipeline phases. Available presets are shown below.</p>
@@ -216,17 +223,26 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                           <span class="phase-toggle-name">{{ p.name }}</span>
                           <span class="phase-toggle-id">{{ p.id }}</span>
                         </div>
-                        <mat-slide-toggle [(ngModel)]="p.enabled" color="primary"
+                        <mat-slide-toggle
+                          [(ngModel)]="p.enabled"
+                          color="primary"
                           [disabled]="p.required || isRunning"
-                          [matTooltip]="p.required ? 'Required phase — cannot disable' : (isRunning ? 'Pipeline is running' : '')">
+                          [matTooltip]="
+                            p.required ? 'Required phase — cannot disable' : isRunning ? 'Pipeline is running' : ''
+                          "
+                        >
                         </mat-slide-toggle>
                       </div>
                     }
                   </div>
                   <div class="tab-actions">
-                    <button mat-flat-button color="primary" (click)="savePhases()"
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      (click)="savePhases()"
                       [disabled]="savingPhases || isRunning || !isPhaseDirty()"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isPhaseDirty() ? 'No changes' : '')">
+                      [matTooltip]="isRunning ? 'Pipeline is running' : !isPhaseDirty() ? 'No changes' : ''"
+                    >
                       @if (savingPhases) {
                         <mat-spinner diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
                       } @else {
@@ -260,9 +276,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
 
           @if (hasTabVars('advanced')) {
             <mat-tab>
-              <ng-template mat-tab-label>
-                <mat-icon class="tab-icon">tune</mat-icon> Advanced
-              </ng-template>
+              <ng-template mat-tab-label> <mat-icon class="tab-icon">tune</mat-icon> Advanced </ng-template>
               <ng-template matTabContent>
                 <div class="tab-body">
                   <p class="tab-description">Logging, tracing, skip flags, and directory overrides</p>
@@ -291,9 +305,13 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                     <button mat-stroked-button (click)="resetTab('advanced')" class="btn-reset">
                       <mat-icon>restart_alt</mat-icon> Reset
                     </button>
-                    <button mat-flat-button color="primary" (click)="saveTab('advanced')"
+                    <button
+                      mat-flat-button
+                      color="primary"
+                      (click)="saveTab('advanced')"
                       [disabled]="saving || isRunning || !isDirty('advanced')"
-                      [matTooltip]="isRunning ? 'Pipeline is running' : (!isDirty('advanced') ? 'No changes' : '')">
+                      [matTooltip]="isRunning ? 'Pipeline is running' : !isDirty('advanced') ? 'No changes' : ''"
+                    >
                       <mat-icon>save</mat-icon> Save
                     </button>
                   </div>
@@ -301,148 +319,149 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
               </ng-template>
             </mat-tab>
           }
-
         </mat-tab-group>
       }
     </div>
   `,
-  styles: [`
-    .settings-tabs {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
-    .tab-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-    .tab-body {
-      padding: 28px 32px;
-    }
-    .tab-description {
-      font-size: 13px;
-      color: var(--cg-gray-500);
-      margin: 0 0 24px;
-    }
-    .field-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 640px;
-    }
-    .field-item mat-form-field {
-      width: 100%;
-    }
-    .tab-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px solid var(--cg-gray-100, #eee);
-    }
-    .btn-reset {
-      color: var(--cg-gray-500) !important;
-    }
-    .btn-reset mat-icon,
-    .tab-actions button mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 4px;
-      vertical-align: middle;
-    }
-    .empty-tab {
-      text-align: center;
-      padding: 32px 0;
-      color: var(--cg-gray-400);
-      font-size: 13px;
-    }
-    .section-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--cg-gray-700);
-      margin: 8px 0 12px;
-    }
-    .phase-toggle-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-    .phase-toggle-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      border-radius: 8px;
-      background: var(--cg-gray-50, #f8f9fa);
-      border: 1px solid var(--cg-gray-100, #eee);
-      transition: border-color 0.15s;
-    }
-    .phase-toggle-card:hover {
-      border-color: var(--cg-gray-200);
-    }
-    .phase-disabled {
-      opacity: 0.55;
-    }
-    .phase-toggle-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--cg-gray-900);
-    }
-    .phase-toggle-id {
-      display: block;
-      font-size: 11px;
-      color: var(--cg-gray-400);
-      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-      margin-top: 2px;
-    }
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 10px;
-    }
-    .preset-card {
-      display: flex;
-      gap: 12px;
-      padding: 14px 16px;
-      border-radius: 8px;
-      background: var(--cg-gray-50, #f8f9fa);
-      border: 1px solid var(--cg-gray-100, #eee);
-      transition: border-color 0.15s;
-    }
-    .preset-card:hover {
-      border-color: var(--cg-gray-200);
-    }
-    .preset-icon {
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
-      color: var(--cg-blue);
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .preset-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--cg-gray-900);
-    }
-    .preset-desc {
-      font-size: 12px;
-      color: var(--cg-gray-500);
-      margin-top: 2px;
-    }
-    .preset-phases {
-      font-size: 11px;
-      color: var(--cg-gray-400);
-      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-      margin-top: 4px;
-    }
-  `],
+  styles: [
+    `
+      .settings-tabs {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      }
+      .tab-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+      .tab-body {
+        padding: 28px 32px;
+      }
+      .tab-description {
+        font-size: 13px;
+        color: var(--cg-gray-500);
+        margin: 0 0 24px;
+      }
+      .field-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 640px;
+      }
+      .field-item mat-form-field {
+        width: 100%;
+      }
+      .tab-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--cg-gray-100, #eee);
+      }
+      .btn-reset {
+        color: var(--cg-gray-500) !important;
+      }
+      .btn-reset mat-icon,
+      .tab-actions button mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 4px;
+        vertical-align: middle;
+      }
+      .empty-tab {
+        text-align: center;
+        padding: 32px 0;
+        color: var(--cg-gray-400);
+        font-size: 13px;
+      }
+      .section-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--cg-gray-700);
+        margin: 8px 0 12px;
+      }
+      .phase-toggle-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 10px;
+        margin-bottom: 28px;
+      }
+      .phase-toggle-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 8px;
+        background: var(--cg-gray-50, #f8f9fa);
+        border: 1px solid var(--cg-gray-100, #eee);
+        transition: border-color 0.15s;
+      }
+      .phase-toggle-card:hover {
+        border-color: var(--cg-gray-200);
+      }
+      .phase-disabled {
+        opacity: 0.55;
+      }
+      .phase-toggle-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-900);
+      }
+      .phase-toggle-id {
+        display: block;
+        font-size: 11px;
+        color: var(--cg-gray-400);
+        font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        margin-top: 2px;
+      }
+      .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 10px;
+      }
+      .preset-card {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        background: var(--cg-gray-50, #f8f9fa);
+        border: 1px solid var(--cg-gray-100, #eee);
+        transition: border-color 0.15s;
+      }
+      .preset-card:hover {
+        border-color: var(--cg-gray-200);
+      }
+      .preset-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+        color: var(--cg-blue);
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .preset-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-900);
+      }
+      .preset-desc {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        margin-top: 2px;
+      }
+      .preset-phases {
+        font-size: 11px;
+        color: var(--cg-gray-400);
+        font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+        margin-top: 4px;
+      }
+    `,
+  ],
 })
 export class SettingsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -480,7 +499,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.pipelineSvc.getEnvSchema().subscribe({
       next: (vars) => {
         this.allVars = vars;
-        for (const v of vars) { this.originalValues[v.name] = v.value; }
+        for (const v of vars) {
+          this.originalValues[v.name] = v.value;
+        }
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -505,7 +526,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
           enabled: p.enabled,
           required: p.required ?? false,
         }));
-        for (const p of this.phaseToggles) { this.originalPhaseEnabled[p.id] = p.enabled; }
+        for (const p of this.phaseToggles) {
+          this.originalPhaseEnabled[p.id] = p.enabled;
+        }
         this.cdr.markForCheck();
       },
     });
@@ -556,18 +579,16 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     const missing = vars.filter((v) => v.required && !v.value.trim());
     if (missing.length > 0) {
-      this.snackBar.open(
-        `Required fields missing: ${missing.map((m) => m.name).join(', ')}`,
-        'OK',
-        { duration: 4000 },
-      );
+      this.snackBar.open(`Required fields missing: ${missing.map((m) => m.name).join(', ')}`, 'OK', { duration: 4000 });
       return;
     }
 
     this.saving = true;
     this.pipelineSvc.updateEnv(values).subscribe({
       next: () => {
-        for (const v of vars) { this.originalValues[v.name] = v.value; }
+        for (const v of vars) {
+          this.originalValues[v.name] = v.value;
+        }
         this.snackBar.open('Settings saved', 'OK', { duration: 3000 });
         this.saving = false;
         this.cdr.markForCheck();
@@ -584,9 +605,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.savingPhases = true;
     const requests = this.phaseToggles
       .filter((p) => !p.required)
-      .map((p) =>
-        this.http.put(`/api/phases/${p.id}/toggle`, { enabled: p.enabled })
-      );
+      .map((p) => this.http.put(`/api/phases/${p.id}/toggle`, { enabled: p.enabled }));
 
     if (requests.length === 0) {
       this.snackBar.open('No phases to save', 'OK', { duration: 2000 });
@@ -596,7 +615,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
     forkJoin(requests).subscribe({
       next: () => {
-        for (const p of this.phaseToggles) { this.originalPhaseEnabled[p.id] = p.enabled; }
+        for (const p of this.phaseToggles) {
+          this.originalPhaseEnabled[p.id] = p.enabled;
+        }
         this.snackBar.open('Phase settings saved', 'OK', { duration: 3000 });
         this.savingPhases = false;
         this.cdr.markForCheck();

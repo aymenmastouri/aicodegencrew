@@ -62,9 +62,13 @@ import { ApiService, LogResponse } from '../../services/api.service';
         <mat-card>
           <mat-card-content>
             <cdk-virtual-scroll-viewport itemSize="20" class="log-viewer">
-              <div *cdkVirtualFor="let line of logResponse.lines; let i = index"
-                   class="log-line" [class]="lineClass(line)">
-                <span class="log-num">{{ i + 1 }}</span>{{ line }}
+              <div
+                *cdkVirtualFor="let line of logResponse.lines; let i = index"
+                class="log-line"
+                [class]="lineClass(line)"
+              >
+                <span class="log-num">{{ i + 1 }}</span
+                >{{ line }}
               </div>
             </cdk-virtual-scroll-viewport>
           </mat-card-content>

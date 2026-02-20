@@ -19,12 +19,7 @@ import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrollin
 import { Subscription } from 'rxjs';
 
 import { ApiService, PresetInfo, PhaseInfo } from '../../services/api.service';
-import {
-  PipelineService,
-  ExecutionStatus,
-  EnvVariable,
-  SSEEvent,
-} from '../../services/pipeline.service';
+import { PipelineService, ExecutionStatus, EnvVariable, SSEEvent } from '../../services/pipeline.service';
 import { NotificationService } from '../../services/notification.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
 import { PipelineStepperComponent } from '../../shared/pipeline-stepper.component';
@@ -210,7 +205,6 @@ import { statusIcon } from '../../shared/status';
       <!-- SECTION 2: EXECUTION (visible while running / after completion)  -->
       <!-- ================================================================ -->
       @if (status && status.state !== 'idle') {
-
         <!-- Celebration Banner -->
         @if (showCelebration && celebrationType) {
           <div class="celebration-banner" [class]="'celebration-' + celebrationType">
@@ -220,8 +214,13 @@ import { statusIcon } from '../../shared/status';
                 <span class="celebration-title">{{ celebrationTitle() }}</span>
                 <span class="celebration-sub">{{ celebrationSubtitle() }}</span>
               </div>
-              <button mat-icon-button class="celebration-close" (click)="dismissCelebration()"
-                matTooltip="Dismiss" aria-label="Dismiss">
+              <button
+                mat-icon-button
+                class="celebration-close"
+                (click)="dismissCelebration()"
+                matTooltip="Dismiss"
+                aria-label="Dismiss"
+              >
                 <mat-icon>close</mat-icon>
               </button>
             </div>
@@ -243,7 +242,7 @@ import { statusIcon } from '../../shared/status';
                 {{ status.run_id ? ' | ' : '' }}Elapsed: {{ formatDuration(status.elapsed_seconds) }}
               }
               @if (status.eta_seconds !== null && status.eta_seconds !== undefined && status.eta_seconds > 0) {
-                {{ (status.run_id || status.elapsed_seconds) ? ' | ' : '' }}ETA: ~{{ formatDuration(status.eta_seconds) }}
+                {{ status.run_id || status.elapsed_seconds ? ' | ' : '' }}ETA: ~{{ formatDuration(status.eta_seconds) }}
               }
             </mat-card-subtitle>
           </mat-card-header>
@@ -253,13 +252,23 @@ import { statusIcon } from '../../shared/status';
             <div class="exec-bar">
               <div class="progress-section">
                 <mat-progress-bar
-                  [mode]="(status.progress_percent !== null && status.progress_percent !== undefined && status.progress_percent > 0) ? 'determinate' : 'indeterminate'"
+                  [mode]="
+                    status.progress_percent !== null &&
+                    status.progress_percent !== undefined &&
+                    status.progress_percent > 0
+                      ? 'determinate'
+                      : 'indeterminate'
+                  "
                   [value]="status.progress_percent || 0"
-                  class="run-progress">
+                  class="run-progress"
+                >
                 </mat-progress-bar>
                 <span class="progress-label">
-                  {{ (status.completed_phase_count || 0) + (status.skipped_phase_count || 0) }}/{{ status.total_phase_count || 0 }} phases
-                  <span class="progress-pct">{{ status.progress_percent | number:'1.0-0' }}%</span>
+                  {{ (status.completed_phase_count || 0) + (status.skipped_phase_count || 0) }}/{{
+                    status.total_phase_count || 0
+                  }}
+                  phases
+                  <span class="progress-pct">{{ status.progress_percent | number: '1.0-0' }}%</span>
                 </span>
               </div>
               <button mat-stroked-button color="warn" (click)="cancelPipeline()">
@@ -334,13 +343,15 @@ import { statusIcon } from '../../shared/status';
             <span class="spacer"></span>
             <mat-form-field appearance="outline" class="log-search-field">
               <mat-icon matPrefix>search</mat-icon>
-              <input matInput placeholder="Filter logs..." [(ngModel)]="logSearch"
-                     (ngModelChange)="filterLogs()" />
+              <input matInput placeholder="Filter logs..." [(ngModel)]="logSearch" (ngModelChange)="filterLogs()" />
             </mat-form-field>
-            <button mat-icon-button (click)="autoScroll = !autoScroll"
-                    [matTooltip]="autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'"
-                    [attr.aria-label]="autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'"
-                    [class.active-toggle]="autoScroll">
+            <button
+              mat-icon-button
+              (click)="autoScroll = !autoScroll"
+              [matTooltip]="autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'"
+              [attr.aria-label]="autoScroll ? 'Auto-scroll ON' : 'Auto-scroll OFF'"
+              [class.active-toggle]="autoScroll"
+            >
               <mat-icon>{{ autoScroll ? 'vertical_align_bottom' : 'pause' }}</mat-icon>
             </button>
             <button mat-icon-button (click)="scrollToTop()" matTooltip="Scroll to top" aria-label="Scroll to top">
@@ -349,9 +360,13 @@ import { statusIcon } from '../../shared/status';
           </mat-card-header>
           <mat-card-content>
             <cdk-virtual-scroll-viewport itemSize="22" class="log-viewport" #logViewport>
-              <div *cdkVirtualFor="let line of filteredLogLines; let i = index"
-                   class="log-line" [class]="getLogLevel(line)">
-                <span class="log-num">{{ i + 1 }}</span>{{ line }}
+              <div
+                *cdkVirtualFor="let line of filteredLogLines; let i = index"
+                class="log-line"
+                [class]="getLogLevel(line)"
+              >
+                <span class="log-num">{{ i + 1 }}</span
+                >{{ line }}
               </div>
             </cdk-virtual-scroll-viewport>
           </mat-card-content>
@@ -362,16 +377,37 @@ import { statusIcon } from '../../shared/status';
   styles: [
     `
       /* Config Card */
-      .config-card { margin-bottom: 16px; }
-      .tab-content { padding: 16px 0; }
-      .full-width { width: 100%; }
-      .phase-chips {
-        display: flex; align-items: center; gap: 8px;
-        flex-wrap: wrap; margin-top: 8px;
+      .config-card {
+        margin-bottom: 16px;
       }
-      .chips-label { font-size: 13px; font-weight: 500; color: var(--cg-gray-500); }
-      .phase-checkboxes { display: flex; flex-direction: column; gap: 8px; }
-      .phase-label { display: inline-flex; align-items: center; gap: 4px; }
+      .tab-content {
+        padding: 16px 0;
+      }
+      .full-width {
+        width: 100%;
+      }
+      .phase-chips {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .chips-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-500);
+      }
+      .phase-checkboxes {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .phase-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
 
       /* Advanced panel inside config card */
       .advanced-panel {
@@ -379,52 +415,105 @@ import { statusIcon } from '../../shared/status';
         box-shadow: none !important;
         border: 1px solid var(--cg-gray-100);
       }
-      .advanced-panel ::ng-deep .mat-expansion-panel-body { padding: 0 16px 16px; }
-      .advanced-section { margin-top: 16px; }
+      .advanced-panel ::ng-deep .mat-expansion-panel-body {
+        padding: 0 16px 16px;
+      }
+      .advanced-section {
+        margin-top: 16px;
+      }
       .advanced-section-title {
-        display: flex; align-items: center; gap: 8px;
-        font-size: 14px; font-weight: 600; color: var(--cg-gray-700);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--cg-gray-700);
         margin: 0 0 8px;
       }
       .advanced-section-title .mat-icon {
-        font-size: 18px; width: 18px; height: 18px; color: var(--cg-blue);
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-blue);
       }
       .advanced-badge {
-        font-size: 11px; font-weight: 600;
-        background: rgba(40, 167, 69, 0.1); color: var(--cg-success);
-        padding: 2px 8px; border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--cg-success);
+        padding: 2px 8px;
+        border-radius: 8px;
       }
 
       /* Input chips */
-      .input-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-      .input-chip {
-        display: inline-flex; align-items: center; gap: 4px;
-        padding: 4px 10px; border-radius: 8px;
-        background: var(--cg-gray-100); font-size: 12px; color: var(--cg-gray-500);
+      .input-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
       }
-      .input-chip .mat-icon { font-size: 16px; width: 16px; height: 16px; }
+      .input-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        background: var(--cg-gray-100);
+        font-size: 12px;
+        color: var(--cg-gray-500);
+      }
+      .input-chip .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
       .input-chip.has-files {
-        background: rgba(18, 171, 219, 0.1); color: var(--cg-blue); font-weight: 500;
+        background: rgba(18, 171, 219, 0.1);
+        color: var(--cg-blue);
+        font-weight: 500;
       }
       .chip-count {
-        min-width: 18px; height: 18px;
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 9px; background: rgba(0, 0, 0, 0.06);
-        font-size: 11px; font-weight: 600;
+        min-width: 18px;
+        height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: rgba(0, 0, 0, 0.06);
+        font-size: 11px;
+        font-weight: 600;
       }
-      .input-chip.has-files .chip-count { background: var(--cg-vibrant); color: #fff; }
-      .manage-btn { font-size: 13px; }
-      .manage-btn .mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
+      .input-chip.has-files .chip-count {
+        background: var(--cg-vibrant);
+        color: #fff;
+      }
+      .manage-btn {
+        font-size: 13px;
+      }
+      .manage-btn .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 4px;
+      }
 
       /* Env overrides */
       .env-group-title {
-        font-size: 12px; font-weight: 600; color: var(--cg-blue);
-        margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--cg-blue);
+        margin: 12px 0 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
       .env-fields {
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 8px;
       }
-      .env-field { width: 100%; }
+      .env-field {
+        width: 100%;
+      }
 
       /* Config actions */
       .config-actions {
@@ -438,48 +527,80 @@ import { statusIcon } from '../../shared/status';
 
       /* Execution section */
       .exec-bar {
-        display: flex; align-items: center; gap: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
         padding: 0 16px 12px;
       }
       .progress-section {
-        flex: 1; display: flex; flex-direction: column; gap: 4px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
-      .run-progress { width: 100%; }
+      .run-progress {
+        width: 100%;
+      }
       .run-progress ::ng-deep .mdc-linear-progress__bar-inner {
         border-color: var(--cg-vibrant) !important;
       }
       .progress-label {
-        font-size: 12px; color: var(--cg-gray-500);
-        display: flex; align-items: center; gap: 8px;
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .progress-pct {
         font-family: 'Cascadia Code', 'Fira Code', monospace;
-        font-weight: 600; color: var(--cg-blue);
+        font-weight: 600;
+        color: var(--cg-blue);
       }
 
       /* Live Metrics */
       .metrics-bar {
-        display: flex; gap: 16px; flex-wrap: wrap;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
         padding: 8px 16px 12px;
         border-top: 1px solid var(--cg-gray-100);
       }
       .metric-item {
-        display: flex; align-items: center; gap: 6px;
-        font-size: 13px; color: var(--cg-gray-600);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--cg-gray-600);
       }
-      .metric-item .mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--cg-blue); }
+      .metric-item .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-blue);
+      }
       .metric-value {
         font-family: 'Cascadia Code', 'Fira Code', monospace;
-        font-weight: 600; color: var(--cg-gray-900);
+        font-weight: 600;
+        color: var(--cg-gray-900);
       }
-      .metric-label { font-size: 11px; color: var(--cg-gray-400); }
-      .metric-eta .mat-icon { color: var(--cg-vibrant); }
-      .metric-eta .metric-value { color: var(--cg-vibrant); }
+      .metric-label {
+        font-size: 11px;
+        color: var(--cg-gray-400);
+      }
+      .metric-eta .mat-icon {
+        color: var(--cg-vibrant);
+      }
+      .metric-eta .metric-value {
+        color: var(--cg-vibrant);
+      }
 
       /* Celebration Banner */
       .celebration-banner {
-        border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
-        position: relative; overflow: hidden;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        position: relative;
+        overflow: hidden;
         animation: slide-in 0.4s ease-out;
       }
       .celebration-success {
@@ -499,48 +620,132 @@ import { statusIcon } from '../../shared/status';
         color: #fff;
       }
       .celebration-content {
-        display: flex; align-items: center; gap: 12px; position: relative; z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
       }
-      .celebration-icon { font-size: 32px; width: 32px; height: 32px; }
-      .celebration-text { display: flex; flex-direction: column; flex: 1; }
-      .celebration-title { font-size: 16px; font-weight: 600; }
-      .celebration-sub { font-size: 13px; opacity: 0.9; }
-      .celebration-close { color: rgba(255, 255, 255, 0.7) !important; }
-      .logs-link { color: #fff; text-decoration: underline; margin-left: 6px; }
+      .celebration-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+      .celebration-text {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+      .celebration-title {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .celebration-sub {
+        font-size: 13px;
+        opacity: 0.9;
+      }
+      .celebration-close {
+        color: rgba(255, 255, 255, 0.7) !important;
+      }
+      .logs-link {
+        color: #fff;
+        text-decoration: underline;
+        margin-left: 6px;
+      }
       @keyframes slide-in {
-        from { transform: translateY(-20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
       }
 
       /* Status Card */
-      .status-card { margin-bottom: 16px; }
-      .state-completed { border-left: 4px solid var(--cg-success); }
-      .state-failed { border-left: 4px solid var(--cg-error); }
-      .state-running { border-left: 4px solid var(--cg-blue); }
-      .state-cancelled { border-left: 4px solid var(--cg-warn); }
-      .state-icon-completed { color: var(--cg-success); }
-      .state-icon-failed { color: var(--cg-error); }
-      .state-icon-running { color: var(--cg-blue); }
-      .state-icon-cancelled { color: var(--cg-warn); }
+      .status-card {
+        margin-bottom: 16px;
+      }
+      .state-completed {
+        border-left: 4px solid var(--cg-success);
+      }
+      .state-failed {
+        border-left: 4px solid var(--cg-error);
+      }
+      .state-running {
+        border-left: 4px solid var(--cg-blue);
+      }
+      .state-cancelled {
+        border-left: 4px solid var(--cg-warn);
+      }
+      .state-icon-completed {
+        color: var(--cg-success);
+      }
+      .state-icon-failed {
+        color: var(--cg-error);
+      }
+      .state-icon-running {
+        color: var(--cg-blue);
+      }
+      .state-icon-cancelled {
+        color: var(--cg-warn);
+      }
 
       .exec-actions {
         padding: 8px 16px 16px !important;
-        display: flex; gap: 12px;
+        display: flex;
+        gap: 12px;
       }
 
       /* Log Viewer */
-      .log-card { margin-bottom: 16px; }
-      .log-card mat-card-header { display: flex; align-items: center; }
-      .log-title { display: flex !important; align-items: center; gap: 8px; }
-      .log-count { font-size: 12px; color: var(--cg-gray-500); font-weight: 400; }
-      .spacer { flex: 1; }
-      .log-search-field { width: 180px; margin: 0 8px; }
-      .log-search-field ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
-      .log-search-field ::ng-deep .mdc-text-field { height: 36px !important; }
-      .log-search-field ::ng-deep .mat-mdc-form-field-infix { padding: 4px 0 !important; min-height: unset; }
-      .log-search-field ::ng-deep input { font-size: 12px; }
-      .log-search-field ::ng-deep .mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--cg-gray-400); margin-right: 4px; }
-      .active-toggle { color: var(--cg-vibrant) !important; }
+      .log-card {
+        margin-bottom: 16px;
+      }
+      .log-card mat-card-header {
+        display: flex;
+        align-items: center;
+      }
+      .log-title {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+      }
+      .log-count {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        font-weight: 400;
+      }
+      .spacer {
+        flex: 1;
+      }
+      .log-search-field {
+        width: 180px;
+        margin: 0 8px;
+      }
+      .log-search-field ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
+      .log-search-field ::ng-deep .mdc-text-field {
+        height: 36px !important;
+      }
+      .log-search-field ::ng-deep .mat-mdc-form-field-infix {
+        padding: 4px 0 !important;
+        min-height: unset;
+      }
+      .log-search-field ::ng-deep input {
+        font-size: 12px;
+      }
+      .log-search-field ::ng-deep .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--cg-gray-400);
+        margin-right: 4px;
+      }
+      .active-toggle {
+        color: var(--cg-vibrant) !important;
+      }
       .log-viewport {
         height: 500px;
         background: var(--cg-dark);
@@ -550,16 +755,30 @@ import { statusIcon } from '../../shared/status';
         border-radius: 8px;
       }
       .log-line {
-        height: 22px; line-height: 22px;
-        padding: 0 12px; white-space: pre; overflow: hidden; text-overflow: ellipsis;
+        height: 22px;
+        line-height: 22px;
+        padding: 0 12px;
+        white-space: pre;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .log-num {
-        display: inline-block; width: 36px; text-align: right;
-        margin-right: 12px; color: rgba(255, 255, 255, 0.2); user-select: none;
+        display: inline-block;
+        width: 36px;
+        text-align: right;
+        margin-right: 12px;
+        color: rgba(255, 255, 255, 0.2);
+        user-select: none;
       }
-      .log-error { color: #f48771; }
-      .log-warning { color: #cca700; }
-      .log-info { color: #89d185; }
+      .log-error {
+        color: #f48771;
+      }
+      .log-warning {
+        color: #cca700;
+      }
+      .log-info {
+        color: #89d185;
+      }
     `,
   ],
 })
@@ -748,21 +967,31 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
 
   celebrationIcon(): string {
     switch (this.celebrationType) {
-      case 'success': return 'check_circle';
-      case 'partial': return 'check_circle';
-      case 'all_skipped': return 'check_circle';
-      case 'failure': return 'error_outline';
-      default: return 'info';
+      case 'success':
+        return 'check_circle';
+      case 'partial':
+        return 'check_circle';
+      case 'all_skipped':
+        return 'check_circle';
+      case 'failure':
+        return 'error_outline';
+      default:
+        return 'info';
     }
   }
 
   celebrationTitle(): string {
     switch (this.celebrationType) {
-      case 'success': return 'Run Completed Successfully';
-      case 'partial': return 'Run Completed (Partial)';
-      case 'all_skipped': return 'Run Completed - Already Current';
-      case 'failure': return 'Run Failed';
-      default: return '';
+      case 'success':
+        return 'Run Completed Successfully';
+      case 'partial':
+        return 'Run Completed (Partial)';
+      case 'all_skipped':
+        return 'Run Completed - Already Current';
+      case 'failure':
+        return 'Run Failed';
+      default:
+        return '';
     }
   }
 
@@ -896,4 +1125,3 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     return '';
   }
 }
-

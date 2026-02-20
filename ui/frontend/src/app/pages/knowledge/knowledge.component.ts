@@ -110,8 +110,11 @@ interface FileGroup {
             <!-- Group Selector -->
             <div class="group-nav">
               @for (g of archGroups; track g.id) {
-                <button class="group-chip" [class.group-active]="activeArchGroup === g.id"
-                        (click)="selectArchGroup(g.id)">
+                <button
+                  class="group-chip"
+                  [class.group-active]="activeArchGroup === g.id"
+                  (click)="selectArchGroup(g.id)"
+                >
                   <mat-icon class="group-chip-icon">{{ g.icon }}</mat-icon>
                   {{ g.label }}
                   <span class="group-chip-count">{{ g.files.length }}</span>
@@ -184,7 +187,9 @@ interface FileGroup {
                     <span class="dg-label">{{ g.label }}</span>
                     <span class="dg-phase">{{ g.phase }}</span>
                     <span class="dg-count">{{ g.files.length }}</span>
-                    <mat-icon class="dg-chevron">{{ expandedDataGroups.has(g.id) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    <mat-icon class="dg-chevron">{{
+                      expandedDataGroups.has(g.id) ? 'expand_less' : 'expand_more'
+                    }}</mat-icon>
                   </div>
                   @if (expandedDataGroups.has(g.id)) {
                     <div class="dg-files">
@@ -198,7 +203,9 @@ interface FileGroup {
                           (keydown.enter)="viewFile(file)"
                           (keydown.space)="viewFile(file); $event.preventDefault()"
                         >
-                          <mat-icon class="dg-file-icon" [class]="'type-' + file.type">{{ fileIcon(file.type) }}</mat-icon>
+                          <mat-icon class="dg-file-icon" [class]="'type-' + file.type">{{
+                            fileIcon(file.type)
+                          }}</mat-icon>
                           <span class="dg-file-name">{{ file.name }}</span>
                           <span class="dg-file-size">{{ formatBytes(file.size_bytes) }}</span>
                         </div>
@@ -268,10 +275,20 @@ interface FileGroup {
                     <mat-icon>code</mat-icon> Source
                   </button>
                 }
-                <button mat-icon-button (click)="copyContent()" matTooltip="Copy to clipboard" aria-label="Copy to clipboard">
+                <button
+                  mat-icon-button
+                  (click)="copyContent()"
+                  matTooltip="Copy to clipboard"
+                  aria-label="Copy to clipboard"
+                >
                   <mat-icon>content_copy</mat-icon>
                 </button>
-                <button mat-icon-button (click)="downloadContent()" matTooltip="Download file" aria-label="Download file">
+                <button
+                  mat-icon-button
+                  (click)="downloadContent()"
+                  matTooltip="Download file"
+                  aria-label="Download file"
+                >
                   <mat-icon>download</mat-icon>
                 </button>
                 <button mat-icon-button (click)="closeViewer()" matTooltip="Close (Esc)" aria-label="Close viewer">
@@ -298,9 +315,15 @@ interface FileGroup {
   styles: [
     `
       /* ── Stats icons ─────────────────────────────────── */
-      .stat-docs .mat-icon { color: var(--cg-blue); }
-      .stat-data .mat-icon { color: var(--cg-vibrant); }
-      .stat-diagrams .mat-icon { color: var(--cg-success); }
+      .stat-docs .mat-icon {
+        color: var(--cg-blue);
+      }
+      .stat-data .mat-icon {
+        color: var(--cg-vibrant);
+      }
+      .stat-diagrams .mat-icon {
+        color: var(--cg-success);
+      }
 
       /* ── Section Cards ───────────────────────────────── */
       .section-card {
@@ -317,7 +340,8 @@ interface FileGroup {
         padding: 20px 24px 16px;
       }
       .section-icon-wrap {
-        width: 42px; height: 42px;
+        width: 42px;
+        height: 42px;
         border-radius: 10px;
         display: flex;
         align-items: center;
@@ -325,12 +349,20 @@ interface FileGroup {
         flex-shrink: 0;
       }
       .section-icon-wrap .mat-icon {
-        font-size: 22px; width: 22px; height: 22px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
         color: #fff;
       }
-      .arch-icon-wrap { background: var(--cg-blue); }
-      .data-icon-wrap { background: var(--cg-vibrant); }
-      .other-icon-wrap { background: var(--cg-gray-400); }
+      .arch-icon-wrap {
+        background: var(--cg-blue);
+      }
+      .data-icon-wrap {
+        background: var(--cg-vibrant);
+      }
+      .other-icon-wrap {
+        background: var(--cg-gray-400);
+      }
       .section-title {
         font-size: 16px;
         font-weight: 500;
@@ -374,7 +406,9 @@ interface FileGroup {
         font-weight: 500;
       }
       .group-chip-icon {
-        font-size: 16px; width: 16px; height: 16px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
       }
       .group-chip-count {
         background: var(--cg-gray-100);
@@ -407,7 +441,9 @@ interface FileGroup {
         background: rgba(0, 112, 173, 0.06) !important;
       }
       .doc-icon {
-        font-size: 20px; width: 20px; height: 20px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
         flex-shrink: 0;
       }
       .doc-info {
@@ -449,7 +485,9 @@ interface FileGroup {
         flex-shrink: 0;
       }
       .doc-arrow {
-        font-size: 18px; width: 18px; height: 18px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
         color: var(--cg-gray-300);
         flex-shrink: 0;
       }
@@ -464,7 +502,9 @@ interface FileGroup {
         font-size: 13px;
       }
       .section-empty .mat-icon {
-        font-size: 20px; width: 20px; height: 20px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
         color: var(--cg-gray-300);
       }
 
@@ -490,7 +530,9 @@ interface FileGroup {
         background: var(--cg-gray-50);
       }
       .dg-icon {
-        font-size: 18px; width: 18px; height: 18px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
         color: var(--cg-vibrant);
       }
       .dg-label {
@@ -512,7 +554,9 @@ interface FileGroup {
         border-radius: 10px;
       }
       .dg-chevron {
-        font-size: 20px; width: 20px; height: 20px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
         color: var(--cg-gray-300);
       }
       .dg-files {
@@ -531,7 +575,9 @@ interface FileGroup {
         background: var(--cg-gray-50);
       }
       .dg-file-icon {
-        font-size: 16px; width: 16px; height: 16px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
       }
       .dg-file-name {
         flex: 1;
@@ -550,21 +596,56 @@ interface FileGroup {
       }
 
       /* ── Type Colors ─────────────────────────────────── */
-      .type-json { color: var(--cg-vibrant); }
-      .type-md { color: var(--cg-blue); }
-      .type-drawio { color: var(--cg-success); }
-      .type-html { color: #e44d26; }
-      .type-adoc { color: #a0522d; }
-      .type-confluence { color: #0052cc; }
-      .type-other { color: var(--cg-gray-500); }
+      .type-json {
+        color: var(--cg-vibrant);
+      }
+      .type-md {
+        color: var(--cg-blue);
+      }
+      .type-drawio {
+        color: var(--cg-success);
+      }
+      .type-html {
+        color: #e44d26;
+      }
+      .type-adoc {
+        color: #a0522d;
+      }
+      .type-confluence {
+        color: #0052cc;
+      }
+      .type-other {
+        color: var(--cg-gray-500);
+      }
 
-      .badge-json { background: rgba(18, 171, 219, 0.1); color: var(--cg-vibrant); }
-      .badge-md { background: rgba(0, 112, 173, 0.1); color: var(--cg-blue); }
-      .badge-drawio { background: rgba(40, 167, 69, 0.1); color: var(--cg-success); }
-      .badge-html { background: rgba(228, 77, 38, 0.1); color: #e44d26; }
-      .badge-adoc { background: rgba(160, 82, 45, 0.1); color: #a0522d; }
-      .badge-confluence { background: rgba(0, 82, 204, 0.1); color: #0052cc; }
-      .badge-other { background: var(--cg-gray-100); color: var(--cg-gray-500); }
+      .badge-json {
+        background: rgba(18, 171, 219, 0.1);
+        color: var(--cg-vibrant);
+      }
+      .badge-md {
+        background: rgba(0, 112, 173, 0.1);
+        color: var(--cg-blue);
+      }
+      .badge-drawio {
+        background: rgba(40, 167, 69, 0.1);
+        color: var(--cg-success);
+      }
+      .badge-html {
+        background: rgba(228, 77, 38, 0.1);
+        color: #e44d26;
+      }
+      .badge-adoc {
+        background: rgba(160, 82, 45, 0.1);
+        color: #a0522d;
+      }
+      .badge-confluence {
+        background: rgba(0, 82, 204, 0.1);
+        color: #0052cc;
+      }
+      .badge-other {
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-500);
+      }
 
       /* ── Viewer Panel ────────────────────────────────── */
       .viewer-panel {
@@ -607,7 +688,9 @@ interface FileGroup {
         padding: 0 10px !important;
       }
       .mode-btn .mat-icon {
-        font-size: 16px; width: 16px; height: 16px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
         margin-right: 4px;
       }
       .viewer-body {
@@ -697,40 +780,141 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
   // ─── Categorization ─────────────────────────────────────────────
   private categorize(files: KnowledgeFile[]): void {
     // Architecture Documentation (document / legacy phase3_synthesis)
-    const arc42 = this.sortArc42(files.filter(f => this.inDir(f, 'document/arc42') || this.inDir(f, 'phase3_synthesis/arc42') || this.inDir(f, 'arc42')));
-    const c4 = this.sortC4(files.filter(f => this.inDir(f, 'document/c4') || this.inDir(f, 'phase3_synthesis/c4') || (this.inDir(f, 'c4') && !this.inDir(f, 'arc42'))));
-    const quality = files.filter(f => this.inDir(f, 'document/quality') || this.inDir(f, 'phase3_synthesis/quality'));
-    const synthOther = files.filter(f =>
-      (this.inDir(f, 'document') || this.inDir(f, 'phase3_synthesis')) &&
-      !arc42.includes(f) && !c4.includes(f) && !quality.includes(f));
+    const arc42 = this.sortArc42(
+      files.filter(
+        (f) => this.inDir(f, 'document/arc42') || this.inDir(f, 'phase3_synthesis/arc42') || this.inDir(f, 'arc42'),
+      ),
+    );
+    const c4 = this.sortC4(
+      files.filter(
+        (f) =>
+          this.inDir(f, 'document/c4') ||
+          this.inDir(f, 'phase3_synthesis/c4') ||
+          (this.inDir(f, 'c4') && !this.inDir(f, 'arc42')),
+      ),
+    );
+    const quality = files.filter((f) => this.inDir(f, 'document/quality') || this.inDir(f, 'phase3_synthesis/quality'));
+    const synthOther = files.filter(
+      (f) =>
+        (this.inDir(f, 'document') || this.inDir(f, 'phase3_synthesis')) &&
+        !arc42.includes(f) &&
+        !c4.includes(f) &&
+        !quality.includes(f),
+    );
 
     this.archGroups = [
-      { id: 'arc42', label: 'Arc42 Docs', icon: 'menu_book', phase: 'Phase 3', description: 'Arc42 architecture template chapters', files: arc42 },
-      { id: 'c4', label: 'C4 Model', icon: 'account_tree', phase: 'Phase 3', description: 'C4 diagrams (context, container, component, deployment)', files: c4 },
-      ...(quality.length > 0 ? [{ id: 'quality', label: 'Quality', icon: 'verified', phase: 'Phase 3', description: 'Quality assessment reports', files: quality }] : []),
-      ...(synthOther.length > 0 ? [{ id: 'synth-other', label: 'Other Synthesis', icon: 'description', phase: 'Phase 3', description: 'Additional synthesis artifacts', files: synthOther }] : []),
-    ].filter(g => g.files.length > 0);
+      {
+        id: 'arc42',
+        label: 'Arc42 Docs',
+        icon: 'menu_book',
+        phase: 'Phase 3',
+        description: 'Arc42 architecture template chapters',
+        files: arc42,
+      },
+      {
+        id: 'c4',
+        label: 'C4 Model',
+        icon: 'account_tree',
+        phase: 'Phase 3',
+        description: 'C4 diagrams (context, container, component, deployment)',
+        files: c4,
+      },
+      ...(quality.length > 0
+        ? [
+            {
+              id: 'quality',
+              label: 'Quality',
+              icon: 'verified',
+              phase: 'Phase 3',
+              description: 'Quality assessment reports',
+              files: quality,
+            },
+          ]
+        : []),
+      ...(synthOther.length > 0
+        ? [
+            {
+              id: 'synth-other',
+              label: 'Other Synthesis',
+              icon: 'description',
+              phase: 'Phase 3',
+              description: 'Additional synthesis artifacts',
+              files: synthOther,
+            },
+          ]
+        : []),
+    ].filter((g) => g.files.length > 0);
 
     if (this.archGroups.length > 0) {
       this.activeArchGroup = this.archGroups[0].id;
     }
 
     // Pipeline Data (extract/facts, analyze/analysis, plan/planning, implement/codegen)
-    const facts = files.filter(f => this.inDir(f, 'extract') || this.inDir(f, 'phase1_facts'));
-    const analysis = files.filter(f => this.inDir(f, 'analyze') || this.inDir(f, 'phase2_analysis'));
-    const plans = files.filter(f => this.inDir(f, 'plan') || this.inDir(f, 'phase4_planning'));
-    const codegen = files.filter(f => this.inDir(f, 'implement') || this.inDir(f, 'phase5_codegen'));
-    const testing = files.filter(f => this.inDir(f, 'verify') || this.inDir(f, 'phase6_testing'));
-    const deployment = files.filter(f => this.inDir(f, 'deliver') || this.inDir(f, 'phase7_deployment'));
+    const facts = files.filter((f) => this.inDir(f, 'extract') || this.inDir(f, 'phase1_facts'));
+    const analysis = files.filter((f) => this.inDir(f, 'analyze') || this.inDir(f, 'phase2_analysis'));
+    const plans = files.filter((f) => this.inDir(f, 'plan') || this.inDir(f, 'phase4_planning'));
+    const codegen = files.filter((f) => this.inDir(f, 'implement') || this.inDir(f, 'phase5_codegen'));
+    const testing = files.filter((f) => this.inDir(f, 'verify') || this.inDir(f, 'phase6_testing'));
+    const deployment = files.filter((f) => this.inDir(f, 'deliver') || this.inDir(f, 'phase7_deployment'));
 
     this.dataGroups = [
-      { id: 'facts', label: 'Facts & Evidence', icon: 'data_object', phase: 'Phase 1', description: 'Architecture facts and evidence', files: facts },
-      { id: 'analysis', label: 'Analysis', icon: 'analytics', phase: 'Phase 2', description: 'Architecture analysis results', files: analysis },
-      { id: 'plans', label: 'Development Plans', icon: 'assignment', phase: 'Phase 4', description: 'Generated development plans', files: plans },
-      { id: 'codegen', label: 'Code Reports', icon: 'code', phase: 'Phase 5', description: 'Code generation reports', files: codegen },
-      ...(testing.length > 0 ? [{ id: 'testing', label: 'Test Reports', icon: 'science', phase: 'Phase 6', description: 'Test generation output', files: testing }] : []),
-      ...(deployment.length > 0 ? [{ id: 'deploy', label: 'Deployment', icon: 'rocket_launch', phase: 'Phase 7', description: 'Deployment artifacts', files: deployment }] : []),
-    ].filter(g => g.files.length > 0);
+      {
+        id: 'facts',
+        label: 'Facts & Evidence',
+        icon: 'data_object',
+        phase: 'Phase 1',
+        description: 'Architecture facts and evidence',
+        files: facts,
+      },
+      {
+        id: 'analysis',
+        label: 'Analysis',
+        icon: 'analytics',
+        phase: 'Phase 2',
+        description: 'Architecture analysis results',
+        files: analysis,
+      },
+      {
+        id: 'plans',
+        label: 'Development Plans',
+        icon: 'assignment',
+        phase: 'Phase 4',
+        description: 'Generated development plans',
+        files: plans,
+      },
+      {
+        id: 'codegen',
+        label: 'Code Reports',
+        icon: 'code',
+        phase: 'Phase 5',
+        description: 'Code generation reports',
+        files: codegen,
+      },
+      ...(testing.length > 0
+        ? [
+            {
+              id: 'testing',
+              label: 'Test Reports',
+              icon: 'science',
+              phase: 'Phase 6',
+              description: 'Test generation output',
+              files: testing,
+            },
+          ]
+        : []),
+      ...(deployment.length > 0
+        ? [
+            {
+              id: 'deploy',
+              label: 'Deployment',
+              icon: 'rocket_launch',
+              phase: 'Phase 7',
+              description: 'Deployment artifacts',
+              files: deployment,
+            },
+          ]
+        : []),
+    ].filter((g) => g.files.length > 0);
 
     // Auto-expand first data group
     if (this.dataGroups.length > 0) {
@@ -738,14 +922,25 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
     }
 
     // Other: anything not classified
-    const classified = new Set([...arc42, ...c4, ...quality, ...synthOther, ...facts, ...analysis, ...plans, ...codegen, ...testing, ...deployment]);
-    this.otherFiles = files.filter(f => !classified.has(f));
+    const classified = new Set([
+      ...arc42,
+      ...c4,
+      ...quality,
+      ...synthOther,
+      ...facts,
+      ...analysis,
+      ...plans,
+      ...codegen,
+      ...testing,
+      ...deployment,
+    ]);
+    this.otherFiles = files.filter((f) => !classified.has(f));
 
     // Stats
     const docTypes = new Set(['md', 'adoc', 'html', 'confluence']);
-    this.docCount = [...arc42, ...c4, ...quality, ...synthOther].filter(f => docTypes.has(f.type)).length;
+    this.docCount = [...arc42, ...c4, ...quality, ...synthOther].filter((f) => docTypes.has(f.type)).length;
     this.dataCount = [...facts, ...analysis, ...plans, ...codegen].length;
-    this.diagramCount = files.filter(f => f.type === 'drawio').length;
+    this.diagramCount = files.filter((f) => f.type === 'drawio').length;
   }
 
   private inDir(file: KnowledgeFile, dir: string): boolean {
@@ -938,27 +1133,78 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
     for (const line of lines) {
       const trimmed = line.trim();
       if (/^\{code(:.*)?\}$/.test(trimmed)) {
-        if (inCode) { html += '</code></pre>'; inCode = false; }
-        else { if (inTable) { html += '</tbody></table>'; inTable = false; } html += '<pre class="json-viewer"><code>'; inCode = true; }
+        if (inCode) {
+          html += '</code></pre>';
+          inCode = false;
+        } else {
+          if (inTable) {
+            html += '</tbody></table>';
+            inTable = false;
+          }
+          html += '<pre class="json-viewer"><code>';
+          inCode = true;
+        }
         continue;
       }
-      if (inCode) { html += this.esc(line) + '\n'; continue; }
-      if (trimmed === '----') { if (inTable) { html += '</tbody></table>'; inTable = false; } html += '<hr>'; continue; }
+      if (inCode) {
+        html += this.esc(line) + '\n';
+        continue;
+      }
+      if (trimmed === '----') {
+        if (inTable) {
+          html += '</tbody></table>';
+          inTable = false;
+        }
+        html += '<hr>';
+        continue;
+      }
       const hm = trimmed.match(/^h([1-6])\.\s+(.+)$/);
-      if (hm) { if (inTable) { html += '</tbody></table>'; inTable = false; } html += `<h${hm[1]}>${this.cfInline(this.esc(hm[2]))}</h${hm[1]}>`; continue; }
+      if (hm) {
+        if (inTable) {
+          html += '</tbody></table>';
+          inTable = false;
+        }
+        html += `<h${hm[1]}>${this.cfInline(this.esc(hm[2]))}</h${hm[1]}>`;
+        continue;
+      }
       if (/^\|\|.+\|\|$/.test(trimmed)) {
-        if (!inTable) { html += '<table><tbody>'; inTable = true; }
-        const cells = trimmed.slice(2, -2).split('||').map(c => `<th>${this.cfInline(this.esc(c.trim()))}</th>`).join('');
-        html += `<tr>${cells}</tr>`; continue;
+        if (!inTable) {
+          html += '<table><tbody>';
+          inTable = true;
+        }
+        const cells = trimmed
+          .slice(2, -2)
+          .split('||')
+          .map((c) => `<th>${this.cfInline(this.esc(c.trim()))}</th>`)
+          .join('');
+        html += `<tr>${cells}</tr>`;
+        continue;
       }
       if (/^\|[^|].+\|$/.test(trimmed)) {
-        if (!inTable) { html += '<table><tbody>'; inTable = true; }
-        const cells = trimmed.slice(1, -1).split('|').map(c => `<td>${this.cfInline(this.esc(c.trim()))}</td>`).join('');
-        html += `<tr>${cells}</tr>`; continue;
+        if (!inTable) {
+          html += '<table><tbody>';
+          inTable = true;
+        }
+        const cells = trimmed
+          .slice(1, -1)
+          .split('|')
+          .map((c) => `<td>${this.cfInline(this.esc(c.trim()))}</td>`)
+          .join('');
+        html += `<tr>${cells}</tr>`;
+        continue;
       }
-      if (inTable) { html += '</tbody></table>'; inTable = false; }
-      if (/^\*\s+/.test(trimmed)) { html += `<li>${this.cfInline(this.esc(trimmed.replace(/^\*\s+/, '')))}</li>`; continue; }
-      if (/^#\s+/.test(trimmed)) { html += `<li>${this.cfInline(this.esc(trimmed.replace(/^#\s+/, '')))}</li>`; continue; }
+      if (inTable) {
+        html += '</tbody></table>';
+        inTable = false;
+      }
+      if (/^\*\s+/.test(trimmed)) {
+        html += `<li>${this.cfInline(this.esc(trimmed.replace(/^\*\s+/, '')))}</li>`;
+        continue;
+      }
+      if (/^#\s+/.test(trimmed)) {
+        html += `<li>${this.cfInline(this.esc(trimmed.replace(/^#\s+/, '')))}</li>`;
+        continue;
+      }
       if (trimmed === '') continue;
       html += `<p>${this.cfInline(this.esc(trimmed))}</p>`;
     }
@@ -986,22 +1232,32 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
     // "01-introduction.md" → "01 — Introduction"
     const m = name.match(/^(\d+)[-_](.+?)\.(\w+)$/);
     if (m) {
-      const title = m[2].replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const title = m[2].replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
       return `${m[1]} — ${title}`;
     }
     // "c4-component.md" → "C4 Component"
-    return name.replace(/\.\w+$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return name
+      .replace(/\.\w+$/, '')
+      .replace(/[-_]/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   fileIcon(type: string): string {
     switch (type) {
-      case 'json': return 'data_object';
-      case 'md': return 'article';
-      case 'drawio': return 'architecture';
-      case 'html': return 'web';
-      case 'adoc': return 'description';
-      case 'confluence': return 'edit_document';
-      default: return 'insert_drive_file';
+      case 'json':
+        return 'data_object';
+      case 'md':
+        return 'article';
+      case 'drawio':
+        return 'architecture';
+      case 'html':
+        return 'web';
+      case 'adoc':
+        return 'description';
+      case 'confluence':
+        return 'edit_document';
+      default:
+        return 'insert_drive_file';
     }
   }
 

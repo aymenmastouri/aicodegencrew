@@ -204,9 +204,7 @@ export class PipelineService {
   // SSE stream
   connectSSE(startIdx = 0): Observable<SSEEvent> {
     return new Observable<SSEEvent>((observer) => {
-      const url = startIdx > 0
-        ? `${this.base}/pipeline/stream?start_idx=${startIdx}`
-        : `${this.base}/pipeline/stream`;
+      const url = startIdx > 0 ? `${this.base}/pipeline/stream?start_idx=${startIdx}` : `${this.base}/pipeline/stream`;
       const eventSource = new EventSource(url);
 
       eventSource.onmessage = (event) => {

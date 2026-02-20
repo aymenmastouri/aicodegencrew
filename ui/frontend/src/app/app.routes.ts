@@ -36,8 +36,7 @@ export const routes: Routes = [
   },
   {
     path: 'collectors',
-    loadComponent: () =>
-      import('./pages/collectors/collectors.component').then((m) => m.CollectorsComponent),
+    loadComponent: () => import('./pages/collectors/collectors.component').then((m) => m.CollectorsComponent),
   },
   {
     path: 'history',

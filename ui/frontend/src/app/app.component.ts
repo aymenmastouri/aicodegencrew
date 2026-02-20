@@ -31,15 +31,20 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
   ],
   template: `
     <mat-toolbar class="app-toolbar sticky top-0 z-[1000]">
-      <button mat-icon-button (click)="toggleSidenav()"
-              [attr.aria-label]="sidenavLayout === 'hidden' ? 'Show menu' : sidenavLayout === 'rail' ? 'Hide menu' : 'Collapse menu'"
-              [matTooltip]="sidenavLayout === 'hidden' ? 'Show menu' : sidenavLayout === 'rail' ? 'Hide menu' : 'Collapse menu'">
+      <button
+        mat-icon-button
+        (click)="toggleSidenav()"
+        [attr.aria-label]="
+          sidenavLayout === 'hidden' ? 'Show menu' : sidenavLayout === 'rail' ? 'Hide menu' : 'Collapse menu'
+        "
+        [matTooltip]="
+          sidenavLayout === 'hidden' ? 'Show menu' : sidenavLayout === 'rail' ? 'Hide menu' : 'Collapse menu'
+        "
+      >
         <mat-icon class="text-white">{{ sidenavLayout === 'hidden' ? 'menu_open' : 'menu' }}</mat-icon>
       </button>
       <a routerLink="/dashboard" class="brand-link">
-        <span class="brand">
-          <span class="brand-ai">SDLC</span> Pilot
-        </span>
+        <span class="brand"> <span class="brand-ai">SDLC</span> Pilot </span>
         <span class="brand-sub">AI-Powered Development Lifecycle Automation</span>
       </a>
       <span class="flex-1"></span>
@@ -47,13 +52,15 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
       <!-- Pipeline Status Indicator -->
       @if (notifSvc.notification$ | async; as notif) {
         @if (notif.state === 'running') {
-          <a class="status-indicator status-running" routerLink="/run"
-             matTooltip="Pipeline running — click to view">
+          <a class="status-indicator status-running" routerLink="/run" matTooltip="Pipeline running — click to view">
             <div class="mini-progress-wrap">
-              <mat-progress-bar mode="determinate" [value]="notif.progressPercent"
-                class="mini-progress-bar"></mat-progress-bar>
+              <mat-progress-bar
+                mode="determinate"
+                [value]="notif.progressPercent"
+                class="mini-progress-bar"
+              ></mat-progress-bar>
             </div>
-            <span class="mini-progress-pct">{{ notif.progressPercent | number:'1.0-0' }}%</span>
+            <span class="mini-progress-pct">{{ notif.progressPercent | number: '1.0-0' }}%</span>
             @if (notif.etaSeconds !== null && notif.etaSeconds !== undefined && notif.etaSeconds > 0) {
               <span class="mini-eta">~{{ formatEta(notif.etaSeconds) }}</span>
             }
@@ -75,26 +82,30 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
     </mat-toolbar>
 
     <mat-sidenav-container class="sidenav-container">
-      <mat-sidenav #sidenav
+      <mat-sidenav
+        #sidenav
         [mode]="sidenavLayout === 'overlay' ? 'over' : 'side'"
-        [opened]="sidenavLayout !== 'overlay' && sidenavLayout !== 'hidden' || sidenavOpenOverlay"
+        [opened]="(sidenavLayout !== 'overlay' && sidenavLayout !== 'hidden') || sidenavOpenOverlay"
         (closedStart)="onSidenavClosed()"
         class="sidenav"
         [class.sidenav-rail]="sidenavLayout === 'rail' && !railExpanded"
         [class.sidenav-full]="sidenavLayout === 'full' || (sidenavLayout === 'rail' && railExpanded)"
-        [class.sidenav-hidden]="sidenavLayout === 'hidden'">
-        <div class="sidenav-inner"
-             (mouseenter)="onRailHover(true)"
-             (mouseleave)="onRailHover(false)">
+        [class.sidenav-hidden]="sidenavLayout === 'hidden'"
+      >
+        <div class="sidenav-inner" (mouseenter)="onRailHover(true)" (mouseleave)="onRailHover(false)">
           <div class="nav-content">
             @for (group of navGroups; track group.label) {
               <div class="nav-group-label">{{ group.label }}</div>
               <mat-nav-list class="nav-section">
                 @for (item of group.items; track item.route) {
-                  <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link"
-                     (click)="onNavItemClick()"
-                     [matTooltip]="sidenavLayout === 'rail' && !railExpanded ? item.label : ''"
-                     matTooltipPosition="right">
+                  <a
+                    mat-list-item
+                    [routerLink]="item.route"
+                    routerLinkActive="active-link"
+                    (click)="onNavItemClick()"
+                    [matTooltip]="sidenavLayout === 'rail' && !railExpanded ? item.label : ''"
+                    matTooltipPosition="right"
+                  >
                     <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
                     <span matListItemTitle class="nav-label">{{ item.label }}</span>
                   </a>
@@ -218,8 +229,15 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         animation: pulse-dot 1.5s ease-in-out infinite;
       }
       @keyframes pulse-dot {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(0.8); }
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
+        }
       }
 
       /* Static dots */
@@ -228,8 +246,12 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         height: 8px;
         border-radius: 50%;
       }
-      .dot-green { background: var(--cg-success, #28a745); }
-      .dot-red { background: var(--cg-error, #dc3545); }
+      .dot-green {
+        background: var(--cg-success, #28a745);
+      }
+      .dot-red {
+        background: var(--cg-error, #dc3545);
+      }
 
       .sidenav-container {
         height: calc(100vh - 56px);
@@ -361,7 +383,8 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         color: rgba(255, 255, 255, 0.6);
       }
       .footer-sep {
-        width: 3px; height: 3px;
+        width: 3px;
+        height: 3px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.15);
       }
@@ -377,7 +400,9 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
 
       /* Hide tagline on small screens */
       @media (max-width: 768px) {
-        .brand-sub { display: none; }
+        .brand-sub {
+          display: none;
+        }
       }
     `,
   ],
