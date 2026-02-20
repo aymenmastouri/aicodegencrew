@@ -108,11 +108,6 @@ class OllamaClient:
                 return embeddings[0]  # Return first embedding
 
             except requests.exceptions.RequestException as e:
-                try:
-                    pass  # type: ignore[name-defined]
-                except Exception:
-                    pass
-
                 logger.warning(f"Ollama API request failed (attempt {attempt + 1}/{self.max_retries}): {e}")
 
                 if attempt < self.max_retries - 1:

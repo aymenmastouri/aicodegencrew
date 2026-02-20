@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -12,7 +12,8 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { PipelineService, EnvVariable } from '../../services/pipeline.service';
 import { ApiService, PresetInfo } from '../../services/api.service';
@@ -443,7 +444,8 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
     }
   `],
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   loading = true;
   saving = false;
   savingPhases = false;
@@ -465,8 +467,13 @@ export class SettingsComponent implements OnInit {
     private cdr: ChangeDetectorRef,
   ) {}
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   ngOnInit(): void {
-    this.notifSvc.notification$.subscribe((n) => {
+    this.notifSvc.notification$.pipe(takeUntil(this.destroy$)).subscribe((n) => {
       this.isRunning = n.state === 'running';
       this.cdr.markForCheck();
     });

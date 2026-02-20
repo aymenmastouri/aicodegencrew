@@ -420,10 +420,17 @@ class DimensionResultsAdapter:
                 lines_str = raw_ev.get("lines", "1-1")
                 if "-" in str(lines_str):
                     parts = str(lines_str).split("-")
-                    line_start = int(parts[0])
-                    line_end = int(parts[1]) if len(parts) > 1 else line_start
+                    try:
+                        line_start = int(parts[0])
+                        line_end = int(parts[1]) if len(parts) > 1 else line_start
+                    except (ValueError, IndexError):
+                        line_start = 1
+                        line_end = 1
                 else:
-                    line_start = int(lines_str) if lines_str else 1
+                    try:
+                        line_start = int(lines_str) if lines_str else 1
+                    except ValueError:
+                        line_start = 1
                     line_end = line_start
                 ev = CollectedEvidence(
                     path=raw_ev.get("path", raw_ev.get("file_path", "")),
