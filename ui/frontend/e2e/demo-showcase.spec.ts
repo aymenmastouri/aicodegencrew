@@ -3,7 +3,8 @@ import { test, expect, Page } from '@playwright/test';
 /**
  * Demo Showcase — FULL SCENARIO for AI Challenge presentation.
  *
- * Flow: Reset All → Show empty app → Run Discover→Implement → Show ALL artifacts
+ * Flow: Reset All → Empty App Tour → Fill Settings → Upload Task XML →
+ *       Run Discover→Implement → Review ALL artifacts → History → Logs → Metrics
  *
  * Run:  npx playwright test --project=demo e2e/demo-showcase.spec.ts
  * Video: test-results/demo-showcase-Demo-Showcase-.../video.webm
@@ -35,33 +36,80 @@ async function scrollThrough(page: Page, selector: string, fast = false) {
   }
 }
 
+/** Fill a mat-input field identified by its mat-label text.
+ *  Clears existing content first so old values don't bleed through. */
+async function fillField(page: Page, labelText: string, value: string) {
+  const field = page
+    .locator(`mat-form-field:has(mat-label:has-text("${labelText}")) input`)
+    .first();
+  if (await field.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await field.click({ clickCount: 3 }); // select all
+    await field.clear();
+    await field.fill(value);
+    await pause(page, 600);
+  }
+}
+
+/** Click the Reset button on the currently visible Settings tab, wait for snackbar. */
+async function resetSettingsTab(page: Page) {
+  const resetBtn = page.locator('button:has-text("Reset")').first();
+  if (await resetBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await resetBtn.click();
+    await pause(page, 800); // let the form reset animate
+  }
+}
+
+/** Select a value in a mat-select identified by its mat-label text */
+async function selectField(page: Page, labelText: string, optionText: string) {
+  const select = page
+    .locator(`mat-form-field:has(mat-label:has-text("${labelText}")) mat-select`)
+    .first();
+  if (await select.isVisible({ timeout: 3_000 }).catch(() => false)) {
+    await select.click();
+    const option = page.locator(`mat-option:has-text("${optionText}")`);
+    await expect(option.first()).toBeVisible({ timeout: 5_000 });
+    await option.first().click();
+    await pause(page, 600);
+  }
+}
+
 test.describe('Demo Showcase', () => {
   test('Full app walkthrough', async ({ page }) => {
     test.setTimeout(3_600_000); // 60 min
 
     // ════════════════════════════════════════════════
-    // PROLOGUE: RESET EVERYTHING
+    // PROLOGUE: RESET EVERYTHING — clean slate
     // ════════════════════════════════════════════════
-    // Call reset API — clears all phases except Discover's ChromaDB
-    // Retry up to 3 times (409 = pipeline still running from previous test)
+
+    // Open dashboard first so the reset is visible on-screen
+    await page.goto('/dashboard');
+    await expect(page.locator('.hero, mat-toolbar').first()).toBeVisible({ timeout: 15_000 });
+    await pause(page, LONG_PAUSE);
+
+    // Call reset API — clears all phase knowledge + pipeline state
+    // Retry up to 3 times (409 = pipeline still running from a previous test)
     for (let attempt = 0; attempt < 3; attempt++) {
       const resetResp = await page.request.post('http://localhost:4200/api/reset/all');
       if (resetResp.ok()) break;
-      // 409 = pipeline running — wait and retry
       if (resetResp.status() === 409 && attempt < 2) {
         await pause(page, 10_000);
         continue;
       }
-      // Non-409 or last attempt — continue anyway (best effort)
-      break;
+      break; // non-409 or last attempt — continue anyway
     }
     await pause(page, LONG_PAUSE);
 
-    // Also clear Discover phase state (for fully clean slate)
-    await page.request.post('http://localhost:4200/api/reset/clear-state', {
-      data: { phase_ids: ['discover'], cascade: false },
-    }).catch(() => {});
-    await pause(page);
+    // Also clear Discover phase state for a fully clean slate
+    await page
+      .request.post('http://localhost:4200/api/reset/clear-state', {
+        data: { phase_ids: ['discover'], cascade: false },
+      })
+      .catch(() => {});
+
+    // Reload the page so Angular reflects the clean state visually
+    await page.reload();
+    await expect(page.locator('.hero, mat-toolbar').first()).toBeVisible({ timeout: 15_000 });
+    await pause(page, LONG_PAUSE);
 
     // ════════════════════════════════════════════════
     // ACT 1: SHOW THE EMPTY APP
@@ -94,7 +142,6 @@ test.describe('Demo Showcase', () => {
 
     // ── 3. KNOWLEDGE — empty state ──
     await navigateTo(page, 'Knowledge', '/knowledge');
-    // Should show empty state after reset
     const kbEmpty = page.locator('.empty-state');
     const kbStats = page.locator('.stats-bar');
     await expect(kbEmpty.or(kbStats).first()).toBeVisible({ timeout: 10_000 });
@@ -105,28 +152,187 @@ test.describe('Demo Showcase', () => {
     await expect(page.locator('mat-tab-group, .empty-state').first()).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    // ── 5. SETTINGS — show ALL config tabs with parameters ──
+    // ════════════════════════════════════════════════
+    // ACT 2: CONFIGURE THE PIPELINE — FILL ALL SETTINGS
+    // ════════════════════════════════════════════════
+
+    // ── 5. SETTINGS — fill ALL tabs with real configuration values ──
     await navigateTo(page, 'Settings', '/settings');
     const settingsTabs = page.locator('.mat-mdc-tab');
     await expect(settingsTabs.first()).toBeVisible({ timeout: 10_000 });
-    const settingsTabCount = await settingsTabs.count();
-    for (let i = 0; i < settingsTabCount; i++) {
-      await settingsTabs.nth(i).click();
-      await pause(page);
+    await pause(page, LONG_PAUSE);
 
-      // Scroll through tab content to show all fields/parameters
-      const tabContent = page.locator('.tab-content, .settings-form, mat-tab-body .mat-mdc-tab-body-content').first();
-      if (await tabContent.isVisible().catch(() => false)) {
-        await tabContent.evaluate((el) => el.scrollTo(0, el.scrollHeight / 2));
-        await pause(page, LONG_PAUSE);
-        await tabContent.evaluate((el) => el.scrollTo(0, el.scrollHeight));
-        await pause(page, LONG_PAUSE);
-        await tabContent.evaluate((el) => el.scrollTo(0, 0));
-        await pause(page, 600);
-      }
-    }
+    // ──────────────────────────────────────────────
+    // GENERAL TAB — Reset form first, then fill
+    // ──────────────────────────────────────────────
     await settingsTabs.first().click();
     await pause(page);
+
+    // Show the tab content
+    const generalBody = page.locator('mat-tab-body').first();
+    if (await generalBody.isVisible().catch(() => false)) {
+      await pause(page, LONG_PAUSE);
+    }
+
+    // RESET the General tab to defaults before filling
+    await resetSettingsTab(page);
+    await pause(page, LONG_PAUSE);
+
+    // Fill PROJECT_PATH
+    await fillField(page, 'PROJECT_PATH', 'C:\\uvz');
+    await pause(page, LONG_PAUSE);
+
+    // Scroll to show all general fields
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+    await pause(page, LONG_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await pause(page);
+
+    // ──────────────────────────────────────────────
+    // LLM TAB — Reset form first, then fill
+    // ──────────────────────────────────────────────
+    const llmTab = page.locator('.mat-mdc-tab').filter({ hasText: 'LLM' });
+    if (await llmTab.isVisible().catch(() => false)) {
+      await llmTab.click();
+      await pause(page, LONG_PAUSE);
+
+      // RESET the LLM tab to defaults before filling
+      await resetSettingsTab(page);
+      await pause(page, LONG_PAUSE);
+
+      // LLM_PROVIDER dropdown — select On-Prem
+      await selectField(page, 'LLM_PROVIDER', 'On-Prem');
+      await pause(page, LONG_PAUSE);
+
+      // MODEL
+      await fillField(page, 'MODEL', 'gpt-oss-120b');
+
+      // API_BASE
+      await fillField(page, 'API_BASE', 'http://sov-ai-platform.nue.local.vm:4000/v1');
+      await pause(page, LONG_PAUSE);
+
+      // Scroll to show lower fields
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+      await pause(page, LONG_PAUSE);
+
+      // CODEGEN_MODEL
+      await fillField(page, 'CODEGEN_MODEL', 'Qwen/Qwen2.5-Coder-14B-Instruct-GPTQ-Int4');
+
+      // CODEGEN_API_BASE
+      await fillField(page, 'CODEGEN_API_BASE', 'https://bmf-ai.apps.ce.capgemini.com/v1');
+
+      // CODEGEN_API_KEY — reveal then fill
+      const apiKeyField = page
+        .locator('mat-form-field:has(mat-label:has-text("CODEGEN_API_KEY")) input')
+        .first();
+      if (await apiKeyField.isVisible({ timeout: 3_000 }).catch(() => false)) {
+        // Toggle visibility to show key is set
+        const revealBtn = page
+          .locator('mat-form-field:has(mat-label:has-text("CODEGEN_API_KEY")) button[mat-icon-button]')
+          .first();
+        if (await revealBtn.isVisible().catch(() => false)) {
+          await revealBtn.click();
+          await pause(page, 600);
+        }
+        await apiKeyField.click({ clickCount: 3 });
+        await apiKeyField.clear();
+        await apiKeyField.fill('sk-bEyrQ6GSI4PRymm1UmJq3A');
+        await pause(page, LONG_PAUSE);
+        // Hide again
+        if (await revealBtn.isVisible().catch(() => false)) {
+          await revealBtn.click();
+          await pause(page, 400);
+        }
+      }
+
+      // OLLAMA_BASE_URL
+      await fillField(page, 'OLLAMA_BASE_URL', 'http://127.0.0.1:11434');
+
+      // EMBED_MODEL
+      await fillField(page, 'EMBED_MODEL', 'nomic-embed-text:latest');
+
+      // Scroll to show all LLM fields
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await pause(page, LONG_PAUSE);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await pause(page);
+
+      // Save LLM settings
+      const saveLlmBtn = page.locator('button:has-text("Save")').first();
+      if (await saveLlmBtn.isEnabled().catch(() => false)) {
+        await saveLlmBtn.click();
+        await expect(page.locator('.mat-mdc-snack-bar-container')).toBeVisible({ timeout: 5_000 });
+        await pause(page, LONG_PAUSE);
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // PHASES TAB — show phase toggles
+    // ──────────────────────────────────────────────
+    const phasesTab = page.locator('.mat-mdc-tab').filter({ hasText: 'Phases' });
+    if (await phasesTab.isVisible().catch(() => false)) {
+      await phasesTab.click();
+      await pause(page, LONG_PAUSE);
+
+      const phaseToggles = page.locator('.phase-toggle-grid mat-slide-toggle');
+      if (await phaseToggles.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
+        await pause(page, READ_PAUSE);
+        // Scroll through phase presets
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+        await pause(page, LONG_PAUSE);
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await pause(page, LONG_PAUSE);
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await pause(page);
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // ADVANCED TAB — Reset form first, then fill
+    // ──────────────────────────────────────────────
+    const advancedTab = page.locator('.mat-mdc-tab').filter({ hasText: 'Advanced' });
+    if (await advancedTab.isVisible().catch(() => false)) {
+      await advancedTab.click();
+      await pause(page, LONG_PAUSE);
+
+      // RESET the Advanced tab to defaults before filling
+      await resetSettingsTab(page);
+      await pause(page, LONG_PAUSE);
+
+      // INDEX_MODE dropdown — Auto
+      await selectField(page, 'INDEX_MODE', 'Auto');
+      await pause(page);
+
+      // LOG_LEVEL dropdown — INFO
+      await selectField(page, 'LOG_LEVEL', 'INFO');
+      await pause(page);
+
+      // MAX_LLM_OUTPUT_TOKENS
+      await fillField(page, 'MAX_LLM_OUTPUT_TOKENS', '16000');
+      await pause(page, LONG_PAUSE);
+
+      // Save Advanced settings
+      const saveAdvBtn = page.locator('button:has-text("Save")').first();
+      if (await saveAdvBtn.isEnabled().catch(() => false)) {
+        await saveAdvBtn.click();
+        await expect(page.locator('.mat-mdc-snack-bar-container')).toBeVisible({ timeout: 5_000 });
+        await pause(page, LONG_PAUSE);
+      }
+    }
+
+    // Return to General tab and save if dirty
+    await settingsTabs.first().click();
+    await pause(page);
+    const saveGenBtn = page.locator('button:has-text("Save")').first();
+    if (await saveGenBtn.isEnabled().catch(() => false)) {
+      await saveGenBtn.click();
+      await expect(page.locator('.mat-mdc-snack-bar-container')).toBeVisible({ timeout: 5_000 });
+      await pause(page, LONG_PAUSE);
+    }
+
+    // ════════════════════════════════════════════════
+    // ACT 3: INPUT FILES — upload task XML via "click to browse"
+    // ════════════════════════════════════════════════
 
     // ── 6. INPUT FILES — show all categories + existing files ──
     await navigateTo(page, 'Input Files', '/inputs');
@@ -144,21 +350,18 @@ test.describe('Demo Showcase', () => {
     const categoryCards = page.locator('.category-card');
     for (let i = 0; i < 4; i++) {
       const card = categoryCards.nth(i);
-      // Scroll card into view
       await card.scrollIntoViewIfNeeded();
       await pause(page);
 
-      // Show file list if files exist in this category
       const fileItems = card.locator('.file-item, .file-row, .file-entry');
       if ((await fileItems.count()) > 0) {
         await pause(page, LONG_PAUSE);
       }
     }
-    // Back to top
     await page.evaluate(() => window.scrollTo(0, 0));
     await pause(page);
 
-    // ── 6b. UPLOAD JIRA TASK FILE (BNUVZ-12529.xml) ──
+    // ── 6b. UPLOAD JIRA TASK FILE via "click to browse" ──
     const taskCard = page.locator('.category-card:has-text("Task Files")');
     await taskCard.scrollIntoViewIfNeeded();
     await pause(page, LONG_PAUSE);
@@ -172,8 +375,17 @@ test.describe('Demo Showcase', () => {
       leftoverCount = await existingFiles.count();
     }
 
-    const fileInput = taskCard.locator('input[type="file"]');
-    await fileInput.setInputFiles('C:\\projects\\BNUVZ-12529.xml');
+    // VISUAL UPLOAD: click on "click to browse" in the drop zone
+    // This triggers the native file chooser (visible in demo recording)
+    const dropZone = taskCard.locator('.drop-zone');
+    await dropZone.scrollIntoViewIfNeeded();
+    await pause(page, LONG_PAUSE);
+
+    const [fileChooser] = await Promise.all([
+      page.waitForEvent('filechooser'),
+      dropZone.click(),
+    ]);
+    await fileChooser.setFiles('C:\\projects\\BNUVZ-12529.xml');
 
     // Wait for upload success snackbar
     const uploadSnackbar = page.locator('.mat-mdc-snack-bar-container');
@@ -203,7 +415,7 @@ test.describe('Demo Showcase', () => {
     await expect(page.locator('.phase-table')).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    // Expand a few presets
+    // Expand all presets to show them
     const presetPanels = page.locator('mat-accordion mat-expansion-panel');
     await expect(presetPanels.first()).toBeVisible({ timeout: 10_000 });
     const presetCount = await presetPanels.count();
@@ -221,7 +433,6 @@ test.describe('Demo Showcase', () => {
     const mcpGrid = page.locator('.grid');
     if (await mcpGrid.isVisible({ timeout: 10_000 }).catch(() => false)) {
       await pause(page, LONG_PAUSE);
-      // Scroll through MCP cards
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
       await pause(page, LONG_PAUSE);
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
@@ -231,7 +442,7 @@ test.describe('Demo Showcase', () => {
     }
 
     // ════════════════════════════════════════════════
-    // ACT 2: RUN FULL PIPELINE (Discover → Implement)
+    // ACT 4: RUN FULL PIPELINE (Discover → Implement)
     // ════════════════════════════════════════════════
 
     await navigateTo(page, 'Run Pipeline', '/run');
@@ -247,7 +458,6 @@ test.describe('Demo Showcase', () => {
     if ((await runTabs.count()) >= 2) {
       await runTabs.nth(1).click();
       await pause(page, LONG_PAUSE);
-      // Show checkboxes
       const checkboxes = page.locator('mat-checkbox');
       if (await checkboxes.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
         await pause(page, LONG_PAUSE);
@@ -263,19 +473,16 @@ test.describe('Demo Showcase', () => {
       await advancedPanel.click();
       await pause(page, LONG_PAUSE);
 
-      // Show Input Files section
       const inputSection = page.locator('.advanced-section-title:has-text("Input Files")');
       if (await inputSection.isVisible().catch(() => false)) {
         await pause(page, LONG_PAUSE);
       }
 
-      // Show Environment Overrides
       const envSection = page.locator('.advanced-section-title:has-text("Environment")');
       if (await envSection.isVisible().catch(() => false)) {
         await pause(page, LONG_PAUSE);
       }
 
-      // Collapse Advanced Options
       await advancedPanel.click();
       await pause(page, 600);
     }
@@ -339,7 +546,6 @@ test.describe('Demo Showcase', () => {
       await expect(page.locator('.log-viewport .log-line').first()).toBeVisible({ timeout: 20_000 });
       await pause(page, READ_PAUSE);
 
-      // Show logs flowing in
       for (let i = 0; i < 5; i++) {
         await logViewport.evaluate((el) => el.scrollTo(0, el.scrollHeight));
         await pause(page, READ_PAUSE);
@@ -391,7 +597,7 @@ test.describe('Demo Showcase', () => {
     }
 
     // ════════════════════════════════════════════════
-    // ACT 3: REVIEW ALL GENERATED ARTIFACTS
+    // ACT 5: REVIEW ALL GENERATED ARTIFACTS
     // ════════════════════════════════════════════════
 
     // ── 9. DASHBOARD — show completed phases (green) ──
@@ -404,15 +610,14 @@ test.describe('Demo Showcase', () => {
       await pause(page, READ_PAUSE);
     }
 
-    // ── 10. KNOWLEDGE — open ALL architecture docs ──
+    // ── 10. KNOWLEDGE — open EVERY architecture document ──
     await navigateTo(page, 'Knowledge', '/knowledge');
 
-    // Stats bar
     if (await page.locator('.stats-bar').isVisible({ timeout: 10_000 }).catch(() => false)) {
       await pause(page, LONG_PAUSE);
     }
 
-    // ARCHITECTURE DOCS — cycle ALL groups, open docs (max 5 per group, first one slow, rest fast)
+    // ARCHITECTURE DOCS — cycle ALL groups, open EVERY document
     const groupChips = page.locator('.group-chip');
     if (await groupChips.first().isVisible({ timeout: 10_000 }).catch(() => false)) {
       const gCount = await groupChips.count();
@@ -422,20 +627,23 @@ test.describe('Demo Showcase', () => {
 
         const docRows = page.locator('.doc-row');
         const docCount = await docRows.count();
-        const maxDocs = Math.min(docCount, 5);
-        for (let d = 0; d < maxDocs; d++) {
+        // Open ALL documents in this group (no cap)
+        for (let d = 0; d < docCount; d++) {
           await docRows.nth(d).click();
           const viewer = page.locator('.viewer-panel');
           if (await viewer.isVisible({ timeout: 5_000 }).catch(() => false)) {
+            const viewerSel =
+              '.viewer-panel .viewer-body, .viewer-panel .rendered-content, .viewer-panel .source-content';
             // First doc per group: slow scroll; rest: fast
-            const viewerSel = '.viewer-panel .viewer-body, .viewer-panel .rendered-content, .viewer-panel .source-content';
             if (d === 0) {
               await scrollThrough(page, viewerSel);
             } else {
               await scrollThrough(page, viewerSel, true);
             }
 
-            const closeBtn = page.locator('.viewer-panel button:has(mat-icon:has-text("close"))');
+            const closeBtn = page.locator(
+              '.viewer-panel button:has(mat-icon:has-text("close"))',
+            );
             if (await closeBtn.isVisible().catch(() => false)) {
               await closeBtn.click();
               await pause(page, 400);
@@ -458,8 +666,14 @@ test.describe('Demo Showcase', () => {
         await dgFiles.nth(f).click();
         const viewer = page.locator('.viewer-panel');
         if (await viewer.isVisible({ timeout: 5_000 }).catch(() => false)) {
-          await scrollThrough(page, '.viewer-panel .viewer-body, .viewer-panel .rendered-content, .viewer-panel .source-content', true);
-          const closeBtn = page.locator('.viewer-panel button:has(mat-icon:has-text("close"))');
+          await scrollThrough(
+            page,
+            '.viewer-panel .viewer-body, .viewer-panel .rendered-content, .viewer-panel .source-content',
+            true,
+          );
+          const closeBtn = page.locator(
+            '.viewer-panel button:has(mat-icon:has-text("close"))',
+          );
           if (await closeBtn.isVisible().catch(() => false)) {
             await closeBtn.click();
             await pause(page, 400);
@@ -477,13 +691,12 @@ test.describe('Demo Showcase', () => {
     await expect(page.locator('mat-tab-group')).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    // Architecture tab — expand doc groups (collapsed by default), preview files
+    // Architecture tab — expand doc groups, preview ALL files
     const archTab = page.getByRole('tab', { name: /Architecture/i });
     if (await archTab.isVisible().catch(() => false)) {
       await archTab.click();
       await pause(page);
 
-      // Doc groups are collapsed by default — expand each, then preview files
       const docGroupHeaders = page.locator('.doc-group-header');
       const groupCount = await docGroupHeaders.count();
       for (let g = 0; g < groupCount; g++) {
@@ -492,7 +705,8 @@ test.describe('Demo Showcase', () => {
 
         const docFileCards = page.locator('.doc-group-files:visible .doc-file-card');
         const cardCount = await docFileCards.count();
-        for (let i = 0; i < Math.min(cardCount, 3); i++) {
+        // Show EVERY document in each group (no cap)
+        for (let i = 0; i < cardCount; i++) {
           await docFileCards.nth(i).click();
           const preview = page.locator('.doc-preview').first();
           if (await preview.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -508,7 +722,7 @@ test.describe('Demo Showcase', () => {
       }
     }
 
-    // Development Plans tab
+    // Development Plans tab — expand and scroll through EVERY plan completely
     const plansTab = page.getByRole('tab', { name: /Development Plans/i });
     if (await plansTab.isVisible().catch(() => false)) {
       await plansTab.click();
@@ -516,16 +730,32 @@ test.describe('Demo Showcase', () => {
 
       const planPanels = page.locator('mat-expansion-panel');
       const planCount = await planPanels.count();
-      for (let i = 0; i < Math.min(planCount, 3); i++) {
+      // Show ALL plans — no cap
+      for (let i = 0; i < planCount; i++) {
         const header = planPanels.nth(i).locator('mat-expansion-panel-header');
         if (await header.isVisible().catch(() => false)) {
           await header.click();
           await pause(page, READ_PAUSE);
-          const planBody = page.locator('.plan-body, .plan-content').first();
-          if (await planBody.isVisible().catch(() => false)) {
-            await planBody.evaluate((el) => el.scrollTo(0, el.scrollHeight / 2));
-            await pause(page, LONG_PAUSE);
+
+          // Scroll the full plan body so every step is visible
+          const planBody = page.locator('.plan-body, .plan-content, mat-expansion-panel-body').nth(i);
+          if (await planBody.isVisible({ timeout: 3_000 }).catch(() => false)) {
+            await planBody.evaluate((el) => el.scrollTo(0, 0));
+            await pause(page, PAUSE);
+            await planBody.evaluate((el) => el.scrollTo(0, el.scrollHeight / 3));
+            await pause(page, PAUSE);
+            await planBody.evaluate((el) => el.scrollTo(0, (el.scrollHeight * 2) / 3));
+            await pause(page, PAUSE);
+            await planBody.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+            await pause(page, READ_PAUSE);
+          } else {
+            // plan content may not be scrollable — just wait for audience to read
+            await pause(page, READ_PAUSE);
           }
+
+          // Collapse before opening the next one (keeps layout clean)
+          await header.click();
+          await pause(page, 600);
         }
       }
     }
@@ -564,17 +794,44 @@ test.describe('Demo Showcase', () => {
       await pause(page, LONG_PAUSE);
     }
 
-    // ── 12. METRICS ──
-    await navigateTo(page, 'Metrics', '/metrics');
-    const metricsContent = page.locator('.stats-bar, .empty-state');
-    await expect(metricsContent.first()).toBeVisible({ timeout: 10_000 });
+    // ════════════════════════════════════════════════
+    // ACT 6: FINALE — HISTORY → LOGS → METRICS
+    // ════════════════════════════════════════════════
+
+    // ── 12. HISTORY — show the completed run with all details ──
+    await navigateTo(page, 'History', '/history');
+    const filterBar = page.locator('.filter-bar');
+    await expect(filterBar).toBeVisible();
     await pause(page, LONG_PAUSE);
 
-    const metricsTable = page.locator('.metrics-table');
-    if (await metricsTable.isVisible().catch(() => false)) {
+    await page.waitForTimeout(2000);
+    const historyContent = page.locator('.history-table, .empty-state');
+    if (await historyContent.first().isVisible().catch(() => false)) {
       await pause(page, LONG_PAUSE);
-      await metricsTable.evaluate((el) => el.scrollTo(0, el.scrollHeight));
-      await pause(page, LONG_PAUSE);
+    }
+
+    // Cycle filter chips (status filters)
+    const filterChips = page.locator('.filter-chip');
+    const chipFilterCount = await filterChips.count();
+    for (let i = 0; i < chipFilterCount; i++) {
+      await filterChips.nth(i).click();
+      await pause(page);
+    }
+
+    // Expand the first run entry to show phase details
+    const historyRows = page.locator('.history-row, .run-row');
+    if ((await historyRows.count()) > 0) {
+      await historyRows.first().click();
+      await pause(page, READ_PAUSE);
+
+      // Scroll through run details
+      const runDetail = page.locator('.run-detail, .history-detail');
+      if (await runDetail.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
+        await runDetail.first().evaluate((el) => el.scrollTo(0, el.scrollHeight / 2));
+        await pause(page, LONG_PAUSE);
+        await runDetail.first().evaluate((el) => el.scrollTo(0, el.scrollHeight));
+        await pause(page, LONG_PAUSE);
+      }
     }
 
     // ── 13. LOGS — show multiple log files ──
@@ -587,7 +844,7 @@ test.describe('Demo Showcase', () => {
     await expect(logOptions.first()).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    // Cycle through log files
+    // Cycle through log files (show all, max 3 for demo)
     const logFileCount = await logOptions.count();
     for (let i = 0; i < Math.min(logFileCount, 3); i++) {
       await logOptions.nth(i).click();
@@ -607,28 +864,21 @@ test.describe('Demo Showcase', () => {
       }
     }
 
-    // ── 14. HISTORY — show the completed run ──
-    await navigateTo(page, 'History', '/history');
-    const filterBar = page.locator('.filter-bar');
-    await expect(filterBar).toBeVisible();
+    // ── 14. METRICS — final stats view ──
+    await navigateTo(page, 'Metrics', '/metrics');
+    const metricsContent = page.locator('.stats-bar, .empty-state');
+    await expect(metricsContent.first()).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    await page.waitForTimeout(2000);
-    const historyContent = page.locator('.history-table, .empty-state');
-    if (await historyContent.first().isVisible().catch(() => false)) {
+    const metricsTable = page.locator('.metrics-table');
+    if (await metricsTable.isVisible().catch(() => false)) {
+      await pause(page, LONG_PAUSE);
+      await metricsTable.evaluate((el) => el.scrollTo(0, el.scrollHeight));
       await pause(page, LONG_PAUSE);
     }
 
-    // Cycle filter chips
-    const filterChips = page.locator('.filter-chip');
-    const chipFilterCount = await filterChips.count();
-    for (let i = 0; i < chipFilterCount; i++) {
-      await filterChips.nth(i).click();
-      await pause(page);
-    }
-
     // ════════════════════════════════════════════════
-    // ACT 4: RESPONSIVE DESIGN
+    // ACT 7: RESPONSIVE DESIGN
     // ════════════════════════════════════════════════
     await navigateTo(page, 'Dashboard', '/dashboard');
 
@@ -679,7 +929,7 @@ test.describe('Demo Showcase', () => {
     await pause(page, LONG_PAUSE);
 
     // ════════════════════════════════════════════════
-    // FIN — closing shot
+    // FIN — closing shot on Dashboard
     // ════════════════════════════════════════════════
     await page.goto('/dashboard');
     await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
