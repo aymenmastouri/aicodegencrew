@@ -36,42 +36,6 @@ async function scrollThrough(page: Page, selector: string, fast = false) {
   }
 }
 
-/** Fill a mat-input field identified by its mat-label text.
- *  Clears existing content first so old values don't bleed through. */
-async function fillField(page: Page, labelText: string, value: string) {
-  const field = page
-    .locator(`mat-form-field:has(mat-label:has-text("${labelText}")) input`)
-    .first();
-  if (await field.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await field.click({ clickCount: 3 }); // select all
-    await field.clear();
-    await field.fill(value);
-    await pause(page, 600);
-  }
-}
-
-/** Click the Reset button on the currently visible Settings tab, wait for snackbar. */
-async function resetSettingsTab(page: Page) {
-  const resetBtn = page.locator('button:has-text("Reset")').first();
-  if (await resetBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await resetBtn.click();
-    await pause(page, 800); // let the form reset animate
-  }
-}
-
-/** Select a value in a mat-select identified by its mat-label text */
-async function selectField(page: Page, labelText: string, optionText: string) {
-  const select = page
-    .locator(`mat-form-field:has(mat-label:has-text("${labelText}")) mat-select`)
-    .first();
-  if (await select.isVisible({ timeout: 3_000 }).catch(() => false)) {
-    await select.click();
-    const option = page.locator(`mat-option:has-text("${optionText}")`);
-    await expect(option.first()).toBeVisible({ timeout: 5_000 });
-    await option.first().click();
-    await pause(page, 600);
-  }
-}
 
 test.describe('Demo Showcase', () => {
   test('Full app walkthrough', async ({ page }) => {
@@ -152,186 +116,31 @@ test.describe('Demo Showcase', () => {
     await expect(page.locator('mat-tab-group, .empty-state').first()).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    // ════════════════════════════════════════════════
-    // ACT 2: CONFIGURE THE PIPELINE — FILL ALL SETTINGS
-    // ════════════════════════════════════════════════
-
-    // ── 5. SETTINGS — fill ALL tabs with real configuration values ──
+    // ── 5. SETTINGS — browse all tabs (read-only, do not modify) ──
     await navigateTo(page, 'Settings', '/settings');
     const settingsTabs = page.locator('.mat-mdc-tab');
     await expect(settingsTabs.first()).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
-    // ──────────────────────────────────────────────
-    // GENERAL TAB — Reset form first, then fill
-    // ──────────────────────────────────────────────
-    await settingsTabs.first().click();
-    await pause(page);
-
-    // Show the tab content
-    const generalBody = page.locator('mat-tab-body').first();
-    if (await generalBody.isVisible().catch(() => false)) {
+    // Cycle through all tabs so the audience sees every settings category
+    const settingsTabCount = await settingsTabs.count();
+    for (let i = 0; i < settingsTabCount; i++) {
+      await settingsTabs.nth(i).click();
       await pause(page, LONG_PAUSE);
-    }
-
-    // RESET the General tab to defaults before filling
-    await resetSettingsTab(page);
-    await pause(page, LONG_PAUSE);
-
-    // Fill PROJECT_PATH
-    await fillField(page, 'PROJECT_PATH', 'C:\\uvz');
-    await pause(page, LONG_PAUSE);
-
-    // Scroll to show all general fields
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
-    await pause(page, LONG_PAUSE);
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await pause(page);
-
-    // ──────────────────────────────────────────────
-    // LLM TAB — Reset form first, then fill
-    // ──────────────────────────────────────────────
-    const llmTab = page.locator('.mat-mdc-tab').filter({ hasText: 'LLM' });
-    if (await llmTab.isVisible().catch(() => false)) {
-      await llmTab.click();
-      await pause(page, LONG_PAUSE);
-
-      // RESET the LLM tab to defaults before filling
-      await resetSettingsTab(page);
-      await pause(page, LONG_PAUSE);
-
-      // LLM_PROVIDER dropdown — select On-Prem
-      await selectField(page, 'LLM_PROVIDER', 'On-Prem');
-      await pause(page, LONG_PAUSE);
-
-      // MODEL
-      await fillField(page, 'MODEL', 'gpt-oss-120b');
-
-      // API_BASE
-      await fillField(page, 'API_BASE', 'http://sov-ai-platform.nue.local.vm:4000/v1');
-      await pause(page, LONG_PAUSE);
-
-      // Scroll to show lower fields
+      // Scroll tab content so all fields are visible
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
-      await pause(page, LONG_PAUSE);
-
-      // CODEGEN_MODEL
-      await fillField(page, 'CODEGEN_MODEL', 'Qwen/Qwen2.5-Coder-14B-Instruct-GPTQ-Int4');
-
-      // CODEGEN_API_BASE
-      await fillField(page, 'CODEGEN_API_BASE', 'https://bmf-ai.apps.ce.capgemini.com/v1');
-
-      // CODEGEN_API_KEY — reveal then fill
-      const apiKeyField = page
-        .locator('mat-form-field:has(mat-label:has-text("CODEGEN_API_KEY")) input')
-        .first();
-      if (await apiKeyField.isVisible({ timeout: 3_000 }).catch(() => false)) {
-        // Toggle visibility to show key is set
-        const revealBtn = page
-          .locator('mat-form-field:has(mat-label:has-text("CODEGEN_API_KEY")) button[mat-icon-button]')
-          .first();
-        if (await revealBtn.isVisible().catch(() => false)) {
-          await revealBtn.click();
-          await pause(page, 600);
-        }
-        await apiKeyField.click({ clickCount: 3 });
-        await apiKeyField.clear();
-        await apiKeyField.fill('sk-bEyrQ6GSI4PRymm1UmJq3A');
-        await pause(page, LONG_PAUSE);
-        // Hide again
-        if (await revealBtn.isVisible().catch(() => false)) {
-          await revealBtn.click();
-          await pause(page, 400);
-        }
-      }
-
-      // OLLAMA_BASE_URL
-      await fillField(page, 'OLLAMA_BASE_URL', 'http://127.0.0.1:11434');
-
-      // EMBED_MODEL
-      await fillField(page, 'EMBED_MODEL', 'nomic-embed-text:latest');
-
-      // Scroll to show all LLM fields
+      await pause(page, PAUSE);
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      await pause(page, LONG_PAUSE);
+      await pause(page, PAUSE);
       await page.evaluate(() => window.scrollTo(0, 0));
-      await pause(page);
-
-      // Save LLM settings
-      const saveLlmBtn = page.locator('button:has-text("Save")').first();
-      if (await saveLlmBtn.isEnabled().catch(() => false)) {
-        await saveLlmBtn.click();
-        await expect(page.locator('.mat-mdc-snack-bar-container')).toBeVisible({ timeout: 5_000 });
-        await pause(page, LONG_PAUSE);
-      }
+      await pause(page, 400);
     }
-
-    // ──────────────────────────────────────────────
-    // PHASES TAB — show phase toggles
-    // ──────────────────────────────────────────────
-    const phasesTab = page.locator('.mat-mdc-tab').filter({ hasText: 'Phases' });
-    if (await phasesTab.isVisible().catch(() => false)) {
-      await phasesTab.click();
-      await pause(page, LONG_PAUSE);
-
-      const phaseToggles = page.locator('.phase-toggle-grid mat-slide-toggle');
-      if (await phaseToggles.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
-        await pause(page, READ_PAUSE);
-        // Scroll through phase presets
-        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
-        await pause(page, LONG_PAUSE);
-        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-        await pause(page, LONG_PAUSE);
-        await page.evaluate(() => window.scrollTo(0, 0));
-        await pause(page);
-      }
-    }
-
-    // ──────────────────────────────────────────────
-    // ADVANCED TAB — Reset form first, then fill
-    // ──────────────────────────────────────────────
-    const advancedTab = page.locator('.mat-mdc-tab').filter({ hasText: 'Advanced' });
-    if (await advancedTab.isVisible().catch(() => false)) {
-      await advancedTab.click();
-      await pause(page, LONG_PAUSE);
-
-      // RESET the Advanced tab to defaults before filling
-      await resetSettingsTab(page);
-      await pause(page, LONG_PAUSE);
-
-      // INDEX_MODE dropdown — Auto
-      await selectField(page, 'INDEX_MODE', 'Auto');
-      await pause(page);
-
-      // LOG_LEVEL dropdown — INFO
-      await selectField(page, 'LOG_LEVEL', 'INFO');
-      await pause(page);
-
-      // MAX_LLM_OUTPUT_TOKENS
-      await fillField(page, 'MAX_LLM_OUTPUT_TOKENS', '16000');
-      await pause(page, LONG_PAUSE);
-
-      // Save Advanced settings
-      const saveAdvBtn = page.locator('button:has-text("Save")').first();
-      if (await saveAdvBtn.isEnabled().catch(() => false)) {
-        await saveAdvBtn.click();
-        await expect(page.locator('.mat-mdc-snack-bar-container')).toBeVisible({ timeout: 5_000 });
-        await pause(page, LONG_PAUSE);
-      }
-    }
-
-    // Return to General tab and save if dirty
+    // Return to first tab
     await settingsTabs.first().click();
     await pause(page);
-    const saveGenBtn = page.locator('button:has-text("Save")').first();
-    if (await saveGenBtn.isEnabled().catch(() => false)) {
-      await saveGenBtn.click();
-      await expect(page.locator('.mat-mdc-snack-bar-container')).toBeVisible({ timeout: 5_000 });
-      await pause(page, LONG_PAUSE);
-    }
 
     // ════════════════════════════════════════════════
-    // ACT 3: INPUT FILES — upload task XML via "click to browse"
+    // ACT 2: INPUT FILES — upload task XML via "click to browse"
     // ════════════════════════════════════════════════
 
     // ── 6. INPUT FILES — show all categories + existing files ──
