@@ -80,14 +80,15 @@ def list_knowledge_files() -> KnowledgeSummary:
 def read_knowledge_file(relative_path: str) -> dict | list | str:
     """Read a knowledge file by relative path."""
     file_path = settings.knowledge_dir / relative_path
-    if not file_path.exists():
-        raise FileNotFoundError(f"File not found: {relative_path}")
 
-    # Security: prevent path traversal
+    # Security: prevent path traversal BEFORE any file access
     try:
         file_path.resolve().relative_to(settings.knowledge_dir.resolve())
     except ValueError:
         raise ValueError("Path traversal not allowed")
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {relative_path}")
 
     if file_path.suffix == ".json":
         with open(file_path, encoding="utf-8") as f:
