@@ -300,7 +300,7 @@ const SECRET_KEY_PATTERNS = [
               }
 
               <!-- Metrics Summary -->
-              @if (detail.metrics_events.length > 0) {
+              @if (detail.metrics_events?.length > 0) {
                 <div class="detail-section">
                   <h3 class="detail-section-title">
                     <mat-icon>monitoring</mat-icon> Metrics Events
@@ -943,7 +943,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   countEventType(type: string): number {
     if (!this.detail) return 0;
-    return this.detail.metrics_events.filter((e) => e['event'] === type).length;
+    return (this.detail.metrics_events ?? []).filter((e) => e['event'] === type).length;
   }
 
   getFileName(path: string): string {

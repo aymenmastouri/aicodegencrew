@@ -104,10 +104,10 @@ PHASES: dict[str, PhaseDescriptor] = {
     ),
     "deliver": PhaseDescriptor(
         "deliver",
-        "Review & Deploy",
-        "pipeline",
+        "Review & Consistency Guard",
+        "crew",
         7,
-        ("verify",),
+        ("implement",),
         False,
         "knowledge/deliver",
         ("knowledge/deliver",),

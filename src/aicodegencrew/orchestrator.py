@@ -357,7 +357,7 @@ class SDLCOrchestrator:
 
             duration = (datetime.now() - start).total_seconds()
             metric_status = phase_result_to_phase_state_status(phase_status)
-            phase_state_status = phase_result_to_phase_state_status(phase_status)
+            phase_state_status = metric_status
 
             logger.info(f"[Phase] {display} — {phase_status} in {duration:.2f}s")
             log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status=metric_status)
