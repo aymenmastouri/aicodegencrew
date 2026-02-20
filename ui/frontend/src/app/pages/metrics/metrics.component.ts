@@ -209,7 +209,11 @@ export class MetricsComponent implements OnInit, OnDestroy {
   formatData(data: Record<string, unknown>): string {
     const entries = Object.entries(data)
       .filter(([k]) => k !== 'run_id')
-      .map(([k, v]) => `${k}=${v}`);
+      .map(([k, v]) => {
+        if (v === null || v === undefined) return `${k}=—`;
+        if (typeof v === 'object') return `${k}=${JSON.stringify(v)}`;
+        return `${k}=${v}`;
+      });
     return entries.join(', ');
   }
 }
