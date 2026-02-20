@@ -195,7 +195,7 @@ class TestScenario1FreshFirstRun:
         )
         pipeline.kickoff()
 
-        comps = json.loads((output_dir / "components.json").read_text(encoding="utf-8"))
+        comps = json.loads((output_dir / "components.json").read_text(encoding="utf-8"))["components"]
 
         names = [c["name"] for c in comps]
         stereotypes = [c.get("stereotype", "") for c in comps]
@@ -223,7 +223,7 @@ class TestScenario1FreshFirstRun:
         )
         pipeline.kickoff()
 
-        containers = json.loads((output_dir / "containers.json").read_text(encoding="utf-8"))
+        containers = json.loads((output_dir / "containers.json").read_text(encoding="utf-8"))["containers"]
 
         technologies = [c.get("technology", "") for c in containers]
 

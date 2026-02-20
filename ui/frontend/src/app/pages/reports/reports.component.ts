@@ -12,6 +12,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { marked } from 'marked';
 
 import { ApiService, ReportList, BranchList } from '../../services/api.service';
@@ -1728,6 +1730,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   };
 
   private mdCache: Record<string, SafeHtml> = {};
+  private destroy$ = new Subject<void>();
 
   constructor(
     private api: ApiService,
@@ -1739,7 +1742,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.notifSvc.notification$.subscribe((n) => {
+    this.notifSvc.notification$.pipe(takeUntil(this.destroy$)).subscribe((n) => {
       this.isRunning = n.state === 'running';
       this.cdr.markForCheck();
     });
@@ -1749,6 +1752,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadReports(): void {
