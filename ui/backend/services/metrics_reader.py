@@ -25,7 +25,12 @@ def read_metrics(limit: int = 200, event_filter: str | None = None) -> MetricsSu
             except json.JSONDecodeError:
                 continue
 
-            event_name = data.pop("event", "unknown")
+            # Skip structured log entries (they have 'level'/'msg' but no 'event').
+            # Only metric events have an 'event' key.
+            if "event" not in data:
+                continue
+
+            event_name = data.pop("event")
             timestamp = data.pop("timestamp", "")
 
             if "run_id" in data:
