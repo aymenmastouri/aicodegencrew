@@ -44,7 +44,7 @@ def _semantic_search_subprocess(
 ) -> None:
     """Run ChromaDB semantic search in an isolated subprocess."""
     try:
-        import chromadb  # noqa: E402
+        import chromadb
         from chromadb.config import Settings
 
         http_cfg = get_chroma_http_config()
@@ -190,7 +190,9 @@ class ComponentDiscoveryStage:
             proc.join(timeout=remaining)
 
             if proc.is_alive():
-                logger.warning(f"[Stage2] Semantic search subprocess timed out after {semantic_timeout_s}s, terminating")
+                logger.warning(
+                    f"[Stage2] Semantic search subprocess timed out after {semantic_timeout_s}s, terminating"
+                )
                 proc.terminate()
                 proc.join(timeout=3)
                 if proc.is_alive():

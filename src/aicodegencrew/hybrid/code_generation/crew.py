@@ -31,6 +31,7 @@ from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardr
 
 # Apply CrewAI patches for on-prem LLM compatibility (idempotent)
 apply_patches()
+from ...shared.tools import RAGQueryTool, SymbolQueryTool
 from .agents import create_agent
 from .output_writer import OutputWriter
 from .preflight import (
@@ -60,7 +61,6 @@ from .tools import (
     PlanReaderTool,
     TaskSourceTool,
 )
-from ...shared.tools import RAGQueryTool, SymbolQueryTool
 
 # MCPs loaded dynamically from shared/mcp/mcp_manager.py
 _MAX_RPM = 30
@@ -136,13 +136,15 @@ class ImplementCrew:
             out: list[dict[str, str]] = []
             for c in data.get("containers", []):
                 metadata = c.get("metadata", {})
-                out.append({
-                    "id": c.get("id", ""),
-                    "name": c.get("name", ""),
-                    "root_path": c.get("root_path", "") or metadata.get("root_path", ""),
-                    "build_system": metadata.get("build_system", ""),
-                    "language": metadata.get("language", ""),
-                })
+                out.append(
+                    {
+                        "id": c.get("id", ""),
+                        "name": c.get("name", ""),
+                        "root_path": c.get("root_path", "") or metadata.get("root_path", ""),
+                        "build_system": metadata.get("build_system", ""),
+                        "language": metadata.get("language", ""),
+                    }
+                )
             self._containers = out
         except Exception:
             self._containers = []
@@ -176,13 +178,15 @@ class ImplementCrew:
     def _staging_to_generated_files(staging: dict[str, dict[str, Any]]) -> list[GeneratedFile]:
         generated: list[GeneratedFile] = []
         for file_path, entry in staging.items():
-            generated.append(GeneratedFile(
-                file_path=file_path,
-                content=entry.get("content", ""),
-                original_content=entry.get("original_content", ""),
-                action=entry.get("action", "modify"),
-                language=entry.get("language", "other"),
-            ))
+            generated.append(
+                GeneratedFile(
+                    file_path=file_path,
+                    content=entry.get("content", ""),
+                    original_content=entry.get("original_content", ""),
+                    action=entry.get("action", "modify"),
+                    language=entry.get("language", "other"),
+                )
+            )
         return generated
 
     # ── Deterministic build verification (post-crew) ───────────────────────
@@ -199,7 +203,8 @@ class ImplementCrew:
         container_ids = self._container_ids_for_plan(plan)
         if not container_ids:
             return BuildVerificationResult(
-                all_passed=False, skipped=False,
+                all_passed=False,
+                skipped=False,
                 skip_reason="No buildable containers detected for plan",
             )
 
@@ -225,12 +230,17 @@ class ImplementCrew:
             bcmd = baseline.get("build_command", "")
 
             if not baseline.get("success", False):
-                results.append(ContainerBuildResult(
-                    container_id=cid, container_name=cname,
-                    build_command=bcmd, success=False,
-                    exit_code=int(baseline.get("exit_code", -1)),
-                    error_summary="Baseline broken (pre-existing); staged build not executed", attempts=0,
-                ))
+                results.append(
+                    ContainerBuildResult(
+                        container_id=cid,
+                        container_name=cname,
+                        build_command=bcmd,
+                        success=False,
+                        exit_code=int(baseline.get("exit_code", -1)),
+                        error_summary="Baseline broken (pre-existing); staged build not executed",
+                        attempts=0,
+                    )
+                )
                 continue
 
             staged_raw = runner._run(container_id=cid, baseline=False)
@@ -238,14 +248,17 @@ class ImplementCrew:
             raw_output = str(staged.get("output", ""))
 
             if staged.get("success", False):
-                results.append(ContainerBuildResult(
-                    container_id=cid,
-                    container_name=staged.get("container_name", cname),
-                    build_command=staged.get("build_command", bcmd),
-                    success=True, exit_code=int(staged.get("exit_code", 0)),
-                    raw_output=raw_output,
-                    attempts=1,
-                ))
+                results.append(
+                    ContainerBuildResult(
+                        container_id=cid,
+                        container_name=staged.get("container_name", cname),
+                        build_command=staged.get("build_command", bcmd),
+                        success=True,
+                        exit_code=int(staged.get("exit_code", 0)),
+                        raw_output=raw_output,
+                        attempts=1,
+                    )
+                )
                 continue
 
             parsed_raw = parser._run(
@@ -256,25 +269,31 @@ class ImplementCrew:
             errors = parsed.get("errors", [])
             if errors:
                 summary = "; ".join(
-                    f"{e.get('file_path', '?')}:{e.get('line', 0)} {e.get('message', '')}"
-                    for e in errors[:8]
+                    f"{e.get('file_path', '?')}:{e.get('line', 0)} {e.get('message', '')}" for e in errors[:8]
                 )
             else:
                 summary = raw_output[-1000:]
 
-            results.append(ContainerBuildResult(
-                container_id=cid,
-                container_name=staged.get("container_name", cname),
-                build_command=staged.get("build_command", bcmd),
-                success=False, exit_code=int(staged.get("exit_code", -1)),
-                error_summary=summary, raw_output=raw_output, attempts=1,
-            ))
+            results.append(
+                ContainerBuildResult(
+                    container_id=cid,
+                    container_name=staged.get("container_name", cname),
+                    build_command=staged.get("build_command", bcmd),
+                    success=False,
+                    exit_code=int(staged.get("exit_code", -1)),
+                    error_summary=summary,
+                    raw_output=raw_output,
+                    attempts=1,
+                )
+            )
 
         passed = sum(1 for r in results if r.success)
         failed = sum(1 for r in results if not r.success)
         return BuildVerificationResult(
-            container_results=results, all_passed=failed == 0,
-            total_containers_built=passed, total_containers_failed=failed,
+            container_results=results,
+            all_passed=failed == 0,
+            total_containers_built=passed,
+            total_containers_failed=failed,
         )
 
     @staticmethod
@@ -295,11 +314,7 @@ class ImplementCrew:
         description = str(source.get("description", "") or "")
         source_file = str(source.get("source_file", "") or "")
         excerpt = description[:800] if description else ""
-        return (
-            f"- source_file: {source_file}\n"
-            f"- summary: {summary}\n"
-            f"- description_excerpt: {excerpt}"
-        ).strip()
+        return (f"- source_file: {source_file}\n- summary: {summary}\n- description_excerpt: {excerpt}").strip()
 
     def _format_build_errors(self, build_result: BuildVerificationResult) -> str:
         """Format build errors for fix task prompt."""
@@ -404,17 +419,19 @@ class ImplementCrew:
             guardrail_budget = max(50, len(dependency_order_paths) * 4)
             tracker = install_guardrails(max_total=guardrail_budget)
             try:
-                result = crew.kickoff(inputs={
-                    "task_id": plan.task_id,
-                    "task_type": plan.task_type,
-                    "summary": plan.summary,
-                    "description": plan.description,
-                    "task_input_dir": self.task_input_dir,
-                    "task_source_snapshot": task_source_snapshot,
-                    "implementation_steps": plan.implementation_steps,
-                    "affected_components": [c.model_dump() for c in plan.affected_components],
-                    "dependency_order": dependency_order_paths,
-                })
+                result = crew.kickoff(
+                    inputs={
+                        "task_id": plan.task_id,
+                        "task_type": plan.task_type,
+                        "summary": plan.summary,
+                        "description": plan.description,
+                        "task_input_dir": self.task_input_dir,
+                        "task_source_snapshot": task_source_snapshot,
+                        "implementation_steps": plan.implementation_steps,
+                        "affected_components": [c.model_dump() for c in plan.affected_components],
+                        "dependency_order": dependency_order_paths,
+                    }
+                )
                 self.total_calls += 1
                 token_usage = getattr(result, "token_usage", None)
                 if token_usage is not None:
@@ -493,12 +510,14 @@ class ImplementCrew:
             guardrail_budget = max(50, len(dependency_order_paths) * 4)
             tracker = install_guardrails(max_total=guardrail_budget)
             try:
-                result = crew.kickoff(inputs={
-                    "task_id": plan.task_id,
-                    "build_errors": build_errors,
-                    "failed_files": failed_files,
-                    "dependency_order": dependency_order_paths,
-                })
+                result = crew.kickoff(
+                    inputs={
+                        "task_id": plan.task_id,
+                        "build_errors": build_errors,
+                        "failed_files": failed_files,
+                        "dependency_order": dependency_order_paths,
+                    }
+                )
                 self.total_calls += 1
                 token_usage = getattr(result, "token_usage", None)
                 if token_usage is not None:
@@ -577,7 +596,8 @@ class ImplementCrew:
         # ── 1. Preflight ────────────────────────────────────────────────────
         # Pass shared_import_index so preflight skips rebuild when already available.
         preflight = PreflightValidator(
-            repo_path=str(self.repo_path), facts_path=str(self.facts_path),
+            repo_path=str(self.repo_path),
+            facts_path=str(self.facts_path),
         )
         preflight_result, import_index = preflight.run(plan, import_index=shared_import_index)
         if not preflight_result.ok:
@@ -591,11 +611,12 @@ class ImplementCrew:
         build_result = BuildVerificationResult(skipped=True, skip_reason="No attempts made")
         # BUG-Y5 fix: use shared baseline cache when provided by cascade, otherwise fresh.
         # The baseline build for a container cannot change between cascade tasks on the same
-        # session, so sharing avoids N×containers redundant baseline builds.
+        # session, so sharing avoids N x containers redundant baseline builds.
         baseline_cache: dict[str, dict] = shared_baseline_cache if shared_baseline_cache is not None else {}
 
         # ── 1b. Strategy: enrich plan + pre-execution (deterministic) ────
         from .strategies import get_strategy
+
         strategy = get_strategy(plan.task_type)
 
         facts = self._load_facts()
@@ -615,7 +636,9 @@ class ImplementCrew:
         if det_result.steps:
             logger.info(
                 "[Implement] Pre-execution: %d steps, %d files, %d errors",
-                len(det_result.steps), det_result.total_files_modified, len(det_result.errors),
+                len(det_result.steps),
+                det_result.total_files_modified,
+                len(det_result.errors),
             )
 
         # ── 2. Build-fix loop ───────────────────────────────────────────────
@@ -629,7 +652,9 @@ class ImplementCrew:
             else:
                 build_errors = self._format_build_errors(build_result)
                 failed_files = self._extract_failed_files(build_result)
-                self._execute_fix(plan, staging, build_errors, failed_files, dependency_order_paths, import_index, generation_order)
+                self._execute_fix(
+                    plan, staging, build_errors, failed_files, dependency_order_paths, import_index, generation_order
+                )
 
             generated_files = self._staging_to_generated_files(staging)
 
@@ -662,18 +687,26 @@ class ImplementCrew:
 
         # ── 3. Strategy: verification enrichment ─────────────────────────
         rich_report = strategy.enrich_verification(
-            build_result, staging, plan, raw_build_outputs, det_result,
+            build_result,
+            staging,
+            plan,
+            raw_build_outputs,
+            det_result,
         )
         if rich_report.error_clusters:
             logger.info(
                 "[Implement] Report: %d error clusters, %d deprecations",
-                len(rich_report.error_clusters), len(rich_report.deprecation_warnings),
+                len(rich_report.error_clusters),
+                len(rich_report.deprecation_warnings),
             )
 
         duration = time.time() - start_time
         logger.info(
             "[Implement] Crew complete in %.1fs | files=%d | build_passed=%s | tokens=%d",
-            duration, len(generated_files), build_result.all_passed, self.total_tokens,
+            duration,
+            len(generated_files),
+            build_result.all_passed,
+            self.total_tokens,
         )
 
         return generated_files, build_result, rich_report
@@ -774,7 +807,8 @@ class ImplementCrew:
         if cascade_completed:
             logger.info(
                 "[Implement] Cascade checkpoint: %d task(s) already done: %s",
-                len(cascade_completed), sorted(cascade_completed),
+                len(cascade_completed),
+                sorted(cascade_completed),
             )
 
         # BUG-Y5: single baseline cache shared across all cascade tasks
@@ -782,7 +816,7 @@ class ImplementCrew:
 
         # BUG-Y6: build ImportIndex ONCE before the task loop.
         # Each call to run() previously triggered a full source-tree scan inside
-        # PreflightValidator — for 10 cascade tasks that is 10 × 3-10s of I/O.
+        # PreflightValidator — for 10 cascade tasks that is 10 x 3-10s of I/O.
         # Passing the pre-built index lets preflight skip the rebuild entirely.
         shared_import_index: ImportIndex | None = None
         try:
@@ -792,7 +826,8 @@ class ImplementCrew:
             ).run()
             logger.info(
                 "[Implement] Shared ImportIndex built: %d symbols — reusing across %d cascade tasks",
-                shared_import_index.total_symbols, n,
+                shared_import_index.total_symbols,
+                n,
             )
         except Exception as idx_err:
             logger.warning(
@@ -801,7 +836,8 @@ class ImplementCrew:
             )
 
         plan_reader = PlanReader(
-            plans_dir=self.plans_dir, facts_path=str(self.facts_path),
+            plans_dir=self.plans_dir,
+            facts_path=str(self.facts_path),
         )
 
         for i, plan_file in enumerate(plan_files, 1):
@@ -867,7 +903,9 @@ class ImplementCrew:
         logger.info("=" * 80)
         logger.info(
             "[Implement] Cascade complete: %d succeeded, %d failed, %.2fs",
-            succeeded, failed, total_duration,
+            succeeded,
+            failed,
+            total_duration,
         )
         logger.info("=" * 80)
 
@@ -921,8 +959,6 @@ class ImplementCrew:
             reasons.append(f"{validation.total_invalid} file(s) failed validation")
 
         if build_result and not build_result.skipped and not build_result.all_passed:
-            reasons.append(
-                f"build failed for {build_result.total_containers_failed} container(s)"
-            )
+            reasons.append(f"build failed for {build_result.total_containers_failed} container(s)")
 
         return reasons

@@ -7,7 +7,6 @@ using Microsoft Playwright MCP. No hardcoded rules.
 This ensures upgrade guidance is always current with official Angular documentation.
 """
 
-
 from .base import (
     CodePattern,
     UpgradeCategory,
@@ -620,6 +619,7 @@ def fetch_angular_rules_dynamic(from_version: str, to_version: str) -> UpgradeRu
 
     except Exception as e:
         import logging
+
         logger = logging.getLogger(__name__)
         logger.error(f"Failed to fetch Angular rules dynamically: {e}")
         return _get_fallback_ruleset(from_version, to_version, str(e))
@@ -628,7 +628,8 @@ def fetch_angular_rules_dynamic(from_version: str, to_version: str) -> UpgradeRu
 def _slugify(text: str) -> str:
     """Convert text to slug (lowercase, hyphenated)."""
     import re
-    return re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')[:50]
+
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:50]
 
 
 def _get_static_ruleset(from_version: str, to_version: str) -> UpgradeRuleSet:

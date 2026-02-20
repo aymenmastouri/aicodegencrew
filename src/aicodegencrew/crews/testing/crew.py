@@ -75,9 +75,7 @@ def _infer_test_path(source_path: str) -> str:
 
     if ext == ".java":
         if "/main/java/" in normalized:
-            return normalized.replace("/main/java/", "/test/java/", 1).replace(
-                f"/{stem}.java", f"/{stem}Test.java"
-            )
+            return normalized.replace("/main/java/", "/test/java/", 1).replace(f"/{stem}.java", f"/{stem}Test.java")
         parent_fwd = str(p.parent).replace("\\", "/")
         return f"{parent_fwd}/{stem}Test.java"
 
@@ -212,9 +210,7 @@ class TestingCrew:
 
             task_status = report.get("status", "")
             if task_status not in ("success", "partial"):
-                logger.info(
-                    "[TestingCrew] Skipping %s (implement status=%s)", rf.stem, task_status
-                )
+                logger.info("[TestingCrew] Skipping %s (implement status=%s)", rf.stem, task_status)
                 continue
 
             t0 = time.monotonic()

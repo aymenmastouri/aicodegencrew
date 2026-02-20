@@ -74,6 +74,7 @@ def _is_pid_alive(pid: int) -> bool:
     """
     try:
         import psutil  # optional dep; always present in our env
+
         return psutil.pid_exists(pid)
     except ImportError:
         pass

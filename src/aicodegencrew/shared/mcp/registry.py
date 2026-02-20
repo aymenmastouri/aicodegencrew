@@ -14,6 +14,7 @@ from typing import Any
 
 class MCPStatus(str, Enum):
     """MCP server status."""
+
     AVAILABLE = "available"  # MCP is configured and can be used
     REQUIRES_API_KEY = "requires_api_key"  # Needs API key in env
     NOT_INSTALLED = "not_installed"  # npm package not found
@@ -65,22 +66,17 @@ MCP_REGISTRY: dict[str, MCPMetadata] = {
             "Architecture pattern analysis",
             "Multi-step planning decisions",
             "Complex dependency resolution",
-            "Trade-off evaluation"
+            "Trade-off evaluation",
         ],
         phases=[3, 4],  # Phase 3 (Analyze), Phase 4 (Plan)
         requires_api_key=False,
         api_key_env_var=None,
         api_key_url=None,
-        tools=[
-            "sequential_think",
-            "sequential_analyze",
-            "sequential_reason"
-        ],
+        tools=["sequential_think", "sequential_analyze", "sequential_reason"],
         status=MCPStatus.AVAILABLE,
         command="npx",
         args=["-y", "@modelcontextprotocol/server-sequential-thinking"],
     ),
-
     "memory": MCPMetadata(
         id="memory",
         name="Memory",
@@ -90,23 +86,17 @@ MCP_REGISTRY: dict[str, MCPMetadata] = {
             "Remember user preferences",
             "Learn from past mistakes",
             "Store project conventions",
-            "Track successful patterns"
+            "Track successful patterns",
         ],
         phases=[4, 5],  # Phase 4 (Plan), Phase 5 (Implement)
         requires_api_key=False,
         api_key_env_var=None,
         api_key_url=None,
-        tools=[
-            "memory_store",
-            "memory_retrieve",
-            "memory_search",
-            "memory_delete"
-        ],
+        tools=["memory_store", "memory_retrieve", "memory_search", "memory_delete"],
         status=MCPStatus.AVAILABLE,
         command="npx",
         args=["-y", "@modelcontextprotocol/server-memory"],
     ),
-
     "brave_search": MCPMetadata(
         id="brave_search",
         name="Brave Search",
@@ -116,48 +106,32 @@ MCP_REGISTRY: dict[str, MCPMetadata] = {
             "Find current API documentation",
             "Search migration patterns",
             "Look up error solutions",
-            "Discover best practices"
+            "Discover best practices",
         ],
         phases=[4, 5],  # Phase 4 (Plan), Phase 5 (Implement)
         requires_api_key=True,
         api_key_env_var="BRAVE_API_KEY",
         api_key_url="https://brave.com/search/api/",
-        tools=[
-            "brave_web_search",
-            "brave_local_search"
-        ],
+        tools=["brave_web_search", "brave_local_search"],
         status=MCPStatus.REQUIRES_API_KEY,  # Will be AVAILABLE if key is set
         command="npx",
         args=["-y", "@modelcontextprotocol/server-brave-search"],
     ),
-
     "filesystem": MCPMetadata(
         id="filesystem",
         name="Filesystem",
         package="@modelcontextprotocol/server-filesystem",
         description="Structured file operations with permissions",
-        use_cases=[
-            "Safe file reading/writing",
-            "Directory traversal",
-            "File search",
-            "Permission-controlled access"
-        ],
+        use_cases=["Safe file reading/writing", "Directory traversal", "File search", "Permission-controlled access"],
         phases=[5],  # Phase 5 (Implement)
         requires_api_key=False,
         api_key_env_var=None,
         api_key_url=None,
-        tools=[
-            "read_file",
-            "write_file",
-            "list_directory",
-            "search_files",
-            "get_file_info"
-        ],
+        tools=["read_file", "write_file", "list_directory", "search_files", "get_file_info"],
         status=MCPStatus.AVAILABLE,
         command="npx",
         args=["-y", "@modelcontextprotocol/server-filesystem"],
     ),
-
     "playwright": MCPMetadata(
         id="playwright",
         name="Playwright",
@@ -167,7 +141,7 @@ MCP_REGISTRY: dict[str, MCPMetadata] = {
             "Fetch Angular upgrade guides",
             "Extract documentation from SPAs",
             "Web scraping",
-            "Page screenshots"
+            "Page screenshots",
         ],
         phases=[4],  # Phase 4 (Plan)
         requires_api_key=False,
@@ -178,35 +152,23 @@ MCP_REGISTRY: dict[str, MCPMetadata] = {
             "playwright_snapshot",
             "playwright_click",
             "playwright_fill",
-            "playwright_screenshot"
+            "playwright_screenshot",
         ],
         status=MCPStatus.AVAILABLE,
         command="npx",
         args=["@playwright/mcp@latest", "--headless", "--timeout-action", "30000", "--isolated"],
     ),
-
     "github": MCPMetadata(
         id="github",
         name="GitHub",
         package="@modelcontextprotocol/server-github",
         description="GitHub API integration for PR/Issue management",
-        use_cases=[
-            "Create pull requests",
-            "Create/update issues",
-            "Query repository data",
-            "Manage labels/milestones"
-        ],
+        use_cases=["Create pull requests", "Create/update issues", "Query repository data", "Manage labels/milestones"],
         phases=[8],  # Phase 8 (Deliver)
         requires_api_key=True,
         api_key_env_var="GITHUB_TOKEN",
         api_key_url="https://github.com/settings/tokens",
-        tools=[
-            "github_create_pr",
-            "github_create_issue",
-            "github_list_prs",
-            "github_update_pr",
-            "github_search_code"
-        ],
+        tools=["github_create_pr", "github_create_issue", "github_list_prs", "github_update_pr", "github_search_code"],
         status=MCPStatus.REQUIRES_API_KEY,
         command="npx",
         args=["-y", "@modelcontextprotocol/server-github"],
@@ -217,6 +179,7 @@ MCP_REGISTRY: dict[str, MCPMetadata] = {
 # =============================================================================
 # Registry Functions (for dashboard API)
 # =============================================================================
+
 
 def get_all_mcps() -> dict[str, MCPMetadata]:
     """Get all registered MCPs (for dashboard display)."""

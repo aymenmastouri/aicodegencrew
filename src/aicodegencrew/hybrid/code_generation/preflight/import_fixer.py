@@ -19,27 +19,103 @@ from .import_index import ImportIndex
 logger = setup_logger(__name__)
 
 # ── Built-in types that never need imports ────────────────────────────────────
-JAVA_BUILTINS = frozenset({
-    "String", "Integer", "Long", "Double", "Float", "Boolean", "Byte", "Short",
-    "Character", "Object", "Class", "Void", "Number", "Math",
-    "Exception", "RuntimeException", "Error", "Throwable",
-    "System", "Thread", "Runnable",
-    "Override", "Deprecated", "SuppressWarnings", "FunctionalInterface",
-    "int", "long", "double", "float", "boolean", "byte", "short", "char", "void",
-    "var",
-})
+JAVA_BUILTINS = frozenset(
+    {
+        "String",
+        "Integer",
+        "Long",
+        "Double",
+        "Float",
+        "Boolean",
+        "Byte",
+        "Short",
+        "Character",
+        "Object",
+        "Class",
+        "Void",
+        "Number",
+        "Math",
+        "Exception",
+        "RuntimeException",
+        "Error",
+        "Throwable",
+        "System",
+        "Thread",
+        "Runnable",
+        "Override",
+        "Deprecated",
+        "SuppressWarnings",
+        "FunctionalInterface",
+        "int",
+        "long",
+        "double",
+        "float",
+        "boolean",
+        "byte",
+        "short",
+        "char",
+        "void",
+        "var",
+    }
+)
 
-TS_BUILTINS = frozenset({
-    "string", "number", "boolean", "any", "void", "never", "unknown", "object",
-    "undefined", "null", "symbol", "bigint",
-    "Promise", "Observable", "Subscription", "Subject", "BehaviorSubject",
-    "Array", "Map", "Set", "Date", "RegExp", "Error", "JSON",
-    "Record", "Partial", "Required", "Pick", "Omit", "Exclude", "Extract",
-    "HTMLElement", "Event", "EventEmitter", "console", "window", "document",
-    "TemplateRef", "ElementRef", "ViewChild", "ViewChildren",
-    "true", "false", "this", "super", "new", "typeof", "instanceof",
-    "T", "K", "V", "U", "R",
-})
+TS_BUILTINS = frozenset(
+    {
+        "string",
+        "number",
+        "boolean",
+        "any",
+        "void",
+        "never",
+        "unknown",
+        "object",
+        "undefined",
+        "null",
+        "symbol",
+        "bigint",
+        "Promise",
+        "Observable",
+        "Subscription",
+        "Subject",
+        "BehaviorSubject",
+        "Array",
+        "Map",
+        "Set",
+        "Date",
+        "RegExp",
+        "Error",
+        "JSON",
+        "Record",
+        "Partial",
+        "Required",
+        "Pick",
+        "Omit",
+        "Exclude",
+        "Extract",
+        "HTMLElement",
+        "Event",
+        "EventEmitter",
+        "console",
+        "window",
+        "document",
+        "TemplateRef",
+        "ElementRef",
+        "ViewChild",
+        "ViewChildren",
+        "true",
+        "false",
+        "this",
+        "super",
+        "new",
+        "typeof",
+        "instanceof",
+        "T",
+        "K",
+        "V",
+        "U",
+        "R",
+    }
+)
 
 # ── Import parsing regexes ────────────────────────────────────────────────────
 _JAVA_IMPORT_RE = re.compile(r"^(import\s+(static\s+)?([\w.]+)\s*;)\s*$", re.MULTILINE)
@@ -104,9 +180,11 @@ class ImportFixer:
                 self.total_fixes += 1
 
         logger.info(
-            "[Preflight] Import fixes: %d files modified, %d imports added, "
-            "%d paths corrected, %d duplicates removed",
-            self.total_fixes, self.total_added, self.total_corrected, self.total_deduped,
+            "[Preflight] Import fixes: %d files modified, %d imports added, %d paths corrected, %d duplicates removed",
+            self.total_fixes,
+            self.total_added,
+            self.total_corrected,
+            self.total_deduped,
         )
         return generated_files
 

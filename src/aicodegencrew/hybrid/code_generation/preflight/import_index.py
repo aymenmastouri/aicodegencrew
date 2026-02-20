@@ -114,9 +114,7 @@ class ImportIndex:
     # ── TypeScript resolution ─────────────────────────────────────────────
 
     @staticmethod
-    def _resolve_typescript(
-        entries: list[ImportEntry], symbol: str, from_file: str
-    ) -> str | None:
+    def _resolve_typescript(entries: list[ImportEntry], symbol: str, from_file: str) -> str | None:
         if not entries:
             return None
 
@@ -158,7 +156,9 @@ class ImportIndexBuilder:
 
         logger.info(
             "[Preflight] ImportIndex built: %d entries (%d from symbols.jsonl, %d from repo scan)",
-            index.total_symbols, symbols_loaded, scanned,
+            index.total_symbols,
+            symbols_loaded,
+            scanned,
         )
         return index
 
@@ -208,14 +208,16 @@ class ImportIndexBuilder:
                     if not Path(abs_path).exists():
                         continue
 
-                    index.add(ImportEntry(
-                        symbol=symbol,
-                        qualified_name=qname,
-                        import_path=file_path,
-                        file_path=abs_path,
-                        kind=kind,
-                        language=lang,
-                    ))
+                    index.add(
+                        ImportEntry(
+                            symbol=symbol,
+                            qualified_name=qname,
+                            import_path=file_path,
+                            file_path=abs_path,
+                            kind=kind,
+                            language=lang,
+                        )
+                    )
                     count += 1
         except Exception as e:
             logger.warning("[Preflight] Error reading symbols.jsonl: %s", e)
@@ -228,7 +230,8 @@ class ImportIndexBuilder:
 
         for root, dirs, files in os.walk(self.repo_path):
             dirs[:] = [
-                d for d in dirs
+                d
+                for d in dirs
                 if d not in ("node_modules", ".git", "build", "dist", "target", "__pycache__", ".gradle")
             ]
             for fname in files:
@@ -238,7 +241,10 @@ class ImportIndexBuilder:
 
                 full_path = os.path.join(root, fname)
                 norm_path = full_path.replace("\\", "/")
-                if any(norm_path.endswith(k.replace("\\", "/")) or k.replace("\\", "/").endswith(norm_path) for k in known_files):
+                if any(
+                    norm_path.endswith(k.replace("\\", "/")) or k.replace("\\", "/").endswith(norm_path)
+                    for k in known_files
+                ):
                     continue
 
                 try:
@@ -264,11 +270,16 @@ class ImportIndexBuilder:
         for match in _JAVA_CLASS_RE.finditer(content):
             symbol = match.group(1)
             qualified = f"{package}.{symbol}" if package else symbol
-            index.add(ImportEntry(
-                symbol=symbol, qualified_name=qualified,
-                import_path=file_path, file_path=file_path,
-                kind="class", language="java",
-            ))
+            index.add(
+                ImportEntry(
+                    symbol=symbol,
+                    qualified_name=qualified,
+                    import_path=file_path,
+                    file_path=file_path,
+                    kind="class",
+                    language="java",
+                )
+            )
             count += 1
         return count
 
@@ -280,33 +291,48 @@ class ImportIndexBuilder:
             symbol = match.group(1)
             if symbol not in seen:
                 seen.add(symbol)
-                index.add(ImportEntry(
-                    symbol=symbol, qualified_name=symbol,
-                    import_path=file_path, file_path=file_path,
-                    kind="class", language="typescript",
-                ))
+                index.add(
+                    ImportEntry(
+                        symbol=symbol,
+                        qualified_name=symbol,
+                        import_path=file_path,
+                        file_path=file_path,
+                        kind="class",
+                        language="typescript",
+                    )
+                )
                 count += 1
 
         for match in _TS_EXPORT_CONST_RE.finditer(content):
             symbol = match.group(1)
             if symbol not in seen:
                 seen.add(symbol)
-                index.add(ImportEntry(
-                    symbol=symbol, qualified_name=symbol,
-                    import_path=file_path, file_path=file_path,
-                    kind="const", language="typescript",
-                ))
+                index.add(
+                    ImportEntry(
+                        symbol=symbol,
+                        qualified_name=symbol,
+                        import_path=file_path,
+                        file_path=file_path,
+                        kind="const",
+                        language="typescript",
+                    )
+                )
                 count += 1
 
         for match in _TS_EXPORT_DEFAULT_RE.finditer(content):
             symbol = match.group(1)
             if symbol not in seen:
                 seen.add(symbol)
-                index.add(ImportEntry(
-                    symbol=symbol, qualified_name=symbol,
-                    import_path=file_path, file_path=file_path,
-                    kind="class", language="typescript",
-                ))
+                index.add(
+                    ImportEntry(
+                        symbol=symbol,
+                        qualified_name=symbol,
+                        import_path=file_path,
+                        file_path=file_path,
+                        kind="class",
+                        language="typescript",
+                    )
+                )
                 count += 1
 
         for match in _TS_RE_EXPORT_RE.finditer(content):
@@ -317,11 +343,16 @@ class ImportIndexBuilder:
                     sym_part = sym_part.split(" as ")[1].strip()
                 if sym_part and sym_part not in seen:
                     seen.add(sym_part)
-                    index.add(ImportEntry(
-                        symbol=sym_part, qualified_name=sym_part,
-                        import_path=file_path, file_path=file_path,
-                        kind="class", language="typescript",
-                    ))
+                    index.add(
+                        ImportEntry(
+                            symbol=sym_part,
+                            qualified_name=sym_part,
+                            import_path=file_path,
+                            file_path=file_path,
+                            kind="class",
+                            language="typescript",
+                        )
+                    )
                     count += 1
 
         return count

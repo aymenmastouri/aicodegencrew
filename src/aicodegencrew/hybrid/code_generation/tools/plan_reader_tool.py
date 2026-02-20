@@ -28,7 +28,9 @@ class PlanReaderTool(BaseTool):
     plans_dir: str = "knowledge/plan"
     facts_path: str = "knowledge/extract/architecture_facts.json"
 
-    def __init__(self, plans_dir: str = "knowledge/plan", facts_path: str = "knowledge/extract/architecture_facts.json", **kwargs):
+    def __init__(
+        self, plans_dir: str = "knowledge/plan", facts_path: str = "knowledge/extract/architecture_facts.json", **kwargs
+    ):
         super().__init__(**kwargs)
         self.plans_dir = plans_dir
         self.facts_path = facts_path

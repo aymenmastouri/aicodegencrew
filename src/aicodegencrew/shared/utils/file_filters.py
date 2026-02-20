@@ -14,26 +14,73 @@ from pathlib import Path, PurePosixPath
 # Everything else is treated as text and indexed.
 BINARY_EXTENSIONS = {
     # Compiled / bytecode
-    ".class", ".jar", ".war", ".ear", ".pyc", ".pyo",
-    ".o", ".obj", ".a", ".lib", ".so", ".dll", ".dylib", ".exe",
+    ".class",
+    ".jar",
+    ".war",
+    ".ear",
+    ".pyc",
+    ".pyo",
+    ".o",
+    ".obj",
+    ".a",
+    ".lib",
+    ".so",
+    ".dll",
+    ".dylib",
+    ".exe",
     # Archives
-    ".zip", ".tar", ".gz", ".bz2", ".7z", ".rar", ".xz",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".bz2",
+    ".7z",
+    ".rar",
+    ".xz",
     # Images
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg", ".webp", ".tiff",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".svg",
+    ".webp",
+    ".tiff",
     # Media
-    ".mp3", ".mp4", ".avi", ".mov", ".wav", ".flac", ".ogg", ".webm",
+    ".mp3",
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".wav",
+    ".flac",
+    ".ogg",
+    ".webm",
     # Fonts
-    ".woff", ".woff2", ".ttf", ".eot", ".otf",
+    ".woff",
+    ".woff2",
+    ".ttf",
+    ".eot",
+    ".otf",
     # Documents (binary)
-    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
     # Data (binary/large)
-    ".db", ".sqlite", ".sqlite3", ".mdb",
+    ".db",
+    ".sqlite",
+    ".sqlite3",
+    ".mdb",
     # Lock files (auto-generated, often huge)
     ".lock",
     # Source maps (generated)
     ".map",
     # Minified bundles (generated, not useful for RAG)
-    ".min.js", ".min.css",
+    ".min.js",
+    ".min.css",
 }
 
 CONFIG_EXTENSIONS = {
@@ -150,10 +197,7 @@ DEFAULT_KEEP_GLOBS = [
 # Defaults used by tests and callers that rely on glob patterns.
 # Blocklist: include everything, exclude skip-dirs + binary extensions.
 DEFAULT_INCLUDE_PATTERNS = ["**/*"]
-DEFAULT_EXCLUDE_PATTERNS = (
-    [f"**/{d}/**" for d in sorted(SKIP_DIRS)]
-    + [f"*{ext}" for ext in sorted(BINARY_EXTENSIONS)]
-)
+DEFAULT_EXCLUDE_PATTERNS = [f"**/{d}/**" for d in sorted(SKIP_DIRS)] + [f"*{ext}" for ext in sorted(BINARY_EXTENSIONS)]
 
 
 def _env_csv_set(name: str) -> set[str]:
@@ -298,7 +342,9 @@ def should_include_file(
 
     # 3) Allowlist
     if include_patterns is not None:
-        include_match = any(_match_path(path_posix, pat) or _match_path(file_path.name, pat) for pat in include_patterns)
+        include_match = any(
+            _match_path(path_posix, pat) or _match_path(file_path.name, pat) for pat in include_patterns
+        )
         return include_match
     else:
         keep_patterns = _get_keep_globs()

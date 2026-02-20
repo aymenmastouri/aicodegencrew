@@ -40,14 +40,14 @@ from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_f
 # to log contract violations (observational — not a hard gate; the existing
 # get_dependencies() system already handles blocking).
 PHASE_CONTRACTS: dict[str, dict] = {
-    "discover":  {"requires": [],              "provides": ["discover"]},
-    "extract":   {"requires": ["discover"],    "provides": ["extract"]},
-    "analyze":   {"requires": ["extract"],     "provides": ["analyze"]},
-    "document":  {"requires": ["analyze"],     "provides": ["document"]},
-    "plan":      {"requires": ["extract"],     "provides": ["plan"]},
-    "implement": {"requires": ["plan"],        "provides": ["implement"]},
-    "verify":    {"requires": ["implement"],   "provides": ["verify"]},
-    "deliver":   {"requires": ["implement"],   "provides": ["deliver"]},
+    "discover": {"requires": [], "provides": ["discover"]},
+    "extract": {"requires": ["discover"], "provides": ["extract"]},
+    "analyze": {"requires": ["extract"], "provides": ["analyze"]},
+    "document": {"requires": ["analyze"], "provides": ["document"]},
+    "plan": {"requires": ["extract"], "provides": ["plan"]},
+    "implement": {"requires": ["plan"], "provides": ["implement"]},
+    "verify": {"requires": ["implement"], "provides": ["verify"]},
+    "deliver": {"requires": ["implement"], "provides": ["deliver"]},
 }
 
 # Phase-level wall-clock timeout (ARCH-6). Thread-based — compatible with Windows.
@@ -366,7 +366,9 @@ class SDLCOrchestrator:
                 "duration_seconds": round(duration, 2),
                 "status": metric_status,
             }
-            self.phase_context.set_phase_result(phase_id=phase_id, status=phase_status, output=output, message=phase_message)
+            self.phase_context.set_phase_result(
+                phase_id=phase_id, status=phase_status, output=output, message=phase_message
+            )
 
             # PERF-2: Cache architecture_facts.json after extract phase so downstream
             # phases can read from inputs["previous_results"]["facts"] without I/O.
@@ -380,6 +382,7 @@ class SDLCOrchestrator:
                             len(self._facts_cache),
                         )
                         from .shared.schema_version import check_schema_version
+
                         check_schema_version(self._facts_cache, "extract")
                     except Exception as cache_err:
                         logger.warning("[Orchestrator] Could not cache facts.json: %s", cache_err)
@@ -427,9 +430,9 @@ class SDLCOrchestrator:
             except _cf.TimeoutError:
                 phase_id = inputs.get("config", {}).get("phase_id", "unknown")
                 logger.error(
-                    "[Orchestrator] Phase '%s' timed out after %ds. "
-                    "Set PHASE_TIMEOUT_SECONDS env var to increase.",
-                    phase_id, _PHASE_TIMEOUT_S,
+                    "[Orchestrator] Phase '%s' timed out after %ds. Set PHASE_TIMEOUT_SECONDS env var to increase.",
+                    phase_id,
+                    _PHASE_TIMEOUT_S,
                 )
                 raise TimeoutError(
                     f"Phase '{phase_id}' timed out after {_PHASE_TIMEOUT_S}s. "

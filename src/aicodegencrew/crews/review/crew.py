@@ -52,9 +52,7 @@ _ARC42_REQUIRED: list[str] = [
 ]
 
 # Placeholder markers to detect in documentation files
-_PLACEHOLDER_RE = re.compile(
-    r"\b(TODO|FIXME|PLACEHOLDER|TBD|XXX)\b", re.IGNORECASE
-)
+_PLACEHOLDER_RE = re.compile(r"\b(TODO|FIXME|PLACEHOLDER|TBD|XXX)\b", re.IGNORECASE)
 
 
 class ReviewCrew:
@@ -118,9 +116,8 @@ class ReviewCrew:
             logger.error("[ReviewCrew] LLM synthesis failed: %s", e)
 
         duration = round(time.monotonic() - t0, 2)
-        issue_count = (
-            len(consistency.get("missing_containers", []))
-            + len(consistency.get("missing_arc42_chapters", []))
+        issue_count = len(consistency.get("missing_containers", [])) + len(
+            consistency.get("missing_arc42_chapters", [])
         )
         summary = {
             "status": "success" if llm_ok else "partial",

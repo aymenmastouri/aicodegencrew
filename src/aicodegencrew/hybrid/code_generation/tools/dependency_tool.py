@@ -1,4 +1,4 @@
-﻿"""Dependency lookup tool for Phase 5 agents."""
+"""Dependency lookup tool for Phase 5 agents."""
 
 from __future__ import annotations
 

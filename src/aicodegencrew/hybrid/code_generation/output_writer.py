@@ -56,10 +56,14 @@ class OutputWriter:
         if len(generated_files) == 0:
             logger.error("[OutputWriter] 0 files generated — aborting commit")
             report = self._build_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=["0 files generated"],
                 rich_verification=rich_verification,
             )
@@ -70,13 +74,18 @@ class OutputWriter:
         if failed_count / len(generated_files) >= 0.5:
             logger.error(
                 "[OutputWriter] >=50%% files failed (%d/%d), aborting",
-                failed_count, len(generated_files),
+                failed_count,
+                len(generated_files),
             )
             report = self._build_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
@@ -87,10 +96,14 @@ class OutputWriter:
         if build_verification and not build_verification.skipped and not build_verification.all_passed:
             logger.error("[OutputWriter] Build failed — aborting commit")
             report = self._build_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
@@ -100,10 +113,14 @@ class OutputWriter:
         if self.dry_run:
             logger.info("[OutputWriter] DRY RUN — skipping file writes and git")
             report = self._build_report(
-                task_id=task_id, status="dry_run",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, dry_run=True,
+                task_id=task_id,
+                status="dry_run",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                dry_run=True,
                 build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
@@ -114,10 +131,14 @@ class OutputWriter:
         if not self._is_git_repo():
             logger.error("[OutputWriter] %s is not a git repository", self.repo_path)
             report = self._build_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
@@ -127,10 +148,14 @@ class OutputWriter:
         if not self._is_clean_working_tree():
             logger.error("[OutputWriter] Target repo has uncommitted changes")
             report = self._build_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
@@ -140,10 +165,14 @@ class OutputWriter:
         branch_name = self._create_branch(task_id)
         if not branch_name:
             report = self._build_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, degradation_reasons=degradation_reasons,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                degradation_reasons=degradation_reasons,
                 rich_verification=rich_verification,
             )
             self._write_report(report)
@@ -168,10 +197,14 @@ class OutputWriter:
             task_id=task_id,
             status="failed" if not commit_ok else ("success" if failed_count == 0 else "partial"),
             branch_name=branch_name,
-            generated_files=generated_files, validation=validation,
-            files_changed=files_changed, files_created=files_created,
-            files_failed=failed_count, duration_seconds=duration_seconds,
-            llm_calls=llm_calls, total_tokens=total_tokens,
+            generated_files=generated_files,
+            validation=validation,
+            files_changed=files_changed,
+            files_created=files_created,
+            files_failed=failed_count,
+            duration_seconds=duration_seconds,
+            llm_calls=llm_calls,
+            total_tokens=total_tokens,
             build_verification=build_verification,
             degradation_reasons=degradation_reasons,
             rich_verification=rich_verification,
@@ -236,12 +269,17 @@ class OutputWriter:
         if len(generated_files) == 0:
             logger.error("[OutputWriter] Cascade task %s: 0 files generated — aborting commit", task_id)
             report = self._build_cascade_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=["0 files generated"],
-                rich_verification=rich_verification, **cascade_kwargs,
+                rich_verification=rich_verification,
+                **cascade_kwargs,
             )
             self._write_report(report)
             return report
@@ -249,37 +287,52 @@ class OutputWriter:
         # Safety gate: >=50% failure threshold
         if failed_count / len(generated_files) >= 0.5:
             report = self._build_cascade_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
-                rich_verification=rich_verification, **cascade_kwargs,
+                rich_verification=rich_verification,
+                **cascade_kwargs,
             )
             self._write_report(report)
             return report
 
         if self.dry_run:
             report = self._build_cascade_report(
-                task_id=task_id, status="dry_run",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, dry_run=True,
+                task_id=task_id,
+                status="dry_run",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                dry_run=True,
                 build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
-                rich_verification=rich_verification, **cascade_kwargs,
+                rich_verification=rich_verification,
+                **cascade_kwargs,
             )
             self._write_report(report)
             return report
 
         if build_verification and not build_verification.skipped and not build_verification.all_passed:
             report = self._build_cascade_report(
-                task_id=task_id, status="failed",
-                generated_files=generated_files, validation=validation,
-                duration_seconds=duration_seconds, llm_calls=llm_calls,
-                total_tokens=total_tokens, build_verification=build_verification,
+                task_id=task_id,
+                status="failed",
+                generated_files=generated_files,
+                validation=validation,
+                duration_seconds=duration_seconds,
+                llm_calls=llm_calls,
+                total_tokens=total_tokens,
+                build_verification=build_verification,
                 degradation_reasons=degradation_reasons,
-                rich_verification=rich_verification, **cascade_kwargs,
+                rich_verification=rich_verification,
+                **cascade_kwargs,
             )
             self._write_report(report)
             return report
@@ -301,13 +354,18 @@ class OutputWriter:
             task_id=task_id,
             status="failed" if not commit_ok else ("success" if failed_count == 0 else "partial"),
             branch_name=cascade_branch,
-            generated_files=generated_files, validation=validation,
-            files_changed=files_changed, files_created=files_created,
-            files_failed=failed_count, duration_seconds=duration_seconds,
-            llm_calls=llm_calls, total_tokens=total_tokens,
+            generated_files=generated_files,
+            validation=validation,
+            files_changed=files_changed,
+            files_created=files_created,
+            files_failed=failed_count,
+            duration_seconds=duration_seconds,
+            llm_calls=llm_calls,
+            total_tokens=total_tokens,
             build_verification=build_verification,
             degradation_reasons=degradation_reasons,
-            rich_verification=rich_verification, **cascade_kwargs,
+            rich_verification=rich_verification,
+            **cascade_kwargs,
         )
         self._write_report(report)
         return report
@@ -374,7 +432,9 @@ class OutputWriter:
             result = subprocess.run(
                 ["git", *list(args)],
                 cwd=str(self.repo_path),
-                capture_output=True, text=True, timeout=30,
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             if result.returncode != 0:
                 return None
@@ -432,12 +492,19 @@ class OutputWriter:
 
     @staticmethod
     def _build_report(
-        task_id: str, status: str = "failed", branch_name: str = "",
+        task_id: str,
+        status: str = "failed",
+        branch_name: str = "",
         generated_files: list[GeneratedFile] | None = None,
         validation: ValidationResult | None = None,
-        files_changed: int = 0, files_created: int = 0, files_failed: int = 0,
-        duration_seconds: float = 0.0, llm_calls: int = 0, total_tokens: int = 0,
-        dry_run: bool = False, build_verification: BuildVerificationResult | None = None,
+        files_changed: int = 0,
+        files_created: int = 0,
+        files_failed: int = 0,
+        duration_seconds: float = 0.0,
+        llm_calls: int = 0,
+        total_tokens: int = 0,
+        dry_run: bool = False,
+        build_verification: BuildVerificationResult | None = None,
         degradation_reasons: list[str] | None = None,
         rich_verification: dict | None = None,
     ) -> CodegenReport:
@@ -450,11 +517,18 @@ class OutputWriter:
             status = "partial"
 
         return CodegenReport(
-            task_id=task_id, branch_name=branch_name, status=status,
-            files_changed=files_changed, files_created=files_created,
-            files_failed=files_failed, generated_files=generated_files or [],
-            validation_errors=validation_errors, duration_seconds=duration_seconds,
-            llm_calls=llm_calls, total_tokens=total_tokens, dry_run=dry_run,
+            task_id=task_id,
+            branch_name=branch_name,
+            status=status,
+            files_changed=files_changed,
+            files_created=files_created,
+            files_failed=files_failed,
+            generated_files=generated_files or [],
+            validation_errors=validation_errors,
+            duration_seconds=duration_seconds,
+            llm_calls=llm_calls,
+            total_tokens=total_tokens,
+            dry_run=dry_run,
             build_verification=build_verification,
             degradation_reasons=degradation_reasons or [],
             rich_verification=rich_verification,
@@ -462,14 +536,23 @@ class OutputWriter:
 
     @staticmethod
     def _build_cascade_report(
-        task_id: str, status: str = "failed", branch_name: str = "",
-        cascade_branch: str = "", cascade_position: int = 0,
-        cascade_total: int = 0, prior_task_ids: list[str] | None = None,
+        task_id: str,
+        status: str = "failed",
+        branch_name: str = "",
+        cascade_branch: str = "",
+        cascade_position: int = 0,
+        cascade_total: int = 0,
+        prior_task_ids: list[str] | None = None,
         generated_files: list[GeneratedFile] | None = None,
         validation: ValidationResult | None = None,
-        files_changed: int = 0, files_created: int = 0, files_failed: int = 0,
-        duration_seconds: float = 0.0, llm_calls: int = 0, total_tokens: int = 0,
-        dry_run: bool = False, build_verification: BuildVerificationResult | None = None,
+        files_changed: int = 0,
+        files_created: int = 0,
+        files_failed: int = 0,
+        duration_seconds: float = 0.0,
+        llm_calls: int = 0,
+        total_tokens: int = 0,
+        dry_run: bool = False,
+        build_verification: BuildVerificationResult | None = None,
         degradation_reasons: list[str] | None = None,
         rich_verification: dict | None = None,
     ) -> CodegenReport:
@@ -479,14 +562,23 @@ class OutputWriter:
                 validation_errors.extend(f"{r.file_path}: {e}" for e in r.errors)
 
         return CodegenReport(
-            task_id=task_id, branch_name=branch_name, status=status,
-            files_changed=files_changed, files_created=files_created,
-            files_failed=files_failed, generated_files=generated_files or [],
-            validation_errors=validation_errors, duration_seconds=duration_seconds,
-            llm_calls=llm_calls, total_tokens=total_tokens, dry_run=dry_run,
+            task_id=task_id,
+            branch_name=branch_name,
+            status=status,
+            files_changed=files_changed,
+            files_created=files_created,
+            files_failed=files_failed,
+            generated_files=generated_files or [],
+            validation_errors=validation_errors,
+            duration_seconds=duration_seconds,
+            llm_calls=llm_calls,
+            total_tokens=total_tokens,
+            dry_run=dry_run,
             build_verification=build_verification,
-            cascade_branch=cascade_branch, cascade_position=cascade_position,
-            cascade_total=cascade_total, prior_task_ids=prior_task_ids or [],
+            cascade_branch=cascade_branch,
+            cascade_position=cascade_position,
+            cascade_total=cascade_total,
+            prior_task_ids=prior_task_ids or [],
             degradation_reasons=degradation_reasons or [],
             rich_verification=rich_verification,
         )

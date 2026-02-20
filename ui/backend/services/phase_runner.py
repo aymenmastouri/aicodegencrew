@@ -1,4 +1,4 @@
-﻿"""Service for reading phase configuration and status."""
+"""Service for reading phase configuration and status."""
 
 import logging
 

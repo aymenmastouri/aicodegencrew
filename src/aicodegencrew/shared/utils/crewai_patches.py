@@ -62,9 +62,7 @@ def _patch_max_iterations_handler() -> None:
             )
 
         if formatted_answer and hasattr(formatted_answer, "text"):
-            assistant_message = (
-                formatted_answer.text + f"\n{i18n.errors('force_final_answer')}"
-            )
+            assistant_message = formatted_answer.text + f"\n{i18n.errors('force_final_answer')}"
         else:
             assistant_message = i18n.errors("force_final_answer")
 

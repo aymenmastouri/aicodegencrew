@@ -80,7 +80,11 @@ def get_history_stats() -> dict:
     total_runs = len(runs)
 
     # Average duration of completed runs
-    durations = [r.get("duration_seconds") for r in runs if r.get("status") == "completed" and r.get("duration_seconds") is not None]
+    durations = [
+        r.get("duration_seconds")
+        for r in runs
+        if r.get("status") == "completed" and r.get("duration_seconds") is not None
+    ]
     avg_duration = sum(durations) / len(durations) if durations else 0.0
 
     # Total tokens from metrics
@@ -112,7 +116,9 @@ def get_history_stats() -> dict:
         "success_count": success_count,
         "failed_count": failed_count,
         "cancelled_count": cancelled_count,
-        "success_rate": round(success_count / (total_runs - cancelled_count) * 100, 1) if (total_runs - cancelled_count) > 0 else 0.0,
+        "success_rate": round(success_count / (total_runs - cancelled_count) * 100, 1)
+        if (total_runs - cancelled_count) > 0
+        else 0.0,
         "avg_duration_seconds": round(avg_duration, 1),
         "total_tokens": total_tokens,
         "total_deleted_files": total_deleted,

@@ -198,10 +198,7 @@ class SecurityDetailCollector(DimensionCollector):
 
     def _collect_angular_security(self):
         """Collect Angular route guard facts."""
-        ts_files = [
-            f for f in self._find_files("*.ts")
-            if "guard" in str(f).lower() or "auth" in str(f).lower()
-        ]
+        ts_files = [f for f in self._find_files("*.ts") if "guard" in str(f).lower() or "auth" in str(f).lower()]
 
         for ts_file in ts_files:
             try:

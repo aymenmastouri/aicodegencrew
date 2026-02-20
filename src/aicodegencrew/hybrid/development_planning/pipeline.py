@@ -158,8 +158,7 @@ class DevelopmentPlanningPipeline:
             }
         if quality_hints.get("architecture_quality") or quality_hints.get("critical_issues"):
             logger.info(
-                "[Phase4] Received quality_hints from analyze phase: "
-                "architecture_quality=%s, critical_issues=%d",
+                "[Phase4] Received quality_hints from analyze phase: architecture_quality=%s, critical_issues=%d",
                 bool(quality_hints.get("architecture_quality")),
                 len(quality_hints.get("critical_issues", [])),
             )
@@ -257,7 +256,8 @@ class DevelopmentPlanningPipeline:
         if cascade_completed:
             logger.info(
                 "[Phase4] Plan checkpoint: %d task(s) already done: %s",
-                len(cascade_completed), sorted(cascade_completed),
+                len(cascade_completed),
+                sorted(cascade_completed),
             )
 
         for i, task in enumerate(sorted_tasks, 1):
@@ -532,7 +532,9 @@ class DevelopmentPlanningPipeline:
             comps = discovery_result.get("affected_components", [])
             if comps:
                 dp["affected_components"] = [c for c in comps if isinstance(c, dict) and "name" in c]
-                logger.info(f"[Enrich] Filled affected_components from discovery: {len(dp['affected_components'])} components")
+                logger.info(
+                    f"[Enrich] Filled affected_components from discovery: {len(dp['affected_components'])} components"
+                )
 
         # Fill upgrade_plan.migration_sequence from pattern_result if LLM left it empty
         upgrade = pattern_result.get("upgrade_assessment", {})

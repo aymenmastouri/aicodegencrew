@@ -43,9 +43,9 @@ ARC42_AGENT_CONFIG = {
         "## TOOL USAGE (use these tools actively!)\n"
         "1. get_statistics() — get total component/endpoint counts\n"
         "2. get_architecture_summary() — get patterns, quality, architecture style\n"
-        "3. list_components_by_stereotype(stereotype=\"controller\") — get component lists\n"
-        "4. query_architecture_facts(category=\"containers\") — get container details\n"
-        "5. rag_query(query=\"...\") — search source code for concrete patterns\n"
+        '3. list_components_by_stereotype(stereotype="controller") — get component lists\n'
+        '4. query_architecture_facts(category="containers") — get container details\n'
+        '5. rag_query(query="...") — search source code for concrete patterns\n'
         "6. doc_writer(path, content) — write documentation files\n"
         "\n"
         "## TOOL CALL PATTERN (follow this EXACTLY before each chapter):\n"

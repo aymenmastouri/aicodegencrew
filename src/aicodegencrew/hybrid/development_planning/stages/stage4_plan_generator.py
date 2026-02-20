@@ -20,8 +20,8 @@ from typing import Any
 from crewai import Agent, Crew, Process, Task
 
 from ....shared.mcp import get_phase4_mcps
-from ....shared.utils.logger import setup_logger
 from ....shared.utils.llm_factory import create_llm
+from ....shared.utils.logger import setup_logger
 from ..schemas import ImplementationPlan, TaskInput
 
 logger = setup_logger(__name__)
@@ -113,7 +113,9 @@ class PlanGeneratorStage:
 
         # Build task description
         description = self._build_task_description(task, discovery_result, pattern_result)
-        expected = f"ImplementationPlan JSON object with task_id={task.task_id}, understanding, and development_plan sections"
+        expected = (
+            f"ImplementationPlan JSON object with task_id={task.task_id}, understanding, and development_plan sections"
+        )
 
         # Create CrewAI task (no output_pydantic — on-prem LLMs can truncate output,
         # causing CrewAI to raise ValidationError before our repair code runs).
@@ -155,8 +157,7 @@ class PlanGeneratorStage:
                 raw = str(result).strip()
                 if not raw:
                     raise ValueError(
-                        "Agent returned empty result — check LLM connectivity "
-                        "and ensure the model is responding."
+                        "Agent returned empty result — check LLM connectivity and ensure the model is responding."
                     )
                 plan_json = self._extract_json(raw)
                 plan = self._plan_from_dict(plan_json, task)
@@ -277,9 +278,8 @@ VERIFICATION COMMANDS:
     }},"""
 
         # Extract actual layer pattern from analyzed architecture if available
-        layer_pattern = (
-            self.analyzed_architecture.get("macro_architecture", {}).get("layer_pattern")
-            or (arch_style if arch_style != "Unknown" else "Presentation → Service → Repository → Domain")
+        layer_pattern = self.analyzed_architecture.get("macro_architecture", {}).get("layer_pattern") or (
+            arch_style if arch_style != "Unknown" else "Presentation → Service → Repository → Domain"
         )
 
         prompt += f"""
@@ -561,7 +561,7 @@ Generate the plan now:"""
             if escape_next:
                 escape_next = False
                 continue
-            if ch == '\\' and in_string:
+            if ch == "\\" and in_string:
                 escape_next = True
                 continue
             if ch == '"':
@@ -569,11 +569,11 @@ Generate the plan now:"""
                 continue
             if in_string:
                 continue
-            if ch in ('{', '['):
+            if ch in ("{", "["):
                 stack.append(ch)
-            elif ch == '}' and stack and stack[-1] == '{':
+            elif ch == "}" and stack and stack[-1] == "{":
                 stack.pop()
-            elif ch == ']' and stack and stack[-1] == '[':
+            elif ch == "]" and stack and stack[-1] == "[":
                 stack.pop()
 
         # If we're inside a string, close it
@@ -581,11 +581,11 @@ Generate the plan now:"""
             content += '"'
 
         # Close trailing comma before closing brackets
-        content = re.sub(r',\s*$', '', content)
+        content = re.sub(r",\s*$", "", content)
 
         # Close open structures in reverse order
         for opener in reversed(stack):
-            content += ']' if opener == '[' else '}'
+            content += "]" if opener == "[" else "}"
 
         return content
 

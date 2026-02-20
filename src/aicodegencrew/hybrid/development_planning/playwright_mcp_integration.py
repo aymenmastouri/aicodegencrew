@@ -81,6 +81,7 @@ def fetch_upgrade_guide(framework: str, from_version: str, to_version: str) -> d
     result = crew.kickoff()
 
     import json
+
     try:
         if isinstance(result, str):
             return json.loads(result)

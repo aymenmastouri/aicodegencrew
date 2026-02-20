@@ -31,9 +31,7 @@ def test_output_writer_blocks_prefix_path_escape(tmp_path: Path) -> None:
     outside.parent.mkdir(parents=True, exist_ok=True)
 
     writer = OutputWriter(repo_path=str(repo))
-    blocked = writer._write_file(
-        GeneratedFile(file_path=str(outside), content="secret", action="create")
-    )
+    blocked = writer._write_file(GeneratedFile(file_path=str(outside), content="secret", action="create"))
     assert blocked is False
     assert not outside.exists()
 
@@ -72,9 +70,7 @@ def test_dependency_graph_reads_file_paths_and_from_to_keys(tmp_path: Path) -> N
                     {"id": "comp.a", "file_paths": ["src/a.ts"]},
                     {"id": "comp.b", "file_paths": ["src/b.ts"]},
                 ],
-                "relations": [
-                    {"from": "comp.a", "to": "comp.b", "type": "uses"}
-                ],
+                "relations": [{"from": "comp.a", "to": "comp.b", "type": "uses"}],
             }
         ),
         encoding="utf-8",

@@ -402,9 +402,7 @@ class TechStackVersionCollector(DimensionCollector):
         results = []
         for dirpath, dirnames, filenames in os.walk(self.repo_path):
             # Prune skip directories IN PLACE so os.walk doesn't descend into them
-            dirnames[:] = [
-                d for d in dirnames if d.lower() not in self.SKIP_DIRS
-            ]
+            dirnames[:] = [d for d in dirnames if d.lower() not in self.SKIP_DIRS]
             if filename in filenames:
                 results.append(Path(dirpath) / filename)
         return results
@@ -412,11 +410,10 @@ class TechStackVersionCollector(DimensionCollector):
     def _find_files_glob(self, pattern: str) -> list[Path]:
         """Like _find_files but matches a glob pattern (e.g. 'Dockerfile*', '*.gradle')."""
         import fnmatch
+
         results = []
         for dirpath, dirnames, filenames in os.walk(self.repo_path):
-            dirnames[:] = [
-                d for d in dirnames if d.lower() not in self.SKIP_DIRS
-            ]
+            dirnames[:] = [d for d in dirnames if d.lower() not in self.SKIP_DIRS]
             for fname in filenames:
                 if fnmatch.fnmatch(fname, pattern):
                     results.append(Path(dirpath) / fname)

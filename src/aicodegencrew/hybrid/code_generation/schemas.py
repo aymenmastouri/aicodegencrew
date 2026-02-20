@@ -34,7 +34,9 @@ class CodegenPlanInput(BaseModel):
     description: str = ""
     source_files: list[str] = Field(default_factory=list, description="Files identified by Phase 4 for changes")
     requirements: list[str] = Field(default_factory=list, description="Requirements from task understanding")
-    acceptance_criteria: list[str] = Field(default_factory=list, description="Acceptance criteria from task understanding")
+    acceptance_criteria: list[str] = Field(
+        default_factory=list, description="Acceptance criteria from task understanding"
+    )
     technical_notes: list[str] = Field(default_factory=list, description="Technical notes from task understanding")
     affected_components: list[ComponentTarget] = Field(default_factory=list)
     implementation_steps: list[str] = Field(default_factory=list)
