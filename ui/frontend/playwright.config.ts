@@ -22,7 +22,12 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
   },
   projects: [
-    { name: 'chromium', use: { browserName: 'chromium' } },
+    {
+      name: 'chromium',
+      use: { browserName: 'chromium' },
+      // Exclude the long-running demo recording — run it manually with --project=demo
+      testIgnore: ['**/demo-showcase.spec.ts'],
+    },
     {
       name: 'demo',
       retries: 0,
