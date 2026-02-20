@@ -24,6 +24,7 @@ from crewai import Agent, Crew, Process, Task
 
 from ...hybrid.code_generation.tools.code_reader_tool import EXT_TO_LANG, CodeReaderTool
 from ...hybrid.code_generation.tools.test_writer_tool import TestWriterTool
+from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -332,7 +333,7 @@ class TestingCrew:
                 "never just describe the tests."
             ),
             tools=[reader, writer],
-            llm=_CODEGEN_MODEL,
+            llm=create_llm(model_override=_CODEGEN_MODEL),
             verbose=True,
             max_iter=4,
             max_retry_limit=1,

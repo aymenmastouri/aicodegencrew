@@ -217,7 +217,7 @@ class MiniCrewBase(ABC):
             DrawioDiagramTool(output_dir=out),
             DocWriterTool(output_dir=out),
             FileReadTool(),
-            FactsQueryTool(facts_path=str(self.facts_path)),
+            FactsQueryTool(facts_dir=str(self.facts_path.parent)),
             StereotypeListTool(facts_path=str(self.facts_path)),
             RAGQueryTool(chroma_dir=self.chroma_dir),
             SymbolQueryTool(),

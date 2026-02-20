@@ -465,7 +465,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
                     "quality-gate",
                     [
                         Task(
-                            description=QUALITY_GATE_DESCRIPTION,
+                            description=QUALITY_GATE_DESCRIPTION.format(**template_data),
                             expected_output="Arc42 Quality report written to quality/arc42-report.md",
                             agent=agent,
                         ),
