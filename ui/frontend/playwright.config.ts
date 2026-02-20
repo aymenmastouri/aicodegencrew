@@ -1,6 +1,10 @@
 import { defineConfig } from '@playwright/test';
+import path from 'path';
 
 const isCI = !!process.env['CI'];
+
+// Project root is two levels above this config file (ui/frontend → ui → project root)
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
 
 export default defineConfig({
   testDir: './e2e',
@@ -21,6 +25,19 @@ export default defineConfig({
     video: 'on',
     viewport: { width: 1440, height: 900 },
   },
+
+  // Start the FastAPI backend before tests run.
+  // reuseExistingServer: true → if backend is already listening on :8001 (local dev),
+  // the command is skipped and the existing server is reused.
+  // In CI (no existing server), the command is executed to bring the backend up.
+  webServer: {
+    command: 'python -m uvicorn ui.backend.main:app --host 127.0.0.1 --port 8001',
+    url: 'http://127.0.0.1:8001/api/health',
+    timeout: 90_000,
+    reuseExistingServer: true,
+    cwd: PROJECT_ROOT,
+  },
+
   projects: [
     {
       name: 'chromium',
