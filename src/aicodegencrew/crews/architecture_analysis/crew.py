@@ -539,6 +539,11 @@ class ArchitectureAnalysisCrew:
                     f.unlink()
                     deleted += 1
 
+            # Also delete the mini-crew checkpoint so no crews are skipped on this fresh run
+            if self._checkpoint_file.exists():
+                self._checkpoint_file.unlink()
+                deleted += 1
+
             if deleted:
                 logger.info(f"   [OK] {deleted} old files deleted")
             else:

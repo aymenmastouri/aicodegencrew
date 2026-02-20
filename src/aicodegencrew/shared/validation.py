@@ -128,7 +128,7 @@ class PhaseOutputValidator:
         min_size = spec.get("min_file_size", 0)
         if min_size:
             for path_str in spec.get("required_paths", []):
-                path = Path(path_str)
+                path = self._base / path_str
                 if path.is_file() and path.stat().st_size < min_size:
                     errors.append(f"Output too small: {path_str} ({path.stat().st_size} bytes, min {min_size})")
 

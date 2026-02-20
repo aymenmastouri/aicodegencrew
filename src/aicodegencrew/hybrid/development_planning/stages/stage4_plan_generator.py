@@ -608,8 +608,8 @@ Generate the plan now:"""
         return ImplementationPlan(
             task_id=task.task_id,
             source_files=[task.source_file],
-            understanding=plan_json.get("understanding", {}),
-            development_plan=plan_json.get("development_plan", {}),
+            understanding=plan_json.get("understanding") or {},
+            development_plan=plan_json.get("development_plan") or {},
         )
 
     @staticmethod
@@ -635,7 +635,12 @@ Generate the plan now:"""
 
         try:
             return json.loads(content)
-        except json.JSONDecodeError as e:
-            logger.error(f"[Stage4] Failed to parse JSON: {e}")
-            logger.error(f"[Stage4] Content (first 500 chars): {content[:500]}")
-            raise
+        except json.JSONDecodeError:
+            # LLM may truncate output at token limit — attempt repair before giving up
+            try:
+                repaired = PlanGeneratorStage._repair_truncated_json(content)
+                return json.loads(repaired)
+            except Exception as e:
+                logger.error(f"[Stage4] Failed to parse JSON (repair also failed): {e}")
+                logger.error(f"[Stage4] Content (first 500 chars): {content[:500]}")
+                raise
