@@ -312,8 +312,10 @@ def _export_run_report(
     from .pipeline_contract import compute_run_outcome
 
     phase_statuses = [pr.status for pr in result.phases]
-    run_outcome = compute_run_outcome(iter(phase_statuses)) if phase_statuses else (
-        "success" if result.status == "completed" else "failed"
+    run_outcome = (
+        compute_run_outcome(iter(phase_statuses))
+        if phase_statuses
+        else ("success" if result.status == "completed" else "failed")
     )
 
     report = {

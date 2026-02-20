@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-
 # =============================================================================
 # Helpers
 # =============================================================================
@@ -45,7 +44,9 @@ def spring_repo(tmp_path: Path) -> Path:
     """
     java = tmp_path / "src" / "main" / "java" / "com" / "example"
 
-    _write(java / "FooController.java", """\
+    _write(
+        java / "FooController.java",
+        """\
 package com.example;
 
 import org.springframework.web.bind.annotation.*;
@@ -65,9 +66,12 @@ public class FooController {
         return "ok";
     }
 }
-""")
+""",
+    )
 
-    _write(java / "FooService.java", """\
+    _write(
+        java / "FooService.java",
+        """\
 package com.example;
 
 import org.springframework.stereotype.Service;
@@ -76,9 +80,12 @@ import org.springframework.stereotype.Service;
 public class FooService {
     public String doSomething() { return "done"; }
 }
-""")
+""",
+    )
 
-    _write(java / "Foo.java", """\
+    _write(
+        java / "Foo.java",
+        """\
 package com.example;
 
 import javax.persistence.Entity;
@@ -88,9 +95,12 @@ public class Foo {
     private Long id;
     private String name;
 }
-""")
+""",
+    )
 
-    _write(java / "FooRepository.java", """\
+    _write(
+        java / "FooRepository.java",
+        """\
 package com.example;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -100,7 +110,8 @@ import org.springframework.stereotype.Repository;
 public interface FooRepository extends JpaRepository<Foo, Long> {
     List<Foo> findByName(String name);
 }
-""")
+""",
+    )
 
     return tmp_path
 
@@ -123,7 +134,9 @@ def angular_repo(tmp_path: Path) -> Path:
 
     app = tmp_path / "src" / "app"
 
-    _write(app / "foo.component.ts", """\
+    _write(
+        app / "foo.component.ts",
+        """\
 import { Component } from '@angular/core';
 
 @Component({
@@ -134,18 +147,24 @@ import { Component } from '@angular/core';
 export class FooComponent {
   title = 'foo';
 }
-""")
+""",
+    )
 
-    _write(app / "highlight.directive.ts", """\
+    _write(
+        app / "highlight.directive.ts",
+        """\
 import { Directive } from '@angular/core';
 
 @Directive({
   selector: '[appHighlight]',
 })
 export class HighlightDirective {}
-""")
+""",
+    )
 
-    _write(app / "foo.service.ts", """\
+    _write(
+        app / "foo.service.ts",
+        """\
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -154,9 +173,12 @@ import { Injectable } from '@angular/core';
 export class FooService {
   getData() { return []; }
 }
-""")
+""",
+    )
 
-    _write(app / "app-routing.module.ts", """\
+    _write(
+        app / "app-routing.module.ts",
+        """\
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { FooComponent } from './foo.component';
@@ -174,7 +196,8 @@ const routes: Routes = [
   exports: [RouterModule],
 })
 export class AppRoutingModule {}
-""")
+""",
+    )
 
     return tmp_path
 
@@ -193,7 +216,9 @@ def container_repo(tmp_path: Path) -> Path:
     # Spring Boot backend
     backend = tmp_path / "backend"
     backend.mkdir()
-    _write(backend / "pom.xml", """\
+    _write(
+        backend / "pom.xml",
+        """\
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -215,7 +240,8 @@ def container_repo(tmp_path: Path) -> Path:
     </dependency>
   </dependencies>
 </project>
-""")
+""",
+    )
 
     # Angular frontend
     frontend = tmp_path / "frontend"

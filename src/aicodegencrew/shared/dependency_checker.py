@@ -29,20 +29,20 @@ class DependencyChecker:
     # Used for observational contract violation warnings only — not a hard gate;
     # the actual blocking is handled by get_dependencies() on the contract object.
     PHASE_CONTRACTS: dict[str, dict] = {
-        "discover":  {"requires": [],            "provides": ["discover"]},
-        "extract":   {"requires": ["discover"],  "provides": ["extract"]},
-        "analyze":   {"requires": ["extract"],   "provides": ["analyze"]},
-        "document":  {"requires": ["analyze"],   "provides": ["document"]},
-        "plan":      {"requires": ["extract"],   "provides": ["plan"]},
-        "implement": {"requires": ["plan"],      "provides": ["implement"]},
-        "verify":    {"requires": ["implement"], "provides": ["verify"]},
-        "deliver":   {"requires": ["implement"], "provides": ["deliver"]},
+        "discover": {"requires": [], "provides": ["discover"]},
+        "extract": {"requires": ["discover"], "provides": ["extract"]},
+        "analyze": {"requires": ["extract"], "provides": ["analyze"]},
+        "document": {"requires": ["analyze"], "provides": ["document"]},
+        "plan": {"requires": ["extract"], "provides": ["plan"]},
+        "implement": {"requires": ["plan"], "provides": ["implement"]},
+        "verify": {"requires": ["implement"], "provides": ["verify"]},
+        "deliver": {"requires": ["implement"], "provides": ["deliver"]},
     }
 
     def __init__(
         self,
-        contract: Any,           # PipelineContract — get_dependencies(phase_id) -> list[str]
-        results: dict[str, Any], # dict[phase_id, PhaseResult-like] — .is_success() -> bool
+        contract: Any,  # PipelineContract — get_dependencies(phase_id) -> list[str]
+        results: dict[str, Any],  # dict[phase_id, PhaseResult-like] — .is_success() -> bool
     ) -> None:
         self._contract = contract
         self._results = results
@@ -81,7 +81,8 @@ class DependencyChecker:
 
             logger.error(
                 "[DependencyChecker] Dependency not met: %s requires %s",
-                phase_id, dep,
+                phase_id,
+                dep,
             )
             return False
 
@@ -91,7 +92,8 @@ class DependencyChecker:
             if required not in self._results and not outputs_exist(required, Path(".")):
                 logger.warning(
                     "[DependencyChecker] Contract violation: %s requires '%s' output but it is absent",
-                    phase_id, required,
+                    phase_id,
+                    required,
                 )
 
         return True

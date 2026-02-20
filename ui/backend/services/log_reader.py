@@ -30,8 +30,4 @@ def list_log_files() -> list[str]:
     """List available log files."""
     if not settings.logs_dir.exists():
         return []
-    return sorted(
-        f.name
-        for f in settings.logs_dir.iterdir()
-        if f.is_file() and f.suffix == ".log"
-    )
+    return sorted(f.name for f in settings.logs_dir.iterdir() if f.is_file() and f.suffix == ".log")

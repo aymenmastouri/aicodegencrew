@@ -178,7 +178,7 @@ class ValidatorStage:
                 # Flatten common fields to string for matching
                 parts = []
                 for key in ("title", "description", "summary", "step"):
-                    if key in step and step[key]:
+                    if step.get(key):
                         parts.append(str(step[key]))
                 if not parts:
                     parts.append(str(step))

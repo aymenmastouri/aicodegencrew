@@ -62,7 +62,9 @@ class PlanReader:
 
         logger.info(
             "[PlanReader] Plan loaded: task_id=%s, type=%s, components=%d",
-            plan_input.task_id, plan_input.task_type, len(plan_input.affected_components),
+            plan_input.task_id,
+            plan_input.task_type,
+            len(plan_input.affected_components),
         )
 
         return plan_input
@@ -149,9 +151,14 @@ class PlanReader:
                     if not file_path:
                         logger.warning("[PlanReader] Could not resolve file for: %s (skipped)", comp)
                         continue
-                    components.append(ComponentTarget(
-                        id=comp, name=comp, file_path=file_path, change_type="modify",
-                    ))
+                    components.append(
+                        ComponentTarget(
+                            id=comp,
+                            name=comp,
+                            file_path=file_path,
+                            change_type="modify",
+                        )
+                    )
                 elif isinstance(comp, dict):
                     file_path = comp.get("file_path", "")
                     if not file_path:
@@ -159,19 +166,22 @@ class PlanReader:
                     if not file_path:
                         logger.warning(
                             "[PlanReader] Skipping component (no resolvable file_path): id=%s, name=%s",
-                            comp.get("id", ""), comp.get("name", ""),
+                            comp.get("id", ""),
+                            comp.get("name", ""),
                         )
                         continue
 
-                    components.append(ComponentTarget(
-                        id=comp.get("id", ""),
-                        name=comp.get("name", ""),
-                        file_path=file_path,
-                        stereotype=comp.get("stereotype", "unknown"),
-                        layer=comp.get("layer", "unknown"),
-                        change_type=comp.get("change_type", "modify"),
-                        relevance_score=float(comp.get("relevance_score", 0)),
-                    ))
+                    components.append(
+                        ComponentTarget(
+                            id=comp.get("id", ""),
+                            name=comp.get("name", ""),
+                            file_path=file_path,
+                            stereotype=comp.get("stereotype", "unknown"),
+                            layer=comp.get("layer", "unknown"),
+                            change_type=comp.get("change_type", "modify"),
+                            relevance_score=float(comp.get("relevance_score", 0)),
+                        )
+                    )
             except Exception:
                 continue
         return components

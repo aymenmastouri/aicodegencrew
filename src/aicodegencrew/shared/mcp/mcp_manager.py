@@ -22,14 +22,7 @@ from typing import Literal
 from crewai.mcp import MCPServerStdio
 
 # MCP server types
-MCPServerType = Literal[
-    "sequential_thinking",
-    "memory",
-    "brave_search",
-    "filesystem",
-    "playwright",
-    "github"
-]
+MCPServerType = Literal["sequential_thinking", "memory", "brave_search", "filesystem", "playwright", "github"]
 
 
 class MCPManager:
@@ -116,7 +109,7 @@ class MCPManager:
 
         return MCPServerStdio(
             command="npx",
-            args=["-y", "@modelcontextprotocol/server-filesystem"] + allowed_directories,
+            args=["-y", "@modelcontextprotocol/server-filesystem", *allowed_directories],
             cache_tools_list=True,
         )
 
@@ -202,6 +195,7 @@ class MCPManager:
             except ValueError as e:
                 # Skip if API key missing, log warning
                 import logging
+
                 logger = logging.getLogger(__name__)
                 logger.warning(f"Skipping {server_type} MCP: {e}")
 
@@ -211,6 +205,7 @@ class MCPManager:
 # Convenience functions
 
 _manager = None
+
 
 def get_mcp_manager() -> MCPManager:
     """Get singleton MCP manager instance."""
@@ -239,6 +234,7 @@ def get_mcp_servers(server_types: list[MCPServerType]) -> list[MCPServerStdio]:
 
 
 # Phase-specific MCP configurations
+
 
 def get_phase3_mcps() -> list[MCPServerStdio]:
     """MCPs for Phase 3 (Architecture Analysis)."""

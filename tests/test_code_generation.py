@@ -1,4 +1,4 @@
-﻿"""Legacy Phase 5 tests placeholder.
+"""Legacy Phase 5 tests placeholder.
 
 The old pipeline/stage test suite was removed when Phase 5 moved to ImplementCrew.
 """

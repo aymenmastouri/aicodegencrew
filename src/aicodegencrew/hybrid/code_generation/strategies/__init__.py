@@ -1,5 +1,7 @@
 """Task-type strategies for pipeline behavior customization."""
 
+# Import strategies to trigger @register_strategy decorators
+from . import upgrade_strategy  # noqa: F401
 from .base import (
     DefaultStrategy,
     ErrorCluster,
@@ -11,9 +13,6 @@ from .base import (
     get_strategy,
     register_strategy,
 )
-
-# Import strategies to trigger @register_strategy decorators
-from . import upgrade_strategy  # noqa: F401
 
 __all__ = [
     "DefaultStrategy",

@@ -195,8 +195,7 @@ class InputParserStage:
         # 1. Check build-tool migrations first (summary only → avoids false positives)
         build_migration_rules = TASK_TYPE_RULES.get("build_migration", {})
         is_build_tool_migration = any(
-            pat in summary_lower
-            for pat in build_migration_rules.get("summary_exclusions", [])
+            pat in summary_lower for pat in build_migration_rules.get("summary_exclusions", [])
         )
         if is_build_tool_migration:
             task.task_type = "refactoring"

@@ -104,13 +104,15 @@ class UpgradeStrategy(TaskTypeStrategy):
             for dep_name, required_spec in required.items():
                 current = tech_versions.get(dep_name.lower(), "")
                 status, message = self._check_semver(current, required_spec)
-                checks.append({
-                    "name": dep_name,
-                    "current_version": current or "unknown",
-                    "required_spec": required_spec,
-                    "status": status,
-                    "message": message,
-                })
+                checks.append(
+                    {
+                        "name": dep_name,
+                        "current_version": current or "unknown",
+                        "required_spec": required_spec,
+                        "status": status,
+                        "message": message,
+                    }
+                )
 
         return checks
 
@@ -154,7 +156,10 @@ class UpgradeStrategy(TaskTypeStrategy):
     # ── Hook 2: Pre-execution (schematics, configs, bumps) ──────────────
 
     def pre_execute(
-        self, plan: Any, staging: dict[str, dict], repo_path: str,
+        self,
+        plan: Any,
+        staging: dict[str, dict],
+        repo_path: str,
         dry_run: bool = False,
     ) -> PreExecutionResult:
         """Execute deterministic upgrade steps before LLM."""
@@ -192,7 +197,10 @@ class UpgradeStrategy(TaskTypeStrategy):
         return self._load_rule_sets(facts_data, upgrade_plan)
 
     def _run_schematics(
-        self, migration_seq: list, repo_path: str, dry_run: bool,
+        self,
+        migration_seq: list,
+        repo_path: str,
+        dry_run: bool,
         staging: dict[str, dict],
     ) -> list[PreExecutionStep]:
         """Run whitelisted schematics from migration sequence."""
@@ -206,22 +214,26 @@ class UpgradeStrategy(TaskTypeStrategy):
             rule_id = entry.get("rule_id", "unknown") if isinstance(entry, dict) else "unknown"
 
             if not self._validate_command(schematic):
-                steps.append(PreExecutionStep(
-                    step_type="schematic",
-                    rule_id=rule_id,
-                    description=f"Skipped (not whitelisted): {schematic}",
-                    success=False,
-                    error=f"Command not in whitelist: {schematic.split()[0] if schematic.split() else 'empty'}",
-                ))
+                steps.append(
+                    PreExecutionStep(
+                        step_type="schematic",
+                        rule_id=rule_id,
+                        description=f"Skipped (not whitelisted): {schematic}",
+                        success=False,
+                        error=f"Command not in whitelist: {schematic.split()[0] if schematic.split() else 'empty'}",
+                    )
+                )
                 continue
 
             if dry_run:
-                steps.append(PreExecutionStep(
-                    step_type="schematic",
-                    rule_id=rule_id,
-                    description=f"[DRY RUN] Would run: {schematic}",
-                    success=True,
-                ))
+                steps.append(
+                    PreExecutionStep(
+                        step_type="schematic",
+                        rule_id=rule_id,
+                        description=f"[DRY RUN] Would run: {schematic}",
+                        success=True,
+                    )
+                )
                 continue
 
             step = self._run_single_schematic(schematic, rule_id, repo_path, staging)
@@ -230,7 +242,10 @@ class UpgradeStrategy(TaskTypeStrategy):
         return steps
 
     def _run_single_schematic(
-        self, command: str, rule_id: str, repo_path: str,
+        self,
+        command: str,
+        rule_id: str,
+        repo_path: str,
         staging: dict[str, dict],
     ) -> PreExecutionStep:
         """Run a single schematic command and capture modified files."""
@@ -296,7 +311,10 @@ class UpgradeStrategy(TaskTypeStrategy):
         return tool in SCHEMATIC_WHITELIST
 
     def _apply_config_changes(
-        self, rule_sets: list, repo_path: str, staging: dict[str, dict],
+        self,
+        rule_sets: list,
+        repo_path: str,
+        staging: dict[str, dict],
         dry_run: bool,
     ) -> list[PreExecutionStep]:
         """Apply deterministic config changes from upgrade rules."""
@@ -309,12 +327,14 @@ class UpgradeStrategy(TaskTypeStrategy):
                 rule_id = getattr(rule, "id", "unknown")
                 for change in config_changes:
                     if dry_run:
-                        steps.append(PreExecutionStep(
-                            step_type="config_change",
-                            rule_id=rule_id,
-                            description=f"[DRY RUN] {getattr(change, 'description', 'config change')}",
-                            success=True,
-                        ))
+                        steps.append(
+                            PreExecutionStep(
+                                step_type="config_change",
+                                rule_id=rule_id,
+                                description=f"[DRY RUN] {getattr(change, 'description', 'config change')}",
+                                success=True,
+                            )
+                        )
                         continue
                     step = self._apply_single_config(change, rule_id, repo_path, staging)
                     steps.append(step)
@@ -322,7 +342,10 @@ class UpgradeStrategy(TaskTypeStrategy):
         return steps
 
     def _apply_single_config(
-        self, change: Any, rule_id: str, repo_path: str,
+        self,
+        change: Any,
+        rule_id: str,
+        repo_path: str,
         staging: dict[str, dict],
     ) -> PreExecutionStep:
         """Apply a single ConfigChange to a file."""
@@ -404,7 +427,10 @@ class UpgradeStrategy(TaskTypeStrategy):
         )
 
     def _apply_version_bumps(
-        self, upgrade_plan: dict, repo_path: str, staging: dict[str, dict],
+        self,
+        upgrade_plan: dict,
+        repo_path: str,
+        staging: dict[str, dict],
         dry_run: bool,
     ) -> list[PreExecutionStep]:
         """Apply version bumps from required_dependencies."""
@@ -415,12 +441,14 @@ class UpgradeStrategy(TaskTypeStrategy):
         steps: list[PreExecutionStep] = []
         for dep_name, spec in required_deps.items():
             if dry_run:
-                steps.append(PreExecutionStep(
-                    step_type="version_bump",
-                    rule_id=f"dep-{dep_name}",
-                    description=f"[DRY RUN] Would bump {dep_name} to {spec}",
-                    success=True,
-                ))
+                steps.append(
+                    PreExecutionStep(
+                        step_type="version_bump",
+                        rule_id=f"dep-{dep_name}",
+                        description=f"[DRY RUN] Would bump {dep_name} to {spec}",
+                        success=True,
+                    )
+                )
                 continue
 
             # Determine if npm or gradle dependency
@@ -435,7 +463,10 @@ class UpgradeStrategy(TaskTypeStrategy):
         return steps
 
     def _bump_npm_dep(
-        self, name: str, spec: str, repo_path: str,
+        self,
+        name: str,
+        spec: str,
+        repo_path: str,
         staging: dict[str, dict],
     ) -> PreExecutionStep:
         """Bump an npm dependency in package.json."""
@@ -479,7 +510,10 @@ class UpgradeStrategy(TaskTypeStrategy):
         )
 
     def _bump_gradle_dep(
-        self, name: str, spec: str, repo_path: str,
+        self,
+        name: str,
+        spec: str,
+        repo_path: str,
         staging: dict[str, dict],
     ) -> PreExecutionStep:
         """Bump a Gradle dependency in build.gradle / build.gradle.kts."""
@@ -572,7 +606,9 @@ class UpgradeStrategy(TaskTypeStrategy):
 
     @staticmethod
     def _read_file(
-        rel_path: str, repo_path: str, staging: dict[str, dict],
+        rel_path: str,
+        repo_path: str,
+        staging: dict[str, dict],
     ) -> str | None:
         """Read file content from staging dict or disk."""
         if rel_path in staging:
@@ -588,7 +624,9 @@ class UpgradeStrategy(TaskTypeStrategy):
 
     @staticmethod
     def _stage_file(
-        rel_path: str, content: str, staging: dict[str, dict],
+        rel_path: str,
+        content: str,
+        staging: dict[str, dict],
         action: str = "modify",
     ) -> None:
         """Add or update file in staging dict."""
@@ -622,7 +660,9 @@ class UpgradeStrategy(TaskTypeStrategy):
         return snapshot
 
     def _capture_modified(
-        self, before_snapshot: dict[str, float], repo_path: str,
+        self,
+        before_snapshot: dict[str, float],
+        repo_path: str,
         staging: dict[str, dict],
     ) -> list[str]:
         """Compare before/after snapshots and stage modified files."""
@@ -647,7 +687,10 @@ class UpgradeStrategy(TaskTypeStrategy):
     # ── Hook 3: Verification (migration completeness) ────────────────────
 
     def enrich_verification(
-        self, build_result: Any, staging: dict[str, dict], plan: Any,
+        self,
+        build_result: Any,
+        staging: dict[str, dict],
+        plan: Any,
         raw_build_outputs: list[str],
         pre_execution_result: PreExecutionResult | None = None,
     ) -> VerificationEnrichment:
@@ -682,15 +725,19 @@ class UpgradeStrategy(TaskTypeStrategy):
                         msg = match.group(1).strip()
                         if msg and msg not in seen:
                             seen.add(msg)
-                            deprecations.append({
-                                "message": msg,
-                                "source_line": line.strip()[:200],
-                            })
+                            deprecations.append(
+                                {
+                                    "message": msg,
+                                    "source_line": line.strip()[:200],
+                                }
+                            )
 
         return deprecations
 
     def _compute_migration_completeness(
-        self, plan: Any, staging: dict[str, dict],
+        self,
+        plan: Any,
+        staging: dict[str, dict],
     ) -> dict:
         """Estimate migration completeness based on plan vs staged files."""
         upgrade_plan = getattr(plan, "upgrade_plan", None) or {}
@@ -715,11 +762,7 @@ class UpgradeStrategy(TaskTypeStrategy):
             "total_rules": total_rules,
             "rules_with_staged_changes": rules_with_staged_files,
             "completeness_ratio": round(completeness, 2),
-            "status": (
-                "complete" if completeness >= 1.0
-                else "partial" if completeness > 0
-                else "not_started"
-            ),
+            "status": ("complete" if completeness >= 1.0 else "partial" if completeness > 0 else "not_started"),
         }
 
     @staticmethod

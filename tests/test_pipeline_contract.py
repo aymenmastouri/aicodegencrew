@@ -41,7 +41,9 @@ def test_load_pipeline_contract_empty_file_keeps_empty_raw_config(tmp_path: Path
     config_path = tmp_path / "empty.yaml"
     config_path.write_text("", encoding="utf-8")
 
-    contract = load_pipeline_contract(config_path=config_path, fallback_config={"phases": {"discover": {"enabled": True}}})
+    contract = load_pipeline_contract(
+        config_path=config_path, fallback_config={"phases": {"discover": {"enabled": True}}}
+    )
     assert contract.raw_config == {}
 
 

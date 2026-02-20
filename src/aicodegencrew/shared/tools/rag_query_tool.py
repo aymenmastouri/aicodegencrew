@@ -282,7 +282,10 @@ class RAGQueryTool(BaseTool):
                 if not (len(documents) == len(metadatas) == len(distances) == len(ids)):
                     logger.warning(
                         "[RAGQuery] Mismatched result arrays: docs=%d, meta=%d, dist=%d, ids=%d",
-                        len(documents), len(metadatas), len(distances), len(ids),
+                        len(documents),
+                        len(metadatas),
+                        len(distances),
+                        len(ids),
                     )
 
                 for i, doc in enumerate(documents):

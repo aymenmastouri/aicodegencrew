@@ -238,8 +238,7 @@ def _acquire_index_lock(lock_path: Path, timeout_s: int) -> bool:
                 is_stale = not pid_alive or lock_age > 3600
                 if is_stale:
                     logger.warning(
-                        f"Stale lock detected (pid={old_pid}, alive={pid_alive}, "
-                        f"age={int(lock_age)}s). Removing."
+                        f"Stale lock detected (pid={old_pid}, alive={pid_alive}, age={int(lock_age)}s). Removing."
                     )
                     lock_path.unlink(missing_ok=True)
         except Exception as e:
@@ -745,12 +744,14 @@ class IndexingPipeline:
         # causes the next run to falsely skip re-indexing.
         try:
             coll = self.chroma_tool._get_client().get_collection(name=self.config.collection_name)
-            coll.modify(metadata={
-                "repo_fingerprint": fingerprint,
-                "repo_fingerprint_type": fp_type,
-                "repo_path": str(self.config.repo_path),
-                "description": "Repository documentation chunks",
-            })
+            coll.modify(
+                metadata={
+                    "repo_fingerprint": fingerprint,
+                    "repo_fingerprint_type": fp_type,
+                    "repo_path": str(self.config.repo_path),
+                    "description": "Repository documentation chunks",
+                }
+            )
             logger.info(f"[INDEX] Updated collection fingerprint to {fingerprint[:8]}")
         except Exception as e:
             logger.warning(f"Could not update collection fingerprint: {e}")
@@ -1118,9 +1119,7 @@ class IndexingPipeline:
             except ValueError:
                 rel_path = file_path.replace("\\", "/")
             stored = (
-                stored_hashes.get(rel_path, "")
-                or stored_hashes.get(file_path, "")
-                or zero_chunk_reg.get(rel_path, "")
+                stored_hashes.get(rel_path, "") or stored_hashes.get(file_path, "") or zero_chunk_reg.get(rel_path, "")
             )
             if stored == disk_hash:
                 unchanged += 1

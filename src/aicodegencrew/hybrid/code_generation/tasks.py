@@ -93,8 +93,10 @@ def implement_task(
     Returns (description, expected_output, None) for CrewAI Task construction.
     No output_pydantic — the task's value is in write_code() side effects, not output JSON.
     """
-    ordered = "\n".join(f"  {i+1}. {p}" for i, p in enumerate(dependency_order)) if dependency_order else "  (none)"
-    steps_text = "\n".join(f"  {i+1}. {s}" for i, s in enumerate(implementation_steps)) if implementation_steps else "  (none)"
+    ordered = "\n".join(f"  {i + 1}. {p}" for i, p in enumerate(dependency_order)) if dependency_order else "  (none)"
+    steps_text = (
+        "\n".join(f"  {i + 1}. {s}" for i, s in enumerate(implementation_steps)) if implementation_steps else "  (none)"
+    )
     type_instructions = _get_type_instructions(task_type, upgrade_plan)
     task_source_snapshot = task_source_snapshot or "(not available)"
 
@@ -120,7 +122,7 @@ Implement code changes for task {task_id}.
 
 TASK: {summary}
 TYPE: {task_type}
-COMPLEXITY: {estimated_complexity or 'unknown'}
+COMPLEXITY: {estimated_complexity or "unknown"}
 
 {type_instructions}
 
@@ -266,8 +268,5 @@ After fixing ALL files, return a JSON object with this structure:
 
 DO NOT call any more tools after writing all files - just return the JSON.
 """
-    expected = (
-        f"A summary of which files were fixed for task {task_id}. "
-        f"List each file path and what was changed."
-    )
+    expected = f"A summary of which files were fixed for task {task_id}. List each file path and what was changed."
     return task_description, expected, None

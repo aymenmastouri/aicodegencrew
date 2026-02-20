@@ -8,12 +8,11 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from aicodegencrew.shared.mcp.registry import (
-    MCPMetadata,
     MCPStatus,
     get_all_mcps,
     get_mcp_by_id,
-    get_mcps_by_phase,
     get_mcp_status_summary,
+    get_mcps_by_phase,
 )
 
 router = APIRouter(prefix="/api/mcps", tags=["MCPs"])

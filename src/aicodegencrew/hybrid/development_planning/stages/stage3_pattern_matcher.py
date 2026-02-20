@@ -489,6 +489,7 @@ class PatternMatcherStage:
             # Strategy enrichment: validate dependency compatibility
             try:
                 from ...code_generation.strategies import get_strategy
+
                 strategy = get_strategy("upgrade")
                 enrichment = strategy.enrich_plan(
                     plan_data={

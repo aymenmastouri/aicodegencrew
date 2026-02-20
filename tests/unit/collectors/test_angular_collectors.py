@@ -10,8 +10,6 @@ All tests are purely deterministic — no LLM calls, no network access.
 
 from pathlib import Path
 
-import pytest
-
 from aicodegencrew.pipelines.architecture_facts.collectors.angular.component_collector import (
     AngularComponentCollector,
 )
@@ -21,7 +19,6 @@ from aicodegencrew.pipelines.architecture_facts.collectors.angular.routing_colle
 from aicodegencrew.pipelines.architecture_facts.collectors.angular.service_collector import (
     AngularServiceCollector,
 )
-
 
 # =============================================================================
 # AngularComponentCollector
@@ -62,19 +59,14 @@ class TestAngularServiceCollector:
     def test_finds_service(self, angular_repo: Path) -> None:
         output = AngularServiceCollector(repo_path=angular_repo).collect()
         # At least the FooService should be detected
-        services = [
-            f for f in output.facts
-            if hasattr(f, "stereotype") and f.stereotype == "service"
-        ]
+        services = [f for f in output.facts if hasattr(f, "stereotype") and f.stereotype == "service"]
         assert len(services) >= 1, "No service facts found"
 
     def test_injectable_stereotype(self, angular_repo: Path) -> None:
         output = AngularServiceCollector(repo_path=angular_repo).collect()
         foo = next((f for f in output.facts if "FooService" in f.name), None)
         assert foo is not None, "FooService not found in output"
-        assert foo.stereotype == "service", (
-            f"Expected stereotype 'service', got '{foo.stereotype}'"
-        )
+        assert foo.stereotype == "service", f"Expected stereotype 'service', got '{foo.stereotype}'"
 
     def test_empty_repo_returns_zero(self, empty_repo: Path) -> None:
         output = AngularServiceCollector(repo_path=empty_repo).collect()
@@ -91,16 +83,11 @@ class TestAngularRoutingCollector:
         """Routing file must produce at least one RawInterface with a path."""
         output = AngularRoutingCollector(repo_path=angular_repo).collect()
         assert output.fact_count >= 1
-        paths = [
-            f.path for f in output.facts
-            if hasattr(f, "path") and f.path is not None
-        ]
+        paths = [f.path for f in output.facts if hasattr(f, "path") and f.path is not None]
         assert len(paths) >= 1, f"No route paths found; facts: {output.facts}"
 
     def test_lazy_load_detected(self, angular_repo: Path) -> None:
         """The dashboard lazy route must produce a fact tagged 'lazy-loaded'."""
         output = AngularRoutingCollector(repo_path=angular_repo).collect()
         lazy = [f for f in output.facts if "lazy-loaded" in f.tags]
-        assert len(lazy) >= 1, (
-            f"No lazy-loaded route found; all tags: {[f.tags for f in output.facts]}"
-        )
+        assert len(lazy) >= 1, f"No lazy-loaded route found; all tags: {[f.tags for f in output.facts]}"

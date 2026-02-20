@@ -63,13 +63,15 @@ def detect_buildable_containers(
         if not build_system:
             continue
 
-        result.append({
-            "id": cid,
-            "name": container.get("name", root),
-            "root_path": root,
-            "build_system": build_system,
-            "language": meta.get("language", ""),
-        })
+        result.append(
+            {
+                "id": cid,
+                "name": container.get("name", root),
+                "root_path": root,
+                "build_system": build_system,
+                "language": meta.get("language", ""),
+            }
+        )
 
     return result
 
@@ -125,7 +127,8 @@ class PreflightValidator:
         built_index = import_index
         if built_index is None:
             built_index = ImportIndexBuilder(
-                repo_path=str(self.repo_path), facts_path=str(self.facts_path),
+                repo_path=str(self.repo_path),
+                facts_path=str(self.facts_path),
             ).run()
 
         import_symbols = built_index.total_symbols
@@ -153,7 +156,8 @@ class PreflightValidator:
         else:
             logger.info(
                 "[Preflight] OK: symbols=%d, buildable_containers=%d",
-                result.import_symbols, result.buildable_containers,
+                result.import_symbols,
+                result.buildable_containers,
             )
 
         return result, built_index

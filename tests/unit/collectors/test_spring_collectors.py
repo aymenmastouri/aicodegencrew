@@ -10,8 +10,6 @@ All tests are purely deterministic (regex/AST) — no LLM calls, no network acce
 
 from pathlib import Path
 
-import pytest
-
 from aicodegencrew.pipelines.architecture_facts.collectors.spring.repository_collector import (
     SpringRepositoryCollector,
 )
@@ -21,7 +19,6 @@ from aicodegencrew.pipelines.architecture_facts.collectors.spring.rest_collector
 from aicodegencrew.pipelines.architecture_facts.collectors.spring.service_collector import (
     SpringServiceCollector,
 )
-
 
 # =============================================================================
 # SpringRestCollector
@@ -52,9 +49,7 @@ class TestSpringRestCollector:
         output = SpringRestCollector(repo_path=spring_repo).collect()
         for fact in output.facts:
             for ev in fact.evidence:
-                assert ev.line_start >= 1, (
-                    f"line_start must be ≥1, got {ev.line_start} for {fact.name}"
-                )
+                assert ev.line_start >= 1, f"line_start must be ≥1, got {ev.line_start} for {fact.name}"
 
     def test_empty_repo_returns_zero(self, empty_repo: Path) -> None:
         output = SpringRestCollector(repo_path=empty_repo).collect()

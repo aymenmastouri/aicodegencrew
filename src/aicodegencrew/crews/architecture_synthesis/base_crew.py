@@ -652,9 +652,7 @@ This chapter requires manual completion or re-running with a more capable LLM.
 
     def _unmark_degraded_for(self, crew_name: str) -> None:
         """Remove all degradation reasons for a crew that succeeded on retry."""
-        self._degradation_reasons = [
-            r for r in self._degradation_reasons if not r.startswith(f"{crew_name}:")
-        ]
+        self._degradation_reasons = [r for r in self._degradation_reasons if not r.startswith(f"{crew_name}:")]
 
     def has_degraded_outputs(self) -> bool:
         """Whether this crew produced degraded output."""

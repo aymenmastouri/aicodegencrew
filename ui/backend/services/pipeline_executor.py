@@ -20,8 +20,8 @@ from aicodegencrew.pipeline_contract import (
     PHASE_PROGRESS_CANCELLED,
     PHASE_PROGRESS_COMPLETED,
     PHASE_PROGRESS_FAILED,
-    PHASE_PROGRESS_PENDING,
     PHASE_PROGRESS_PARTIAL,
+    PHASE_PROGRESS_PENDING,
     PHASE_PROGRESS_RUNNING,
     PHASE_PROGRESS_SKIPPED,
     compute_run_outcome,
@@ -215,6 +215,7 @@ class PipelineExecutor:
         else:
             import os
             import signal
+
             try:
                 os.killpg(os.getpgid(pid), signal.SIGTERM)
             except (ProcessLookupError, OSError):
@@ -316,12 +317,14 @@ class PipelineExecutor:
         skipped = sum(
             1
             for p in phase_progress
-            if normalize_phase_progress_status(p.get("status"), default=PHASE_PROGRESS_PENDING) == PHASE_PROGRESS_SKIPPED
+            if normalize_phase_progress_status(p.get("status"), default=PHASE_PROGRESS_PENDING)
+            == PHASE_PROGRESS_SKIPPED
         )
         running = sum(
             1
             for p in phase_progress
-            if normalize_phase_progress_status(p.get("status"), default=PHASE_PROGRESS_PENDING) == PHASE_PROGRESS_RUNNING
+            if normalize_phase_progress_status(p.get("status"), default=PHASE_PROGRESS_PENDING)
+            == PHASE_PROGRESS_RUNNING
         )
         if total > 0 and unregistered_count > 0:
             total = max(total - unregistered_count, 0)
@@ -345,8 +348,10 @@ class PipelineExecutor:
         # Compute run_outcome for terminal states
         run_outcome = None
         if state in ("completed", "failed", "cancelled"):
-            run_outcome = self._compute_run_outcome(phase_progress) if phase_progress else (
-                "success" if state == "completed" else "failed"
+            run_outcome = (
+                self._compute_run_outcome(phase_progress)
+                if phase_progress
+                else ("success" if state == "completed" else "failed")
             )
 
         return {
@@ -746,7 +751,9 @@ class PipelineExecutor:
                     tasks_list = raw_tasks if isinstance(raw_tasks, list) else []
                     sub = {
                         "name": data.get("crew_name", crew_type),
-                        "status": PHASE_PROGRESS_COMPLETED if event_name == "mini_crew_complete" else PHASE_PROGRESS_FAILED,
+                        "status": PHASE_PROGRESS_COMPLETED
+                        if event_name == "mini_crew_complete"
+                        else PHASE_PROGRESS_FAILED,
                         "duration_seconds": data.get("duration_seconds"),
                         "total_tokens": tokens,
                         "tasks": tasks_list,
@@ -876,7 +883,8 @@ class PipelineExecutor:
 
         # Check if any phase is running and PID is alive
         has_running = any(
-            normalize_phase_progress_status(entry.get("status"), default=PHASE_PROGRESS_PENDING) == PHASE_PROGRESS_RUNNING
+            normalize_phase_progress_status(entry.get("status"), default=PHASE_PROGRESS_PENDING)
+            == PHASE_PROGRESS_RUNNING
             for entry in phases.values()
         )
         if not has_running:

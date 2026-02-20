@@ -42,8 +42,14 @@ from .tasks import (
     TECH_ANALYSIS_TASKS,
     WORKFLOW_ANALYSIS_TASKS,
 )
-from .tools import FactsQueryTool, FactsStatisticsTool, PartialResultsTool, RAGQueryTool, StereotypeListTool, SymbolQueryTool
-
+from .tools import (
+    FactsQueryTool,
+    FactsStatisticsTool,
+    PartialResultsTool,
+    RAGQueryTool,
+    StereotypeListTool,
+    SymbolQueryTool,
+)
 
 logger = setup_logger(__name__)
 
@@ -302,7 +308,8 @@ class ArchitectureAnalysisCrew:
                     )
                     logger.warning(
                         "[Phase2] Could not repair %s (%s), wrote fallback",
-                        output_path.name, repair_err,
+                        output_path.name,
+                        repair_err,
                     )
 
     _MAX_RETRIES = 2  # transient error retries
@@ -617,9 +624,7 @@ class ArchitectureAnalysisCrew:
             data = json.loads(output_file.read_text(encoding="utf-8"))
             if "_schema_version" not in data:
                 versioned = add_schema_version(data, "analyze")
-                output_file.write_text(
-                    json.dumps(versioned, indent=2, ensure_ascii=False), encoding="utf-8"
-                )
+                output_file.write_text(json.dumps(versioned, indent=2, ensure_ascii=False), encoding="utf-8")
                 logger.info("[Phase2] Schema version injected into analyzed_architecture.json")
         except Exception as e:
             logger.warning("[Phase2] Could not inject schema version: %s", e)
@@ -660,14 +665,13 @@ class ArchitectureAnalysisCrew:
         if pending:
             logger.info(
                 "[Phase2] Launching %d analysis mini-crews in parallel: %s",
-                len(pending), [n for n, _, _ in pending],
+                len(pending),
+                [n for n, _, _ in pending],
             )
             # PERF-3: Preload the three heaviest dimension files once; each
             # parallel mini-crew receives a copy via FactsQueryTool(preloaded_cache=…)
-            # — 4 tool instances × ~500 KB each is <<10 MB and saves 4 disk reads.
-            shared_preloaded = self._preload_dimension_cache(
-                ["components", "relations", "interfaces"]
-            )
+            # — 4 tool instances x ~500 KB each is <<10 MB and saves 4 disk reads.
+            shared_preloaded = self._preload_dimension_cache(["components", "relations", "interfaces"])
             with ThreadPoolExecutor(max_workers=len(pending)) as executor:
                 futures: dict = {}
                 for name, agent_key, task_defs in pending:
@@ -685,9 +689,7 @@ class ArchitectureAnalysisCrew:
                         errors.append(f"{crew_name}: {exc}")
 
                 if errors:
-                    raise RuntimeError(
-                        f"[Phase2] {len(errors)} parallel mini-crew(s) failed: {'; '.join(errors)}"
-                    )
+                    raise RuntimeError(f"[Phase2] {len(errors)} parallel mini-crew(s) failed: {'; '.join(errors)}")
         else:
             logger.info("[Phase2] All analysis mini-crews already completed (checkpoint)")
 

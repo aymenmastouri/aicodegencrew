@@ -1,4 +1,4 @@
-﻿"""Shared LLM factory - single source of truth for CrewAI LLM creation.
+"""Shared LLM factory - single source of truth for CrewAI LLM creation.
 
 All crews import `create_llm()` from here instead of duplicating the logic.
 """

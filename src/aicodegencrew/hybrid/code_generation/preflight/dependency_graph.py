@@ -41,17 +41,16 @@ class DependencyGraphBuilder:
         for file_path in ordered:
             tier = tiers.get(file_path, 0)
             deps = [d for d in graph.get(file_path, []) if d in affected_paths]
-            consumers = [
-                f for f, dep_list in graph.items()
-                if file_path in dep_list and f in affected_paths
-            ]
-            entries.append(FileGenerationEntry(
-                file_path=file_path,
-                component=comp_by_path.get(file_path),
-                depends_on=deps,
-                depended_by=consumers,
-                generation_tier=tier,
-            ))
+            consumers = [f for f, dep_list in graph.items() if file_path in dep_list and f in affected_paths]
+            entries.append(
+                FileGenerationEntry(
+                    file_path=file_path,
+                    component=comp_by_path.get(file_path),
+                    depends_on=deps,
+                    depended_by=consumers,
+                    generation_tier=tier,
+                )
+            )
 
         result = GenerationOrder(
             ordered_files=entries,
@@ -202,7 +201,8 @@ class DependencyGraphBuilder:
             max_tier = max(tiers.values()) + 1 if tiers else 0
             logger.warning(
                 "[Preflight] Cycle detected among %d files, placing at tier %d",
-                len(remaining), max_tier,
+                len(remaining),
+                max_tier,
             )
             for node in sorted(remaining):
                 ordered.append(node)

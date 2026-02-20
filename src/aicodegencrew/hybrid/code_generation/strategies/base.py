@@ -13,7 +13,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
 
-
 # ── Result types (shared by all strategies) ──────────────────────────────
 
 
@@ -211,7 +210,11 @@ class DefaultStrategy(TaskTypeStrategy):
         return PreExecutionResult()
 
     def enrich_verification(
-        self, build_result, staging, plan, raw_build_outputs,
+        self,
+        build_result,
+        staging,
+        plan,
+        raw_build_outputs,
         pre_execution_result=None,
     ) -> VerificationEnrichment:
         # Error clustering is universal — applies to ALL task types

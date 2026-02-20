@@ -31,12 +31,12 @@ from .utils.logger import logger
 
 # Current schema versions per phase. Bump when a phase output schema changes.
 SCHEMA_VERSIONS: dict[str, str] = {
-    "extract":   "1.0",
-    "analyze":   "1.0",
-    "plan":      "1.0",
+    "extract": "1.0",
+    "analyze": "1.0",
+    "plan": "1.0",
     "implement": "1.0",
-    "verify":    "1.0",
-    "deliver":   "1.0",
+    "verify": "1.0",
+    "deliver": "1.0",
 }
 
 
@@ -68,5 +68,7 @@ def check_schema_version(data: dict, phase_id: str) -> None:
     if stored and current and stored != current:
         logger.warning(
             "[SchemaVersion] %s: stored=%s current=%s — check migration",
-            phase_id, stored, current,
+            phase_id,
+            stored,
+            current,
         )
