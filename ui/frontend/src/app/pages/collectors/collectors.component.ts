@@ -104,7 +104,11 @@ import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
             <ng-container matColumnDef="category">
               <th mat-header-cell *matHeaderCellDef>Category</th>
               <td mat-cell *matCellDef="let c">
-                <span class="chip" [class.chip-core]="c.category === 'core'" [class.chip-optional]="c.category === 'optional'">
+                <span
+                  class="chip"
+                  [class.chip-core]="c.category === 'core'"
+                  [class.chip-optional]="c.category === 'optional'"
+                >
                   @if (c.category === 'core') {
                     <mat-icon class="chip-icon">lock</mat-icon>
                   }
@@ -118,7 +122,7 @@ import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
               <th mat-header-cell *matHeaderCellDef>Facts</th>
               <td mat-cell *matCellDef="let c">
                 <span class="fact-count" [class.no-data]="c.fact_count === null">
-                  {{ c.fact_count !== null ? c.fact_count : '\u2014' }}
+                  {{ c.fact_count !== null ? c.fact_count : '—' }}
                 </span>
               </td>
             </ng-container>
@@ -148,7 +152,12 @@ import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let c">
                 @if (c.fact_count !== null) {
-                  <button mat-icon-button matTooltip="View output" aria-label="View output" (click)="toggleOutput(c); $event.stopPropagation()">
+                  <button
+                    mat-icon-button
+                    matTooltip="View output"
+                    aria-label="View output"
+                    (click)="toggleOutput(c); $event.stopPropagation()"
+                  >
                     <mat-icon>{{ expandedId === c.id ? 'expand_less' : 'visibility' }}</mat-icon>
                   </button>
                 }
@@ -180,9 +189,7 @@ import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
               <pre class="output-json">{{ outputPreview }}</pre>
             </mat-card-content>
             <mat-card-actions align="end">
-              <button mat-button (click)="closeOutput()">
-                Close
-              </button>
+              <button mat-button (click)="closeOutput()">Close</button>
             </mat-card-actions>
           </mat-card>
         }
@@ -381,11 +388,7 @@ export class CollectorsComponent implements OnInit, OnDestroy {
           this.data.enabled_count = this.collectors.filter((c) => c.enabled).length;
         }
         this.toggling = null;
-        this.snack.open(
-          `${collector.name} ${enabled ? 'enabled' : 'disabled'}`,
-          'OK',
-          { duration: 2500 },
-        );
+        this.snack.open(`${collector.name} ${enabled ? 'enabled' : 'disabled'}`, 'OK', { duration: 2500 });
         this.cdr.markForCheck();
       },
       error: () => {
@@ -422,7 +425,9 @@ export class CollectorsComponent implements OnInit, OnDestroy {
         this.outputFileSize = res.file_size_bytes;
         this.outputLoading = false;
         this.cdr.markForCheck();
-        setTimeout(() => document.getElementById('collector-output')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        setTimeout(() =>
+          document.getElementById('collector-output')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+        );
       },
       error: () => {
         this.outputLoading = false;

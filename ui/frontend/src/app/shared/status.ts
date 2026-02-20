@@ -18,29 +18,39 @@ export const DISPLAY_STATUS = {
   PLANNED: 'planned',
 } as const;
 
-export type PhaseStatusValue = typeof PHASE_STATUS[keyof typeof PHASE_STATUS];
-export type DisplayStatusValue = typeof DISPLAY_STATUS[keyof typeof DISPLAY_STATUS];
+export type PhaseStatusValue = (typeof PHASE_STATUS)[keyof typeof PHASE_STATUS];
+export type DisplayStatusValue = (typeof DISPLAY_STATUS)[keyof typeof DISPLAY_STATUS];
 export type AnyStatusValue = PhaseStatusValue | DisplayStatusValue;
 
 /** Status -> Material icon. */
 export function statusIcon(status: string): string {
   switch (status) {
-    case 'completed': return 'check_circle';
-    case 'partial': return 'warning';
-    case 'running': return 'sync';
-    case 'failed': return 'error';
-    case 'skipped': return 'check_circle';
-    case 'cancelled': return 'cancel';
-    default: return 'radio_button_unchecked';
+    case 'completed':
+      return 'check_circle';
+    case 'partial':
+      return 'warning';
+    case 'running':
+      return 'sync';
+    case 'failed':
+      return 'error';
+    case 'skipped':
+      return 'check_circle';
+    case 'cancelled':
+      return 'cancel';
+    default:
+      return 'radio_button_unchecked';
   }
 }
 
 /** Human-readable label. */
 export function statusLabel(status: string): string {
   switch (status) {
-    case 'skipped': return 'up to date';
-    case 'planned': return 'not available';
-    default: return status;
+    case 'skipped':
+      return 'up to date';
+    case 'planned':
+      return 'not available';
+    default:
+      return status;
   }
 }
 

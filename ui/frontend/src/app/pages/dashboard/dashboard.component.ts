@@ -13,10 +13,20 @@ import { RouterLink } from '@angular/router';
 import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 
 import { ApiService, PipelineStatus, HealthResponse, SetupStatus } from '../../services/api.service';
-import { PipelineService, PhaseProgress, ExecutionStatus, RunHistoryEntry, ResetPreview } from '../../services/pipeline.service';
+import {
+  PipelineService,
+  PhaseProgress,
+  ExecutionStatus,
+  RunHistoryEntry,
+  ResetPreview,
+} from '../../services/pipeline.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 import { PipelineStepperComponent } from '../../shared/pipeline-stepper.component';
-import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as formatDurationUtil } from '../../shared/phase-utils';
+import {
+  humanizePhaseId,
+  shortPhase as shortPhaseUtil,
+  formatDuration as formatDurationUtil,
+} from '../../shared/phase-utils';
 import { statusLabel, isTerminal } from '../../shared/status';
 
 @Component({
@@ -45,16 +55,30 @@ import { statusLabel, isTerminal } from '../../shared/status';
         </div>
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
-          <p class="hero-subtitle">AI-Powered Development Lifecycle Automation - Discover, Extract, Analyze, Document, Plan, Implement</p>
+          <p class="hero-subtitle">
+            AI-Powered Development Lifecycle Automation - Discover, Extract, Analyze, Document, Plan, Implement
+          </p>
         </div>
         <div class="hero-stats">
           @if (health) {
             <div class="stat-pill" [class.stat-ok]="health.status === 'ok'" [class.stat-error]="health.status !== 'ok'">
-              <span class="stat-dot" [class.dot-ok]="health.status === 'ok'" [class.dot-error]="health.status !== 'ok'"></span>
+              <span
+                class="stat-dot"
+                [class.dot-ok]="health.status === 'ok'"
+                [class.dot-error]="health.status !== 'ok'"
+              ></span>
               <span>Backend</span>
             </div>
-            <div class="stat-pill" [class.stat-ok]="health.knowledge_dir_exists" [class.stat-error]="!health.knowledge_dir_exists">
-              <span class="stat-dot" [class.dot-ok]="health.knowledge_dir_exists" [class.dot-error]="!health.knowledge_dir_exists"></span>
+            <div
+              class="stat-pill"
+              [class.stat-ok]="health.knowledge_dir_exists"
+              [class.stat-error]="!health.knowledge_dir_exists"
+            >
+              <span
+                class="stat-dot"
+                [class.dot-ok]="health.knowledge_dir_exists"
+                [class.dot-error]="!health.knowledge_dir_exists"
+              ></span>
               <span>Knowledge</span>
             </div>
           } @else {
@@ -115,10 +139,17 @@ import { statusLabel, isTerminal } from '../../shared/status';
 
       <!-- Live Pipeline Stepper -->
       @if (phaseProgress.length > 0 && executionState !== 'idle') {
-        <div class="stepper-card" [class]="'stepper-' + executionState + (runOutcome === 'all_skipped' ? ' stepper-all-skipped' : '')">
+        <div
+          class="stepper-card"
+          [class]="'stepper-' + executionState + (runOutcome === 'all_skipped' ? ' stepper-all-skipped' : '')"
+        >
           <div class="stepper-header">
             <div class="stepper-left">
-              <mat-icon class="stepper-logo" [class]="'logo-' + (runOutcome === 'all_skipped' ? 'skipped' : executionState)">rocket_launch</mat-icon>
+              <mat-icon
+                class="stepper-logo"
+                [class]="'logo-' + (runOutcome === 'all_skipped' ? 'skipped' : executionState)"
+                >rocket_launch</mat-icon
+              >
               <div>
                 <div class="stepper-title">
                   @if (executionState === 'running') {
@@ -148,11 +179,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
               </a>
             </div>
           </div>
-          <app-pipeline-stepper
-            [steps]="phaseProgress"
-            [circleSize]="38"
-            [stepMinWidth]="90"
-            padding="4px 0 8px">
+          <app-pipeline-stepper [steps]="phaseProgress" [circleSize]="38" [stepMinWidth]="90" padding="4px 0 8px">
           </app-pipeline-stepper>
         </div>
       }
@@ -162,15 +189,23 @@ import { statusLabel, isTerminal } from '../../shared/status';
         <h2>Phases</h2>
         <div class="section-actions">
           @if (hasCompletedPhases()) {
-            <button mat-stroked-button class="btn-reset" (click)="resetAll()"
+            <button
+              mat-stroked-button
+              class="btn-reset"
+              (click)="resetAll()"
               [disabled]="executionState === 'running'"
-              [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset all completed phases'">
+              [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset all completed phases'"
+            >
               Reset All
             </button>
           }
-          <button mat-flat-button color="primary" routerLink="/run"
+          <button
+            mat-flat-button
+            color="primary"
+            routerLink="/run"
             [disabled]="executionState === 'running'"
-            [matTooltip]="executionState === 'running' ? 'Pipeline is running' : ''">
+            [matTooltip]="executionState === 'running' ? 'Pipeline is running' : ''"
+          >
             Run Pipeline
           </button>
         </div>
@@ -192,9 +227,12 @@ import { statusLabel, isTerminal } from '../../shared/status';
                 <span class="status-dot" [class]="'dot-' + phase.status"></span>
                 <span class="status-label">{{ getStatusLabel(phase.status) }}</span>
                 @if (isPhaseTerminal(phase.status)) {
-                  <button class="reset-btn" (click)="resetPhase(phase.id); $event.stopPropagation(); $event.preventDefault()"
+                  <button
+                    class="reset-btn"
+                    (click)="resetPhase(phase.id); $event.stopPropagation(); $event.preventDefault()"
                     [disabled]="executionState === 'running'"
-                    [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset'">
+                    [matTooltip]="executionState === 'running' ? 'Pipeline is running' : 'Reset'"
+                  >
                     <mat-icon>restart_alt</mat-icon>
                   </button>
                 }
@@ -256,7 +294,9 @@ import { statusLabel, isTerminal } from '../../shared/status';
   `,
   styles: [
     `
-      .mt-32 { margin-top: 32px; }
+      .mt-32 {
+        margin-top: 32px;
+      }
 
       /* Hero */
       .hero {
@@ -289,13 +329,21 @@ import { statusLabel, isTerminal } from '../../shared/status';
         color: #fff;
         margin: 0 0 6px;
       }
-      .hero-accent { color: var(--cg-vibrant); font-weight: 600; }
+      .hero-accent {
+        color: var(--cg-vibrant);
+        font-weight: 600;
+      }
       .hero-subtitle {
         color: rgba(255, 255, 255, 0.55);
         font-size: 14px;
         margin: 0;
       }
-      .hero-stats { display: flex; gap: 10px; flex-shrink: 0; align-self: flex-end; }
+      .hero-stats {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+        align-self: flex-end;
+      }
       .stat-pill {
         display: flex;
         align-items: center;
@@ -307,15 +355,24 @@ import { statusLabel, isTerminal } from '../../shared/status';
         background: rgba(255, 255, 255, 0.08);
         color: rgba(255, 255, 255, 0.5);
       }
-      .stat-ok { color: var(--cg-success); }
-      .stat-error { color: var(--cg-error); }
-      .stat-dot {
-        width: 7px; height: 7px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.3);
+      .stat-ok {
+        color: var(--cg-success);
       }
-      .dot-ok { background: var(--cg-success); }
-      .dot-error { background: var(--cg-error); }
+      .stat-error {
+        color: var(--cg-error);
+      }
+      .stat-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+      }
+      .dot-ok {
+        background: var(--cg-success);
+      }
+      .dot-error {
+        background: var(--cg-error);
+      }
 
       /* Live Pipeline Stepper */
       .stepper-card {
@@ -330,10 +387,18 @@ import { statusLabel, isTerminal } from '../../shared/status';
         border-color: rgba(0, 112, 173, 0.2);
         background: linear-gradient(135deg, #fff 0%, rgba(0, 112, 173, 0.02) 100%);
       }
-      .stepper-completed { border-color: rgba(40, 167, 69, 0.2); }
-      .stepper-all-skipped { border-color: rgba(40, 167, 69, 0.2); }
-      .stepper-failed { border-color: rgba(220, 53, 69, 0.2); }
-      .stepper-cancelled { border-color: rgba(224, 168, 0, 0.3); }
+      .stepper-completed {
+        border-color: rgba(40, 167, 69, 0.2);
+      }
+      .stepper-all-skipped {
+        border-color: rgba(40, 167, 69, 0.2);
+      }
+      .stepper-failed {
+        border-color: rgba(220, 53, 69, 0.2);
+      }
+      .stepper-cancelled {
+        border-color: rgba(224, 168, 0, 0.3);
+      }
       .stepper-header {
         display: flex;
         justify-content: space-between;
@@ -356,13 +421,27 @@ import { statusLabel, isTerminal } from '../../shared/status';
         background: var(--cg-blue);
         animation: pulse-stepper-logo 1.5s ease-in-out infinite;
       }
-      .logo-completed { background: var(--cg-success, #28a745); }
-      .logo-skipped { background: var(--cg-success, #28a745); opacity: 0.7; }
-      .logo-failed { background: var(--cg-error, #dc3545); }
-      .logo-cancelled { background: var(--cg-warn, #f57c00); }
+      .logo-completed {
+        background: var(--cg-success, #28a745);
+      }
+      .logo-skipped {
+        background: var(--cg-success, #28a745);
+        opacity: 0.7;
+      }
+      .logo-failed {
+        background: var(--cg-error, #dc3545);
+      }
+      .logo-cancelled {
+        background: var(--cg-warn, #f57c00);
+      }
       @keyframes pulse-stepper-logo {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.6; }
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
       }
       .stepper-title {
         font-size: 14px;
@@ -392,14 +471,20 @@ import { statusLabel, isTerminal } from '../../shared/status';
         padding: 4px 12px;
         border-radius: 8px;
       }
-      .elapsed-icon { font-size: 16px; width: 16px; height: 16px; }
+      .elapsed-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
       .stepper-link {
         color: var(--cg-gray-300);
         display: flex;
         align-items: center;
         text-decoration: none;
       }
-      .stepper-link:hover { color: var(--cg-blue); }
+      .stepper-link:hover {
+        color: var(--cg-blue);
+      }
 
       /* Section Header */
       .section-header {
@@ -414,7 +499,10 @@ import { statusLabel, isTerminal } from '../../shared/status';
         margin: 0;
         color: var(--cg-gray-900);
       }
-      .section-actions { display: flex; gap: 8px; }
+      .section-actions {
+        display: flex;
+        gap: 8px;
+      }
       .btn-reset {
         color: var(--cg-error, #dc3545) !important;
         border-color: rgba(220, 53, 69, 0.3) !important;
@@ -426,7 +514,9 @@ import { statusLabel, isTerminal } from '../../shared/status';
         text-decoration: none;
         font-weight: 500;
       }
-      .view-all:hover { text-decoration: underline; }
+      .view-all:hover {
+        text-decoration: underline;
+      }
 
       /* Phase Cards - Clean & Minimal */
       .phase-grid {
@@ -444,15 +534,35 @@ import { statusLabel, isTerminal } from '../../shared/status';
         color: inherit;
         transition: box-shadow 0.15s;
       }
-      .phase-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-      .phase-completed { border-left-color: var(--cg-success); }
-      .phase-partial { border-left-color: var(--cg-warn, #f57c00); }
-      .phase-failed { border-left-color: var(--cg-error); }
-      .phase-cancelled { border-left-color: var(--cg-warn, #f57c00); }
-      .phase-running { border-left-color: var(--cg-blue); }
-      .phase-ready { border-left-color: var(--cg-vibrant); }
-      .phase-skipped { border-left-color: var(--cg-success); opacity: 0.85; }
-      .phase-planned { border-left-color: var(--cg-gray-200); opacity: 0.55; }
+      .phase-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+      }
+      .phase-completed {
+        border-left-color: var(--cg-success);
+      }
+      .phase-partial {
+        border-left-color: var(--cg-warn, #f57c00);
+      }
+      .phase-failed {
+        border-left-color: var(--cg-error);
+      }
+      .phase-cancelled {
+        border-left-color: var(--cg-warn, #f57c00);
+      }
+      .phase-running {
+        border-left-color: var(--cg-blue);
+      }
+      .phase-ready {
+        border-left-color: var(--cg-vibrant);
+      }
+      .phase-skipped {
+        border-left-color: var(--cg-success);
+        opacity: 0.85;
+      }
+      .phase-planned {
+        border-left-color: var(--cg-gray-200);
+        opacity: 0.55;
+      }
       .phase-top {
         display: flex;
         align-items: center;
@@ -460,7 +570,8 @@ import { statusLabel, isTerminal } from '../../shared/status';
         margin-bottom: 8px;
       }
       .phase-index {
-        width: 22px; height: 22px;
+        width: 22px;
+        height: 22px;
         border-radius: 6px;
         background: var(--cg-gray-100);
         display: flex;
@@ -485,22 +596,48 @@ import { statusLabel, isTerminal } from '../../shared/status';
         gap: 6px;
       }
       .status-dot {
-        width: 8px; height: 8px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         flex-shrink: 0;
       }
-      .status-dot.sm { width: 6px; height: 6px; }
-      .dot-completed { background: var(--cg-success); }
-      .dot-partial { background: var(--cg-warn, #f57c00); }
-      .dot-success { background: var(--cg-success); }
-      .dot-failed { background: var(--cg-error); }
-      .dot-running { background: var(--cg-blue); }
-      .dot-ready { background: var(--cg-vibrant); }
-      .dot-skipped { background: var(--cg-gray-300); }
-      .dot-planned { background: var(--cg-gray-300); }
-      .dot-idle { background: var(--cg-gray-300); }
-      .dot-cancelled { background: #e0a800; }
-      .dot-reset { background: var(--cg-error); }
+      .status-dot.sm {
+        width: 6px;
+        height: 6px;
+      }
+      .dot-completed {
+        background: var(--cg-success);
+      }
+      .dot-partial {
+        background: var(--cg-warn, #f57c00);
+      }
+      .dot-success {
+        background: var(--cg-success);
+      }
+      .dot-failed {
+        background: var(--cg-error);
+      }
+      .dot-running {
+        background: var(--cg-blue);
+      }
+      .dot-ready {
+        background: var(--cg-vibrant);
+      }
+      .dot-skipped {
+        background: var(--cg-gray-300);
+      }
+      .dot-planned {
+        background: var(--cg-gray-300);
+      }
+      .dot-idle {
+        background: var(--cg-gray-300);
+      }
+      .dot-cancelled {
+        background: #e0a800;
+      }
+      .dot-reset {
+        background: var(--cg-error);
+      }
       .status-label {
         font-size: 12px;
         color: var(--cg-gray-500);
@@ -511,7 +648,8 @@ import { statusLabel, isTerminal } from '../../shared/status';
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 22px; height: 22px;
+        width: 22px;
+        height: 22px;
         border-radius: 6px;
         border: none;
         background: transparent;
@@ -519,9 +657,19 @@ import { statusLabel, isTerminal } from '../../shared/status';
         cursor: pointer;
         transition: all 0.15s;
       }
-      .reset-btn:hover:not(:disabled) { background: rgba(220, 53, 69, 0.1); color: var(--cg-error, #dc3545); }
-      .reset-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-      .reset-btn .mat-icon { font-size: 15px; width: 15px; height: 15px; }
+      .reset-btn:hover:not(:disabled) {
+        background: rgba(220, 53, 69, 0.1);
+        color: var(--cg-error, #dc3545);
+      }
+      .reset-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+      .reset-btn .mat-icon {
+        font-size: 15px;
+        width: 15px;
+        height: 15px;
+      }
 
       /* Empty */
       .empty-state {
@@ -531,8 +679,18 @@ import { statusLabel, isTerminal } from '../../shared/status';
         border-radius: 12px;
         border: 2px dashed var(--cg-gray-200);
       }
-      .empty-icon { font-size: 40px; width: 40px; height: 40px; color: var(--cg-gray-200); margin-bottom: 8px; }
-      .empty-state p { color: var(--cg-gray-500); margin-bottom: 14px; font-size: 14px; }
+      .empty-icon {
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
+        color: var(--cg-gray-200);
+        margin-bottom: 8px;
+      }
+      .empty-state p {
+        color: var(--cg-gray-500);
+        margin-bottom: 14px;
+        font-size: 14px;
+      }
 
       /* Recent Activity - Clean rows */
       .activity-card {
@@ -548,7 +706,9 @@ import { statusLabel, isTerminal } from '../../shared/status';
         border-bottom: 1px solid var(--cg-gray-50);
         font-size: 13px;
       }
-      .activity-row:last-child { border-bottom: none; }
+      .activity-row:last-child {
+        border-bottom: none;
+      }
       .activity-trigger {
         font-size: 11px;
         font-weight: 600;
@@ -556,10 +716,25 @@ import { statusLabel, isTerminal } from '../../shared/status';
         letter-spacing: 0.5px;
         width: 40px;
       }
-      .at-pipeline, .at-run { color: var(--cg-blue); }
-      .at-reset { color: var(--cg-error, #dc3545); }
-      .activity-id { font-family: monospace; font-size: 11px; color: var(--cg-gray-400); }
-      .activity-phases { font-size: 12px; color: var(--cg-gray-400); display: flex; gap: 3px; flex-wrap: wrap; }
+      .at-pipeline,
+      .at-run {
+        color: var(--cg-blue);
+      }
+      .at-reset {
+        color: var(--cg-error, #dc3545);
+      }
+      .activity-id {
+        font-family: monospace;
+        font-size: 11px;
+        color: var(--cg-gray-400);
+      }
+      .activity-phases {
+        font-size: 12px;
+        color: var(--cg-gray-400);
+        display: flex;
+        gap: 3px;
+        flex-wrap: wrap;
+      }
       .act-phase-chip {
         display: inline-block;
         padding: 0 6px;
@@ -570,8 +745,16 @@ import { statusLabel, isTerminal } from '../../shared/status';
         color: var(--cg-gray-600);
         white-space: nowrap;
       }
-      .activity-status { font-size: 12px; color: var(--cg-gray-500); text-transform: capitalize; }
-      .activity-time { font-size: 11px; color: var(--cg-gray-400); white-space: nowrap; }
+      .activity-status {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        text-transform: capitalize;
+      }
+      .activity-time {
+        font-size: 11px;
+        color: var(--cg-gray-400);
+        white-space: nowrap;
+      }
 
       /* Quick Actions - Simpler */
       .action-grid {
@@ -591,14 +774,25 @@ import { statusLabel, isTerminal } from '../../shared/status';
         cursor: pointer;
         transition: box-shadow 0.15s;
       }
-      .action-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+      .action-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+      }
       .action-icon {
-        font-size: 22px; width: 22px; height: 22px;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
         color: var(--cg-blue);
         flex-shrink: 0;
       }
-      .action-label { font-weight: 500; font-size: 13px; }
-      .action-desc { font-size: 12px; color: var(--cg-gray-500); margin-top: 1px; }
+      .action-label {
+        font-weight: 500;
+        font-size: 13px;
+      }
+      .action-desc {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        margin-top: 1px;
+      }
 
       /* Onboarding */
       .onboarding-card {
@@ -632,8 +826,14 @@ import { statusLabel, isTerminal } from '../../shared/status';
         padding: 0;
         line-height: 1;
       }
-      .dismiss-btn:hover { color: var(--cg-gray-500); }
-      .dismiss-btn .mat-icon { font-size: 18px; width: 18px; height: 18px; }
+      .dismiss-btn:hover {
+        color: var(--cg-gray-500);
+      }
+      .dismiss-btn .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
       .onboarding-progress {
         display: flex;
         align-items: center;
@@ -675,10 +875,15 @@ import { statusLabel, isTerminal } from '../../shared/status';
         cursor: pointer;
         transition: background 0.15s;
       }
-      .onboarding-step:hover { background: var(--cg-gray-100, #f0f0f0); }
-      .onboarding-step.step-done { opacity: 0.55; }
+      .onboarding-step:hover {
+        background: var(--cg-gray-100, #f0f0f0);
+      }
+      .onboarding-step.step-done {
+        opacity: 0.55;
+      }
       .step-num {
-        width: 24px; height: 24px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         background: var(--cg-gray-200);
         display: flex;
@@ -693,14 +898,20 @@ import { statusLabel, isTerminal } from '../../shared/status';
         background: var(--cg-success, #28a745);
         color: #fff;
       }
-      .check-icon { font-size: 16px; width: 16px; height: 16px; }
+      .check-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
       .step-label {
         font-size: 13px;
         font-weight: 500;
         flex: 1;
       }
       .step-arrow {
-        font-size: 16px; width: 16px; height: 16px;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
         color: var(--cg-gray-300);
       }
       .onboarding-complete {
@@ -723,8 +934,14 @@ import { statusLabel, isTerminal } from '../../shared/status';
         padding: 0;
         margin-bottom: 16px;
       }
-      .show-wizard-btn:hover { text-decoration: underline; }
-      .show-wizard-btn .mat-icon { font-size: 16px; width: 16px; height: 16px; }
+      .show-wizard-btn:hover {
+        text-decoration: underline;
+      }
+      .show-wizard-btn .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
     `,
   ],
 })
@@ -813,7 +1030,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
       error: () => {
         // Show wizard with all-false defaults so user can still see it
-        this.setupStatus = { repo_configured: false, llm_configured: false, has_input_files: false, has_run_history: false };
+        this.setupStatus = {
+          repo_configured: false,
+          llm_configured: false,
+          has_input_files: false,
+          has_run_history: false,
+        };
         this.cdr.markForCheck();
       },
     });
@@ -842,9 +1064,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   hasCompletedPhases(): boolean {
-    return !!this.pipeline?.phases.some(
-      (p) => isTerminal(p.status) && p.status !== 'skipped' && p.id !== 'discover',
-    );
+    return !!this.pipeline?.phases.some((p) => isTerminal(p.status) && p.status !== 'skipped' && p.id !== 'discover');
   }
 
   private phaseDisplayName(phaseId: string): string {
@@ -919,40 +1139,40 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   resetAll(): void {
-    this.pipelineSvc.previewReset(
-      this.pipeline?.phases.filter((p) => isTerminal(p.status) && p.id !== 'discover').map((p) => p.id) || [],
-    ).subscribe({
-      next: (preview: ResetPreview) => {
-        const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
-        const ref = this.dialog.open(ConfirmDialogComponent, {
-          width: '480px',
-          data: {
-            title: 'Reset All Phases (excluding Discover)',
-            message: `The following ${names.length} phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
-            details: names,
-            type: 'warn',
-            icon: 'restart_alt',
-            confirmLabel: 'Reset All',
-          } as ConfirmDialogData,
-        });
-        ref.afterClosed().subscribe((confirmed) => {
-          if (!confirmed) return;
-          this.pipelineSvc.resetAll().subscribe({
-            next: (result) => {
-              this.snackBar.open(
-                `Reset all phases, deleted ${result.deleted_count} file(s)`,
-                'OK',
-                { duration: 4000 },
-              );
-              this.refreshAll();
-            },
-            error: (err) => {
-              this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
-            },
+    this.pipelineSvc
+      .previewReset(
+        this.pipeline?.phases.filter((p) => isTerminal(p.status) && p.id !== 'discover').map((p) => p.id) || [],
+      )
+      .subscribe({
+        next: (preview: ResetPreview) => {
+          const names = preview.phases_to_reset.map((id) => this.phaseDisplayName(id));
+          const ref = this.dialog.open(ConfirmDialogComponent, {
+            width: '480px',
+            data: {
+              title: 'Reset All Phases (excluding Discover)',
+              message: `The following ${names.length} phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
+              details: names,
+              type: 'warn',
+              icon: 'restart_alt',
+              confirmLabel: 'Reset All',
+            } as ConfirmDialogData,
           });
-        });
-      },
-    });
+          ref.afterClosed().subscribe((confirmed) => {
+            if (!confirmed) return;
+            this.pipelineSvc.resetAll().subscribe({
+              next: (result) => {
+                this.snackBar.open(`Reset all phases, deleted ${result.deleted_count} file(s)`, 'OK', {
+                  duration: 4000,
+                });
+                this.refreshAll();
+              },
+              error: (err) => {
+                this.snackBar.open(err?.error?.detail || 'Reset failed', 'OK', { duration: 4000 });
+              },
+            });
+          });
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -982,10 +1202,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   runOutcomeTitle(): string {
     switch (this.runOutcome) {
-      case 'all_skipped': return 'Run Completed - Already Current';
-      case 'partial': return 'Run Completed (Partial)';
-      case 'failed': return 'Run Failed';
-      default: return 'Run Completed';
+      case 'all_skipped':
+        return 'Run Completed - Already Current';
+      case 'partial':
+        return 'Run Completed (Partial)';
+      case 'failed':
+        return 'Run Failed';
+      default:
+        return 'Run Completed';
     }
   }
   entryDisplayStatus(entry: RunHistoryEntry): string {
@@ -1025,46 +1249,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private startIdlePolling(): void {
     this.stopLiveUpdates();
 
-    this.statusSub = timer(5000, 5000).pipe(
-      switchMap(() => this.pipelineSvc.getStatus()),
-      catchError(() => of(null)),
-    ).subscribe((s) => {
-      if (!s) return;
-      this.updateExecution(s);
-      // Refresh phase cards so status badges stay current
-      this.api.getPipelineStatus().subscribe((p) => {
-        this.pipeline = p;
-        this.cdr.markForCheck();
+    this.statusSub = timer(5000, 5000)
+      .pipe(
+        switchMap(() => this.pipelineSvc.getStatus()),
+        catchError(() => of(null)),
+      )
+      .subscribe((s) => {
+        if (!s) return;
+        this.updateExecution(s);
+        // Refresh phase cards so status badges stay current
+        this.api.getPipelineStatus().subscribe((p) => {
+          this.pipeline = p;
+          this.cdr.markForCheck();
+        });
+        if (s.state === 'running') {
+          this.startLiveUpdates();
+        }
       });
-      if (s.state === 'running') {
-        this.startLiveUpdates();
-      }
-    });
   }
 
   /** Fast polling (every 3s) + elapsed ticker while pipeline is running. */
   private startLiveUpdates(): void {
     this.stopLiveUpdates();
 
-    this.statusSub = timer(3000, 3000).pipe(
-      switchMap(() => this.pipelineSvc.getStatus()),
-      catchError(() => of(null)),
-    ).subscribe((s) => {
-      if (!s) return;
-      this.updateExecution(s);
-      // Also refresh phase cards + history so dashboard stays fully live
-      this.api.getPipelineStatus().subscribe((p) => {
-        this.pipeline = p;
-        this.cdr.markForCheck();
+    this.statusSub = timer(3000, 3000)
+      .pipe(
+        switchMap(() => this.pipelineSvc.getStatus()),
+        catchError(() => of(null)),
+      )
+      .subscribe((s) => {
+        if (!s) return;
+        this.updateExecution(s);
+        // Also refresh phase cards + history so dashboard stays fully live
+        this.api.getPipelineStatus().subscribe((p) => {
+          this.pipeline = p;
+          this.cdr.markForCheck();
+        });
+        this.pipelineSvc.getHistory().subscribe((h) => {
+          this.recentHistory = h.slice(0, 5);
+          this.cdr.markForCheck();
+        });
+        if (s.state !== 'running') {
+          this.startIdlePolling();
+        }
       });
-      this.pipelineSvc.getHistory().subscribe((h) => {
-        this.recentHistory = h.slice(0, 5);
-        this.cdr.markForCheck();
-      });
-      if (s.state !== 'running') {
-        this.startIdlePolling();
-      }
-    });
 
     // Tick elapsed every second (local interpolation between polls)
     this.timerSub = timer(1000, 1000).subscribe(() => {
@@ -1149,4 +1377,3 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.pollStatus();
   }
 }
-

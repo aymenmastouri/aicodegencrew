@@ -56,8 +56,13 @@ import { isTerminal } from '../../shared/status';
               Phase Configuration
             </mat-card-title>
             <span class="spacer"></span>
-            <button mat-stroked-button color="warn" [disabled]="!hasResettablePhases()" (click)="resetAll()"
-              matTooltip="Reset all completed/failed phases">
+            <button
+              mat-stroked-button
+              color="warn"
+              [disabled]="!hasResettablePhases()"
+              (click)="resetAll()"
+              matTooltip="Reset all completed/failed phases"
+            >
               <mat-icon>restart_alt</mat-icon>
               Reset All
             </button>
@@ -105,11 +110,14 @@ import { isTerminal } from '../../shared/status';
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let p">
-                  <button mat-icon-button color="warn"
+                  <button
+                    mat-icon-button
+                    color="warn"
                     [disabled]="!isPhaseTerminal(getPhaseStatus(p.id))"
                     (click)="resetPhase(p.id)"
                     matTooltip="Reset this phase"
-                    aria-label="Reset this phase">
+                    aria-label="Reset this phase"
+                  >
                     <mat-icon>restart_alt</mat-icon>
                   </button>
                 </td>
@@ -291,9 +299,7 @@ export class PhasesComponent implements OnInit, OnDestroy {
 
   hasResettablePhases(): boolean {
     if (!this.pipeline) return false;
-    return this.pipeline.phases.some(
-      (p) => isTerminal(p.status) && p.id !== 'discover',
-    );
+    return this.pipeline.phases.some((p) => isTerminal(p.status) && p.id !== 'discover');
   }
 
   getPhaseError(phaseId: string): string {
@@ -389,9 +395,10 @@ export class PhasesComponent implements OnInit, OnDestroy {
   }
 
   resetAll(): void {
-    const phaseIds = this.pipeline?.phases
-      .filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover')
-      .map((p) => p.id) || [];
+    const phaseIds =
+      this.pipeline?.phases
+        .filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover')
+        .map((p) => p.id) || [];
 
     this.pipelineService.previewReset(phaseIds).subscribe({
       next: (preview: ResetPreview) => {

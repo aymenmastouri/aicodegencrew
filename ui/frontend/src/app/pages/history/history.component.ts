@@ -12,13 +12,16 @@ import { MatTableDataSource } from '@angular/material/table';
 import { RouterLink } from '@angular/router';
 
 import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../../services/pipeline.service';
-import { humanizePhaseId, shortPhase as shortPhaseUtil, formatDuration as formatDurationUtil, formatNumber as formatNumberUtil } from '../../shared/phase-utils';
+import {
+  humanizePhaseId,
+  shortPhase as shortPhaseUtil,
+  formatDuration as formatDurationUtil,
+  formatNumber as formatNumberUtil,
+} from '../../shared/phase-utils';
 import { statusLabel } from '../../shared/status';
 
 /** Keys whose values are masked by default in the run-detail environment panel. */
-const SECRET_KEY_PATTERNS = [
-  /api[_-]?key/i, /secret/i, /password/i, /token/i, /credential/i, /private[_-]?key/i,
-];
+const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /credential/i, /private[_-]?key/i];
 
 @Component({
   selector: 'app-history',
@@ -130,9 +133,7 @@ const SECRET_KEY_PATTERNS = [
                     <mat-icon class="chip-icon">restart_alt</mat-icon> Reset
                   </span>
                 } @else {
-                  <span class="trigger-chip trigger-run">
-                    <mat-icon class="chip-icon">play_arrow</mat-icon> Run
-                  </span>
+                  <span class="trigger-chip trigger-run"> <mat-icon class="chip-icon">play_arrow</mat-icon> Run </span>
                 }
               </td>
             </ng-container>
@@ -186,7 +187,7 @@ const SECRET_KEY_PATTERNS = [
               <th mat-header-cell *matHeaderCellDef>Duration</th>
               <td mat-cell *matCellDef="let row">
                 <div>
-                  {{ row.duration_seconds ? formatDurationShort(row.duration_seconds) : (row.duration || '—') }}
+                  {{ row.duration_seconds ? formatDurationShort(row.duration_seconds) : row.duration || '—' }}
                 </div>
                 @if (row.trigger === 'reset' && row.deleted_count) {
                   <span class="deleted-badge">
@@ -207,18 +208,25 @@ const SECRET_KEY_PATTERNS = [
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row">
-                <button mat-icon-button matTooltip="View details"
+                <button
+                  mat-icon-button
+                  matTooltip="View details"
                   [attr.aria-label]="selectedRun?.run_id === row.run_id ? 'Collapse details' : 'View details'"
-                  (click)="toggleDetail(row); $event.stopPropagation()">
+                  (click)="toggleDetail(row); $event.stopPropagation()"
+                >
                   <mat-icon>{{ selectedRun?.run_id === row.run_id ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
               </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"
-              class="table-row" [class.row-selected]="selectedRun?.run_id === row.run_id"
-              (click)="toggleDetail(row)"></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: displayedColumns"
+              class="table-row"
+              [class.row-selected]="selectedRun?.run_id === row.run_id"
+              (click)="toggleDetail(row)"
+            ></tr>
           </table>
           <mat-paginator [pageSize]="20" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
         </div>
@@ -247,7 +255,9 @@ const SECRET_KEY_PATTERNS = [
                     </div>
                   </div>
                   <div class="detail-header-right">
-                    <span class="status-chip status-lg" [class]="'status-' + displayStatus(detail)">{{ displayStatusLabel(detail) }}</span>
+                    <span class="status-chip status-lg" [class]="'status-' + displayStatus(detail)">{{
+                      displayStatusLabel(detail)
+                    }}</span>
                     @if (detail.duration) {
                       <span class="detail-duration">{{ detail.duration }}</span>
                     }
@@ -258,9 +268,7 @@ const SECRET_KEY_PATTERNS = [
               <!-- Phase Timeline -->
               @if (detail.phase_results.length > 0) {
                 <div class="detail-section">
-                  <h3 class="detail-section-title">
-                    <mat-icon>account_tree</mat-icon> Phase Results
-                  </h3>
+                  <h3 class="detail-section-title"><mat-icon>account_tree</mat-icon> Phase Results</h3>
                   <div class="phase-timeline">
                     @for (phase of detail.phase_results; track $index) {
                       <div class="timeline-item" [class]="'tl-' + displayPhaseStatus(phase.status || 'unknown')">
@@ -271,12 +279,17 @@ const SECRET_KEY_PATTERNS = [
                         </div>
                         <div class="tl-content">
                           <div class="tl-header">
-                            <span class="tl-name">{{ phase.name || humanize(phase.phase_id || '') || 'Phase ' + $index }}</span>
-                            <span class="status-chip status-sm" [class]="'status-' + displayPhaseStatus(phase.status || 'unknown')">
+                            <span class="tl-name">{{
+                              phase.name || humanize(phase.phase_id || '') || 'Phase ' + $index
+                            }}</span>
+                            <span
+                              class="status-chip status-sm"
+                              [class]="'status-' + displayPhaseStatus(phase.status || 'unknown')"
+                            >
                               {{ displayPhaseStatus(phase.status || 'unknown') }}
                             </span>
                             @if (phase.duration || phase.duration_seconds) {
-                              <span class="tl-duration">{{ phase.duration || (phase.duration_seconds + 's') }}</span>
+                              <span class="tl-duration">{{ phase.duration || phase.duration_seconds + 's' }}</span>
                             }
                           </div>
                           @if (phase.output_files && phase.output_files.length > 0) {
@@ -302,9 +315,7 @@ const SECRET_KEY_PATTERNS = [
               <!-- Metrics Summary -->
               @if (detail.metrics_events?.length > 0) {
                 <div class="detail-section">
-                  <h3 class="detail-section-title">
-                    <mat-icon>monitoring</mat-icon> Metrics Events
-                  </h3>
+                  <h3 class="detail-section-title"><mat-icon>monitoring</mat-icon> Metrics Events</h3>
                   <div class="metrics-grid">
                     <div class="metric-card">
                       <div class="metric-value">{{ detail.metrics_events.length }}</div>
@@ -329,9 +340,7 @@ const SECRET_KEY_PATTERNS = [
               <!-- Environment -->
               @if (detail.environment && objectKeys(detail.environment).length > 0) {
                 <div class="detail-section">
-                  <h3 class="detail-section-title">
-                    <mat-icon>settings</mat-icon> Environment
-                  </h3>
+                  <h3 class="detail-section-title"><mat-icon>settings</mat-icon> Environment</h3>
                   <div class="env-grid">
                     @for (key of objectKeys(detail.environment); track key) {
                       <div class="env-item">
@@ -733,8 +742,14 @@ const SECRET_KEY_PATTERNS = [
         color: var(--cg-gray-400);
         flex-shrink: 0;
       }
-      .env-reveal-btn:hover { color: var(--cg-blue); }
-      .env-reveal-icon { font-size: 14px; width: 14px; height: 14px; }
+      .env-reveal-btn:hover {
+        color: var(--cg-blue);
+      }
+      .env-reveal-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
     `,
   ],
 })
