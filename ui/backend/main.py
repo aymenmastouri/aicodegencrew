@@ -18,9 +18,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from aicodegencrew.shared.utils.phase_state import configure_state_dir
+
 from .config import settings
 from .routers import collectors, diagrams, env, inputs, knowledge, logs, mcps, metrics, phases, pipeline, reports, reset
 from .schemas import HealthResponse
+
+# Point phase_state at the project's logs/ dir so it resolves correctly
+# regardless of the process CWD when uvicorn is started.
+configure_state_dir(settings.logs_dir)
 
 app = FastAPI(
     title="AICodeGenCrew Dashboard",
