@@ -69,7 +69,7 @@ class PhaseGitHandler:
             )
             if result.returncode == 0:
                 logger.debug("[PhaseGitHandler] No changes to commit")
-                return True
+                return False
 
             # Commit with descriptive message
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

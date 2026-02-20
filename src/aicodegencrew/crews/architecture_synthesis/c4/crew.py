@@ -12,6 +12,7 @@ Data is passed via template variables (summaries), not inter-task context.
 """
 
 import logging
+from datetime import date
 
 from crewai import Task
 
@@ -184,6 +185,7 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
             "components_summary": self.escape_braces(components_summary),
             "relations_summary": self.escape_braces(relations_summary),
             "interfaces_summary": self.escape_braces(interfaces_summary),
+            "current_date": date.today().isoformat(),
         }
 
     # -------------------------------------------------------------------------
