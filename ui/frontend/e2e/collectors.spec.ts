@@ -20,11 +20,11 @@ test.describe('Collectors', () => {
     await expect(statsBar).toContainText('Total Facts');
   });
 
-  test('should show total of 15 collectors in stats', async ({ page }) => {
+  test('should show total of 16 collectors in stats', async ({ page }) => {
     const statsBar = page.locator('.stats-bar');
     await expect(statsBar).toBeVisible({ timeout: 10_000 });
     const totalStat = page.locator('.stat-item:has-text("Total Collectors") .stat-value');
-    await expect(totalStat).toContainText('15');
+    await expect(totalStat).toContainText('16');
   });
 
   test('should render collector table', async ({ page }) => {
@@ -32,19 +32,19 @@ test.describe('Collectors', () => {
     await expect(table).toBeVisible({ timeout: 10_000 });
   });
 
-  test('should display 15 collector rows', async ({ page }) => {
+  test('should display 16 collector rows', async ({ page }) => {
     await expect(page.locator('.collectors-table')).toBeVisible({ timeout: 10_000 });
     const rows = page.locator('.collectors-table tbody tr');
-    await expect(rows).toHaveCount(15);
+    await expect(rows).toHaveCount(16);
   });
 
-  test('should show step badges with numbers 1-15', async ({ page }) => {
+  test('should show step badges with numbers 1-16', async ({ page }) => {
     await expect(page.locator('.collectors-table')).toBeVisible({ timeout: 10_000 });
     const firstBadge = page.locator('.step-badge').first();
     await expect(firstBadge).toBeVisible();
     await expect(firstBadge).toContainText('1');
     const lastBadge = page.locator('.step-badge').last();
-    await expect(lastBadge).toContainText('15');
+    await expect(lastBadge).toContainText('16');
   });
 
   test('should show core collectors with lock icon', async ({ page }) => {
@@ -57,8 +57,8 @@ test.describe('Collectors', () => {
   test('should show toggle switches for optional collectors', async ({ page }) => {
     await expect(page.locator('.collectors-table')).toBeVisible({ timeout: 10_000 });
     const toggles = page.locator('mat-slide-toggle');
-    // 11 optional collectors (steps 4-14) should have toggles
-    await expect(toggles).toHaveCount(11);
+    // 12 optional collectors (category=optional, can_disable=true) have toggles
+    await expect(toggles).toHaveCount(12);
   });
 
   test('should show System Facts as first collector', async ({ page }) => {
@@ -72,7 +72,7 @@ test.describe('Collectors', () => {
   test('should show dimension chips for each collector', async ({ page }) => {
     await expect(page.locator('.collectors-table')).toBeVisible({ timeout: 10_000 });
     const dimensionChips = page.locator('.dimension-chip');
-    await expect(dimensionChips).toHaveCount(15);
+    await expect(dimensionChips).toHaveCount(16);
   });
 
   test('should show category chips (core and optional)', async ({ page }) => {
@@ -95,20 +95,25 @@ test.describe('Collectors', () => {
   test('should update enabled count in stats after toggle', async ({ page }) => {
     await expect(page.locator('.collectors-table')).toBeVisible({ timeout: 10_000 });
     const enabledStat = page.locator('.stat-item:has-text("Enabled") .stat-value');
-    const initialCount = await enabledStat.textContent();
+    await expect(enabledStat).toBeVisible({ timeout: 5_000 });
+    const initialCount = (await enabledStat.textContent()) ?? '';
 
     // Toggle first optional collector off
     const firstToggle = page.locator('mat-slide-toggle').first();
     await firstToggle.click();
-    await expect(page.locator('mat-snack-bar-container')).toBeVisible({ timeout: 5_000 });
+    // Use .last() — newest snackbar is always appended last in the DOM
+    await expect(page.locator('mat-snack-bar-container').last()).toBeVisible({ timeout: 5_000 });
 
-    // Enabled count should have changed
-    const newCount = await enabledStat.textContent();
-    expect(newCount).not.toBe(initialCount);
+    // Wait for Angular to re-render the stat (toHaveText polls until timeout)
+    await expect(enabledStat).not.toHaveText(initialCount, { timeout: 5_000 });
+
+    // Wait for the first snackbar to fully exit before the second toggle
+    await expect(page.locator('mat-snack-bar-container')).toHaveCount(0, { timeout: 5_000 });
 
     // Toggle back on to restore state
     await firstToggle.click();
-    await expect(page.locator('mat-snack-bar-container')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('mat-snack-bar-container').last()).toBeVisible({ timeout: 5_000 });
+    await expect(enabledStat).toHaveText(initialCount, { timeout: 5_000 });
   });
 
   test('should show view output button for collectors with data', async ({ page }) => {
