@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { InputsService, InputFile } from '../../services/inputs.service';
 import { NotificationService } from '../../services/notification.service';
@@ -344,11 +346,12 @@ interface CategoryView {
     `,
   ],
 })
-export class InputFilesComponent implements OnInit {
+export class InputFilesComponent implements OnInit, OnDestroy {
   categories: CategoryView[] = [];
   totalFiles = 0;
   totalSize = 0;
   isRunning = false;
+  private destroy$ = new Subject<void>();
 
   private hints: Record<string, string> = {
     tasks: 'Drop JIRA XML exports, tickets, or task descriptions here',
@@ -365,11 +368,16 @@ export class InputFilesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.notifSvc.notification$.subscribe((n) => {
+    this.notifSvc.notification$.pipe(takeUntil(this.destroy$)).subscribe((n) => {
       this.isRunning = n.state === 'running';
       this.cdr.markForCheck();
     });
     this.loadAll();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadAll(): void {

@@ -145,8 +145,11 @@ def get_collector_output(collector_id: str) -> CollectorOutput:
     if not filepath.exists():
         raise FileNotFoundError(f"Output file not found: {reg['output_file']}")
 
-    with open(filepath, encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open(filepath, encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in {reg['output_file']}: {e}") from e
 
     fact_count, _, file_size = _get_output_stats(reg["output_file"])
 
