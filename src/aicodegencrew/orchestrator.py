@@ -192,6 +192,7 @@ class SDLCOrchestrator:
         """
         self._start_time = datetime.now()
         self.results.clear()
+        self._facts_cache.clear()
         self.contract = self._contract_from_current_config()
 
         # Use the logger's RUN_ID so that phase_state.json and metrics.jsonl
