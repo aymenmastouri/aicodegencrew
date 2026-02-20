@@ -123,7 +123,7 @@ class ReviewCrew:
             + len(consistency.get("missing_arc42_chapters", []))
         )
         summary = {
-            "status": "success",
+            "status": "success" if llm_ok else "partial",
             "phase": "deliver",
             "quality_score": quality.get("score", 0),
             "consistency_issues": issue_count,
