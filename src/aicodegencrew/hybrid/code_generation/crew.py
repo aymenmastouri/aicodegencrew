@@ -25,7 +25,9 @@ from typing import Any
 from crewai import Crew, Process, Task
 
 from ...shared.mcp import get_phase5_mcps
+from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.crewai_patches import apply_patches
+from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 
@@ -403,6 +405,8 @@ class ImplementCrew:
             human_input=False,
         )
 
+        log_dir = self.output_dir / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
         crew = Crew(
             agents=[developer],
             tasks=[task],
@@ -411,6 +415,10 @@ class ImplementCrew:
             memory=False,
             planning=False,
             max_rpm=_MAX_RPM,
+            step_callback=step_callback,
+            task_callback=task_callback,
+            output_log_file=str(log_dir / f"{plan.task_id}_impl.json"),
+            embedder=get_crew_embedder(),
         )
 
         tracker = None
@@ -494,6 +502,8 @@ class ImplementCrew:
             human_input=False,
         )
 
+        log_dir = self.output_dir / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
         crew = Crew(
             agents=[developer],
             tasks=[task],
@@ -502,6 +512,10 @@ class ImplementCrew:
             memory=False,
             planning=False,
             max_rpm=_MAX_RPM,
+            step_callback=step_callback,
+            task_callback=task_callback,
+            output_log_file=str(log_dir / f"{plan.task_id}_fix.json"),
+            embedder=get_crew_embedder(),
         )
 
         tracker = None

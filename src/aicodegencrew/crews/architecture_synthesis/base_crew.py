@@ -27,6 +27,8 @@ from crewai import LLM, Agent, Crew, Process, Task
 from ...shared.mcp import get_phase3_mcps
 from ...shared.paths import CHROMA_DIR
 from ...shared.tools import RAGQueryTool, SymbolQueryTool
+from ...shared.utils.crew_callbacks import step_callback, task_callback
+from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
@@ -252,6 +254,7 @@ class MiniCrewBase(ABC):
             verbose=True,
             max_iter=30,
             max_retry_limit=10,
+            inject_date=True,
         )
 
     # -------------------------------------------------------------------------
@@ -289,6 +292,8 @@ class MiniCrewBase(ABC):
         for attempt in range(1, _MAX_RETRIES + 1):
             tracker = None
             try:
+                log_dir = self._output_dir / "logs"
+                log_dir.mkdir(parents=True, exist_ok=True)
                 crew = Crew(
                     agents=[tasks[0].agent],
                     tasks=tasks,
@@ -297,6 +302,10 @@ class MiniCrewBase(ABC):
                     memory=False,
                     respect_context_window=True,
                     max_rpm=30,
+                    step_callback=step_callback,
+                    task_callback=task_callback,
+                    output_log_file=str(log_dir / f"{name}.json"),
+                    embedder=get_crew_embedder(),
                 )
                 tracker = install_guardrails()
                 result = crew.kickoff(inputs=self.summaries)

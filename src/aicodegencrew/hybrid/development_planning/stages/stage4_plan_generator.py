@@ -20,8 +20,11 @@ from typing import Any
 from crewai import Agent, Crew, Process, Task
 
 from ....shared.mcp import get_phase4_mcps
+from ....shared.utils.crew_callbacks import step_callback, task_callback
+from ....shared.utils.embedder_config import get_crew_embedder
 from ....shared.utils.llm_factory import create_llm
 from ....shared.utils.logger import setup_logger
+from ....shared.utils.task_guardrails import validate_plan_json
 from ..schemas import ImplementationPlan, TaskInput
 
 logger = setup_logger(__name__)
@@ -87,6 +90,7 @@ class PlanGeneratorStage:
             max_iter=15,
             max_retry_limit=2,
             respect_context_window=True,
+            inject_date=True,
         )
 
         # Try to create agent with MCPs; fall back to no MCPs on connection failure
@@ -137,15 +141,25 @@ class PlanGeneratorStage:
             description=description,
             expected_output=expected,
             agent=self.agent,
+            guardrail=validate_plan_json,
+            guardrail_max_retries=1,
         )
 
         # Run crew
         try:
+            from pathlib import Path as _Path
+
+            log_dir = _Path("knowledge/plan/logs")
+            log_dir.mkdir(parents=True, exist_ok=True)
             crew = Crew(
                 agents=[self.agent],
                 tasks=[planning_task],
                 process=Process.sequential,
                 verbose=False,
+                step_callback=step_callback,
+                task_callback=task_callback,
+                output_log_file=str(log_dir / f"{task.task_id}_plan.json"),
+                embedder=get_crew_embedder(),
             )
 
             result = crew.kickoff()

@@ -1,14 +1,16 @@
 # SDLC Pilot
 
-> **Proprietary Prototype**
-> This repository contains a private prototype created by Aymen Mastouri.
+> **Proprietary Software**
+> This repository contains software created by Aymen Mastouri (Capgemini).
 > No internal or external usage is permitted without explicit written agreement.
 
 **AI-Powered Development Lifecycle Automation**
 
+[![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)](#changelog)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![CrewAI](https://img.shields.io/badge/framework-CrewAI-orange.svg)](https://crewai.com/)
+[![CrewAI](https://img.shields.io/badge/CrewAI-1.9.3-orange.svg)](https://crewai.com/)
 [![Angular 21](https://img.shields.io/badge/dashboard-Angular%2021-red.svg)](#sdlc-dashboard)
+[![Tests](https://img.shields.io/badge/tests-781%20passed-brightgreen.svg)](#testing)
 [![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#why-on-premises)
 
 SDLC Pilot automates the full Software Development Lifecycle, from architecture extraction to code generation. It consists of two parts:
