@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from ....shared.utils.logger import setup_logger
 from ....shared.utils.token_budget import truncate_response
@@ -29,8 +29,10 @@ EXT_TO_LANG = {
     ".xml": "xml",
 }
 
-# Max characters per file to fit LLM context window
-MAX_FILE_CHARS = 12000
+# Max characters per file to fit LLM context window.
+# Enterprise Java/TS files can be 20-30KB; 12KB truncated too aggressively,
+# causing the agent to "invent" the bottom half of large files.
+MAX_FILE_CHARS = 30000
 
 
 class CodeReaderInput(BaseModel):
@@ -66,32 +68,55 @@ class CodeReaderTool(BaseTool):
     # Configuration
     repo_path: str = ""
 
-    def __init__(self, repo_path: str = "", **kwargs):
-        """Initialize with target repository path."""
+    # Optional staging dict: when provided, staged file content is returned
+    # instead of the on-disk version.  This is critical for the build-fix loop
+    # where the fix agent must see the code it generated in attempt N-1.
+    _staging: dict = PrivateAttr(default_factory=dict)
+
+    def __init__(self, repo_path: str = "", staging: dict | None = None, **kwargs):
+        """Initialize with target repository path and optional staging dict."""
         super().__init__(**kwargs)
         if repo_path:
             self.repo_path = repo_path
+        self._staging = staging if staging is not None else {}
 
     def _run(self, file_path: str, include_siblings: bool = False) -> str:
-        """Read a source file and optionally list siblings."""
-        try:
-            resolved = self._resolve_path(file_path)
-            if resolved is None:
-                return json.dumps(
-                    {
-                        "error": f"File not found: {file_path}",
-                        "file_path": file_path,
-                    }
-                )
+        """Read a source file and optionally list siblings.
 
-            content = self._read_file(resolved)
-            if content is None:
-                return json.dumps(
-                    {
-                        "error": f"Could not read file: {file_path}",
-                        "file_path": file_path,
-                    }
-                )
+        Resolution order:
+        1. Staging dict (in-memory, written by CodeWriterTool in a previous attempt)
+        2. On-disk file in the target repository
+        """
+        try:
+            # ── 1. Check staging first (K1 fix: fix-agent must see its own code) ──
+            staged = self._read_from_staging(file_path)
+            if staged is not None:
+                content = staged
+                source = "staging"
+                resolved_path = file_path
+                language = self._detect_language(file_path)
+            else:
+                # ── 2. Fall back to disk ──
+                resolved = self._resolve_path(file_path)
+                if resolved is None:
+                    return json.dumps(
+                        {
+                            "error": f"File not found: {file_path}",
+                            "file_path": file_path,
+                        }
+                    )
+
+                content = self._read_file(resolved)
+                if content is None:
+                    return json.dumps(
+                        {
+                            "error": f"Could not read file: {file_path}",
+                            "file_path": file_path,
+                        }
+                    )
+                source = "disk"
+                resolved_path = str(resolved)
+                language = self._detect_language(resolved_path)
 
             # Truncate large files
             truncated = False
@@ -99,18 +124,17 @@ class CodeReaderTool(BaseTool):
                 content = content[:MAX_FILE_CHARS] + "\n// ... (truncated)"
                 truncated = True
 
-            language = self._detect_language(str(resolved))
-
             result = {
-                "file_path": str(resolved),
+                "file_path": resolved_path,
                 "content": content,
                 "language": language,
                 "size_chars": len(content),
                 "truncated": truncated,
+                "source": source,
             }
 
             if include_siblings:
-                result["siblings"] = self._find_siblings(str(resolved))
+                result["siblings"] = self._find_siblings(resolved_path)
 
             output = json.dumps(result, ensure_ascii=False)
             return truncate_response(output, hint="file was truncated to fit context")
@@ -118,6 +142,38 @@ class CodeReaderTool(BaseTool):
         except Exception as e:
             logger.error(f"CodeReaderTool error: {e}")
             return json.dumps({"error": str(e), "file_path": file_path})
+
+    def _read_from_staging(self, file_path: str) -> str | None:
+        """Return staged content for *file_path*, or None if not staged.
+
+        Tries exact match first, then normalized-path match so that
+        absolute vs relative or Windows vs Unix separators don't cause misses.
+        """
+        if not self._staging:
+            return None
+
+        # Exact match
+        entry = self._staging.get(file_path)
+        if entry:
+            return entry.get("content", "")
+
+        # Normalized match (forward slashes, resolve against repo root)
+        norm = file_path.replace("\\", "/")
+        for staged_path, entry in self._staging.items():
+            staged_norm = staged_path.replace("\\", "/")
+            if staged_norm == norm:
+                return entry.get("content", "")
+            # Match repo-relative against absolute and vice-versa
+            if self.repo_path:
+                repo_prefix = self.repo_path.replace("\\", "/").rstrip("/") + "/"
+                if staged_norm.startswith(repo_prefix):
+                    if staged_norm[len(repo_prefix):] == norm:
+                        return entry.get("content", "")
+                elif norm.startswith(repo_prefix):
+                    if norm[len(repo_prefix):] == staged_norm:
+                        return entry.get("content", "")
+
+        return None
 
     def _resolve_path(self, file_path: str) -> Path | None:
         """Resolve a file path to an absolute path in the target repo."""

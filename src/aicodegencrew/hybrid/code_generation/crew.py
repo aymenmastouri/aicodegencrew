@@ -158,9 +158,15 @@ class ImplementCrew:
         if not containers:
             return []
 
+        # Normalize repo_path once for stripping absolute prefixes
+        repo_prefix = str(self.repo_path).replace("\\", "/").rstrip("/") + "/"
+
         ids: list[str] = []
         for comp in plan.affected_components:
             fp = comp.file_path.replace("\\", "/")
+            # Strip absolute repo prefix so comparison is always repo-relative
+            if fp.startswith(repo_prefix):
+                fp = fp[len(repo_prefix):]
             for c in containers:
                 root = (c.get("root_path", "") or "").replace("\\", "/").strip("/")
                 if root and (fp.startswith(root + "/") or fp == root):
@@ -365,7 +371,7 @@ class ImplementCrew:
         task_source_tool = TaskSourceTool(task_input_dir=self.task_input_dir)
 
         developer_tools = [
-            CodeReaderTool(repo_path=str(self.repo_path)),
+            CodeReaderTool(repo_path=str(self.repo_path), staging=staging),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
             RAGQueryTool(),
@@ -448,10 +454,20 @@ class ImplementCrew:
                     else:
                         # CrewAI UsageMetrics object (total_tokens attribute)
                         self.total_tokens += int(getattr(token_usage, "total_tokens", 0))
+            except (ConnectionError, TimeoutError, OSError) as e:
+                # Transient network/API errors — re-raise so the caller can retry or abort.
+                # These indicate VPN drops, LLM API outages, etc. where proceeding makes no sense.
+                logger.error("[Implement] Transient error during crew execution: %s", e)
+                raise
             except Exception as e:
                 # CrewAI may throw validation errors but staging dict is already populated
-                logger.warning("[Implement] Crew finished with error (staging preserved): %s", e)
+                # via write_code() side effects. Only tolerate these if staging has content.
                 self.total_calls += 1
+                if staging:
+                    logger.warning("[Implement] Crew finished with error (staging has %d files): %s", len(staging), e)
+                else:
+                    logger.error("[Implement] Crew failed with 0 staged files: %s", e)
+                    raise
         finally:
             uninstall_guardrails(tracker)
 
@@ -475,7 +491,7 @@ class ImplementCrew:
         task_source_tool = TaskSourceTool(task_input_dir=self.task_input_dir)
 
         developer_tools = [
-            CodeReaderTool(repo_path=str(self.repo_path)),
+            CodeReaderTool(repo_path=str(self.repo_path), staging=staging),
             CodeWriterTool(repo_path=str(self.repo_path), staging=staging),
             FactsQueryTool(facts_dir=str(self.facts_path.parent)),
             RAGQueryTool(),
@@ -540,7 +556,11 @@ class ImplementCrew:
                     else:
                         # CrewAI UsageMetrics object (total_tokens attribute)
                         self.total_tokens += int(getattr(token_usage, "total_tokens", 0))
+            except (ConnectionError, TimeoutError, OSError) as e:
+                logger.error("[Implement] Transient error during fix crew: %s", e)
+                raise
             except Exception as e:
+                # Fix crew validation errors — staging should still have content from previous attempt
                 logger.warning("[Implement] Fix crew finished with error (staging preserved): %s", e)
                 self.total_calls += 1
         finally:
@@ -645,6 +665,11 @@ class ImplementCrew:
                 "[Implement] Plan enrichment context keys: %s",
                 list(plan_enrichment.additional_context.keys()),
             )
+            # H1 fix: Abort early if strategy declares the plan infeasible
+            if not plan_enrichment.additional_context.get("is_feasible", True):
+                raise ValueError(
+                    "Strategy declared plan infeasible: " + "; ".join(plan_enrichment.warnings)
+                )
 
         det_result = strategy.pre_execute(plan, staging, str(self.repo_path), self.dry_run)
         if det_result.steps:
@@ -653,6 +678,12 @@ class ImplementCrew:
                 len(det_result.steps),
                 det_result.total_files_modified,
                 len(det_result.errors),
+            )
+        # H2 fix: Surface pre-execution errors so they're visible
+        if det_result.errors:
+            logger.warning(
+                "[Implement] Pre-execution errors (continuing with LLM): %s",
+                "; ".join(det_result.errors),
             )
 
         # ── 2. Build-fix loop ───────────────────────────────────────────────
@@ -663,6 +694,11 @@ class ImplementCrew:
             # 2a. Crew execution (implement or fix)
             if attempt == 1:
                 self._execute_implement(plan, staging, dependency_order_paths, import_index, generation_order)
+                # M5 fix: If the crew produced 0 files, skip build verification entirely.
+                # Running builds on unchanged code wastes time and gives a misleading "build passed".
+                if not staging:
+                    logger.error("[Implement] Crew produced 0 staged files — aborting build-fix loop")
+                    break
             else:
                 build_errors = self._format_build_errors(build_result)
                 failed_files = self._extract_failed_files(build_result)

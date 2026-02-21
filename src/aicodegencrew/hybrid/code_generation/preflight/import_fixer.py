@@ -399,7 +399,39 @@ class ImportFixer:
     ) -> str:
         result_lines = [line for i, line in enumerate(lines) if i not in import_lines]
 
-        all_stmts = sorted(set(existing_imports.values()) | set(new_imports))
+        all_stmts = list(set(existing_imports.values()) | set(new_imports))
+
+        # H4 fix: Preserve import grouping instead of flat alphabetical sort.
+        # Groups: 1. @-prefixed (framework), 2. non-relative external, 3. relative (./)
+        def _import_group_key(stmt: str) -> tuple[int, str]:
+            # Extract the path from the import statement for grouping
+            for quote in ("'", '"'):
+                idx = stmt.rfind(quote)
+                if idx > 0:
+                    start = stmt.rfind(quote, 0, idx)
+                    if start >= 0:
+                        path = stmt[start + 1 : idx]
+                        if path.startswith("@"):
+                            return (0, stmt)  # Framework (@angular, @ngrx, etc.)
+                        if path.startswith("."):
+                            return (2, stmt)  # Relative imports
+                        return (1, stmt)  # External packages (rxjs, lodash, etc.)
+            # Re-exports or unrecognized: keep at end
+            if stmt.strip().startswith("export"):
+                return (3, stmt)
+            return (1, stmt)
+
+        all_stmts.sort(key=_import_group_key)
+
+        # Insert blank lines between groups
+        grouped_lines: list[str] = []
+        prev_group = -1
+        for stmt in all_stmts:
+            group = _import_group_key(stmt)[0]
+            if prev_group >= 0 and group != prev_group:
+                grouped_lines.append("")
+            grouped_lines.append(stmt)
+            prev_group = group
 
         insert_at = 0
         for i, line in enumerate(result_lines):
@@ -407,7 +439,7 @@ class ImportFixer:
                 insert_at = i
                 break
 
-        import_block = "\n".join(all_stmts)
+        import_block = "\n".join(grouped_lines)
         if import_block:
             result_lines.insert(insert_at, import_block)
             result_lines.insert(insert_at + 1, "")
