@@ -167,8 +167,8 @@ interface FileGroup {
                 <mat-icon>analytics</mat-icon>
               </div>
               <div>
-                <h2 class="section-title">Pipeline Data</h2>
-                <p class="section-sub">Facts, analysis, development plans & code generation reports</p>
+                <h2 class="section-title">Development Artifacts</h2>
+                <p class="section-sub">Development plans, code generation reports & delivery artifacts</p>
               </div>
             </div>
 
@@ -731,6 +731,7 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
 
   dataGroups: FileGroup[] = [];
   expandedDataGroups = new Set<string>();
+  internalFiles: KnowledgeFile[] = [];
 
   otherFiles: KnowledgeFile[] = [];
 
@@ -764,8 +765,6 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
   private loadKnowledge(): void {
     this.api.getKnowledgeFiles().subscribe({
       next: (s) => {
-        this.totalFiles = s.total_files;
-        this.totalSize = s.total_size_bytes;
         this.categorize(s.files);
         this.loading = false;
         this.cdr.markForCheck();
@@ -849,9 +848,12 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
       this.activeArchGroup = this.archGroups[0].id;
     }
 
-    // Pipeline Data (extract/facts, analyze/analysis, plan/planning, implement/codegen)
+    // Internal pipeline data (hidden — not user-facing)
     const facts = files.filter((f) => this.inDir(f, 'extract') || this.inDir(f, 'phase1_facts'));
     const analysis = files.filter((f) => this.inDir(f, 'analyze') || this.inDir(f, 'phase2_analysis'));
+    this.internalFiles = [...facts, ...analysis];
+
+    // Development Artifacts (user-facing outputs only)
     const plans = files.filter((f) => this.inDir(f, 'plan') || this.inDir(f, 'phase4_planning'));
     const codegen = files.filter((f) => this.inDir(f, 'implement') || this.inDir(f, 'phase5_codegen'));
     const testing = files.filter((f) => this.inDir(f, 'verify') || this.inDir(f, 'phase6_testing'));
@@ -859,26 +861,10 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
 
     this.dataGroups = [
       {
-        id: 'facts',
-        label: 'Facts & Evidence',
-        icon: 'data_object',
-        phase: 'Phase 1',
-        description: 'Architecture facts and evidence',
-        files: facts,
-      },
-      {
-        id: 'analysis',
-        label: 'Analysis',
-        icon: 'analytics',
-        phase: 'Phase 2',
-        description: 'Architecture analysis results',
-        files: analysis,
-      },
-      {
         id: 'plans',
         label: 'Development Plans',
         icon: 'assignment',
-        phase: 'Phase 4',
+        phase: 'Plan',
         description: 'Generated development plans',
         files: plans,
       },
@@ -886,7 +872,7 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
         id: 'codegen',
         label: 'Code Reports',
         icon: 'code',
-        phase: 'Phase 5',
+        phase: 'Implement',
         description: 'Code generation reports',
         files: codegen,
       },
@@ -896,7 +882,7 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
               id: 'testing',
               label: 'Test Reports',
               icon: 'science',
-              phase: 'Phase 6',
+              phase: 'Verify',
               description: 'Test generation output',
               files: testing,
             },
@@ -906,10 +892,10 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
         ? [
             {
               id: 'deploy',
-              label: 'Deployment',
+              label: 'Delivery',
               icon: 'rocket_launch',
-              phase: 'Phase 7',
-              description: 'Deployment artifacts',
+              phase: 'Deliver',
+              description: 'Review & delivery artifacts',
               files: deployment,
             },
           ]
@@ -936,11 +922,14 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
     ]);
     this.otherFiles = files.filter((f) => !classified.has(f));
 
-    // Stats
+    // Stats (exclude internal pipeline data)
+    const visibleFiles = files.filter((f) => !this.internalFiles.includes(f));
+    this.totalFiles = visibleFiles.length;
+    this.totalSize = visibleFiles.reduce((sum, f) => sum + f.size_bytes, 0);
     const docTypes = new Set(['md', 'adoc', 'html', 'confluence']);
     this.docCount = [...arc42, ...c4, ...quality, ...synthOther].filter((f) => docTypes.has(f.type)).length;
-    this.dataCount = [...facts, ...analysis, ...plans, ...codegen].length;
-    this.diagramCount = files.filter((f) => f.type === 'drawio').length;
+    this.dataCount = [...plans, ...codegen, ...testing, ...deployment].length;
+    this.diagramCount = visibleFiles.filter((f) => f.type === 'drawio').length;
   }
 
   private inDir(file: KnowledgeFile, dir: string): boolean {

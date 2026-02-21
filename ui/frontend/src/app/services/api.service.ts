@@ -65,8 +65,6 @@ export interface MetricsSummary {
 export interface ReportList {
   plans: Record<string, unknown>[];
   codegen_reports: Record<string, unknown>[];
-  extract_reports: Record<string, unknown>[];
-  analyze_reports: Record<string, unknown>[];
   document_reports: Record<string, unknown>[];
 }
 
