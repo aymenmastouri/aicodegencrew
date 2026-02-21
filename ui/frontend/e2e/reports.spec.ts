@@ -113,7 +113,7 @@ test.describe('Reports', () => {
     const panel = page.locator('mat-expansion-panel').first();
     const panelVisible = await panel.isVisible({ timeout: 10_000 }).catch(() => false);
     if (panelVisible) {
-      await panel.locator('mat-expansion-panel-header').click();
+      await panel.locator('mat-expansion-panel-header').first().click();
       await expect(page.locator('.plan-body, .plan-content').first()).toBeVisible({ timeout: 5_000 });
     }
   });
