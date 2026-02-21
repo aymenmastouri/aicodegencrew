@@ -81,13 +81,15 @@ test.describe('Phases', () => {
   test('should disable Reset All button when no phases have completed or failed', async ({ page }) => {
     await expect(page.locator('.phase-table')).toBeVisible({ timeout: 10_000 });
     const resetAllBtn = page.locator('button:has-text("Reset All")');
-    // hasResettablePhases() checks: any terminal status (completed/partial/skipped/failed/cancelled), not discover
-    const terminalStatuses = ['completed', 'failed', 'cancelled', 'partial', 'skipped'];
-    let anyTerminal = 0;
-    for (const s of terminalStatuses) {
-      anyTerminal += await page.locator(`.status-chip:text("${s}")`).count();
-    }
-    if (anyTerminal === 0) {
+    // hasResettablePhases() checks: terminal status, NOT discover phase
+    // Exclude the discover row by filtering out rows whose name cell contains "Discover"
+    const nonDiscoverTerminal = await page
+      .locator('tr[mat-row]')
+      .filter({ hasNot: page.locator('td:has-text("Discover")') })
+      .locator('.status-chip')
+      .filter({ hasText: /completed|failed|cancelled|partial|skipped/ })
+      .count();
+    if (nonDiscoverTerminal === 0) {
       await expect(resetAllBtn).toBeDisabled();
     } else {
       await expect(resetAllBtn).toBeEnabled();

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -233,7 +233,7 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
 
         <!-- Detail Panel -->
         @if (selectedRun) {
-          <div class="detail-panel">
+          <div class="detail-panel" #detailPanel>
             @if (detailLoading) {
               <div class="loading-center">
                 <mat-spinner diameter="32"></mat-spinner>
@@ -780,6 +780,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild('detailPanel') detailPanelRef!: ElementRef<HTMLElement>;
 
   constructor(
     private pipelineSvc: PipelineService,
@@ -926,6 +927,10 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.revealedKeys.clear();
     this.detailLoading = true;
     this.cdr.markForCheck();
+    // Scroll detail panel into view after Angular renders it
+    setTimeout(() => {
+      this.detailPanelRef?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
 
     this.pipelineSvc.getRunDetail(row.run_id).subscribe({
       next: (d) => {
