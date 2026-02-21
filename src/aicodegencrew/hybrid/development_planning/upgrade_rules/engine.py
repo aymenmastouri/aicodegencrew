@@ -263,12 +263,20 @@ class UpgradeRulesEngine:
         current: str,
         target: str,
     ) -> bool:
+        """Check if a rule set applies for the given upgrade range.
+
+        A rule set from_version→to_version applies when from_version falls
+        within [current, target).  Strict less-than on the upper bound
+        prevents e.g. 19→20 rules from being included in an 18→19 upgrade.
+        """
         try:
             rf = int(rule_from)
-            int(rule_to)
+            rt = int(rule_to)
             cv = int(current.split(".")[0]) if current != "unknown" else 0
             tv = int(target.split(".")[0]) if target not in ("unknown", "latest") else 999
-            return rf >= cv and rf <= tv
+            # Rule applies if its from_version is within the upgrade window [current, target)
+            # AND the rule's to_version doesn't exceed the target
+            return rf >= cv and rf < tv and rt <= tv
         except (ValueError, IndexError):
             return True
 

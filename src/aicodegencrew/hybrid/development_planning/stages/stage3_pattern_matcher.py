@@ -9,6 +9,7 @@ Duration: 1-3 seconds (pure algorithms)
 NO LLM REQUIRED
 """
 
+from pathlib import Path
 from typing import Any
 
 from ....shared.utils.logger import setup_logger
@@ -150,9 +151,17 @@ class PatternMatcherStage:
         test_texts = []
 
         for test in candidate_tests:
-            # Combine test name + scenarios
-            test_text = test.get("name", "") + " " + " ".join(test.get("scenarios", []))
-            test_texts.append(test_text)
+            # Facts may have "name", "scenarios", or "targets" — use all available fields
+            parts = []
+            if test.get("name"):
+                parts.append(test["name"])
+            if test.get("scenarios"):
+                parts.extend(test["scenarios"])
+            if test.get("targets"):
+                parts.extend(test["targets"])
+            if test.get("file_path"):
+                parts.append(test["file_path"])
+            test_texts.append(" ".join(parts) if parts else test.get("file_path", ""))
 
         corpus.extend(test_texts)
 
@@ -176,13 +185,15 @@ class PatternMatcherStage:
             similarity = float(similarities[idx])
 
             if similarity > 0.1:  # Threshold
+                # Derive name from file_path if not present
+                test_name = test.get("name") or Path(test.get("file_path", "")).stem
                 results.append(
                     TestPattern(
-                        name=test.get("name", ""),
+                        name=test_name,
                         file_path=test.get("file_path", ""),
                         test_type=test.get("test_type", "unit"),
                         framework=test.get("framework", "unknown"),
-                        scenarios=test.get("scenarios", []),
+                        scenarios=test.get("scenarios", test.get("targets", [])),
                         relevance_score=round(similarity, 3),
                         pattern_description=f"Similar {test.get('test_type', 'unit')} test using {test.get('framework', 'unknown')}",
                     )

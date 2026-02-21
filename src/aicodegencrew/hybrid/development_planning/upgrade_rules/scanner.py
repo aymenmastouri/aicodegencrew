@@ -19,6 +19,13 @@ class UpgradeCodeScanner:
 
     SKIP_DIRS = {"node_modules", ".git", "dist", "build", "__pycache__", ".cache"}
 
+    # File globs that belong to the frontend (Angular/React/Vue)
+    _FRONTEND_GLOBS = frozenset({
+        "*.component.ts", "*.module.ts", "*.service.ts", "*.directive.ts",
+        "*.pipe.ts", "*.html", "*.scss", "*.css",
+        "angular.json", "karma.conf.js", "tsconfig.json",
+    })
+
     def __init__(self, repo_path: str, frontend_root: str = "frontend"):
         self.repo_path = Path(repo_path)
         self.frontend_root = self.repo_path / frontend_root
@@ -61,20 +68,40 @@ class UpgradeCodeScanner:
             details=details,
         )
 
+    def _pick_search_root(self, pattern: CodePattern) -> "Path":
+        """Pick the right search root based on file glob.
+
+        Frontend globs (*.component.ts, angular.json, etc.) search frontend_root.
+        Backend globs (*.java, pom.xml, build.gradle, etc.) search repo_path.
+        """
+        if pattern.file_glob in self._FRONTEND_GLOBS:
+            return self.frontend_root
+        # Backend / generic patterns: search entire repo
+        return self.repo_path
+
     def _scan_pattern(self, pattern: CodePattern) -> tuple[int, list[str]]:
         """Scan for a single code pattern."""
         count = 0
         affected_files = []
-        search_root = self.frontend_root
+        search_root = self._pick_search_root(pattern)
 
-        # Single-file patterns (package.json, angular.json, karma.conf.js)
-        if pattern.file_glob in ("package.json", "angular.json", "karma.conf.js"):
-            target = search_root / pattern.file_glob
-            if target.exists():
-                matches = self._count_in_file(target, pattern.regex)
-                if matches > 0:
-                    count += matches
-                    affected_files.append(self._rel_path(target))
+        # Single-file patterns (package.json, angular.json, karma.conf.js, pom.xml, build.gradle)
+        single_file_globs = {
+            "package.json", "angular.json", "karma.conf.js",
+            "pom.xml", "build.gradle", "gradle-wrapper.properties",
+        }
+        if pattern.file_glob in single_file_globs:
+            # Check both frontend and repo root for config files
+            roots_to_check = [search_root]
+            if search_root != self.repo_path:
+                roots_to_check.append(self.repo_path)
+            for root in roots_to_check:
+                target = root / pattern.file_glob
+                if target.exists():
+                    matches = self._count_in_file(target, pattern.regex)
+                    if matches > 0:
+                        count += matches
+                        affected_files.append(self._rel_path(target))
             return count, affected_files
 
         # Recursive glob patterns
