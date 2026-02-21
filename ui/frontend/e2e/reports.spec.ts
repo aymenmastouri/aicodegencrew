@@ -65,7 +65,13 @@ test.describe('Reports', () => {
     const docGroups = page.locator('.doc-group');
     const count = await docGroups.count();
     if (count > 0) {
+      // Groups may start collapsed — expand the first one to reveal file cards
+      const firstHeader = docGroups.first().locator('.doc-group-header');
+      if (await firstHeader.isVisible()) {
+        await firstHeader.click();
+      }
       const fileCards = docGroups.first().locator('.doc-file-card');
+      await expect(fileCards.first()).toBeVisible({ timeout: 5_000 });
       const fileCount = await fileCards.count();
       expect(fileCount).toBeGreaterThan(0);
     }

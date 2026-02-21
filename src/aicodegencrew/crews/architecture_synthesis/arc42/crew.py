@@ -8,7 +8,7 @@ Architecture Fix:
 - NEW: 18 Mini-Crews (1 task each) -> Fresh context per chapter/sub-chapter
 
 Chapters 5, 6, and 8 are split into sub-crews for maximum output quality:
-- Chapter 5: 4 sub-crews (overview, controllers, services, domain)
+- Chapter 5: 5 sub-crews (overview, controllers-overview, controllers-inventory, services, domain)
 - Chapter 6: 2 sub-crews (API flows, business flows)
 - Chapter 8: 3 sub-crews (domain+security, persistence+ops, patterns)
 
@@ -30,7 +30,8 @@ from .tasks import (
     CH03_CONTEXT,
     CH04_SOLUTION_STRATEGY,
     CH05_PART1_OVERVIEW,
-    CH05_PART2_CONTROLLERS,
+    CH05_PART2A_CONTROLLERS_OVERVIEW,
+    CH05_PART2B_CONTROLLERS_INVENTORY,
     CH05_PART3_SERVICES,
     CH05_PART4_DOMAIN,
     CH06_PART1_API_FLOWS,
@@ -340,11 +341,18 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
                 ["arc42/05-part1-overview.md"],
             ),
             (
-                "building-blocks-controllers",
+                "building-blocks-controllers-overview",
                 [
-                    (CH05_PART2_CONTROLLERS, "Building Blocks presentation layer"),
+                    (CH05_PART2A_CONTROLLERS_OVERVIEW, "Building Blocks: controller overview + top 5 deep dive"),
                 ],
-                ["arc42/05-part2-controllers.md"],
+                ["arc42/05-part2a-controllers-overview.md"],
+            ),
+            (
+                "building-blocks-controllers-inventory",
+                [
+                    (CH05_PART2B_CONTROLLERS_INVENTORY, "Building Blocks: complete controller inventory table"),
+                ],
+                ["arc42/05-part2b-controllers-inventory.md"],
             ),
             (
                 "building-blocks-services",

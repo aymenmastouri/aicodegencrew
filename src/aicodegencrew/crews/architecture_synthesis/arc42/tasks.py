@@ -217,35 +217,62 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 """
 )
 
-CH05_PART2_CONTROLLERS = (
+CH05_PART2A_CONTROLLERS_OVERVIEW = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 5 PART 2: Presentation Layer / Controllers.
+Create arc42 Chapter 5 Part 2A: Controller Layer Overview and Top 5 Deep Dive.
 
 ## REQUIRED SECTIONS (do NOT skip any):
 ### 5.3.1 Layer Overview
 - Controller layer responsibilities and patterns
-### 5.3.2 Controller Inventory
-- COMPLETE table of ALL controllers: | # | Controller | Package | Endpoints | Description |
-### 5.3.3 API Patterns
+- Request lifecycle (HTTP → Controller → Service → Repository)
+### 5.3.2 API Patterns
 - REST conventions, URL naming, HTTP methods, response formats
-### 5.3.4 Key Controllers Deep Dive — TOP 5
-- For EACH: All endpoints, operations, delegation to services, validation, security
+- Common annotations used (@RestController, @RequestMapping, etc.)
+### 5.3.3 Key Controllers Deep Dive — TOP 5 most important
+- For EACH of the 5: endpoints listed, delegation to services, validation, security
 
 ## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="controller") -> get ALL controllers
-2. get_endpoints() -> get ALL REST API endpoints
-3. get_statistics() -> get component counts
-4. query_architecture_facts(category="relations") -> get controller dependencies
-5. rag_query(query="REST controller endpoint mapping") -> API patterns
-6. doc_writer(file_path="arc42/05-part2-controllers.md", content="## 5.3 Presentation Layer\\n...")
-7. Respond: "File arc42/05-part2-controllers.md written successfully."
+1. list_components_by_stereotype(stereotype="controller") -> get controller names (use first 5 for deep dive)
+2. get_endpoints() -> get REST API endpoints
+3. rag_query(query="REST controller endpoint mapping RequestMapping") -> API patterns
+4. rag_query(query="controller validation security authentication") -> security details
+5. doc_writer(file_path="arc42/05-part2a-controllers-overview.md", content="## 5.3 Presentation Layer\\n...")
+6. Respond: "File arc42/05-part2a-controllers-overview.md written successfully."
 
 Summary data:
 {system_summary}
 
-Write to file: arc42/05-part2-controllers.md using doc_writer tool.
-Write 8-10 pages with REAL data. COMPLETE controller inventory. No placeholders.
+Write to file: arc42/05-part2a-controllers-overview.md using doc_writer tool.
+Write 4-5 pages with REAL data from tools. No placeholders.
+"""
+)
+
+CH05_PART2B_CONTROLLERS_INVENTORY = (
+    TOOL_INSTRUCTION
+    + """
+Create arc42 Chapter 5 Part 2B: Complete Controller Inventory Table.
+
+## REQUIRED SECTIONS (do NOT skip any):
+### 5.3.4 Complete Controller Inventory
+- Full table: | # | Controller | Package | Primary Responsibility |
+- List EVERY controller found — no truncation
+### 5.3.5 Endpoint Summary
+- Total endpoint count by HTTP method (GET/POST/PUT/DELETE/PATCH)
+- Most frequently used URL patterns
+
+## EXECUTION EXAMPLE (follow this pattern):
+1. list_components_by_stereotype(stereotype="controller") -> get ALL controllers for the table
+2. get_statistics() -> get total counts
+3. get_endpoints() -> count by HTTP method
+4. doc_writer(file_path="arc42/05-part2b-controllers-inventory.md", content="### 5.3.4 Complete Controller Inventory\\n...")
+5. Respond: "File arc42/05-part2b-controllers-inventory.md written successfully."
+
+Summary data:
+{system_summary}
+
+Write to file: arc42/05-part2b-controllers-inventory.md using doc_writer tool.
+Write 3-4 pages — focused on the inventory table only. No placeholders.
 """
 )
 

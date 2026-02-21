@@ -68,7 +68,8 @@ test.describe('Input Files', () => {
 
   test('should be reachable from sidenav', async ({ page }) => {
     await page.goto('/dashboard');
-    const navItem = page.locator('a[href="/inputs"]');
+    // Scope to mat-nav-list to avoid matching onboarding card link
+    const navItem = page.locator('mat-nav-list a[href="/inputs"]');
     await expect(navItem).toBeVisible();
     await navItem.click();
     await page.waitForURL('**/inputs');

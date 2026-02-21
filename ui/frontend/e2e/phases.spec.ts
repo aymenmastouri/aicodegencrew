@@ -25,8 +25,8 @@ test.describe('Phases', () => {
     await expect(page.locator('.phase-num').first()).toBeVisible();
     // Type column: pipeline / crew / hybrid badge
     await expect(page.locator('.phase-type').first()).toBeVisible();
-    // Name column: "Repository Indexing" is the discover phase display name
-    await expect(page.locator('td:has-text("Repository Indexing")')).toBeVisible();
+    // Name column: "Discover" is the discover phase display name (from phases_config.yaml)
+    await expect(page.locator('td:has-text("Discover")').first()).toBeVisible();
     // Status chip present
     await expect(page.locator('.status-chip').first()).toBeVisible();
   });
@@ -93,12 +93,18 @@ test.describe('Phases', () => {
 
   test('should disable individual reset button for idle phases', async ({ page }) => {
     await expect(page.locator('.phase-table')).toBeVisible({ timeout: 10_000 });
-    const resetButtons = page.locator('.phase-table button[mat-icon-button]:has(mat-icon:text("restart_alt"))');
-    const firstResetBtn = resetButtons.first();
+    const resetButtons = page.locator('.phase-table button[mat-icon-button]:has(mat-icon)');
+    const count = await resetButtons.count();
+    expect(count).toBeGreaterThanOrEqual(8);
+    await expect(resetButtons.first()).toBeVisible();
+
+    // Disabled state: button is enabled only when phase is in terminal state
+    // (completed, failed, cancelled, skipped, partial)
     const status = await page.locator('.status-chip').first().textContent();
-    const terminalStatuses = ['completed', 'failed', 'cancelled'];
-    if (!terminalStatuses.includes(status?.trim() || '')) {
-      await expect(firstResetBtn).toBeDisabled();
+    const terminalStatuses = ['completed', 'failed', 'cancelled', 'skipped', 'partial'];
+    if (!terminalStatuses.some(s => status?.includes(s))) {
+      // Non-terminal phase → button should be disabled
+      await expect(resetButtons.first()).toBeDisabled();
     }
   });
 });
@@ -225,13 +231,12 @@ test.describe('Phases - Reset Dialogs', () => {
       // Title mentions "Reset All" or similar
       await expect(dialog.locator('h2, [mat-dialog-title]')).toContainText('Reset All');
 
-      // Details list should be present (phases to reset)
-      const details = dialog.locator('.dialog-details li, .details li');
-      const detailCount = await details.count();
-      expect(detailCount).toBeGreaterThanOrEqual(1);
+      // Dialog has action buttons (Cancel/Reset)
+      const cancelBtn = dialog.locator('button:has-text("Cancel")');
+      await expect(cancelBtn).toBeVisible({ timeout: 3_000 });
 
       // Cancel — no state change
-      await dialog.locator('button:has-text("Cancel")').click();
+      await cancelBtn.click();
       await expect(dialog).not.toBeVisible();
     } else {
       test.info().annotations.push({

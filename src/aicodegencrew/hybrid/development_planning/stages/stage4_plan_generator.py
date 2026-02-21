@@ -51,11 +51,12 @@ class PlanGeneratorStage:
 
         MCPs provide tools automatically - no need to list them in prompts.
         CrewAI handles tool discovery and makes them available to the agent.
+        Falls back to no MCPs if network/connection issues prevent MCP startup.
         """
         mcps = get_phase4_mcps()
         llm = create_llm()
 
-        agent = Agent(
+        agent_kwargs = dict(
             role="Senior Software Architect & Development Planner",
             goal=(
                 "Create evidence-based implementation plans grounded in discovered "
@@ -81,7 +82,6 @@ class PlanGeneratorStage:
                 "   (migration guides, changelogs). Prefer the facts already provided."
             ),
             llm=llm,
-            mcps=mcps,
             allow_delegation=False,
             verbose=True,
             max_iter=15,
@@ -89,7 +89,19 @@ class PlanGeneratorStage:
             respect_context_window=True,
         )
 
-        logger.info(f"[Stage4] Created planning agent with {len(mcps)} MCPs")
+        # Try to create agent with MCPs; fall back to no MCPs on connection failure
+        if mcps:
+            try:
+                agent = Agent(**agent_kwargs, mcps=mcps)
+                logger.info(f"[Stage4] Created planning agent with {len(mcps)} MCPs")
+                return agent
+            except Exception as e:
+                logger.warning(
+                    f"[Stage4] MCP startup failed ({e}); retrying without MCPs"
+                )
+
+        agent = Agent(**agent_kwargs)
+        logger.info("[Stage4] Created planning agent without MCPs (fallback)")
         return agent
 
     def run(
@@ -605,11 +617,21 @@ Generate the plan now:"""
                 "technical_notes": task.technical_notes,
             }
 
+        # Coerce string values to dicts — on-prem LLM sometimes returns strings
+        # instead of dicts for structured fields (MEMORY.md item 13)
+        understanding_raw = plan_json.get("understanding") or {}
+        if isinstance(understanding_raw, str):
+            understanding_raw = {"summary": understanding_raw}
+
+        development_plan_raw = plan_json.get("development_plan") or {}
+        if isinstance(development_plan_raw, str):
+            development_plan_raw = {"raw": development_plan_raw}
+
         return ImplementationPlan(
             task_id=task.task_id,
             source_files=[task.source_file],
-            understanding=plan_json.get("understanding") or {},
-            development_plan=plan_json.get("development_plan") or {},
+            understanding=understanding_raw,
+            development_plan=development_plan_raw,
         )
 
     @staticmethod
