@@ -39,7 +39,7 @@ async function scrollThrough(page: Page, selector: string, fast = false) {
 
 test.describe('Demo Showcase', () => {
   test('Full app walkthrough', async ({ page }) => {
-    test.setTimeout(3_600_000); // 60 min
+    test.setTimeout(7_200_000); // 2h
 
     // ════════════════════════════════════════════════
     // PROLOGUE: RESET EVERYTHING — clean slate
@@ -80,14 +80,46 @@ test.describe('Demo Showcase', () => {
     // ════════════════════════════════════════════════
 
     // ── 1. DASHBOARD — all phases pending ──
+    // Clear onboarding-dismissed flag so the "Getting Started" card is visible
+    await page.evaluate(() => localStorage.removeItem('onboarding_dismissed'));
     await page.goto('/dashboard');
     await expect(page.locator('.hero')).toBeVisible({ timeout: 15_000 });
+
+    // Slow down on hero so first-time viewers can read "AI-Powered Development Lifecycle Automation"
+    await pause(page, READ_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, 300));
+    await pause(page, LONG_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, 0));
     await pause(page, LONG_PAUSE);
 
-    // Phase grid — 8 cards, all should be pending/planned
+    // ── GETTING STARTED card — 4 setup steps for first-time viewers ──
+    // Shows: Configure repository → Configure LLM → Upload task files → Run first pipeline
+    const onboardingCard = page.locator('.onboarding-card');
+    if (await onboardingCard.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await onboardingCard.scrollIntoViewIfNeeded();
+      await pause(page, READ_PAUSE);
+      // Scroll slowly through all 4 steps
+      const steps = onboardingCard.locator('.onboarding-step');
+      const stepCount = await steps.count();
+      for (let s = 0; s < stepCount; s++) {
+        await steps.nth(s).scrollIntoViewIfNeeded();
+        await pause(page, PAUSE);
+      }
+      await pause(page, LONG_PAUSE);
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await pause(page);
+    }
+
+    // Phase grid — 8 cards, all should be pending/idle (clean slate)
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('.phase-card')).toHaveCount(8);
+    // Scroll slowly through the phase cards so audience sees all 8 phases
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+    await pause(page, LONG_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await pause(page, READ_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await pause(page);
 
     // Quick actions
     await expect(page.locator('.action-card').first()).toBeVisible();
@@ -104,11 +136,14 @@ test.describe('Demo Showcase', () => {
     await expect(navItems).toHaveCount(12);
     await pause(page, LONG_PAUSE);
 
-    // ── 3. KNOWLEDGE — empty state ──
+    // ── 3. KNOWLEDGE — empty state (emphasise: nothing here YET) ──
     await navigateTo(page, 'Knowledge', '/knowledge');
     const kbEmpty = page.locator('.empty-state');
     const kbStats = page.locator('.stats-bar');
     await expect(kbEmpty.or(kbStats).first()).toBeVisible({ timeout: 10_000 });
+    // Pause long enough for the audience to register: knowledge base is empty right now.
+    // After the pipeline run this page will be filled with AI-generated documentation.
+    await pause(page, READ_PAUSE);
     await pause(page, LONG_PAUSE);
 
     // ── 4. REPORTS — empty state ──
@@ -219,9 +254,17 @@ test.describe('Demo Showcase', () => {
     await collectorTable.evaluate((el) => el.scrollTo(0, 0));
     await pause(page);
 
-    // ── 8. PHASES — 8 phases + presets ──
+    // ── 8. PHASES — 8 phases + types (pipeline/crew/hybrid) + presets ──
     await navigateTo(page, 'Phases', '/phases');
     await expect(page.locator('.phase-table')).toBeVisible({ timeout: 10_000 });
+    // Pause so viewers can read the phase table (type badges: pipeline / crew / hybrid)
+    await pause(page, READ_PAUSE);
+    // Scroll slowly through the full table
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+    await pause(page, LONG_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await pause(page, LONG_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, 0));
     await pause(page, LONG_PAUSE);
 
     // Expand all presets to show them
@@ -348,6 +391,27 @@ test.describe('Demo Showcase', () => {
       await pause(page, LONG_PAUSE);
     }
 
+    // ── LIVE DASHBOARD: navigate there to show phases switching to "running" / "completed" ──
+    // This is the most visually impressive moment for first-time viewers.
+    await navigateTo(page, 'Dashboard', '/dashboard');
+    await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
+    await pause(page, READ_PAUSE);
+    // Scroll through phase cards to show live status
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+    await pause(page, LONG_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await pause(page, LONG_PAUSE);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await pause(page, LONG_PAUSE);
+    // Wait up to 20s for at least one phase to show "running" or "completed" on the grid
+    // Dashboard uses class="phase-card phase-{status}" pattern
+    const livePhase = page.locator('.phase-card.phase-running, .phase-card.phase-completed');
+    await livePhase.first().isVisible({ timeout: 20_000 }).catch(() => {});
+    await pause(page, READ_PAUSE);
+    // Navigate back to Run Pipeline to monitor the log stream
+    await navigateTo(page, 'Run Pipeline', '/run');
+    await pause(page, LONG_PAUSE);
+
     // Live log stream
     const logViewport = page.locator('.log-viewport');
     const hasLogs = await logViewport.isVisible({ timeout: 20_000 }).catch(() => false);
@@ -367,24 +431,27 @@ test.describe('Demo Showcase', () => {
       await pause(page, LONG_PAUSE);
     }
 
-    // WAIT FOR COMPLETION (up to 60 min, poll every 30s with log scroll)
-    const completed = page.locator('.status-card.state-completed');
-    const failed = page.locator('.status-card.state-failed');
-    const maxWaitMs = 3_600_000;
+    // WAIT FOR COMPLETION — poll backend API directly (survives page navigation)
+    const maxWaitMs = 7_200_000; // 2h
     const pollMs = 30_000;
     const startTime = Date.now();
     let pipelineDone = false;
 
     while (Date.now() - startTime < maxWaitMs) {
-      const isDone =
-        (await completed.isVisible().catch(() => false)) ||
-        (await failed.isVisible().catch(() => false));
-      if (isDone) {
-        pipelineDone = true;
-        break;
+      // Check pipeline state via API — reliable regardless of which page is shown
+      const resp = await page.request.get('http://localhost:4200/api/pipeline/status').catch(() => null);
+      if (resp && resp.ok()) {
+        const data = await resp.json().catch(() => ({}));
+        const terminalStates = ['completed', 'failed', 'cancelled'];
+        if (terminalStates.includes(data.state)) {
+          pipelineDone = data.state === 'completed';
+          break;
+        }
       }
-      if (hasLogs) {
-        await logViewport.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+      // Also scroll log if still visible
+      const lv = page.locator('.log-viewport');
+      if (await lv.isVisible().catch(() => false)) {
+        await lv.evaluate((el) => el.scrollTo(0, el.scrollHeight));
       }
       await pause(page, pollMs);
     }
@@ -399,9 +466,10 @@ test.describe('Demo Showcase', () => {
       await pause(page, READ_PAUSE);
     }
 
-    // Final log scroll
-    if (hasLogs) {
-      await logViewport.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+    // Final log scroll — use a fresh locator (navigated away and back, old ref is stale)
+    const freshLogViewport = page.locator('.log-viewport');
+    if (await freshLogViewport.isVisible().catch(() => false)) {
+      await freshLogViewport.evaluate((el) => el.scrollTo(0, el.scrollHeight));
       await pause(page, LONG_PAUSE);
     }
 
@@ -436,8 +504,8 @@ test.describe('Demo Showcase', () => {
 
         const docRows = page.locator('.doc-row');
         const docCount = await docRows.count();
-        // Open ALL documents in this group (no cap)
-        for (let d = 0; d < docCount; d++) {
+        // Open max 4 documents per group (enough to demonstrate, keeps demo length sane)
+        for (let d = 0; d < Math.min(docCount, 4); d++) {
           await docRows.nth(d).click();
           const viewer = page.locator('.viewer-panel');
           if (await viewer.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -497,7 +565,8 @@ test.describe('Demo Showcase', () => {
 
     // ── 11. REPORTS — all tabs, expand everything ──
     await navigateTo(page, 'Reports', '/reports');
-    await expect(page.locator('mat-tab-group')).toBeVisible({ timeout: 10_000 });
+    // After a long pipeline run, the backend reads 30+ files — give it 30s
+    await expect(page.locator('mat-tab-group')).toBeVisible({ timeout: 30_000 });
     await pause(page, LONG_PAUSE);
 
     // Architecture tab — expand doc groups, preview ALL files
@@ -514,8 +583,8 @@ test.describe('Demo Showcase', () => {
 
         const docFileCards = page.locator('.doc-group-files:visible .doc-file-card');
         const cardCount = await docFileCards.count();
-        // Show EVERY document in each group (no cap)
-        for (let i = 0; i < cardCount; i++) {
+        // Show max 4 documents per group (representative sample)
+        for (let i = 0; i < Math.min(cardCount, 4); i++) {
           await docFileCards.nth(i).click();
           const preview = page.locator('.doc-preview').first();
           if (await preview.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -539,8 +608,8 @@ test.describe('Demo Showcase', () => {
 
       const planPanels = page.locator('mat-expansion-panel');
       const planCount = await planPanels.count();
-      // Show ALL plans — no cap
-      for (let i = 0; i < planCount; i++) {
+      // Show max 3 plans (representative sample)
+      for (let i = 0; i < Math.min(planCount, 3); i++) {
         const header = planPanels.nth(i).locator('mat-expansion-panel-header');
         if (await header.isVisible().catch(() => false)) {
           await header.click();
@@ -607,39 +676,44 @@ test.describe('Demo Showcase', () => {
     // ACT 6: FINALE — HISTORY → LOGS → METRICS
     // ════════════════════════════════════════════════
 
-    // ── 12. HISTORY — show the completed run with all details ──
+    // ── 12. HISTORY — show the completed run with ALL phase details ──
     await navigateTo(page, 'History', '/history');
-    const filterBar = page.locator('.filter-bar');
-    await expect(filterBar).toBeVisible();
+    const filterBar = page.locator('.filter-bar, .history-filters');
+    await expect(filterBar.first()).toBeVisible({ timeout: 10_000 });
     await pause(page, LONG_PAUSE);
 
+    // Wait for history table to load
     await page.waitForTimeout(2000);
-    const historyContent = page.locator('.history-table, .empty-state');
-    if (await historyContent.first().isVisible().catch(() => false)) {
+    const historyContent = page.locator('.history-table, .run-card, .run-row, .empty-state');
+    if (await historyContent.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
       await pause(page, LONG_PAUSE);
     }
 
-    // Cycle filter chips (status filters)
-    const filterChips = page.locator('.filter-chip');
-    const chipFilterCount = await filterChips.count();
-    for (let i = 0; i < chipFilterCount; i++) {
-      await filterChips.nth(i).click();
-      await pause(page);
-    }
-
-    // Expand the first run entry to show phase details
-    const historyRows = page.locator('.history-row, .run-row');
+    // Expand the first (most recent) run entry
+    const historyRows = page.locator('.table-row');
     if ((await historyRows.count()) > 0) {
       await historyRows.first().click();
       await pause(page, READ_PAUSE);
 
-      // Scroll through run details
-      const runDetail = page.locator('.run-detail, .history-detail');
-      if (await runDetail.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
-        await runDetail.first().evaluate((el) => el.scrollTo(0, el.scrollHeight / 2));
+      // Scroll slowly through ALL phase details in the detail-panel
+      const detailPanel = page.locator('.detail-panel');
+      if (await detailPanel.isVisible({ timeout: 5_000 }).catch(() => false)) {
+        await detailPanel.evaluate((el) => el.scrollTo(0, 0));
         await pause(page, LONG_PAUSE);
-        await runDetail.first().evaluate((el) => el.scrollTo(0, el.scrollHeight));
+        await detailPanel.evaluate((el) => el.scrollTo(0, el.scrollHeight / 3));
         await pause(page, LONG_PAUSE);
+        await detailPanel.evaluate((el) => el.scrollTo(0, (el.scrollHeight * 2) / 3));
+        await pause(page, LONG_PAUSE);
+        await detailPanel.evaluate((el) => el.scrollTo(0, el.scrollHeight));
+        await pause(page, READ_PAUSE);
+      } else {
+        // Fallback: scroll the page
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
+        await pause(page, LONG_PAUSE);
+        await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+        await pause(page, READ_PAUSE);
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await pause(page);
       }
     }
 
@@ -685,34 +759,6 @@ test.describe('Demo Showcase', () => {
       await metricsTable.evaluate((el) => el.scrollTo(0, el.scrollHeight));
       await pause(page, LONG_PAUSE);
     }
-
-    // ════════════════════════════════════════════════
-    // ACT 7: RESPONSIVE DESIGN
-    // ════════════════════════════════════════════════
-    await navigateTo(page, 'Dashboard', '/dashboard');
-
-    // Desktop full
-    await page.setViewportSize({ width: 1500, height: 900 });
-    await pause(page, LONG_PAUSE);
-
-    // Tablet rail
-    await page.setViewportSize({ width: 1200, height: 900 });
-    await pause(page, LONG_PAUSE);
-
-    // Mobile overlay
-    await page.setViewportSize({ width: 900, height: 900 });
-    await pause(page, LONG_PAUSE);
-
-    // Open overlay sidenav
-    const menuBtn = page.locator('mat-toolbar button[mat-icon-button]');
-    if (await menuBtn.isVisible().catch(() => false)) {
-      await menuBtn.click();
-      await pause(page, LONG_PAUSE);
-    }
-
-    // Back to desktop
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    await pause(page, LONG_PAUSE);
 
     // ════════════════════════════════════════════════
     // EPILOGUE: CLEANUP — delete inputs + reset all

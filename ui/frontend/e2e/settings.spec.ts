@@ -12,6 +12,8 @@ test.describe('Settings', () => {
   });
 
   test('should render at least 4 tabs including Phases', async ({ page }) => {
+    // Wait for tabs to render (settings loads config async before showing tabs)
+    await expect(page.locator('.mat-mdc-tab').first()).toBeVisible({ timeout: 10_000 });
     const tabs = page.locator('.mat-mdc-tab');
     const count = await tabs.count();
     expect(count).toBeGreaterThanOrEqual(4);
@@ -33,7 +35,8 @@ test.describe('Settings', () => {
 
   test('should switch to LLM tab', async ({ page }) => {
     await page.locator('.mat-mdc-tab:has-text("LLM")').click();
-    await expect(page.locator('.tab-description')).toContainText('Language model');
+    // Multiple .tab-description elements exist in DOM (one per tab) — filter to the LLM one
+    await expect(page.locator('.tab-description').filter({ hasText: 'Language model' })).toContainText('Language model');
   });
 
   test('should switch to Phases tab and show phase toggles', async ({ page }) => {
@@ -43,7 +46,8 @@ test.describe('Settings', () => {
 
   test('should be reachable from sidenav', async ({ page }) => {
     await page.goto('/dashboard');
-    const navItem = page.locator('a[href="/settings"]');
+    // Scope to mat-nav-list to avoid matching other Settings links on the page
+    const navItem = page.locator('mat-nav-list a[href="/settings"]');
     await expect(navItem).toBeVisible();
     await navItem.click();
     await page.waitForURL('**/settings');
@@ -65,7 +69,8 @@ test.describe('Settings - Phases Tab', () => {
   });
 
   test('should show tab description mentioning phases enable/disable', async ({ page }) => {
-    await expect(page.locator('.tab-description'))
+    // Multiple .tab-description elements exist in DOM (one per tab) — filter to the Phases one
+    await expect(page.locator('.tab-description').filter({ hasText: 'Enable or disable pipeline phases' }))
       .toContainText('Enable or disable pipeline phases');
   });
 
@@ -97,20 +102,20 @@ test.describe('Settings - Phases Tab', () => {
   });
 
   test('should visually change toggle state when clicked', async ({ page }) => {
-    const firstToggle = page.locator('.phase-toggle-card mat-slide-toggle').first();
-    const toggleBtn = firstToggle.locator('button[role="switch"]');
+    // First 3 phases (discover, extract, analyze) are required and disabled — use index 3 (document)
+    const optionalToggle = page.locator('.phase-toggle-card mat-slide-toggle').nth(3);
+    const toggleBtn = optionalToggle.locator('button[role="switch"]');
     const initialState = await toggleBtn.getAttribute('aria-checked');
-    await firstToggle.click();
+    await optionalToggle.click();
     const newState = await toggleBtn.getAttribute('aria-checked');
     // State must have flipped (true→false or false→true)
     expect(newState).not.toBe(initialState);
   });
 
-  test('should NOT have a Save button in the Phases tab (display-only design)', async ({ page }) => {
-    // The Phases tab intentionally has no save action — toggles reflect config but
-    // do not persist changes. There is no .tab-actions block in this tab.
-    const saveBtn = page.locator('.tab-actions button:has-text("Save")');
-    await expect(saveBtn).toHaveCount(0);
+  test('should have a Save Phases button in the Phases tab', async ({ page }) => {
+    // The Phases tab has a "Save Phases" button (unique text avoids matching other tabs' "Save" buttons)
+    const saveBtn = page.locator('button:has-text("Save Phases")');
+    await expect(saveBtn).toBeVisible();
   });
 
   test('should show discover phase toggle card with correct ID', async ({ page }) => {
@@ -118,7 +123,7 @@ test.describe('Settings - Phases Tab', () => {
       has: page.locator('.phase-toggle-id:has-text("discover")'),
     });
     await expect(discoverCard).toBeVisible();
-    await expect(discoverCard.locator('.phase-toggle-name')).toContainText('Repository Indexing');
+    await expect(discoverCard.locator('.phase-toggle-name')).toContainText('Discover');
   });
 
   test('should show implement phase toggle card', async ({ page }) => {
@@ -154,20 +159,20 @@ test.describe('Settings - Phases Tab', () => {
   test('should toggle multiple phases independently', async ({ page }) => {
     const toggleBtns = page.locator('.phase-toggle-card mat-slide-toggle button[role="switch"]');
     const count = await toggleBtns.count();
-    expect(count).toBeGreaterThanOrEqual(2);
+    expect(count).toBeGreaterThanOrEqual(5);
 
-    // Record initial states of first two toggles
-    const state0Before = await toggleBtns.nth(0).getAttribute('aria-checked');
-    const state1Before = await toggleBtns.nth(1).getAttribute('aria-checked');
+    // First 3 phases (discover, extract, analyze) are required/disabled — use indices 3 and 4
+    const state3Before = await toggleBtns.nth(3).getAttribute('aria-checked');
+    const state4Before = await toggleBtns.nth(4).getAttribute('aria-checked');
 
-    // Toggle only the first one
-    await page.locator('.phase-toggle-card mat-slide-toggle').first().click();
+    // Toggle only index 3 (document phase)
+    await page.locator('.phase-toggle-card mat-slide-toggle').nth(3).click();
 
-    const state0After = await toggleBtns.nth(0).getAttribute('aria-checked');
-    const state1After = await toggleBtns.nth(1).getAttribute('aria-checked');
+    const state3After = await toggleBtns.nth(3).getAttribute('aria-checked');
+    const state4After = await toggleBtns.nth(4).getAttribute('aria-checked');
 
-    // First should have flipped, second should remain unchanged
-    expect(state0After).not.toBe(state0Before);
-    expect(state1After).toBe(state1Before);
+    // Index 3 should have flipped, index 4 should remain unchanged
+    expect(state3After).not.toBe(state3Before);
+    expect(state4After).toBe(state4Before);
   });
 });

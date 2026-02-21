@@ -7,7 +7,7 @@ test.describe('Metrics', () => {
 
   test('should render page title with icon', async ({ page }) => {
     await expect(page.locator('.page-title')).toContainText('Metrics');
-    await expect(page.locator('.page-title mat-icon')).toBeVisible();
+    await expect(page.locator('.page-icon')).toBeVisible();
   });
 
   test('should show stats bar or empty state', async ({ page }) => {
@@ -35,9 +35,10 @@ test.describe('Metrics', () => {
   });
 
   test('should display metrics table when data exists', async ({ page }) => {
-    const table = page.locator('.metrics-table');
-    const emptyState = page.locator('.empty-state');
-    const either = page.locator('.metrics-table, .empty-state');
-    await expect(either.first()).toBeVisible({ timeout: 10_000 });
+    // Wait for stats bar first (loads quickly), then for table or empty state
+    await expect(page.locator('.stats-bar')).toBeVisible({ timeout: 10_000 });
+    const either = page.locator('.metrics-table, .empty-inline, .empty-state');
+    // Give extra time for events to load from backend
+    await expect(either.first()).toBeVisible({ timeout: 20_000 });
   });
 });

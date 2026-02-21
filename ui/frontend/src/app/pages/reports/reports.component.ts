@@ -1877,17 +1877,22 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   /** Parse component ID strings into structured objects */
-  parseComponents(ids: string[]): ParsedComponent[] {
-    if (!ids?.length) return [];
-    return ids.map((id) => {
+  parseComponents(items: (string | Record<string, unknown>)[]): ParsedComponent[] {
+    if (!items?.length) return [];
+    return items.map((item) => {
+      // Accept either a plain id string or a full ComponentMatch object {id, name, ...}
+      const id = typeof item === 'string' ? item : String((item as Record<string, unknown>)['id'] ?? '');
+      const displayName = typeof item !== 'string' && (item as Record<string, unknown>)['name']
+        ? String((item as Record<string, unknown>)['name'])
+        : null;
       // "component.frontend.core.app_module" -> container=frontend, package=core, name=app_module
       const parts = id.replace(/^component\./, '').split('.');
       const container = parts[0] || '';
-      const name = parts[parts.length - 1] || id;
+      const rawName = parts[parts.length - 1] || id;
       const pkg = parts.length > 2 ? parts.slice(1, -1).join('.') : '';
       return {
         id,
-        name: name.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        name: displayName ?? rawName.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
         container,
         package: pkg,
       };

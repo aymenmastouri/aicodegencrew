@@ -48,7 +48,7 @@ export default defineConfig({
     {
       name: 'demo',
       retries: 0,
-      timeout: 3_600_000,
+      timeout: 7_200_000,
       use: {
         browserName: 'chromium',
         viewport: { width: 1920, height: 1080 },

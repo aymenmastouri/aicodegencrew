@@ -21,25 +21,25 @@ test.describe('Full Pipeline Flow', () => {
     await page.goto('/dashboard');
     const hero = page.locator('.hero');
     await expect(hero).toBeVisible();
-    await expect(hero).toContainText('AICodeGenCrew');
+    await expect(hero).toContainText('SDLC');
 
-    // Backend health pill should show "ok"
+    // Backend health pill should be visible (status shown via CSS class, not text)
     const healthPill = page.locator('.stat-pill:has-text("Backend")');
     await expect(healthPill).toBeVisible({ timeout: 15_000 });
-    await expect(healthPill).toContainText('ok');
+    await expect(healthPill).toHaveClass(/stat-ok/, { timeout: 5_000 });
   });
 
   // ── 2. Sidenav has all pages ─────────────────────────────
 
-  test('2 - Sidenav shows all 8 navigation items', async ({ page }) => {
+  test('2 - Sidenav shows all 12 navigation items', async ({ page }) => {
     await page.goto('/dashboard');
     const navItems = page.locator('mat-nav-list a[mat-list-item]');
-    await expect(navItems).toHaveCount(8);
+    await expect(navItems).toHaveCount(12);
 
-    // Verify key pages exist
-    await expect(page.locator('a[href="/inputs"]')).toBeVisible();
-    await expect(page.locator('a[href="/run"]')).toBeVisible();
-    await expect(page.locator('a[href="/knowledge"]')).toBeVisible();
+    // Verify key pages exist — scope to mat-nav-list to avoid onboarding card links
+    await expect(page.locator('mat-nav-list a[href="/inputs"]')).toBeVisible();
+    await expect(page.locator('mat-nav-list a[href="/run"]')).toBeVisible();
+    await expect(page.locator('mat-nav-list a[href="/knowledge"]')).toBeVisible();
   });
 
   // ── 3. Input Files page ──────────────────────────────────
@@ -121,20 +121,21 @@ test.describe('Full Pipeline Flow', () => {
 
   // ── 4. Run Pipeline page ─────────────────────────────────
 
-  test('7 - Run Pipeline shows input file summary', async ({ page }) => {
+  test('7 - Run Pipeline shows Input Files section in Advanced Options', async ({ page }) => {
     await page.goto('/run');
-    const inputCard = page.locator('.input-summary-card');
-    await expect(inputCard).toBeVisible({ timeout: 10_000 });
-    await expect(inputCard).toContainText('Input Files');
+    // Input Files summary is inside the Advanced Options expansion panel
+    await page.locator('mat-expansion-panel-header:has-text("Advanced Options")').click();
+    await expect(page.locator('.advanced-section-title:has-text("Input Files")').first()).toBeVisible({ timeout: 10_000 });
 
     // Should have a Manage Files link
-    const manageBtn = page.locator('a:has-text("Manage Files")');
+    const manageBtn = page.locator('a.manage-btn:has-text("Manage Files")');
     await expect(manageBtn).toBeVisible();
   });
 
   test('8 - Run Pipeline Manage Files link navigates to inputs', async ({ page }) => {
     await page.goto('/run');
-    const manageBtn = page.locator('a:has-text("Manage Files")');
+    await page.locator('mat-expansion-panel-header:has-text("Advanced Options")').click();
+    const manageBtn = page.locator('a.manage-btn:has-text("Manage Files")');
     await expect(manageBtn).toBeVisible({ timeout: 10_000 });
     await manageBtn.click();
     await page.waitForURL('**/inputs');
@@ -161,21 +162,26 @@ test.describe('Full Pipeline Flow', () => {
 
   test('10 - Run Pipeline custom phases: can select and deselect', async ({ page }) => {
     await page.goto('/run');
+    // Wait for config card before switching tabs
+    await expect(page.locator('.config-card')).toBeVisible({ timeout: 10_000 });
     // Switch to custom phases tab
     await page.locator('.mat-mdc-tab').nth(1).click();
-    const checkboxes = page.locator('mat-checkbox');
+
+    // Wait for phase checkboxes to render
+    const checkboxes = page.locator('.phase-checkboxes mat-checkbox');
     await expect(checkboxes.first()).toBeVisible({ timeout: 5_000 });
 
-    // Select Phase 1 (Facts - no indexing)
-    const phase1 = page.locator('mat-checkbox:has-text("Facts")');
-    await phase1.click();
+    // Click the label — visible & properly routed through Angular Material's change detection
+    const phase1Label = checkboxes.first().locator('label');
 
+    // Select first phase
+    await phase1Label.click();
     const runButton = page.locator('button:has-text("Run Pipeline")').first();
     await expect(runButton).toBeEnabled({ timeout: 3_000 });
 
     // Deselect
-    await phase1.click();
-    await expect(runButton).toBeDisabled({ timeout: 3_000 });
+    await phase1Label.click();
+    await expect(runButton).toBeDisabled({ timeout: 5_000 });
   });
 
   // ── 5. Explore pages load ────────────────────────────────
@@ -207,17 +213,22 @@ test.describe('Full Pipeline Flow', () => {
     await expect(page.locator('.page-title')).toContainText('Logs');
   });
 
-  // ── 7. Environment Configuration ─────────────────────────
+  // ── 7. Advanced Options panel ─────────────────────────────
 
-  test('16 - Run Pipeline env config panel expands and shows fields', async ({ page }) => {
+  test('16 - Run Pipeline Advanced Options panel expands and shows sections', async ({ page }) => {
     await page.goto('/run');
-    const header = page.locator('mat-expansion-panel-header:has-text("Environment Configuration")');
+    const header = page.locator('mat-expansion-panel-header:has-text("Advanced Options")');
     await expect(header).toBeVisible({ timeout: 10_000 });
     await header.click();
 
-    // Should show grouped env fields
-    await expect(page.locator('.env-fields').first()).toBeVisible({ timeout: 5_000 });
-    await expect(page.locator('.env-group-title').first()).toBeVisible();
+    // Input Files section is always present
+    await expect(page.locator('.advanced-section-title:has-text("Input Files")').first()).toBeVisible({ timeout: 5_000 });
+
+    // Environment Overrides section is conditional on env groups being configured
+    const envFields = page.locator('.env-fields').first();
+    if (await envFields.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await expect(page.locator('.env-group-title').first()).toBeVisible();
+    }
   });
 
   // ── 8. Full run (skip indexing unless opted in) ──────────
@@ -261,18 +272,21 @@ test.describe('Full Pipeline Flow', () => {
     await page.goto('/dashboard');
     await expect(page.locator('.hero')).toBeVisible();
 
-    // Navigate to Input Files via sidenav
-    await page.locator('a[href="/inputs"]').click();
+    // Navigate to Input Files via sidenav — scope to mat-nav-list to avoid onboarding card links
+    await page.locator('mat-nav-list a[href="/inputs"]').click();
     await page.waitForURL('**/inputs');
     await expect(page.locator('.category-card')).toHaveCount(4, { timeout: 10_000 });
 
     // Navigate to Run Pipeline via sidenav
     await page.locator('a[href="/run"]').click();
     await page.waitForURL('**/run');
-    await expect(page.locator('.input-summary-card')).toBeVisible({ timeout: 10_000 });
+
+    // Expand Advanced Options to access Input Files and Manage Files link
+    await page.locator('mat-expansion-panel-header:has-text("Advanced Options")').click();
+    await expect(page.locator('.advanced-section-title:has-text("Input Files")').first()).toBeVisible({ timeout: 10_000 });
 
     // Click "Manage Files" to go back to inputs
-    await page.locator('a:has-text("Manage Files")').click();
+    await page.locator('a.manage-btn:has-text("Manage Files")').click();
     await page.waitForURL('**/inputs');
 
     // Navigate to Knowledge

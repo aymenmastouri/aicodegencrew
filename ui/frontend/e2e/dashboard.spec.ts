@@ -29,10 +29,10 @@ test.describe('Dashboard', () => {
     await expect(phaseCards).toHaveCount(8);
   });
 
-  test('should show phase index numbers 0-7', async ({ page }) => {
+  test('should show phase index numbers 1-8', async ({ page }) => {
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
     for (let i = 0; i < 8; i++) {
-      await expect(page.locator('.phase-index').nth(i)).toContainText(String(i));
+      await expect(page.locator('.phase-index').nth(i)).toContainText(String(i + 1));
     }
   });
 
@@ -102,13 +102,13 @@ test.describe('Dashboard', () => {
     }
   });
 
-  test('should show reset mini-buttons on completed phase cards', async ({ page }) => {
+  test('should show reset buttons on completed phase cards', async ({ page }) => {
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
     const completedCards = page.locator('.phase-completed');
     const count = await completedCards.count();
     if (count > 0) {
-      // Each completed card should have a reset mini-button
-      const resetBtns = page.locator('.phase-completed .reset-mini');
+      // Each completed card should have a reset button (.reset-btn)
+      const resetBtns = page.locator('.phase-completed .reset-btn');
       await expect(resetBtns).toHaveCount(count);
     }
   });

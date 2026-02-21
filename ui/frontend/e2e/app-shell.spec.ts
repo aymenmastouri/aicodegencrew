@@ -25,7 +25,7 @@ test.describe('App Shell', () => {
   });
 
   test('should show version badge in sidenav footer', async ({ page }) => {
-    await expect(page.locator('.footer-version')).toContainText('v0.5.0');
+    await expect(page.locator('.footer-version')).toContainText('v0.6.2');
   });
 
   test('should highlight active nav item', async ({ page }) => {
