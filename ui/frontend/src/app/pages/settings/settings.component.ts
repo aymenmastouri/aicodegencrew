@@ -49,6 +49,7 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
   ],
   INDEX_MODE: [
     { label: 'Auto', value: 'auto' },
+    { label: 'Smart', value: 'smart' },
     { label: 'Force', value: 'force' },
     { label: 'Off', value: 'off' },
   ],

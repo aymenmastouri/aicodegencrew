@@ -1,6 +1,6 @@
 [project]
 name = "aicodegencrew"
-version = "1.0.0"
+version = "0.7.0"
 description = "AI-powered SDLC automation platform — from architecture analysis to code generation"
 authors = [{ name = "Aymen Mastouri", email = "aymen.mastouri@icloud.com" }]
 requires-python = ">=3.10,<3.13"
@@ -8,7 +8,7 @@ readme = "README.md"
 license = { text = "Proprietary" }
 keywords = ["ai", "sdlc", "code-generation", "architecture", "rag", "automation"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3.10",

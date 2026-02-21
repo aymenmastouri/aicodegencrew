@@ -6,9 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
-## [1.0.0] - 2026-02-21
+## [0.7.0] - 2026-02-21
 
-First stable production release. All 8 SDLC phases are implemented, tested, and observable.
+Phase 7 (deliver) complete. All 8 SDLC phases implemented and tested. 781 tests pass (0 failures).
+Major reliability and observability improvements via CrewAI advanced features.
 781 tests pass (0 failures). The pipeline runs fully on-premises without any cloud dependency.
 
 ### Added
@@ -93,7 +94,6 @@ First stable production release. All 8 SDLC phases are implemented, tested, and 
 
 ### Changed
 
-- `pyproject.toml`: `Development Status :: 4 - Beta` → `5 - Production/Stable`
 - `phases_config.yaml`: `verify` and `deliver` phases enabled by default
 
 ---
