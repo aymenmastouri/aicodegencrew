@@ -20,7 +20,9 @@ from crewai.tools import BaseTool
 
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
+from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import logger
+from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 
 
 class ContainerFactsTool(BaseTool):
@@ -126,6 +128,7 @@ class ContainerAnalysisCrew:
             role="Technical Architect",
             goal=f"Analyze technical architecture of container '{self.container_name}'",
             backstory="Expert in software architecture patterns and enterprise systems across any technology stack.",
+            llm=create_llm(),
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
@@ -137,6 +140,7 @@ class ContainerAnalysisCrew:
             role="Functional Analyst",
             goal=f"Analyze domain and capabilities of container '{self.container_name}'",
             backstory="Expert in domain-driven design, business capabilities, and functional decomposition.",
+            llm=create_llm(),
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
@@ -148,6 +152,7 @@ class ContainerAnalysisCrew:
             role="Quality Analyst",
             goal=f"Assess architecture quality of container '{self.container_name}'",
             backstory="Expert in software quality, code metrics, technical debt, and architecture anti-patterns.",
+            llm=create_llm(),
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
@@ -159,6 +164,7 @@ class ContainerAnalysisCrew:
             role="Synthesis Lead",
             goal=f"Merge all analyses for container '{self.container_name}' into unified result",
             backstory="Senior architect who synthesizes technical, functional, and quality perspectives.",
+            llm=create_llm(),
             verbose=False,
             allow_delegation=False,
             inject_date=True,
@@ -262,13 +268,17 @@ Create final container analysis JSON:
             tasks=[tech_task, func_task, quality_task, synthesis_task],
             process=Process.sequential,
             verbose=False,
+            memory=False,
+            max_rpm=30,
             step_callback=step_callback,
             task_callback=task_callback,
             output_log_file=str(log_dir / f"container_{self.container_name}.json"),
             embedder=get_crew_embedder(),
         )
 
+        tracker = None
         try:
+            tracker = install_guardrails()
             crew.kickoff()
 
             # Parse synthesis result
@@ -314,6 +324,9 @@ Create final container analysis JSON:
             logger.error(f"[ContainerCrew] {self.container_name} failed: {e}")
             return self._fallback_analysis()
 
+        finally:
+            uninstall_guardrails(tracker)
+
     def _empty_analysis(self) -> dict[str, Any]:
         """Return empty analysis for containers with no components."""
         return {
@@ -343,17 +356,15 @@ Create final container analysis JSON:
             counts[stereo] = counts.get(stereo, 0) + 1
         return counts
 
-    def _parse_json_output(self, text: str) -> dict[str, Any]:
-        """Extract JSON from agent output."""
+    @staticmethod
+    def _parse_json_output(text: str) -> dict[str, Any]:
+        """Extract JSON from agent output using robust repair logic."""
+        from .crew import ArchitectureAnalysisCrew
+
         try:
-            # Find JSON in output
-            start = text.find("{")
-            end = text.rfind("}") + 1
-            if start >= 0 and end > start:
-                return json.loads(text[start:end])
-        except Exception:
-            pass
-        return {}
+            return ArchitectureAnalysisCrew._extract_json_from_raw(text)
+        except (ValueError, Exception):
+            return {}
 
     def _fallback_analysis(self) -> dict[str, Any]:
         """Deterministic fallback if LLM fails."""
