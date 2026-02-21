@@ -176,20 +176,35 @@ def get_pipeline_status() -> PipelineStatus:
 
     Priority: state file (running/failed/completed) > output existence > config enabled.
     Backward compatible: no state file = old output-only behavior.
+
+    Dependency rule: a phase is only "ready" if ALL its dependencies have a
+    terminal-success status (completed, partial, skipped).  Otherwise it shows
+    as "planned" (not yet available).
     """
     contract = _load_contract()
     state_data = _read_phase_state()
     state_phases = state_data.get("phases", {})
 
+    # First pass: resolve raw status for every phase
+    raw: dict[str, str] = {}
+    phase_data: list[tuple] = []
+    for phase_id, definition in contract.phases.items():
+        output_exists = check_phase_output_exists(phase_id, settings.project_root)
+        state_entry = state_phases.get(phase_id)
+        status, duration, _error = _resolve_status(state_entry, output_exists, definition.enabled)
+        raw[phase_id] = status
+        phase_data.append((phase_id, definition, status, duration, state_entry, output_exists))
+
+    # Second pass: downgrade "ready" → "planned" when dependencies are not yet satisfied
+    _success = {PHASE_PROGRESS_COMPLETED, PHASE_PROGRESS_PARTIAL, PHASE_PROGRESS_SKIPPED}
     statuses = []
     any_running = False
 
-    for phase_id, definition in contract.phases.items():
-        output_exists = check_phase_output_exists(phase_id, settings.project_root)
-        enabled = definition.enabled
-        state_entry = state_phases.get(phase_id)
-
-        status, duration, _error = _resolve_status(state_entry, output_exists, enabled)
+    for phase_id, definition, status, duration, state_entry, output_exists in phase_data:
+        if status == PIPELINE_PHASE_READY and definition.dependencies:
+            deps_done = all(raw.get(dep) in _success for dep in definition.dependencies)
+            if not deps_done:
+                status = PIPELINE_PHASE_PLANNED
 
         if status == PHASE_PROGRESS_RUNNING:
             any_running = True
@@ -199,7 +214,7 @@ def get_pipeline_status() -> PipelineStatus:
                 id=phase_id,
                 name=definition.name,
                 status=status,
-                enabled=enabled,
+                enabled=definition.enabled,
                 output_exists=output_exists,
                 duration_seconds=duration,
                 last_run=state_entry.get("completed_at") if state_entry else None,
