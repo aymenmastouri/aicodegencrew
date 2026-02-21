@@ -9,7 +9,7 @@ from typing import Any
 
 from crewai import Agent
 
-from ...shared.utils.llm_factory import create_llm
+from ...shared.utils.llm_factory import create_codegen_llm, create_llm
 
 AGENT_CONFIGS = {
     "developer": {
@@ -35,7 +35,7 @@ AGENT_CONFIGS = {
             "You handle Java (Spring Boot), TypeScript/JavaScript, HTML, SCSS, and config files."
         ),
         "allow_delegation": False,
-        "llm_tier": "analysis",
+        "llm_tier": "codegen",
     },
 }
 
@@ -58,7 +58,7 @@ def create_agent(
         Configured CrewAI Agent.
     """
     cfg = AGENT_CONFIGS[agent_key]
-    llm = create_llm()
+    llm = create_codegen_llm() if cfg.get("llm_tier") == "codegen" else create_llm()
 
     return Agent(
         role=cfg["role"],

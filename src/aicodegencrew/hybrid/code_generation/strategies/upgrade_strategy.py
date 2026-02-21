@@ -9,7 +9,9 @@ Implements all 3 pipeline hooks for task_type="upgrade":
 from __future__ import annotations
 
 import json
+import platform
 import re
+import shlex
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -252,9 +254,14 @@ class UpgradeStrategy(TaskTypeStrategy):
         before_snapshot = self._snapshot_tree(repo_path)
 
         try:
+            # Build safe argument list — no shell=True to prevent injection
+            if platform.system() == "Windows":
+                cmd_args = ["cmd", "/d", "/s", "/c", command]
+            else:
+                cmd_args = shlex.split(command)
             result = subprocess.run(
-                command,
-                shell=True,
+                cmd_args,
+                shell=False,
                 cwd=repo_path,
                 capture_output=True,
                 timeout=SCHEMATIC_TIMEOUT,
@@ -300,14 +307,25 @@ class UpgradeStrategy(TaskTypeStrategy):
                 error=str(e),
             )
 
-    @staticmethod
-    def _validate_command(command: str) -> bool:
-        """Check if command starts with a whitelisted tool."""
-        parts = command.strip().split()
-        if not parts:
+    # Shell metacharacters that indicate injection or command chaining
+    _SHELL_METACHAR_RE = re.compile(r"[;&|`$\(\)\{\}<>!]")
+
+    @classmethod
+    def _validate_command(cls, command: str) -> bool:
+        """Check if command is safe to execute.
+
+        Validates:
+        1. Starts with a whitelisted tool
+        2. Contains no shell metacharacters (&&, ;, |, backticks, $(), etc.)
+        """
+        if not command or not command.strip():
             return False
+        # Block shell metacharacters to prevent injection
+        if cls._SHELL_METACHAR_RE.search(command):
+            logger.warning("[UpgradeStrategy] Blocked command with shell metacharacters: %s", command[:100])
+            return False
+        parts = command.strip().split()
         tool = parts[0].lower()
-        # Handle npx-prefixed commands (e.g., "npx ng update")
         return tool in SCHEMATIC_WHITELIST
 
     def _apply_config_changes(

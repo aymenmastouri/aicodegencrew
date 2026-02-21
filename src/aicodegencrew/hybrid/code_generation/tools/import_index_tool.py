@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from ....shared.utils.token_budget import truncate_response
 from ..preflight.import_index import ImportIndex, ImportIndexBuilder
@@ -31,7 +31,7 @@ class ImportIndexTool(BaseTool):
 
     repo_path: str = ""
     facts_path: str = "knowledge/extract/architecture_facts.json"
-    _index: ImportIndex | None = None
+    _index: ImportIndex | None = PrivateAttr(default=None)
 
     def __init__(
         self,
