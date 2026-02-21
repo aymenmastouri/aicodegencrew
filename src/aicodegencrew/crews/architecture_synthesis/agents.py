@@ -39,6 +39,7 @@ def build_c4_synthesizer(llm: LLM, tools=None) -> Agent:
             "Each diagram must tell a STORY about the system architecture that any stakeholder "
             "can understand within 5 minutes."
         ),
+        inject_date=True,
         backstory=(
             "You are a SENIOR SOFTWARE ARCHITECT with 20+ years of experience and a recognized "
             "expert in C4 modeling methodology created by Simon Brown. You have created C4 "
@@ -128,6 +129,7 @@ def build_arc42_synthesizer(llm: LLM, tools=None) -> Agent:
             "patterns, code structure). Your documentation must enable any architect to "
             "understand the system in 30 minutes."
         ),
+        inject_date=True,
         backstory=(
             "You are a SENIOR SOFTWARE ARCHITECT with 20+ years of experience in enterprise "
             "software architecture. You have reverse-engineered over 200 legacy systems and "
@@ -213,6 +215,7 @@ def build_synthesis_quality_gate(llm: LLM, tools=None) -> Agent:
             "Ensure the generated documentation meets professional standards. "
             "Reject any documentation that is too short, generic, or unhelpful."
         ),
+        inject_date=True,
         backstory=(
             "You are a strict quality reviewer who has seen too many useless "
             "architecture documents that just repeat what's obvious from code.\n\n"

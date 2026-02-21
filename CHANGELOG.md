@@ -6,6 +6,98 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [1.0.0] - 2026-02-21
+
+First stable production release. All 8 SDLC phases are implemented, tested, and observable.
+781 tests pass (0 failures). The pipeline runs fully on-premises without any cloud dependency.
+
+### Added
+
+**Phase 7 — Review & Consistency Guard (`ReviewCrew`)**
+- Deterministic scan phase (no LLM): container/C4 coverage check, arc42 chapter presence, placeholder detection (TODO/FIXME/TBD/XXX), quality score 0-100
+- LLM synthesis phase: single agent with `FactsQueryTool` + `RAGQueryTool` produces a Markdown quality report
+- Outputs: `knowledge/deliver/consistency.json`, `quality.json`, `summary.json`, `synthesis-report.md`
+- Registered in CLI (`cli.py`) and `phases_config.yaml` with correct `type: crew` and `dependencies: [implement]`
+
+**CrewAI Advanced Features — Runtime Observability & Reliability**
+- **Task Guardrails** (`shared/utils/task_guardrails.py`): `validate_json_output` (Phase 2 tasks) and `validate_plan_json` (Phase 4 planning task) — LLM gets one structured retry when output is not valid JSON or missing required keys; `guardrail_max_retries=1` on all guarded tasks
+- **`inject_date=True`** on all 13 agent factories (Phases 2, 3, 4, 5, 6, 7, MCP utility) — current date injected into every agent system prompt automatically
+- **`step_callback` + `task_callback`** wired into all 9 `Crew()` constructors (was dead code in `crew_callbacks.py` — never connected); every agent reasoning step and tool call now logged in real time
+- **`output_log_file`** on all 9 Crew constructors — structured JSON logs written to `knowledge/{phase}/logs/{name}.json` using CrewAI's built-in `FileHandler` (JSON array format, one entry per task)
+- **Embedder config** (`shared/utils/embedder_config.py`): `get_crew_embedder()` reads `OLLAMA_BASE_URL` + `EMBED_MODEL` env vars; passed to all Crew constructors, removes the OpenAI-embeddings blocker for future `memory=True` adoption
+- New utility files: `shared/utils/task_guardrails.py`, `shared/utils/embedder_config.py`
+
+**Architecture — Shared Infrastructure Extraction (Wave 3)**
+- `shared/dependency_checker.py`: `DependencyChecker` class extracted from orchestrator — phase prerequisite validation with structured error messages
+- `shared/phase_git_handler.py`: `PhaseGitHandler` class — git branch/commit lifecycle for phase outputs, extracted from orchestrator
+- `shared/schema_version.py`: `add_schema_version()` / `check_schema_version()` — all 6 phase output JSON files now carry `_schema_version` and `_generated_at` metadata; orchestrator validates schema version on cached facts
+
+**Unit Tests — Collectors (Wave 3)**
+- `tests/unit/collectors/test_spring_collectors.py` — 11 tests for Spring Boot fact extraction
+- `tests/unit/collectors/test_angular_collectors.py` — 9 tests for Angular component/service/module/pipe/directive extraction
+- `tests/unit/collectors/test_generic_collectors.py` — 6 tests for Container and Dependency collectors
+- **Total test count: 781 passed, 0 failed**
+
+**Settings UI Improvements**
+- `INDEX_MODE`: dropdown with `Auto` / `Force` / `Off` options (removed undocumented `smart` alias from UI)
+- `LOG_LEVEL`: dropdown with `INFO / DEBUG / WARNING / ERROR / CRITICAL`
+- `CODEGEN_API_KEY` added to masked secret keys
+- `mat-hint` descriptions under every settings field (sourced from `.env.example`)
+- Phase toggles: Save button calls `PUT /api/phases/{id}/toggle` → writes `phases_config.yaml`
+- Required phases shown as disabled toggle with tooltip
+- Progress counter: skipped phases counted as done alongside completed
+
+**E2E & CI**
+- Comprehensive Playwright demo showcase covering all 8 phases
+- CI E2E: `webServer` config aligned with dev server startup; collectors count assertions corrected
+
+### Fixed
+
+**Phase 4 — Development Planning**
+- `W7`: `file_path` was missing from every component line shown to the LLM → Phase 5 could not resolve files; added `file: {file_path}` and raised component limit 10 → 15 (`stage4_plan_generator.py`)
+- `W1`: `_enrich_plan()` stored bare component name strings instead of full `ComponentMatch` objects → Phase 5 `plan_reader` missing `id`/`stereotype`/`file_path`; fixed in `pipeline.py`
+- `W4`: agent backstory was too vague → implementation steps had no file paths; added GOLDEN RULES with explicit step format `"N. Verb ComponentName (path) — what"`
+- `W13`: JSON template step example had no file path; full `affected_components` object now shown in template
+- `W10`: `layer_pattern` was hardcoded; now derived from `analyzed_architecture.macro_architecture.layer_pattern`
+
+**Phase 3 — Architecture Synthesis (Arc42, Wave 3)**
+- Non-existent `seaguide_query` tool referenced in `arc42/agents.py` and `c4/agents.py` → LLM wasted all `max_iter` attempts → stub fallback; replaced with `rag_query`
+- `$(date)` shell literal appearing verbatim in output; replaced with `current_date` template variable (`date.today().isoformat()`)
+- JPA `@Entity` classes mixed with Flyway migration stubs in arc42 ch05; added explicit stereotype filter
+- Database technology guessed incorrectly; added `rag_query(query="Oracle datasource database")` to relevant task prompts
+- Wrong stats path in stub fallback (`facts["statistics"]["total_components"]` → `len(facts["components"])`)
+
+**Deep Review Fixes — Waves 1 & 2**
+- `BUG-C1`: Token counting crash — `UsageMetrics` is not a dict; switched to `getattr()` (`architecture_analysis/crew.py`)
+- `BUG-C2`: `PrivateAttr` missing `default_factory=dict` on `FactsQueryTool._dimension_cache` → Pydantic crash on first instantiation
+- `BUG-C3`: `output_pydantic` on Phase 2 tasks caused CrewAI to raise `ValidationError` before repair code ran; removed; added `_repair_task_output_files()` post-processing
+- `BUG-C5`: Git auto-commit in knowledge dir was running unconditionally; guarded by `CODEGEN_COMMIT_KNOWLEDGE=false` env check
+- `BUG-Y1`: On resume, stale output files from failed mini-crews corrupted synthesis; now deleted before restart
+- `BUG-Y2`: Phase 4 `output_pydantic` + dead `_extract_json_from_validation_error()` removed
+- `BUG-Y3/Y4`: `quality_context` / `quality_hints` from Phase 2 not forwarded to Phase 3/4; fixed in crew `kickoff()` methods
+- `BUG-Y5`: Shared baseline build cache not passed through `_run_cascade()` → N redundant baseline builds per session; fixed
+- `BUG-Y6`: `ImportIndex` rebuilt N times per cascade; now built once and shared across all cascade tasks
+- `ARCH-4/5/6/7`: `TASK_TYPE_RULES` dict, `PHASE_CONTRACTS` dict, per-phase timeout wrapper, local `FactsQueryTool` duplicate removed
+- `PERF-2/3`: `facts.json` cached after extract phase; `FactsQueryTool` preloads 3 heaviest dimensions once at startup
+
+**Phase Config**
+- `verify` and `deliver` phases had `enabled: false` → silently excluded from pipeline; set to `true`
+- `deliver` had `type: pipeline` (should be `type: crew`); corrected
+- `deliver.dependencies` was `[verify]` (too strict); corrected to `[implement]`
+- `ReviewCrew` not registered in `cli.py` → phase never executed even when enabled; registration added
+
+**Dashboard / UI**
+- Knowledge and Reports pages no longer expose raw internal pipeline data (`.checkpoint_*.json`, `evidence.jsonl`, `symbols.jsonl`) — filtered at API level
+- Reports page crash on missing `generated_files` field fixed
+- Arc42 document rendering improvements in Knowledge Explorer
+
+### Changed
+
+- `pyproject.toml`: `Development Status :: 4 - Beta` → `5 - Production/Stable`
+- `phases_config.yaml`: `verify` and `deliver` phases enabled by default
+
+---
+
 ## [0.6.0] - 2026-02-15
 
 ### Added

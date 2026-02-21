@@ -35,6 +35,8 @@ from crewai import Crew, Process
 
 from ...shared.paths import CHROMA_DIR
 from ...shared.schema_version import add_schema_version
+from ...shared.utils.crew_callbacks import step_callback, task_callback
+from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.logger import setup_logger
 from .agents import create_quality_reviewer
 from .tasks import create_synthesis_task
@@ -291,11 +293,17 @@ class ReviewCrew:
         )
         task = create_synthesis_task(agent, findings_summary, output_path)
 
+        log_dir = self.output_dir / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
         crew = Crew(
             agents=[agent],
             tasks=[task],
             process=Process.sequential,
             verbose=True,
+            step_callback=step_callback,
+            task_callback=task_callback,
+            output_log_file=str(log_dir / "synthesis.json"),
+            embedder=get_crew_embedder(),
         )
         try:
             result = crew.kickoff()

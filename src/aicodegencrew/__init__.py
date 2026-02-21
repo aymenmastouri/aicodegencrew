@@ -26,7 +26,7 @@ Usage:
 from .cli import main
 from .orchestrator import SDLCOrchestrator
 
-__version__ = "0.6.2"
+__version__ = "1.0.0"
 
 __all__ = [
     "SDLCOrchestrator",

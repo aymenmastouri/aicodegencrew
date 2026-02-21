@@ -24,6 +24,8 @@ from crewai import Agent, Crew, Process, Task
 
 from ...hybrid.code_generation.tools.code_reader_tool import EXT_TO_LANG, CodeReaderTool
 from ...hybrid.code_generation.tools.test_writer_tool import TestWriterTool
+from ...shared.utils.crew_callbacks import step_callback, task_callback
+from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.logger import setup_logger
 
@@ -333,6 +335,7 @@ class TestingCrew:
             verbose=True,
             max_iter=4,
             max_retry_limit=1,
+            inject_date=True,
         )
 
         description = _make_task_description(source_path, source_content, test_path, language)
@@ -345,11 +348,17 @@ class TestingCrew:
             agent=agent,
         )
 
+        log_dir = self.output_dir / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
         crew = Crew(
             agents=[agent],
             tasks=[task],
             process=Process.sequential,
             verbose=True,
+            step_callback=step_callback,
+            task_callback=task_callback,
+            output_log_file=str(log_dir / f"{Path(source_path).stem}_test.json"),
+            embedder=get_crew_embedder(),
         )
 
         staged_before = set(writer.staging.keys())

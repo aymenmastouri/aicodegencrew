@@ -11,6 +11,8 @@ from crewai import Agent, Crew, Task
 from crewai.process import Process
 
 from ...shared.mcp import get_phase4_mcps
+from ...shared.utils.crew_callbacks import step_callback, task_callback
+from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.llm_factory import create_llm
 
 
@@ -37,6 +39,7 @@ def create_web_fetch_agent() -> Agent:
         verbose=True,
         max_iter=10,
         respect_context_window=True,
+        inject_date=True,
     )
 
 
@@ -71,11 +74,19 @@ def fetch_upgrade_guide(framework: str, from_version: str, to_version: str) -> d
         agent=agent,
     )
 
+    from pathlib import Path as _Path
+
+    log_dir = _Path("knowledge/plan/logs")
+    log_dir.mkdir(parents=True, exist_ok=True)
     crew = Crew(
         agents=[agent],
         tasks=[task],
         process=Process.sequential,
         verbose=False,
+        step_callback=step_callback,
+        task_callback=task_callback,
+        output_log_file=str(log_dir / "web_fetch.json"),
+        embedder=get_crew_embedder(),
     )
 
     result = crew.kickoff()

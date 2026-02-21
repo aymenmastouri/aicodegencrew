@@ -18,6 +18,8 @@ from typing import Any
 from crewai import Agent, Crew, Process, Task
 from crewai.tools import BaseTool
 
+from ...shared.utils.crew_callbacks import step_callback, task_callback
+from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.logger import logger
 
 
@@ -127,6 +129,7 @@ class ContainerAnalysisCrew:
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
+            inject_date=True,
         )
 
         # === AGENT 2: Functional Analyst ===
@@ -137,6 +140,7 @@ class ContainerAnalysisCrew:
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
+            inject_date=True,
         )
 
         # === AGENT 3: Quality Analyst ===
@@ -147,6 +151,7 @@ class ContainerAnalysisCrew:
             tools=[self._facts_tool],
             verbose=False,
             allow_delegation=False,
+            inject_date=True,
         )
 
         # === AGENT 4: Synthesis Lead ===
@@ -156,6 +161,7 @@ class ContainerAnalysisCrew:
             backstory="Senior architect who synthesizes technical, functional, and quality perspectives.",
             verbose=False,
             allow_delegation=False,
+            inject_date=True,
         )
 
         # === TASKS ===
@@ -249,11 +255,17 @@ Create final container analysis JSON:
         )
 
         # Run crew
+        log_dir = self.output_dir / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
         crew = Crew(
             agents=[tech_agent, func_agent, quality_agent, synthesis_agent],
             tasks=[tech_task, func_task, quality_task, synthesis_task],
             process=Process.sequential,
             verbose=False,
+            step_callback=step_callback,
+            task_callback=task_callback,
+            output_log_file=str(log_dir / f"container_{self.container_name}.json"),
+            embedder=get_crew_embedder(),
         )
 
         try:

@@ -72,4 +72,5 @@ def create_agent(
         max_retry_limit=3,
         allow_delegation=cfg.get("allow_delegation", False),
         respect_context_window=True,
+        inject_date=True,
     )

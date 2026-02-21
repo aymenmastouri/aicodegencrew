@@ -39,4 +39,5 @@ def create_quality_reviewer(facts_dir: str, chroma_dir: str) -> Agent:
         allow_delegation=False,
         max_iter=6,
         max_retry_limit=1,
+        inject_date=True,
     )
