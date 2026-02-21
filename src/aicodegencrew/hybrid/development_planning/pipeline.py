@@ -42,12 +42,18 @@ class DevelopmentPlanningPipeline:
     """
 
     # JIRA priority ordering (lower = higher priority)
+    # Covers both classic JIRA (Blocker..Trivial) and simplified (Highest..Lowest)
     PRIORITY_ORDER = {
         "Blocker": 1,
+        "Highest": 1,
         "Critical": 2,
+        "High": 2,
         "Major": 3,
+        "Medium": 3,
         "Minor": 4,
+        "Low": 4,
         "Trivial": 5,
+        "Lowest": 5,
     }
     # Task type ordering for sorting
     TASK_TYPE_ORDER = {
@@ -535,6 +541,20 @@ class DevelopmentPlanningPipeline:
                 logger.info(
                     f"[Enrich] Filled affected_components from discovery: {len(dp['affected_components'])} components"
                 )
+
+        # Fill interfaces from discovery if LLM left it empty
+        if not dp.get("interfaces"):
+            ifaces = discovery_result.get("interfaces", [])
+            if ifaces:
+                dp["interfaces"] = ifaces
+                logger.info(f"[Enrich] Filled interfaces from discovery: {len(ifaces)} interfaces")
+
+        # Fill dependencies from discovery if LLM left it empty
+        if not dp.get("dependencies"):
+            deps = discovery_result.get("dependencies", [])
+            if deps:
+                dp["dependencies"] = deps
+                logger.info(f"[Enrich] Filled dependencies from discovery: {len(deps)} dependencies")
 
         # Fill upgrade_plan.migration_sequence from pattern_result if LLM left it empty
         upgrade = pattern_result.get("upgrade_assessment", {})

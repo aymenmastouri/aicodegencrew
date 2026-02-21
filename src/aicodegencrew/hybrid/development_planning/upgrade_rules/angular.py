@@ -680,7 +680,7 @@ def _get_fallback_ruleset(from_version: str, to_version: str, error: str = "") -
 # Combined export
 # =============================================================================
 
-# Static rules (fallback when dynamic fetch is disabled)
+# Static rules (always available, no import-time side effects)
 ANGULAR_UPGRADE_RULES_STATIC: list = [
     ANGULAR_18_TO_19,
     ANGULAR_19_TO_20,
@@ -688,10 +688,7 @@ ANGULAR_UPGRADE_RULES_STATIC: list = [
     ANGULAR_THIRD_PARTY,
 ]
 
-# Dynamic rules (fetched from angular.dev at runtime)
-ANGULAR_UPGRADE_RULES: list = [
-    fetch_angular_rules_dynamic("18", "19"),
-    fetch_angular_rules_dynamic("19", "20"),
-    ANGULAR_SIGNAL_MIGRATION,  # Keep signal migration (not version-specific)
-    ANGULAR_THIRD_PARTY,  # Keep third-party compat checks
-]
+# Primary export: use static rules directly (dynamic fetch is opt-in at runtime).
+# Previously this called fetch_angular_rules_dynamic() at import time, which
+# duplicated rulesets and would cause import failures if USE_DYNAMIC_FETCH=True.
+ANGULAR_UPGRADE_RULES: list = ANGULAR_UPGRADE_RULES_STATIC

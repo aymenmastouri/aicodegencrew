@@ -128,10 +128,6 @@ class ValidatorStage:
         """Check if changes follow architecture layer rules."""
         warnings = []
 
-        # Get layer structure from analyzed architecture
-        self.analyzed_architecture.get("micro_architecture", {})
-
-        # For now, just warn if layer_compliance is not mentioned
         arch_context = dev_plan.get("architecture_context", {})
 
         if "layer_compliance" not in arch_context:

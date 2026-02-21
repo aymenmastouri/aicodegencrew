@@ -193,6 +193,9 @@ class PlanGeneratorStage:
 
             return plan
 
+        except (ConnectionError, TimeoutError, OSError) as e:
+            logger.error(f"[Stage4] Transient error (network/timeout): {e}")
+            raise
         except Exception as e:
             logger.error(f"[Stage4] Agent plan generation failed: {e}")
             raise
@@ -216,7 +219,7 @@ If you need current documentation or best practices, use your available tools.
 
 TASK TYPE: {task.task_type}
 
-TASK:
+TASK INPUT:
 Task ID: {task.task_id}
 Summary: {task.summary}
 Description: {task.description}
@@ -281,11 +284,15 @@ VERIFICATION COMMANDS:
 
         upgrade_plan_schema = ""
         if is_upgrade:
-            upgrade_plan_schema = """
+            uc = upgrade.get("upgrade_context", {})
+            uc_framework = uc.get("framework", "Angular")
+            uc_from = uc.get("current_version", "unknown")
+            uc_to = uc.get("target_version", "unknown")
+            upgrade_plan_schema = f"""
     "upgrade_plan": {{
-      "framework": "{upgrade.get('upgrade_context', {{}}).get('framework', 'Angular')}",
-      "from_version": "{upgrade.get('upgrade_context', {{}}).get('current_version', 'unknown')}",
-      "to_version": "{upgrade.get('upgrade_context', {{}}).get('target_version', 'unknown')}",
+      "framework": "{uc_framework}",
+      "from_version": "{uc_from}",
+      "to_version": "{uc_to}",
       "migration_sequence": [
         {{
           "rule_id": "rule ID from MIGRATION SEQUENCE above",
@@ -293,12 +300,12 @@ VERIFICATION COMMANDS:
           "severity": "breaking|deprecated|recommended",
           "migration_steps": ["Step 1", "Step 2"],
           "affected_files": ["file1.ts", "file2.ts"],
-          "estimated_effort_minutes": <number>,
+          "estimated_effort_minutes": 15,
           "schematic": "ng generate command (if applicable)"
         }}
       ],
       "verification_commands": ["command 1", "command 2"],
-      "total_estimated_effort_hours": <number>,
+      "total_estimated_effort_hours": 8,
       "pre_migration_checks": ["Check 1", "Check 2"],
       "post_migration_checks": ["Check 1", "Check 2"]
     }},"""
@@ -309,7 +316,7 @@ VERIFICATION COMMANDS:
         )
 
         prompt += f"""
-TASK:
+OUTPUT INSTRUCTIONS:
 Create a COMPLETE implementation plan as JSON following this EXACT structure.
 Replace ALL placeholder values with REAL data from DISCOVERED COMPONENTS and patterns above.
 

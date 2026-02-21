@@ -26,7 +26,13 @@ def validate_json_output(task_output) -> tuple[bool, str]:
 
 
 def validate_plan_json(task_output) -> tuple[bool, str]:
-    """Guardrail: reject plan output missing required keys."""
+    """Guardrail: reject plan output missing required keys.
+
+    Accepts two formats:
+    1. Full wrapper: {"task_id": ..., "understanding": ..., "development_plan": ...}
+    2. Bare plan: {"affected_components": ..., "implementation_steps": ...}
+       (Stage 4 _plan_from_dict wraps this automatically after the guardrail)
+    """
     raw = task_output.raw if hasattr(task_output, "raw") else str(task_output)
     text = raw.strip()
     if text.startswith("```json"):
@@ -40,8 +46,12 @@ def validate_plan_json(task_output) -> tuple[bool, str]:
         data = json.loads(text)
     except json.JSONDecodeError as e:
         return (False, f"Output is not valid JSON: {e}. Please output ONLY a valid JSON object.")
-    required = {"task_id", "understanding", "development_plan"}
-    missing = required - set(data.keys())
-    if missing:
-        return (False, f"Missing required keys: {missing}. Include all of: {required}")
-    return (True, text)
+    # Accept full wrapper format
+    if "development_plan" in data:
+        return (True, text)
+    # Accept bare plan (has plan-level keys like affected_components or implementation_steps)
+    plan_keys = {"affected_components", "implementation_steps", "test_strategy", "estimated_complexity"}
+    if plan_keys & set(data.keys()):
+        return (True, text)
+    return (False, "JSON must contain 'development_plan' key or plan-level keys (affected_components, implementation_steps). Please output a valid plan JSON.")
+

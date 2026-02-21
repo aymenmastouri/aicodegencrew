@@ -254,16 +254,28 @@ class ComponentDiscoveryStage:
             "dependencies": [d.model_dump() for d in dependencies],
         }
 
+    def _find_container_id(self, keywords: list[str]) -> str | None:
+        """Find container ID from facts by matching technology keywords."""
+        containers = self.facts.get("containers", [])
+        for container in containers:
+            tech = (container.get("technology") or "").lower()
+            name = (container.get("name") or "").lower()
+            cid = (container.get("id") or "").lower()
+            searchable = f"{tech} {name} {cid}"
+            if any(kw in searchable for kw in keywords):
+                return container.get("id", "")
+        return None
+
     def _upgrade_discovery(self, task: TaskInput) -> dict[str, Any]:
         """Discover ALL components for upgrade tasks (not top-K scoring)."""
-        # Detect which container is being upgraded
+        # Detect which container is being upgraded using facts data
         text = f"{task.summary} {task.description}".lower()
         target_container = None
 
         if "angular" in text or "frontend" in text:
-            target_container = "container.frontend"
+            target_container = self._find_container_id(["angular", "frontend", "react", "vue"])
         elif "spring" in text or "backend" in text:
-            target_container = "container.backend"
+            target_container = self._find_container_id(["spring", "backend", "java"])
 
         affected = []
         for comp in self.components:
