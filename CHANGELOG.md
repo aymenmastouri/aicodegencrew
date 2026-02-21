@@ -6,6 +6,69 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.7.1] - 2026-02-21
+
+Deep audit of all pipeline phases — 64 bugs fixed across Phases 2-5. Demo rewritten for managers.
+
+### Fixed
+
+**Phase 2 — Architecture Facts Extraction (32 bugs in 21 collector files)**
+
+*Critical (5 broken exported collectors — complete rewrites):*
+- `SpringSecurityCollector`: wrong field names, missing dimension, bypassed file cache
+- `AngularStateCollector`: same pattern, `rglob` without SKIP_DIRS pruning
+- `OracleSchemaCollector`: `.upper()` corrupting extracted names, wrong field names
+- `OracleProcedureCollector`: `RelationHint(relation_type=)` → `type=`
+- `OracleViewCollector`: `columns=list[str]` → `list[dict]`
+
+*High (13 pipeline bugs):*
+- `system_collector`: pom.xml extracted parent version instead of project version
+- `container_collector`: substring test-directory matching (e.g. "contest" matched "test")
+- `component_collector` + `interface_collector`: `rglob` without SKIP_DIRS (10-20x slowdown on VPN)
+- `component_collector`: `relative_to` crash on edge paths
+- `interface_collector`: only detected "Spring Boot", missed Java/Gradle and Java/Maven projects
+- `workflow_collector`: substring `_should_skip`, Python `def` pattern on Java codebase, `rglob` without SKIP_DIRS
+- `techstack_version_collector`: version comparison by string length instead of segment count; npm versions truncated to major-only
+- `security_detail_collector`: `@Secured`/`@RolesAllowed` captured only first and last role
+- `dependency_collector`: pyproject.toml parsed `[tool.X.dependencies]` instead of `[project]`
+
+*Medium (14 fixes):*
+- `dependency_collector`: Gradle dependencies now parse `group:artifact:version` (version was always empty)
+- `oracle_table_collector`: UNIQUE index detection looked outside regex match
+- `evidence_collector`: substring path matching replaced with normalized comparison
+- `config_collector`: `rglob` replaced with `_find_files`; `_should_skip_path` fixed to path-component matching
+- `data_model_collector`: `line_start` clamped to `max(1, ...)`; only collection types skipped (not all generics)
+- `_should_skip` fixed in 6 collectors: workflow, techstack, security_detail, test, validation, error_handling
+- `infrastructure_collector`: Kubernetes `rglob` replaced with `_find_files`
+- `requirements.txt` parser handles extras brackets and dots in package names
+
+**Phase 3 — Architecture Analysis (9 bugs)**
+- Token counting crash, `PrivateAttr` missing default, `output_pydantic` blocking repairs
+- Stale files on resume, quality context not forwarded, parallel mini-crews
+
+**Phase 4 — Development Planning (12 bugs)**
+- Components shown to LLM now include `file_path` (was missing → Phase 5 could not resolve files)
+- Enrichment stores full component dicts instead of bare name strings
+- Agent backstory includes explicit step format with file paths
+- Layer pattern derived from analyzed architecture instead of hardcoded
+- `output_pydantic` removed, dead code cleaned up
+
+**Phase 5 — Code Generation (11 bugs)**
+- Shared baseline cache, import index reuse, cascade checkpoints
+- Per-phase timeout wrapper, phase contract validation
+
+**UI / E2E**
+- Reports Architecture tab shows only arc42/C4 documents
+- Phase cards show "ready" only when all dependencies are completed
+- History page auto-scrolls to detail panel
+
+### Changed
+- **Demo showcase** (`e2e/demo-showcase.spec.ts`) rewritten for manager audience (793 → 310 lines):
+  removed Settings, Collectors, Phases config, MCP Servers, Logs, Metrics;
+  focused on business story: Upload Task → One-Click Run → Generated Architecture Docs → Development Plans → Code → Git Branches → Audit History
+
+---
+
 ## [0.7.0] - 2026-02-21
 
 Phase 7 (deliver) complete. All 8 SDLC phases implemented and tested. 781 tests pass (0 failures).
