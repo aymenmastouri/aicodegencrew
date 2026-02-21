@@ -93,9 +93,12 @@ class EvidenceCollector(DimensionCollector):
 
     def get_evidence_for_file(self, file_path: str) -> list[dict]:
         """Get all evidence entries for a specific file."""
+        # Normalize separators for cross-platform comparison
+        normalized = file_path.replace("\\", "/")
         results = []
         for _key, entry in self._evidence_map.items():
-            if entry.path == file_path or file_path in entry.path:
+            entry_normalized = entry.path.replace("\\", "/")
+            if entry_normalized == normalized or entry_normalized.endswith("/" + normalized):
                 results.append(
                     {
                         "lines": f"{entry.line_start}-{entry.line_end}",

@@ -171,7 +171,7 @@ class OracleTableCollector(DimensionCollector):
             columns = match.group(4)
             line_num = content[: match.start()].count("\n") + 1
 
-            is_unique = "UNIQUE" in content[max(0, match.start() - 10) : match.start()].upper()
+            is_unique = "UNIQUE" in match.group(0).upper()
 
             # Add index info to table if we have it
             # For now, create as metadata

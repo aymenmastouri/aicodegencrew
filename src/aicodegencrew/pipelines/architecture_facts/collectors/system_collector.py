@@ -122,13 +122,16 @@ class SystemCollector(DimensionCollector):
 
         result = {}
 
-        # Extract version
-        version_match = re.search(r"<version>([^<]+)</version>", content)
+        # Strip <parent>...</parent> block to avoid extracting parent version/groupId
+        content_no_parent = re.sub(r"<parent>.*?</parent>", "", content, flags=re.DOTALL)
+
+        # Extract version (from project, not parent)
+        version_match = re.search(r"<version>([^<]+)</version>", content_no_parent)
         if version_match:
             result["version"] = version_match.group(1)
 
-        # Extract groupId
-        group_match = re.search(r"<groupId>([^<]+)</groupId>", content)
+        # Extract groupId (from project, not parent)
+        group_match = re.search(r"<groupId>([^<]+)</groupId>", content_no_parent)
         if group_match:
             result["group_id"] = group_match.group(1)
 
@@ -175,8 +178,8 @@ class SystemCollector(DimensionCollector):
         java_roots = self._find_java_roots()
 
         for java_root in java_roots:
-            # Find all Java files
-            java_files = list(java_root.rglob("*.java"))[:500]  # Limit for performance
+            # Find all Java files (use _find_files for SKIP_DIRS pruning)
+            java_files = self._find_files("*.java", java_root)[:500]  # Limit for performance
 
             for java_file in java_files:
                 # Extract package from file

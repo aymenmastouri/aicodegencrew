@@ -35,8 +35,9 @@ class InterfaceCollector(DimensionCollector):
         """Collect all interface facts."""
         self._log_start()
 
-        # Collect REST endpoints from Spring containers
-        spring_containers = [c for c in self.containers if c.get("technology") == "Spring Boot"]
+        # Collect REST endpoints from Spring/Java containers
+        _SPRING_TECHNOLOGIES = {"Spring Boot", "Java/Gradle", "Java/Maven"}
+        spring_containers = [c for c in self.containers if c.get("technology") in _SPRING_TECHNOLOGIES]
         for container in spring_containers:
             self._collect_rest_endpoints(container)
 
@@ -130,12 +131,20 @@ class InterfaceCollector(DimensionCollector):
 
     def _detect_spring(self) -> bool:
         """Detect if project has Spring Boot."""
-        for gradle in list(self.repo_path.rglob("build.gradle")) + list(self.repo_path.rglob("build.gradle.kts")):
-            if "node_modules" in str(gradle) or "deployment" in str(gradle):
+        # Check Maven
+        for pom in self._find_files("pom.xml"):
+            try:
+                content = pom.read_text(encoding="utf-8", errors="ignore")
+                if "spring-boot" in content.lower():
+                    return True
+            except Exception:
                 continue
+
+        # Check Gradle
+        for gradle in self._find_files("build.gradle") + self._find_files("build.gradle.kts"):
             try:
                 content = gradle.read_text(encoding="utf-8", errors="ignore")
-                if "org.springframework.boot" in content:
+                if "org.springframework.boot" in content or "spring-boot" in content.lower():
                     return True
             except Exception:
                 continue
@@ -143,10 +152,16 @@ class InterfaceCollector(DimensionCollector):
 
     def _find_angular_root(self) -> Path | None:
         """Find Angular root directory."""
-        for subdir in ["", "frontend", "client", "web"]:
+        # Check root and common subdirectories
+        for subdir in ["", "frontend", "client", "web", "ui", "angular"]:
             check_path = self.repo_path / subdir if subdir else self.repo_path
             if (check_path / "angular.json").exists():
                 return check_path
+
+        # Deeper search fallback
+        for angular_json in self._find_files("angular.json"):
+            return angular_json.parent
+
         return None
 
     def _collect_schedulers(self):
@@ -154,9 +169,8 @@ class InterfaceCollector(DimensionCollector):
         SCHEDULED_PATTERN = re.compile(r"@Scheduled\s*\(([^)]+)\)")
         METHOD_PATTERN = re.compile(r"(?:public|private|protected)?\s*(?:void|[\w<>]+)\s+(\w+)\s*\(")
 
-        # Search in all Java files
-        java_files = list(self.repo_path.rglob("*.java"))
-        java_files = [f for f in java_files if "node_modules" not in str(f) and "deployment" not in str(f)]
+        # Search in all Java files (using _find_files for SKIP_DIRS pruning)
+        java_files = self._find_files("*.java")
 
         for java_file in java_files:
             try:
@@ -201,10 +215,9 @@ class InterfaceCollector(DimensionCollector):
         """Collect message listeners (Kafka, RabbitMQ)."""
         KAFKA_LISTENER = re.compile(r"@KafkaListener\s*\(([^)]+)\)")
         RABBIT_LISTENER = re.compile(r"@RabbitListener\s*\(([^)]+)\)")
-        re.compile(r"(?:public|private|protected)?\s*(?:void|[\w<>]+)\s+(\w+)\s*\(")
 
-        java_files = list(self.repo_path.rglob("*.java"))
-        java_files = [f for f in java_files if "node_modules" not in str(f) and "deployment" not in str(f)]
+        # Search in all Java files (using _find_files for SKIP_DIRS pruning)
+        java_files = self._find_files("*.java")
 
         for java_file in java_files:
             try:

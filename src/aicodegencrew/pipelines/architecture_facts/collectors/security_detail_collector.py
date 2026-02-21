@@ -104,9 +104,9 @@ class SecurityDetailCollector(DimensionCollector):
                 )
                 self.output.add_fact(fact)
 
-            # @Secured
+            # @Secured — extract all quoted role strings from the annotation
             for match in self.SECURED_PATTERN.finditer(content):
-                roles = [r for r in match.groups() if r]
+                roles = re.findall(r'"([^"]+)"', match.group(0))
                 method_name = self._find_next_method(content, match.end())
                 line_num = content[: match.start()].count("\n") + 1
 
@@ -127,9 +127,9 @@ class SecurityDetailCollector(DimensionCollector):
                 )
                 self.output.add_fact(fact)
 
-            # @RolesAllowed
+            # @RolesAllowed — extract all quoted role strings from the annotation
             for match in self.ROLES_ALLOWED_PATTERN.finditer(content):
-                roles = [r for r in match.groups() if r]
+                roles = re.findall(r'"([^"]+)"', match.group(0))
                 method_name = self._find_next_method(content, match.end())
                 line_num = content[: match.start()].count("\n") + 1
 
@@ -247,8 +247,8 @@ class SecurityDetailCollector(DimensionCollector):
         return match.group(1) if match else None
 
     def _should_skip(self, path: Path) -> bool:
-        path_str = str(path).lower()
-        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
+        """Check if path should be skipped (path-component matching, not substring)."""
+        return bool(set(p.lower() for p in path.parts) & self.SKIP_DIRS)
 
     def _relative_path(self, file_path: Path) -> str:
         try:

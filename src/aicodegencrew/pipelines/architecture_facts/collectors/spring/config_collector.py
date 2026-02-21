@@ -126,7 +126,7 @@ class SpringConfigCollector(DimensionCollector):
 
             config.add_evidence(
                 path=rel_path,
-                line_start=class_line - 1,
+                line_start=max(1, class_line - 1),
                 line_end=class_line + 5,
                 reason=f"@Configuration: {class_name} ({bean_count} beans)",
             )
@@ -169,11 +169,10 @@ class SpringConfigCollector(DimensionCollector):
                             for config_file in subdir.glob(pattern):
                                 found_files.add(config_file)
 
-        # Strategy 2: Global recursive search for any config files
+        # Strategy 2: Global recursive search for any config files (with SKIP_DIRS pruning)
         for pattern in config_patterns:
-            for config_file in self.repo_path.rglob(pattern):
-                if not self._should_skip_path(config_file):
-                    found_files.add(config_file)
+            for config_file in self._find_files(pattern):
+                found_files.add(config_file)
 
         logger.info(f"[SpringConfigCollector] Found {len(found_files)} config files")
 
@@ -182,9 +181,8 @@ class SpringConfigCollector(DimensionCollector):
             self._process_config_file(config_file)
 
     def _should_skip_path(self, path: Path) -> bool:
-        """Check if path should be skipped."""
-        path_str = str(path).lower()
-        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
+        """Check if path should be skipped (path-component matching, not substring)."""
+        return bool(set(p.lower() for p in path.parts) & self.SKIP_DIRS)
 
     def _process_config_file(self, config_file: Path):
         """Process a single config file."""
@@ -280,9 +278,7 @@ class SpringConfigCollector(DimensionCollector):
             "bootstrap-*.yml",
             "bootstrap-*.yaml",
         ]:
-            for f in self.repo_path.rglob(pattern):
-                if self._should_skip_path(f):
-                    continue
+            for f in self._find_files(pattern):
                 parts = f.stem.split("-", 1)
                 if len(parts) > 1:
                     profiles_found.add(parts[1])

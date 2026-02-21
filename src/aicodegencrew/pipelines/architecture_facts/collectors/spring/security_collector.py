@@ -20,29 +20,34 @@ from ..base import CollectorOutput, DimensionCollector, RawComponent, RawEvidenc
 class SpringSecurityCollector(DimensionCollector):
     """Extracts Spring Security configuration facts."""
 
+    DIMENSION = "spring_security"
+
+    def __init__(self, repo_path: Path, container_id: str = "backend"):
+        super().__init__(repo_path)
+        self.container_id = container_id
+
     def collect(self) -> CollectorOutput:
         """Collect security configuration facts."""
-        facts: list[RawComponent] = []
-        relations: list[RelationHint] = []
+        self._log_start()
 
         # Find Java and Kotlin files
         all_files = self._find_files("*.java") + self._find_files("*.kt")
 
         for src_file in all_files:
             try:
-                content = src_file.read_text(encoding="utf-8", errors="ignore")
+                content = self._read_file_content(src_file)
 
                 # Security Configuration classes
                 if "@EnableWebSecurity" in content or "SecurityFilterChain" in content:
-                    facts.extend(self._extract_security_config(src_file, content))
+                    self._extract_security_config(src_file, content)
 
                 # Auth providers
                 if "AuthenticationProvider" in content or "UserDetailsService" in content:
-                    facts.extend(self._extract_auth_providers(src_file, content))
+                    self._extract_auth_providers(src_file, content)
 
                 # Filters
                 if "OncePerRequestFilter" in content or "GenericFilterBean" in content:
-                    facts.extend(self._extract_filters(src_file, content))
+                    self._extract_filters(src_file, content)
 
             except Exception:
                 continue
@@ -54,24 +59,24 @@ class SpringSecurityCollector(DimensionCollector):
             + self._find_files("application*.properties")
         ):
             try:
-                content = props_file.read_text(encoding="utf-8", errors="ignore")
+                content = self._read_file_content(props_file)
                 if "security" in content.lower() or "oauth2" in content.lower() or "jwt" in content.lower():
-                    facts.extend(self._extract_security_properties(props_file, content))
+                    self._extract_security_properties(props_file, content)
             except Exception:
                 continue
 
-        return CollectorOutput(facts=facts, relations=relations)
+        self._log_end()
+        return self.output
 
-    def _extract_security_config(self, file_path: Path, content: str) -> list[RawComponent]:
+    def _extract_security_config(self, file_path: Path, content: str) -> None:
         """Extract security configuration classes."""
-        facts = []
-
         # Find class name
         class_match = re.search(r"class\s+(\w+)", content)
         if not class_match:
-            return facts
+            return
 
         class_name = class_match.group(1)
+        rel_path = self._relative_path(file_path)
 
         # Detect security features
         features = []
@@ -97,27 +102,25 @@ class SpringSecurityCollector(DimensionCollector):
                 line_num = i
                 break
 
-        facts.append(
-            RawComponent(
-                name=class_name,
-                component_type="security_config",
-                file_path=file_path,
-                description=f"Security configuration with: {', '.join(features)}",
-                evidence=RawEvidence(
-                    file_path=file_path,
-                    line_start=line_num,
-                    line_end=line_num + 50,
-                    reason=f"@EnableWebSecurity or SecurityFilterChain in {class_name}",
-                ),
-                tags=features,
-            )
+        comp = RawComponent(
+            name=class_name,
+            stereotype="security_config",
+            file_path=rel_path,
+            container_hint=self.container_id,
+            tags=features,
+            metadata={"features": features},
         )
+        comp.add_evidence(
+            path=rel_path,
+            line_start=line_num,
+            line_end=line_num + 50,
+            reason=f"@EnableWebSecurity or SecurityFilterChain in {class_name}",
+        )
+        self.output.add_fact(comp)
 
-        return facts
-
-    def _extract_auth_providers(self, file_path: Path, content: str) -> list[RawComponent]:
+    def _extract_auth_providers(self, file_path: Path, content: str) -> None:
         """Extract authentication provider implementations."""
-        facts = []
+        rel_path = self._relative_path(file_path)
 
         # AuthenticationProvider implementations
         provider_match = re.search(r"class\s+(\w+)\s+implements\s+.*AuthenticationProvider", content)
@@ -125,20 +128,19 @@ class SpringSecurityCollector(DimensionCollector):
             class_name = provider_match.group(1)
             line_num = content[: provider_match.start()].count("\n") + 1
 
-            facts.append(
-                RawComponent(
-                    name=class_name,
-                    component_type="auth_provider",
-                    file_path=file_path,
-                    description="Custom authentication provider",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=line_num + 30,
-                        reason=f"AuthenticationProvider implementation: {class_name}",
-                    ),
-                )
+            comp = RawComponent(
+                name=class_name,
+                stereotype="auth_provider",
+                file_path=rel_path,
+                container_hint=self.container_id,
             )
+            comp.add_evidence(
+                path=rel_path,
+                line_start=line_num,
+                line_end=line_num + 30,
+                reason=f"AuthenticationProvider implementation: {class_name}",
+            )
+            self.output.add_fact(comp)
 
         # UserDetailsService implementations
         uds_match = re.search(r"class\s+(\w+)\s+implements\s+.*UserDetailsService", content)
@@ -146,26 +148,23 @@ class SpringSecurityCollector(DimensionCollector):
             class_name = uds_match.group(1)
             line_num = content[: uds_match.start()].count("\n") + 1
 
-            facts.append(
-                RawComponent(
-                    name=class_name,
-                    component_type="user_details_service",
-                    file_path=file_path,
-                    description="User details service for authentication",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=line_num + 30,
-                        reason=f"UserDetailsService implementation: {class_name}",
-                    ),
-                )
+            comp = RawComponent(
+                name=class_name,
+                stereotype="user_details_service",
+                file_path=rel_path,
+                container_hint=self.container_id,
             )
+            comp.add_evidence(
+                path=rel_path,
+                line_start=line_num,
+                line_end=line_num + 30,
+                reason=f"UserDetailsService implementation: {class_name}",
+            )
+            self.output.add_fact(comp)
 
-        return facts
-
-    def _extract_filters(self, file_path: Path, content: str) -> list[RawComponent]:
+    def _extract_filters(self, file_path: Path, content: str) -> None:
         """Extract security filter implementations."""
-        facts = []
+        rel_path = self._relative_path(file_path)
 
         # OncePerRequestFilter
         filter_match = re.search(r"class\s+(\w+)\s+extends\s+OncePerRequestFilter", content)
@@ -180,61 +179,54 @@ class SpringSecurityCollector(DimensionCollector):
             elif "auth" in class_name.lower():
                 filter_type = "auth_filter"
 
-            facts.append(
-                RawComponent(
-                    name=class_name,
-                    component_type=filter_type,
-                    file_path=file_path,
-                    description=f"Security filter: {class_name}",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=line_num + 40,
-                        reason=f"OncePerRequestFilter: {class_name}",
-                    ),
-                )
+            comp = RawComponent(
+                name=class_name,
+                stereotype=filter_type,
+                file_path=rel_path,
+                container_hint=self.container_id,
             )
+            comp.add_evidence(
+                path=rel_path,
+                line_start=line_num,
+                line_end=line_num + 40,
+                reason=f"OncePerRequestFilter: {class_name}",
+            )
+            self.output.add_fact(comp)
 
-        return facts
-
-    def _extract_security_properties(self, file_path: Path, content: str) -> list[RawComponent]:
+    def _extract_security_properties(self, file_path: Path, content: str) -> None:
         """Extract security properties from YAML."""
-        facts = []
+        rel_path = self._relative_path(file_path)
 
         # OAuth2 config
         if "oauth2:" in content:
-            facts.append(
-                RawComponent(
-                    name="oauth2_config",
-                    component_type="security_property",
-                    file_path=file_path,
-                    description="OAuth2 configuration in application properties",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=1,
-                        line_end=50,
-                        reason="OAuth2 configuration in YAML",
-                    ),
-                    tags=["oauth2"],
-                )
+            comp = RawComponent(
+                name="oauth2_config",
+                stereotype="security_property",
+                file_path=rel_path,
+                container_hint=self.container_id,
+                tags=["oauth2"],
             )
+            comp.add_evidence(
+                path=rel_path,
+                line_start=1,
+                line_end=50,
+                reason="OAuth2 configuration in YAML",
+            )
+            self.output.add_fact(comp)
 
         # JWT config
         if "jwt:" in content:
-            facts.append(
-                RawComponent(
-                    name="jwt_config",
-                    component_type="security_property",
-                    file_path=file_path,
-                    description="JWT configuration in application properties",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=1,
-                        line_end=50,
-                        reason="JWT configuration in YAML",
-                    ),
-                    tags=["jwt"],
-                )
+            comp = RawComponent(
+                name="jwt_config",
+                stereotype="security_property",
+                file_path=rel_path,
+                container_hint=self.container_id,
+                tags=["jwt"],
             )
-
-        return facts
+            comp.add_evidence(
+                path=rel_path,
+                line_start=1,
+                line_end=50,
+                reason="JWT configuration in YAML",
+            )
+            self.output.add_fact(comp)

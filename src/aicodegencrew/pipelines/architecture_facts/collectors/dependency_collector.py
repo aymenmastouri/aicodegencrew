@@ -161,8 +161,9 @@ class DependencyCollector(DimensionCollector):
                 if not line or line.startswith("#") or line.startswith("-"):
                     continue
 
-                # Parse: package==version, package>=version, package
-                match = re.match(r"^([a-zA-Z0-9_-]+)([<>=!]+)?(.+)?$", line)
+                # Parse: package[extras]>=version, package>=version, package
+                # Strip extras brackets and environment markers first
+                match = re.match(r"^([a-zA-Z0-9_.-]+)(?:\[.*?\])?\s*([<>=!~]+)?(.+)?$", line)
                 if match:
                     name = match.group(1)
                     version = (match.group(2) or "") + (match.group(3) or "")
@@ -185,8 +186,11 @@ class DependencyCollector(DimensionCollector):
             content = pyproject_path.read_text(encoding="utf-8")
             rel_path = self._relative_path(pyproject_path)
 
-            # Parse [project] dependencies = ["pkg>=1.0"]
-            deps_match = re.search(r"dependencies\s*=\s*\[(.*?)\]", content, re.DOTALL)
+            # Parse [project] dependencies — find the first dependencies block after [project] section
+            # Anchor to [project] section to avoid matching [tool.X.dependencies]
+            project_match = re.search(r"^\[project\]", content, re.MULTILINE)
+            project_content = content[project_match.start():] if project_match else content
+            deps_match = re.search(r"dependencies\s*=\s*\[(.*?)\]", project_content, re.DOTALL)
             if deps_match:
                 deps_str = deps_match.group(1)
                 for dep in re.findall(r'["\']([^"\']+)["\']', deps_str):
@@ -254,11 +258,16 @@ class DependencyCollector(DimensionCollector):
                     "testimplementation": "test",
                 }
 
+                # Parse group:artifact:version format
+                dep_parts = dep.split(":")
+                dep_version = dep_parts[2] if len(dep_parts) >= 3 else ""
+
                 fact = RawDependency(
                     name=dep,
                     type="gradle",
-                    version="",  # Version often in dependency string
+                    version=dep_version,
                     scope=scope_map.get(scope, "compile"),
+                    group=dep_parts[0] if len(dep_parts) >= 2 else "",
                 )
                 fact.add_evidence(rel_path, line_num, line_num, f"Gradle dependency: {dep}")
                 self.output.add_fact(fact)

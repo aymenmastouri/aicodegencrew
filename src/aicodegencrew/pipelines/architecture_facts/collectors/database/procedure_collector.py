@@ -14,52 +14,58 @@ Output: Procedure/package facts for data_model.json
 import re
 from pathlib import Path
 
-from ..base import CollectorOutput, DimensionCollector, RawEntity, RawEvidence, RelationHint
+from ..base import DimensionCollector, RawEntity, RelationHint
 
 
 class OracleProcedureCollector(DimensionCollector):
     """Extracts Oracle stored procedure and package facts."""
 
-    def collect(self) -> CollectorOutput:
-        """Collect procedure/package facts from SQL files."""
-        facts: list[RawEntity] = []
-        relations: list[RelationHint] = []
+    DIMENSION = "database_procedures"
 
-        # Find SQL files
-        sql_patterns = ["*.sql", "*.pls", "*.pkb", "*.pks", "*.prc", "*.fnc", "*.trg"]
+    def collect(self):
+        """Collect procedure/package facts from SQL files."""
+        self._log_start()
+
+        # Find SQL files (using _find_files for SKIP_DIRS pruning)
         sql_files = []
-        for pattern in sql_patterns:
-            sql_files.extend(self.repo_path.rglob(pattern))
+        for pattern in ["*.sql", "*.pls", "*.pkb", "*.pks", "*.prc", "*.fnc", "*.trg"]:
+            sql_files.extend(self._find_files(pattern))
 
         for sql_file in sql_files:
             try:
-                content = sql_file.read_text(encoding="utf-8", errors="ignore")
+                content = self._read_file_content(sql_file)
+                rel_path = self._relative_path(sql_file)
 
                 # Procedures
-                facts.extend(self._extract_procedures(sql_file, content))
+                for fact in self._extract_procedures(rel_path, content):
+                    self.output.add_fact(fact)
 
                 # Functions
-                facts.extend(self._extract_functions(sql_file, content))
+                for fact in self._extract_functions(rel_path, content):
+                    self.output.add_fact(fact)
 
                 # Packages
-                facts.extend(self._extract_packages(sql_file, content))
+                for fact in self._extract_packages(rel_path, content):
+                    self.output.add_fact(fact)
 
                 # Triggers
-                facts.extend(self._extract_triggers(sql_file, content))
+                for fact in self._extract_triggers(rel_path, content):
+                    self.output.add_fact(fact)
 
                 # Dependencies
-                relations.extend(self._extract_dependencies(sql_file, content))
+                for rel in self._extract_dependencies(rel_path, content):
+                    self.output.add_relation(rel)
 
             except Exception:
                 continue
 
-        return CollectorOutput(facts=facts, relations=relations)
+        self._log_end()
+        return self.output
 
-    def _extract_procedures(self, file_path: Path, content: str) -> list[RawEntity]:
+    def _extract_procedures(self, rel_path: str, content: str) -> list[RawEntity]:
         """Extract procedure definitions."""
         facts = []
 
-        # CREATE [OR REPLACE] PROCEDURE [schema.]name (params) IS/AS
         proc_pattern = re.compile(
             r"CREATE\s+(?:OR\s+REPLACE\s+)?PROCEDURE\s+"
             r"(?:(\w+)\.)?(\w+)\s*"
@@ -73,33 +79,24 @@ class OracleProcedureCollector(DimensionCollector):
             proc_name = match.group(2)
             params = match.group(3) or "()"
             line_num = content[: match.start()].count("\n") + 1
-
-            # Count parameters
             param_count = params.count(",") + 1 if params.strip() != "()" else 0
 
-            facts.append(
-                RawEntity(
-                    name=proc_name,
-                    entity_type="procedure",
-                    file_path=file_path,
-                    description=f"Stored procedure: {proc_name} ({param_count} params)",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=line_num + 50,
-                        reason=f"CREATE PROCEDURE {proc_name}",
-                    ),
-                    schema=schema,
-                )
+            entity = RawEntity(
+                name=proc_name, type="procedure", schema=schema,
+                metadata={"param_count": param_count},
             )
+            entity.add_evidence(
+                path=rel_path, line_start=line_num, line_end=line_num + 50,
+                reason=f"CREATE PROCEDURE {proc_name}",
+            )
+            facts.append(entity)
 
         return facts
 
-    def _extract_functions(self, file_path: Path, content: str) -> list[RawEntity]:
+    def _extract_functions(self, rel_path: str, content: str) -> list[RawEntity]:
         """Extract function definitions."""
         facts = []
 
-        # CREATE [OR REPLACE] FUNCTION [schema.]name (params) RETURN type IS/AS
         func_pattern = re.compile(
             r"CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+"
             r"(?:(\w+)\.)?(\w+)\s*"
@@ -111,34 +108,26 @@ class OracleProcedureCollector(DimensionCollector):
         for match in func_pattern.finditer(content):
             schema = match.group(1) or ""
             func_name = match.group(2)
-            match.group(3) or "()"
             return_type = match.group(4)
             line_num = content[: match.start()].count("\n") + 1
 
-            facts.append(
-                RawEntity(
-                    name=func_name,
-                    entity_type="function",
-                    file_path=file_path,
-                    description=f"Function: {func_name} returns {return_type}",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=line_num + 50,
-                        reason=f"CREATE FUNCTION {func_name}",
-                    ),
-                    schema=schema,
-                    tags=[f"returns_{return_type.lower()}"],
-                )
+            entity = RawEntity(
+                name=func_name, type="function", schema=schema,
+                tags=[f"returns_{return_type.lower()}"],
+                metadata={"return_type": return_type},
             )
+            entity.add_evidence(
+                path=rel_path, line_start=line_num, line_end=line_num + 50,
+                reason=f"CREATE FUNCTION {func_name}",
+            )
+            facts.append(entity)
 
         return facts
 
-    def _extract_packages(self, file_path: Path, content: str) -> list[RawEntity]:
+    def _extract_packages(self, rel_path: str, content: str) -> list[RawEntity]:
         """Extract package definitions."""
         facts = []
 
-        # CREATE [OR REPLACE] PACKAGE [BODY] [schema.]name IS/AS
         pkg_pattern = re.compile(
             r"CREATE\s+(?:OR\s+REPLACE\s+)?PACKAGE\s+(BODY\s+)?"
             r"(?:(\w+)\.)?(\w+)\s*"
@@ -163,30 +152,23 @@ class OracleProcedureCollector(DimensionCollector):
             proc_count = len(re.findall(r"PROCEDURE\s+\w+", pkg_content, re.IGNORECASE))
             func_count = len(re.findall(r"FUNCTION\s+\w+", pkg_content, re.IGNORECASE))
 
-            facts.append(
-                RawEntity(
-                    name=pkg_name,
-                    entity_type=entity_type,
-                    file_path=file_path,
-                    description=f"Package {'body' if is_body else 'spec'}: {pkg_name} ({proc_count} procs, {func_count} funcs)",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=line_num + 100,
-                        reason=f"CREATE PACKAGE {'BODY ' if is_body else ''}{pkg_name}",
-                    ),
-                    schema=schema,
-                    tags=[f"{proc_count}_procedures", f"{func_count}_functions"],
-                )
+            entity = RawEntity(
+                name=pkg_name, type=entity_type, schema=schema,
+                tags=[f"{proc_count}_procedures", f"{func_count}_functions"],
+                metadata={"proc_count": proc_count, "func_count": func_count},
             )
+            entity.add_evidence(
+                path=rel_path, line_start=line_num, line_end=line_num + 100,
+                reason=f"CREATE PACKAGE {'BODY ' if is_body else ''}{pkg_name}",
+            )
+            facts.append(entity)
 
         return facts
 
-    def _extract_triggers(self, file_path: Path, content: str) -> list[RawEntity]:
+    def _extract_triggers(self, rel_path: str, content: str) -> list[RawEntity]:
         """Extract trigger definitions."""
         facts = []
 
-        # CREATE [OR REPLACE] TRIGGER [schema.]name BEFORE/AFTER event ON table
         trigger_pattern = re.compile(
             r"CREATE\s+(?:OR\s+REPLACE\s+)?TRIGGER\s+"
             r"(?:(\w+)\.)?(\w+)\s+"
@@ -201,42 +183,32 @@ class OracleProcedureCollector(DimensionCollector):
             trigger_name = match.group(2)
             timing = match.group(3)
             event = match.group(4)
-            match.group(5) or ""
             table_name = match.group(6)
             line_num = content[: match.start()].count("\n") + 1
 
-            facts.append(
-                RawEntity(
-                    name=trigger_name,
-                    entity_type="trigger",
-                    file_path=file_path,
-                    description=f"Trigger: {trigger_name} {timing} {event} ON {table_name}",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=line_num + 30,
-                        reason=f"CREATE TRIGGER {trigger_name} ON {table_name}",
-                    ),
-                    schema=schema,
-                    tags=[timing.lower(), event.lower(), f"on_{table_name.lower()}"],
-                )
+            entity = RawEntity(
+                name=trigger_name, type="trigger", schema=schema,
+                tags=[timing.lower(), event.lower(), f"on_{table_name.lower()}"],
+                metadata={"table": table_name, "timing": timing, "event": event},
             )
+            entity.add_evidence(
+                path=rel_path, line_start=line_num, line_end=line_num + 30,
+                reason=f"CREATE TRIGGER {trigger_name} ON {table_name}",
+            )
+            facts.append(entity)
 
         return facts
 
-    def _extract_dependencies(self, file_path: Path, content: str) -> list[RelationHint]:
+    def _extract_dependencies(self, rel_path: str, content: str) -> list[RelationHint]:
         """Extract procedure/package dependencies."""
         relations = []
 
-        # Find procedure/function that calls another
-        # Look for: procedure_name(...) pattern after procedure definition
-
-        # First, collect all defined procedure/function names
+        # Collect all defined procedure/function names
         defined = set()
         for match in re.finditer(r"(?:PROCEDURE|FUNCTION)\s+(\w+)", content, re.IGNORECASE):
             defined.add(match.group(1).upper())
 
-        # Then find calls to these within procedure bodies
+        # Find calls within procedure bodies
         current_proc = None
         for match in re.finditer(
             r"(?:CREATE\s+(?:OR\s+REPLACE\s+)?(?:PROCEDURE|FUNCTION)\s+(?:\w+\.)?(\w+))|"
@@ -249,18 +221,16 @@ class OracleProcedureCollector(DimensionCollector):
             elif match.group(2) and current_proc:
                 called = match.group(2).upper()
                 if called in defined and called != current_proc.upper():
-                    relations.append(
-                        RelationHint(
-                            from_name=current_proc,
-                            to_name=called,
-                            relation_type="calls",
-                            evidence=RawEvidence(
-                                file_path=file_path,
-                                line_start=content[: match.start()].count("\n") + 1,
-                                line_end=content[: match.start()].count("\n") + 1,
-                                reason=f"{current_proc} calls {called}",
-                            ),
-                        )
+                    line_num = content[: match.start()].count("\n") + 1
+                    hint = RelationHint(
+                        from_name=current_proc,
+                        to_name=called,
+                        type="calls",
                     )
+                    hint.add_evidence(
+                        path=rel_path, line_start=line_num, line_end=line_num,
+                        reason=f"{current_proc} calls {called}",
+                    )
+                    relations.append(hint)
 
         return relations

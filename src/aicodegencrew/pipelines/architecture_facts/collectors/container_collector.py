@@ -315,9 +315,14 @@ class ContainerCollector(DimensionCollector):
     def _is_test_directory(self, name: str) -> bool:
         """Check if directory name indicates a test container."""
         name_lower = name.lower()
-        # Check for test patterns
+        # Use exact match or hyphenated prefix/suffix to avoid false positives
+        # (e.g. "it" must not match "audit", "credit", "security")
         for pattern in self.TEST_DIR_PATTERNS:
-            if pattern in name_lower:
+            if name_lower == pattern:
+                return True
+            if name_lower.startswith(pattern + "-") or name_lower.endswith("-" + pattern):
+                return True
+            if name_lower.startswith(pattern + "_") or name_lower.endswith("_" + pattern):
                 return True
         return False
 

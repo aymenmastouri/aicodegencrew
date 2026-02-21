@@ -141,8 +141,7 @@ class ComponentCollector(DimensionCollector):
 
         logger.info(f"[ComponentCollector] Scanning Node.js/TS exports for '{container_name}' in {container_root}")
 
-        ts_files = list(container_root.rglob("*.ts")) + list(container_root.rglob("*.js"))
-        ts_files = [f for f in ts_files if "node_modules" not in str(f) and "dist" not in str(f)]
+        ts_files = self._find_files("*.ts", container_root) + self._find_files("*.js", container_root)
 
         count = 0
         for fpath in ts_files:
@@ -167,7 +166,7 @@ class ComponentCollector(DimensionCollector):
                 else:
                     stereo = "component"
 
-                rel_path = str(fpath.relative_to(self.repo_path))
+                rel_path = self._relative_path(fpath)
                 self.output.add_fact(
                     RawComponent(
                         name=name,
