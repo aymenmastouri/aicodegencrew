@@ -81,10 +81,13 @@ test.describe('Phases', () => {
   test('should disable Reset All button when no phases have completed or failed', async ({ page }) => {
     await expect(page.locator('.phase-table')).toBeVisible({ timeout: 10_000 });
     const resetAllBtn = page.locator('button:has-text("Reset All")');
-    // If no pipeline has ever run the button is disabled (hasResettablePhases returns false)
-    const anyCompleted = await page.locator('.status-chip:text("completed")').count();
-    const anyFailed = await page.locator('.status-chip:text("failed")').count();
-    if (anyCompleted === 0 && anyFailed === 0) {
+    // hasResettablePhases() checks: any terminal status (completed/partial/skipped/failed/cancelled), not discover
+    const terminalStatuses = ['completed', 'failed', 'cancelled', 'partial', 'skipped'];
+    let anyTerminal = 0;
+    for (const s of terminalStatuses) {
+      anyTerminal += await page.locator(`.status-chip:text("${s}")`).count();
+    }
+    if (anyTerminal === 0) {
       await expect(resetAllBtn).toBeDisabled();
     } else {
       await expect(resetAllBtn).toBeEnabled();

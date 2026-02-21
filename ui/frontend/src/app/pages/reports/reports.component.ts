@@ -71,7 +71,7 @@ interface ParsedComponent {
           <mat-tab>
             <ng-template mat-tab-label>
               <mat-icon class="tab-icon">auto_stories</mat-icon>
-              Architecture ({{ reports?.document_reports?.length || 0 }})
+              Architecture ({{ (docGroups['arc42']?.length || 0) + (docGroups['c4']?.length || 0) }})
             </ng-template>
 
             @if (docGroupKeys.length > 0) {
@@ -1771,25 +1771,21 @@ export class ReportsComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Group document files by subdirectory (arc42, c4, quality, other) */
+  /** Group document files by subdirectory — only arc42 and c4 are shown */
   private buildDocGroups(docs: Record<string, unknown>[]): void {
     const groups: Record<string, Record<string, unknown>[]> = {};
-    const order = ['arc42', 'c4', 'quality'];
+    const allowed = ['arc42', 'c4'];
     for (const doc of docs) {
       const filePath = (doc['_file'] as string) || '';
       // Extract subfolder: "document/arc42/file.md" → "arc42"
       const parts = filePath.split('/');
       const group = parts.length >= 3 ? parts[1] : 'other';
+      // Only keep arc42 and c4 documents
+      if (!allowed.includes(group)) continue;
       if (!groups[group]) groups[group] = [];
       groups[group].push(doc);
     }
-    // Sort keys: known groups first, then alphabetical
-    this.docGroupKeys = [
-      ...order.filter((k) => groups[k]),
-      ...Object.keys(groups)
-        .filter((k) => !order.includes(k))
-        .sort(),
-    ];
+    this.docGroupKeys = allowed.filter((k) => groups[k]);
     this.docGroups = groups;
   }
 

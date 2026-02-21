@@ -92,10 +92,12 @@ test.describe('Dashboard', () => {
 
   test('should show Reset All button only when phases are completed', async ({ page }) => {
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
-    const completed = page.locator('.phase-completed');
-    const completedCount = await completed.count();
+    // hasCompletedPhases() checks: terminal (completed/partial/failed/cancelled), not skipped, not discover
+    const terminalCount = await page.locator(
+      '.phase-completed, .phase-partial, .phase-failed, .phase-cancelled'
+    ).count();
     const resetAllBtn = page.locator('button:has-text("Reset All")');
-    if (completedCount > 0) {
+    if (terminalCount > 0) {
       await expect(resetAllBtn).toBeVisible();
     } else {
       await expect(resetAllBtn).toHaveCount(0);
