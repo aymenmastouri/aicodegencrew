@@ -181,7 +181,7 @@ class ArchitectureAnalysisCrew:
         """
         return [
             FactsStatisticsTool(facts_path=str(self.facts_path)),
-            FactsQueryTool(facts_path=str(self.facts_path), preloaded_cache=preloaded_cache),
+            FactsQueryTool(facts_dir=str(self.facts_path.parent), preloaded_cache=preloaded_cache),
             RAGQueryTool(chroma_dir=self.chroma_dir),
             StereotypeListTool(facts_path=str(self.facts_path)),
             SymbolQueryTool(),
@@ -415,7 +415,7 @@ class ArchitectureAnalysisCrew:
                             crew_name=name,
                             total_calls=len(tracker.calls),
                             unique_calls=len(set(tracker.calls)),
-                            blocked=len(tracker.calls) - len(set(tracker.calls)),
+                            duplicates=len(tracker.calls) - len(set(tracker.calls)),
                         )
                     except Exception:
                         pass

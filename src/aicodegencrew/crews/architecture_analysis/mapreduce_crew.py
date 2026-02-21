@@ -223,7 +223,7 @@ class MapReduceAnalysisCrew:
 
         return should_use
 
-    def run(self) -> str:
+    def run(self) -> dict[str, Any]:
         """Execute map-reduce analysis if beneficial, otherwise standard crew."""
         if not self.should_use_mapreduce():
             # Fall back to standard crew for small repos
@@ -242,7 +242,10 @@ class MapReduceAnalysisCrew:
         # Get containers
         facts = self._load_facts()
         containers = facts.get("containers", [])
-        container_names = [c.get("name", "unknown") for c in containers]
+        container_names = [
+            c.get("name") or c.get("id") or f"container_{i}"
+            for i, c in enumerate(containers)
+        ]
 
         logger.info(f"[MAP] Containers to analyze: {container_names}")
 
@@ -261,7 +264,11 @@ class MapReduceAnalysisCrew:
         logger.info(f"[MapReduce] Complete: {output_file}")
         logger.info("=" * 60)
 
-        return str(output_file)
+        return {
+            "status": "completed",
+            "phase": "analyze",
+            "result": str(output_file),
+        }
 
     def _is_cache_fresh(self, cache_file: Path) -> bool:
         """Return True when cache was produced for current or newer facts input."""
@@ -564,6 +571,6 @@ class MapReduceAnalysisCrew:
             logger.warning(f"Could not read facts: {e}")
             return {}
 
-    def kickoff(self, inputs: dict[str, Any] = None) -> str:
+    def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
         """Execute crew - compatible with orchestrator interface."""
         return self.run()

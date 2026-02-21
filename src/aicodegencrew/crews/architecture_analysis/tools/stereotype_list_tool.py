@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from ....shared.utils.logger import setup_logger
 from ....shared.utils.token_budget import truncate_response
@@ -113,12 +113,13 @@ class StereotypeListTool(BaseTool):
     args_schema: type[BaseModel] = StereotypeListInput
 
     facts_path: str = "knowledge/extract/architecture_facts.json"
-    _facts_cache: dict[str, Any] | None = None
+    _facts_cache: dict[str, Any] | None = PrivateAttr(default=None)
 
     def __init__(self, facts_path: str = None, **kwargs):
         super().__init__(**kwargs)
         if facts_path:
             self.facts_path = facts_path
+        self._facts_cache = None
 
     def _load_facts(self) -> dict[str, Any]:
         if self._facts_cache is not None:
