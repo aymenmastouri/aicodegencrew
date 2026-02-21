@@ -13,46 +13,50 @@ Output: View facts for data_model.json
 import re
 from pathlib import Path
 
-from ..base import CollectorOutput, DimensionCollector, RawEntity, RawEvidence, RelationHint
+from ..base import DimensionCollector, RawEntity, RelationHint
 
 
 class OracleViewCollector(DimensionCollector):
     """Extracts Oracle view facts."""
 
-    def collect(self) -> CollectorOutput:
-        """Collect view facts from SQL files."""
-        facts: list[RawEntity] = []
-        relations: list[RelationHint] = []
+    DIMENSION = "database_views"
 
-        # Find SQL files
-        sql_patterns = ["*.sql", "*.ddl", "*.vw"]
+    def collect(self):
+        """Collect view facts from SQL files."""
+        self._log_start()
+
+        # Find SQL files (using _find_files for SKIP_DIRS pruning)
         sql_files = []
-        for pattern in sql_patterns:
-            sql_files.extend(self.repo_path.rglob(pattern))
+        for pattern in ["*.sql", "*.ddl", "*.vw"]:
+            sql_files.extend(self._find_files(pattern))
 
         for sql_file in sql_files:
             try:
-                content = sql_file.read_text(encoding="utf-8", errors="ignore")
+                content = self._read_file_content(sql_file)
+                rel_path = self._relative_path(sql_file)
 
                 # Regular views
-                facts.extend(self._extract_views(sql_file, content))
+                for fact in self._extract_views(rel_path, content):
+                    self.output.add_fact(fact)
 
                 # Materialized views
-                facts.extend(self._extract_materialized_views(sql_file, content))
+                for fact in self._extract_materialized_views(rel_path, content):
+                    self.output.add_fact(fact)
 
                 # Extract view-table dependencies
-                relations.extend(self._extract_view_dependencies(sql_file, content))
+                for rel in self._extract_view_dependencies(rel_path, content):
+                    self.output.add_relation(rel)
 
             except Exception:
                 continue
 
-        return CollectorOutput(facts=facts, relations=relations)
+        self._log_end()
+        return self.output
 
-    def _extract_views(self, file_path: Path, content: str) -> list[RawEntity]:
+    def _extract_views(self, rel_path: str, content: str) -> list[RawEntity]:
         """Extract regular view definitions."""
         facts = []
 
-        # CREATE [OR REPLACE] VIEW [schema.]viewname AS SELECT...
         view_pattern = re.compile(
             r"CREATE\s+(?:OR\s+REPLACE\s+)?(?:FORCE\s+)?VIEW\s+"
             r"(?:(\w+)\.)?(\w+)\s*"
@@ -64,37 +68,28 @@ class OracleViewCollector(DimensionCollector):
         for match in view_pattern.finditer(content):
             schema = match.group(1) or ""
             view_name = match.group(2)
-            select_stmt = match.group(3)[:200]  # Truncate for evidence
+            select_stmt = match.group(3)[:200]
             line_num = content[: match.start()].count("\n") + 1
             line_end = content[: match.end()].count("\n") + 1
 
-            # Extract columns from SELECT
-            columns = self._extract_view_columns(select_stmt)
+            # Extract columns from SELECT as list[dict]
+            columns = [{"name": col} for col in self._extract_view_columns(select_stmt)]
 
-            facts.append(
-                RawEntity(
-                    name=view_name,
-                    entity_type="view",
-                    file_path=file_path,
-                    description=f"View: {schema + '.' if schema else ''}{view_name}",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=min(line_end, line_num + 30),
-                        reason=f"CREATE VIEW {view_name}",
-                    ),
-                    columns=columns,
-                    schema=schema,
-                )
+            entity = RawEntity(
+                name=view_name, type="view", schema=schema, columns=columns,
             )
+            entity.add_evidence(
+                path=rel_path, line_start=line_num, line_end=min(line_end, line_num + 30),
+                reason=f"CREATE VIEW {view_name}",
+            )
+            facts.append(entity)
 
         return facts
 
-    def _extract_materialized_views(self, file_path: Path, content: str) -> list[RawEntity]:
+    def _extract_materialized_views(self, rel_path: str, content: str) -> list[RawEntity]:
         """Extract materialized view definitions."""
         facts = []
 
-        # CREATE MATERIALIZED VIEW
         mv_pattern = re.compile(
             r"CREATE\s+MATERIALIZED\s+VIEW\s+"
             r"(?:(\w+)\.)?(\w+)\s*"
@@ -107,33 +102,27 @@ class OracleViewCollector(DimensionCollector):
         for match in mv_pattern.finditer(content):
             schema = match.group(1) or ""
             mv_name = match.group(2)
-            match.group(3)[:200]
             line_num = content[: match.start()].count("\n") + 1
             line_end = content[: match.end()].count("\n") + 1
 
             # Detect refresh type
             refresh_type = "unknown"
-            if "REFRESH FAST" in content[match.start() : match.end()].upper():
+            match_text = content[match.start() : match.end()].upper()
+            if "REFRESH FAST" in match_text:
                 refresh_type = "fast"
-            elif "REFRESH COMPLETE" in content[match.start() : match.end()].upper():
+            elif "REFRESH COMPLETE" in match_text:
                 refresh_type = "complete"
 
-            facts.append(
-                RawEntity(
-                    name=mv_name,
-                    entity_type="materialized_view",
-                    file_path=file_path,
-                    description=f"Materialized view: {mv_name} (refresh: {refresh_type})",
-                    evidence=RawEvidence(
-                        file_path=file_path,
-                        line_start=line_num,
-                        line_end=min(line_end, line_num + 40),
-                        reason=f"CREATE MATERIALIZED VIEW {mv_name}",
-                    ),
-                    schema=schema,
-                    tags=[f"refresh_{refresh_type}"],
-                )
+            entity = RawEntity(
+                name=mv_name, type="materialized_view", schema=schema,
+                tags=[f"refresh_{refresh_type}"],
+                metadata={"refresh_type": refresh_type},
             )
+            entity.add_evidence(
+                path=rel_path, line_start=line_num, line_end=min(line_end, line_num + 40),
+                reason=f"CREATE MATERIALIZED VIEW {mv_name}",
+            )
+            facts.append(entity)
 
         return facts
 
@@ -141,26 +130,22 @@ class OracleViewCollector(DimensionCollector):
         """Extract column names from SELECT statement."""
         columns = []
 
-        # Simple extraction: between SELECT and FROM
         select_match = re.search(r"SELECT\s+(.+?)\s+FROM", select_stmt, re.IGNORECASE | re.DOTALL)
 
         if select_match:
             column_part = select_match.group(1)
-            # Split by comma, handle aliases
             for col in column_part.split(","):
                 col = col.strip()
-                # Handle "expr AS alias" or "expr alias"
                 alias_match = re.search(r"(?:AS\s+)?(\w+)\s*$", col, re.IGNORECASE)
                 if alias_match:
                     columns.append(alias_match.group(1))
 
-        return columns[:20]  # Limit
+        return columns[:20]
 
-    def _extract_view_dependencies(self, file_path: Path, content: str) -> list[RelationHint]:
+    def _extract_view_dependencies(self, rel_path: str, content: str) -> list[RelationHint]:
         """Extract which tables a view depends on."""
         relations = []
 
-        # Find view names and their source tables
         view_pattern = re.compile(
             r"CREATE\s+(?:OR\s+REPLACE\s+)?(?:MATERIALIZED\s+)?VIEW\s+"
             r"(?:\w+\.)?(\w+)\s*.+?AS\s*SELECT.+?FROM\s+(.+?)(?:WHERE|GROUP|ORDER|;|$)",
@@ -171,28 +156,24 @@ class OracleViewCollector(DimensionCollector):
             view_name = match.group(1)
             from_clause = match.group(2)
 
-            # Extract table names from FROM clause
-            # Handle: table, schema.table, table alias, JOINs
             table_matches = re.finditer(r"(?:FROM|JOIN)\s+(?:(\w+)\.)?(\w+)(?:\s+(\w+))?", from_clause, re.IGNORECASE)
 
             for tm in table_matches:
                 table_name = tm.group(2)
-                # Skip if it looks like a keyword
                 if table_name.upper() in ("SELECT", "WHERE", "AND", "OR", "ON", "AS"):
                     continue
 
-                relations.append(
-                    RelationHint(
-                        from_name=view_name,
-                        to_name=table_name,
-                        relation_type="view_depends_on",
-                        evidence=RawEvidence(
-                            file_path=file_path,
-                            line_start=content[: match.start()].count("\n") + 1,
-                            line_end=content[: match.end()].count("\n") + 1,
-                            reason=f"View {view_name} references table {table_name}",
-                        ),
-                    )
+                line_num = content[: match.start()].count("\n") + 1
+                line_end = content[: match.end()].count("\n") + 1
+                hint = RelationHint(
+                    from_name=view_name,
+                    to_name=table_name,
+                    type="view_depends_on",
                 )
+                hint.add_evidence(
+                    path=rel_path, line_start=line_num, line_end=line_end,
+                    reason=f"View {view_name} references table {table_name}",
+                )
+                relations.append(hint)
 
         return relations

@@ -143,7 +143,7 @@ class InfrastructureCollector(DimensionCollector):
             if not k8s_path.exists():
                 continue
 
-            yaml_files = list(k8s_path.rglob("*.yaml")) + list(k8s_path.rglob("*.yml"))
+            yaml_files = self._find_files("*.yaml", k8s_path) + self._find_files("*.yml", k8s_path)
 
             for yaml_file in yaml_files:
                 content = self._read_file_content(yaml_file)

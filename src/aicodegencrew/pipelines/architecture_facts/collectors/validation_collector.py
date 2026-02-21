@@ -235,8 +235,8 @@ class ValidationCollector(DimensionCollector):
                 self.output.add_fact(fact)
 
     def _should_skip(self, path: Path) -> bool:
-        path_str = str(path).lower()
-        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
+        """Check if path should be skipped (path-component matching, not substring)."""
+        return bool(set(p.lower() for p in path.parts) & self.SKIP_DIRS)
 
     def _relative_path(self, file_path: Path) -> str:
         try:

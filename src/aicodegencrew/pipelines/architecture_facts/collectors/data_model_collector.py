@@ -101,7 +101,7 @@ class DataModelCollector(DimensionCollector):
 
             entity.add_evidence(
                 path=rel_path,
-                line_start=class_line - 2,
+                line_start=max(1, class_line - 2),
                 line_end=class_line + 5,
                 reason=f"JPA Entity: {entity_name} -> {table_name}",
             )
@@ -126,8 +126,10 @@ class DataModelCollector(DimensionCollector):
             field_type = match.group(1)
             field_name = match.group(2)
 
-            # Skip relationships (handled separately)
-            if field_type in ("List", "Set", "Collection") or "<" in field_type:
+            # Skip collection relationships (handled separately)
+            # Only skip known collection types, not all generics (Map, Optional are data fields)
+            collection_prefixes = ("List", "Set", "Collection", "Iterable")
+            if field_type in collection_prefixes or any(field_type.startswith(p + "<") for p in collection_prefixes):
                 continue
 
             field_area = content[max(0, match.start() - 100) : match.start()]

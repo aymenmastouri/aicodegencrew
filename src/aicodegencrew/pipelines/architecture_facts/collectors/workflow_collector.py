@@ -140,9 +140,7 @@ class WorkflowCollector(DimensionCollector):
     def _collect_bpmn_workflows(self):
         """Parse BPMN files for process definitions."""
         for ext in self.BPMN_EXTENSIONS:
-            for bpmn_file in self.repo_path.rglob(ext):
-                if self._should_skip(bpmn_file):
-                    continue
+            for bpmn_file in self._find_files(ext):
                 self._parse_bpmn_file(bpmn_file)
 
     def _parse_bpmn_file(self, file_path: Path):
@@ -438,8 +436,8 @@ class WorkflowCollector(DimensionCollector):
             method_name = method_match.group(1) + method_match.group(2)
             actions.append(method_name)
 
-        # Also look for common workflow method names
-        for pattern in [r"def\s+(approve|reject|submit|cancel|complete|start|pause|resume)\s*\("]:
+        # Also look for common workflow method names (Java method signature)
+        for pattern in [r"(?:public|protected|private)\s+\w+\s+(approve|reject|submit|cancel|complete|start|pause|resume)\s*\("]:
             for m in re.finditer(pattern, content, re.IGNORECASE):
                 actions.append(m.group(1))
 
@@ -707,9 +705,8 @@ class WorkflowCollector(DimensionCollector):
     # =========================================================================
 
     def _should_skip(self, path: Path) -> bool:
-        """Check if path should be skipped."""
-        path_str = str(path).lower()
-        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
+        """Check if path should be skipped (path-component matching, not substring)."""
+        return bool(set(p.lower() for p in path.parts) & self.SKIP_DIRS)
 
     def _read_file_content(self, file_path: Path) -> str | None:
         """Read file content safely."""

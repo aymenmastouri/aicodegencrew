@@ -85,10 +85,13 @@ class TechStackVersionCollector(DimensionCollector):
         if not version:
             return
 
-        # Skip if already have this tech with same or better version
+        # Skip if already have this tech — keep the more specific (longer) version
+        # but use segment count, not string length, for comparison
         if key in self.versions:
             existing = self.versions[key]
-            if len(existing.version) >= len(version):
+            existing_segments = existing.version.count(".") + 1
+            new_segments = version.count(".") + 1
+            if existing_segments >= new_segments:
                 return
 
         fact = TechVersion(
@@ -307,13 +310,10 @@ class TechStackVersionCollector(DimensionCollector):
             for dep_name, (tech_name, category) in version_map.items():
                 if dep_name in all_deps:
                     version = all_deps[dep_name]
-                    # Clean version (remove ^, ~, v prefix, extract major version)
-                    clean_version = re.sub(r"^[\^~>=<v]+", "", str(version))
-                    # Extract major version: "18.2.13" -> "18", "18-lts" -> "18"
-                    match = re.match(r"^(\d+)", clean_version)
-                    if match:
-                        clean_version = match.group(1)
-                    self._add_version(tech_name, clean_version, rel_path, category)
+                    # Clean version (remove ^, ~, v prefix) but keep full version
+                    clean_version = re.sub(r"^[\^~>=<v]+", "", str(version)).strip()
+                    if clean_version:
+                        self._add_version(tech_name, clean_version, rel_path, category)
 
             # Node.js engine
             engines = pkg.get("engines", {})
@@ -420,9 +420,8 @@ class TechStackVersionCollector(DimensionCollector):
         return results
 
     def _should_skip(self, path: Path) -> bool:
-        """Check if path should be skipped."""
-        path_str = str(path).lower()
-        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
+        """Check if path should be skipped (path-component matching, not substring)."""
+        return bool(set(p.lower() for p in path.parts) & self.SKIP_DIRS)
 
     def _relative_path(self, file_path: Path) -> str:
         """Get relative path from repo root."""
