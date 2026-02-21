@@ -12,20 +12,14 @@ from ..schemas import BranchInfo, BranchList, ReportList
 
 
 def list_reports() -> ReportList:
-    """List all phase outputs: extract, analyze, document, plan, implement."""
+    """List user-facing reports: document, plan, implement."""
     plans = _read_json_dir(settings.knowledge_dir / "plan", "*_plan.json")
     reports = _read_json_dir(settings.knowledge_dir / "implement", "*_report.json")
-
-    # Extract / Analyze / Document: metadata only (content loaded on demand)
-    extract = _list_file_meta(settings.knowledge_dir, "extract")
-    analyze = _list_file_meta(settings.knowledge_dir, "analyze")
     document = _list_file_meta(settings.knowledge_dir, "document")
 
     return ReportList(
         plans=plans,
         codegen_reports=reports,
-        extract_reports=extract,
-        analyze_reports=analyze,
         document_reports=document,
     )
 
