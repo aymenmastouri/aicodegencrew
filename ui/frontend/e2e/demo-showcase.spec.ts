@@ -41,6 +41,32 @@ async function scrollThrough(page: Page, selector: string, speed: 'slow' | 'fast
   }
 }
 
+/** Show a subtitle overlay at the bottom of the screen (visible in video recording) */
+async function showSubtitle(page: Page, text: string, durationMs = READ_PAUSE) {
+  await page.evaluate((t) => {
+    // Remove previous subtitle if any
+    document.getElementById('demo-subtitle')?.remove();
+    const el = document.createElement('div');
+    el.id = 'demo-subtitle';
+    el.textContent = t;
+    Object.assign(el.style, {
+      position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+      background: 'rgba(0,0,0,0.82)', color: '#fff', padding: '14px 32px',
+      borderRadius: '10px', fontSize: '20px', fontFamily: 'system-ui, sans-serif',
+      fontWeight: '500', zIndex: '99999', maxWidth: '80%', textAlign: 'center',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.3)', letterSpacing: '0.02em',
+      lineHeight: '1.5', pointerEvents: 'none',
+    });
+    document.body.appendChild(el);
+  }, text);
+  await pause(page, durationMs);
+}
+
+/** Remove the subtitle overlay */
+async function hideSubtitle(page: Page) {
+  await page.evaluate(() => document.getElementById('demo-subtitle')?.remove());
+}
+
 
 test.describe('Demo Showcase', () => {
   test('Full app walkthrough', async ({ page }) => {
@@ -54,10 +80,15 @@ test.describe('Demo Showcase', () => {
     await expect(page.locator('.hero, mat-toolbar').first()).toBeVisible({ timeout: 15_000 });
 
     // Reset via API — invisible to the viewer
+    // Step 1: Cancel any running/stale pipeline (fixes 409 on reset)
+    await page.request.post('http://localhost:4200/api/pipeline/cancel').catch(() => {});
+    await pause(page, 2000);
+
+    // Step 2: Reset all phases (retry on 409 in case cancel takes a moment)
     for (let attempt = 0; attempt < 3; attempt++) {
       const resp = await page.request.post('http://localhost:4200/api/reset/all');
       if (resp.ok()) break;
-      if (resp.status() === 409 && attempt < 2) { await pause(page, 10_000); continue; }
+      if (resp.status() === 409 && attempt < 2) { await pause(page, 5_000); continue; }
       break;
     }
     await page.request.post('http://localhost:4200/api/reset/clear-state', {
@@ -77,21 +108,25 @@ test.describe('Demo Showcase', () => {
     // ── 1a. Hero — "AI-Powered Development Lifecycle Automation" ──
     await page.goto('/dashboard');
     await expect(page.locator('.hero')).toBeVisible({ timeout: 15_000 });
-    await pause(page, READ_PAUSE);
+    await showSubtitle(page, 'AI-Powered SDLC Automation — from Jira task to generated code');
 
     // ── 1b. Getting Started card — 4 simple steps ──
+    await hideSubtitle(page);
     const onboardingCard = page.locator('.onboarding-card');
     if (await onboardingCard.isVisible({ timeout: 5_000 }).catch(() => false)) {
       await onboardingCard.scrollIntoViewIfNeeded();
-      await pause(page, READ_PAUSE);
+      await showSubtitle(page, 'Getting Started — 4 simple steps to automate your development lifecycle');
     }
 
     // ── 1c. Phase grid — 8 phases, all pending ──
+    await hideSubtitle(page);
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
+    await showSubtitle(page, '8 phases — from repository indexing to code generation and delivery', LONG_PAUSE);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
     await pause(page, LONG_PAUSE);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await pause(page, LONG_PAUSE);
+    await hideSubtitle(page);
     await page.evaluate(() => window.scrollTo(0, 0));
     await pause(page);
 
@@ -99,16 +134,17 @@ test.describe('Demo Showcase', () => {
     await navigateTo(page, 'Knowledge', '/knowledge');
     await expect(page.locator('.empty-state').or(page.locator('.stats-bar')).first())
       .toBeVisible({ timeout: 10_000 });
-    await pause(page, READ_PAUSE);
+    await showSubtitle(page, 'Knowledge base is empty — no documentation generated yet');
 
     // ════════════════════════════════════════════════════════════════
     //  ACT 2 — UPLOAD A JIRA TASK  (≈20 s)
     //  Goal: "Just drag-and-drop a task file — that's the only input."
     // ════════════════════════════════════════════════════════════════
 
+    await hideSubtitle(page);
     await navigateTo(page, 'Input Files', '/inputs');
     await expect(page.locator('.category-card')).toHaveCount(4, { timeout: 10_000 });
-    await pause(page, LONG_PAUSE);
+    await showSubtitle(page, 'Upload a Jira task — the only manual input needed', LONG_PAUSE);
 
     // Find the Task Files card
     const taskCard = page.locator('.category-card:has-text("Task Files")');
@@ -136,9 +172,10 @@ test.describe('Demo Showcase', () => {
     await fileChooser.setFiles('C:\\projects\\BNUVZ-12529.xml');
 
     // Success feedback
+    await hideSubtitle(page);
     const snackbar = page.locator('.mat-mdc-snack-bar-container');
     await expect(snackbar).toBeVisible({ timeout: 10_000 });
-    await pause(page, READ_PAUSE);
+    await showSubtitle(page, 'Task file uploaded successfully — ready to run the pipeline');
 
     // Confirm file appears in list
     await expect(taskCard.locator('.file-name:has-text("BNUVZ-12529.xml")'))
@@ -150,9 +187,10 @@ test.describe('Demo Showcase', () => {
     //  Goal: "Select a preset, click Run — that's it."
     // ════════════════════════════════════════════════════════════════
 
+    await hideSubtitle(page);
     await navigateTo(page, 'Run Pipeline', '/run');
     await expect(page.locator('.config-card')).toBeVisible({ timeout: 10_000 });
-    await pause(page, LONG_PAUSE);
+    await showSubtitle(page, 'Select a preset and click Run — one-click automation', LONG_PAUSE);
 
     // Open preset dropdown
     await page.locator('mat-select').first().click();
@@ -179,10 +217,11 @@ test.describe('Demo Showcase', () => {
     await pause(page, LONG_PAUSE);
 
     // HIT THE BUTTON
+    await hideSubtitle(page);
     const runBtn = page.locator('.config-card button:has-text("Run Pipeline")');
     await expect(runBtn).toBeEnabled({ timeout: 5_000 });
     await runBtn.click();
-    await pause(page, LONG_PAUSE);
+    await showSubtitle(page, 'Pipeline started — AI is now analyzing your codebase', LONG_PAUSE);
 
     // ════════════════════════════════════════════════════════════════
     //  ACT 4 — LIVE EXECUTION  (≈60–90 s visible, then wait)
@@ -207,9 +246,10 @@ test.describe('Demo Showcase', () => {
     }
 
     // ── Live Dashboard — phases switching green ──
+    await hideSubtitle(page);
     await navigateTo(page, 'Dashboard', '/dashboard');
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
-    await pause(page, READ_PAUSE);
+    await showSubtitle(page, 'Live dashboard — watch phases turn green in real-time', READ_PAUSE);
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await pause(page, LONG_PAUSE);
     await page.evaluate(() => window.scrollTo(0, 0));
@@ -221,8 +261,9 @@ test.describe('Demo Showcase', () => {
     await pause(page, READ_PAUSE);
 
     // ── Brief log stream (show "it's working", 1 scroll) ──
+    await hideSubtitle(page);
     await navigateTo(page, 'Run Pipeline', '/run');
-    await pause(page, LONG_PAUSE);
+    await showSubtitle(page, 'Live log stream — full transparency into what the AI is doing', LONG_PAUSE);
 
     const logViewport = page.locator('.log-viewport');
     if (await logViewport.isVisible({ timeout: 20_000 }).catch(() => false)) {
@@ -235,10 +276,21 @@ test.describe('Demo Showcase', () => {
     }
 
     // ── WAIT FOR COMPLETION — poll API ──
+    await hideSubtitle(page);
     const maxWaitMs = 7_200_000;
     const pollMs = 30_000;
     const startTime = Date.now();
     let pipelineDone = false;
+    const phaseLabels: Record<string, string> = {
+      discover: 'Indexing repository (25,000+ code chunks)',
+      extract:  'Extracting architecture facts from source code',
+      analyze:  'AI analyzing code structure and dependencies',
+      document: 'Generating C4 & arc42 architecture documentation',
+      plan:     'Creating development plans from Jira task',
+      implement:'AI writing code changes based on the plan',
+      verify:   'Running tests and build verification',
+      deliver:  'Generating final review and delivery report',
+    };
 
     while (Date.now() - startTime < maxWaitMs) {
       const resp = await page.request
@@ -249,6 +301,15 @@ test.describe('Demo Showcase', () => {
         if (['completed', 'failed', 'cancelled'].includes(data.state)) {
           pipelineDone = data.state === 'completed';
           break;
+        }
+        // Show current phase as subtitle
+        const running = (data.phase_progress || []).find(
+          (p: { status: string }) => p.status === 'running',
+        );
+        if (running) {
+          const label = phaseLabels[running.phase_id] || running.phase_id;
+          const pct = Math.round(data.progress_percent || 0);
+          await showSubtitle(page, `${label}  (${pct}% complete)`, 0);
         }
       }
       // Keep log tailing while waiting
@@ -276,9 +337,10 @@ test.describe('Demo Showcase', () => {
     // ════════════════════════════════════════════════════════════════
 
     // ── 5a. Dashboard — all phases GREEN ──
+    await hideSubtitle(page);
     await navigateTo(page, 'Dashboard', '/dashboard');
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
-    await pause(page, READ_PAUSE);
+    await showSubtitle(page, 'All phases completed — full SDLC pipeline done!', READ_PAUSE);
 
     // Scroll to show all completed phase cards
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight / 2));
@@ -289,7 +351,9 @@ test.describe('Demo Showcase', () => {
     await pause(page, LONG_PAUSE);
 
     // ── 5b. Knowledge — AI-generated architecture documentation ──
+    await hideSubtitle(page);
     await navigateTo(page, 'Knowledge', '/knowledge');
+    await showSubtitle(page, 'AI-generated architecture documentation — C4 models, arc42 chapters', LONG_PAUSE);
 
     if (await page.locator('.stats-bar').isVisible({ timeout: 10_000 }).catch(() => false)) {
       await pause(page, LONG_PAUSE);
@@ -327,9 +391,10 @@ test.describe('Demo Showcase', () => {
     }
 
     // ── 5c. Reports — Architecture tab ──
+    await hideSubtitle(page);
     await navigateTo(page, 'Reports', '/reports');
     await expect(page.locator('mat-tab-group')).toBeVisible({ timeout: 30_000 });
-    await pause(page, LONG_PAUSE);
+    await showSubtitle(page, 'Reports — architecture analysis, development plans, and code generation results', LONG_PAUSE);
 
     const archTab = page.getByRole('tab', { name: /Architecture/i });
     if (await archTab.isVisible().catch(() => false)) {
@@ -362,10 +427,11 @@ test.describe('Demo Showcase', () => {
     }
 
     // ── 5d. Reports — Development Plans ──
+    await hideSubtitle(page);
     const plansTab = page.getByRole('tab', { name: /Development Plans/i });
     if (await plansTab.isVisible().catch(() => false)) {
       await plansTab.click();
-      await pause(page, LONG_PAUSE);
+      await showSubtitle(page, 'AI-generated development plan — step-by-step implementation guide', LONG_PAUSE);
 
       const planPanels = page.locator('mat-expansion-panel');
       const planCount = await planPanels.count();
@@ -394,10 +460,11 @@ test.describe('Demo Showcase', () => {
     }
 
     // ── 5e. Reports — Code Generation ──
+    await hideSubtitle(page);
     const codegenTab = page.getByRole('tab', { name: /Code Generation/i });
     if (await codegenTab.isVisible().catch(() => false)) {
       await codegenTab.click();
-      await pause(page, LONG_PAUSE);
+      await showSubtitle(page, 'AI-generated code — ready to merge, with build verification', LONG_PAUSE);
 
       const codegenPanels = page.locator('mat-expansion-panel');
       const codegenCount = await codegenPanels.count();
@@ -412,10 +479,11 @@ test.describe('Demo Showcase', () => {
     }
 
     // ── 5f. Reports — Git Branches ──
+    await hideSubtitle(page);
     const branchesTab = page.getByRole('tab', { name: /Git Branches/i });
     if (await branchesTab.isVisible().catch(() => false)) {
       await branchesTab.click();
-      await pause(page, LONG_PAUSE);
+      await showSubtitle(page, 'Git branches — each task gets its own feature branch with generated code', LONG_PAUSE);
       const branchGrid = page.locator('.branches-grid');
       if (await branchGrid.isVisible({ timeout: 5_000 }).catch(() => false)) {
         await pause(page, READ_PAUSE);
@@ -427,10 +495,11 @@ test.describe('Demo Showcase', () => {
     //  Goal: "Every run is tracked — full traceability."
     // ════════════════════════════════════════════════════════════════
 
+    await hideSubtitle(page);
     await navigateTo(page, 'History', '/history');
     const filterBar = page.locator('.filter-bar, .history-filters');
     await expect(filterBar.first()).toBeVisible({ timeout: 10_000 });
-    await pause(page, LONG_PAUSE);
+    await showSubtitle(page, 'Complete audit trail — every pipeline run is tracked and reproducible', LONG_PAUSE);
 
     // Wait for table
     await page.waitForTimeout(2000);
@@ -458,13 +527,15 @@ test.describe('Demo Showcase', () => {
     //  FINALE — Dashboard closing shot  (≈10 s)
     // ════════════════════════════════════════════════════════════════
 
+    await hideSubtitle(page);
     await page.goto('/dashboard');
     await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
-    await pause(page, READ_PAUSE);
+    await showSubtitle(page, 'From Jira task to generated code — fully automated, fully traceable');
     // Scroll through the completed phase grid one last time
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await pause(page, READ_PAUSE);
     await page.evaluate(() => window.scrollTo(0, 0));
     await pause(page, READ_PAUSE);
+    await hideSubtitle(page);
   });
 });

@@ -136,7 +136,7 @@ class StereotypeListTool(BaseTool):
     def _run(self, stereotype: str, container: str = "", limit: int = 100, offset: int = 0) -> str:
         """Get components by stereotype (limited to prevent token overflow)."""
 
-        MAX_RESULTS = min(limit, 50)  # Hard cap at 50 to prevent context overflow
+        MAX_RESULTS = min(limit, 30)  # Hard cap at 30 to prevent context overflow
 
         facts = self._load_facts()
         components = facts.get("components", [])
