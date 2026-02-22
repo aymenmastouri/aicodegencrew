@@ -6,9 +6,10 @@ import { test, expect, Page } from '@playwright/test';
  * Optimised for non-technical audience: shows business value & outcomes only.
  * No Settings, Collectors, Phases-config, MCP, Logs, Metrics, Pipeline-Data.
  *
- * Story:  Empty Tool → Upload Task → One-Click Run → Live Progress →
- *         Generated Architecture Docs → Development Plans → Generated Code →
- *         Git Branches → Audit History → Done!
+ * Story:  Empty Tool → Dark Mode → Upload Task → One-Click Run → Live Progress →
+ *         Knowledge Search → Architecture Diagram → Export ZIP →
+ *         Development Plans → Generated Code → Git Branches →
+ *         Run Comparison → Audit History → Dark Mode Finale!
  *
  * Run:    npx playwright test --project=demo e2e/demo-showcase.spec.ts
  * Video:  test-results/demo-showcase-Demo-Showcase-.../video.webm
@@ -118,7 +119,21 @@ test.describe('Demo Showcase', () => {
       await showSubtitle(page, 'Getting Started — 4 simple steps to automate your development lifecycle');
     }
 
-    // ── 1c. Phase grid — 8 phases, all pending ──
+    // ── 1c. Dark Mode toggle — visual wow moment ──
+    await hideSubtitle(page);
+    const darkModeBtn = page.locator('mat-toolbar button:has(mat-icon:has-text("dark_mode"))');
+    if (await darkModeBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await darkModeBtn.click();
+      await showSubtitle(page, 'Built-in dark mode — one click to switch themes');
+      // Switch back to light for the rest of the demo
+      const lightModeBtn = page.locator('mat-toolbar button:has(mat-icon:has-text("light_mode"))');
+      if (await lightModeBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+        await lightModeBtn.click();
+        await pause(page, LONG_PAUSE);
+      }
+    }
+
+    // ── 1d. Phase grid — 8 phases, all pending ──
     await hideSubtitle(page);
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
     await showSubtitle(page, '8 phases — from repository indexing to code generation and delivery', LONG_PAUSE);
@@ -303,13 +318,16 @@ test.describe('Demo Showcase', () => {
           break;
         }
         // Show current phase as subtitle
-        const running = (data.phase_progress || []).find(
-          (p: { status: string }) => p.status === 'running',
-        );
+        const phases = data.phase_progress || [];
+        const running = phases.find((p: { status: string }) => p.status === 'running');
         if (running) {
           const label = phaseLabels[running.phase_id] || running.phase_id;
           const pct = Math.round(data.progress_percent || 0);
-          await showSubtitle(page, `${label}  (${pct}% complete)`, 0);
+          const skipped = phases.filter((p: { status: string }) => p.status === 'skipped');
+          const skippedNote = skipped.length > 0
+            ? `  [${skipped.map((s: { phase_id: string }) => s.phase_id).join(', ')} skipped — already cached]`
+            : '';
+          await showSubtitle(page, `${label}  (${pct}% complete)${skippedNote}`, 0);
         }
       }
       // Keep log tailing while waiting
@@ -390,17 +408,67 @@ test.describe('Demo Showcase', () => {
       }
     }
 
+    // ── 5b-extra. Knowledge Search ──
+    await hideSubtitle(page);
+    const searchInput = page.locator('.search-input');
+    if (await searchInput.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await showSubtitle(page, 'Full-text search across all generated documentation', PAUSE);
+      await searchInput.click();
+      await searchInput.fill('Controller');
+      await pause(page, LONG_PAUSE);
+      const searchResults = page.locator('.search-result-row');
+      if (await searchResults.first().isVisible({ timeout: 5_000 }).catch(() => false)) {
+        await pause(page, READ_PAUSE);
+        // Open a search result
+        await searchResults.first().click();
+        await pause(page, LONG_PAUSE);
+        // Close viewer if open
+        const closeBtn = page.locator('.viewer-panel button:has(mat-icon:has-text("close"))');
+        if (await closeBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+          await closeBtn.click();
+          await pause(page, 400);
+        }
+      }
+      // Clear search
+      const clearBtn = page.locator('.search-clear');
+      if (await clearBtn.isVisible().catch(() => false)) {
+        await clearBtn.click();
+        await pause(page);
+      }
+    }
+
     // ── 5c. Reports — Architecture tab ──
     await hideSubtitle(page);
     await navigateTo(page, 'Reports', '/reports');
     await expect(page.locator('mat-tab-group')).toBeVisible({ timeout: 30_000 });
     await showSubtitle(page, 'Reports — architecture analysis, development plans, and code generation results', LONG_PAUSE);
 
+    // Export ZIP button
+    const exportBtn = page.locator('button:has-text("Export ZIP")');
+    if (await exportBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await showSubtitle(page, 'One-click export — download all architecture docs as ZIP', LONG_PAUSE);
+      await exportBtn.click();
+      await pause(page, READ_PAUSE);
+    }
+
+    await hideSubtitle(page);
     const archTab = page.getByRole('tab', { name: /Architecture/i });
     if (await archTab.isVisible().catch(() => false)) {
       await archTab.click();
       await pause(page, LONG_PAUSE);
 
+      // Mermaid container diagram
+      const diagramCard = page.locator('.diagram-card');
+      if (await diagramCard.isVisible({ timeout: 10_000 }).catch(() => false)) {
+        await diagramCard.scrollIntoViewIfNeeded();
+        await showSubtitle(page, 'Auto-generated architecture diagram — containers and their relationships', READ_PAUSE);
+        const diagramSvg = page.locator('.diagram-container svg');
+        if (await diagramSvg.isVisible({ timeout: 10_000 }).catch(() => false)) {
+          await pause(page, READ_PAUSE);
+        }
+      }
+
+      await hideSubtitle(page);
       const docGroupHeaders = page.locator('.doc-group-header');
       const groupCount = await docGroupHeaders.count();
       for (let g = 0; g < groupCount; g++) {
@@ -521,6 +589,32 @@ test.describe('Demo Showcase', () => {
         await detailPanel.evaluate((el) => el.scrollTo(0, el.scrollHeight));
         await pause(page, LONG_PAUSE);
       }
+
+      // ── Run Comparison (if 2+ runs exist) ──
+      const compareCheckboxes = page.locator('.compare-col mat-checkbox');
+      if ((await compareCheckboxes.count()) >= 2) {
+        await hideSubtitle(page);
+        await showSubtitle(page, 'Run comparison — select two runs and compare phase-by-phase', PAUSE);
+        // Click first two checkboxes
+        await compareCheckboxes.nth(0).click();
+        await pause(page, PAUSE);
+        await compareCheckboxes.nth(1).click();
+        await pause(page, LONG_PAUSE);
+
+        // Click Compare button
+        const compareBtn = page.locator('button:has-text("Compare")');
+        if (await compareBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+          await compareBtn.click();
+          await pause(page, LONG_PAUSE);
+
+          const comparePanel = page.locator('.compare-panel');
+          if (await comparePanel.isVisible({ timeout: 5_000 }).catch(() => false)) {
+            await comparePanel.scrollIntoViewIfNeeded();
+            await pause(page, READ_PAUSE);
+            await scrollThrough(page, '.compare-panel', 'slow');
+          }
+        }
+      }
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -530,7 +624,15 @@ test.describe('Demo Showcase', () => {
     await hideSubtitle(page);
     await page.goto('/dashboard');
     await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
-    await showSubtitle(page, 'From Jira task to generated code — fully automated, fully traceable');
+
+    // Dramatic dark mode finale
+    const finalDarkBtn = page.locator('mat-toolbar button:has(mat-icon:has-text("dark_mode"))');
+    if (await finalDarkBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await finalDarkBtn.click();
+      await pause(page, LONG_PAUSE);
+    }
+
+    await showSubtitle(page, 'SDLC Pilot — from Jira task to generated code, fully automated');
     // Scroll through the completed phase grid one last time
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await pause(page, READ_PAUSE);
