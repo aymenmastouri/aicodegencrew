@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { RouterLink } from '@angular/router';
 
 import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../../services/pipeline.service';
@@ -36,6 +37,7 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
     MatTooltipModule,
     MatTableModule,
     MatPaginatorModule,
+    MatCheckboxModule,
     RouterLink,
   ],
   template: `
@@ -47,6 +49,15 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
           <p class="page-subtitle">Pipeline execution and reset history with detailed outcomes</p>
         </div>
         <span class="flex-1"></span>
+        @if (selectedForCompare.size === 2) {
+          <button mat-flat-button color="primary" (click)="showComparison()">
+            <mat-icon>compare_arrows</mat-icon> Compare ({{ selectedForCompare.size }})
+          </button>
+        } @else if (selectedForCompare.size > 0) {
+          <button mat-stroked-button disabled>
+            <mat-icon>compare_arrows</mat-icon> Select {{ 2 - selectedForCompare.size }} more
+          </button>
+        }
         <button mat-stroked-button color="primary" routerLink="/run">
           <mat-icon>rocket_launch</mat-icon> Run Pipeline
         </button>
@@ -124,6 +135,22 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
         <!-- Master Table -->
         <div class="table-card">
           <table mat-table [dataSource]="dataSource" class="history-table">
+            <!-- Compare Checkbox Column -->
+            <ng-container matColumnDef="compare">
+              <th mat-header-cell *matHeaderCellDef class="compare-col"></th>
+              <td mat-cell *matCellDef="let row" class="compare-col">
+                @if (row.trigger !== 'reset') {
+                  <mat-checkbox
+                    [checked]="selectedForCompare.has(row.run_id)"
+                    (change)="toggleCompareSelection(row.run_id, $event.checked)"
+                    (click)="$event.stopPropagation()"
+                    [disabled]="!selectedForCompare.has(row.run_id) && selectedForCompare.size >= 2"
+                    matTooltip="Select for comparison"
+                  ></mat-checkbox>
+                }
+              </td>
+            </ng-container>
+
             <!-- Trigger Column -->
             <ng-container matColumnDef="trigger">
               <th mat-header-cell *matHeaderCellDef>Type</th>
@@ -230,6 +257,72 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
           </table>
           <mat-paginator [pageSize]="20" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
         </div>
+
+        <!-- Comparison Panel -->
+        @if (comparisonVisible && comparisonRuns.length === 2) {
+          <div class="compare-panel">
+            <div class="compare-header">
+              <h3 class="compare-title"><mat-icon>compare_arrows</mat-icon> Run Comparison</h3>
+              <button mat-icon-button (click)="closeComparison()" matTooltip="Close comparison">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+            <div class="compare-grid">
+              @for (run of comparisonRuns; track run.run_id) {
+                <div class="compare-col-card">
+                  <div class="compare-run-id mono-text">{{ run.run_id }}</div>
+                  <span class="status-chip" [class]="'status-' + displayStatus(run)">{{ displayStatusLabel(run) }}</span>
+                  <div class="compare-meta">
+                    {{ run.started_at | date: 'medium' }}
+                    @if (run.duration_seconds) {
+                      <span>&middot; {{ formatDurationShort(run.duration_seconds) }}</span>
+                    }
+                  </div>
+                  <div class="compare-phases">
+                    @for (ph of run.phases; track ph) {
+                      <span class="phase-chip-sm" [matTooltip]="humanize(ph)">{{ shortPhase(ph) }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            @if (comparisonDetails.length === 2) {
+              <h4 class="compare-section-title">Phase-by-Phase Comparison</h4>
+              <div class="compare-table">
+                <div class="ct-header">
+                  <span class="ct-phase">Phase</span>
+                  <span class="ct-status">{{ comparisonRuns[0].run_id }}</span>
+                  <span class="ct-status">{{ comparisonRuns[1].run_id }}</span>
+                  <span class="ct-delta">Delta</span>
+                </div>
+                @for (row of comparisonPhaseRows; track row.phase) {
+                  <div class="ct-row">
+                    <span class="ct-phase">{{ row.phase }}</span>
+                    <span class="ct-status">
+                      <span class="status-chip status-sm" [class]="'status-' + row.status1">{{ row.status1 }}</span>
+                      @if (row.duration1) {
+                        <span class="ct-dur">{{ formatDurationShort(row.duration1) }}</span>
+                      }
+                    </span>
+                    <span class="ct-status">
+                      <span class="status-chip status-sm" [class]="'status-' + row.status2">{{ row.status2 }}</span>
+                      @if (row.duration2) {
+                        <span class="ct-dur">{{ formatDurationShort(row.duration2) }}</span>
+                      }
+                    </span>
+                    <span class="ct-delta" [class.delta-better]="row.delta < 0" [class.delta-worse]="row.delta > 0">
+                      @if (row.delta !== 0 && (row.duration1 || row.duration2)) {
+                        {{ row.delta > 0 ? '+' : '' }}{{ formatDurationShort(row.delta) }}
+                      } @else {
+                        —
+                      }
+                    </span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
 
         <!-- Detail Panel -->
         @if (selectedRun) {
@@ -506,6 +599,122 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
         height: 14px;
       }
 
+      /* Compare checkbox column */
+      .compare-col {
+        width: 40px;
+        padding-right: 0 !important;
+      }
+
+      /* Comparison Panel */
+      .compare-panel {
+        margin-top: 16px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        border: 1px solid rgba(0, 112, 173, 0.15);
+      }
+      .compare-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .compare-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+        color: var(--cg-gray-900);
+      }
+      .compare-title .mat-icon {
+        color: var(--cg-blue);
+      }
+      .compare-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      .compare-col-card {
+        padding: 14px;
+        border-radius: 10px;
+        background: var(--cg-gray-50);
+        border: 1px solid var(--cg-gray-100);
+      }
+      .compare-run-id {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .compare-meta {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        margin-top: 6px;
+      }
+      .compare-phases {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .compare-section-title {
+        font-size: 14px;
+        font-weight: 500;
+        margin: 0 0 10px;
+        color: var(--cg-gray-700);
+      }
+      .compare-table {
+        border: 1px solid var(--cg-gray-100);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .ct-header {
+        display: grid;
+        grid-template-columns: 1.5fr 2fr 2fr 1fr;
+        gap: 8px;
+        padding: 8px 14px;
+        background: var(--cg-gray-50);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--cg-gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .ct-row {
+        display: grid;
+        grid-template-columns: 1.5fr 2fr 2fr 1fr;
+        gap: 8px;
+        padding: 8px 14px;
+        font-size: 13px;
+        border-top: 1px solid var(--cg-gray-50);
+        align-items: center;
+      }
+      .ct-phase {
+        font-weight: 500;
+      }
+      .ct-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .ct-dur {
+        font-size: 11px;
+        font-family: monospace;
+        color: var(--cg-gray-500);
+      }
+      .ct-delta {
+        font-size: 12px;
+        font-family: monospace;
+      }
+      .delta-better {
+        color: var(--cg-success);
+      }
+      .delta-worse {
+        color: var(--cg-error);
+      }
+
       /* Detail Panel */
       .detail-panel {
         margin-top: 16px;
@@ -757,7 +966,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
   loading = true;
   allEntries: RunHistoryEntry[] = [];
   dataSource = new MatTableDataSource<RunHistoryEntry>([]);
-  displayedColumns = ['trigger', 'run_id', 'preset', 'phases', 'status', 'started_at', 'duration', 'actions'];
+  displayedColumns = ['compare', 'trigger', 'run_id', 'preset', 'phases', 'status', 'started_at', 'duration', 'actions'];
 
   activeFilter = 'all';
   searchTerm = '';
@@ -776,6 +985,13 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   /** Keys currently revealed in the environment panel (populated by user click). */
   revealedKeys = new Set<string>();
+
+  /** Run comparison */
+  selectedForCompare = new Set<string>();
+  comparisonVisible = false;
+  comparisonRuns: RunHistoryEntry[] = [];
+  comparisonDetails: RunDetail[] = [];
+  comparisonPhaseRows: { phase: string; status1: string; status2: string; duration1: number; duration2: number; delta: number }[] = [];
 
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -914,6 +1130,76 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.filters[1].count = this.allEntries.filter((e) => e.trigger !== 'reset').length;
     this.filters[2].count = this.allEntries.filter((e) => e.trigger === 'reset').length;
     this.filters[3].count = this.allEntries.filter((e) => e.status === 'failed').length;
+  }
+
+  toggleCompareSelection(runId: string, checked: boolean): void {
+    if (checked) {
+      if (this.selectedForCompare.size < 2) {
+        this.selectedForCompare.add(runId);
+      }
+    } else {
+      this.selectedForCompare.delete(runId);
+    }
+  }
+
+  showComparison(): void {
+    const ids = [...this.selectedForCompare];
+    this.comparisonRuns = ids
+      .map((id) => this.allEntries.find((e) => e.run_id === id))
+      .filter((e): e is RunHistoryEntry => !!e);
+
+    this.comparisonDetails = [];
+    this.comparisonPhaseRows = [];
+    this.comparisonVisible = true;
+
+    // Fetch details for both runs
+    let loaded = 0;
+    for (const runId of ids) {
+      this.pipelineSvc.getRunDetail(runId).subscribe({
+        next: (d) => {
+          this.comparisonDetails.push(d);
+          loaded++;
+          if (loaded === 2) {
+            this.buildComparisonRows();
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          loaded++;
+          this.cdr.markForCheck();
+        },
+      });
+    }
+    this.cdr.markForCheck();
+  }
+
+  closeComparison(): void {
+    this.comparisonVisible = false;
+    this.selectedForCompare.clear();
+  }
+
+  private buildComparisonRows(): void {
+    if (this.comparisonDetails.length < 2) return;
+    const d1 = this.comparisonDetails[0];
+    const d2 = this.comparisonDetails[1];
+    const phases1 = new Map((d1.phase_results || []).map((p) => [p.phase_id || p.name, p]));
+    const phases2 = new Map((d2.phase_results || []).map((p) => [p.phase_id || p.name, p]));
+    const allPhases = new Set([...phases1.keys(), ...phases2.keys()]);
+
+    this.comparisonPhaseRows = [...allPhases].map((phase) => {
+      const p1 = phases1.get(phase);
+      const p2 = phases2.get(phase);
+      const dur1 = p1?.duration_seconds || 0;
+      const dur2 = p2?.duration_seconds || 0;
+      return {
+        phase: p1?.name || p2?.name || this.humanize(phase ?? ''),
+        status1: this.displayPhaseStatus(p1?.status || '—'),
+        status2: this.displayPhaseStatus(p2?.status || '—'),
+        duration1: dur1,
+        duration2: dur2,
+        delta: dur2 - dur1,
+      };
+    });
   }
 
   toggleDetail(row: RunHistoryEntry): void {

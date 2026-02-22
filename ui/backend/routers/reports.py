@@ -2,9 +2,11 @@
 
 from fastapi import APIRouter, HTTPException
 from fastapi import Path as PathParam
+from fastapi.responses import StreamingResponse
 
 from ..schemas import BranchList, ReportList
 from ..services.report_reader import (
+    create_docs_zip,
     delete_codegen_branch,
     list_codegen_branches,
     list_reports,
@@ -12,6 +14,17 @@ from ..services.report_reader import (
 )
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
+
+
+@router.get("/export")
+def export_reports():
+    """Export arc42 + c4 docs as ZIP."""
+    buf = create_docs_zip()
+    return StreamingResponse(
+        buf,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=sdlc-docs.zip"},
+    )
 
 
 @router.get("", response_model=ReportList)

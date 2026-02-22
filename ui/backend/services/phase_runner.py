@@ -19,6 +19,7 @@ from aicodegencrew.shared.utils.phase_state import read_all_phases
 
 from ..config import settings
 from ..schemas import PhaseInfo, PhaseStatus, PipelineStatus, PresetInfo
+from .history_service import get_phase_duration_averages
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +196,12 @@ def get_pipeline_status() -> PipelineStatus:
         raw[phase_id] = status
         phase_data.append((phase_id, definition, status, duration, state_entry, output_exists))
 
+    # Load historical phase duration averages for ETA display
+    try:
+        avg_durations = get_phase_duration_averages()
+    except Exception:
+        avg_durations = {}
+
     # Second pass: downgrade "ready" → "planned" when dependencies are not yet satisfied
     _success = {PHASE_PROGRESS_COMPLETED, PHASE_PROGRESS_PARTIAL, PHASE_PROGRESS_SKIPPED}
     statuses = []
@@ -218,6 +225,7 @@ def get_pipeline_status() -> PipelineStatus:
                 output_exists=output_exists,
                 duration_seconds=duration,
                 last_run=state_entry.get("completed_at") if state_entry else None,
+                avg_duration_seconds=avg_durations.get(phase_id),
             )
         )
 

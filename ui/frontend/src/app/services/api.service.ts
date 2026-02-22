@@ -20,6 +20,7 @@ export interface PhaseStatus {
   last_run?: string;
   duration_seconds?: number;
   output_exists: boolean;
+  avg_duration_seconds?: number;
 }
 
 export interface PipelineStatus {
@@ -168,6 +169,12 @@ export class ApiService {
     return this.http.get<KnowledgeSummary>(`${this.base}/knowledge`);
   }
 
+  searchKnowledge(q: string): Observable<{ file: string; line: number; content: string }[]> {
+    return this.http.get<{ file: string; line: number; content: string }[]>(`${this.base}/knowledge/search`, {
+      params: new HttpParams().set('q', q),
+    });
+  }
+
   getKnowledgeFile(path: string): Observable<unknown> {
     return this.http.get(`${this.base}/knowledge/file`, {
       params: new HttpParams().set('path', path),
@@ -207,6 +214,11 @@ export class ApiService {
   getLogs(filename = 'current.log', tail = 200): Observable<LogResponse> {
     const params = new HttpParams().set('filename', filename).set('tail', tail.toString());
     return this.http.get<LogResponse>(`${this.base}/logs`, { params });
+  }
+
+  // Architecture diagram
+  getArchitectureDiagram(): Observable<{ mermaid: string }> {
+    return this.http.get<{ mermaid: string }>(`${this.base}/knowledge/architecture/diagram`);
   }
 
   // Diagrams

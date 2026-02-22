@@ -77,6 +77,76 @@ def list_knowledge_files() -> KnowledgeSummary:
     return KnowledgeSummary(total_files=len(files), total_size_bytes=total_size, files=files)
 
 
+def search_knowledge_files(query: str, max_results: int = 50) -> list[dict]:
+    """Search for query string in knowledge text files."""
+    results: list[dict] = []
+    knowledge_dir = settings.knowledge_dir
+    if not knowledge_dir.exists():
+        return results
+    query_lower = query.lower()
+    for path in sorted(knowledge_dir.rglob("*")):
+        if not path.is_file() or _is_excluded(path, knowledge_dir):
+            continue
+        if path.suffix.lower() not in {".json", ".md", ".yaml", ".yml"}:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for i, line in enumerate(text.splitlines(), 1):
+                if query_lower in line.lower():
+                    results.append(
+                        {
+                            "file": str(path.relative_to(knowledge_dir)),
+                            "line": i,
+                            "content": line.strip()[:200],
+                        }
+                    )
+                    if len(results) >= max_results:
+                        return results
+        except OSError:
+            continue
+    return results
+
+
+def generate_container_diagram() -> str:
+    """Generate Mermaid graph from containers.json."""
+    containers_path = settings.knowledge_dir / "extract" / "containers.json"
+    if not containers_path.exists():
+        return "graph LR\n  A[No containers data]"
+    try:
+        data = json.loads(containers_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return "graph LR\n  A[Error reading containers]"
+    containers = data if isinstance(data, list) else data.get("containers", [])
+    if not containers:
+        return "graph LR\n  A[No containers found]"
+
+    lines = ["graph TD"]
+    # Build nodes (limit for readability)
+    seen_ids: set[str] = set()
+    for c in containers[:30]:
+        name = str(c.get("name", "?")).replace('"', "'")
+        tech = str(c.get("technology", ""))
+        label = f"{name}<br/><i>{tech}</i>" if tech else name
+        cid = _mermaid_id(c.get("id", name))
+        if cid in seen_ids:
+            continue
+        seen_ids.add(cid)
+        lines.append(f'  {cid}["{label}"]')
+    # Add relationships
+    for c in containers[:30]:
+        cid = _mermaid_id(c.get("id", c.get("name", "")))
+        for dep in (c.get("dependencies", []) or [])[:5]:
+            did = _mermaid_id(dep)
+            if did in seen_ids:
+                lines.append(f"  {cid} --> {did}")
+    return "\n".join(lines)
+
+
+def _mermaid_id(raw: object) -> str:
+    """Sanitize a string for use as a Mermaid node ID."""
+    return str(raw).replace("-", "_").replace(".", "_").replace(" ", "_")
+
+
 def read_knowledge_file(relative_path: str) -> dict | list | str:
     """Read a knowledge file by relative path."""
     file_path = settings.knowledge_dir / relative_path

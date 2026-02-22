@@ -10,6 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { NotificationService } from './services/notification.service';
+import { ThemeService } from './services/theme.service';
 
 type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
 
@@ -48,6 +49,22 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         <span class="brand-sub">AI-Powered Development Lifecycle Automation</span>
       </a>
       <span class="flex-1"></span>
+
+      <!-- Notification Permission -->
+      @if (notifSvc.notificationPermission() === 'default') {
+        <button mat-icon-button (click)="notifSvc.requestPermission()" matTooltip="Enable notifications">
+          <mat-icon class="text-white">notifications_none</mat-icon>
+        </button>
+      }
+
+      <!-- Theme Toggle -->
+      <button
+        mat-icon-button
+        (click)="themeSvc.toggle()"
+        [matTooltip]="themeSvc.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <mat-icon class="text-white">{{ themeSvc.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
 
       <!-- Pipeline Status Indicator -->
       @if (notifSvc.notification$ | async; as notif) {
@@ -419,7 +436,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private mediaRail!: MediaQueryList;
   private mediaFull!: MediaQueryList;
 
-  constructor(public notifSvc: NotificationService) {}
+  constructor(
+    public notifSvc: NotificationService,
+    public themeSvc: ThemeService,
+  ) {}
 
   ngOnInit(): void {
     // < 1024px → overlay (hidden by default)

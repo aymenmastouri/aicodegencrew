@@ -9,7 +9,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
 
 import { marked } from 'marked';
 import { ApiService, KnowledgeFile } from '../../services/api.service';
@@ -38,6 +42,8 @@ interface FileGroup {
     MatChipsModule,
     MatTooltipModule,
     MatSnackBarModule,
+    MatFormFieldModule,
+    MatInputModule,
     RouterLink,
   ],
   template: `
@@ -64,6 +70,48 @@ interface FileGroup {
           </button>
         </div>
       } @else {
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input
+            class="search-input"
+            placeholder="Search knowledge files..."
+            [value]="searchQuery"
+            (input)="onSearch($event)"
+          />
+          @if (searchQuery) {
+            <button class="search-clear" (click)="clearSearch()">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- Search Results -->
+        @if (searchQuery && searchResults.length > 0) {
+          <div class="search-results">
+            <div class="search-results-header">
+              <mat-icon>search</mat-icon>
+              <span>{{ searchResults.length }} results for "{{ searchQuery }}"</span>
+            </div>
+            @for (result of searchResults; track $index) {
+              <div class="search-result-row" (click)="openSearchResult(result)">
+                <div class="sr-file">
+                  <mat-icon class="sr-icon">description</mat-icon>
+                  <span class="sr-path">{{ result.file }}</span>
+                  <span class="sr-line">:{{ result.line }}</span>
+                </div>
+                <div class="sr-content">{{ result.content }}</div>
+              </div>
+            }
+          </div>
+        }
+        @if (searchQuery && searchResults.length === 0 && !searchLoading) {
+          <div class="search-empty">
+            <mat-icon>search_off</mat-icon>
+            <span>No results found for "{{ searchQuery }}"</span>
+          </div>
+        }
+
         <!-- Stats Bar -->
         <div class="stats-bar">
           <div class="stat-item">
@@ -314,6 +362,133 @@ interface FileGroup {
   `,
   styles: [
     `
+      /* ── Search ──────────────────────────────────────── */
+      .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        background: #fff;
+        border: 1px solid var(--cg-gray-200);
+        border-radius: 10px;
+        padding: 8px 14px;
+        transition: border-color 0.15s;
+      }
+      .search-bar:focus-within {
+        border-color: var(--cg-blue);
+      }
+      .search-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--cg-gray-400);
+      }
+      .search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        background: transparent;
+        color: var(--cg-gray-900);
+      }
+      .search-input::placeholder {
+        color: var(--cg-gray-400);
+      }
+      .search-clear {
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: var(--cg-gray-400);
+        padding: 0;
+        display: flex;
+      }
+      .search-clear:hover {
+        color: var(--cg-gray-600);
+      }
+      .search-clear .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      .search-results {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid var(--cg-gray-100);
+        margin-bottom: 16px;
+        overflow: hidden;
+      }
+      .search-results-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-500);
+        border-bottom: 1px solid var(--cg-gray-100);
+      }
+      .search-results-header .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-blue);
+      }
+      .search-result-row {
+        padding: 8px 14px;
+        cursor: pointer;
+        transition: background 0.1s;
+        border-bottom: 1px solid var(--cg-gray-50);
+      }
+      .search-result-row:last-child {
+        border-bottom: none;
+      }
+      .search-result-row:hover {
+        background: var(--cg-gray-50);
+      }
+      .sr-file {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 2px;
+      }
+      .sr-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        color: var(--cg-blue);
+      }
+      .sr-path {
+        font-size: 12px;
+        font-family: monospace;
+        color: var(--cg-gray-600);
+      }
+      .sr-line {
+        font-size: 11px;
+        color: var(--cg-gray-400);
+      }
+      .sr-content {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-left: 20px;
+      }
+      .search-empty {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        color: var(--cg-gray-400);
+        font-size: 13px;
+      }
+      .search-empty .mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
       /* ── Stats icons ─────────────────────────────────── */
       .stat-docs .mat-icon {
         color: var(--cg-blue);
@@ -741,6 +916,11 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
   viewMode: 'source' | 'rendered' = 'rendered';
   fileLoading = false;
 
+  searchQuery = '';
+  searchResults: { file: string; line: number; content: string }[] = [];
+  searchLoading = false;
+  private searchSubject = new Subject<string>();
+
   constructor(
     private api: ApiService,
     private cdr: ChangeDetectorRef,
@@ -756,10 +936,29 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadKnowledge();
     this.refreshTimer = setInterval(() => this.loadKnowledge(), 10000);
+
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((q) => {
+          if (q.length < 2) {
+            return of([]);
+          }
+          this.searchLoading = true;
+          return this.api.searchKnowledge(q).pipe(catchError(() => of([])));
+        }),
+      )
+      .subscribe((results) => {
+        this.searchResults = results;
+        this.searchLoading = false;
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.searchSubject.complete();
   }
 
   private loadKnowledge(): void {
@@ -774,6 +973,31 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  onSearch(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery = value;
+    this.searchSubject.next(value);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.searchSubject.next('');
+  }
+
+  openSearchResult(result: { file: string; line: number; content: string }): void {
+    // Find the matching knowledge file and open it in the viewer
+    const path = result.file.replace(/\\/g, '/');
+    const fakeFile: KnowledgeFile = {
+      path,
+      name: path.split('/').pop() || path,
+      size_bytes: 0,
+      modified: '',
+      type: path.endsWith('.json') ? 'json' : path.endsWith('.md') ? 'md' : 'other',
+    };
+    this.viewFile(fakeFile);
   }
 
   // ─── Categorization ─────────────────────────────────────────────

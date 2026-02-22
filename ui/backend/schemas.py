@@ -27,6 +27,7 @@ class PhaseStatus(BaseModel):
     last_run: str | None = None
     duration_seconds: float | None = None
     output_exists: bool = False
+    avg_duration_seconds: float | None = None
 
 
 class PipelineStatus(BaseModel):
