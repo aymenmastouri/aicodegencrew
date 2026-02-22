@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, Subscription, timer, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
@@ -30,6 +30,11 @@ export class NotificationService implements OnDestroy {
 
   readonly notification$ = this.state$.asObservable();
 
+  /** Browser notification permission status. */
+  notificationPermission = signal<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied',
+  );
+
   private pollSub: Subscription | null = null;
   private fadeTimer: ReturnType<typeof setTimeout> | null = null;
   private previousState: PipelineState = 'idle';
@@ -58,6 +63,14 @@ export class NotificationService implements OnDestroy {
 
   info(msg: string): void {
     this.snackBar.open(msg, 'OK', { duration: 3000 });
+  }
+
+  /** Request browser notification permission. */
+  requestPermission(): void {
+    if (typeof Notification === 'undefined') return;
+    Notification.requestPermission().then((perm) => {
+      this.notificationPermission.set(perm);
+    });
   }
 
   /** Force an immediate status poll (call after starting/cancelling a pipeline). */
@@ -128,12 +141,18 @@ export class NotificationService implements OnDestroy {
           }
 
           // Detect transitions (must run BEFORE restartPoll which re-subscribes)
+          const completed = status.completed_phase_count ?? 0;
+          const total = status.total_phase_count ?? 0;
+          const phaseSummary = total > 0 ? `${completed}/${total} phases completed` : '';
           if (this.previousState === 'running' && newState === 'completed') {
             this.success('Pipeline completed successfully');
-            this.sendBrowserNotification('Pipeline Completed', 'Your pipeline run has finished successfully.');
+            this.sendBrowserNotification(
+              'Pipeline Completed',
+              phaseSummary || 'Your pipeline run has finished successfully.',
+            );
           } else if (this.previousState === 'running' && newState === 'failed') {
             this.error('Pipeline failed');
-            this.sendBrowserNotification('Pipeline Failed', 'Your pipeline run has failed.');
+            this.sendBrowserNotification('Pipeline Failed', phaseSummary || 'Your pipeline run has failed.');
           } else if (this.previousState === 'running' && newState === 'cancelled') {
             this.info('Pipeline cancelled');
           }

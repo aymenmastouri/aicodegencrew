@@ -226,6 +226,11 @@ import { statusLabel, isTerminal } from '../../shared/status';
               <div class="phase-bottom">
                 <span class="status-dot" [class]="'dot-' + phase.status"></span>
                 <span class="status-label">{{ getStatusLabel(phase.status) }}</span>
+                @if (phase.status === 'running' && phase.avg_duration_seconds) {
+                  <span class="eta-chip" matTooltip="Estimated based on last 10 runs">
+                    ~{{ formatDuration(phase.avg_duration_seconds) }}
+                  </span>
+                }
                 @if (isPhaseTerminal(phase.status)) {
                   <button
                     class="reset-btn"
@@ -669,6 +674,17 @@ import { statusLabel, isTerminal } from '../../shared/status';
         font-size: 15px;
         width: 15px;
         height: 15px;
+      }
+
+      /* ETA Chip */
+      .eta-chip {
+        font-size: 10px;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--cg-blue);
+        background: rgba(0, 112, 173, 0.08);
+        padding: 1px 8px;
+        border-radius: 8px;
+        white-space: nowrap;
       }
 
       /* Empty */

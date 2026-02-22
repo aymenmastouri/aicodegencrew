@@ -184,6 +184,20 @@ def _enrich_tokens(entries: list[dict]) -> None:
             entry["total_tokens"] = token_map[engine_run_id]
 
 
+def get_phase_duration_averages() -> dict[str, float]:
+    """Compute average duration per phase from last 10 runs."""
+    entries = _read_all_entries()
+    runs = [e for e in entries if e.get("trigger") != "reset"][-10:]
+    totals: dict[str, list[float]] = {}
+    for run in runs:
+        for p in run.get("phase_progress", []):
+            phase_id = p.get("phase_id") or p.get("name", "")
+            dur = p.get("duration_seconds")
+            if dur and p.get("status") in ("completed", "partial"):
+                totals.setdefault(phase_id, []).append(dur)
+    return {k: round(sum(v) / len(v), 1) for k, v in totals.items() if v}
+
+
 def get_run_detail(run_id: str) -> dict | None:
     """Get detailed run info by run_id — combines JSONL entry + run_report + metrics."""
     path = _history_path()

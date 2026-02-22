@@ -1,9 +1,11 @@
 """Service for reading development plans and codegen reports."""
 
+import io
 import json
 import os
 import re
 import subprocess
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -119,6 +121,20 @@ def delete_codegen_branch(task_id: str) -> dict:
         raise RuntimeError(f"Failed to delete branch {branch_name}: {result.stderr.strip()}")
 
     return {"status": "deleted", "branch": branch_name}
+
+
+def create_docs_zip() -> io.BytesIO:
+    """Create ZIP of all arc42 + c4 markdown files."""
+    buf = io.BytesIO()
+    doc_dir = settings.knowledge_dir / "document"
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for subdir in ["arc42", "c4"]:
+            d = doc_dir / subdir
+            if d.exists():
+                for f in sorted(d.rglob("*.md")):
+                    zf.write(f, f"docs/{subdir}/{f.relative_to(d)}")
+    buf.seek(0)
+    return buf
 
 
 def _read_json_dir(directory: Path, pattern: str) -> list[dict]:
