@@ -177,30 +177,68 @@ class PipelineExecutor:
             return phase_ids
 
     def cancel(self) -> bool:
-        """Cancel the running pipeline. Returns True if cancelled."""
+        """Cancel the running pipeline. Returns True if cancelled.
+
+        Handles both dashboard-started runs (self._process) and stale
+        subprocess runs detected via phase_state.json.
+        """
         with self._state_lock:
-            if self.state != "running" or self._process is None:
-                return False
-
-            try:
-                pid = self._process.pid
-                self._kill_process_tree(pid)
-                # Give it 5 seconds to terminate gracefully after tree kill
+            # Case 1: Dashboard-started run with live process
+            if self.state == "running" and self._process is not None:
                 try:
-                    self._process.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    self._process.kill()
-                self.state = "cancelled"
-                self._finished_at = time.monotonic()
-                logger.info("Pipeline cancelled: run_id=%s", self.current_run.run_id if self.current_run else "?")
+                    pid = self._process.pid
+                    self._kill_process_tree(pid)
+                    # Give it 5 seconds to terminate gracefully after tree kill
+                    try:
+                        self._process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        self._process.kill()
+                    self.state = "cancelled"
+                    self._finished_at = time.monotonic()
+                    logger.info("Pipeline cancelled: run_id=%s", self.current_run.run_id if self.current_run else "?")
+                    self._mark_running_phases_cancelled()
+                    return True
+                except Exception as exc:
+                    logger.error("Failed to cancel pipeline: %s", exc)
+                    return False
 
-                # Mark any "running" phases as failed in phase_state.json
-                self._mark_running_phases_cancelled()
-
+            # Case 2: Stale subprocess (e.g. server restarted while pipeline was running)
+            if self._cancel_stale_subprocess():
                 return True
-            except Exception as exc:
-                logger.error("Failed to cancel pipeline: %s", exc)
+
+            return False
+
+    def _cancel_stale_subprocess(self) -> bool:
+        """Kill a stale pipeline subprocess detected via phase_state.json."""
+        import os as _os
+
+        state_path = settings.logs_dir / "phase_state.json"
+        if not state_path.exists():
+            return False
+        try:
+            with open(state_path, encoding="utf-8") as f:
+                data = json.load(f)
+            pid = data.get("pid")
+            phases = data.get("phases", {})
+            has_running = any(e.get("status") == "running" for e in phases.values())
+            if not (has_running and pid):
                 return False
+            # Check if process is still alive
+            try:
+                _os.kill(pid, 0)
+            except (OSError, ProcessLookupError):
+                # Process dead — just clean up the stale state
+                self._mark_running_phases_cancelled()
+                logger.info("Cleaned up stale phase_state.json (PID %s dead)", pid)
+                return True
+            # Process alive — kill it
+            self._kill_process_tree(pid)
+            self._mark_running_phases_cancelled()
+            logger.info("Killed stale pipeline subprocess PID %s", pid)
+            return True
+        except Exception as exc:
+            logger.warning("Failed to cancel stale subprocess: %s", exc)
+            return False
 
     @staticmethod
     def _kill_process_tree(pid: int) -> None:

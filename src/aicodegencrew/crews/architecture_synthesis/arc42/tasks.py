@@ -251,22 +251,25 @@ Write 4-5 pages with REAL data from tools. No placeholders.
 CH05_PART2B_CONTROLLERS_INVENTORY = (
     TOOL_INSTRUCTION
     + """
-Create arc42 Chapter 5 Part 2B: Complete Controller Inventory Table.
+Create arc42 Chapter 5 Part 2B: Controller Inventory Table.
 
 ## REQUIRED SECTIONS (do NOT skip any):
-### 5.3.4 Complete Controller Inventory
+### 5.3.4 Controller Inventory (representative sample)
 - Full table: | # | Controller | Package | Primary Responsibility |
-- List EVERY controller found — no truncation
+- List the TOP 30 most important controllers (do NOT paginate for more — 30 is enough)
+- State total count (e.g. "230 controllers total; representative sample below")
 ### 5.3.5 Endpoint Summary
 - Total endpoint count by HTTP method (GET/POST/PUT/DELETE/PATCH)
 - Most frequently used URL patterns
 
 ## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="controller") -> get ALL controllers for the table
+1. list_components_by_stereotype(stereotype="controller") -> get first page (do NOT call again with offset)
 2. get_statistics() -> get total counts
 3. get_endpoints() -> count by HTTP method
-4. doc_writer(file_path="arc42/05-part2b-controllers-inventory.md", content="### 5.3.4 Complete Controller Inventory\\n...")
+4. doc_writer(file_path="arc42/05-part2b-controllers-inventory.md", content="### 5.3.4 Controller Inventory\\n...")
 5. Respond: "File arc42/05-part2b-controllers-inventory.md written successfully."
+
+IMPORTANT: Do NOT paginate through all controllers — one call is enough. Use the total_count for the summary.
 
 Summary data:
 {system_summary}
@@ -284,8 +287,9 @@ Create arc42 Chapter 5 PART 3: Business Layer / Services.
 ## REQUIRED SECTIONS (do NOT skip any):
 ### 5.4.1 Layer Overview
 - Service layer responsibilities, bounded contexts, business rules
-### 5.4.2 Service Inventory
-- COMPLETE table of ALL services: | # | Service | Package | Interface? | Description |
+### 5.4.2 Service Inventory (representative sample)
+- Table of TOP 30 services: | # | Service | Package | Interface? | Description |
+  State total count. Do NOT paginate — one call is enough.
 ### 5.4.3 Service Patterns
 - Interface/Implementation pattern, transaction boundaries, service composition
 ### 5.4.4 Key Services Deep Dive — TOP 5
@@ -294,7 +298,7 @@ Create arc42 Chapter 5 PART 3: Business Layer / Services.
 - Key service-to-service dependencies with direction
 
 ## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="service") -> get ALL services
+1. list_components_by_stereotype(stereotype="service") -> get first page (do NOT paginate)
 2. get_architecture_summary() -> get architecture patterns
 3. get_statistics() -> get component counts
 4. query_architecture_facts(category="relations") -> get service dependencies
@@ -306,7 +310,7 @@ Summary data:
 {system_summary}
 
 Write to file: arc42/05-part3-services.md using doc_writer tool.
-Write 8-10 pages with REAL data. COMPLETE service inventory. No placeholders.
+Write 6-8 pages with REAL data. No placeholders. Do NOT paginate tool results.
 """
 )
 
@@ -318,14 +322,16 @@ Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies.
 ## REQUIRED SECTIONS (do NOT skip any):
 ### 5.5 Domain Layer — Entities
 - Layer overview: JPA entities, aggregate roots, value objects
-- COMPLETE entity inventory: | # | Entity | Package | Key Attributes | Description |
+- Entity inventory (TOP 30): | # | Entity | Package | Key Attributes | Description |
   IMPORTANT: Include ONLY JPA @Entity classes (names ending in "Entity" or "Eto").
   EXCLUDE: Flyway migration scripts, SQL files, and any non-Java class items.
+  State total count (e.g. "120 entities total; representative sample below").
 - Key entities deep dive (TOP 5): attributes, relationships, lifecycle, validation
 ### 5.6 Persistence Layer — Repositories
 - Layer overview: data access patterns
-- COMPLETE repository inventory: | # | Repository | Entity | Custom Queries | Description |
+- Repository inventory (TOP 30): | # | Repository | Entity | Custom Queries | Description |
   Include DAO interfaces, JpaRepository extensions, and custom implementations.
+  State total count. Do NOT paginate — one call is enough.
 - Data access patterns (Spring Data JPA, custom queries, specifications)
 ### 5.7 Component Dependencies
 - Layer dependency rules with direction
@@ -333,26 +339,26 @@ Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies.
 - Dependency statistics and coupling analysis
 
 ## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="entity") -> get JPA entity classes
-2. list_components_by_stereotype(stereotype="repository") -> get ALL repositories
+1. list_components_by_stereotype(stereotype="entity") -> get first page (do NOT call again with offset)
+2. list_components_by_stereotype(stereotype="repository") -> get first page (do NOT paginate)
 3. query_architecture_facts(category="relations") -> get dependency data
 4. get_statistics() -> get component counts
-5. rag_query(query="@Entity @Table JPA annotation mapping") -> JPA entity details
-6. rag_query(query="repository JpaRepository CrudRepository DAO") -> repo patterns
-7. rag_query(query="Oracle datasource database connection spring") -> database technology
-8. doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer\\n...")
-9. Respond: "File arc42/05-part4-domain.md written successfully."
+5. rag_query(query="Oracle datasource database connection spring") -> database technology
+6. doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer\\n...")
+7. Respond: "File arc42/05-part4-domain.md written successfully."
 
 IMPORTANT NOTES:
 - Entity inventory: ONLY classes annotated with @Entity (JPA). Skip migration files.
 - Repository inventory: Include all DAO/Repository classes (JPA + custom implementations).
 - Use rag_query to confirm the actual production database (Oracle/H2/PostgreSQL — don't assume).
+- Do NOT paginate tool results — use total_count for summary, one page is enough.
+- Limit tool calls to 5-6 maximum to stay within token budget.
 
 Summary data:
 {system_summary}
 
 Write to file: arc42/05-part4-domain.md using doc_writer tool.
-Write 8-10 pages with REAL data. COMPLETE inventories. No placeholders.
+Write 6-8 pages with REAL data. No placeholders.
 """
 )
 
