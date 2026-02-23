@@ -406,7 +406,7 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
               }
 
               <!-- Metrics Summary -->
-              @if ((detail.metrics_events?.length ?? 0) > 0) {
+              @if (detail.metrics_events.length > 0) {
                 <div class="detail-section">
                   <h3 class="detail-section-title"><mat-icon>monitoring</mat-icon> Metrics Events</h3>
                   <div class="metrics-grid">

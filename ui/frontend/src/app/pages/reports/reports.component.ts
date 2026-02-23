@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,7 +15,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { marked } from 'marked';
-import mermaid from 'mermaid';
 
 import { ApiService, ReportList, BranchList } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
@@ -78,32 +77,6 @@ interface ParsedComponent {
               <mat-icon class="tab-icon">auto_stories</mat-icon>
               Architecture ({{ (docGroups['arc42']?.length || 0) + (docGroups['c4']?.length || 0) }})
             </ng-template>
-
-            <!-- Architecture Diagram -->
-            <mat-card class="diagram-card">
-              <mat-card-content>
-                <div class="diagram-header">
-                  <mat-icon>hub</mat-icon>
-                  <h3>Container Diagram</h3>
-                  <span class="flex-1"></span>
-                  @if (!diagramLoading && !diagramError) {
-                    <button mat-icon-button matTooltip="Refresh diagram" (click)="loadDiagram()">
-                      <mat-icon>refresh</mat-icon>
-                    </button>
-                  }
-                </div>
-                @if (diagramLoading) {
-                  <div class="loading-center"><mat-spinner diameter="28"></mat-spinner></div>
-                } @else if (diagramError) {
-                  <div class="diagram-empty">
-                    <mat-icon>warning</mat-icon>
-                    <span>{{ diagramError }}</span>
-                  </div>
-                } @else {
-                  <div class="diagram-container" #diagramContainer></div>
-                }
-              </mat-card-content>
-            </mat-card>
 
             @if (docGroupKeys.length > 0) {
               <div class="doc-groups">
@@ -1748,8 +1721,7 @@ interface ParsedComponent {
     `,
   ],
 })
-export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('diagramContainer') diagramContainer?: ElementRef<HTMLDivElement>;
+export class ReportsComponent implements OnInit, OnDestroy {
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
   reports: ReportList | null = null;
   loading = true;
@@ -1760,12 +1732,6 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
   activeTabIndex = 0;
   showRawJson: Record<string, boolean> = {};
   expandedFiles: Record<string, boolean> = {};
-
-  /** Mermaid diagram */
-  diagramLoading = false;
-  diagramError = '';
-  private diagramSrc = '';
-  private diagramRendered = false;
 
   /** Lazy-loaded file contents keyed by knowledge-relative path */
   fileContents: Record<string, string> = {};
@@ -1779,7 +1745,7 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
   docGroupMeta: Record<string, { label: string; icon: string; description: string }> = {
     arc42: { label: 'Arc42 Documentation', icon: 'menu_book', description: 'Standardized architecture documentation' },
     c4: {
-      label: 'C4 Model Diagrams',
+      label: 'C4 Model Documents',
       icon: 'architecture',
       description: 'Context, Container, Component & Deployment views',
     },
@@ -1800,59 +1766,18 @@ export class ReportsComponent implements OnInit, OnDestroy, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
     this.notifSvc.notification$.pipe(takeUntil(this.destroy$)).subscribe((n) => {
       this.isRunning = n.state === 'running';
       this.cdr.markForCheck();
     });
     this.loadReports();
-    this.loadDiagram();
     this.refreshTimer = setInterval(() => this.loadReports(), 10000);
-  }
-
-  ngAfterViewInit(): void {
-    // Render diagram once the container element is available
-    if (this.diagramSrc && !this.diagramRendered) {
-      this.renderDiagram();
-    }
   }
 
   ngOnDestroy(): void {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  loadDiagram(): void {
-    this.diagramLoading = true;
-    this.diagramError = '';
-    this.diagramRendered = false;
-    this.api.getArchitectureDiagram().subscribe({
-      next: (res) => {
-        this.diagramSrc = res.mermaid;
-        this.diagramLoading = false;
-        this.cdr.markForCheck();
-        // Allow Angular to render the container before inserting SVG
-        setTimeout(() => this.renderDiagram(), 0);
-      },
-      error: () => {
-        this.diagramError = 'Could not load architecture diagram. Run the Extract phase first.';
-        this.diagramLoading = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  private async renderDiagram(): Promise<void> {
-    const el = this.diagramContainer?.nativeElement;
-    if (!el || !this.diagramSrc || this.diagramRendered) return;
-    try {
-      const { svg } = await mermaid.render('arch-diagram', this.diagramSrc);
-      el.innerHTML = svg;
-      this.diagramRendered = true;
-    } catch {
-      el.innerHTML = '<span style="color:var(--cg-gray-500)">Failed to render diagram</span>';
-    }
   }
 
   private loadReports(): void {

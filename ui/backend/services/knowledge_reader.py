@@ -108,7 +108,7 @@ def search_knowledge_files(query: str, max_results: int = 50) -> list[dict]:
 
 
 def generate_container_diagram() -> str:
-    """Generate Mermaid graph from containers.json."""
+    """Generate Mermaid graph from containers.json + relations.json."""
     containers_path = settings.knowledge_dir / "extract" / "containers.json"
     if not containers_path.exists():
         return "graph LR\n  A[No containers data]"
@@ -121,8 +121,9 @@ def generate_container_diagram() -> str:
         return "graph LR\n  A[No containers found]"
 
     lines = ["graph TD"]
-    # Build nodes (limit for readability)
+    # Build nodes
     seen_ids: set[str] = set()
+    container_names: set[str] = set()
     for c in containers[:30]:
         name = str(c.get("name", "?")).replace('"', "'")
         tech = str(c.get("technology", ""))
@@ -131,14 +132,54 @@ def generate_container_diagram() -> str:
         if cid in seen_ids:
             continue
         seen_ids.add(cid)
+        container_names.add(name)
         lines.append(f'  {cid}["{label}"]')
-    # Add relationships
+
+    # Add relationships from containers.json dependencies (if present)
     for c in containers[:30]:
         cid = _mermaid_id(c.get("id", c.get("name", "")))
         for dep in (c.get("dependencies", []) or [])[:5]:
             did = _mermaid_id(dep)
             if did in seen_ids:
                 lines.append(f"  {cid} --> {did}")
+
+    # Derive cross-container edges from relations.json
+    relations_path = settings.knowledge_dir / "extract" / "relations.json"
+    if relations_path.exists():
+        try:
+            rel_data = json.loads(relations_path.read_text(encoding="utf-8"))
+            rels = (
+                rel_data
+                if isinstance(rel_data, list)
+                else rel_data.get("relations", rel_data.get("items", []))
+            )
+            from collections import Counter
+
+            edge_counts: Counter[tuple[str, str]] = Counter()
+            for r in rels:
+                src = str(r.get("source", r.get("from", "")))
+                tgt = str(r.get("target", r.get("to", "")))
+                src_parts = src.split(".")
+                tgt_parts = tgt.split(".")
+                if len(src_parts) >= 2 and len(tgt_parts) >= 2:
+                    src_cont = src_parts[1]
+                    tgt_cont = tgt_parts[1]
+                    if src_cont != tgt_cont:
+                        edge_counts[(src_cont, tgt_cont)] += 1
+            added_edges: set[tuple[str, str]] = set()
+            for (src_cont, tgt_cont), count in edge_counts.most_common():
+                src_id = _mermaid_id(f"container.{src_cont}")
+                tgt_id = _mermaid_id(f"container.{tgt_cont}")
+                if (
+                    src_id in seen_ids
+                    and tgt_id in seen_ids
+                    and (src_id, tgt_id) not in added_edges
+                ):
+                    lines.append(f'  {src_id} -->|"{count} calls"| {tgt_id}')
+                    added_edges.add((src_id, tgt_id))
+        except (json.JSONDecodeError, OSError):
+            pass  # relations unavailable — diagram still shows nodes
+
     return "\n".join(lines)
 
 

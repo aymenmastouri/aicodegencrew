@@ -466,7 +466,7 @@ class PipelineExecutor:
             "run_id": data.get("run_id", "unknown"),
             "status": data.get("status", "unknown"),
             "run_outcome": run_outcome,
-            "preset": data.get("environment", {}).get("preset"),
+            "preset": (data.get("environment") or {}).get("preset"),
             "phases": data.get("planned_phases", []),
             "started_at": data.get("timestamp"),
             "duration": data.get("total_duration"),
