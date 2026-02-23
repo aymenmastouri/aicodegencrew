@@ -422,9 +422,14 @@ class SDLCOrchestrator:
     def _reset_phase_output(self, phase_id: str) -> None:
         """Clean stale output files before re-running a phase.
 
-        Removes output files (stubs, old docs, logs) but preserves checkpoint
-        files (.checkpoint_*) so that crew resume logic still works.
-        Skips non-resettable phases (e.g., discover — manages its own state).
+        Two modes:
+        - **Resume mode** (checkpoint files exist): Skip reset entirely.
+          The crew's checkpoint logic will skip completed mini-crews and
+          only re-run failed ones. Output files are needed for merging.
+        - **Fresh mode** (no checkpoints): Delete all output files so the
+          phase starts from a clean state. No stale stubs persist.
+
+        Skips non-resettable phases (e.g., discover — manages own INDEX_MODE).
         """
         import shutil
 
@@ -438,23 +443,16 @@ class SDLCOrchestrator:
             if not target.exists():
                 continue
             if target.is_dir():
-                # Preserve checkpoint files for resume support
+                # If checkpoint files exist, this is a resume — don't touch output
                 checkpoints = list(target.glob(".checkpoint_*"))
                 if checkpoints:
-                    # Delete everything except checkpoint files
-                    for item in target.iterdir():
-                        if item.name.startswith(".checkpoint_"):
-                            continue
-                        if item.is_dir():
-                            shutil.rmtree(item)
-                        else:
-                            item.unlink()
                     logger.info(
-                        f"[Orchestrator] Reset {rel}/ (preserved {len(checkpoints)} checkpoint(s))"
+                        f"[Orchestrator] Skipping reset of {rel}/ — "
+                        f"{len(checkpoints)} checkpoint(s) found (resume mode)"
                     )
-                else:
-                    shutil.rmtree(target)
-                    logger.info(f"[Orchestrator] Reset {rel}/")
+                    continue
+                shutil.rmtree(target)
+                logger.info(f"[Orchestrator] Reset {rel}/")
             else:
                 target.unlink()
                 logger.info(f"[Orchestrator] Deleted {rel}")
