@@ -388,6 +388,30 @@ class MiniCrewBase(ABC):
                 return None  # Recovery done in _handle_crew_failure
 
             except Exception as e:
+                # Context overflow: litellm calculates max_tokens = model_limit - input_tokens
+                # which goes negative when the accumulated context exceeds the model window.
+                # No retry possible — reduce token budget to prevent this upstream.
+                if "max_tokens must be at least 1" in str(e):
+                    duration = time.time() - start_time
+                    logger.warning(
+                        f"[{self.crew_name}] {name}: Context overflow after {duration:.1f}s "
+                        f"— creating fallback stub (reduce TOOL_BUDGET_RATIO to avoid this)"
+                    )
+                    self._mark_degraded(f"{name}: ContextOverflow")
+                    if expected_files:
+                        self._recover_missing_files(name, expected_files)
+                    self._checkpoints.append(
+                        {
+                            "crew": name,
+                            "status": "context_overflow",
+                            "duration_seconds": round(duration, 1),
+                            "tasks": len(tasks),
+                            "error": "max_tokens must be at least 1 (context overflow)",
+                        }
+                    )
+                    self._save_checkpoint()
+                    return None
+
                 # Non-retryable: Pydantic validation, unexpected errors
                 self._handle_crew_failure(name, tasks, e, start_time, expected_files)
                 return None  # Recovery done in _handle_crew_failure

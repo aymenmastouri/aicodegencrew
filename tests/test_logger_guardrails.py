@@ -290,8 +290,8 @@ class TestTokenBudgetDefaults:
 
         expected = int(MAX_LLM_INPUT_TOKENS * TOOL_BUDGET_RATIO) * CHARS_PER_TOKEN
         assert TOOL_MAX_CHARS == expected
-        # With defaults: 100000 * 0.25 = 25000 tokens * 4 = 100000 chars
-        assert TOOL_MAX_CHARS == 100_000
+        # With defaults: 100000 * 0.15 = 15000 tokens * 4 = 60000 chars
+        assert TOOL_MAX_CHARS == 60_000
 
     def test_get_max_response_chars(self):
         from aicodegencrew.shared.utils.token_budget import (

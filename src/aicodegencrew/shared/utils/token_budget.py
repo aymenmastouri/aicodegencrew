@@ -21,8 +21,10 @@ MAX_LLM_OUTPUT_TOKENS = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "16000"))
 # Chars per token (conservative estimate)
 CHARS_PER_TOKEN = 4
 
-# Tool response budget: 25% of input tokens
-TOOL_BUDGET_RATIO = 0.25
+# Tool response budget: 15% of input tokens
+# 25% caused context overflow with mini-crews that make 10-12 tool calls.
+# 15% keeps total tool data well below the model's context window.
+TOOL_BUDGET_RATIO = 0.15
 TOOL_MAX_TOKENS = int(MAX_LLM_INPUT_TOKENS * TOOL_BUDGET_RATIO)
 TOOL_MAX_CHARS = TOOL_MAX_TOKENS * CHARS_PER_TOKEN
 
