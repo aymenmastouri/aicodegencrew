@@ -325,7 +325,7 @@ test.describe('Demo Showcase', () => {
           const pct = Math.round(data.progress_percent || 0);
           const skipped = phases.filter((p: { status: string }) => p.status === 'skipped');
           const skippedNote = skipped.length > 0
-            ? `  [${skipped.map((s: { phase_id: string }) => s.phase_id).join(', ')} skipped — already cached]`
+            ? `  [${skipped.map((s: { phase_id: string }) => s.phase_id).join(', ')} up-to-date — reusing previous results]`
             : '';
           await showSubtitle(page, `${label}  (${pct}% complete)${skippedNote}`, 0);
         }
@@ -457,17 +457,7 @@ test.describe('Demo Showcase', () => {
       await archTab.click();
       await pause(page, LONG_PAUSE);
 
-      // Mermaid container diagram
-      const diagramCard = page.locator('.diagram-card');
-      if (await diagramCard.isVisible({ timeout: 10_000 }).catch(() => false)) {
-        await diagramCard.scrollIntoViewIfNeeded();
-        await showSubtitle(page, 'Auto-generated architecture diagram — containers and their relationships', READ_PAUSE);
-        const diagramSvg = page.locator('.diagram-container svg');
-        if (await diagramSvg.isVisible({ timeout: 10_000 }).catch(() => false)) {
-          await pause(page, READ_PAUSE);
-        }
-      }
-
+      await showSubtitle(page, 'Arc42 documentation and C4 model documents — generated from codebase analysis', READ_PAUSE);
       await hideSubtitle(page);
       const docGroupHeaders = page.locator('.doc-group-header');
       const groupCount = await docGroupHeaders.count();
