@@ -75,7 +75,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "triage": PhaseDescriptor(
         "triage",
         "Issue Triage",
-        "crew",
+        "hybrid",
         4,
         ("extract",),
         False,
@@ -115,7 +115,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "deliver": PhaseDescriptor(
         "deliver",
         "Review & Consistency Guard",
-        "crew",
+        "hybrid",
         8,
         ("implement",),
         False,

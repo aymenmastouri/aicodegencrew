@@ -326,7 +326,7 @@ class TestDeliveryArtifacts:
             assert "name" in phase_cfg, f"Phase '{phase_id}' missing 'name'"
             assert "type" in phase_cfg, f"Phase '{phase_id}' missing 'type'"
             assert "order" in phase_cfg, f"Phase '{phase_id}' missing 'order'"
-            assert phase_cfg["type"] in ("pipeline", "crew"), (
+            assert phase_cfg["type"] in ("pipeline", "crew", "hybrid"), (
                 f"Phase '{phase_id}' has invalid type: {phase_cfg['type']}"
             )
 

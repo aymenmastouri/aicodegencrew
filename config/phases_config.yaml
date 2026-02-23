@@ -138,7 +138,7 @@ phases:
     enabled: true
     name: "Triage"
     description: "Issue classification, blast radius, and dual-audience reports"
-    type: crew
+    type: hybrid
     required: false
     order: 4
     dependencies: [extract]
@@ -256,7 +256,7 @@ phases:
     enabled: true
     name: "Deliver"
     description: "Architecture consistency review and quality report"
-    type: crew
+    type: hybrid
     required: false
     order: 8
     dependencies: [implement]
