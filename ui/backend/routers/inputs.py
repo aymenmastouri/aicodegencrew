@@ -40,7 +40,7 @@ def categories_metadata():
 def list_category(category: str):
     """List files in a specific category."""
     if category not in CATEGORIES:
-        raise HTTPException(status_code=404, detail=f"Unknown category: {category}")
+        raise HTTPException(status_code=400, detail=f"Unknown category: {category}")
     return list_category_files(category)
 
 
@@ -48,7 +48,7 @@ def list_category(category: str):
 async def upload_file(category: str, file: UploadFile):
     """Upload a file to a category."""
     if category not in CATEGORIES:
-        raise HTTPException(status_code=404, detail=f"Unknown category: {category}")
+        raise HTTPException(status_code=400, detail=f"Unknown category: {category}")
 
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
@@ -72,7 +72,7 @@ async def upload_file(category: str, file: UploadFile):
 def delete_file(category: str, filename: str):
     """Delete a file from a category."""
     if category not in CATEGORIES:
-        raise HTTPException(status_code=404, detail=f"Unknown category: {category}")
+        raise HTTPException(status_code=400, detail=f"Unknown category: {category}")
 
     try:
         deleted = delete_input_file(category, filename)

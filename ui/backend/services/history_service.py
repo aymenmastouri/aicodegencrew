@@ -213,6 +213,8 @@ def get_run_detail(run_id: str) -> dict | None:
                         continue
                     try:
                         parsed = json.loads(line)
+                        if not isinstance(parsed, dict):
+                            continue
                         if parsed.get("run_id") == run_id or parsed.get("engine_run_id") == run_id:
                             entry = parsed
                     except json.JSONDecodeError:

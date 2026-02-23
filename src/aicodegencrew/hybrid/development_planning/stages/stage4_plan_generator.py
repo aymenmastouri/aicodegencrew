@@ -146,58 +146,97 @@ class PlanGeneratorStage:
         )
 
         # Run crew
+        from pathlib import Path as _Path
+
+        log_dir = _Path("knowledge/plan/logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        result = self._kickoff_with_mcp_fallback(planning_task, task, log_dir)
+
+        # CrewAI kickoff() returns CrewOutput with .pydantic, .json_dict, .raw
+        plan = None
+
+        # Path 1: Pydantic attribute present on result (rare — some CrewAI versions populate it)
+        if hasattr(result, "pydantic") and isinstance(getattr(result, "pydantic", None), ImplementationPlan):
+            plan = result.pydantic
+            logger.info("[Stage4] Got plan from CrewOutput.pydantic")
+
+        # Path 2: JSON dict available on CrewOutput
+        elif hasattr(result, "json_dict") and result.json_dict:
+            plan_json = result.json_dict
+            plan = self._plan_from_dict(plan_json, task)
+            logger.info("[Stage4] Got plan from CrewOutput.json_dict")
+
+        # Path 3: Parse from raw string output
+        else:
+            raw = str(result).strip()
+            if not raw:
+                raise ValueError(
+                    "Agent returned empty result — check LLM connectivity and ensure the model is responding."
+                )
+            plan_json = self._extract_json(raw)
+            plan = self._plan_from_dict(plan_json, task)
+            logger.info("[Stage4] Got plan from CrewOutput.raw (parsed JSON)")
+
+        logger.info("[Stage4] Generated plan successfully")
+
+        return plan
+
+    def _kickoff_with_mcp_fallback(
+        self,
+        planning_task: Task,
+        task: "TaskInput",
+        log_dir: "Path",
+    ) -> Any:
+        """Run crew with MCP fallback: if MCP tools fail at kickoff, retry without MCPs.
+
+        CrewAI 1.9.x has a bug where _get_native_mcp_tools raises RuntimeError
+        ('cannot access local variable tools_list') when the MCP server is unreachable.
+        This is caught at kickoff time (not agent creation time), so the fallback in
+        _create_agent doesn't help. This method catches that error and retries.
+        """
+        crew_kwargs = dict(
+            tasks=[planning_task],
+            process=Process.sequential,
+            verbose=False,
+            step_callback=step_callback,
+            task_callback=task_callback,
+            output_log_file=str(log_dir / f"{task.task_id}_plan.json"),
+            embedder=get_crew_embedder(),
+        )
+
         try:
-            from pathlib import Path as _Path
+            crew = Crew(agents=[self.agent], **crew_kwargs)
+            return crew.kickoff()
 
-            log_dir = _Path("knowledge/plan/logs")
-            log_dir.mkdir(parents=True, exist_ok=True)
-            crew = Crew(
-                agents=[self.agent],
-                tasks=[planning_task],
-                process=Process.sequential,
-                verbose=False,
-                step_callback=step_callback,
-                task_callback=task_callback,
-                output_log_file=str(log_dir / f"{task.task_id}_plan.json"),
-                embedder=get_crew_embedder(),
+        except RuntimeError as e:
+            if "MCP" not in str(e) and "tools_list" not in str(e):
+                raise
+            logger.warning(
+                "[Stage4] MCP tools failed at kickoff (%s); retrying without MCPs", e
             )
-
-            result = crew.kickoff()
-
-            # CrewAI kickoff() returns CrewOutput with .pydantic, .json_dict, .raw
-            plan = None
-
-            # Path 1: Pydantic attribute present on result (rare — some CrewAI versions populate it)
-            if hasattr(result, "pydantic") and isinstance(getattr(result, "pydantic", None), ImplementationPlan):
-                plan = result.pydantic
-                logger.info("[Stage4] Got plan from CrewOutput.pydantic")
-
-            # Path 2: JSON dict available on CrewOutput
-            elif hasattr(result, "json_dict") and result.json_dict:
-                plan_json = result.json_dict
-                plan = self._plan_from_dict(plan_json, task)
-                logger.info("[Stage4] Got plan from CrewOutput.json_dict")
-
-            # Path 3: Parse from raw string output
-            else:
-                raw = str(result).strip()
-                if not raw:
-                    raise ValueError(
-                        "Agent returned empty result — check LLM connectivity and ensure the model is responding."
-                    )
-                plan_json = self._extract_json(raw)
-                plan = self._plan_from_dict(plan_json, task)
-                logger.info("[Stage4] Got plan from CrewOutput.raw (parsed JSON)")
-
-            logger.info("[Stage4] Generated plan successfully")
-
-            return plan
+            # Recreate agent without MCPs and retry
+            fallback_agent = Agent(
+                role=self.agent.role,
+                goal=self.agent.goal,
+                backstory=self.agent.backstory,
+                llm=create_llm(),
+                allow_delegation=False,
+                verbose=True,
+                max_iter=15,
+                max_retry_limit=2,
+                respect_context_window=True,
+                inject_date=True,
+            )
+            self.agent = fallback_agent
+            crew = Crew(agents=[fallback_agent], **crew_kwargs)
+            return crew.kickoff()
 
         except (ConnectionError, TimeoutError, OSError) as e:
-            logger.error(f"[Stage4] Transient error (network/timeout): {e}")
+            logger.error("[Stage4] Transient error (network/timeout): %s", e)
             raise
         except Exception as e:
-            logger.error(f"[Stage4] Agent plan generation failed: {e}")
+            logger.error("[Stage4] Agent plan generation failed: %s", e)
             raise
 
     def _build_task_description(
