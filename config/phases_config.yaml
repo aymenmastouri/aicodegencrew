@@ -316,6 +316,7 @@ presets:
     phases:
       - discover
       - extract
+      - analyze
       - triage
 
   plan:
