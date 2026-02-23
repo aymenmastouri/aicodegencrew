@@ -135,7 +135,7 @@ phases:
   # Output:    knowledge/triage/ (findings, customer.md, developer.md, triage.json)
   # =========================================================================
   triage:
-    enabled: false
+    enabled: true
     name: "Triage"
     description: "Issue classification, blast radius, and dual-audience reports"
     type: crew
@@ -308,6 +308,15 @@ presets:
       - extract
       - analyze
       - document
+
+  triage:
+    display_name: "Discover → Triage"
+    description: "Issue classification, blast radius, and dual-audience reports"
+    icon: "troubleshoot"
+    phases:
+      - discover
+      - extract
+      - triage
 
   plan:
     display_name: "Discover → Plan"

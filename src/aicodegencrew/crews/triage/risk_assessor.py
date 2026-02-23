@@ -38,7 +38,7 @@ def assess_risk(
     risk_score = 0  # 0-10 scale
 
     # ── Security dimension ──────────────────────────────────────────
-    security = facts.get("security", [])
+    security = facts.get("security_details", [])
     if isinstance(security, list):
         for sec in security:
             sec_class = (sec.get("class_name", "") or sec.get("name", "")).lower()

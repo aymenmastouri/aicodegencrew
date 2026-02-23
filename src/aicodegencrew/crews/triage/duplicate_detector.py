@@ -49,9 +49,15 @@ def find_duplicates(
         return []
 
     try:
-        # Use default embedding function from collection
+        # Embed query ourselves (collection was indexed without a default embedding function)
+        from ...shared.utils.ollama_client import OllamaClient
+        embedder = OllamaClient()
+        embeddings = embedder.embed_batch([query[:500]])
+        if not embeddings:
+            logger.warning("[DuplicateDetector] Embedding failed — skipping duplicate detection")
+            return []
         results = collection.query(
-            query_texts=[query[:500]],  # cap query length
+            query_embeddings=embeddings,
             n_results=top_k,
             include=["documents", "metadatas", "distances"],
         )
