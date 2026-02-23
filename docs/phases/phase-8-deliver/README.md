@@ -1,4 +1,4 @@
-# Phase 7 — Deliver (Review & Deploy)
+# Phase 8 — Deliver (Review & Deploy)
 
 > **Status**: PLANNED | **Type**: Pipeline | **Layer**: Execution
 

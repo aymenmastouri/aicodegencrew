@@ -5,10 +5,10 @@ Deterministic stage-based execution for phases that don't need multi-agent colla
 > **Reference Diagrams:**
 > - [phase-0-discover-architecture.drawio](../phases/phase-0-discover/phase-0-discover-architecture.drawio) — Indexing pipeline
 > - [phase-1-extract-architecture.drawio](../phases/phase-1-extract/phase-1-extract-architecture.drawio) — Facts collector pattern
-> - [phase-4-plan-architecture.drawio](../phases/phase-4-plan/phase-4-plan-architecture.drawio) — Planning pipeline stages
-> - [phase-5-implement-architecture.drawio](../phases/phase-5-implement/phase-5-implement-architecture.drawio) — Code generation crew
-> - [code-generation-pipeline.drawio](../phases/phase-5-implement/code-generation-pipeline.drawio) — Code generation stages + strategy hooks
-> - [task-type-strategy.drawio](../phases/phase-5-implement/task-type-strategy.drawio) — Task-type strategy pattern
+> - [phase-5-plan-architecture.drawio](../phases/phase-5-plan/phase-5-plan-architecture.drawio) — Planning pipeline stages
+> - [phase-6-implement-architecture.drawio](../phases/phase-6-implement/phase-6-implement-architecture.drawio) — Code generation crew
+> - [code-generation-pipeline.drawio](../phases/phase-6-implement/code-generation-pipeline.drawio) — Code generation stages + strategy hooks
+> - [task-type-strategy.drawio](../phases/phase-6-implement/task-type-strategy.drawio) — Task-type strategy pattern
 
 ## When to Use Pipeline vs Crew
 
@@ -57,13 +57,13 @@ Deterministic extraction of 16 architecture dimensions via modular collector pat
 
 ### 3. Development Planning Pipeline (Plan)
 
-**Full docs:** [Phase 4 — Plan](../phases/phase-4-plan/README.md)
+**Full docs:** [Phase 5 — Plan](../phases/phase-5-plan/README.md)
 
 Hybrid pipeline: 4 deterministic stages + 1 LLM call. 18–40 seconds vs 5–7 min with CrewAI.
 
 ### 4. Code Generation Pipeline (Implement)
 
-**Full docs:** [Phase 5 — Implement](../phases/phase-5-implement/README.md)
+**Full docs:** [Phase 6 — Implement](../phases/phase-6-implement/README.md)
 
 Hierarchical CrewAI crew (4 agents) with preflight, task-type strategy hooks, and post-crew verification.
 
@@ -115,8 +115,8 @@ This ensures later tasks can build on earlier ones (e.g., a refactoring task fol
 
 ## Task-Type Strategy Pattern
 
-> **Full docs**: [Phase 5 — Implement](../phases/phase-5-implement/README.md#task-type-strategy-pattern)
-> **Diagram**: [task-type-strategy.drawio](../phases/phase-5-implement/task-type-strategy.drawio)
+> **Full docs**: [Phase 6 — Implement](../phases/phase-6-implement/README.md#task-type-strategy-pattern)
+> **Diagram**: [task-type-strategy.drawio](../phases/phase-6-implement/task-type-strategy.drawio)
 
 The Strategy pattern extends pipelines with **task-type-specific behavior** without modifying core pipeline code. Each task type can register custom hooks via a decorator-based registry.
 

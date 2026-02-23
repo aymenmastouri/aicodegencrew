@@ -1,4 +1,4 @@
-# Phase 5 — Implement (Code Generation)
+# Phase 6 — Implement (Code Generation)
 
 > **Status**: IMPLEMENTED | **Type**: Hierarchical CrewAI | **Layer**: Execution
 
@@ -17,7 +17,7 @@
 | Dependency | Plan |
 | Status | **IMPLEMENTED** |
 
-> **Diagrams:** [phase-5-implement-architecture.drawio](phase-5-implement-architecture.drawio) · [code-generation-pipeline.drawio](code-generation-pipeline.drawio) · [task-type-strategy.drawio](task-type-strategy.drawio)
+> **Diagrams:** [phase-6-implement-architecture.drawio](phase-6-implement-architecture.drawio) · [code-generation-pipeline.drawio](code-generation-pipeline.drawio) · [task-type-strategy.drawio](task-type-strategy.drawio)
 
 **Why CrewAI?** The previous pipeline approach (1 LLM call per file) was too rigid — no cross-file reasoning, no iterative improvement, no self-healing with architectural context. The new approach treats the LLM as a *developer with tools*, not a code template engine.
 

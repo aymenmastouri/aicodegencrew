@@ -33,6 +33,19 @@ interface ParsedComponent {
   package: string;
 }
 
+interface TriageListItem {
+  issue_id: string;
+  classification: Record<string, unknown>;
+  file: string;
+}
+
+interface TriageDetail {
+  triage: Record<string, unknown>;
+  customer_md?: string;
+  developer_md?: string;
+  findings?: Record<string, unknown>;
+}
+
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -55,7 +68,7 @@ interface ParsedComponent {
         <mat-icon class="page-icon">summarize</mat-icon>
         <div>
           <h1 class="page-title">Reports</h1>
-          <p class="page-subtitle">Architecture documentation, development plans, code generation, and branches</p>
+          <p class="page-subtitle">Architecture docs, development plans, code generation, triage results, and branches</p>
         </div>
         <span class="flex-1"></span>
         <button mat-stroked-button (click)="exportDocs()" matTooltip="Download arc42 + C4 docs as ZIP">
@@ -811,7 +824,157 @@ interface ParsedComponent {
           </mat-tab>
 
           <!-- ============================================================ -->
-          <!-- TAB 4: Git Branches                                          -->
+          <!-- TAB 4: Triage Results                                        -->
+          <!-- ============================================================ -->
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <mat-icon class="tab-icon">troubleshoot</mat-icon>
+              Triage ({{ triageResults.length }})
+            </ng-template>
+
+            @if (triageLoading) {
+              <div class="loading-center">
+                <mat-spinner diameter="36"></mat-spinner>
+              </div>
+            } @else if (triageResults.length) {
+              <mat-accordion class="report-accordion" multi>
+                @for (item of triageResults; track item.issue_id) {
+                  <mat-expansion-panel (opened)="loadTriageDetail(item.issue_id)">
+                    <mat-expansion-panel-header>
+                      <mat-panel-title>
+                        <mat-icon class="panel-icon">troubleshoot</mat-icon>
+                        <span class="mono">{{ item.issue_id }}</span>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        @if (item.classification['type']) {
+                          <span class="severity-chip" [class]="getTriageTypeClass(item.classification['type'])">
+                            {{ item.classification['type'] }}
+                          </span>
+                        }
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+
+                    <div class="triage-body">
+                      @if (triageDetails[item.issue_id]; as detail) {
+                        <!-- Classification Banner -->
+                        @if ($any(detail.findings)?.['classification']) {
+                          <div class="triage-banner" [class]="'risk-' + ($any(detail.findings)?.['risk_assessment']?.['risk_level'] || 'medium')">
+                            <div class="triage-banner-main">
+                              <span class="triage-type-label">{{ $any(detail.findings)?.['classification']?.['type'] || 'unknown' }}</span>
+                              <span class="triage-confidence">{{ (($any(detail.findings)?.['classification']?.['confidence'] || 0) * 100).toFixed(0) }}% confidence</span>
+                            </div>
+                            <div class="triage-banner-meta">
+                              @if ($any(detail.findings)?.['risk_assessment']?.['risk_level']) {
+                                <span class="risk-badge-sm" [class]="'risk-' + $any(detail.findings)?.['risk_assessment']?.['risk_level']">
+                                  Risk: {{ $any(detail.findings)?.['risk_assessment']?.['risk_level'] }}
+                                </span>
+                              }
+                              @if ($any(detail.findings)?.['entry_points']?.length) {
+                                <span class="triage-meta-item">{{ $any(detail.findings)?.['entry_points']?.length }} entry points</span>
+                              }
+                              @if ($any(detail.findings)?.['blast_radius']?.['component_count']) {
+                                <span class="triage-meta-item">{{ $any(detail.findings)?.['blast_radius']?.['component_count'] }} affected</span>
+                              }
+                            </div>
+                          </div>
+                        }
+
+                        <!-- Entry Points -->
+                        @if ($any(detail.findings)?.['entry_points']?.length) {
+                          <div class="section">
+                            <h3 class="section-title"><mat-icon>pin_drop</mat-icon> Entry Points</h3>
+                            <div class="component-grid">
+                              @for (ep of $any(detail.findings)?.['entry_points'] || []; track ep['component']) {
+                                <div class="component-chip">
+                                  <span class="comp-name">{{ ep['component'] }}</span>
+                                  @if (ep['file_path']) {
+                                    <span class="comp-package mono">{{ shortenPath(ep['file_path']) }}</span>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
+
+                        <!-- Blast Radius -->
+                        @if ($any(detail.findings)?.['blast_radius']?.['component_count']) {
+                          <div class="section">
+                            <h3 class="section-title"><mat-icon>radar</mat-icon> Blast Radius</h3>
+                            <div class="metrics-row">
+                              <div class="metric-box">
+                                <span class="metric-label">Components</span>
+                                <span class="metric-value">{{ $any(detail.findings)?.['blast_radius']?.['component_count'] }}</span>
+                              </div>
+                              <div class="metric-box">
+                                <span class="metric-label">Depth</span>
+                                <span class="metric-value">{{ $any(detail.findings)?.['blast_radius']?.['depth'] }}</span>
+                              </div>
+                              @if ($any(detail.findings)?.['blast_radius']?.['containers_affected']?.length) {
+                                <div class="metric-box">
+                                  <span class="metric-label">Containers</span>
+                                  <span class="metric-value">{{ $any(detail.findings)?.['blast_radius']?.['containers_affected']?.join(', ') }}</span>
+                                </div>
+                              }
+                            </div>
+                          </div>
+                        }
+
+                        <!-- Test Coverage -->
+                        @if ($any(detail.findings)?.['test_coverage']) {
+                          <div class="section">
+                            <h3 class="section-title"><mat-icon>verified</mat-icon> Test Coverage</h3>
+                            <div class="coverage-bar-wrap">
+                              <div class="coverage-bar-bg">
+                                <div class="coverage-bar-fill" [style.width.%]="($any(detail.findings)?.['test_coverage']?.['coverage_ratio'] || 0) * 100"></div>
+                              </div>
+                              <span class="coverage-label">{{ (($any(detail.findings)?.['test_coverage']?.['coverage_ratio'] || 0) * 100).toFixed(0) }}% covered</span>
+                            </div>
+                          </div>
+                        }
+
+                        <!-- Customer Summary (Markdown) -->
+                        @if (detail.customer_md) {
+                          <div class="section">
+                            <h3 class="section-title"><mat-icon>person</mat-icon> Customer Summary</h3>
+                            <div class="rendered-md markdown-body" [innerHTML]="renderMarkdown(detail.customer_md)"></div>
+                          </div>
+                        }
+
+                        <!-- Developer Brief (Markdown) -->
+                        @if (detail.developer_md) {
+                          <div class="section">
+                            <h3 class="section-title"><mat-icon>code</mat-icon> Developer Brief</h3>
+                            <div class="rendered-md markdown-body" [innerHTML]="renderMarkdown(detail.developer_md)"></div>
+                          </div>
+                        }
+
+                        <!-- Raw JSON toggle -->
+                        <div class="toggle-row">
+                          <button mat-button (click)="toggleRawJson('triage_' + item.issue_id)">
+                            <mat-icon>{{ showRawJson['triage_' + item.issue_id] ? 'visibility' : 'data_object' }}</mat-icon>
+                            {{ showRawJson['triage_' + item.issue_id] ? 'Hide JSON' : 'Raw JSON' }}
+                          </button>
+                        </div>
+                        @if (showRawJson['triage_' + item.issue_id]) {
+                          <pre class="code-viewer">{{ detail.triage | json }}</pre>
+                        }
+                      } @else {
+                        <div class="loading-center"><mat-spinner diameter="24"></mat-spinner></div>
+                      }
+                    </div>
+                  </mat-expansion-panel>
+                }
+              </mat-accordion>
+            } @else {
+              <div class="empty-inline tab-empty">
+                <mat-icon>troubleshoot</mat-icon>
+                <span>No triage results found. Run the Triage phase or use the Triage page to analyze issues.</span>
+              </div>
+            }
+          </mat-tab>
+
+          <!-- ============================================================ -->
+          <!-- TAB 5: Git Branches                                          -->
           <!-- ============================================================ -->
           <mat-tab>
             <ng-template mat-tab-label>
@@ -1683,6 +1846,47 @@ interface ParsedComponent {
         color: var(--cg-vibrant);
       }
 
+      /* Triage banner */
+      .triage-body { padding: 4px 0; }
+      .triage-banner {
+        padding: 14px 18px; border-radius: 10px; margin-bottom: 16px;
+        border: 1px solid var(--cg-gray-200); background: #fff;
+      }
+      .triage-banner.risk-low { border-left: 4px solid var(--cg-success, #28a745); }
+      .triage-banner.risk-medium { border-left: 4px solid var(--cg-warn, #f57c00); }
+      .triage-banner.risk-high { border-left: 4px solid var(--cg-error, #dc3545); }
+      .triage-banner.risk-critical { border-left: 4px solid #9c27b0; }
+      .triage-banner-main {
+        display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+      }
+      .triage-type-label {
+        font-size: 17px; font-weight: 600; text-transform: capitalize;
+      }
+      .triage-confidence { font-size: 12px; color: var(--cg-gray-500); }
+      .triage-banner-meta {
+        display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+      }
+      .risk-badge-sm {
+        padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: capitalize;
+      }
+      .risk-badge-sm.risk-low { background: rgba(40,167,69,0.1); color: #28a745; }
+      .risk-badge-sm.risk-medium { background: rgba(245,124,0,0.1); color: #f57c00; }
+      .risk-badge-sm.risk-high { background: rgba(220,53,69,0.1); color: #dc3545; }
+      .risk-badge-sm.risk-critical { background: rgba(156,39,176,0.1); color: #9c27b0; }
+      .triage-meta-item { font-size: 12px; color: var(--cg-gray-500); }
+
+      /* Coverage bar */
+      .coverage-bar-wrap { display: flex; align-items: center; gap: 12px; }
+      .coverage-bar-bg {
+        flex: 1; height: 8px; background: var(--cg-gray-100);
+        border-radius: 4px; overflow: hidden;
+      }
+      .coverage-bar-fill {
+        height: 100%; background: var(--cg-success, #28a745);
+        border-radius: 4px; transition: width 0.3s;
+      }
+      .coverage-label { font-size: 13px; color: var(--cg-gray-500); white-space: nowrap; }
+
       /* Branches */
       .branches-grid {
         display: grid;
@@ -1732,6 +1936,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
   activeTabIndex = 0;
   showRawJson: Record<string, boolean> = {};
   expandedFiles: Record<string, boolean> = {};
+
+  /** Triage results */
+  triageResults: TriageListItem[] = [];
+  triageDetails: Record<string, TriageDetail> = {};
+  triageLoading = false;
 
   /** Lazy-loaded file contents keyed by knowledge-relative path */
   fileContents: Record<string, string> = {};
@@ -1835,8 +2044,12 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   onTabChange(event: MatTabChangeEvent): void {
-    // Git Branches is the 4th tab (index 3)
-    if (event.index === 3 && !this.branches) {
+    // Triage is the 4th tab (index 3) — lazy-load on first open
+    if (event.index === 3 && !this.triageResults.length && !this.triageLoading) {
+      this.loadTriageResults();
+    }
+    // Git Branches is the 5th tab (index 4)
+    if (event.index === 4 && !this.branches) {
       this.loadBranches();
     }
   }
@@ -1856,6 +2069,40 @@ export class ReportsComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  loadTriageResults(): void {
+    this.triageLoading = true;
+    this.api.getTriageResults().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => {
+        this.triageResults = data.results || [];
+        this.triageLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.triageLoading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  loadTriageDetail(issueId: string): void {
+    if (this.triageDetails[issueId]) return;
+    this.api.getTriageResult(issueId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => {
+        this.triageDetails[issueId] = data;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  getTriageTypeClass(type: unknown): string {
+    switch (type) {
+      case 'bug': return 'severity-chip severity-high';
+      case 'feature': return 'severity-chip severity-low';
+      case 'refactor': return 'severity-chip severity-medium';
+      default: return 'severity-chip severity-medium';
+    }
   }
 
   toggleRawJson(id: string): void {
@@ -2053,7 +2300,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   goToReport(_taskId: string): void {
-    this.activeTabIndex = 2; // Code Generation tab
+    this.activeTabIndex = 2; // Code Generation tab (index unchanged)
   }
 
   exportDocs(): void {
