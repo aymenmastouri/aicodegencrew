@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from ...shared.paths import CHROMA_DIR, DISCOVER_EVIDENCE, DISCOVER_MANIFEST, DISCOVER_SYMBOLS
+from ...shared.project_context import derive_project_slug, migrate_legacy_to_subfolder, set_active_project
 from ...shared.utils.file_filters import collect_files
 from ...shared.utils.logger import setup_logger
 from .budget_engine import BudgetEngine, is_budget_enabled
@@ -56,7 +57,11 @@ class IndexingConfig:
 
     @classmethod
     def from_env(cls, repo_path: str = None, index_mode: str = None, chroma_dir: str = None) -> "IndexingConfig":
-        """Create config from environment variables with optional overrides."""
+        """Create config from environment variables with optional overrides.
+
+        When *chroma_dir* is not explicitly provided, derives a per-project
+        subfolder under ``knowledge/discover/{slug}/`` from the repo path.
+        """
         if repo_path is None:
             repo_path = os.getenv("PROJECT_PATH") or os.getenv("REPO_PATH")
         if not repo_path:
@@ -66,10 +71,15 @@ class IndexingConfig:
         if not resolved_path.exists():
             raise ValueError(f"Repo path not found: {resolved_path}")
 
+        # Multi-project: derive subfolder from repo name
+        if not chroma_dir:
+            slug = derive_project_slug(resolved_path)
+            chroma_dir = str(Path(CHROMA_DIR) / slug)
+
         return cls(
             repo_path=resolved_path,
             index_mode=index_mode or os.getenv("INDEX_MODE", "auto"),
-            chroma_dir=chroma_dir or CHROMA_DIR,
+            chroma_dir=chroma_dir,
             collection_name=os.getenv("COLLECTION_NAME", "repo_docs"),
             include_submodules=True,
             batch_size=int(os.getenv("INDEX_BATCH_SIZE", "50")),
@@ -383,6 +393,12 @@ class IndexingPipeline:
         self.repo_path = self.config.repo_path
         self.metrics = IndexingMetrics()
 
+        # Multi-project: migrate legacy flat layout on first run
+        migrate_legacy_to_subfolder(self.repo_path)
+
+        # Derive project slug for artifact paths
+        self._project_slug = derive_project_slug(self.repo_path)
+
         # Resolve chroma dir relative to CWD (project root), NOT repo_path.
         # Knowledge outputs always go into the project directory.
         chroma_base = self.config.chroma_dir or CHROMA_DIR
@@ -537,9 +553,12 @@ class IndexingPipeline:
                 repo_path=str(self.repo_path),
                 symbols_count=len(self._all_symbols),
                 evidence_count=len(self._all_evidence),
-                manifest_generated=Path(DISCOVER_MANIFEST).exists(),
+                manifest_generated=(self._cache_dir / "repo_manifest.json").exists(),
             )
             state.save(self._cache_dir)
+
+            # Mark this project as active for downstream tools
+            set_active_project(self._project_slug, str(self.repo_path))
 
             return result
         finally:
@@ -704,7 +723,7 @@ class IndexingPipeline:
         logger.info("Step 1b/6: Building repo manifest...")
         try:
             manifest = self._manifest_builder.build(all_file_paths)
-            manifest_path = Path(DISCOVER_MANIFEST)
+            manifest_path = self._cache_dir / "repo_manifest.json"
             self._manifest_builder.write(manifest, manifest_path)
         except Exception as e:
             logger.warning(f"Manifest build failed (non-fatal): {e}")
@@ -998,13 +1017,13 @@ class IndexingPipeline:
     # -- Artifact writing ---------------------------------------------------
 
     def _write_artifacts(self) -> None:
-        """Write symbols.jsonl and evidence.jsonl to knowledge/discover/."""
-        discover_dir = Path(DISCOVER_SYMBOLS).parent
+        """Write symbols.jsonl and evidence.jsonl into the project subfolder."""
+        discover_dir = self._cache_dir
         discover_dir.mkdir(parents=True, exist_ok=True)
 
         # Write symbols.jsonl
         try:
-            symbols_path = Path(DISCOVER_SYMBOLS)
+            symbols_path = discover_dir / "symbols.jsonl"
             with open(symbols_path, "w", encoding="utf-8") as f:
                 for sym in self._all_symbols:
                     f.write(json.dumps(sym.to_dict(), ensure_ascii=False) + "\n")
@@ -1014,7 +1033,7 @@ class IndexingPipeline:
 
         # Write evidence.jsonl
         try:
-            evidence_path = Path(DISCOVER_EVIDENCE)
+            evidence_path = discover_dir / "evidence.jsonl"
             with open(evidence_path, "w", encoding="utf-8") as f:
                 for ev in self._all_evidence:
                     f.write(json.dumps(ev.to_dict(), ensure_ascii=False) + "\n")

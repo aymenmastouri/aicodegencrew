@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from ....shared.paths import CHROMA_DIR, DISCOVER_SYMBOLS
+from ....shared.paths import CHROMA_DIR, DISCOVER_SYMBOLS, get_chroma_dir, get_discover_symbols
 from ....shared.utils.chroma_client import create_chroma_client, get_chroma_http_config
 from ....shared.utils.logger import setup_logger
 from ..schemas import ComponentMatch, DependencyRelation, InterfaceMatch, TaskInput
@@ -119,7 +119,7 @@ class ComponentDiscoveryStage:
             chroma_dir: ChromaDB directory path
         """
         self.facts = facts
-        self.chroma_dir = chroma_dir or CHROMA_DIR
+        self.chroma_dir = chroma_dir or get_chroma_dir()
 
         self.components = facts.get("components", [])
         self.interfaces = facts.get("interfaces", [])
@@ -577,7 +577,7 @@ class ComponentDiscoveryStage:
 
         import json
 
-        symbols_path = Path(DISCOVER_SYMBOLS)
+        symbols_path = Path(get_discover_symbols())
         if not symbols_path.exists():
             self._symbol_index = []
             return self._symbol_index

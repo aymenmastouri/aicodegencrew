@@ -34,7 +34,7 @@ from typing import Any
 
 from crewai import Crew, Process
 
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.schema_version import add_schema_version
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
@@ -79,7 +79,7 @@ class TriageCrew:
         self.knowledge_dir = Path(knowledge_dir)
         self.facts_dir = str(self.knowledge_dir / "extract")
         self.output_dir = self.knowledge_dir / "triage"
-        self.chroma_dir = chroma_dir or CHROMA_DIR
+        self.chroma_dir = chroma_dir or get_chroma_dir()
         self._loader = KnowledgeLoader(knowledge_dir)
 
     # ── Orchestrator interface ──────────────────────────────────────────

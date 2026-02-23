@@ -126,12 +126,26 @@ PHASES: dict[str, PhaseDescriptor] = {
 
 
 # ── Discover phase artifact paths (relative to project root) ─────────────────
+# NOTE: these are *legacy* flat paths kept for backward compat.  At runtime,
+# callers should use ``shared.paths.get_discover_*()`` which resolves the
+# active project subfolder automatically.
 
 DISCOVER_ARTIFACTS: dict[str, str] = {
     "symbols": "knowledge/discover/symbols.jsonl",
     "evidence": "knowledge/discover/evidence.jsonl",
     "manifest": "knowledge/discover/repo_manifest.json",
 }
+
+
+def get_discover_artifacts() -> dict[str, str]:
+    """Return discover artifact paths for the active project."""
+    from .shared.paths import get_discover_evidence, get_discover_manifest, get_discover_symbols
+
+    return {
+        "symbols": get_discover_symbols(),
+        "evidence": get_discover_evidence(),
+        "manifest": get_discover_manifest(),
+    }
 
 
 # ── Convenience helpers ──────────────────────────────────────────────────────

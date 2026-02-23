@@ -30,7 +30,7 @@ from crewai import LLM, Agent, Crew, Process, Task
 from crewai_tools import FileWriterTool
 
 from ...shared.mcp import get_phase3_mcps
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
@@ -83,7 +83,7 @@ class ArchitectureAnalysisCrew:
         """Initialize crew with paths."""
         self.facts_path = Path(facts_path)
         self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        self.chroma_dir = chroma_dir or CHROMA_DIR
+        self.chroma_dir = chroma_dir or get_chroma_dir()
         self.output_dir = Path(output_dir)
         self._analysis_dir = self.output_dir / "analysis"
         self._checkpoint_file = self.output_dir / ".checkpoint_analysis.json"

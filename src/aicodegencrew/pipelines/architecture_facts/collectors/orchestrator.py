@@ -164,9 +164,9 @@ class CollectorOrchestrator:
 
         Provides framework/module hints to skip re-scanning when available.
         """
-        from ....shared.paths import DISCOVER_MANIFEST
+        from ....shared.paths import get_discover_manifest
 
-        manifest_path = Path(DISCOVER_MANIFEST)
+        manifest_path = Path(get_discover_manifest())
         if not manifest_path.exists():
             return None
 

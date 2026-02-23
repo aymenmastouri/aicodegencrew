@@ -101,10 +101,24 @@ class RAGQueryTool(BaseTool):
             self.chroma_dir = chroma_dir
 
     def _find_chroma_path(self) -> str | None:
-        """Find ChromaDB in standard locations."""
+        """Find ChromaDB in standard locations.
+
+        Resolution order:
+        1. Explicit ``chroma_dir`` (constructor override)
+        2. Active project subfolder via ``get_chroma_dir()``
+        3. Legacy flat paths (backward compat)
+        """
         # Check explicit config first
         if self.chroma_dir and Path(self.chroma_dir).exists():
             return self.chroma_dir
+
+        # Try active-project aware resolution
+        from ..paths import get_chroma_dir
+
+        active_dir = get_chroma_dir()
+        if active_dir and Path(active_dir).exists():
+            logger.info(f"Found ChromaDB at active project dir: {active_dir}")
+            return active_dir
 
         # Resolve project root from __file__ (stable, independent of CWD)
         # __file__ = src/aicodegencrew/shared/tools/rag_query_tool.py
@@ -182,8 +196,14 @@ class RAGQueryTool(BaseTool):
         if self._evidence_index is not None:
             return self._evidence_index
 
-        base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-        evidence_path = base_dir / "knowledge" / "discover" / "evidence.jsonl"
+        # Try active-project aware path first, then legacy flat path
+        from ..paths import get_discover_evidence
+
+        evidence_path = Path(get_discover_evidence())
+        if not evidence_path.exists():
+            # Legacy fallback
+            base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
+            evidence_path = base_dir / "knowledge" / "discover" / "evidence.jsonl"
 
         if not evidence_path.exists():
             self._evidence_index = {}
