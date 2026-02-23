@@ -4,6 +4,7 @@ import logging
 
 from aicodegencrew.phase_registry import check_phase_output_exists
 from aicodegencrew.pipeline_contract import (
+    PHASE_PROGRESS_CANCELLED,
     PHASE_PROGRESS_COMPLETED,
     PHASE_PROGRESS_FAILED,
     PHASE_PROGRESS_PARTIAL,
@@ -57,6 +58,10 @@ def _resolve_status(
 
         if st == PHASE_PROGRESS_RUNNING:
             return PHASE_PROGRESS_RUNNING, None, None
+
+        if st == PHASE_PROGRESS_CANCELLED:
+            # Cancelled always wins — even if partial output exists on disk.
+            return PHASE_PROGRESS_CANCELLED, duration, None
 
         if st == PHASE_PROGRESS_FAILED:
             return PHASE_PROGRESS_FAILED, duration, error
