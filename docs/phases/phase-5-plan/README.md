@@ -1,4 +1,4 @@
-# Phase 4 — Plan (Development Planning)
+# Phase 5 — Plan (Development Planning)
 
 > **Status**: IMPLEMENTED | **Type**: Hybrid Pipeline | **Layer**: Reasoning
 
@@ -17,7 +17,7 @@
 | Dependency | Discover + Extract + Analyze |
 | Status | **IMPLEMENTED** |
 
-> **Diagrams:** [phase-4-plan-architecture.drawio](phase-4-plan-architecture.drawio) · [upgrade-rules-engine.drawio](upgrade-rules-engine.drawio)
+> **Diagrams:** [phase-5-plan-architecture.drawio](phase-5-plan-architecture.drawio) · [upgrade-rules-engine.drawio](upgrade-rules-engine.drawio)
 
 **Why Hybrid?** Development planning is 80% pattern matching and 20% creative synthesis. Multi-agent workflows use LLMs for everything — including deterministic tasks like name matching — which is slow (5–7 min), expensive (5 LLM calls), and unreliable (70–80% success). The hybrid approach uses algorithms for what they do best and the LLM only for synthesis. **Result: 10–20x faster, 95%+ success rate.**
 

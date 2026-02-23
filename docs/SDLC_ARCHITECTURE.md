@@ -29,11 +29,11 @@
 | 1 | Extract | Knowledge | Pipeline | IMPLEMENTED | [Phase 1](phases/phase-1-extract/README.md) |
 | 2 | Analyze | Reasoning | Crew | IMPLEMENTED | [Phase 2](phases/phase-2-analyze/README.md) |
 | 3 | Document | Reasoning | Crew | IMPLEMENTED | [Phase 3](phases/phase-3-document/README.md) |
-| 4 | Triage | Reasoning | Crew | IMPLEMENTED | [Phase 4](phases/triage/README.md) |
-| 5 | Plan | Reasoning | Hybrid | IMPLEMENTED | [Phase 5](phases/phase-4-plan/README.md) |
-| 6 | Implement | Execution | Hybrid | IMPLEMENTED | [Phase 6](phases/phase-5-implement/README.md) |
-| 7 | Verify | Execution | Crew | IMPLEMENTED | [Phase 7](phases/phase-6-verify/README.md) |
-| 8 | Deliver | Execution | Crew | IMPLEMENTED | [Phase 8](phases/phase-7-deliver/README.md) |
+| 4 | Triage | Reasoning | Crew | IMPLEMENTED | [Phase 4](phases/phase-4-triage/README.md) |
+| 5 | Plan | Reasoning | Hybrid | IMPLEMENTED | [Phase 5](phases/phase-5-plan/README.md) |
+| 6 | Implement | Execution | Hybrid | IMPLEMENTED | [Phase 6](phases/phase-6-implement/README.md) |
+| 7 | Verify | Execution | Crew | IMPLEMENTED | [Phase 7](phases/phase-7-verify/README.md) |
+| 8 | Deliver | Execution | Crew | IMPLEMENTED | [Phase 8](phases/phase-8-deliver/README.md) |
 
 ## 4. Core Principles
 
@@ -209,8 +209,9 @@ See [Delivery Guide](guides/DELIVERY_GUIDE.md) for release process.
 | 1 — Extract | [phase-1-extract-architecture.drawio](phases/phase-1-extract/phase-1-extract-architecture.drawio) | — |
 | 2 — Analyze | [phase-2-analyze-architecture.drawio](phases/phase-2-analyze/phase-2-analyze-architecture.drawio) | [analysis-crew-schema.drawio](phases/phase-2-analyze/analysis-crew-schema.drawio) |
 | 3 — Document | [phase-3-document-architecture.drawio](phases/phase-3-document/phase-3-document-architecture.drawio) | — |
-| 4 — Plan | [phase-4-plan-architecture.drawio](phases/phase-4-plan/phase-4-plan-architecture.drawio) | [upgrade-rules-engine.drawio](phases/phase-4-plan/upgrade-rules-engine.drawio) |
-| 5 — Implement | [phase-5-implement-architecture.drawio](phases/phase-5-implement/phase-5-implement-architecture.drawio) | [code-generation-pipeline.drawio](phases/phase-5-implement/code-generation-pipeline.drawio) · [task-type-strategy.drawio](phases/phase-5-implement/task-type-strategy.drawio) |
+| 4 — Triage | — | — |
+| 5 — Plan | [phase-5-plan-architecture.drawio](phases/phase-5-plan/phase-5-plan-architecture.drawio) | [upgrade-rules-engine.drawio](phases/phase-5-plan/upgrade-rules-engine.drawio) |
+| 6 — Implement | [phase-6-implement-architecture.drawio](phases/phase-6-implement/phase-6-implement-architecture.drawio) | [code-generation-pipeline.drawio](phases/phase-6-implement/code-generation-pipeline.drawio) · [task-type-strategy.drawio](phases/phase-6-implement/task-type-strategy.drawio) |
 
 ---
 

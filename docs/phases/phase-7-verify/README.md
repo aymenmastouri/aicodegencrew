@@ -1,4 +1,4 @@
-# Phase 6 — Verify (Test Generation)
+# Phase 7 — Verify (Test Generation)
 
 > **Status**: PLANNED | **Type**: Crew | **Layer**: Execution
 
@@ -15,11 +15,11 @@
 | Module | `crews/testing/` |
 | Status | **PLANNED** |
 
-The Verify phase will generate comprehensive test suites for code changes produced by Phase 5 (Implement). Tests will match existing repository conventions (JUnit 5 + Mockito for Spring Boot, Jasmine + TestBed for Angular).
+The Verify phase will generate comprehensive test suites for code changes produced by Phase 6 (Implement). Tests will match existing repository conventions (JUnit 5 + Mockito for Spring Boot, Jasmine + TestBed for Angular).
 
 ## 2. Goals
 
-- Generate unit tests for all code changes from Phase 5
+- Generate unit tests for all code changes from Phase 6
 - Match existing test patterns and frameworks in the target repository
 - Achieve meaningful coverage of modified code paths
 - Produce tests that compile and run against the target codebase
