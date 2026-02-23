@@ -78,9 +78,13 @@ def list_triage_results():
     for f in sorted(_triage_dir.glob("*_triage.json")):
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
+            findings = data.get("findings", {})
             results.append({
                 "issue_id": data.get("issue_id", f.stem.replace("_triage", "")),
                 "classification": data.get("classification", {}),
+                "risk_level": findings.get("risk_assessment", {}).get("risk_level", "unknown"),
+                "entry_points_count": len(findings.get("entry_points", [])),
+                "blast_radius_count": findings.get("blast_radius", {}).get("component_count", 0),
                 "file": f.name,
             })
         except Exception:
