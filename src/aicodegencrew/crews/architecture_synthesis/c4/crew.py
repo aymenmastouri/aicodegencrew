@@ -276,7 +276,7 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
                 logger.error(f"[C4] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")
 
-        if not self.is_degraded:
+        if not self.has_degraded_outputs():
             self._clear_checkpoint()
         else:
             logger.warning(

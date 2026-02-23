@@ -485,7 +485,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
 
         # Only clear checkpoint if ALL mini-crews succeeded (no degradation).
         # On partial completion, keep the checkpoint so only failed crews re-run.
-        if not self.is_degraded:
+        if not self.has_degraded_outputs():
             self._clear_checkpoint()
         else:
             logger.warning(
