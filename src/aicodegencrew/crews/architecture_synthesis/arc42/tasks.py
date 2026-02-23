@@ -262,14 +262,14 @@ Create arc42 Chapter 5 Part 2B: Controller Inventory Table.
 - Total endpoint count by HTTP method (GET/POST/PUT/DELETE/PATCH)
 - Most frequently used URL patterns
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="controller") -> get first page (do NOT call again with offset)
-2. get_statistics() -> get total counts
-3. get_endpoints() -> count by HTTP method
-4. doc_writer(file_path="arc42/05-part2b-controllers-inventory.md", content="### 5.3.4 Controller Inventory\\n...")
-5. Respond: "File arc42/05-part2b-controllers-inventory.md written successfully."
+## EXECUTION — EXACTLY 4 TOOL CALLS (no more!):
+1. list_components_by_stereotype(stereotype="controller") — ONE call, first page only
+2. get_statistics() — total counts
+3. get_endpoints() — count by HTTP method
+4. doc_writer(file_path="arc42/05-part2b-controllers-inventory.md", content="...")
 
-IMPORTANT: Do NOT paginate through all controllers — one call is enough. Use the total_count for the summary.
+STRICT LIMIT: 4 tool calls total. Do NOT call list_components_by_stereotype for other stereotypes.
+Do NOT paginate. Do NOT call get_architecture_summary. The summary data below has everything you need.
 
 Summary data:
 {system_summary}

@@ -60,8 +60,8 @@ MANDATORY RULES:
 
 ## CORRECT EXECUTION PATTERN (follow this exactly):
 
-Step 1: Call MCP tools to gather REAL data (4-10 tool calls). Query EVERY stereotype,
-        get endpoints, get relations. More data = better documentation.
+Step 1: Call MCP tools to gather REAL data (3-6 tool calls). Query ONLY the
+        stereotypes relevant to THIS chapter. Do NOT query all 14 stereotypes.
 Step 2: Call doc_writer(file_path="<path>", content="# Full markdown document...") ONCE.
 Step 3: Respond ONLY with a short confirmation message.
 
