@@ -199,7 +199,8 @@ def get_pipeline_status() -> PipelineStatus:
     # Load historical phase duration averages for ETA display
     try:
         avg_durations = get_phase_duration_averages()
-    except Exception:
+    except Exception as exc:
+        logger.debug("Failed to load phase duration averages: %s", exc)
         avg_durations = {}
 
     # Second pass: downgrade "ready" → "planned" when dependencies are not yet satisfied

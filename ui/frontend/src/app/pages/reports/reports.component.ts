@@ -1781,7 +1781,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   private loadReports(): void {
-    this.api.getReports().subscribe({
+    this.api.getReports().pipe(takeUntil(this.destroy$)).subscribe({
       next: (r) => {
         this.reports = r;
         this.buildDocGroups(r.document_reports || []);
@@ -1844,7 +1844,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   loadBranches(): void {
     this.branchesLoading = true;
     this.branchesError = '';
-    this.api.getBranches().subscribe({
+    this.api.getBranches().pipe(takeUntil(this.destroy$)).subscribe({
       next: (b) => {
         this.branches = b;
         this.branchesLoading = false;
@@ -1870,7 +1870,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   loadFileContent(path: string): void {
     if (this.fileContents[path] || this.fileLoading[path]) return;
     this.fileLoading[path] = true;
-    this.api.getKnowledgeFile(path).subscribe({
+    this.api.getKnowledgeFile(path).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.fileContents[path] = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
         this.fileLoading[path] = false;
@@ -2035,9 +2035,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
         confirmLabel: 'Delete',
       } as ConfirmDialogData,
     });
-    ref.afterClosed().subscribe((confirmed) => {
+    ref.afterClosed().pipe(takeUntil(this.destroy$)).subscribe((confirmed) => {
       if (!confirmed) return;
-      this.api.deleteBranch(taskId).subscribe({
+      this.api.deleteBranch(taskId).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           if (this.branches) {
             this.branches.branches = this.branches.branches.filter((b) => b.task_id !== taskId);
@@ -2066,7 +2066,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   /** Download a knowledge file by its path */
   downloadFileContent(path: string, filename: string): void {
-    this.api.getKnowledgeFile(path).subscribe({
+    this.api.getKnowledgeFile(path).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         const text = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
         this.triggerDownload(text, filename, filename.endsWith('.json') ? 'application/json' : 'text/plain');

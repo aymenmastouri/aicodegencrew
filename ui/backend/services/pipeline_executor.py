@@ -173,7 +173,8 @@ class PipelineExecutor:
 
             enabled_by_id = {p.id: bool(p.enabled) for p in get_phases()}
             return [phase_id for phase_id in phase_ids if enabled_by_id.get(phase_id, True)]
-        except Exception:
+        except Exception as exc:
+            logger.debug("Failed to filter disabled phases: %s", exc)
             return phase_ids
 
     def cancel(self) -> bool:
@@ -273,14 +274,19 @@ class PipelineExecutor:
                 try:
                     with open(state_path, encoding="utf-8") as f:
                         data = json.load(f)
-                except Exception:
-                    pass
+                except (json.JSONDecodeError, OSError) as exc:
+                    logger.warning("Corrupted phase_state.json, resetting: %s", exc)
 
             phases = data.setdefault("phases", {})
+            if not isinstance(phases, dict):
+                phases = {}
+                data["phases"] = phases
             modified = False
 
             # Mark any currently-running phases as cancelled
             for entry in phases.values():
+                if not isinstance(entry, dict):
+                    continue
                 if entry.get("status") == "running":
                     entry["status"] = "cancelled"
                     entry["error"] = "Cancelled by user"
@@ -575,11 +581,13 @@ class PipelineExecutor:
                         if state_path.exists():
                             with open(state_path, encoding="utf-8") as _f:
                                 _state = json.load(_f)
-                            _statuses = [e.get("status") for e in _state.get("phases", {}).values()]
-                            if _statuses:
-                                run_outcome = compute_run_outcome(iter(_statuses))
-                    except Exception:
-                        pass
+                            _phases = _state.get("phases", {})
+                            if isinstance(_phases, dict):
+                                _statuses = [e.get("status") for e in _phases.values() if isinstance(e, dict)]
+                                if _statuses:
+                                    run_outcome = compute_run_outcome(iter(_statuses))
+                    except Exception as exc:
+                        logger.debug("Failed to read phase_state for run outcome: %s", exc)
                     if run_outcome is None:
                         run_outcome = "success" if state == "completed" else "failed"
             append_run_to_history(
@@ -999,7 +1007,8 @@ class PipelineExecutor:
             avg_duration = sum(durations) / len(durations)
             remaining = avg_duration - elapsed
             return round(max(remaining, 0), 1)
-        except Exception:
+        except Exception as exc:
+            logger.debug("Failed to estimate ETA: %s", exc)
             return None
 
     def _write_env_with_overrides(self, overrides: dict[str, str], target: Path) -> None:

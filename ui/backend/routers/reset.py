@@ -50,7 +50,9 @@ def _is_pipeline_running() -> bool:
             data = json.load(f)
         pid = data.get("pid")
         phases = data.get("phases", {})
-        has_running = any(e.get("status") == "running" for e in phases.values())
+        if not isinstance(phases, dict):
+            phases = {}
+        has_running = any(e.get("status") == "running" for e in phases.values() if isinstance(e, dict))
         if has_running and pid:
             try:
                 os.kill(pid, 0)

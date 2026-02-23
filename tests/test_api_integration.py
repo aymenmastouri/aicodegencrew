@@ -193,10 +193,10 @@ def test_collectors_and_inputs(client, tmp_path, monkeypatch):
         "/api/inputs/default/upload",
         files={"file": ("task1.txt", b"hello")},
     )
-    assert upload_resp.status_code in (200, 404)  # upload path mocked; allow 404 if router rejects
+    assert upload_resp.status_code in (200, 400)  # upload path mocked; allow 400 if category unknown
 
     delete_resp = client.delete("/api/inputs/default/task1.txt")
-    assert delete_resp.status_code in (200, 404)
+    assert delete_resp.status_code in (200, 400)
     monkeypatch.setattr(
         "ui.backend.services.log_reader.list_log_files",
         lambda: {"diagrams": []},
