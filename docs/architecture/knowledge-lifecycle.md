@@ -20,6 +20,8 @@ graph TD
     D --> A
     A --> DOC[Document<br/>C4 + Arc42 docs]
     E --> DOC
+    E --> T[Triage<br/>findings + customer/developer briefs]
+    D --> T
     A --> P[Plan<br/>task_plan.json]
     E --> P
     D --> P
@@ -27,31 +29,36 @@ graph TD
     E --> I
     D --> I
     I --> V[Verify<br/>Generated tests]
-    V --> DEL[Deliver<br/>PR + merge]
+    V --> DEL[Deliver<br/>Consistency + quality report]
 
     style D fill:#e3f2fd
     style E fill:#e3f2fd
     style A fill:#fff3e0
     style DOC fill:#fff3e0
+    style T fill:#fff3e0
     style P fill:#e8f5e9
     style I fill:#e8f5e9
     style V fill:#fff3e0
     style DEL fill:#e3f2fd
 ```
 
-> **Note:** Discover now feeds directly into Plan (symbol-based component scoring) and Implement (symbol-targeted context extraction), not just via ChromaDB vectors.
+> **Note:** Discover feeds directly into Triage (ChromaDB similarity), Plan (symbol-based component scoring), and Implement (symbol-targeted context extraction), not just via ChromaDB vectors.
 
 ## Knowledge Directory Structure
 
 ```
 knowledge/
-├── discover/          # ChromaDB + symbol index + evidence + manifest
-│   ├── chroma.sqlite3          # Vector embeddings (with content_type metadata)
-│   ├── symbols.jsonl           # Symbol index (class/method/endpoint per line)
-│   ├── evidence.jsonl          # Chunk evidence (line range, type, linked symbols)
-│   ├── repo_manifest.json      # Repo stats, frameworks, modules, noise folders
-│   ├── .indexing_state.json    # Fingerprint, counts, timestamp
-│   └── ...                     # ChromaDB internal files
+├── discover/          # Per-project subfolders (multi-project isolation)
+│   ├── .active_project         # JSON marker: {"slug": "uvz", "repo_path": "C:\\uvz"}
+│   ├── uvz/                    # Artifacts for project "uvz"
+│   │   ├── chroma.sqlite3          # Vector embeddings (with content_type metadata)
+│   │   ├── symbols.jsonl           # Symbol index (class/method/endpoint per line)
+│   │   ├── evidence.jsonl          # Chunk evidence (line range, type, linked symbols)
+│   │   ├── repo_manifest.json      # Repo stats, frameworks, modules, noise folders
+│   │   ├── .indexing_state.json    # Fingerprint, counts, timestamp
+│   │   └── ...                     # ChromaDB internal files
+│   └── myapp/                  # Artifacts for another project
+│       └── ...
 ├── extract/           # Deterministic facts (single source of truth)
 │   ├── architecture_facts.json    # Aggregated 16-dimension model
 │   └── evidence_map.json          # File→entity evidence mapping
@@ -61,12 +68,18 @@ knowledge/
 │   ├── c4/            # C4 model diagrams (context, container, component)
 │   ├── arc42/         # Arc42 documentation sections
 │   └── quality/       # Quality assessment reports
+├── triage/            # Issue triage output
+│   ├── {issue_id}_findings.json   # Deterministic analysis
+│   ├── {issue_id}_customer.md     # Customer-facing summary
+│   ├── {issue_id}_developer.md    # Developer action brief
+│   ├── {issue_id}_triage.json     # Full triage result
+│   └── summary.json               # Run summary
 ├── plan/              # Implementation plans
 │   └── {task_id}_plan.json
 ├── implement/         # Code generation reports
 │   └── {task_id}_report.json
-├── verify/            # (planned) Test generation output
-├── deliver/           # (planned) Delivery artifacts
+├── verify/            # Test generation output
+├── deliver/           # Delivery artifacts (consistency, quality, synthesis)
 └── archive/           # Reset archives
     └── reset_{timestamp}/
 ```

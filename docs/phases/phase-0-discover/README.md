@@ -13,7 +13,7 @@
 | Type | Pipeline (deterministic) |
 | LLM Requirement | None (embeddings only — local Ollama model) |
 | Entry Point | `pipelines/indexing/indexing_pipeline.py` → `IndexingPipeline` |
-| Output | `knowledge/discover/` |
+| Output | `knowledge/discover/{slug}/` |
 | Status | **IMPLEMENTED** |
 
 > **Diagrams:** [phase-0-discover-architecture.drawio](phase-0-discover-architecture.drawio) · [evidence-flow.drawio](evidence-flow.drawio)
@@ -33,11 +33,14 @@ The Discover phase is the foundation that every subsequent phase builds on. It t
 | Direction | Artifact | Format | Path |
 |-----------|----------|--------|------|
 | **Input** | Target repository | File system | `PROJECT_PATH` or `GIT_REPO_URL` |
-| **Output** | Vector embeddings | ChromaDB | `knowledge/discover/chroma.sqlite3` |
-| **Output** | Symbol index | JSONL | `knowledge/discover/symbols.jsonl` |
-| **Output** | Evidence store | JSONL | `knowledge/discover/evidence.jsonl` |
-| **Output** | Repository manifest | JSON | `knowledge/discover/repo_manifest.json` |
-| **Output** | Indexing state | JSON | `knowledge/discover/.indexing_state.json` |
+| **Output** | Vector embeddings | ChromaDB | `knowledge/discover/{slug}/chroma.sqlite3` |
+| **Output** | Symbol index | JSONL | `knowledge/discover/{slug}/symbols.jsonl` |
+| **Output** | Evidence store | JSONL | `knowledge/discover/{slug}/evidence.jsonl` |
+| **Output** | Repository manifest | JSON | `knowledge/discover/{slug}/repo_manifest.json` |
+| **Output** | Indexing state | JSON | `knowledge/discover/{slug}/.indexing_state.json` |
+| **Output** | Active project marker | JSON | `knowledge/discover/.active_project` |
+
+> `{slug}` is derived from the repository folder name (e.g. `C:\uvz` → `uvz`). See [Multi-Project Isolation](../../architecture/multi-project-isolation.md).
 
 ## 4. Architecture
 
@@ -113,6 +116,33 @@ Classifies files into 3 priority tiers — high-value files indexed first:
 | **A** (high) | 40% | READMEs, controllers, root configs, Angular modules |
 | **B** (medium) | 40% | Services, repositories, entities, files with 3+ symbols |
 | **C** (low) | 20% | Tests, utilities, generated code |
+
+### Multi-Project Isolation
+
+Multiple target repositories can be indexed **side by side** without overwriting each other. Each project gets its own subfolder:
+
+```
+knowledge/discover/
+├── .active_project           ← JSON: {"slug": "uvz", "repo_path": "C:\\uvz"}
+├── uvz/                      ← All artifacts for C:\uvz
+│   ├── chroma.sqlite3
+│   ├── symbols.jsonl
+│   ├── evidence.jsonl
+│   ├── repo_manifest.json
+│   └── .indexing_state.json
+└── myapp/                    ← All artifacts for C:\projects\myapp
+    ├── chroma.sqlite3
+    └── ...
+```
+
+| Concept | Details |
+|---------|---------|
+| **Slug derivation** | `Path(repo_path).resolve().name`, lowercased, sanitized |
+| **Active project** | `.active_project` marker tracks which project downstream tools should query |
+| **Legacy migration** | First index after upgrade automatically moves flat artifacts into `{slug}/` |
+| **Fallback chain** | Active project → single subfolder → legacy flat layout |
+
+Central module: `shared/project_context.py`. See [Multi-Project Isolation](../../architecture/multi-project-isolation.md) for full architecture.
 
 ## 6. Dependencies
 
