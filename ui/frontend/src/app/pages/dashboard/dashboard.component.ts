@@ -173,6 +173,10 @@ import { statusLabel, isTerminal } from '../../shared/status';
                   <mat-icon class="elapsed-icon">timer</mat-icon>
                   {{ formatElapsed(executionElapsed) }}
                 </div>
+                <button mat-stroked-button color="warn" class="stepper-cancel-btn" (click)="cancelPipeline()" matTooltip="Cancel pipeline">
+                  <mat-icon>stop</mat-icon>
+                  Cancel
+                </button>
               }
               <a routerLink="/run" class="stepper-link" matTooltip="Go to Run Pipeline">
                 <mat-icon>chevron_right</mat-icon>
@@ -199,15 +203,16 @@ import { statusLabel, isTerminal } from '../../shared/status';
               Reset All
             </button>
           }
-          <button
-            mat-flat-button
-            color="primary"
-            routerLink="/run"
-            [disabled]="executionState === 'running'"
-            [matTooltip]="executionState === 'running' ? 'Pipeline is running' : ''"
-          >
-            Run Pipeline
-          </button>
+          @if (executionState === 'running') {
+            <button mat-stroked-button color="warn" (click)="cancelPipeline()">
+              <mat-icon>stop</mat-icon>
+              Cancel
+            </button>
+          } @else {
+            <button mat-flat-button color="primary" routerLink="/run">
+              Run Pipeline
+            </button>
+          }
         </div>
       </div>
 
@@ -489,6 +494,18 @@ import { statusLabel, isTerminal } from '../../shared/status';
       }
       .stepper-link:hover {
         color: var(--cg-blue);
+      }
+      .stepper-cancel-btn {
+        font-size: 12px;
+        height: 28px;
+        line-height: 28px;
+        padding: 0 10px;
+      }
+      .stepper-cancel-btn .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
       }
 
       /* Section Header */
@@ -1243,6 +1260,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
   formatDuration(seconds?: number): string {
     return formatDurationUtil(seconds);
+  }
+
+  cancelPipeline(): void {
+    this.pipelineSvc.cancelPipeline().subscribe({
+      next: () => {
+        this.pollStatus();
+      },
+    });
   }
 
   private pollStatus(): void {
