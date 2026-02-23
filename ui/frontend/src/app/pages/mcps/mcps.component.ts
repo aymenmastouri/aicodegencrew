@@ -356,14 +356,15 @@ export class McpsComponent implements OnInit, OnDestroy {
 
   getPhaseNames(phases: number[]): string {
     const phaseMap: Record<number, string> = {
-      1: 'Discover',
-      2: 'Extract',
-      3: 'Analyze',
-      4: 'Plan',
-      5: 'Implement',
-      6: 'Verify',
-      7: 'Deliver',
-      8: 'Review',
+      0: 'Discover',
+      1: 'Extract',
+      2: 'Analyze',
+      3: 'Document',
+      4: 'Triage',
+      5: 'Plan',
+      6: 'Implement',
+      7: 'Verify',
+      8: 'Deliver',
     };
     return phases.map((p) => phaseMap[p] || `Phase ${p}`).join(', ');
   }

@@ -1157,7 +1157,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   resetAll(): void {
     this.pipelineSvc
       .previewReset(
-        this.pipeline?.phases.filter((p) => isTerminal(p.status) && p.id !== 'discover').map((p) => p.id) || [],
+        this.pipeline?.phases.filter((p) => p.id !== 'discover').map((p) => p.id) || [],
       )
       .subscribe({
         next: (preview: ResetPreview) => {

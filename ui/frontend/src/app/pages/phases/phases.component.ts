@@ -397,7 +397,7 @@ export class PhasesComponent implements OnInit, OnDestroy {
   resetAll(): void {
     const phaseIds =
       this.pipeline?.phases
-        .filter((p) => (p.status === 'completed' || p.status === 'failed') && p.id !== 'discover')
+        .filter((p) => p.id !== 'discover')
         .map((p) => p.id) || [];
 
     this.pipelineService.previewReset(phaseIds).subscribe({
