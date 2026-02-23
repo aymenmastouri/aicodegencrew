@@ -232,13 +232,15 @@ Create arc42 Chapter 5 Part 2A: Controller Layer Overview and Top 5 Deep Dive.
 ### 5.3.3 Key Controllers Deep Dive — TOP 5 most important
 - For EACH of the 5: endpoints listed, delegation to services, validation, security
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="controller") -> get controller names (use first 5 for deep dive)
-2. get_endpoints() -> get REST API endpoints
-3. rag_query(query="REST controller endpoint mapping RequestMapping") -> API patterns
-4. rag_query(query="controller validation security authentication") -> security details
-5. doc_writer(file_path="arc42/05-part2a-controllers-overview.md", content="## 5.3 Presentation Layer\\n...")
-6. Respond: "File arc42/05-part2a-controllers-overview.md written successfully."
+## EXECUTION — EXACTLY 5 TOOL CALLS (no more!):
+1. list_components_by_stereotype(stereotype="controller") — ONE call, no offset/pagination
+2. get_endpoints() — REST API endpoints
+3. rag_query(query="REST controller patterns RequestMapping validation security") — patterns
+4. doc_writer(file_path="arc42/05-part2a-controllers-overview.md", content="...")
+5. Respond: "Chapter completed."
+
+STRICT LIMIT: 5 tool calls total. Do NOT call list_components_by_stereotype for other stereotypes.
+Do NOT paginate. Do NOT call get_architecture_summary. The summary data below has everything you need.
 
 Summary data:
 {system_summary}
