@@ -47,6 +47,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.component').then((m) => m.SettingsComponent),
   },
   {
+    path: 'triage',
+    loadComponent: () => import('./pages/triage/triage.component').then((m) => m.TriageComponent),
+  },
+  {
     path: 'mcps',
     loadComponent: () => import('./pages/mcps/mcps.component').then((m) => m.McpsComponent),
   },

@@ -33,6 +33,7 @@ from .utils.logger import logger
 SCHEMA_VERSIONS: dict[str, str] = {
     "extract": "1.0",
     "analyze": "1.0",
+    "triage": "1.0",
     "plan": "1.0",
     "implement": "1.0",
     "verify": "1.0",

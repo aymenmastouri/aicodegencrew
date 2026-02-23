@@ -28,7 +28,7 @@ class PhaseDescriptor:
     resettable: bool = True
 
 
-# ── All 8 SDLC phases ───────────────────────────────────────────────────────
+# ── All 9 SDLC phases ───────────────────────────────────────────────────────
 
 PHASES: dict[str, PhaseDescriptor] = {
     "discover": PhaseDescriptor(
@@ -72,11 +72,21 @@ PHASES: dict[str, PhaseDescriptor] = {
         "knowledge/document/c4",
         ("knowledge/document",),
     ),
+    "triage": PhaseDescriptor(
+        "triage",
+        "Issue Triage",
+        "crew",
+        4,
+        ("extract",),
+        False,
+        "knowledge/triage",
+        ("knowledge/triage",),
+    ),
     "plan": PhaseDescriptor(
         "plan",
         "Development Planning",
         "hybrid",
-        4,
+        5,
         ("analyze",),
         False,
         "knowledge/plan",
@@ -86,7 +96,7 @@ PHASES: dict[str, PhaseDescriptor] = {
         "implement",
         "Code Generation",
         "hybrid",
-        5,
+        6,
         ("plan",),
         False,
         "knowledge/implement",
@@ -96,7 +106,7 @@ PHASES: dict[str, PhaseDescriptor] = {
         "verify",
         "Test Generation",
         "crew",
-        6,
+        7,
         ("implement",),
         False,
         "knowledge/verify",
@@ -106,7 +116,7 @@ PHASES: dict[str, PhaseDescriptor] = {
         "deliver",
         "Review & Consistency Guard",
         "crew",
-        7,
+        8,
         ("implement",),
         False,
         "knowledge/deliver",

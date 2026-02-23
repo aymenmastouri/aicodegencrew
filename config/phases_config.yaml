@@ -125,6 +125,27 @@ phases:
       verbose: true
 
   # =========================================================================
+  # CREW: Triage - Issue Triage (deterministic + LLM)
+  # =========================================================================
+  # Type:      Crew (deterministic scan + LLM synthesis)
+  # Location:  crews/triage/crew.py → TriageCrew
+  # Purpose:   Classify issues, find entry points, calculate blast radius,
+  #            produce customer summary + developer brief
+  # Input:     knowledge/extract/ (required) + knowledge/analyze/ (optional)
+  # Output:    knowledge/triage/ (findings, customer.md, developer.md, triage.json)
+  # =========================================================================
+  triage:
+    enabled: false
+    name: "Triage"
+    description: "Issue classification, blast radius, and dual-audience reports"
+    type: crew
+    required: false
+    order: 4
+    dependencies: [extract]
+    config:
+      output_dir: "./knowledge/triage"
+      temperature: 0.2
+
   # =========================================================================
   # PIPELINE: Plan - Development Planning (HYBRID ARCHITECTURE)
   # =========================================================================
@@ -163,7 +184,7 @@ phases:
     description: "Fast, evidence-based implementation plans using hybrid architecture"
     type: pipeline
     required: false
-    order: 4
+    order: 5
     dependencies: [analyze]
     config:
       output_dir: "./knowledge/plan"
@@ -195,7 +216,7 @@ phases:
     description: "Generate code from plans using hybrid architecture"
     type: crew
     required: false
-    order: 5
+    order: 6
     dependencies: [plan]
     config:
       output_dir: "./knowledge/implement"
@@ -216,7 +237,7 @@ phases:
     description: "Generate tests matching existing patterns"
     type: crew
     required: false
-    order: 6
+    order: 7
     dependencies: [implement]
     config:
       output_dir: "./knowledge/verify"
@@ -237,7 +258,7 @@ phases:
     description: "Architecture consistency review and quality report"
     type: crew
     required: false
-    order: 7
+    order: 8
     dependencies: [implement]
     config:
       output_dir: "./knowledge/deliver"
@@ -324,13 +345,14 @@ presets:
 
   full:
     display_name: "Full Pipeline"
-    description: "All phases: Discover → Extract → Analyze → Document → Plan → Implement → Verify → Deliver"
+    description: "All phases: Discover → Extract → Analyze → Document → Triage → Plan → Implement → Verify → Deliver"
     icon: "rocket_launch"
     phases:
       - discover
       - extract
       - analyze
       - document
+      - triage
       - plan
       - implement
       - verify
