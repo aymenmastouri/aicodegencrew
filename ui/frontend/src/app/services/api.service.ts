@@ -254,10 +254,26 @@ export class ApiService {
     return this.http.post(`${this.base}/triage/quick`, body);
   }
 
-  getTriageResults(): Observable<{ results: { issue_id: string; classification: Record<string, unknown>; file: string }[] }> {
-    return this.http.get<{ results: { issue_id: string; classification: Record<string, unknown>; file: string }[] }>(
-      `${this.base}/triage/results`,
-    );
+  getTriageResults(): Observable<{
+    results: {
+      issue_id: string;
+      classification: Record<string, unknown>;
+      risk_level?: string;
+      entry_points_count?: number;
+      blast_radius_count?: number;
+      file: string;
+    }[];
+  }> {
+    return this.http.get<{
+      results: {
+        issue_id: string;
+        classification: Record<string, unknown>;
+        risk_level?: string;
+        entry_points_count?: number;
+        blast_radius_count?: number;
+        file: string;
+      }[];
+    }>(`${this.base}/triage/results`);
   }
 
   getTriageResult(issueId: string): Observable<{

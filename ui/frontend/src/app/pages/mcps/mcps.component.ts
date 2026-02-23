@@ -366,6 +366,6 @@ export class McpsComponent implements OnInit, OnDestroy {
       7: 'Verify',
       8: 'Deliver',
     };
-    return phases.map((p) => phaseMap[p] || `Phase ${p}`).join(', ');
+    return (phases ?? []).map((p) => phaseMap[p] || `Phase ${p}`).join(', ');
   }
 }
