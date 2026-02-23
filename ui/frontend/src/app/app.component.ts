@@ -527,6 +527,7 @@ export class AppComponent implements OnInit, OnDestroy {
       items: [
         { route: '/dashboard', icon: 'space_dashboard', label: 'Dashboard' },
         { route: '/run', icon: 'rocket_launch', label: 'Run Pipeline' },
+        { route: '/triage', icon: 'troubleshoot', label: 'Triage' },
         { route: '/inputs', icon: 'upload_file', label: 'Input Files' },
         { route: '/collectors', icon: 'hub', label: 'Collectors' },
         { route: '/settings', icon: 'settings', label: 'Settings' },

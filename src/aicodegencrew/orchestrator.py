@@ -44,6 +44,7 @@ PHASE_CONTRACTS: dict[str, dict] = {
     "extract": {"requires": ["discover"], "provides": ["extract"]},
     "analyze": {"requires": ["extract"], "provides": ["analyze"]},
     "document": {"requires": ["analyze"], "provides": ["document"]},
+    "triage": {"requires": ["extract"], "provides": ["triage"]},
     "plan": {"requires": ["extract"], "provides": ["plan"]},
     "implement": {"requires": ["plan"], "provides": ["implement"]},
     "verify": {"requires": ["implement"], "provides": ["verify"]},

@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from aicodegencrew.shared.utils.phase_state import configure_state_dir
 
 from .config import settings
-from .routers import collectors, diagrams, env, inputs, knowledge, logs, mcps, metrics, phases, pipeline, reports, reset
+from .routers import collectors, diagrams, env, inputs, knowledge, logs, mcps, metrics, phases, pipeline, reports, reset, triage
 from .schemas import HealthResponse
 
 # Point phase_state at the project's logs/ dir so it resolves correctly
@@ -56,6 +56,7 @@ app.include_router(inputs.router)
 app.include_router(collectors.router)
 app.include_router(reset.router)
 app.include_router(mcps.router)  # MCP Registry
+app.include_router(triage.router)
 
 
 @app.get("/api/health", response_model=HealthResponse)

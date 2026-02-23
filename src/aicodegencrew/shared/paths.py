@@ -16,6 +16,7 @@ PHASE_DIRS: dict[str, str] = {
     "extract": "knowledge/extract",
     "analyze": "knowledge/analyze",
     "document": "knowledge/document",
+    "triage": "knowledge/triage",
     "plan": "knowledge/plan",
     "implement": "knowledge/implement",
     "verify": "knowledge/verify",

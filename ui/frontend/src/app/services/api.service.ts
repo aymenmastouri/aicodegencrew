@@ -238,4 +238,39 @@ export class ApiService {
   getCollectorOutput(id: string): Observable<CollectorOutput> {
     return this.http.get<CollectorOutput>(`${this.base}/collectors/${id}/output`);
   }
+
+  // Triage
+  runFullTriage(body: {
+    issue_id: string;
+    title: string;
+    description: string;
+    task_file?: string;
+    supplementary_files?: Record<string, string[]>;
+  }): Observable<unknown> {
+    return this.http.post(`${this.base}/triage`, body);
+  }
+
+  runQuickTriage(body: { title: string; description: string }): Observable<unknown> {
+    return this.http.post(`${this.base}/triage/quick`, body);
+  }
+
+  getTriageResults(): Observable<{ results: { issue_id: string; classification: Record<string, unknown>; file: string }[] }> {
+    return this.http.get<{ results: { issue_id: string; classification: Record<string, unknown>; file: string }[] }>(
+      `${this.base}/triage/results`,
+    );
+  }
+
+  getTriageResult(issueId: string): Observable<{
+    triage: Record<string, unknown>;
+    customer_md?: string;
+    developer_md?: string;
+    findings?: Record<string, unknown>;
+  }> {
+    return this.http.get<{
+      triage: Record<string, unknown>;
+      customer_md?: string;
+      developer_md?: string;
+      findings?: Record<string, unknown>;
+    }>(`${this.base}/triage/results/${issueId}`);
+  }
 }
