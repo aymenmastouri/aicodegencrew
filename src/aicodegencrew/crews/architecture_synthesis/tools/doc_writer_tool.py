@@ -37,7 +37,7 @@ class DocWriterTool(BaseTool):
     # Configurable output directory (set by base_crew)
     output_dir: str | None = None
 
-    def _run(self, file_path: str, content: str, overwrite: bool = True) -> str:
+    def _run(self, file_path: str, content: str, overwrite: bool = True, **kwargs) -> str:
         """Write content to a file."""
         try:
             base_dir = Path(self.output_dir) if self.output_dir else Path("knowledge/document")

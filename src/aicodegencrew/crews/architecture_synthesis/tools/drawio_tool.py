@@ -54,7 +54,7 @@ class DrawioDiagramTool(BaseTool):
     )
     args_schema: type[BaseModel] = DrawioDiagramInput
 
-    def _run(self, file_path: str, diagram_name: str, nodes: list[dict[str, Any]], edges: list[dict[str, Any]]) -> str:
+    def _run(self, file_path: str, diagram_name: str, nodes: list[dict[str, Any]], edges: list[dict[str, Any]], **kwargs) -> str:
         """Create a Draw.io diagram."""
         try:
             # Build mxGraphModel XML
