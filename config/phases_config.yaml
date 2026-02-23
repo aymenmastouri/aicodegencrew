@@ -326,7 +326,6 @@ presets:
       - discover
       - extract
       - analyze
-      - document
       - triage
       - plan
 
@@ -338,7 +337,6 @@ presets:
       - discover
       - extract
       - analyze
-      - document
       - triage
       - plan
       - implement

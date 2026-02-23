@@ -36,6 +36,9 @@ interface ParsedComponent {
 interface TriageListItem {
   issue_id: string;
   classification: Record<string, unknown>;
+  risk_level?: string;
+  entry_points_count?: number;
+  blast_radius_count?: number;
   file: string;
 }
 
@@ -846,10 +849,16 @@ interface TriageDetail {
                         <span class="mono">{{ item.issue_id }}</span>
                       </mat-panel-title>
                       <mat-panel-description>
-                        @if (item.classification['type']) {
-                          <span class="severity-chip" [class]="getTriageTypeClass(item.classification['type'])">
-                            {{ item.classification['type'] }}
+                        @if ($any(item.classification)?.['type']) {
+                          <span class="severity-chip" [class]="getTriageTypeClass($any(item.classification)?.['type'])">
+                            {{ $any(item.classification)?.['type'] }}
                           </span>
+                        }
+                        @if (item.risk_level && item.risk_level !== 'unknown') {
+                          <span class="risk-badge-sm" [class]="'risk-' + item.risk_level">{{ item.risk_level }}</span>
+                        }
+                        @if (item.blast_radius_count) {
+                          <span class="triage-meta-item">{{ item.blast_radius_count }} affected</span>
                         }
                       </mat-panel-description>
                     </mat-expansion-panel-header>

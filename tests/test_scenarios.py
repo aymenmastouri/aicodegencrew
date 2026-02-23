@@ -295,24 +295,25 @@ class TestScenario2PresetResolution:
         ]
 
     def test_plan_preset(self, orchestrator):
-        """plan => [discover, extract, analyze, document, plan]."""
+        """plan => [discover, extract, analyze, triage, plan]."""
         phases = orchestrator.get_preset_phases("plan")
         assert phases == [
             "discover",
             "extract",
             "analyze",
-            "document",
+            "triage",
             "plan",
         ]
 
     def test_architect_preset(self, orchestrator):
-        """architect => [phase0..phase4]."""
+        """architect => [discover, extract, analyze, document, triage, plan]."""
         phases = orchestrator.get_preset_phases("architect")
         assert phases == [
             "discover",
             "extract",
             "analyze",
             "document",
+            "triage",
             "plan",
         ]
 
