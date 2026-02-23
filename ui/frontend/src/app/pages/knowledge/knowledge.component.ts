@@ -1078,12 +1078,25 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
     this.internalFiles = [...facts, ...analysis];
 
     // Development Artifacts (user-facing outputs only)
+    const triageFiles = files.filter((f) => this.inDir(f, 'triage'));
     const plans = files.filter((f) => this.inDir(f, 'plan') || this.inDir(f, 'phase4_planning'));
     const codegen = files.filter((f) => this.inDir(f, 'implement') || this.inDir(f, 'phase5_codegen'));
     const testing = files.filter((f) => this.inDir(f, 'verify') || this.inDir(f, 'phase6_testing'));
     const deployment = files.filter((f) => this.inDir(f, 'deliver') || this.inDir(f, 'phase7_deployment'));
 
     this.dataGroups = [
+      ...(triageFiles.length > 0
+        ? [
+            {
+              id: 'triage',
+              label: 'Issue Triage',
+              icon: 'troubleshoot',
+              phase: 'Triage',
+              description: 'Issue classification, blast radius, and triage reports',
+              files: triageFiles,
+            },
+          ]
+        : []),
       {
         id: 'plans',
         label: 'Development Plans',
