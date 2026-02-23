@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Protocol
 
-from .phase_registry import PHASES
+from .phase_registry import PHASES, get_cleanup_targets
 from .pipeline_contract import (
     PhaseContext,
     PipelineContract,
@@ -315,6 +315,9 @@ class SDLCOrchestrator:
                 message="Dependencies not met",
             )
 
+        # Clean stale output before re-running (preserve checkpoint files for resume)
+        self._reset_phase_output(phase_id)
+
         # Execute
         display = PHASES[phase_id].display_name if phase_id in PHASES else phase_id
         logger.info(f"[Phase] {display} ({phase_id})")
@@ -415,6 +418,46 @@ class SDLCOrchestrator:
                 message=str(e),
                 duration_seconds=duration,
             )
+
+    def _reset_phase_output(self, phase_id: str) -> None:
+        """Clean stale output files before re-running a phase.
+
+        Removes output files (stubs, old docs, logs) but preserves checkpoint
+        files (.checkpoint_*) so that crew resume logic still works.
+        Skips non-resettable phases (e.g., discover — manages its own state).
+        """
+        import shutil
+
+        desc = PHASES.get(phase_id)
+        if desc and not desc.resettable:
+            return
+
+        base = Path.cwd()
+        for rel in get_cleanup_targets(phase_id):
+            target = base / rel
+            if not target.exists():
+                continue
+            if target.is_dir():
+                # Preserve checkpoint files for resume support
+                checkpoints = list(target.glob(".checkpoint_*"))
+                if checkpoints:
+                    # Delete everything except checkpoint files
+                    for item in target.iterdir():
+                        if item.name.startswith(".checkpoint_"):
+                            continue
+                        if item.is_dir():
+                            shutil.rmtree(item)
+                        else:
+                            item.unlink()
+                    logger.info(
+                        f"[Orchestrator] Reset {rel}/ (preserved {len(checkpoints)} checkpoint(s))"
+                    )
+                else:
+                    shutil.rmtree(target)
+                    logger.info(f"[Orchestrator] Reset {rel}/")
+            else:
+                target.unlink()
+                logger.info(f"[Orchestrator] Deleted {rel}")
 
     def _invoke_executable(self, executable: PhaseExecutable, inputs: dict[str, Any]) -> Any:
         """Invoke phase with a wall-clock timeout (ARCH-6).
