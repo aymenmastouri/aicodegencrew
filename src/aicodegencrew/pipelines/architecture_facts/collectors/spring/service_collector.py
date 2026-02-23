@@ -51,7 +51,7 @@ class SpringServiceCollector(DimensionCollector):
 
         self._java_root = self._find_java_root()
         if not self._java_root:
-            logger.info("[SpringServiceCollector] No Java/Kotlin source root found")
+            logger.debug("[SpringServiceCollector] No Java/Kotlin source root in %s (skipping)", self.repo_path)
             return self.output
 
         # Collect Java and Kotlin files

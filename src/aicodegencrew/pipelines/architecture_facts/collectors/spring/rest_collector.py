@@ -89,7 +89,7 @@ class SpringRestCollector(DimensionCollector):
 
         self._java_root = self._find_java_root()
         if not self._java_root:
-            logger.info("[SpringRestCollector] No Java/Kotlin source root found")
+            logger.debug("[SpringRestCollector] No Java/Kotlin source root in %s (skipping)", self.repo_path)
             return self.output
 
         # Process Java files
