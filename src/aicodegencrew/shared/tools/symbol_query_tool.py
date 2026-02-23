@@ -84,18 +84,21 @@ class SymbolQueryTool(BaseTool):
         if self._symbols is not None:
             return self._symbols
 
-        # Find symbols file
-        # Try from project root (__file__ -> src/aicodegencrew/shared/tools/)
-        base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
+        # Try active-project aware path first
+        from ..paths import get_discover_symbols
 
-        symbols_path = None
-        for rel in self.SYMBOLS_PATHS:
-            candidate = base_dir / rel
-            if candidate.exists():
-                symbols_path = candidate
-                break
+        symbols_path = Path(get_discover_symbols())
+        if not symbols_path.exists():
+            # Legacy fallback: search standard locations from project root
+            base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
+            symbols_path = None
+            for rel in self.SYMBOLS_PATHS:
+                candidate = base_dir / rel
+                if candidate.exists():
+                    symbols_path = candidate
+                    break
 
-        if not symbols_path:
+        if not symbols_path or not symbols_path.exists():
             logger.debug("[SymbolQuery] symbols.jsonl not found — returning empty")
             self._symbols = []
             return self._symbols

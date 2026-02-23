@@ -208,16 +208,18 @@ def cmd_list(config: Config) -> int:
 def cmd_index(config: Config) -> int:
     """Run indexing pipeline only."""
     from .pipelines.indexing import ensure_repo_indexed
+    from .shared.paths import get_chroma_dir
+    from .shared.project_context import derive_project_slug, set_active_project
 
     repo_path = _resolve_repo_path(config)
-    from .shared.paths import CHROMA_DIR
-
-    chroma_dir = Path(CHROMA_DIR)
+    project_slug = derive_project_slug(repo_path)
+    chroma_dir = Path(get_chroma_dir(project_slug))
 
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")
     logger.info("=" * 60)
     logger.info(f"Repository : {repo_path}")
+    logger.info(f"Project    : {project_slug}")
     logger.info(f"INDEX_MODE : {config.index_mode}")
     logger.info(f"ChromaDB   : {chroma_dir}")
     logger.info("")
@@ -236,6 +238,7 @@ def cmd_index(config: Config) -> int:
 
     try:
         ensure_repo_indexed(str(repo_path), force_reindex=force_reindex)
+        set_active_project(project_slug, str(repo_path))
         logger.info("\n[OK] Indexing completed!")
         return 0
     except KeyboardInterrupt:
@@ -393,15 +396,19 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     from .crews import ArchitectureSynthesisCrew
     from .orchestrator import SDLCOrchestrator
     from .pipelines import ArchitectureFactsPipeline, IndexingPipeline
+    from .shared.paths import KNOWLEDGE_DIR, get_chroma_dir
+    from .shared.project_context import derive_project_slug, set_active_project
 
     # Resolve repo path (clone from Git URL if configured)
     repo_path = _resolve_repo_path(config)
 
-    # Knowledge paths: relative to project root (CWD), NOT target repo
-    from .shared.paths import CHROMA_DIR, KNOWLEDGE_DIR
+    # Multi-project: derive slug and resolve chroma subfolder
+    project_slug = derive_project_slug(repo_path)
+    set_active_project(project_slug, str(repo_path))
 
+    # Knowledge paths: relative to project root (CWD), NOT target repo
     knowledge_dir = KNOWLEDGE_DIR
-    chroma_dir = CHROMA_DIR
+    chroma_dir = get_chroma_dir(project_slug)
     phase1_dir = knowledge_dir / "extract"
     phase2_dir = knowledge_dir / "analyze"
     phase4_dir = knowledge_dir / "plan"

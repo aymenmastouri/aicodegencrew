@@ -76,7 +76,12 @@ class KnowledgeLoader:
     # ── discover ────────────────────────────────────────────────────────
 
     def _load_discover(self) -> dict[str, Any]:
-        d = self.root / "discover"
+        # Try active-project subfolder first, then legacy flat layout
+        from ...shared.paths import get_chroma_dir
+
+        active_dir = Path(get_chroma_dir())
+        d = active_dir if active_dir.exists() else self.root / "discover"
+
         return {
             "symbols": _load_jsonl(d / "symbols.jsonl"),
             "evidence": _load_jsonl(d / "evidence.jsonl"),

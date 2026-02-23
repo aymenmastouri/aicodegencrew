@@ -11,7 +11,7 @@ import os
 import re
 from pathlib import Path
 
-from ....shared.paths import DISCOVER_SYMBOLS
+from ....shared.paths import DISCOVER_SYMBOLS, get_discover_symbols
 from ....shared.utils.logger import setup_logger
 from ..schemas import ImportEntry
 
@@ -163,7 +163,7 @@ class ImportIndexBuilder:
         return index
 
     def _load_from_symbols_jsonl(self, index: ImportIndex) -> int:
-        symbols_path = Path(DISCOVER_SYMBOLS)
+        symbols_path = Path(get_discover_symbols())
         if not symbols_path.exists():
             return 0
 

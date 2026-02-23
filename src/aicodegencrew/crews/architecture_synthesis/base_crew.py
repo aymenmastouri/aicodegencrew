@@ -25,7 +25,7 @@ from typing import Any
 from crewai import LLM, Agent, Crew, Process, Task
 
 from ...shared.mcp import get_phase3_mcps
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.tools import RAGQueryTool, SymbolQueryTool
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
@@ -124,7 +124,7 @@ class MiniCrewBase(ABC):
             # Derive from facts_path: knowledge/extract/ → knowledge/analyze/
             knowledge_base = self.facts_path.parent.parent
             self.analyzed_path = knowledge_base / "analyze" / "analyzed_architecture.json"
-        self.chroma_dir = chroma_dir or CHROMA_DIR
+        self.chroma_dir = chroma_dir or get_chroma_dir()
 
         # Load data
         self.facts = self._load_json(self.facts_path)

@@ -15,7 +15,7 @@ from chromadb.config import Settings
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.utils.chroma_client import get_chroma_http_config
 from ...shared.utils.logger import setup_logger
 
@@ -108,7 +108,7 @@ class ChromaIndexTool(BaseTool):
                     ),
                 )
             else:
-                chroma_dir = self.chroma_dir or CHROMA_DIR
+                chroma_dir = self.chroma_dir or get_chroma_dir()
                 Path(chroma_dir).mkdir(parents=True, exist_ok=True)
 
                 logger.info(f"Initializing ChromaDB client at: {chroma_dir}")

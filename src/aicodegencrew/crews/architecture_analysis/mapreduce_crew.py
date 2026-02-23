@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from .container_crew import ContainerAnalysisCrew
 from .crew import ArchitectureAnalysisCrew
 
@@ -196,7 +196,7 @@ class MapReduceAnalysisCrew:
         max_workers: int = 3,
     ):
         self.facts_path = Path(facts_path)
-        self.chroma_dir = chroma_dir or CHROMA_DIR
+        self.chroma_dir = chroma_dir or get_chroma_dir()
         self.output_dir = Path(output_dir)
         self.parallel = parallel
         self.max_workers = max_workers

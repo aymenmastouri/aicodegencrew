@@ -36,3 +36,36 @@ CHROMA_DIR = "knowledge/discover"
 DISCOVER_SYMBOLS = "knowledge/discover/symbols.jsonl"
 DISCOVER_EVIDENCE = "knowledge/discover/evidence.jsonl"
 DISCOVER_MANIFEST = "knowledge/discover/repo_manifest.json"
+
+
+# ── Multi-project aware path resolvers ───────────────────────────────────────
+# These delegate to project_context to resolve the active project subfolder.
+# Import is lazy to avoid circular imports at module load time.
+
+
+def get_chroma_dir(project_slug: str | None = None) -> str:
+    """Return ChromaDB directory for *project_slug* (or the active project)."""
+    from .project_context import get_discover_dir
+
+    return get_discover_dir(project_slug)
+
+
+def get_discover_symbols(project_slug: str | None = None) -> str:
+    """Return path to symbols.jsonl for *project_slug* (or the active project)."""
+    from .project_context import get_discover_dir
+
+    return str(Path(get_discover_dir(project_slug)) / "symbols.jsonl")
+
+
+def get_discover_evidence(project_slug: str | None = None) -> str:
+    """Return path to evidence.jsonl for *project_slug* (or the active project)."""
+    from .project_context import get_discover_dir
+
+    return str(Path(get_discover_dir(project_slug)) / "evidence.jsonl")
+
+
+def get_discover_manifest(project_slug: str | None = None) -> str:
+    """Return path to repo_manifest.json for *project_slug* (or the active project)."""
+    from .project_context import get_discover_dir
+
+    return str(Path(get_discover_dir(project_slug)) / "repo_manifest.json")

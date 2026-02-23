@@ -33,7 +33,7 @@ from typing import Any
 
 from crewai import Crew, Process
 
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.schema_version import add_schema_version
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
@@ -86,7 +86,7 @@ class ReviewCrew:
         self.c4_dir = self.knowledge_dir / "document" / "c4"
         self.arc42_dir = self.knowledge_dir / "document" / "arc42"
         self.output_dir = self.knowledge_dir / "deliver"
-        self.chroma_dir = chroma_dir or CHROMA_DIR
+        self.chroma_dir = chroma_dir or get_chroma_dir()
 
     # ── Orchestrator interface ────────────────────────────────────────────
 
