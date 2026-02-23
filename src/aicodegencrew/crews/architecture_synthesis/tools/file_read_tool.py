@@ -48,7 +48,7 @@ class FileReadTool(BaseTool):
     )
     args_schema: type[BaseModel] = FileReadInput
 
-    def _run(self, file_path: str) -> str:
+    def _run(self, file_path: str, **kwargs) -> str:
         """Read file with safeguards against token overflow."""
         try:
             path = Path(file_path)

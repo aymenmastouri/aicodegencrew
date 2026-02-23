@@ -280,7 +280,7 @@ class StereotypeListTool(BaseTool):
             self._facts_cache = json.load(f)
         return self._facts_cache
 
-    def _run(self, stereotype: str, container: str = "") -> str:
+    def _run(self, stereotype: str, container: str = "", **kwargs) -> str:
         """Get components by stereotype (limited to 30 to prevent token overflow)."""
         import json
 
