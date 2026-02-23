@@ -26,17 +26,25 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
   },
 
-  // Start the FastAPI backend before tests run.
-  // reuseExistingServer: true → if backend is already listening on :8001 (local dev),
-  // the command is skipped and the existing server is reused.
-  // In CI (no existing server), the command is executed to bring the backend up.
-  webServer: {
-    command: 'python -m uvicorn ui.backend.main:app --host 127.0.0.1 --port 8001',
-    url: 'http://127.0.0.1:8001/api/health',
-    timeout: 90_000,
-    reuseExistingServer: true,
-    cwd: PROJECT_ROOT,
-  },
+  // Start backend + frontend before tests run.
+  // reuseExistingServer: true → if already listening, the command is skipped.
+  // This makes the demo test fully self-sufficient — no manual `npm run dev` required.
+  webServer: [
+    {
+      command: 'python -m uvicorn ui.backend.main:app --host 127.0.0.1 --port 8001',
+      url: 'http://127.0.0.1:8001/api/health',
+      timeout: 90_000,
+      reuseExistingServer: true,
+      cwd: PROJECT_ROOT,
+    },
+    {
+      command: 'npm start --prefix ui/frontend',
+      url: 'http://localhost:4200',
+      timeout: 120_000,
+      reuseExistingServer: true,
+      cwd: PROJECT_ROOT,
+    },
+  ],
 
   projects: [
     {
