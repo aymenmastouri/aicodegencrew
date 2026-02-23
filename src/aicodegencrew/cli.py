@@ -474,6 +474,69 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         )
         orchestrator.register_phase("document", synthesis_crew)
 
+    # --- Triage: Issue Triage (deterministic + LLM synthesis) ---
+    if "triage" in planned_phases:
+        from .crews.triage import TriageCrew
+        from .crews.triage.schemas import TriageRequest
+
+        triage_input_dir = Path(os.getenv("TASK_INPUT_DIR", str(knowledge_dir.parent / "inputs" / "tasks")))
+        triage_files = sorted(triage_input_dir.glob("*")) if triage_input_dir.exists() else []
+        triage_files = [f for f in triage_files if f.is_file() and not f.name.startswith(".")]
+
+        # Collect supplementary files (same as plan phase)
+        triage_supplementary: dict[str, list[str]] = {}
+        for env_key, category in [
+            ("REQUIREMENTS_DIR", "requirements"),
+            ("LOGS_DIR", "logs"),
+            ("REFERENCE_DIR", "reference"),
+        ]:
+            dir_path = os.getenv(env_key, "").strip()
+            if dir_path and Path(dir_path).is_dir():
+                cat_files = sorted(Path(dir_path).glob("*"))
+                cat_files = [f for f in cat_files if f.is_file() and not f.name.startswith(".")]
+                if cat_files:
+                    triage_supplementary[category] = [str(f) for f in cat_files]
+
+        if triage_files:
+            logger.info("[Triage] Found %d task file(s) to triage", len(triage_files))
+            _triage_crew = TriageCrew(knowledge_dir=str(knowledge_dir), chroma_dir=chroma_dir)
+            _triage_requests = [
+                TriageRequest(
+                    issue_id=f.stem,
+                    task_file=str(f),
+                    supplementary_files=triage_supplementary,
+                )
+                for f in triage_files
+            ]
+
+            class _TriageRunner:
+                def __init__(self, crew, requests):
+                    self._crew = crew
+                    self._requests = requests
+
+                def kickoff(self, inputs=None):
+                    results = []
+                    for req in self._requests:
+                        try:
+                            r = self._crew.run(req)
+                            results.append(r)
+                        except Exception as exc:
+                            logger.error("[Triage] Failed to triage %s: %s", req.issue_id, exc)
+                            results.append({"status": "failed", "issue_id": req.issue_id, "error": str(exc)})
+                    success_count = sum(1 for r in results if r.get("status") in ("success", "partial"))
+                    status = "success" if success_count == len(results) else ("partial" if success_count else "failed")
+                    return {"status": status, "phase": "triage", "triaged": success_count, "total": len(results)}
+
+            orchestrator.register_phase("triage", _TriageRunner(_triage_crew, _triage_requests))
+        else:
+            logger.info("[Triage] No task files found in %s — skipping", triage_input_dir)
+
+            class _NoopTriage:
+                def kickoff(self, inputs=None):
+                    return {"status": "skipped", "phase": "triage", "message": "No task files to triage"}
+
+            orchestrator.register_phase("triage", _NoopTriage())
+
     # --- Plan: Development Planning (Hybrid Pipeline) ---
     if "plan" in planned_phases:
         from .hybrid.development_planning import DevelopmentPlanningPipeline
