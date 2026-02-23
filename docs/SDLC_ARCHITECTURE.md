@@ -1,6 +1,6 @@
 # SDLC Pilot — Architecture Overview
 
-> **Status**: v0.6.2 | **Author**: Aymen Mastouri | **Updated**: 2026-02-19
+> **Status**: v0.6.3 | **Author**: Aymen Mastouri | **Updated**: 2026-02-23
 
 ---
 
@@ -17,8 +17,8 @@
 | Layer | Phases | Purpose | LLM Required |
 |-------|--------|---------|--------------|
 | **KNOWLEDGE** | 0–1 | Deterministic facts extraction | No |
-| **REASONING** | 2–4 | AI-powered analysis, synthesis, and planning | Hybrid |
-| **EXECUTION** | 5–7 | Code generation and deployment | Yes |
+| **REASONING** | 2–5 | AI-powered analysis, synthesis, triage, and planning | Hybrid |
+| **EXECUTION** | 6–8 | Code generation, testing, and delivery | Yes |
 | **FEEDBACK** | — | Continuous learning and quality | Yes |
 
 ## 3. Phase Overview
@@ -29,10 +29,11 @@
 | 1 | Extract | Knowledge | Pipeline | IMPLEMENTED | [Phase 1](phases/phase-1-extract/README.md) |
 | 2 | Analyze | Reasoning | Crew | IMPLEMENTED | [Phase 2](phases/phase-2-analyze/README.md) |
 | 3 | Document | Reasoning | Crew | IMPLEMENTED | [Phase 3](phases/phase-3-document/README.md) |
-| 4 | Plan | Reasoning | Hybrid | IMPLEMENTED | [Phase 4](phases/phase-4-plan/README.md) |
-| 5 | Implement | Execution | Hybrid | IMPLEMENTED | [Phase 5](phases/phase-5-implement/README.md) |
-| 6 | Verify | Execution | Crew | IMPLEMENTED | [Phase 6](phases/phase-6-verify/README.md) |
-| 7 | Deliver | Execution | Pipeline | PLANNED | [Phase 7](phases/phase-7-deliver/README.md) |
+| 4 | Triage | Reasoning | Crew | IMPLEMENTED | [Phase 4](phases/triage/README.md) |
+| 5 | Plan | Reasoning | Hybrid | IMPLEMENTED | [Phase 5](phases/phase-4-plan/README.md) |
+| 6 | Implement | Execution | Hybrid | IMPLEMENTED | [Phase 6](phases/phase-5-implement/README.md) |
+| 7 | Verify | Execution | Crew | IMPLEMENTED | [Phase 7](phases/phase-6-verify/README.md) |
+| 8 | Deliver | Execution | Crew | IMPLEMENTED | [Phase 8](phases/phase-7-deliver/README.md) |
 
 ## 4. Core Principles
 
@@ -69,6 +70,7 @@
 | [Orchestration & State](architecture/orchestration.md) | Phase execution, dependencies, crash recovery |
 | [Phase Registry](architecture/phase-registry.md) | Single source of truth for phase metadata |
 | [Pipeline Contract](architecture/pipeline-contract.md) | Inter-phase data contracts |
+| [Multi-Project Isolation](architecture/multi-project-isolation.md) | Per-project discover subfolders, slug derivation |
 | [Dashboard](architecture/dashboard.md) | Angular + FastAPI web UI, SSE streaming |
 | [Logging & Observability](architecture/logging-observability.md) | Structured metrics, run correlation |
 
@@ -78,7 +80,7 @@
 Source Repository
   │
   ▼
-Phase 0: Discover ─── ChromaDB + symbols.jsonl + evidence.jsonl + repo_manifest.json
+Phase 0: Discover ─── knowledge/discover/{slug}/ (ChromaDB + symbols + evidence + manifest)
   │
   ▼
 Phase 1: Extract ──── architecture_facts.json + evidence_map.json
@@ -90,16 +92,19 @@ Phase 2: Analyze ──── analyzed_architecture.json
 Phase 3: Document ─── C4 diagrams + Arc42 docs + quality reports
   │
   ▼
-Phase 4: Plan ─────── {task_id}_plan.json
+Phase 4: Triage ───── knowledge/triage/ (findings + customer + developer briefs)
   │
   ▼
-Phase 5: Implement ── Git branch + {task_id}_report.json
+Phase 5: Plan ─────── {task_id}_plan.json
   │
   ▼
-Phase 6: Verify ───── knowledge/verify/ ({task_id}_verify.json + summary.json)
+Phase 6: Implement ── Git branch + {task_id}_report.json
   │
   ▼
-Phase 7: Deliver ──── (planned) PR + merge
+Phase 7: Verify ───── knowledge/verify/ ({task_id}_verify.json + summary.json)
+  │
+  ▼
+Phase 8: Deliver ──── knowledge/deliver/ (consistency + quality + synthesis report)
 ```
 
 See [Knowledge Lifecycle](architecture/knowledge-lifecycle.md) for the full data flow matrix.
@@ -114,10 +119,11 @@ Presets are defined in `config/phases_config.yaml` and validated by the CLI.
 | `scan` | 0, 1 | Indexing + Architecture Facts (no LLM) |
 | `analyze` | 0, 1, 2 | Indexing + Facts + Analysis |
 | `document` | 0, 1, 2, 3 | C4 + arc42 documentation |
-| `plan` | 0, 1, 2, 4 | Development planning |
-| `develop` | 0, 1, 2, 4, 5 | Planning + code generation |
-| `architect` | 0, 1, 2, 3, 4 | Architecture docs + planning |
-| `full` | 0–7 | Complete SDLC pipeline |
+| `triage` | 0, 1, 2, 4 | Issue triage |
+| `plan` | 0, 1, 2, 5 | Development planning |
+| `develop` | 0, 1, 2, 5, 6 | Planning + code generation |
+| `architect` | 0, 1, 2, 3, 5 | Architecture docs + planning |
+| `full` | 0–8 | Complete SDLC pipeline |
 
 ## 9. Configuration
 
