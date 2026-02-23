@@ -276,7 +276,13 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
                 logger.error(f"[C4] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")
 
-        self._clear_checkpoint()
+        if not self.is_degraded:
+            self._clear_checkpoint()
+        else:
+            logger.warning(
+                f"[C4] Keeping checkpoint for resume — "
+                f"{len(self.get_degradation_reasons())} degraded crew(s)"
+            )
         summary = "\n".join(results)
         logger.info(f"[C4] All Mini-Crews completed:\n{summary}")
         return summary

@@ -209,7 +209,7 @@ See [Delivery Guide](guides/DELIVERY_GUIDE.md) for release process.
 | 1 — Extract | [phase-1-extract-architecture.drawio](phases/phase-1-extract/phase-1-extract-architecture.drawio) | — |
 | 2 — Analyze | [phase-2-analyze-architecture.drawio](phases/phase-2-analyze/phase-2-analyze-architecture.drawio) | [analysis-crew-schema.drawio](phases/phase-2-analyze/analysis-crew-schema.drawio) |
 | 3 — Document | [phase-3-document-architecture.drawio](phases/phase-3-document/phase-3-document-architecture.drawio) | — |
-| 4 — Triage | — | — |
+| 4 — Triage | *(README only — no .drawio yet)* | — |
 | 5 — Plan | [phase-5-plan-architecture.drawio](phases/phase-5-plan/phase-5-plan-architecture.drawio) | [upgrade-rules-engine.drawio](phases/phase-5-plan/upgrade-rules-engine.drawio) |
 | 6 — Implement | [phase-6-implement-architecture.drawio](phases/phase-6-implement/phase-6-implement-architecture.drawio) | [code-generation-pipeline.drawio](phases/phase-6-implement/code-generation-pipeline.drawio) · [task-type-strategy.drawio](phases/phase-6-implement/task-type-strategy.drawio) |
 

@@ -483,7 +483,15 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
                 logger.error(f"[Arc42] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")
 
-        self._clear_checkpoint()
+        # Only clear checkpoint if ALL mini-crews succeeded (no degradation).
+        # On partial completion, keep the checkpoint so only failed crews re-run.
+        if not self.is_degraded:
+            self._clear_checkpoint()
+        else:
+            logger.warning(
+                f"[Arc42] Keeping checkpoint for resume — "
+                f"{len(self.get_degradation_reasons())} degraded crew(s)"
+            )
         summary = "\n".join(results)
         logger.info(f"[Arc42] All Mini-Crews completed:\n{summary}")
         return summary
