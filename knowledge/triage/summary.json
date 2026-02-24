@@ -1,12 +1,12 @@
 {
   "_schema_version": "1.0",
-  "status": "success",
+  "status": "partial",
   "phase": "triage",
   "issue_id": "VVZ-2998",
   "classification": "bug",
   "risk_level": "medium",
   "entry_points_found": 5,
   "blast_radius_count": 2,
-  "llm_synthesis": true,
-  "duration_seconds": 16.55
+  "llm_synthesis": false,
+  "duration_seconds": 5.58
 }
