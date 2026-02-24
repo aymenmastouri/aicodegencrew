@@ -97,16 +97,23 @@ class CustomerSummary(BaseModel):
     eta_category: Literal["quick-fix", "short", "medium", "long", "unknown"] = Field(default="unknown")
 
 
-class DeveloperBrief(BaseModel):
-    """Technical developer brief."""
+class DimensionInsight(BaseModel):
+    """A relevant architectural dimension insight for the developer."""
 
-    root_cause_hypothesis: str = Field(default="")
-    affected_files: list[str] = Field(default_factory=list)
-    affected_components: list[str] = Field(default_factory=list)
-    action_steps: list[str] = Field(default_factory=list)
+    dimension: str = Field(default="", description="Dimension name (e.g. Technologies, Patterns, Conventions)")
+    insight: str = Field(default="", description="What the developer needs to know about this dimension")
+
+
+class DeveloperContext(BaseModel):
+    """Technical developer context — big picture and scope, no action steps."""
+
+    big_picture: str = Field(default="", description="Architectural context — which layers, containers, patterns are involved")
+    scope_boundary: str = Field(default="", description="What's IN scope vs OUT of scope for this issue")
+    classification_assessment: str = Field(default="", description="For bugs: is the classification correct? For CR/Task: empty")
+    affected_components: list[str] = Field(default_factory=list, description="High-level component names (NOT file paths)")
+    relevant_dimensions: list[DimensionInsight] = Field(default_factory=list, description="Key architectural dimensions the developer needs to understand")
+    architecture_notes: str = Field(default="", description="Relevant patterns, constraints, risks")
     linked_tasks: list[str] = Field(default_factory=list)
-    test_strategy: str = Field(default="")
-    architecture_notes: str = Field(default="")
 
 
 class TriageResult(BaseModel):
@@ -115,5 +122,5 @@ class TriageResult(BaseModel):
     issue_id: str
     classification: dict = Field(default_factory=dict)
     customer_summary: CustomerSummary = Field(default_factory=CustomerSummary)
-    developer_brief: DeveloperBrief = Field(default_factory=DeveloperBrief)
+    developer_context: DeveloperContext = Field(default_factory=DeveloperContext)
     findings: TriageFindings = Field(default_factory=TriageFindings)
