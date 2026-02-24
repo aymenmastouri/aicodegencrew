@@ -549,8 +549,19 @@ class TriageCrew:
             "",
         ]
         assessment = developer.get("classification_assessment", "")
+        confidence = developer.get("classification_confidence", -1)
         if assessment:
-            lines.extend(["## Classification Assessment", "", assessment, ""])
+            confidence_str = ""
+            if isinstance(confidence, (int, float)) and confidence >= 0:
+                pct = round(confidence * 100)
+                if confidence >= 0.7:
+                    label = "Confirmed bug"
+                elif confidence >= 0.4:
+                    label = "Uncertain"
+                else:
+                    label = "Likely NOT a bug"
+                confidence_str = f" ({label} — {pct}%)"
+            lines.extend(["## Classification Assessment", "", f"{assessment}{confidence_str}", ""])
         lines.extend(["## Affected Components", ""])
         for c in developer.get("affected_components", []):
             lines.append(f"- {c}")

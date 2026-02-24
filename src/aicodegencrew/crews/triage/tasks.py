@@ -89,6 +89,7 @@ OUTPUT FORMAT (strict JSON):
     "big_picture": "Architectural context — which layers, containers, patterns are involved",
     "scope_boundary": "What's IN scope vs OUT of scope for this issue",
     "classification_assessment": "For bugs: is the classification correct? Reasoning. For CR/Task: empty string",
+    "classification_confidence": 0.0-1.0 or -1,
     "affected_components": ["ComponentName1 (layer)", "ComponentName2 (layer)"],
     "relevant_dimensions": [
       {{"dimension": "Technologies", "insight": "What the developer needs to know about the tech stack here"}},
@@ -105,6 +106,7 @@ IMPORTANT:
 - developer_context must focus on Big Picture and Scope — NO action steps, NO file paths, NO root cause
 - affected_components are high-level component names, NOT file paths
 - relevant_dimensions: summarize the PRE-LOADED DIMENSIONS into 2-5 developer-friendly insights. Each insight must be specific to THIS issue, not generic.
+- classification_confidence: For bugs, rate 0.0 (definitely NOT a bug) to 1.0 (confirmed bug). For CR/Task set to -1.
 - If dimensions are pre-loaded, use them directly — do NOT waste tool calls on query_facts for dimensions.
 - If data is insufficient, mark as "needs investigation"
 - NEVER propose solutions or action steps — that is the Plan phase's job
