@@ -28,13 +28,12 @@ def create_triage_task(
     if is_bug:
         steps = """\
 STEPS:
-1. Review the classification and deterministic findings.
-2. VALIDATE: Is this really a bug? Check the codebase context — could it be:
-   - User error / misunderstanding?
-   - Missing feature / enhancement?
-   - Configuration issue?
-   - Already fixed in another branch?
-   - Working as designed?
+1. Review the classification, deterministic findings, AND the SUPPLEMENTARY CONTEXT (requirements, references, logs) carefully.
+2. VALIDATE: Is this really a bug? Build a structured argument:
+   a) List evidence FOR it being a bug (error logs, stack traces, spec violations, reference documents).
+   b) List evidence AGAINST (user error, missing feature, config issue, working as designed).
+   c) Check supplementary references (PDFs, requirements docs) — do they confirm or contradict the bug claim?
+   d) Rate your confidence and explain your reasoning.
 3. Review the PRE-LOADED DIMENSIONS below — they contain the architectural context already.
 4. Provide the BIG PICTURE: Where does this issue sit in the overall architecture?
 5. Define the SCOPE: What parts of the system are involved? What is NOT involved?
@@ -43,9 +42,9 @@ STEPS:
     else:
         steps = """\
 STEPS:
-1. Review the issue context and deterministic findings.
+1. Review the issue context, deterministic findings, AND the SUPPLEMENTARY CONTEXT (requirements, references, logs).
 2. Review the PRE-LOADED DIMENSIONS below — they contain the architectural context already.
-3. Provide the BIG PICTURE: Where does this fit in the overall architecture?
+3. Provide the BIG PICTURE: Where does this fit in the overall architecture? Use references/requirements to understand the intent.
 4. Define the SCOPE: What parts of the system need attention? What is out of scope?
 5. Summarize the relevant dimensions into developer-friendly insights.
 6. Produce JSON output."""
@@ -88,7 +87,7 @@ OUTPUT FORMAT (strict JSON):
   "developer_context": {{
     "big_picture": "Architectural context — which layers, containers, patterns are involved",
     "scope_boundary": "What's IN scope vs OUT of scope for this issue",
-    "classification_assessment": "For bugs: is the classification correct? Reasoning. For CR/Task: empty string",
+    "classification_assessment": "For bugs: structured argument — evidence FOR being a bug, evidence AGAINST, reference to supplementary docs. For CR/Task: empty string",
     "classification_confidence": 0.0-1.0 or -1,
     "affected_components": ["ComponentName1 (layer)", "ComponentName2 (layer)"],
     "relevant_dimensions": [
@@ -106,6 +105,7 @@ IMPORTANT:
 - developer_context must focus on Big Picture and Scope — NO action steps, NO file paths, NO root cause
 - affected_components are high-level component names, NOT file paths
 - relevant_dimensions: summarize the PRE-LOADED DIMENSIONS into 2-5 developer-friendly insights. Each insight must be specific to THIS issue, not generic.
+- classification_assessment: For bugs, provide a STRUCTURED ARGUMENT: what evidence supports it being a bug, what contradicts it, and reference any supplementary documents (requirements, PDFs) that confirm or deny the claim.
 - classification_confidence: For bugs, rate 0.0 (definitely NOT a bug) to 1.0 (confirmed bug). For CR/Task set to -1.
 - If dimensions are pre-loaded, use them directly — do NOT waste tool calls on query_facts for dimensions.
 - If data is insufficient, mark as "needs investigation"
