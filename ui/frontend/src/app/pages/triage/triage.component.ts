@@ -48,14 +48,19 @@ interface TriageCustomerSummary {
   eta_category: string;
 }
 
-interface TriageDeveloperBrief {
-  root_cause_hypothesis: string;
-  affected_files: string[];
+interface TriageDimensionInsight {
+  dimension: string;
+  insight: string;
+}
+
+interface TriageDeveloperContext {
+  big_picture: string;
+  scope_boundary: string;
+  classification_assessment: string;
   affected_components: string[];
-  action_steps: string[];
-  linked_tasks: string[];
-  test_strategy: string;
+  relevant_dimensions: TriageDimensionInsight[];
   architecture_notes: string;
+  linked_tasks: string[];
 }
 
 @Component({
@@ -204,47 +209,60 @@ interface TriageDeveloperBrief {
             </div>
           </mat-tab>
 
-          <!-- Developer Brief Tab -->
+          <!-- Developer Context Tab -->
           <mat-tab>
             <ng-template mat-tab-label>
-              <mat-icon class="tab-icon">code</mat-icon> Developer Brief
+              <mat-icon class="tab-icon">code</mat-icon> Developer Context
             </ng-template>
             <div class="tab-body">
               @if (developerMd) {
                 <div class="md-content" [innerHTML]="renderMarkdown(developerMd)"></div>
-              } @else if (developerBrief) {
+              } @else if (developerContext) {
                 <div class="brief-section">
-                  <h3>Root Cause Hypothesis</h3>
-                  <p>{{ developerBrief.root_cause_hypothesis || 'Needs investigation' }}</p>
+                  <h3>Big Picture</h3>
+                  <p>{{ developerContext.big_picture || 'Needs investigation' }}</p>
                 </div>
-                @if (developerBrief.affected_files.length) {
+                <div class="brief-section">
+                  <h3>Scope Boundary</h3>
+                  <p>{{ developerContext.scope_boundary || 'Needs investigation' }}</p>
+                </div>
+                @if (developerContext.classification_assessment) {
                   <div class="brief-section">
-                    <h3>Affected Files</h3>
+                    <h3>Classification Assessment</h3>
+                    <p>{{ developerContext.classification_assessment }}</p>
+                  </div>
+                }
+                @if (developerContext.affected_components.length) {
+                  <div class="brief-section">
+                    <h3>Affected Components</h3>
                     <ul class="file-list">
-                      @for (f of developerBrief.affected_files; track f) {
-                        <li><code>{{ f }}</code></li>
+                      @for (c of developerContext.affected_components; track c) {
+                        <li>{{ c }}</li>
                       }
                     </ul>
                   </div>
                 }
-                @if (developerBrief.action_steps.length) {
+                @if (developerContext.relevant_dimensions?.length) {
                   <div class="brief-section">
-                    <h3>Action Steps</h3>
-                    <ol class="action-list">
-                      @for (step of developerBrief.action_steps; track step) {
-                        <li>{{ step }}</li>
+                    <h3>Relevant Dimensions</h3>
+                    <div class="dimensions-list">
+                      @for (dim of developerContext.relevant_dimensions; track dim.dimension) {
+                        <div class="dimension-item">
+                          <span class="dimension-name">{{ dim.dimension }}</span>
+                          <span class="dimension-insight">{{ dim.insight }}</span>
+                        </div>
                       }
-                    </ol>
+                    </div>
                   </div>
                 }
-                @if (developerBrief.test_strategy) {
+                @if (developerContext.architecture_notes) {
                   <div class="brief-section">
-                    <h3>Test Strategy</h3>
-                    <p>{{ developerBrief.test_strategy }}</p>
+                    <h3>Architecture Notes</h3>
+                    <p>{{ developerContext.architecture_notes }}</p>
                   </div>
                 }
               } @else {
-                <p class="empty-hint">Run full triage (LLM) to generate a developer brief.</p>
+                <p class="empty-hint">Run full triage (LLM) to generate developer context.</p>
               }
             </div>
           </mat-tab>
@@ -569,6 +587,28 @@ interface TriageDeveloperBrief {
         margin-bottom: 6px;
         line-height: 1.5;
       }
+      .dimensions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .dimension-item {
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--cg-gray-50);
+        border-left: 3px solid var(--cg-blue, #0070ad);
+      }
+      .dimension-name {
+        display: block;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--cg-blue, #0070ad);
+        margin-bottom: 4px;
+      }
+      .dimension-insight {
+        font-size: 13px;
+        line-height: 1.5;
+      }
 
       /* Markdown content */
       .md-content {
@@ -796,7 +836,7 @@ export class TriageComponent {
   customerMd = '';
   developerMd = '';
   customerSummary: TriageCustomerSummary | null = null;
-  developerBrief: TriageDeveloperBrief | null = null;
+  developerContext: TriageDeveloperContext | null = null;
 
   // Findings
   entryPoints: TriageEntryPoint[] = [];
@@ -856,7 +896,7 @@ export class TriageComponent {
         this.developerMd = data.developer_md || '';
         const triage = data.triage || {};
         this.customerSummary = (triage['customer_summary'] as TriageCustomerSummary) || null;
-        this.developerBrief = (triage['developer_brief'] as TriageDeveloperBrief) || null;
+        this.developerContext = (triage['developer_context'] || triage['developer_brief']) as TriageDeveloperContext || null;
 
         const findings = data.findings || (triage['findings'] as Record<string, unknown>) || {};
         this.applyFindings(findings);

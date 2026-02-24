@@ -147,12 +147,17 @@ class TriageCrew:
         }
         self._write_json(findings, f"{issue_id}_findings.json")
 
+        # ── Determine if this is a bug ──────────────────────────────────
+        task_type = task_info.get("task_type", "")
+        is_bug = task_type in ("bugfix", "bug") or classification.get("type") == "bug"
+
         # ── Phase 2: LLM synthesis ──────────────────────────────────────
         llm_result = None
         llm_ok = False
         try:
             llm_result = self._run_llm_synthesis(
                 title, description, task_info, findings, supplementary,
+                is_bug=is_bug,
             )
             llm_ok = llm_result is not None
         except Exception as e:
@@ -163,7 +168,7 @@ class TriageCrew:
         developer = {}
         if llm_result:
             customer = llm_result.get("customer_summary", {})
-            developer = llm_result.get("developer_brief", {})
+            developer = llm_result.get("developer_context", {})
 
         if customer:
             self._write_markdown(
@@ -180,7 +185,7 @@ class TriageCrew:
             "issue_id": issue_id,
             "classification": classification,
             "customer_summary": customer,
-            "developer_brief": developer,
+            "developer_context": developer,
             "findings": findings,
         }
         self._write_json(triage_result, f"{issue_id}_triage.json")
@@ -287,6 +292,8 @@ class TriageCrew:
         task_info: dict,
         findings: dict,
         supplementary: dict[str, str],
+        *,
+        is_bug: bool = False,
     ) -> dict | None:
         """Run single-agent CrewAI crew for triage synthesis."""
         task_context = f"Title: {title}\nDescription: {description}"
@@ -304,7 +311,7 @@ class TriageCrew:
             facts_dir=self.facts_dir,
             chroma_dir=self.chroma_dir,
         )
-        task = create_triage_task(agent, task_context, findings_json, supplementary_text)
+        task = create_triage_task(agent, task_context, findings_json, supplementary_text, is_bug=is_bug)
 
         log_dir = self.output_dir / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -379,27 +386,34 @@ class TriageCrew:
 
     @staticmethod
     def _format_developer_md(developer: dict, issue_id: str) -> str:
-        """Format developer brief as Markdown."""
+        """Format developer context as Markdown."""
         lines = [
-            f"# Developer Brief: {issue_id}",
+            f"# Developer Context: {issue_id}",
             "",
-            "## Root Cause Hypothesis",
+            "## Big Picture",
             "",
-            developer.get("root_cause_hypothesis", "Needs investigation."),
+            developer.get("big_picture", "Needs investigation."),
             "",
-            "## Affected Files",
+            "## Scope Boundary",
+            "",
+            developer.get("scope_boundary", "Needs investigation."),
             "",
         ]
-        for f in developer.get("affected_files", []):
-            lines.append(f"- `{f}`")
-        lines.extend(["", "## Affected Components", ""])
+        assessment = developer.get("classification_assessment", "")
+        if assessment:
+            lines.extend(["## Classification Assessment", "", assessment, ""])
+        lines.extend(["## Affected Components", ""])
         for c in developer.get("affected_components", []):
             lines.append(f"- {c}")
-        lines.extend(["", "## Action Steps", ""])
-        for step in developer.get("action_steps", []):
-            lines.append(f"- {step}")
-        lines.extend(["", "## Test Strategy", ""])
-        lines.append(developer.get("test_strategy", "TBD"))
+        dimensions = developer.get("relevant_dimensions", [])
+        if dimensions:
+            lines.extend(["", "## Relevant Dimensions", ""])
+            for dim in dimensions:
+                name = dim.get("dimension", "")
+                insight = dim.get("insight", "")
+                if name and insight:
+                    lines.append(f"**{name}:** {insight}")
+                    lines.append("")
         arch = developer.get("architecture_notes", "")
         if arch:
             lines.extend(["", "## Architecture Notes", "", arch])
