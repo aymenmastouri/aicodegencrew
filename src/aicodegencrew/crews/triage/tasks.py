@@ -10,6 +10,7 @@ def create_triage_task(
     supplementary_context: str,
     *,
     is_bug: bool = False,
+    dimension_context: str = "",
 ) -> Task:
     """Create the triage synthesis task.
 
@@ -22,6 +23,7 @@ def create_triage_task(
         findings_summary:      Pre-computed deterministic findings (JSON text).
         supplementary_context: Requirements + logs text.
         is_bug:                Whether the issue is classified as a bug.
+        dimension_context:     Pre-loaded architectural dimension data.
     """
     if is_bug:
         steps = """\
@@ -33,20 +35,26 @@ STEPS:
    - Configuration issue?
    - Already fixed in another branch?
    - Working as designed?
-3. Use query_facts(category="components") to understand which architectural layer/container this issue belongs to.
-4. Use query_facts for the MOST RELEVANT dimensions (technologies, patterns, conventions, etc.) — summarize what the developer NEEDS TO KNOW for this specific issue.
-5. Provide the BIG PICTURE: Where does this issue sit in the overall architecture?
-6. Define the SCOPE: What parts of the system are involved? What is NOT involved?
+3. Review the PRE-LOADED DIMENSIONS below — they contain the architectural context already.
+4. Provide the BIG PICTURE: Where does this issue sit in the overall architecture?
+5. Define the SCOPE: What parts of the system are involved? What is NOT involved?
+6. Summarize the relevant dimensions into developer-friendly insights.
 7. Produce JSON output."""
     else:
         steps = """\
 STEPS:
 1. Review the issue context and deterministic findings.
-2. Use query_facts(category="components") to understand which architectural layer/container this affects.
-3. Use query_facts for the MOST RELEVANT dimensions (technologies, patterns, conventions, etc.) — summarize what the developer NEEDS TO KNOW for this specific issue.
-4. Provide the BIG PICTURE: Where does this fit in the overall architecture?
-5. Define the SCOPE: What parts of the system need attention? What is out of scope?
+2. Review the PRE-LOADED DIMENSIONS below — they contain the architectural context already.
+3. Provide the BIG PICTURE: Where does this fit in the overall architecture?
+4. Define the SCOPE: What parts of the system need attention? What is out of scope?
+5. Summarize the relevant dimensions into developer-friendly insights.
 6. Produce JSON output."""
+
+    dimension_block = f"""
+--- PRE-LOADED DIMENSIONS (from knowledge/extract) ---
+{dimension_context or "(none available)"}
+--- END DIMENSIONS ---
+""" if dimension_context else ""
 
     return Task(
         description=f"""TASK: Analyse Issue Context and Produce Dual Output
@@ -65,7 +73,7 @@ with two sections: `customer_summary` and `developer_context`.
 --- DETERMINISTIC FINDINGS ---
 {findings_summary}
 --- END FINDINGS ---
-
+{dimension_block}
 {steps}
 
 OUTPUT FORMAT (strict JSON):
@@ -96,7 +104,8 @@ IMPORTANT:
 - customer_summary must be understandable by non-technical people
 - developer_context must focus on Big Picture and Scope — NO action steps, NO file paths, NO root cause
 - affected_components are high-level component names, NOT file paths
-- relevant_dimensions: query the MOST RELEVANT dimensions only (2-5), not all of them. Each insight should be specific to THIS issue, not generic.
+- relevant_dimensions: summarize the PRE-LOADED DIMENSIONS into 2-5 developer-friendly insights. Each insight must be specific to THIS issue, not generic.
+- If dimensions are pre-loaded, use them directly — do NOT waste tool calls on query_facts for dimensions.
 - If data is insufficient, mark as "needs investigation"
 - NEVER propose solutions or action steps — that is the Plan phase's job
 """,

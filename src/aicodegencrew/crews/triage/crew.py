@@ -151,6 +151,9 @@ class TriageCrew:
         task_type = task_info.get("task_type", "")
         is_bug = task_type in ("bugfix", "bug") or classification.get("type") == "bug"
 
+        # ── Pre-load relevant dimensions ─────────────────────────────────
+        dimension_context = self._load_relevant_dimensions(entry_points, blast_radius)
+
         # ── Phase 2: LLM synthesis ──────────────────────────────────────
         llm_result = None
         llm_ok = False
@@ -158,6 +161,7 @@ class TriageCrew:
             llm_result = self._run_llm_synthesis(
                 title, description, task_info, findings, supplementary,
                 is_bug=is_bug,
+                dimension_context=dimension_context,
             )
             llm_ok = llm_result is not None
         except Exception as e:
@@ -283,6 +287,147 @@ class TriageCrew:
                 context[category] = "\n\n".join(parts)[:max_chars]
         return context
 
+    # ── Dimension pre-loading ────────────────────────────────────────────
+
+    def _load_relevant_dimensions(
+        self, entry_points: list[dict], blast_radius: dict,
+    ) -> str:
+        """Pre-load relevant dimension data based on affected components.
+
+        Reads dimension files from knowledge/extract/ and filters to entries
+        relevant to the entry points and blast radius. Returns a formatted
+        text block ready for prompt injection.
+        """
+        extract_dir = self.knowledge_dir / "extract"
+        if not extract_dir.exists():
+            return ""
+
+        # Collect affected component/container names for filtering
+        affected_names: set[str] = set()
+        for ep in entry_points:
+            if isinstance(ep, dict):
+                affected_names.add(ep.get("component", "").lower())
+            elif hasattr(ep, "component"):
+                affected_names.add(ep.component.lower())
+        for item in blast_radius.get("affected", []):
+            name = item.get("component", "") if isinstance(item, dict) else ""
+            affected_names.add(name.lower())
+        affected_containers: set[str] = {
+            c.lower() for c in blast_radius.get("containers_affected", [])
+        }
+        affected_names.discard("")
+
+        sections: list[str] = []
+        max_total = 4000  # budget for dimension context
+
+        # 1. Technologies
+        self._add_dimension_section(
+            sections, extract_dir / "tech_versions.json",
+            "Technologies", max_items=15,
+            formatter=lambda items: "\n".join(
+                f"  - {t['technology']} {t.get('version', '?')} ({t.get('category', '')})"
+                for t in items
+            ),
+        )
+
+        # 2. Components (filtered to affected)
+        self._add_dimension_section(
+            sections, extract_dir / "components.json",
+            "Components", key="components",
+            filter_fn=lambda c: (
+                c.get("name", "").lower() in affected_names
+                or c.get("container", "").lower() in affected_containers
+            ),
+            max_items=20,
+            formatter=lambda items: "\n".join(
+                f"  - {c['name']} [{c.get('stereotype', '')}] "
+                f"layer={c.get('layer', '?')}, container={c.get('container', '?')}"
+                for c in items
+            ),
+        )
+
+        # 3. Containers (filtered to affected)
+        self._add_dimension_section(
+            sections, extract_dir / "containers.json",
+            "Containers", key="containers",
+            filter_fn=lambda c: (
+                c.get("name", "").lower() in affected_containers
+                or not affected_containers  # include all if none specifically affected
+            ),
+            max_items=10,
+            formatter=lambda items: "\n".join(
+                f"  - {c.get('name', '?')} ({c.get('technology', '?')}): "
+                f"{c.get('description', '')[:120]}"
+                for c in items
+            ),
+        )
+
+        # 4. Interfaces (filtered to affected components)
+        self._add_dimension_section(
+            sections, extract_dir / "interfaces.json",
+            "Interfaces", key="interfaces",
+            filter_fn=lambda i: (
+                i.get("component", "").lower() in affected_names
+                or i.get("source", "").lower() in affected_names
+            ),
+            max_items=10,
+            formatter=lambda items: "\n".join(
+                f"  - {i.get('name', '?')} ({i.get('type', '?')}): "
+                f"{i.get('description', '')[:100]}"
+                for i in items
+            ),
+        )
+
+        # 5. Error handling
+        self._add_dimension_section(
+            sections, extract_dir / "error_handling.json",
+            "Error Handling", key="strategies",
+            max_items=5,
+            formatter=lambda items: "\n".join(
+                f"  - {e.get('pattern', e.get('name', '?'))}: "
+                f"{e.get('description', '')[:100]}"
+                for e in items
+            ),
+        )
+
+        result = "\n\n".join(sections)
+        if len(result) > max_total:
+            result = result[:max_total] + "\n  ... (truncated)"
+        return result
+
+    @staticmethod
+    def _add_dimension_section(
+        sections: list[str],
+        file_path: Path,
+        title: str,
+        key: str | None = None,
+        filter_fn=None,
+        max_items: int = 10,
+        formatter=None,
+    ) -> None:
+        """Load a dimension file and append a formatted section."""
+        if not file_path.exists():
+            return
+        try:
+            data = json.loads(file_path.read_text(encoding="utf-8"))
+        except Exception:
+            return
+
+        items = data if isinstance(data, list) else data.get(key or title.lower(), [])
+        if not isinstance(items, list):
+            return
+        if filter_fn:
+            items = [i for i in items if filter_fn(i)]
+        items = items[:max_items]
+        if not items:
+            return
+
+        try:
+            body = formatter(items) if formatter else json.dumps(items, indent=2, ensure_ascii=False, default=str)
+        except Exception:
+            return
+        sections.append(f"[{title}]\n{body}")
+
     # ── LLM synthesis ───────────────────────────────────────────────────
 
     def _run_llm_synthesis(
@@ -294,6 +439,7 @@ class TriageCrew:
         supplementary: dict[str, str],
         *,
         is_bug: bool = False,
+        dimension_context: str = "",
     ) -> dict | None:
         """Run single-agent CrewAI crew for triage synthesis."""
         task_context = f"Title: {title}\nDescription: {description}"
@@ -311,7 +457,10 @@ class TriageCrew:
             facts_dir=self.facts_dir,
             chroma_dir=self.chroma_dir,
         )
-        task = create_triage_task(agent, task_context, findings_json, supplementary_text, is_bug=is_bug)
+        task = create_triage_task(
+            agent, task_context, findings_json, supplementary_text,
+            is_bug=is_bug, dimension_context=dimension_context,
+        )
 
         log_dir = self.output_dir / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
