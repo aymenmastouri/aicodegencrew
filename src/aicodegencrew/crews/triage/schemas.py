@@ -110,6 +110,7 @@ class DeveloperContext(BaseModel):
     big_picture: str = Field(default="", description="Architectural context — which layers, containers, patterns are involved")
     scope_boundary: str = Field(default="", description="What's IN scope vs OUT of scope for this issue")
     classification_assessment: str = Field(default="", description="For bugs: is the classification correct? For CR/Task: empty")
+    classification_confidence: float = Field(default=-1.0, description="Bug confidence: 0.0 = definitely not a bug → 1.0 = confirmed bug. -1 = not applicable (CR/Task)")
     affected_components: list[str] = Field(default_factory=list, description="High-level component names (NOT file paths)")
     relevant_dimensions: list[DimensionInsight] = Field(default_factory=list, description="Key architectural dimensions the developer needs to understand")
     architecture_notes: str = Field(default="", description="Relevant patterns, constraints, risks")

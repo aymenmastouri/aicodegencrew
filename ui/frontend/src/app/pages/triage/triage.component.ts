@@ -57,6 +57,7 @@ interface TriageDeveloperContext {
   big_picture: string;
   scope_boundary: string;
   classification_assessment: string;
+  classification_confidence: number;
   affected_components: string[];
   relevant_dimensions: TriageDimensionInsight[];
   architecture_notes: string;
@@ -229,6 +230,12 @@ interface TriageDeveloperContext {
                 @if (developerContext.classification_assessment) {
                   <div class="brief-section">
                     <h3>Classification Assessment</h3>
+                    @if (developerContext.classification_confidence >= 0) {
+                      <span class="confidence-badge" [class]="getConfidenceClass(developerContext.classification_confidence)">
+                        {{ getConfidenceLabel(developerContext.classification_confidence) }}
+                        {{ (developerContext.classification_confidence * 100).toFixed(0) }}%
+                      </span>
+                    }
                     <p>{{ developerContext.classification_assessment }}</p>
                   </div>
                 }
@@ -568,6 +575,26 @@ interface TriageDeveloperContext {
         font-size: 15px;
         font-weight: 500;
         margin: 0 0 8px;
+      }
+      .confidence-badge {
+        display: inline-block;
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .confidence-high {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+      }
+      .confidence-medium {
+        background: rgba(245, 124, 0, 0.1);
+        color: #f57c00;
+      }
+      .confidence-low {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
       }
       .file-list {
         list-style: none;
@@ -960,6 +987,18 @@ export class TriageComponent {
     this.running = false;
     this.error = (err as { error?: { detail?: string } })?.error?.detail || 'Triage failed. Check backend logs.';
     this.cdr.markForCheck();
+  }
+
+  getConfidenceClass(confidence: number): string {
+    if (confidence >= 0.7) return 'confidence-high';
+    if (confidence >= 0.4) return 'confidence-medium';
+    return 'confidence-low';
+  }
+
+  getConfidenceLabel(confidence: number): string {
+    if (confidence >= 0.7) return 'Confirmed bug';
+    if (confidence >= 0.4) return 'Uncertain';
+    return 'Likely NOT a bug';
   }
 
   private getClassIcon(type: string): string {
