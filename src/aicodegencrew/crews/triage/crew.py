@@ -269,7 +269,10 @@ class TriageCrew:
     # ── Supplementary context ───────────────────────────────────────────
 
     def _load_supplementary(self, files: dict[str, list[str]]) -> dict[str, str]:
-        """Load supplementary files (requirements, logs) as text snippets."""
+        """Load supplementary files (requirements, logs) as text snippets.
+
+        Supports plain text files and PDFs (via pymupdf text extraction).
+        """
         context: dict[str, str] = {}
         max_chars = 3000
         for category, paths in files.items():
@@ -279,13 +282,43 @@ class TriageCrew:
                 if not p.exists():
                     continue
                 try:
-                    text = p.read_text(encoding="utf-8", errors="replace")[:max_chars]
-                    parts.append(f"--- {p.name} ---\n{text}")
-                except Exception:
-                    pass
+                    if p.suffix.lower() == ".pdf":
+                        text = self._extract_pdf_text(p, max_chars)
+                    else:
+                        text = p.read_text(encoding="utf-8", errors="replace")[:max_chars]
+                    if text.strip():
+                        parts.append(f"--- {p.name} ---\n{text}")
+                except Exception as e:
+                    logger.warning("[TriageCrew] Failed to load supplementary %s: %s", p.name, e)
             if parts:
                 context[category] = "\n\n".join(parts)[:max_chars]
         return context
+
+    @staticmethod
+    def _extract_pdf_text(path: Path, max_chars: int = 3000) -> str:
+        """Extract text from a PDF file using pymupdf."""
+        try:
+            import pymupdf
+        except ImportError:
+            logger.warning("[TriageCrew] pymupdf not installed — cannot extract PDF text")
+            return ""
+
+        try:
+            doc = pymupdf.open(str(path))
+            pages: list[str] = []
+            total = 0
+            for page in doc:
+                text = page.get_text()
+                pages.append(text)
+                total += len(text)
+                if total >= max_chars:
+                    break
+            doc.close()
+            result = "\n\n".join(pages)
+            return result[:max_chars]
+        except Exception as e:
+            logger.warning("[TriageCrew] PDF extraction failed for %s: %s", path.name, e)
+            return ""
 
     # ── Dimension pre-loading ────────────────────────────────────────────
 
