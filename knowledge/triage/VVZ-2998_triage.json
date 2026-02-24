@@ -1,0 +1,148 @@
+{
+  "_schema_version": "1.0",
+  "issue_id": "VVZ-2998",
+  "classification": {
+    "type": "bug",
+    "confidence": 0.99,
+    "signals": [
+      "keyword:error"
+    ]
+  },
+  "customer_summary": {
+    "summary": "After importing a JSON file, the system loses some of the involved parties (e.g., the organisation \"Sparkasse\") when you try to edit the record. This makes the entry appear incomplete and prevents you from saving the record.",
+    "impact_level": "high",
+    "is_bug": true,
+    "workaround": "Re‑import the JSON file each time before editing, or manually add the missing parties again in the edit view.",
+    "eta_category": "short"
+  },
+  "developer_brief": {
+    "root_cause_hypothesis": "The import routine stores participants via the `check` logic in `ActionServiceImpl`. During the validation step the code incorrectly filters out participants that do not meet a strict criteria (e.g., missing metadata fields). As a result the participant list is cleared, the VM is marked as faulty and the UI no longer shows the imported parties. The DTOs `NotaryChamberServiceDto`, `NotaryChamberServiceShortDto` and `NotaryMetaDataFieldDto` are involved in mapping the JSON data, and the `BasicAction` class may also apply the same validation when the edit view is opened.",
+    "affected_files": [
+      "backend/src/main/java/de/bnotk/vvz/module/action/logic/impl/ActionServiceImpl.java",
+      "backend/src/main/java/de/bnotk/vvz/module/action/logic/impl/BasicAction.java",
+      "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceDto.java",
+      "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceShortDto.java",
+      "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryMetaDataFieldDto.java"
+    ],
+    "affected_components": [
+      "ActionServiceImpl (service)",
+      "BasicAction (service)",
+      "NotaryChamberServiceDto (data model)",
+      "NotaryChamberServiceShortDto (data model)",
+      "NotaryMetaDataFieldDto (data model)"
+    ],
+    "action_steps": [
+      "1. Review the `check` method in `ActionServiceImpl.java` – identify any filtering that removes participants without required metadata and adjust the logic to keep valid participants even if optional fields are missing.",
+      "2. Verify the mapping code in `NotaryChamberServiceDto.java`, `NotaryChamberServiceShortDto.java` and `NotaryMetaDataFieldDto.java` – ensure all participant identifiers from the JSON are persisted correctly.",
+      "3. Update `BasicAction.java` if it re‑invokes the same validation when opening the edit view; make it tolerant to already‑imported participants.",
+      "4. Add unit tests that import a JSON file containing participants (e.g., \"Sparkasse\") and then open the edit view, asserting that the participants remain present and the VM is not marked as faulty.",
+      "5. Add an integration test that performs the full workflow described in the ticket (import → open → edit → save) and verifies no data loss.",
+      "6. Deploy the fix to a test environment and confirm that the issue no longer occurs with the problematic JSON file."
+    ],
+    "linked_tasks": [],
+    "test_strategy": "Create a dedicated test case in the backend test suite that loads the provided JSON (the one that reproduces the issue), runs the import service, opens the edit view via the action service, and asserts that the participant list contains the expected organisations. Include negative tests with the sample‑amount‑of‑custody‑max.json to ensure existing behaviour is unchanged.",
+    "architecture_notes": "The participant validation is part of the core action service; any change should respect the overall validation contract for VVs. Consider extracting the participant‑filtering logic into a reusable validator component to avoid duplication between import and edit paths."
+  },
+  "findings": {
+    "classification": {
+      "type": "bug",
+      "confidence": 0.99,
+      "signals": [
+        "keyword:error"
+      ]
+    },
+    "entry_points": [
+      {
+        "component": "check",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/action/logic/impl/ActionServiceImpl.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:check"
+        ]
+      },
+      {
+        "component": "name",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceDto.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:name"
+        ]
+      },
+      {
+        "component": "name",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceShortDto.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:name"
+        ]
+      },
+      {
+        "component": "name",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryMetaDataFieldDto.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:name"
+        ]
+      },
+      {
+        "component": "check",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/action/logic/impl/BasicAction.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:check"
+        ]
+      }
+    ],
+    "blast_radius": {
+      "affected": [
+        {
+          "component": "check",
+          "depth": 0
+        },
+        {
+          "component": "name",
+          "depth": 0
+        }
+      ],
+      "depth": 0,
+      "component_count": 2,
+      "containers_affected": []
+    },
+    "duplicates": [
+      {
+        "chunk_id": "f1352537:0000:b6f07307",
+        "path": "",
+        "score": 0.806,
+        "snippet": "VVZ - Testdaten EDU-Umgebung\n============================\n\nLieferumfang\n============\n  - Dieses Readme\n  - SQL-Skripte für\n        - Sequence Counter Checking (checkDbSequences.sql)\n        - Sequence..."
+      },
+      {
+        "chunk_id": "f1352537:0002:bc27171c",
+        "path": "",
+        "score": 0.771,
+        "snippet": "elt.\n\n\nEinspielen der Testdaten\n========================\n\nDie Mechanik für das Einspielen ist völlig identisch mit dem Vorgehen für das\nEinspielen von Performance-Daten (siehe processMassData.readme u..."
+      },
+      {
+        "chunk_id": "f0d6659b:0001:1b2f2891",
+        "path": "",
+        "score": 0.766,
+        "snippet": "ATA) | async\"><span class=\"path1\"></span><span\n            class=\"path2\"></span></span>\n      </a>\n    </li>\n    <li class=\"nav-item\" id=\"aocParticipantDataTabButton\">\n      <a class=\"nav-link\" [route..."
+      }
+    ],
+    "test_coverage": {
+      "covered": [
+        "check",
+        "name"
+      ],
+      "uncovered": [],
+      "coverage_ratio": 1.0
+    },
+    "risk_assessment": {
+      "risk_level": "medium",
+      "security_sensitive": false,
+      "flags": [
+        "error_handling:gaps_detected",
+        "quality:low_score(0)"
+      ]
+    }
+  }
+}
