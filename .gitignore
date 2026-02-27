@@ -115,6 +115,8 @@ docker-compose.override.yml
 # LOGS (root-level only, not ui/frontend/src/app/pages/logs/)
 # =============================================================================
 /logs/
+ui/backend/logs/
+ui/logs/
 *.log
 
 # =============================================================================
