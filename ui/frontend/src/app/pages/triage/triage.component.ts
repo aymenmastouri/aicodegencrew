@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -48,9 +49,16 @@ interface TriageCustomerSummary {
   eta_category: string;
 }
 
-interface TriageDimensionInsight {
-  dimension: string;
-  insight: string;
+interface TriageContextBoundary {
+  category: string;
+  boundary: string;
+  severity: 'info' | 'caution' | 'blocking';
+  source_facts: string[];
+}
+
+interface TriageAnticipatedQuestion {
+  question: string;
+  answer: string;
 }
 
 interface TriageDeveloperContext {
@@ -59,9 +67,12 @@ interface TriageDeveloperContext {
   classification_assessment: string;
   classification_confidence: number;
   affected_components: string[];
-  relevant_dimensions: TriageDimensionInsight[];
+  context_boundaries: TriageContextBoundary[];
   architecture_notes: string;
+  anticipated_questions: TriageAnticipatedQuestion[];
   linked_tasks: string[];
+  // backward compat
+  relevant_dimensions?: { dimension: string; insight: string }[];
 }
 
 @Component({
@@ -80,6 +91,7 @@ interface TriageDeveloperContext {
     MatTabsModule,
     MatTooltipModule,
     MatSlideToggleModule,
+    MatSnackBarModule,
   ],
   template: `
     <div class="page-container">
@@ -249,14 +261,26 @@ interface TriageDeveloperContext {
                     </ul>
                   </div>
                 }
-                @if (developerContext.relevant_dimensions?.length) {
+                @if (developerContext.context_boundaries?.length) {
                   <div class="brief-section">
-                    <h3>Relevant Dimensions</h3>
-                    <div class="dimensions-list">
-                      @for (dim of developerContext.relevant_dimensions; track dim.dimension) {
-                        <div class="dimension-item">
-                          <span class="dimension-name">{{ dim.dimension }}</span>
-                          <span class="dimension-insight">{{ dim.insight }}</span>
+                    <h3>Context Boundaries</h3>
+                    <div class="boundaries-list">
+                      @for (b of developerContext.context_boundaries; track b.category) {
+                        <div class="boundary-item" [class]="'severity-' + b.severity">
+                          <div class="boundary-header">
+                            <span class="severity-badge" [class]="'sev-' + b.severity">
+                              {{ b.severity.toUpperCase() }}
+                            </span>
+                            <span class="boundary-category">{{ formatCategory(b.category) }}</span>
+                          </div>
+                          <div class="boundary-text">{{ b.boundary }}</div>
+                          @if (b.source_facts?.length) {
+                            <div class="boundary-sources">
+                              @for (s of b.source_facts; track s) {
+                                <span class="source-chip">{{ s }}</span>
+                              }
+                            </div>
+                          }
                         </div>
                       }
                     </div>
@@ -264,8 +288,21 @@ interface TriageDeveloperContext {
                 }
                 @if (developerContext.architecture_notes) {
                   <div class="brief-section">
-                    <h3>Architecture Notes</h3>
+                    <h3>Architecture Walkthrough</h3>
                     <p>{{ developerContext.architecture_notes }}</p>
+                  </div>
+                }
+                @if (developerContext.anticipated_questions?.length) {
+                  <div class="brief-section">
+                    <h3>Anticipated Questions</h3>
+                    <div class="questions-list">
+                      @for (q of developerContext.anticipated_questions; track q.question) {
+                        <div class="question-item">
+                          <div class="question-text">{{ q.question }}</div>
+                          <div class="answer-text">{{ q.answer }}</div>
+                        </div>
+                      }
+                    </div>
                   </div>
                 }
               } @else {
@@ -614,27 +651,105 @@ interface TriageDeveloperContext {
         margin-bottom: 6px;
         line-height: 1.5;
       }
-      .dimensions-list {
+      .boundaries-list {
         display: flex;
         flex-direction: column;
         gap: 10px;
       }
-      .dimension-item {
+      .boundary-item {
         padding: 10px 14px;
         border-radius: 8px;
         background: var(--cg-gray-50);
         border-left: 3px solid var(--cg-blue, #0070ad);
       }
-      .dimension-name {
-        display: block;
+      .boundary-item.severity-caution {
+        border-left-color: #f57c00;
+        background: rgba(245, 124, 0, 0.03);
+      }
+      .boundary-item.severity-blocking {
+        border-left-color: #dc3545;
+        background: rgba(220, 53, 69, 0.03);
+      }
+      .boundary-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .severity-badge {
+        padding: 1px 8px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+      }
+      .sev-info {
+        background: rgba(0, 112, 173, 0.1);
+        color: #0070ad;
+      }
+      .sev-caution {
+        background: rgba(245, 124, 0, 0.1);
+        color: #f57c00;
+      }
+      .sev-blocking {
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+      }
+      .boundary-category {
         font-weight: 600;
         font-size: 13px;
-        color: var(--cg-blue, #0070ad);
-        margin-bottom: 4px;
+        color: var(--cg-gray-700);
       }
-      .dimension-insight {
+      .boundary-text {
         font-size: 13px;
         line-height: 1.5;
+        margin-bottom: 6px;
+      }
+      .boundary-sources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .source-chip {
+        padding: 1px 6px;
+        border-radius: 6px;
+        font-size: 10px;
+        background: var(--cg-gray-100);
+        color: var(--cg-gray-500);
+        font-family: monospace;
+      }
+
+      /* Anticipated Questions */
+      .questions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .question-item {
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--cg-gray-50);
+        border-left: 3px solid var(--cg-blue, #0070ad);
+      }
+      .question-text {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--cg-gray-700);
+        margin-bottom: 4px;
+      }
+      .question-text::before {
+        content: 'Q: ';
+        color: var(--cg-blue, #0070ad);
+      }
+      .answer-text {
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--cg-gray-600);
+      }
+      .answer-text::before {
+        content: 'A: ';
+        font-weight: 600;
+        color: var(--cg-gray-500);
       }
 
       /* Markdown content */
@@ -886,6 +1001,7 @@ export class TriageComponent {
   constructor(
     private api: ApiService,
     private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar,
   ) {
     this.loadPastResults();
   }
@@ -925,10 +1041,23 @@ export class TriageComponent {
         this.customerSummary = (triage['customer_summary'] as TriageCustomerSummary) || null;
         this.developerContext = (triage['developer_context'] || triage['developer_brief']) as TriageDeveloperContext || null;
 
+        // Backward compat: map old relevant_dimensions → context_boundaries
+        if (this.developerContext && !this.developerContext.context_boundaries?.length && this.developerContext.relevant_dimensions?.length) {
+          this.developerContext.context_boundaries = this.developerContext.relevant_dimensions.map(dim => ({
+            category: 'technology_constraint',
+            boundary: dim.insight,
+            severity: 'info' as const,
+            source_facts: [dim.dimension],
+          }));
+        }
+
         const findings = data.findings || (triage['findings'] as Record<string, unknown>) || {};
         this.applyFindings(findings);
         this.result = triage;
         this.cdr.markForCheck();
+      },
+      error: () => {
+        this.snackBar.open('Failed to load triage result', 'OK', { duration: 4000 });
       },
     });
   }
@@ -989,6 +1118,10 @@ export class TriageComponent {
     this.cdr.markForCheck();
   }
 
+  formatCategory(cat: string): string {
+    return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
   getConfidenceClass(confidence: number): string {
     if (confidence >= 0.7) return 'confidence-high';
     if (confidence >= 0.4) return 'confidence-medium';
@@ -1022,6 +1155,7 @@ export class TriageComponent {
         this.pastResults = data.results || [];
         this.cdr.markForCheck();
       },
+      error: () => {},
     });
   }
 }

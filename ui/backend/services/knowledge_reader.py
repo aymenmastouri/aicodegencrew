@@ -201,9 +201,14 @@ def read_knowledge_file(relative_path: str) -> dict | list | str:
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {relative_path}")
 
-    if file_path.suffix == ".json":
-        with open(file_path, encoding="utf-8") as f:
-            return json.load(f)
+    try:
+        if file_path.suffix == ".json":
+            with open(file_path, encoding="utf-8") as f:
+                return json.load(f)
 
-    with open(file_path, encoding="utf-8") as f:
-        return f.read()
+        with open(file_path, encoding="utf-8") as f:
+            return f.read()
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in {relative_path}: {e}") from e
+    except OSError as e:
+        raise FileNotFoundError(f"Cannot read {relative_path}: {e}") from e

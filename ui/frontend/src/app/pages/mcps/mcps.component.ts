@@ -328,6 +328,7 @@ export class McpsComponent implements OnInit, OnDestroy {
       .pipe(
         catchError((err) => {
           console.error('Failed to load MCPs:', err);
+          this.snack.open('Failed to load MCPs', 'OK', { duration: 4000 });
           return of({
             mcps: [],
             summary: { total: 0, available: 0, requires_api_key: 0, not_installed: 0, by_phase: {} },

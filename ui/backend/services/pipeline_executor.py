@@ -42,6 +42,9 @@ class RunInfo:
     pid: int | None = None
 
 
+_MAX_LOG_LINES = 10_000
+
+
 class PipelineExecutor:
     """Singleton executor that manages one pipeline subprocess at a time."""
 
@@ -499,6 +502,8 @@ class PipelineExecutor:
                         )
                 with self._log_lock:
                     self._log_lines.append(line)
+                    if len(self._log_lines) > _MAX_LOG_LINES:
+                        self._log_lines = self._log_lines[-_MAX_LOG_LINES:]
 
             exit_code = proc.wait()
 
@@ -1013,6 +1018,13 @@ class PipelineExecutor:
 
     def _write_env_with_overrides(self, overrides: dict[str, str], target: Path) -> None:
         """Write a .env file based on the current one with overrides applied."""
+        # Validate overrides against injection
+        for key, value in overrides.items():
+            if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", key):
+                raise ValueError(f"Invalid env key: {key!r}")
+            if "\n" in value or "\r" in value or "\x00" in value:
+                raise ValueError(f"Env value for {key!r} contains invalid characters")
+
         lines: list[str] = []
 
         if settings.env_file.exists():

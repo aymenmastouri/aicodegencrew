@@ -126,7 +126,10 @@ class TriageCrew:
 
         classification = classify_issue(title, description, log_context or None)
 
-        entry_points = find_entry_points(title, description, knowledge)
+        entry_points = find_entry_points(
+            title, description, knowledge,
+            classification_type=classification.get("type", "bug"),
+        )
 
         blast_radius = calculate_blast_radius(entry_points, knowledge)
 
@@ -151,8 +154,8 @@ class TriageCrew:
         task_type = task_info.get("task_type", "")
         is_bug = task_type in ("bugfix", "bug") or classification.get("type") == "bug"
 
-        # ── Pre-load relevant dimensions ─────────────────────────────────
-        dimension_context = self._load_relevant_dimensions(entry_points, blast_radius)
+        # ── Assemble analysis inputs ─────────────────────────────────────
+        analysis_inputs = self._assemble_analysis_inputs(entry_points, blast_radius)
 
         # ── Phase 2: LLM synthesis ──────────────────────────────────────
         llm_result = None
@@ -161,11 +164,20 @@ class TriageCrew:
             llm_result = self._run_llm_synthesis(
                 title, description, task_info, findings, supplementary,
                 is_bug=is_bug,
-                dimension_context=dimension_context,
+                analysis_inputs=analysis_inputs,
             )
             llm_ok = llm_result is not None
         except Exception as e:
             logger.error("[TriageCrew] LLM synthesis failed: %s", e)
+
+        # ── Quality gate ────────────────────────────────────────────────
+        if llm_result:
+            quality = self._score_triage_quality(llm_result)
+            if quality["score"] < 50:
+                logger.warning("[TriageCrew] Quality score %d — partial: %s", quality["score"], quality["warnings"])
+                llm_ok = False  # downgrade to partial
+            elif quality["warnings"]:
+                logger.info("[TriageCrew] Quality score %d — warnings: %s", quality["score"], quality["warnings"])
 
         # ── Write outputs ───────────────────────────────────────────────
         customer = {}
@@ -173,6 +185,33 @@ class TriageCrew:
         if llm_result:
             customer = llm_result.get("customer_summary", {})
             developer = llm_result.get("developer_context", {})
+
+        # ── Classification override: LLM has final say ─────────────────
+        if customer:
+            llm_is_bug = customer.get("is_bug", None)
+            det_type = classification.get("type", "")
+            if llm_is_bug is False and det_type == "bug":
+                # Pick the next-best type from deterministic scores
+                det_scores = classification.get("scores", {})
+                alt_type = "feature"  # fallback
+                if det_scores:
+                    non_bug = {k: v for k, v in det_scores.items() if k != "bug"}
+                    if non_bug:
+                        alt_type = max(non_bug, key=non_bug.get)  # type: ignore[arg-type]
+                        if non_bug[alt_type] == 0:
+                            alt_type = "feature"
+                logger.info(
+                    "[TriageCrew] LLM overrides classification: %s → %s "
+                    "(is_bug=False, confidence=%.2f)",
+                    det_type, alt_type, developer.get("classification_confidence", -1),
+                )
+                classification = {
+                    **classification,
+                    "type": alt_type,
+                    "overridden_from": det_type,
+                    "override_reason": "LLM assessment: not a bug",
+                }
+                findings["classification"] = classification
 
         if customer:
             self._write_markdown(
@@ -195,6 +234,28 @@ class TriageCrew:
         self._write_json(triage_result, f"{issue_id}_triage.json")
 
         duration = round(time.monotonic() - t0, 2)
+
+        # Build triage_context for downstream phases (Plan reads this)
+        triage_context: dict[str, Any] = {
+            "classification_type": classification.get("type", "unknown"),
+            "classification_confidence": classification.get("confidence", 0),
+            "big_picture": developer.get("big_picture", ""),
+            "scope_boundary": developer.get("scope_boundary", ""),
+            "classification_assessment": developer.get("classification_assessment", ""),
+            "affected_components": developer.get("affected_components", []),
+            "context_boundaries": [
+                {
+                    "category": cb.get("category", ""),
+                    "boundary": cb.get("boundary", ""),
+                    "severity": cb.get("severity", "info"),
+                    "source_facts": cb.get("source_facts", []),
+                }
+                for cb in developer.get("context_boundaries", [])
+            ] if developer else [],
+            "architecture_notes": developer.get("architecture_notes", ""),
+            "anticipated_questions": developer.get("anticipated_questions", []),
+        }
+
         summary = {
             "status": "success" if llm_ok else "partial",
             "phase": "triage",
@@ -205,6 +266,7 @@ class TriageCrew:
             "blast_radius_count": blast_radius.get("component_count", 0),
             "llm_synthesis": llm_ok,
             "duration_seconds": duration,
+            "triage_context": triage_context,
         }
         self._write_json(summary, "summary.json")
 
@@ -223,7 +285,10 @@ class TriageCrew:
         knowledge = self._loader.load_available_context()
 
         classification = classify_issue(title, description)
-        entry_points = find_entry_points(title, description, knowledge)
+        entry_points = find_entry_points(
+            title, description, knowledge,
+            classification_type=classification.get("type", "bug"),
+        )
         blast_radius = calculate_blast_radius(entry_points, knowledge)
         affected = blast_radius.get("affected", [])
         test_cov = check_test_coverage(affected, knowledge)
@@ -308,7 +373,7 @@ class TriageCrew:
             pages: list[str] = []
             total = 0
             for page in doc:
-                text = page.get_text()
+                text = page.get_text() or ""
                 pages.append(text)
                 total += len(text)
                 if total >= max_chars:
@@ -320,16 +385,15 @@ class TriageCrew:
             logger.warning("[TriageCrew] PDF extraction failed for %s: %s", path.name, e)
             return ""
 
-    # ── Dimension pre-loading ────────────────────────────────────────────
+    # ── Analysis inputs assembly ─────────────────────────────────────────
 
-    def _load_relevant_dimensions(
+    def _assemble_analysis_inputs(
         self, entry_points: list[dict], blast_radius: dict,
     ) -> str:
-        """Pre-load relevant dimension data based on affected components.
+        """Assemble analysis inputs from knowledge/extract/ for prompt injection.
 
-        Reads dimension files from knowledge/extract/ and filters to entries
-        relevant to the entry points and blast radius. Returns a formatted
-        text block ready for prompt injection.
+        Loads dimension files, filters to affected area, and formats with
+        analysis instructions so the LLM produces insights, not data copies.
         """
         extract_dir = self.knowledge_dir / "extract"
         if not extract_dir.exists():
@@ -337,9 +401,12 @@ class TriageCrew:
 
         # Collect affected component/container names for filtering
         affected_names: set[str] = set()
+        affected_files: set[str] = set()
         for ep in entry_points:
             if isinstance(ep, dict):
                 affected_names.add(ep.get("component", "").lower())
+                if ep.get("file_path"):
+                    affected_files.add(ep["file_path"].lower())
             elif hasattr(ep, "component"):
                 affected_names.add(ep.component.lower())
         for item in blast_radius.get("affected", []):
@@ -351,22 +418,27 @@ class TriageCrew:
         affected_names.discard("")
 
         sections: list[str] = []
-        max_total = 4000  # budget for dimension context
+        max_total = 5000
 
-        # 1. Technologies
-        self._add_dimension_section(
+        # 1. Technology Stack
+        self._add_analysis_section(
             sections, extract_dir / "tech_versions.json",
-            "Technologies", max_items=15,
+            "Technology Stack",
+            "(What CONSTRAINTS do these versions impose on this issue? Do NOT just list them.)",
+            max_items=15,
             formatter=lambda items: "\n".join(
                 f"  - {t['technology']} {t.get('version', '?')} ({t.get('category', '')})"
+                f" — source: tech_versions.json"
                 for t in items
             ),
         )
 
         # 2. Components (filtered to affected)
-        self._add_dimension_section(
+        self._add_analysis_section(
             sections, extract_dir / "components.json",
-            "Components", key="components",
+            "Components (affected area)",
+            "(What PATTERNS and LAYERS are these components in? What constraints arise?)",
+            key="components",
             filter_fn=lambda c: (
                 c.get("name", "").lower() in affected_names
                 or c.get("container", "").lower() in affected_containers
@@ -375,30 +447,35 @@ class TriageCrew:
             formatter=lambda items: "\n".join(
                 f"  - {c['name']} [{c.get('stereotype', '')}] "
                 f"layer={c.get('layer', '?')}, container={c.get('container', '?')}"
+                f" — source: components.json"
                 for c in items
             ),
         )
 
-        # 3. Containers (filtered to affected)
-        self._add_dimension_section(
-            sections, extract_dir / "containers.json",
-            "Containers", key="containers",
-            filter_fn=lambda c: (
-                c.get("name", "").lower() in affected_containers
-                or not affected_containers  # include all if none specifically affected
-            ),
-            max_items=10,
+        # 3. Relations (filtered to affected — source OR target)
+        self._add_analysis_section(
+            sections, extract_dir / "relations.json",
+            "Relations (affected area)",
+            "(What DEPENDENCY CHAINS exist? What could BREAK if these components change?)",
+            key="relations",
+            filter_fn=lambda r: any(
+                name in r.get("from", "").lower() or name in r.get("to", "").lower()
+                for name in affected_names
+            ) if affected_names else False,
+            max_items=15,
             formatter=lambda items: "\n".join(
-                f"  - {c.get('name', '?')} ({c.get('technology', '?')}): "
-                f"{c.get('description', '')[:120]}"
-                for c in items
+                f"  - {r['from'].split('.')[-1]} -> {r['to'].split('.')[-1]} ({r.get('type', '?')})"
+                f" — source: relations.json"
+                for r in items
             ),
         )
 
         # 4. Interfaces (filtered to affected components)
-        self._add_dimension_section(
+        self._add_analysis_section(
             sections, extract_dir / "interfaces.json",
-            "Interfaces", key="interfaces",
+            "Interfaces (affected area)",
+            "(What API CONTRACTS exist? What integration boundaries must be respected?)",
+            key="interfaces",
             filter_fn=lambda i: (
                 i.get("component", "").lower() in affected_names
                 or i.get("source", "").lower() in affected_names
@@ -407,21 +484,102 @@ class TriageCrew:
             formatter=lambda items: "\n".join(
                 f"  - {i.get('name', '?')} ({i.get('type', '?')}): "
                 f"{i.get('description', '')[:100]}"
+                f" — source: interfaces.json"
                 for i in items
             ),
         )
 
-        # 5. Error handling
-        self._add_dimension_section(
+        # 5. Dependencies (filtered to affected containers)
+        self._add_analysis_section(
+            sections, extract_dir / "dependencies.json",
+            "Dependencies (runtime)",
+            "(What LIBRARY RISKS exist? Version conflicts, deprecations?)",
+            key="dependencies",
+            filter_fn=lambda d: d.get("scope") == "runtime",
+            max_items=10,
+            formatter=lambda items: "\n".join(
+                f"  - {d['name']} {d.get('version', '?')} ({d.get('type', '')})"
+                f" — source: dependencies.json"
+                for d in items
+            ),
+        )
+
+        # 6. Security details (filtered by class name proximity)
+        self._add_analysis_section(
+            sections, extract_dir / "security_details.json",
+            "Security Configuration",
+            "(What SECURITY MECHANISMS are in play? What must NOT be bypassed?)",
+            filter_fn=lambda s: any(
+                name in s.get("class_name", "").lower()
+                or name in s.get("file_path", "").lower()
+                for name in affected_names
+            ) if affected_names else False,
+            max_items=8,
+            formatter=lambda items: "\n".join(
+                f"  - {s.get('name', '?')} ({s.get('security_type', '?')})"
+                f" — source: security_details.json"
+                for s in items
+            ),
+        )
+
+        # 7. Workflows (filtered by file proximity)
+        self._add_analysis_section(
+            sections, extract_dir / "workflows.json",
+            "Workflows",
+            "(What BUSINESS FLOWS could be affected? State transitions to preserve?)",
+            key="workflows",
+            filter_fn=lambda w: any(
+                name in w.get("file_path", "").lower()
+                or name in w.get("name", "").lower()
+                for name in affected_names
+            ) if affected_names else False,
+            max_items=5,
+            formatter=lambda items: "\n".join(
+                f"  - {w.get('name', '?')} ({w.get('workflow_type', '?')}): "
+                f"states={w.get('states', [])}"
+                f" — source: workflows.json"
+                for w in items
+            ),
+        )
+
+        # 8. Error handling
+        self._add_analysis_section(
             sections, extract_dir / "error_handling.json",
-            "Error Handling", key="strategies",
+            "Error Handling",
+            "(What error handling patterns MUST be followed?)",
+            key="strategies",
             max_items=5,
             formatter=lambda items: "\n".join(
                 f"  - {e.get('pattern', e.get('name', '?'))}: "
                 f"{e.get('description', '')[:100]}"
+                f" — source: error_handling.json"
                 for e in items
             ),
         )
+
+        # 9. Architecture overview (always, compact)
+        analyze_dir = self.knowledge_dir / "analyze"
+        arch_file = analyze_dir / "analyzed_architecture.json"
+        if arch_file.exists():
+            try:
+                arch = json.loads(arch_file.read_text(encoding="utf-8"))
+                stats = arch.get("system", {}).get("statistics", {})
+                if stats:
+                    by_layer = stats.get("by_layer", {})
+                    layers_str = ", ".join(f"{k}={v}" for k, v in by_layer.items() if v)
+                    sections.append(
+                        f"=== ANALYSIS INPUT: Architecture Overview ===\n"
+                        f"(What is the OVERALL SHAPE of the system?)\n"
+                        f"  - {stats.get('containers', 0)} containers, "
+                        f"{stats.get('components', 0)} components, "
+                        f"{stats.get('interfaces', 0)} interfaces\n"
+                        f"  - Layers: {layers_str}\n"
+                        f"  - Tests: {stats.get('tests', 0)}, "
+                        f"Security configs: {stats.get('security_details', 0)}"
+                        f" — source: analyzed_architecture.json"
+                    )
+            except Exception:
+                pass
 
         result = "\n\n".join(sections)
         if len(result) > max_total:
@@ -429,16 +587,17 @@ class TriageCrew:
         return result
 
     @staticmethod
-    def _add_dimension_section(
+    def _add_analysis_section(
         sections: list[str],
         file_path: Path,
         title: str,
+        analysis_hint: str,
         key: str | None = None,
         filter_fn=None,
         max_items: int = 10,
         formatter=None,
     ) -> None:
-        """Load a dimension file and append a formatted section."""
+        """Load a dimension file and append a formatted analysis section."""
         if not file_path.exists():
             return
         try:
@@ -459,7 +618,7 @@ class TriageCrew:
             body = formatter(items) if formatter else json.dumps(items, indent=2, ensure_ascii=False, default=str)
         except Exception:
             return
-        sections.append(f"[{title}]\n{body}")
+        sections.append(f"=== ANALYSIS INPUT: {title} ===\n{analysis_hint}\n{body}")
 
     # ── LLM synthesis ───────────────────────────────────────────────────
 
@@ -472,7 +631,7 @@ class TriageCrew:
         supplementary: dict[str, str],
         *,
         is_bug: bool = False,
-        dimension_context: str = "",
+        analysis_inputs: str = "",
     ) -> dict | None:
         """Run single-agent CrewAI crew for triage synthesis."""
         task_context = f"Title: {title}\nDescription: {description}"
@@ -492,7 +651,7 @@ class TriageCrew:
         )
         task = create_triage_task(
             agent, task_context, findings_json, supplementary_text,
-            is_bug=is_bug, dimension_context=dimension_context,
+            is_bug=is_bug, analysis_inputs=analysis_inputs,
         )
 
         log_dir = self.output_dir / "logs"
@@ -514,6 +673,88 @@ class TriageCrew:
 
         # Try to parse JSON from the LLM output
         return self._extract_json(raw)
+
+    @staticmethod
+    def _score_triage_quality(result: dict) -> dict:
+        """Score the LLM triage output for quality. Returns {score, warnings}."""
+        score = 100
+        warnings: list[str] = []
+        dev = result.get("developer_context", {})
+
+        # big_picture length check
+        bp = dev.get("big_picture", "")
+        if len(bp) < 50:
+            score -= 20
+            warnings.append("big_picture too short (<50 chars)")
+
+        # scope_boundary must mention IN or OUT
+        sb = dev.get("scope_boundary", "")
+        sb_lower = sb.lower()
+        if "in scope" not in sb_lower and "out of scope" not in sb_lower and "in " not in sb_lower:
+            score -= 15
+            warnings.append("scope_boundary lacks explicit IN/OUT")
+
+        # context_boundaries count
+        boundaries = dev.get("context_boundaries", [])
+        if len(boundaries) < 2:
+            score -= 15
+            warnings.append(f"context_boundaries count={len(boundaries)} (<2)")
+
+        # Parrot detection: boundary that just lists versions without analysis
+        import re
+        version_pattern = re.compile(r"^\s*[\w.-]+\s+\d+\.\d+")
+        for b in boundaries:
+            text = b.get("boundary", "") if isinstance(b, dict) else ""
+            # If more than half the lines are just "name version" patterns
+            lines = [ln for ln in text.split("\n") if ln.strip()]
+            version_lines = sum(1 for ln in lines if version_pattern.match(ln.strip()))
+            if lines and version_lines > len(lines) / 2:
+                score -= 10
+                warnings.append(f"parrot detected in boundary: {b.get('category', '?')}")
+
+            # Missing source_facts
+            if isinstance(b, dict) and not b.get("source_facts"):
+                score -= 5
+                warnings.append(f"no source_facts in boundary: {b.get('category', '?')}")
+
+        # Action steps leaked — check context_boundaries and architecture_notes only
+        # (scope_boundary legitimately contains words like "change", "update")
+        action_words = ["implement", "modify", "change the", "update the", "add a", "create a", "fix the"]
+        check_fields = {
+            "context_boundaries": json.dumps(boundaries, ensure_ascii=False).lower(),
+            "architecture_notes": dev.get("architecture_notes", "").lower(),
+        }
+        for field_name, field_text in check_fields.items():
+            for word in action_words:
+                if word in field_text:
+                    score -= 5
+                    warnings.append(f"action step leaked in {field_name}: '{word}'")
+
+        # Anticipated questions check (Point 4: Stupid Questions)
+        questions = dev.get("anticipated_questions", [])
+        if len(questions) < 2:
+            score -= 10
+            warnings.append(f"anticipated_questions count={len(questions)} (<2)")
+
+        # big_picture must explain WHY (Point 1+3: North Star + Warum)
+        bp_lower = bp.lower()
+        if not any(w in bp_lower for w in ["warum", "weil", "because", "why", "needed", "security", "risk"]):
+            score -= 5
+            warnings.append("big_picture lacks WHY motivation")
+
+        # architecture_notes should show placement (Point 2: Walkthrough)
+        arch = dev.get("architecture_notes", "")
+        if len(arch) < 30:
+            score -= 10
+            warnings.append("architecture_notes too short for walkthrough (<30 chars)")
+
+        # File paths in developer context
+        dev_text = json.dumps(dev, ensure_ascii=False).lower()
+        if re.search(r"[/\\]\w+\.\w{2,4}", dev_text):
+            score -= 10
+            warnings.append("file paths found in developer_context")
+
+        return {"score": max(0, score), "warnings": warnings}
 
     def _extract_json(self, text: str) -> dict | None:
         """Extract JSON object from LLM output text."""
@@ -598,18 +839,30 @@ class TriageCrew:
         lines.extend(["## Affected Components", ""])
         for c in developer.get("affected_components", []):
             lines.append(f"- {c}")
-        dimensions = developer.get("relevant_dimensions", [])
-        if dimensions:
-            lines.extend(["", "## Relevant Dimensions", ""])
-            for dim in dimensions:
-                name = dim.get("dimension", "")
-                insight = dim.get("insight", "")
-                if name and insight:
-                    lines.append(f"**{name}:** {insight}")
-                    lines.append("")
+        boundaries = developer.get("context_boundaries", [])
+        if boundaries:
+            lines.extend(["", "## Context Boundaries", ""])
+            for b in boundaries:
+                severity = b.get("severity", "info").upper()
+                category = b.get("category", "").replace("_", " ").title()
+                boundary_text = b.get("boundary", "")
+                sources = [str(s) for s in b.get("source_facts", [])]
+                lines.append(f"**[{severity}] {category}**")
+                lines.append(boundary_text)
+                if sources:
+                    lines.append(f"_Sources: {', '.join(sources)}_")
+                lines.append("")
         arch = developer.get("architecture_notes", "")
         if arch:
-            lines.extend(["", "## Architecture Notes", "", arch])
+            lines.extend(["", "## Architecture Walkthrough", "", arch])
+        questions = developer.get("anticipated_questions", [])
+        if questions:
+            lines.extend(["", "## Anticipated Questions", ""])
+            for q in questions:
+                if isinstance(q, dict):
+                    lines.append(f"**Q: {q.get('question', '')}**")
+                    lines.append(f"A: {q.get('answer', '')}")
+                    lines.append("")
         linked = developer.get("linked_tasks", [])
         if linked:
             lines.extend(["", "## Linked Tasks", ""])

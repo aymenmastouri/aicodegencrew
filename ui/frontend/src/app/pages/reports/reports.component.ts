@@ -1989,6 +1989,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     });
     this.loadReports();
+    this.loadTriageResults();
+    this.loadBranches();
     this.refreshTimer = setInterval(() => this.loadReports(), 10000);
   }
 
@@ -2052,15 +2054,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
       .replace(/\b\w/g, (c) => c.toUpperCase()); // capitalize words
   }
 
-  onTabChange(event: MatTabChangeEvent): void {
-    // Triage is the 4th tab (index 3) — lazy-load on first open
-    if (event.index === 3 && !this.triageResults.length && !this.triageLoading) {
-      this.loadTriageResults();
-    }
-    // Git Branches is the 5th tab (index 4)
-    if (event.index === 4 && !this.branches) {
-      this.loadBranches();
-    }
+  onTabChange(_event: MatTabChangeEvent): void {
+    // All tabs are now eagerly loaded in ngOnInit.
   }
 
   loadBranches(): void {
@@ -2101,6 +2096,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.triageDetails[issueId] = data;
         this.cdr.markForCheck();
+      },
+      error: () => {
+        this.snackBar.open('Failed to load triage detail', 'OK', { duration: 4000 });
       },
     });
   }

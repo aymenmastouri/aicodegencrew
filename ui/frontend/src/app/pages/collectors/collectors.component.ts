@@ -432,6 +432,7 @@ export class CollectorsComponent implements OnInit, OnDestroy {
       error: () => {
         this.outputLoading = false;
         this.expandedId = null;
+        this.outputData = null;
         this.snack.open('Failed to load output', 'Dismiss', { duration: 4000 });
         this.cdr.markForCheck();
       },

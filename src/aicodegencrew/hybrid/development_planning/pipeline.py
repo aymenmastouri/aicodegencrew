@@ -112,7 +112,7 @@ class DevelopmentPlanningPipeline:
         # Defer data loading to run() so earlier phases can produce files first
         self.facts: dict = {}
         self.analyzed_architecture: dict = {}
-        self.supplementary_context: str = ""
+        self.supplementary_context: dict[str, str] = {}
         self._stages_initialized = False
 
     # ── Cascade checkpoint helpers ────────────────────────────────────────────
@@ -142,13 +142,22 @@ class DevelopmentPlanningPipeline:
             encoding="utf-8",
         )
 
+    # Triage classification → Plan task_type mapping
+    _TRIAGE_TO_PLAN_TYPE: dict[str, str] = {
+        "bug": "bugfix",
+        "feature": "feature",
+        "refactor": "refactoring",
+        "investigation": "feature",  # no direct equivalent
+    }
+
     def kickoff(self, inputs: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Execute pipeline (Orchestrator-compatible interface).
 
         Args:
             inputs: Optional inputs from orchestrator. Reads
-                    previous_results["analyze"] to forward quality hints.
+                    previous_results["analyze"] for quality hints and
+                    previous_results["triage"] for classification + context.
 
         Returns:
             Dict with status, output_files, metrics
@@ -168,7 +177,23 @@ class DevelopmentPlanningPipeline:
                 bool(quality_hints.get("architecture_quality")),
                 len(quality_hints.get("critical_issues", [])),
             )
-        return self.run(quality_hints=quality_hints)
+
+        # Read triage context (classification, scope, boundaries)
+        triage_out = previous.get("triage", {})
+        triage_context: dict = {}
+        if isinstance(triage_out, dict):
+            triage_context = dict(triage_out.get("triage_context", {}))
+            if triage_context:
+                # Carry issue_id from summary level into triage_context
+                triage_context.setdefault("issue_id", triage_out.get("issue_id", ""))
+                logger.info(
+                    "[Phase4] Received triage_context: classification=%s, components=%d, boundaries=%d",
+                    triage_context.get("classification_type"),
+                    len(triage_context.get("affected_components", [])),
+                    len(triage_context.get("context_boundaries", [])),
+                )
+
+        return self.run(quality_hints=quality_hints, triage_context=triage_context)
 
     def _ensure_stages(self) -> None:
         """Load data and create stages on first run (deferred from __init__)."""
@@ -186,11 +211,12 @@ class DevelopmentPlanningPipeline:
         self.stage4 = PlanGeneratorStage(
             analyzed_architecture=self.analyzed_architecture,
             supplementary_context=self.supplementary_context,
+            extract_facts=self.facts,
         )
         self.stage5 = ValidatorStage(analyzed_architecture=self.analyzed_architecture)
         self._stages_initialized = True
 
-    def run(self, quality_hints: dict | None = None) -> dict[str, Any]:
+    def run(self, quality_hints: dict | None = None, triage_context: dict | None = None) -> dict[str, Any]:
         """
         Run pipeline for all input files.
 
@@ -201,11 +227,14 @@ class DevelopmentPlanningPipeline:
             quality_hints: Optional quality context from analyze phase
                 (architecture_quality, critical_issues). Stored in
                 self._quality_hints for potential use by sub-stages.
+            triage_context: Optional triage context with classification,
+                scope_boundary, and context_boundaries from triage phase.
 
         Returns:
             Dict with status, output_files, duration, metrics, results
         """
         self._quality_hints = quality_hints or {}
+        self._triage_context = triage_context or {}
         self._ensure_stages()
         if len(self.input_files) == 1:
             result = self._run_single(self.input_files[0])
@@ -244,6 +273,13 @@ class DevelopmentPlanningPipeline:
 
         if not parsed_tasks:
             raise ValueError("No input files could be parsed")
+
+        # Apply triage classification override (match by issue_id)
+        if self._triage_context:
+            triage_issue_id = self._triage_context.get("issue_id", "")
+            for task in parsed_tasks:
+                if not triage_issue_id or task.task_id == triage_issue_id:
+                    self._apply_triage_classification(task)
 
         # Step 2: Sort by content (priority, task_type, dependencies)
         sorted_tasks = self._sort_tasks(parsed_tasks)
@@ -327,20 +363,95 @@ class DevelopmentPlanningPipeline:
         }
 
     def _sort_tasks(self, tasks: list[TaskInput]) -> list[TaskInput]:
-        """Sort tasks by JIRA priority, task type, and dependency order."""
-        task_ids = {t.task_id for t in tasks}
+        """Sort tasks by dependency order (topological), then priority and type.
 
-        def sort_key(task: TaskInput):
-            # 1. JIRA priority (Blocker=1 .. Trivial=5)
-            prio = self.PRIORITY_ORDER.get(task.priority, 3)
-            # 2. Task type (upgrade=1, bugfix=2, feature=3, refactoring=4)
-            ttype = self.TASK_TYPE_ORDER.get(task.task_type, 3)
-            # 3. Dependency: if this task links to another task in the batch,
-            #    it's a child/subtask → process AFTER the parent (higher number)
-            is_child = 1 if any(link in task_ids for link in task.linked_tasks) else 0
-            return (is_child, prio, ttype, task.task_id)
+        Uses Kahn's algorithm for topological sort with cycle detection.
+        Tasks in cycles are logged as warnings and sorted by priority fallback.
+        """
+        task_map = {t.task_id: t for t in tasks}
+        batch_ids = set(task_map.keys())
 
-        return sorted(tasks, key=sort_key)
+        # Build adjacency: parent → children.
+        # A task that links to another task in the batch is a child/subtask.
+        # Edge: linked_id → task_id (parent must come before child).
+        in_degree: dict[str, int] = {tid: 0 for tid in batch_ids}
+        children: dict[str, list[str]] = {tid: [] for tid in batch_ids}
+
+        for t in tasks:
+            for link in t.linked_tasks:
+                if link in batch_ids:
+                    # link is the parent, t is the child
+                    children[link].append(t.task_id)
+                    in_degree[t.task_id] += 1
+
+        # Kahn's algorithm: process nodes with in_degree 0
+        # Among candidates, sort by priority + type for deterministic ordering
+        def _priority_key(tid: str):
+            t = task_map[tid]
+            return (
+                self.PRIORITY_ORDER.get(t.priority, 3),
+                self.TASK_TYPE_ORDER.get(t.task_type, 3),
+                tid,
+            )
+
+        queue = sorted(
+            [tid for tid, deg in in_degree.items() if deg == 0],
+            key=_priority_key,
+        )
+        ordered: list[str] = []
+
+        while queue:
+            tid = queue.pop(0)
+            ordered.append(tid)
+            for child in children[tid]:
+                in_degree[child] -= 1
+                if in_degree[child] == 0:
+                    # Insert in priority order
+                    queue.append(child)
+                    queue.sort(key=_priority_key)
+
+        # Cycle detection: tasks not in ordered list have circular dependencies
+        if len(ordered) < len(batch_ids):
+            cycle_ids = batch_ids - set(ordered)
+            logger.warning(
+                "[Phase4] Circular dependency detected among tasks: %s — "
+                "falling back to priority sort for these tasks",
+                sorted(cycle_ids),
+            )
+            # Append cycle tasks sorted by priority
+            cycle_tasks = sorted(cycle_ids, key=_priority_key)
+            ordered.extend(cycle_tasks)
+
+        return [task_map[tid] for tid in ordered]
+
+    def _apply_triage_classification(self, task: TaskInput) -> TaskInput:
+        """Override task_type with triage classification if available.
+
+        Triage's LLM-validated classification is more accurate than Stage 1's
+        keyword-based detection. The override only applies when the triage
+        issue_id matches the task_id (or when processing a single task).
+        """
+        tc = self._triage_context
+        if not tc:
+            return task
+
+        triage_type = tc.get("classification_type", "")
+        if not triage_type or triage_type == "unknown":
+            return task
+
+        mapped = self._TRIAGE_TO_PLAN_TYPE.get(triage_type)
+        if not mapped:
+            return task
+
+        if mapped != task.task_type:
+            logger.info(
+                "[Phase4] Triage classification override: %s → %s (triage=%s, confidence=%.2f)",
+                task.task_type, mapped, triage_type,
+                tc.get("classification_confidence", 0),
+            )
+            task.task_type = mapped
+
+        return task
 
     def _run_single(self, input_file: str) -> dict[str, Any]:
         """Run full pipeline (Stages 1-5) for a single input file."""
@@ -358,6 +469,9 @@ class DevelopmentPlanningPipeline:
             task = self.stage1.run(input_file)
             stage1_duration = time.time() - stage1_start
             step_done("Stage 1: Input Parser")
+
+            # Override task_type from triage if available
+            task = self._apply_triage_classification(task)
 
             log_metric(
                 "stage_complete",
@@ -450,7 +564,7 @@ class DevelopmentPlanningPipeline:
         # Stage 4: Plan Generation (LLM)
         step_start(f"Stage 4: Plan Generation ({task.task_id})")
         stage4_start = time.time()
-        plan = self.stage4.run(task, discovery_result, pattern_result)
+        plan = self.stage4.run(task, discovery_result, pattern_result, triage_context=self._triage_context)
         stage4_duration = time.time() - stage4_start
         step_done(f"Stage 4: Plan Generation ({task.task_id})")
 

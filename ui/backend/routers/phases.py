@@ -16,19 +16,28 @@ class PhaseToggleRequest(BaseModel):
 @router.get("", response_model=list[PhaseInfo])
 def list_phases():
     """Get all configured phases."""
-    return get_phases()
+    try:
+        return get_phases()
+    except (OSError, ValueError) as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load phases: {e}")
 
 
 @router.get("/presets", response_model=list[PresetInfo])
 def list_presets():
     """Get all configured presets."""
-    return get_presets()
+    try:
+        return get_presets()
+    except (OSError, ValueError) as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load presets: {e}")
 
 
 @router.get("/status", response_model=PipelineStatus)
 def pipeline_status():
     """Get current pipeline status."""
-    return get_pipeline_status()
+    try:
+        return get_pipeline_status()
+    except (OSError, ValueError) as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load status: {e}")
 
 
 @router.put("/{phase_id}/toggle", response_model=PhaseInfo)

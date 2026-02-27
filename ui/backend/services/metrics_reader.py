@@ -30,8 +30,8 @@ def read_metrics(limit: int = 200, event_filter: str | None = None) -> MetricsSu
             if "event" not in data:
                 continue
 
-            event_name = data.pop("event")
-            timestamp = data.pop("timestamp", "")
+            event_name = data.get("event", "")
+            timestamp = data.get("timestamp", "")
 
             if "run_id" in data:
                 run_ids.add(data["run_id"])
@@ -39,7 +39,9 @@ def read_metrics(limit: int = 200, event_filter: str | None = None) -> MetricsSu
             if event_filter and event_name != event_filter:
                 continue
 
-            events.append(MetricEvent(timestamp=timestamp, event=event_name, data=data))
+            # Build payload without mutating the parsed dict
+            payload = {k: v for k, v in data.items() if k not in ("event", "timestamp")}
+            events.append(MetricEvent(timestamp=timestamp, event=event_name, data=payload))
 
     # Return most recent events first, up to limit
     events.reverse()

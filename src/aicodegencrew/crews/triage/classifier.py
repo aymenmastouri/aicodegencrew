@@ -2,6 +2,9 @@
 
 Reuses TASK_TYPE_RULES pattern from stage1_input_parser.py, enhanced with
 log-context scanning for stack traces and exceptions.
+
+Keywords are matched as WHOLE WORDS only to avoid false positives
+from substring matches (e.g. "exception" in "Exception: still required").
 """
 
 import re
@@ -14,9 +17,14 @@ logger = setup_logger(__name__)
 _CLASSIFICATION_RULES: dict[str, dict] = {
     "bug": {
         "keywords": [
-            "bug", "error", "crash", "exception", "fail", "broken",
+            "bug", "crash", "fail", "broken",
             "regression", "defect", "nullpointer", "stacktrace",
-            "traceback", "500", "404", "timeout", "deadlock",
+            "traceback", "timeout", "deadlock",
+        ],
+        # These keywords ONLY count as bug signals when found in log context,
+        # not in issue text (too ambiguous in natural language).
+        "log_only_keywords": [
+            "exception", "error", "500", "404",
         ],
         "log_patterns": [
             r"(?i)(exception|error|fatal|caused by|traceback|stack\s*trace)",
@@ -26,13 +34,13 @@ _CLASSIFICATION_RULES: dict[str, dict] = {
     "feature": {
         "keywords": [
             "feature", "implement", "add", "new", "create", "introduce",
-            "enable", "support", "extend",
+            "enable", "extend",
         ],
     },
     "refactor": {
         "keywords": [
             "refactor", "cleanup", "clean up", "technical debt", "restructure",
-            "modernize", "deprecat", "migrate",
+            "modernize", "deprecat", "migrate", "upgrade",
         ],
     },
     "investigation": {
@@ -49,6 +57,11 @@ _STACK_TRACE_RE = re.compile(
 )
 
 
+def _match_whole_word(keyword: str, text: str) -> bool:
+    """Check if keyword appears as a whole word in text."""
+    return bool(re.search(r"\b" + re.escape(keyword) + r"\b", text))
+
+
 def classify_issue(
     title: str,
     description: str,
@@ -57,18 +70,27 @@ def classify_issue(
     """Classify an issue as bug | feature | refactor | investigation.
 
     Returns:
-        {"type": "bug", "confidence": 0.85, "signals": ["keyword:error", "log:exception"]}
+        {"type": "bug", "confidence": 0.85, "signals": [...], "scores": {...}}
     """
     text = f"{title} {description}".lower()
     signals: list[str] = []
     scores: dict[str, float] = {k: 0.0 for k in _CLASSIFICATION_RULES}
 
-    # Keyword scoring
+    # Keyword scoring — whole-word match only
     for issue_type, rules in _CLASSIFICATION_RULES.items():
         for kw in rules.get("keywords", []):
-            if kw in text:
+            if _match_whole_word(kw, text):
                 scores[issue_type] += 1.0
                 signals.append(f"keyword:{kw}")
+
+    # Log-only keywords — only count when they appear in actual log context
+    if log_context:
+        log_lower = log_context.lower()
+        for issue_type, rules in _CLASSIFICATION_RULES.items():
+            for kw in rules.get("log_only_keywords", []):
+                if _match_whole_word(kw, log_lower):
+                    scores[issue_type] += 1.5
+                    signals.append(f"log_keyword:{kw}")
 
     # Log context scanning — strong bug signal
     if log_context:
@@ -104,4 +126,5 @@ def classify_issue(
         "type": best_type,
         "confidence": confidence,
         "signals": signals[:15],  # cap signal list
+        "scores": scores,  # all scores for override logic
     }

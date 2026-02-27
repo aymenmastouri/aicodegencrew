@@ -10,6 +10,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 
 import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../../services/pipeline.service';
@@ -38,6 +39,7 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
     MatTableModule,
     MatPaginatorModule,
     MatCheckboxModule,
+    MatSnackBarModule,
     RouterLink,
   ],
   template: `
@@ -1001,6 +1003,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
   constructor(
     private pipelineSvc: PipelineService,
     private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar,
   ) {}
 
   humanize(phaseId: string): string {
@@ -1152,8 +1155,9 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.comparisonPhaseRows = [];
     this.comparisonVisible = true;
 
-    // Fetch details for both runs
+    // Fetch details for both runs — only build comparison when BOTH succeed
     let loaded = 0;
+    let failed = 0;
     for (const runId of ids) {
       this.pipelineSvc.getRunDetail(runId).subscribe({
         next: (d) => {
@@ -1165,7 +1169,11 @@ export class HistoryComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: () => {
-          loaded++;
+          failed++;
+          if (loaded + failed === ids.length && loaded < 2) {
+            this.comparisonVisible = false;
+            this.snackBar.open('Could not load run details for comparison', 'OK', { duration: 4000 });
+          }
           this.cdr.markForCheck();
         },
       });

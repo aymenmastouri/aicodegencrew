@@ -32,19 +32,25 @@ def list_diagrams():
     return DiagramList(diagrams=diagrams)
 
 
+_ALLOWED_DIAGRAM_EXTENSIONS = {".drawio", ".mmd"}
+
+
 @router.get("/file/{path:path}")
 def get_diagram_file(path: str):
     """Download a diagram file."""
     file_path = settings.knowledge_dir / path
-
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Diagram not found")
 
     # Security: prevent path traversal
     try:
         file_path.resolve().relative_to(settings.knowledge_dir.resolve())
     except ValueError:
         raise HTTPException(status_code=400, detail="Path traversal not allowed")
+
+    if file_path.suffix.lower() not in _ALLOWED_DIAGRAM_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only .drawio and .mmd files are allowed")
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Diagram not found")
 
     return FileResponse(
         path=str(file_path),

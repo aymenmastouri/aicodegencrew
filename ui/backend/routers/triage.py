@@ -1,6 +1,7 @@
 """Triage API routes — issue classification, blast radius, dual-audience reports."""
 
 import json
+import re
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -93,9 +94,14 @@ def list_triage_results():
     return {"results": results}
 
 
+_SAFE_ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+
+
 @router.get("/results/{issue_id}")
 def get_triage_result(issue_id: str):
     """Get a specific triage result by issue ID."""
+    if not _SAFE_ID_RE.match(issue_id):
+        raise HTTPException(status_code=400, detail="Invalid issue_id")
     triage_file = _triage_dir / f"{issue_id}_triage.json"
     if not triage_file.exists():
         raise HTTPException(status_code=404, detail=f"No triage result for {issue_id}")

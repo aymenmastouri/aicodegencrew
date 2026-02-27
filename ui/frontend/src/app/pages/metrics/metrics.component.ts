@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 
 import { ApiService, MetricsSummary } from '../../services/api.service';
@@ -21,6 +22,7 @@ import { ApiService, MetricsSummary } from '../../services/api.service';
     MatChipsModule,
     MatSelectModule,
     MatProgressSpinnerModule,
+    MatSnackBarModule,
     FormsModule,
   ],
   template: `
@@ -162,6 +164,7 @@ export class MetricsComponent implements OnInit, OnDestroy {
   constructor(
     private api: ApiService,
     private cdr: ChangeDetectorRef,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -194,6 +197,7 @@ export class MetricsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading = false;
+        this.snackBar.open('Failed to load metrics', 'OK', { duration: 4000 });
         this.cdr.markForCheck();
       },
     });

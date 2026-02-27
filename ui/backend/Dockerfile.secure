@@ -1,5 +1,6 @@
 # =============================================================================
-# AICodeGenCrew Backend - SECURE Multi-Stage Build
+# AICodeGenCrew Backend - SECURE Build
+# Build context: project root (../)
 # Source code compiled to bytecode only. No .py files in final image.
 # =============================================================================
 
@@ -11,49 +12,51 @@ FROM python:3.12-slim AS build
 WORKDIR /build
 
 # Install backend dependencies
-COPY requirements.txt .
+COPY ui/backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --target=/build/deps -r requirements.txt
 
 # Copy backend code
-COPY . /build/ui/backend/
+COPY ui/backend/ /build/ui/backend/
 
-# Copy core aicodegencrew package (passed via docker-compose build context)
-# This will be provided by the secure compose file
-COPY src_bundle/ /build/src/aicodegencrew/
+# Copy core aicodegencrew package
+COPY src/aicodegencrew/ /build/src/aicodegencrew/
+
+# Copy config files (phases_config.yaml etc.)
+COPY src/aicodegencrew/config/ /build/config/
 
 # Compile ALL Python to bytecode and remove source
 RUN python -c "
 import compileall, os, glob
 
-# Compile everything
+# Compile everything under ui/ and src/
 for d in ['/build/ui', '/build/src']:
     compileall.compile_dir(d, force=True, quiet=1, optimize=2)
 
 # Remove all .py source files (keep only .pyc)
-for py in glob.glob('/build/**/*.py', recursive=True):
-    pyc_dir = os.path.join(os.path.dirname(py), '__pycache__')
-    if os.path.isdir(pyc_dir):
-        os.remove(py)
+for py in glob.glob('/build/ui/**/*.py', recursive=True):
+    os.remove(py)
+for py in glob.glob('/build/src/**/*.py', recursive=True):
+    os.remove(py)
 
-# Flatten __pycache__: move .pyc files up and remove __pycache__ dirs
+# Flatten __pycache__: move .pyc up, remove __pycache__ dirs
 for root, dirs, files in os.walk('/build', topdown=False):
     if os.path.basename(root) == '__pycache__':
         parent = os.path.dirname(root)
         for f in files:
-            # Rename: module.cpython-312.opt-2.pyc → module.pyc
             new_name = f.split('.')[0] + '.pyc'
-            os.rename(os.path.join(root, f), os.path.join(parent, new_name))
+            src = os.path.join(root, f)
+            dst = os.path.join(parent, new_name)
+            os.rename(src, dst)
         os.rmdir(root)
-"
+" \
+    # Also remove any leftover build artifacts
+    && find /build -name '*.py' -delete \
+    && find /build -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# Stage 2: FINAL — minimal runtime, no source, no shell
+# Stage 2: FINAL — minimal runtime, no source, limited shell access
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim AS final
-
-# Remove shell and package manager for security
-RUN rm -f /bin/sh /bin/bash /bin/dash /usr/bin/apt* /usr/bin/dpkg* \
-    && rm -rf /var/lib/apt /var/cache/apt
 
 WORKDIR /app
 
@@ -61,27 +64,21 @@ WORKDIR /app
 COPY --from=build /build/deps /usr/local/lib/python3.12/site-packages/
 COPY --from=build /build/ui/backend/ /app/ui/backend/
 COPY --from=build /build/src/aicodegencrew/ /app/src/aicodegencrew/
+COPY --from=build /build/config/ /app/config/
 
-# Ensure __init__.pyc files exist for package resolution
-RUN python3 -c "
-import pathlib
-for d in pathlib.Path('/app').rglob('*'):
-    if d.is_dir() and any(d.glob('*.pyc')):
-        init = d / '__init__.pyc'
-        if not init.exists():
-            # Create empty __init__.pyc
-            import py_compile, tempfile, os
-            tmp = tempfile.NamedTemporaryFile(suffix='.py', delete=False, mode='w')
-            tmp.write('')
-            tmp.close()
-            py_compile.compile(tmp.name, init, doraise=True)
-            os.unlink(tmp.name)
-"
+# Create data directories
+RUN mkdir -p /app/knowledge /app/logs \
+    # Remove tools that could be used to inspect/extract code
+    && rm -f /usr/bin/wget /usr/bin/curl \
+    && rm -rf /var/lib/apt /var/cache/apt \
+    # Create non-root user
+    && useradd --no-create-home --shell /usr/sbin/nologin appuser
+
+USER appuser
 
 ENV PYTHONPATH=/app/src:/app
 ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8001
 
-# Use python directly (no shell needed)
 ENTRYPOINT ["python3", "-m", "uvicorn", "ui.backend.main:app", "--host", "0.0.0.0", "--port", "8001"]

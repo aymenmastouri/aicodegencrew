@@ -9,10 +9,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subscription, timer, switchMap, catchError, of } from 'rxjs';
 
-import { ApiService, PipelineStatus, HealthResponse, SetupStatus } from '../../services/api.service';
+import { ApiService, PhaseStatus, PipelineStatus, HealthResponse, SetupStatus } from '../../services/api.service';
 import {
   PipelineService,
   PhaseProgress,
@@ -21,6 +21,11 @@ import {
   ResetPreview,
 } from '../../services/pipeline.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
+import {
+  PhaseActionDialogComponent,
+  PhaseActionDialogData,
+  PhaseActionResult,
+} from '../../shared/phase-action-dialog.component';
 import { PipelineStepperComponent } from '../../shared/pipeline-stepper.component';
 import {
   humanizePhaseId,
@@ -223,7 +228,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
       } @else if (pipeline && pipeline.phases.length > 0) {
         <div class="phase-grid">
           @for (phase of pipeline.phases; track phase.id; let i = $index) {
-            <div class="phase-card" [class]="'phase-' + phase.status" [routerLink]="'/phases'">
+            <div class="phase-card" [class]="'phase-' + phase.status" (click)="onPhaseClick(phase)">
               <div class="phase-top">
                 <span class="phase-index">{{ i + 1 }}</span>
                 <span class="phase-name">{{ phase.name }}</span>
@@ -1032,6 +1037,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -1103,6 +1109,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private phaseDisplayName(phaseId: string): string {
     const phase = this.pipeline?.phases.find((p) => p.id === phaseId);
     return phase?.name || humanizePhaseId(phaseId);
+  }
+
+  onPhaseClick(phase: PhaseStatus): void {
+    // Running phases → navigate directly to monitor (no dialog needed)
+    if (phase.status === 'running') {
+      this.router.navigate(['/phases']);
+      return;
+    }
+
+    const ref = this.dialog.open(PhaseActionDialogComponent, {
+      width: '420px',
+      data: {
+        phaseId: phase.id,
+        phaseName: phase.name,
+        status: phase.status,
+        lastRun: phase.last_run,
+        durationSeconds: phase.duration_seconds,
+        pipelineRunning: this.executionState === 'running',
+      } as PhaseActionDialogData,
+    });
+
+    ref.afterClosed().subscribe((result: PhaseActionResult) => {
+      if (result === 'start') {
+        this.router.navigate(['/run'], { queryParams: { phase: phase.id } });
+      } else if (result === 'view') {
+        this.router.navigate(['/phases']);
+      }
+    });
   }
 
   resetPhase(phaseId: string): void {
@@ -1299,9 +1333,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (!s) return;
         this.updateExecution(s);
         // Refresh phase cards so status badges stay current
-        this.api.getPipelineStatus().subscribe((p) => {
-          this.pipeline = p;
-          this.cdr.markForCheck();
+        this.api.getPipelineStatus().subscribe({
+          next: (p) => {
+            this.pipeline = p;
+            this.cdr.markForCheck();
+          },
+          error: () => {},
         });
         if (s.state === 'running') {
           this.startLiveUpdates();
@@ -1322,13 +1359,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (!s) return;
         this.updateExecution(s);
         // Also refresh phase cards + history so dashboard stays fully live
-        this.api.getPipelineStatus().subscribe((p) => {
-          this.pipeline = p;
-          this.cdr.markForCheck();
+        this.api.getPipelineStatus().subscribe({
+          next: (p) => {
+            this.pipeline = p;
+            this.cdr.markForCheck();
+          },
+          error: () => {},
         });
-        this.pipelineSvc.getHistory().subscribe((h) => {
-          this.recentHistory = h.slice(0, 5);
-          this.cdr.markForCheck();
+        this.pipelineSvc.getHistory().subscribe({
+          next: (h) => {
+            this.recentHistory = h.slice(0, 5);
+            this.cdr.markForCheck();
+          },
+          error: () => {},
         });
         if (s.state !== 'running') {
           this.startIdlePolling();
