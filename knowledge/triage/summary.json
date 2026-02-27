@@ -3,10 +3,69 @@
   "status": "success",
   "phase": "triage",
   "issue_id": "BNUVZ-12529",
-  "classification": "bug",
+  "classification": "refactor",
   "risk_level": "high",
   "entry_points_found": 5,
   "blast_radius_count": 3,
   "llm_synthesis": true,
-  "duration_seconds": 17.62
+  "duration_seconds": 17.61,
+  "triage_context": {
+    "classification_type": "refactor",
+    "classification_confidence": 0.99,
+    "affected_components": [
+      "UVZ Frontend Application (presentation layer)",
+      "Pattern Library UI components (presentation layer)",
+      "Vertical Action Bar component (presentation layer)",
+      "Action API (application layer – /action/{type} endpoint)",
+      "Angular Guard ActivateIfUserAuthorized (security layer)"
+    ],
+    "scope_boundary": "IN: All front‑end Angular code, Angular CLI configuration, Node.js/TypeScript versions, UI libraries (ng‑bootstrap, ng‑select, ag‑grid), Pattern Library 12.6.0, test suites (Karma, Cypress), and the Angular guard. OUT: Backend Java services, database schema, infrastructure provisioning, and any unrelated backend modules.",
+    "context_boundaries": [
+      {
+        "category": "technology_constraint",
+        "boundary": "Angular 19 requires a newer Node.js and TypeScript version than currently used (Node.js unspecified, TypeScript 4.9.5). The build tools (Angular CLI 18.x, Webpack 5.80.0) must be upgraded, otherwise the application will not compile.",
+        "severity": "blocking",
+        "source_facts": [
+          "tech_versions.json: Angular 18.2.13",
+          "tech_versions.json: Angular CLI 18.2.19",
+          "tech_versions.json: TypeScript 4.9.5"
+        ]
+      },
+      {
+        "category": "dependency_risk",
+        "boundary": "Key UI dependencies (ng‑bootstrap, ng‑select, ag‑grid‑angular, ag‑grid‑community) may not yet have compatible releases for Angular 19, requiring version checks or patches.",
+        "severity": "caution",
+        "source_facts": [
+          "issue description: ng-bootstrap (patch required)",
+          "issue description: ng-select, ag-grid-angular, ag-grid-community"
+        ]
+      },
+      {
+        "category": "security_boundary",
+        "boundary": "The ActivateIfUserAuthorized Angular guard must remain functional after the framework upgrade; changes in Angular's router or guard APIs could break authorization checks.",
+        "severity": "blocking",
+        "source_facts": [
+          "security_details.json: ActivateIfUserAuthorized (angular_guard)"
+        ]
+      },
+      {
+        "category": "testing_constraint",
+        "boundary": "The current test setup uses Karma 6.4.3, which is deprecated in Angular 19 and may need to be replaced or upgraded to stay compatible with the new build pipeline.",
+        "severity": "caution",
+        "source_facts": [
+          "tech_versions.json: Karma 6.4.3",
+          "tech_versions.json: Cypress 14.0.3"
+        ]
+      },
+      {
+        "category": "integration_boundary",
+        "boundary": "Front‑end components interact with backend endpoints such as /action/{type}. Any change in request/response payloads caused by the upgrade must be verified to keep the backend ActionRestService stable.",
+        "severity": "caution",
+        "source_facts": [
+          "deterministic findings: entry_points component /action/{type}",
+          "deterministic findings: backend file ActionRestService.java"
+        ]
+      }
+    ]
+  }
 }
