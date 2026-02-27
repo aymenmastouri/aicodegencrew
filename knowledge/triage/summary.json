@@ -1,81 +1,23 @@
 {
   "_schema_version": "1.0",
-  "status": "success",
+  "status": "partial",
   "phase": "triage",
   "issue_id": "BNUVZ-12529",
   "classification": "refactor",
-  "risk_level": "high",
-  "entry_points_found": 5,
-  "blast_radius_count": 3,
-  "llm_synthesis": true,
-  "duration_seconds": 19.73,
+  "risk_level": "low",
+  "entry_points_found": 0,
+  "blast_radius_count": 0,
+  "llm_synthesis": false,
+  "duration_seconds": 5.14,
   "triage_context": {
     "classification_type": "refactor",
     "classification_confidence": 0.99,
-    "big_picture": "The system consists of five containers with a clear separation between presentation (Angular SPA), application, domain, data‑access and infrastructure layers. The upgrade touches the presentation container and the shared Pattern Library used across UI components. It interacts with backend REST services (e.g., /action/{id}) but does not change backend business logic.",
-    "scope_boundary": "IN: All front‑end source code, Angular configuration, Pattern Library assets, npm dependencies listed in the acceptance criteria (Node.js, TypeScript, bnotk/ds‑ng, ng‑bootstrap, ng‑select, ag‑grid, etc.), build tooling (Angular CLI, Webpack), test suites (Karma, Cypress) and security guards. OUT: Backend Java services, database schemas, infrastructure containers, and any UI components that are already deprecated and removed by the upgrade.",
+    "big_picture": "",
+    "scope_boundary": "",
     "classification_assessment": "",
-    "affected_components": [
-      "Action UI (presentation layer)",
-      "Vertical Action Bar component (presentation layer)",
-      "Pattern Library components (presentation layer)",
-      "ng‑bootstrap integration (presentation layer)",
-      "ag‑grid integration (presentation layer)"
-    ],
-    "context_boundaries": [
-      {
-        "category": "technology_constraint",
-        "boundary": "Angular 19 requires a compatible Node.js version and a minimum TypeScript version. The current stack lists TypeScript 4.9.5 and an unspecified Node version, so compatibility must be verified before the upgrade.",
-        "severity": "caution",
-        "source_facts": [
-          "tech_versions.json: Angular 18.2.13",
-          "tech_versions.json: TypeScript 4.9.5"
-        ]
-      },
-      {
-        "category": "dependency_risk",
-        "boundary": "Key UI libraries (ng‑bootstrap, ng‑select, ag‑grid) have specific major‑version compatibility matrices with Angular. Their current versions are tied to Angular 18 and must be upgraded to versions that support Angular 19, otherwise the application will fail to compile or run.",
-        "severity": "blocking",
-        "source_facts": [
-          "issue_context: ng-bootstrap",
-          "issue_context: ng-select",
-          "issue_context: ag-grid-angular"
-        ]
-      },
-      {
-        "category": "pattern_constraint",
-        "boundary": "Pattern Library 12.6.0 deprecates some components but still supports the vertical action bar until PL 13.2.0. The upgrade must ensure the vertical action bar continues to function and that no obsolete PL 11 components remain.",
-        "severity": "caution",
-        "source_facts": [
-          "issue_context: Vertical action bar",
-          "issue_context: Pattern Library 12.6.0"
-        ]
-      },
-      {
-        "category": "security_boundary",
-        "boundary": "The Angular guard ActivateIfUserAuthorized is critical for authorisation checks. Angular 19 may introduce breaking changes to guard APIs; the guard must be retained and tested to avoid security regressions.",
-        "severity": "blocking",
-        "source_facts": [
-          "security_details.json: ActivateIfUserAuthorized (angular_guard)"
-        ]
-      },
-      {
-        "category": "testing_constraint",
-        "boundary": "Karma 6.4.3, used for unit tests, is deprecated in Angular 19+. Continuing to rely on it could lead to failing test pipelines; a migration to a supported test runner (e.g., Jest) may be required.",
-        "severity": "caution",
-        "source_facts": [
-          "tech_versions.json: Karma 6.4.3"
-        ]
-      },
-      {
-        "category": "integration_boundary",
-        "boundary": "Front‑end endpoints such as /action/{id} remain unchanged, but the upgraded UI must continue to call them with the same contract. Any change in request/response handling introduced by Angular 19 must be validated against these backend services.",
-        "severity": "info",
-        "source_facts": [
-          "deterministic_findings: entry_points /action/{id}"
-        ]
-      }
-    ],
-    "architecture_notes": "The upgrade is confined to the presentation container and its shared Pattern Library. It must respect the existing layered architecture, keep the security guard intact, and avoid breaking the contract with backend REST services. Dependency versions and test framework compatibility are the main risk areas."
+    "affected_components": [],
+    "context_boundaries": [],
+    "architecture_notes": "",
+    "anticipated_questions": []
   }
 }

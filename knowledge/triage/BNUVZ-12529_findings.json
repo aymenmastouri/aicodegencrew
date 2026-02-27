@@ -13,65 +13,11 @@
       "investigation": 0.0
     }
   },
-  "entry_points": [
-    {
-      "component": "/action/{id}",
-      "file_path": "backend/src/main/java/de/bnotk/vvz/module/action/service/api/rest/ActionRestService.java",
-      "score": 1.0,
-      "signals": [
-        "symbol:/action/{id}"
-      ]
-    },
-    {
-      "component": "name",
-      "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceDto.java",
-      "score": 1.0,
-      "signals": [
-        "symbol:name"
-      ]
-    },
-    {
-      "component": "name",
-      "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceShortDto.java",
-      "score": 1.0,
-      "signals": [
-        "symbol:name"
-      ]
-    },
-    {
-      "component": "name",
-      "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryMetaDataFieldDto.java",
-      "score": 1.0,
-      "signals": [
-        "symbol:name"
-      ]
-    },
-    {
-      "component": "user",
-      "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotarySuccessorViewRecordDto.java",
-      "score": 1.0,
-      "signals": [
-        "symbol:user"
-      ]
-    }
-  ],
+  "entry_points": [],
   "blast_radius": {
-    "affected": [
-      {
-        "component": "/action/{id}",
-        "depth": 0
-      },
-      {
-        "component": "name",
-        "depth": 0
-      },
-      {
-        "component": "user",
-        "depth": 0
-      }
-    ],
+    "affected": [],
     "depth": 0,
-    "component_count": 3,
+    "component_count": 0,
     "containers_affected": []
   },
   "duplicates": [
@@ -95,21 +41,14 @@
     }
   ],
   "test_coverage": {
-    "covered": [
-      "name",
-      "user"
-    ],
-    "uncovered": [
-      "/action/{id}"
-    ],
-    "coverage_ratio": 0.67
+    "covered": [],
+    "uncovered": [],
+    "coverage_ratio": 0.0
   },
   "risk_assessment": {
-    "risk_level": "high",
-    "security_sensitive": true,
+    "risk_level": "low",
+    "security_sensitive": false,
     "flags": [
-      "security:angular_guard",
-      "error_handling:gaps_detected",
       "quality:low_score(0)"
     ]
   }
