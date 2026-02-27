@@ -6,4 +6,4 @@
 
 ## Summary
 
-The UVZ application currently runs on Angular 18, whose security support ends in November 2025. The task is to upgrade the front‑end to Angular 19 and the associated Pattern Library to version 12.6.0, together with all required Node.js, TypeScript and UI library updates, while keeping the vertical action bar functional and removing any leftover code from the old versions.
+The UVZ web application is currently built with Angular 18, which will stop receiving security updates after November 2025. The task is to upgrade the front‑end to Angular 19 and to move the shared Pattern Library from version 11.3.1 to 12.6.0. This also requires updating a set of related npm packages (Node.js, TypeScript, ng‑bootstrap, ng‑select, ag‑grid, etc.) while keeping the vertical action bar that is still supported for now. It is a planned refactor, not a defect.
