@@ -514,7 +514,6 @@ export class AppComponent implements OnInit, OnDestroy {
       items: [
         { route: '/dashboard', icon: 'space_dashboard', label: 'Dashboard' },
         { route: '/run', icon: 'rocket_launch', label: 'Run Pipeline' },
-        { route: '/triage', icon: 'troubleshoot', label: 'Triage' },
         { route: '/inputs', icon: 'upload_file', label: 'Input Files' },
         { route: '/collectors', icon: 'hub', label: 'Collectors' },
         { route: '/settings', icon: 'settings', label: 'Settings' },
@@ -524,6 +523,7 @@ export class AppComponent implements OnInit, OnDestroy {
       label: 'Explore',
       items: [
         { route: '/phases', icon: 'account_tree', label: 'Phases' },
+        { route: '/tasks', icon: 'assignment', label: 'Tasks' },
         { route: '/knowledge', icon: 'psychology', label: 'Knowledge' },
         { route: '/reports', icon: 'summarize', label: 'Reports' },
         { route: '/mcps', icon: 'extension', label: 'MCP Servers' },

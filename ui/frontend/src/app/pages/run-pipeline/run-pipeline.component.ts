@@ -825,33 +825,48 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.api.getPresets().subscribe((p) => {
-      this.presets = p;
-      this.cdr.markForCheck();
+    this.api.getPresets().subscribe({
+      next: (p) => {
+        this.presets = p;
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
-    this.api.getPhases().subscribe((p) => {
-      this.phases = p;
-      this.cdr.markForCheck();
+    this.api.getPhases().subscribe({
+      next: (p) => {
+        this.phases = p;
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
-    this.pipeline.getStatus().subscribe((s) => {
-      this.status = s;
-      if (s.state === 'running') {
-        this.connectSSE();
-      }
-      this.cdr.markForCheck();
+    this.pipeline.getStatus().subscribe({
+      next: (s) => {
+        this.status = s;
+        if (s.state === 'running') {
+          this.connectSSE();
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
 
-    this.inputsService.getSummary().subscribe((s) => {
-      this.inputSummary = s;
-      this.inputCategoryEntries = Object.entries(s.categories).map(([key, value]) => ({ key, value }));
-      this.cdr.markForCheck();
+    this.inputsService.getSummary().subscribe({
+      next: (s) => {
+        this.inputSummary = s;
+        this.inputCategoryEntries = Object.entries(s.categories).map(([key, value]) => ({ key, value }));
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
 
-    this.pipeline.getEnv().subscribe((vars) => {
-      this.envVariables = vars;
-      this.envGroups = [...new Set(vars.map((v) => v.group))];
-      vars.forEach((v) => (this.envValues[v.name] = v.value));
-      this.cdr.markForCheck();
+    this.pipeline.getEnv().subscribe({
+      next: (vars) => {
+        this.envVariables = vars;
+        this.envGroups = [...new Set(vars.map((v) => v.group))];
+        vars.forEach((v) => (this.envValues[v.name] = v.value));
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
 
     this.route.queryParams.subscribe((params) => {

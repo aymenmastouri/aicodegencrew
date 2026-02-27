@@ -517,6 +517,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.defaults = d;
         this.cdr.markForCheck();
       },
+      error: () => {},
     });
 
     this.api.getPhases().subscribe({
@@ -532,6 +533,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         }
         this.cdr.markForCheck();
       },
+      error: () => {},
     });
 
     this.api.getPresets().subscribe({
@@ -539,6 +541,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.presets = p;
         this.cdr.markForCheck();
       },
+      error: () => {},
     });
   }
 

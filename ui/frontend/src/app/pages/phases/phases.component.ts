@@ -263,14 +263,20 @@ export class PhasesComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
-    this.api.getPresets().subscribe((p) => {
-      this.presets = p;
-      this.cdr.markForCheck();
+    this.api.getPresets().subscribe({
+      next: (p) => {
+        this.presets = p;
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
-    this.api.getPipelineStatus().subscribe((p) => {
-      this.pipeline = p;
-      this.startAutoRefreshIfNeeded();
-      this.cdr.markForCheck();
+    this.api.getPipelineStatus().subscribe({
+      next: (p) => {
+        this.pipeline = p;
+        this.startAutoRefreshIfNeeded();
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
   }
 

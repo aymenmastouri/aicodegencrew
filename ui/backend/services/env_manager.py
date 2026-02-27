@@ -58,8 +58,18 @@ def read_env(path: Path | None = None) -> dict[str, str]:
     return result
 
 
+def _validate_env_entries(values: dict[str, str]) -> None:
+    """Reject keys/values that could inject additional env vars."""
+    for key, value in values.items():
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", key):
+            raise ValueError(f"Invalid env key: {key!r}")
+        if "\n" in value or "\r" in value or "\x00" in value:
+            raise ValueError(f"Env value for {key!r} contains invalid characters")
+
+
 def write_env(values: dict[str, str], path: Path | None = None) -> None:
     """Update .env file preserving comments and order. Only changes existing keys or appends new ones."""
+    _validate_env_entries(values)
     env_path = path or settings.env_file
     lines: list[str] = []
 

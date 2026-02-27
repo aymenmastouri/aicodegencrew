@@ -135,6 +135,28 @@ export interface CollectorOutput {
   file_size_bytes: number;
 }
 
+export interface TaskPhaseSummary {
+  status: 'not_started' | 'completed' | 'running' | 'failed';
+  data: Record<string, unknown> | null;
+  customer_md?: string;
+  developer_md?: string;
+  findings?: Record<string, unknown>;
+}
+
+export interface TaskSummary {
+  task_id: string;
+  classification_type?: string;
+  risk_level?: string;
+  phase_status: Record<string, string>;
+  last_activity?: string;
+}
+
+export interface TaskLifecycle {
+  task_id: string;
+  has_input: boolean;
+  phases: Record<string, TaskPhaseSummary>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private base = '/api';
@@ -288,5 +310,14 @@ export class ApiService {
       developer_md?: string;
       findings?: Record<string, unknown>;
     }>(`${this.base}/triage/results/${issueId}`);
+  }
+
+  // Tasks (Lifecycle)
+  getTasks(): Observable<{ tasks: TaskSummary[] }> {
+    return this.http.get<{ tasks: TaskSummary[] }>(`${this.base}/tasks`);
+  }
+
+  getTaskLifecycle(taskId: string): Observable<TaskLifecycle> {
+    return this.http.get<TaskLifecycle>(`${this.base}/tasks/${taskId}`);
   }
 }

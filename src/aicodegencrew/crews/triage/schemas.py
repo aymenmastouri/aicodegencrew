@@ -97,23 +97,43 @@ class CustomerSummary(BaseModel):
     eta_category: Literal["quick-fix", "short", "medium", "long", "unknown"] = Field(default="unknown")
 
 
-class DimensionInsight(BaseModel):
-    """A relevant architectural dimension insight for the developer."""
+class ContextBoundary(BaseModel):
+    """An analytical insight about a constraint, risk, or boundary relevant to this issue."""
 
-    dimension: str = Field(default="", description="Dimension name (e.g. Technologies, Patterns, Conventions)")
-    insight: str = Field(default="", description="What the developer needs to know about this dimension")
+    category: Literal[
+        "technology_constraint",
+        "dependency_risk",
+        "integration_boundary",
+        "pattern_constraint",
+        "data_boundary",
+        "security_boundary",
+        "testing_constraint",
+        "workflow_constraint",
+        "infrastructure_constraint",
+    ] = Field(default="technology_constraint", description="Type of boundary or constraint")
+    boundary: str = Field(default="", description="What does this fact MEAN for this issue? (analysis, not data)")
+    severity: Literal["info", "caution", "blocking"] = Field(default="info", description="How critical is this boundary")
+    source_facts: list[str] = Field(default_factory=list, description="Traceability: which extract data backs this")
+
+
+class AnticipatedQuestion(BaseModel):
+    """A question a developer would likely ask, with a preemptive answer."""
+
+    question: str = Field(default="", description="What would a developer ask?")
+    answer: str = Field(default="", description="The answer based on available context")
 
 
 class DeveloperContext(BaseModel):
     """Technical developer context — big picture and scope, no action steps."""
 
-    big_picture: str = Field(default="", description="Architectural context — which layers, containers, patterns are involved")
+    big_picture: str = Field(default="", description="North Star: What is this project? Who is the customer? What problem does this solve? Why NOW?")
     scope_boundary: str = Field(default="", description="What's IN scope vs OUT of scope for this issue")
     classification_assessment: str = Field(default="", description="For bugs: is the classification correct? For CR/Task: empty")
     classification_confidence: float = Field(default=-1.0, description="Bug confidence: 0.0 = definitely not a bug → 1.0 = confirmed bug. -1 = not applicable (CR/Task)")
     affected_components: list[str] = Field(default_factory=list, description="High-level component names (NOT file paths)")
-    relevant_dimensions: list[DimensionInsight] = Field(default_factory=list, description="Key architectural dimensions the developer needs to understand")
-    architecture_notes: str = Field(default="", description="Relevant patterns, constraints, risks")
+    context_boundaries: list[ContextBoundary] = Field(default_factory=list, description="2-6 analytical insights about constraints, risks, and boundaries")
+    architecture_notes: str = Field(default="", description="Architectural walkthrough: where does this piece fit? Container, layer, neighbors")
+    anticipated_questions: list[AnticipatedQuestion] = Field(default_factory=list, description="3-5 questions a developer would ask, answered proactively")
     linked_tasks: list[str] = Field(default_factory=list)
 
 

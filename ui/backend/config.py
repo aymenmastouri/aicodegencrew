@@ -18,8 +18,12 @@ class Settings:
         self.run_report = self.project_root / "knowledge" / "run_report.json"
         self.run_history = self.logs_dir / "run_history.jsonl"
         self.host = os.getenv("DASHBOARD_HOST", "0.0.0.0")
-        self.port = int(os.getenv("DASHBOARD_PORT", "8001"))
-        self.cors_origins = os.getenv("DASHBOARD_CORS_ORIGINS", "http://localhost:4200").split(",")
+        try:
+            self.port = int(os.getenv("DASHBOARD_PORT", "8001"))
+        except ValueError:
+            self.port = 8001
+        origins_str = os.getenv("DASHBOARD_CORS_ORIGINS", "http://localhost:4200")
+        self.cors_origins = [o.strip() for o in origins_str.split(",") if o.strip()]
 
 
 settings = Settings()

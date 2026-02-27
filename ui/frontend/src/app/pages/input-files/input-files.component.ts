@@ -450,6 +450,7 @@ export class InputFilesComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
     let completed = 0;
     let errors = 0;
+    const failedNames: string[] = [];
 
     for (const file of files) {
       this.inputsService.uploadFile(cat.id, file).subscribe({
@@ -461,17 +462,32 @@ export class InputFilesComponent implements OnInit, OnDestroy {
               this.snackBar.open(`Uploaded ${completed} file${completed > 1 ? 's' : ''} to ${cat.label}`, 'OK', {
                 duration: 3000,
               });
+            } else {
+              this.snackBar.open(
+                `${completed} uploaded, ${errors} failed: ${failedNames.join(', ')}`,
+                'Dismiss',
+                { duration: 5000 },
+              );
             }
             this.loadAll();
           }
+          this.cdr.markForCheck();
         },
         error: (err) => {
           errors++;
-          const msg = err?.error?.detail || `Failed to upload ${file.name}`;
-          cat.error = msg;
+          failedNames.push(file.name);
+          cat.error = `${errors} file${errors > 1 ? 's' : ''} failed: ${failedNames.join(', ')}`;
           if (completed + errors === files.length) {
             cat.uploading = false;
-            this.snackBar.open(msg, 'Dismiss', { duration: 5000 });
+            if (completed > 0) {
+              this.snackBar.open(
+                `${completed} uploaded, ${errors} failed: ${failedNames.join(', ')}`,
+                'Dismiss',
+                { duration: 5000 },
+              );
+            } else {
+              this.snackBar.open(`Upload failed: ${failedNames.join(', ')}`, 'Dismiss', { duration: 5000 });
+            }
             this.loadAll();
           }
           this.cdr.markForCheck();

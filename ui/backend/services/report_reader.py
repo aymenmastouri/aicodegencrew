@@ -28,6 +28,9 @@ def list_reports() -> ReportList:
 
 def read_report(report_type: str, task_id: str) -> dict:
     """Read a specific plan or report by task_id."""
+    if not re.match(r"^[A-Za-z0-9_-]+$", task_id):
+        raise ValueError(f"Invalid task_id: {task_id}")
+
     if report_type == "plan":
         path = settings.knowledge_dir / "plan" / f"{task_id}_plan.json"
     elif report_type == "report":
@@ -110,13 +113,16 @@ def delete_codegen_branch(task_id: str) -> dict:
         raise ValueError("PROJECT_PATH not set or not a directory")
 
     branch_name = f"codegen/{task_id}"
-    result = subprocess.run(
-        ["git", "branch", "-D", branch_name],
-        cwd=project_path,
-        capture_output=True,
-        text=True,
-        timeout=10,
-    )
+    try:
+        result = subprocess.run(
+            ["git", "branch", "-D", branch_name],
+            cwd=project_path,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        raise RuntimeError(f"git command failed: {e}") from e
     if result.returncode != 0:
         raise RuntimeError(f"Failed to delete branch {branch_name}: {result.stderr.strip()}")
 

@@ -1,6 +1,7 @@
 """Service for reading phase configuration and status."""
 
 import logging
+import re
 
 from aicodegencrew.phase_registry import check_phase_output_exists
 from aicodegencrew.pipeline_contract import (
@@ -121,16 +122,25 @@ def get_phases() -> list[PhaseInfo]:
     return sorted(phases, key=lambda phase: phase.order)
 
 
+_SAFE_PHASE_ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+
+
 def toggle_phase(phase_id: str, enabled: bool) -> PhaseInfo:
     """Toggle a phase's enabled state in phases_config.yaml.
 
     Raises ValueError if the phase is not found or is required (cannot disable).
     """
+    if not _SAFE_PHASE_ID_RE.match(phase_id):
+        raise ValueError(f"Invalid phase_id: {phase_id}")
+
     import yaml  # lazy import — only needed here
 
     config_path = settings.phases_config
-    with open(config_path, encoding="utf-8") as f:
-        raw = yaml.safe_load(f) or {}
+    try:
+        with open(config_path, encoding="utf-8") as f:
+            raw = yaml.safe_load(f) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        raise ValueError(f"Failed to read config: {exc}") from exc
 
     phases_section = raw.get("phases", {})
     if phase_id not in phases_section:
@@ -144,8 +154,11 @@ def toggle_phase(phase_id: str, enabled: bool) -> PhaseInfo:
         raise ValueError(f"Phase '{phase_id}' is required and cannot be disabled")
 
     definition["enabled"] = enabled
-    with open(config_path, "w", encoding="utf-8") as f:
-        yaml.dump(raw, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    try:
+        with open(config_path, "w", encoding="utf-8") as f:
+            yaml.dump(raw, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    except (OSError, yaml.YAMLError) as exc:
+        raise ValueError(f"Failed to write config: {exc}") from exc
 
     contract = _load_contract()
     defn = contract.phases[phase_id]

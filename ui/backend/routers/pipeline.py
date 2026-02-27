@@ -64,6 +64,10 @@ def pipeline_status():
     return executor.get_status()
 
 
+_SSE_MAX_DURATION = 30 * 60  # 30 minutes max stream lifetime
+_SSE_IDLE_TIMEOUT = 60  # Stop after 60s of no pipeline activity
+
+
 @router.get("/stream")
 async def pipeline_stream(start_idx: int = 0):
     """SSE endpoint for real-time pipeline events.
@@ -75,8 +79,16 @@ async def pipeline_stream(start_idx: int = 0):
 
     async def event_generator() -> AsyncGenerator[str, None]:
         idx = start_idx
+        started = asyncio.get_event_loop().time()
+        idle_since: float | None = None
         while True:
             try:
+                # Max stream lifetime guard
+                elapsed = asyncio.get_event_loop().time() - started
+                if elapsed > _SSE_MAX_DURATION:
+                    yield f"data: {json.dumps({'type': 'timeout', 'data': 'Stream max duration reached'})}\n\n"
+                    break
+
                 lines = executor.get_log_lines(since=idx)
                 idx += len(lines)
 
@@ -92,8 +104,21 @@ async def pipeline_stream(start_idx: int = 0):
                     yield f"data: {json.dumps({'type': 'pipeline_complete', 'data': status})}\n\n"
                     break
 
+                # Idle timeout: if state is 'idle' for too long, stop streaming
+                if status["state"] == "idle":
+                    now = asyncio.get_event_loop().time()
+                    if idle_since is None:
+                        idle_since = now
+                    elif now - idle_since > _SSE_IDLE_TIMEOUT:
+                        yield f"data: {json.dumps({'type': 'idle_timeout', 'data': 'No pipeline activity'})}\n\n"
+                        break
+                else:
+                    idle_since = None
+
                 await asyncio.sleep(0.5)
 
+            except asyncio.CancelledError:
+                break
             except Exception as exc:
                 logger.warning("SSE generator error: %s", exc)
                 try:
