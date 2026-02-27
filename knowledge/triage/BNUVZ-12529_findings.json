@@ -15,11 +15,10 @@
   },
   "entry_points": [
     {
-      "component": "/action/{type}",
+      "component": "/action/{id}",
       "file_path": "backend/src/main/java/de/bnotk/vvz/module/action/service/api/rest/ActionRestService.java",
       "score": 1.0,
       "signals": [
-        "symbol:/action/{type}",
         "symbol:/action/{id}"
       ]
     },
@@ -59,7 +58,7 @@
   "blast_radius": {
     "affected": [
       {
-        "component": "/action/{type}",
+        "component": "/action/{id}",
         "depth": 0
       },
       {
@@ -101,7 +100,7 @@
       "user"
     ],
     "uncovered": [
-      "/action/{type}"
+      "/action/{id}"
     ],
     "coverage_ratio": 0.67
   },

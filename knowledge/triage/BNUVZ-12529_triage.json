@@ -15,47 +15,56 @@
     }
   },
   "customer_summary": {
-    "summary": "The UVZ application currently runs on Angular 18, whose security support ends in November 2025. The task is to upgrade the front‑end to Angular 19 and the associated Pattern Library to version 12.6.0, together with all required Node.js, TypeScript and UI library updates, while keeping the vertical action bar functional and removing any leftover code from the old versions.",
+    "summary": "The UVZ web application is currently built with Angular 18, which will stop receiving security updates after November 2025. The task is to upgrade the front‑end to Angular 19 and to move the shared Pattern Library from version 11.3.1 to 12.6.0. This also requires updating a set of related npm packages (Node.js, TypeScript, ng‑bootstrap, ng‑select, ag‑grid, etc.) while keeping the vertical action bar that is still supported for now. It is a planned refactor, not a defect.",
     "impact_level": "high",
     "is_bug": false,
     "workaround": "",
     "eta_category": "medium"
   },
   "developer_context": {
-    "big_picture": "The upgrade touches the presentation container of the system (the Angular SPA) which sits on top of the backend REST services (e.g., ActionRestService). It involves the UI component library (Pattern Library), the build pipeline (Angular CLI, Webpack), and the test harness (Karma/Cypress). Security is enforced by an Angular guard (ActivateIfUserAuthorized) that must continue to work after the upgrade. The vertical action bar is a deprecated UI pattern that remains supported until Pattern Library 13.2.0.",
-    "scope_boundary": "IN: All front‑end Angular code, Angular CLI configuration, Node.js/TypeScript versions, UI libraries (ng‑bootstrap, ng‑select, ag‑grid), Pattern Library 12.6.0, test suites (Karma, Cypress), and the Angular guard. OUT: Backend Java services, database schema, infrastructure provisioning, and any unrelated backend modules.",
+    "big_picture": "The system consists of five containers with a clear separation between presentation (Angular SPA), application, domain, data‑access and infrastructure layers. The upgrade touches the presentation container and the shared Pattern Library used across UI components. It interacts with backend REST services (e.g., /action/{id}) but does not change backend business logic.",
+    "scope_boundary": "IN: All front‑end source code, Angular configuration, Pattern Library assets, npm dependencies listed in the acceptance criteria (Node.js, TypeScript, bnotk/ds‑ng, ng‑bootstrap, ng‑select, ag‑grid, etc.), build tooling (Angular CLI, Webpack), test suites (Karma, Cypress) and security guards. OUT: Backend Java services, database schemas, infrastructure containers, and any UI components that are already deprecated and removed by the upgrade.",
     "classification_assessment": "",
     "classification_confidence": -1,
     "affected_components": [
-      "UVZ Frontend Application (presentation layer)",
-      "Pattern Library UI components (presentation layer)",
+      "Action UI (presentation layer)",
       "Vertical Action Bar component (presentation layer)",
-      "Action API (application layer – /action/{type} endpoint)",
-      "Angular Guard ActivateIfUserAuthorized (security layer)"
+      "Pattern Library components (presentation layer)",
+      "ng‑bootstrap integration (presentation layer)",
+      "ag‑grid integration (presentation layer)"
     ],
     "context_boundaries": [
       {
         "category": "technology_constraint",
-        "boundary": "Angular 19 requires a newer Node.js and TypeScript version than currently used (Node.js unspecified, TypeScript 4.9.5). The build tools (Angular CLI 18.x, Webpack 5.80.0) must be upgraded, otherwise the application will not compile.",
-        "severity": "blocking",
+        "boundary": "Angular 19 requires a compatible Node.js version and a minimum TypeScript version. The current stack lists TypeScript 4.9.5 and an unspecified Node version, so compatibility must be verified before the upgrade.",
+        "severity": "caution",
         "source_facts": [
           "tech_versions.json: Angular 18.2.13",
-          "tech_versions.json: Angular CLI 18.2.19",
           "tech_versions.json: TypeScript 4.9.5"
         ]
       },
       {
         "category": "dependency_risk",
-        "boundary": "Key UI dependencies (ng‑bootstrap, ng‑select, ag‑grid‑angular, ag‑grid‑community) may not yet have compatible releases for Angular 19, requiring version checks or patches.",
+        "boundary": "Key UI libraries (ng‑bootstrap, ng‑select, ag‑grid) have specific major‑version compatibility matrices with Angular. Their current versions are tied to Angular 18 and must be upgraded to versions that support Angular 19, otherwise the application will fail to compile or run.",
+        "severity": "blocking",
+        "source_facts": [
+          "issue_context: ng-bootstrap",
+          "issue_context: ng-select",
+          "issue_context: ag-grid-angular"
+        ]
+      },
+      {
+        "category": "pattern_constraint",
+        "boundary": "Pattern Library 12.6.0 deprecates some components but still supports the vertical action bar until PL 13.2.0. The upgrade must ensure the vertical action bar continues to function and that no obsolete PL 11 components remain.",
         "severity": "caution",
         "source_facts": [
-          "issue description: ng-bootstrap (patch required)",
-          "issue description: ng-select, ag-grid-angular, ag-grid-community"
+          "issue_context: Vertical action bar",
+          "issue_context: Pattern Library 12.6.0"
         ]
       },
       {
         "category": "security_boundary",
-        "boundary": "The ActivateIfUserAuthorized Angular guard must remain functional after the framework upgrade; changes in Angular's router or guard APIs could break authorization checks.",
+        "boundary": "The Angular guard ActivateIfUserAuthorized is critical for authorisation checks. Angular 19 may introduce breaking changes to guard APIs; the guard must be retained and tested to avoid security regressions.",
         "severity": "blocking",
         "source_facts": [
           "security_details.json: ActivateIfUserAuthorized (angular_guard)"
@@ -63,24 +72,22 @@
       },
       {
         "category": "testing_constraint",
-        "boundary": "The current test setup uses Karma 6.4.3, which is deprecated in Angular 19 and may need to be replaced or upgraded to stay compatible with the new build pipeline.",
+        "boundary": "Karma 6.4.3, used for unit tests, is deprecated in Angular 19+. Continuing to rely on it could lead to failing test pipelines; a migration to a supported test runner (e.g., Jest) may be required.",
         "severity": "caution",
         "source_facts": [
-          "tech_versions.json: Karma 6.4.3",
-          "tech_versions.json: Cypress 14.0.3"
+          "tech_versions.json: Karma 6.4.3"
         ]
       },
       {
         "category": "integration_boundary",
-        "boundary": "Front‑end components interact with backend endpoints such as /action/{type}. Any change in request/response payloads caused by the upgrade must be verified to keep the backend ActionRestService stable.",
-        "severity": "caution",
+        "boundary": "Front‑end endpoints such as /action/{id} remain unchanged, but the upgraded UI must continue to call them with the same contract. Any change in request/response handling introduced by Angular 19 must be validated against these backend services.",
+        "severity": "info",
         "source_facts": [
-          "deterministic findings: entry_points component /action/{type}",
-          "deterministic findings: backend file ActionRestService.java"
+          "deterministic_findings: entry_points /action/{id}"
         ]
       }
     ],
-    "architecture_notes": "The system follows a layered architecture with a distinct presentation container (Angular SPA) that consumes REST services from the application layer. The upgrade stays within the presentation container but touches cross‑cutting concerns like security guards and test infrastructure. The vertical action bar is a deprecated UI pattern that remains supported until Pattern Library 13.2.0, so it must not be removed during this upgrade. Compatibility of third‑party UI libraries with Angular 19 is a known risk area.",
+    "architecture_notes": "The upgrade is confined to the presentation container and its shared Pattern Library. It must respect the existing layered architecture, keep the security guard intact, and avoid breaking the contract with backend REST services. Dependency versions and test framework compatibility are the main risk areas.",
     "linked_tasks": []
   },
   "findings": {
@@ -99,11 +106,10 @@
     },
     "entry_points": [
       {
-        "component": "/action/{type}",
+        "component": "/action/{id}",
         "file_path": "backend/src/main/java/de/bnotk/vvz/module/action/service/api/rest/ActionRestService.java",
         "score": 1.0,
         "signals": [
-          "symbol:/action/{type}",
           "symbol:/action/{id}"
         ]
       },
@@ -143,7 +149,7 @@
     "blast_radius": {
       "affected": [
         {
-          "component": "/action/{type}",
+          "component": "/action/{id}",
           "depth": 0
         },
         {
@@ -185,7 +191,7 @@
         "user"
       ],
       "uncovered": [
-        "/action/{type}"
+        "/action/{id}"
       ],
       "coverage_ratio": 0.67
     },
