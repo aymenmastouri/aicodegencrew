@@ -1,0 +1,188 @@
+{
+  "_schema_version": "1.0",
+  "issue_id": "BNUVZ-12529",
+  "classification": {
+    "type": "bug",
+    "confidence": 0.33,
+    "signals": [
+      "keyword:exception",
+      "keyword:support",
+      "keyword:deprecat"
+    ]
+  },
+  "customer_summary": {
+    "summary": "The current UVZ system is built with Angular 18, which will no longer receive security updates after November 2025. To keep the application safe and supported, the frontend must be upgraded to Angular 19 together with the matching Pattern Library version 12.6.0 and all related libraries. This is a planned upgrade, not a defect.",
+    "impact_level": "high",
+    "is_bug": false,
+    "workaround": "Continue paying for the vendor’s “Never‑Ending Support” to receive security patches for Angular 18, or accept the security risk of staying on an unsupported version.",
+    "eta_category": "medium"
+  },
+  "developer_context": {
+    "big_picture": "The issue lives in the presentation container of the system (the Angular SPA) and touches the UI component library (Pattern Library). It interacts with the backend only through standard REST/GraphQL APIs, so the change is confined to the front‑end layer, the build pipeline (Angular CLI, Webpack) and the CI/CD jobs that compile and test the UI.",
+    "scope_boundary": "IN: Angular application source, Pattern Library, npm dependencies (ng‑bootstrap, ng‑select, ag‑grid, etc.), Angular CLI/Webpack build configuration, unit‑ and integration‑test suites (Karma, Cypress, Playwright). OUT: Java backend services, database schema, domain logic, unrelated micro‑services.",
+    "classification_assessment": "Evidence FOR bug: – The deterministic finder flagged the ticket as a bug (keyword: support, deprecate). – Security‑guard configuration mentions Angular version‑specific behavior. Evidence AGAINST bug: – The description explicitly requests an upgrade to a newer, supported version; no error logs, stack traces, or failing tests are cited. – The need for upgrade is driven by external support policy, not by a malfunction. – All referenced documents (Jira ticket, end‑of‑life page) describe a planned migration, not a defect. → Conclusion: the classification as a bug is weak; the issue is a maintenance task.",
+    "classification_confidence": 0.25,
+    "affected_components": [
+      "UVZ Front‑end (Presentation Layer)",
+      "Pattern Library UI Components (Presentation Layer)",
+      "Build & CI Pipeline (Infrastructure Layer)"
+    ],
+    "context_boundaries": [
+      {
+        "category": "technology_constraint",
+        "boundary": "Angular 18 reached end‑of‑life for security updates on 21‑Nov‑2025; continuing to run it without paid support would expose the system to unpatched vulnerabilities, making the upgrade mandatory.",
+        "severity": "blocking",
+        "source_facts": [
+          "Issue description: security support for Angular 18 ends 21.11.2025",
+          "End‑of‑life reference URLs"
+        ]
+      },
+      {
+        "category": "dependency_risk",
+        "boundary": "Key UI libraries (ng‑bootstrap, ng‑select, ag‑grid) must be upgraded to versions compatible with Angular 19; mismatched versions can cause compile‑time or runtime failures.",
+        "severity": "caution",
+        "source_facts": [
+          "Acceptance criterion 1 lists required dependency updates",
+          "Current dependency list shows all libraries at Angular 18 versions"
+        ]
+      },
+      {
+        "category": "testing_constraint",
+        "boundary": "The current test stack uses Karma, which is deprecated in Angular 19+. Test configuration will need to be migrated to supported runners (e.g., Jest or updated Cypress), otherwise CI will break.",
+        "severity": "caution",
+        "source_facts": [
+          "Analysis input: Karma 6.4.3 listed as current library",
+          "Angular 19 release notes deprecate Karma"
+        ]
+      },
+      {
+        "category": "security_boundary",
+        "boundary": "The Angular guard ActivateIfUserAuthorized is tied to framework internals; a major version bump may alter guard behavior, requiring verification that authorization still works as expected.",
+        "severity": "caution",
+        "source_facts": [
+          "Security configuration: ActivateIfUserAuthorized (angular_guard)"
+        ]
+      },
+      {
+        "category": "pattern_constraint",
+        "boundary": "The vertical action bar component is deprecated but still supported up to Pattern Library 13.2.0; the upgrade must retain it without removal to satisfy existing UI contracts.",
+        "severity": "info",
+        "source_facts": [
+          "Acceptance criterion 2 mentions continued use of vertical action bar"
+        ]
+      }
+    ],
+    "architecture_notes": "The upgrade is confined to the presentation container (Angular SPA) and its supporting libraries. It does not affect domain or data‑access layers, which remain on Java 17/Gradle 8.2.1. The change will ripple through the CI pipeline (build, lint, test) and may require updates to Docker images or node runtime versions. Ensure that any shared contracts (API contracts, authentication guards) remain compatible after the framework bump.",
+    "linked_tasks": []
+  },
+  "findings": {
+    "classification": {
+      "type": "bug",
+      "confidence": 0.33,
+      "signals": [
+        "keyword:exception",
+        "keyword:support",
+        "keyword:deprecat"
+      ]
+    },
+    "entry_points": [
+      {
+        "component": "get",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/action/logic/impl/ActionServiceImpl.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:get"
+        ]
+      },
+      {
+        "component": "name",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceDto.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:name"
+        ]
+      },
+      {
+        "component": "name",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryChamberServiceShortDto.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:name"
+        ]
+      },
+      {
+        "component": "name",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotaryMetaDataFieldDto.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:name"
+        ]
+      },
+      {
+        "component": "user",
+        "file_path": "backend/src/main/java/de/bnotk/vvz/module/adapters/metadataresolver/impl/xnp/model/NotarySuccessorViewRecordDto.java",
+        "score": 1.0,
+        "signals": [
+          "symbol:user"
+        ]
+      }
+    ],
+    "blast_radius": {
+      "affected": [
+        {
+          "component": "get",
+          "depth": 0
+        },
+        {
+          "component": "name",
+          "depth": 0
+        },
+        {
+          "component": "user",
+          "depth": 0
+        }
+      ],
+      "depth": 0,
+      "component_count": 3,
+      "containers_affected": []
+    },
+    "duplicates": [
+      {
+        "chunk_id": "f1352537:0000:b6f07307",
+        "path": "",
+        "score": 0.742,
+        "snippet": "VVZ - Testdaten EDU-Umgebung\n============================\n\nLieferumfang\n============\n  - Dieses Readme\n  - SQL-Skripte für\n        - Sequence Counter Checking (checkDbSequences.sql)\n        - Sequence..."
+      },
+      {
+        "chunk_id": "68e719f2:0002:dbe7a88f",
+        "path": "",
+        "score": 0.724,
+        "snippet": ".TO_BE_APPROVED && isAuthorisedForApproval && !isReadonly\">\n            <button\n              [disabled]=\"dirty\"\n              class=\"btn btn-primary\"\n              type=\"button\"\n              (click)..."
+      },
+      {
+        "chunk_id": "b84cae27:0001:7e671178",
+        "path": "",
+        "score": 0.723,
+        "snippet": "' | translate }}\n          <span class=\"xnotar-close\"></span>\n        </button>\n        <button (click)=\"assignAocs()\"\n        [disabled]=\"!isAllSelected && selectedAoc.length === 0 || assignClicked\"\n..."
+      }
+    ],
+    "test_coverage": {
+      "covered": [
+        "get",
+        "name",
+        "user"
+      ],
+      "uncovered": [],
+      "coverage_ratio": 1.0
+    },
+    "risk_assessment": {
+      "risk_level": "high",
+      "security_sensitive": true,
+      "flags": [
+        "security:angular_guard",
+        "error_handling:gaps_detected",
+        "quality:low_score(0)"
+      ]
+    }
+  }
+}
