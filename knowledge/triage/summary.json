@@ -1,0 +1,12 @@
+{
+  "_schema_version": "1.0",
+  "status": "success",
+  "phase": "triage",
+  "issue_id": "BNUVZ-12529",
+  "classification": "bug",
+  "risk_level": "high",
+  "entry_points_found": 5,
+  "blast_radius_count": 3,
+  "llm_synthesis": true,
+  "duration_seconds": 17.62
+}
