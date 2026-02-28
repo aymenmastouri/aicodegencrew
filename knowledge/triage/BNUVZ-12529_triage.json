@@ -1,22 +1,31 @@
 {
   "_schema_version": "1.0",
-  "status": "success",
-  "phase": "triage",
   "issue_id": "BNUVZ-12529",
-  "classification": "refactor",
-  "risk_level": "low",
-  "entry_points_found": 0,
-  "blast_radius_count": 0,
-  "llm_synthesis": true,
-  "llm_status": "success",
-  "duration_seconds": 49.76,
-  "triage_context": {
-    "classification_type": "refactor",
-    "classification_confidence": 0.99,
-    "llm_status": "success",
+  "classification": {
+    "type": "refactor",
+    "confidence": 0.99,
+    "signals": [
+      "keyword:upgrade"
+    ],
+    "scores": {
+      "bug": 0.0,
+      "feature": 0.0,
+      "refactor": 1.0,
+      "investigation": 0.0
+    }
+  },
+  "customer_summary": {
+    "summary": "The UVZ web‑application currently runs on Angular 18 and Pattern Library 11.3.1. Angular 18 will stop receiving free security updates on 21 Nov 2025, leaving the system exposed unless the customer pays for a Never‑Ending Support contract. Upgrading to Angular 19 together with Pattern Library 12.6.0 restores regular security patches, aligns the UI stack with the supported versions of its third‑party libraries, and prevents future compliance and maintenance problems. If the upgrade is not performed, the application will become vulnerable to known security issues and may eventually require costly paid support or a forced emergency migration.",
+    "impact_level": "high",
+    "is_bug": false,
+    "workaround": "Continue to pay for the Never‑Ending Support contract for Angular 18, but this incurs additional cost and does not solve the underlying obsolescence of the UI stack.",
+    "eta_category": "medium"
+  },
+  "developer_context": {
     "big_picture": "UVZ is a front‑end portal used by internal users (e.g., staff of the BNO‑TK organization) to access business functions. The UI is built as a single‑page Angular application that lives in the *frontend* container and belongs to the presentation layer. This task upgrades the UI framework from Angular 18 to Angular 19 and moves the shared component library (Pattern Library) from version 11.3.1 to 12.6.0. The upgrade is required now because Angular 18 loses free security support on 21 Nov 2025, creating a security risk and a potential compliance issue. Without the upgrade the portal would either have to pay for paid support or operate with unpatched vulnerabilities, which could lead to data breaches or forced downtime.",
     "scope_boundary": "IN: All Angular source code, Angular CLI build configuration, npm package.json, related TypeScript configuration, Pattern Library assets, UI‑related unit/e2e tests, CI/CD steps that compile the front‑end. OUT: Backend Java services, database schemas, non‑UI micro‑services, infrastructure provisioning unrelated to the front‑end, and any feature work unrelated to the UI stack.",
     "classification_assessment": "",
+    "classification_confidence": -1,
     "affected_components": [
       "AppModule (presentation)",
       "RootComponent (presentation)",
@@ -81,6 +90,64 @@
         "question": "How does the upgrade affect our CI/CD pipeline and test suites?",
         "answer": "The pipeline must use the new Angular CLI version (19.x) and the updated Node/TS versions. Unit tests (Karma/Jasmine) and e2e tests (Cypress, Playwright) should be re‑run after the upgrade to catch any breaking changes. No changes to the test code are expected unless they rely on now‑removed Angular APIs."
       }
+    ],
+    "linked_tasks": [
+      "UVZUSLNVV-5824 (this upgrade ticket)",
+      "BNUVZ-12529 (analysis comment \"how to get to angular 21\")"
     ]
+  },
+  "findings": {
+    "classification": {
+      "type": "refactor",
+      "confidence": 0.99,
+      "signals": [
+        "keyword:upgrade"
+      ],
+      "scores": {
+        "bug": 0.0,
+        "feature": 0.0,
+        "refactor": 1.0,
+        "investigation": 0.0
+      }
+    },
+    "entry_points": [],
+    "blast_radius": {
+      "affected": [],
+      "depth": 0,
+      "component_count": 0,
+      "containers_affected": []
+    },
+    "duplicates": [
+      {
+        "chunk_id": "f1352537:0000:b6f07307",
+        "path": "",
+        "score": 0.742,
+        "snippet": "VVZ - Testdaten EDU-Umgebung\n============================\n\nLieferumfang\n============\n  - Dieses Readme\n  - SQL-Skripte für\n        - Sequence Counter Checking (checkDbSequences.sql)\n        - Sequence..."
+      },
+      {
+        "chunk_id": "68e719f2:0002:dbe7a88f",
+        "path": "",
+        "score": 0.724,
+        "snippet": ".TO_BE_APPROVED && isAuthorisedForApproval && !isReadonly\">\n            <button\n              [disabled]=\"dirty\"\n              class=\"btn btn-primary\"\n              type=\"button\"\n              (click)..."
+      },
+      {
+        "chunk_id": "b84cae27:0001:7e671178",
+        "path": "",
+        "score": 0.723,
+        "snippet": "' | translate }}\n          <span class=\"xnotar-close\"></span>\n        </button>\n        <button (click)=\"assignAocs()\"\n        [disabled]=\"!isAllSelected && selectedAoc.length === 0 || assignClicked\"\n..."
+      }
+    ],
+    "test_coverage": {
+      "covered": [],
+      "uncovered": [],
+      "coverage_ratio": 0.0
+    },
+    "risk_assessment": {
+      "risk_level": "low",
+      "security_sensitive": false,
+      "flags": [
+        "quality:low_score(0)"
+      ]
+    }
   }
 }
