@@ -1,0 +1,55 @@
+{
+  "_schema_version": "1.0",
+  "classification": {
+    "type": "refactor",
+    "confidence": 0.99,
+    "signals": [
+      "keyword:upgrade"
+    ],
+    "scores": {
+      "bug": 0.0,
+      "feature": 0.0,
+      "refactor": 1.0,
+      "investigation": 0.0
+    }
+  },
+  "entry_points": [],
+  "blast_radius": {
+    "affected": [],
+    "depth": 0,
+    "component_count": 0,
+    "containers_affected": []
+  },
+  "duplicates": [
+    {
+      "chunk_id": "f1352537:0000:b6f07307",
+      "path": "",
+      "score": 0.742,
+      "snippet": "VVZ - Testdaten EDU-Umgebung\n============================\n\nLieferumfang\n============\n  - Dieses Readme\n  - SQL-Skripte für\n        - Sequence Counter Checking (checkDbSequences.sql)\n        - Sequence..."
+    },
+    {
+      "chunk_id": "68e719f2:0002:dbe7a88f",
+      "path": "",
+      "score": 0.724,
+      "snippet": ".TO_BE_APPROVED && isAuthorisedForApproval && !isReadonly\">\n            <button\n              [disabled]=\"dirty\"\n              class=\"btn btn-primary\"\n              type=\"button\"\n              (click)..."
+    },
+    {
+      "chunk_id": "b84cae27:0001:7e671178",
+      "path": "",
+      "score": 0.723,
+      "snippet": "' | translate }}\n          <span class=\"xnotar-close\"></span>\n        </button>\n        <button (click)=\"assignAocs()\"\n        [disabled]=\"!isAllSelected && selectedAoc.length === 0 || assignClicked\"\n..."
+    }
+  ],
+  "test_coverage": {
+    "covered": [],
+    "uncovered": [],
+    "coverage_ratio": 0.0
+  },
+  "risk_assessment": {
+    "risk_level": "low",
+    "security_sensitive": false,
+    "flags": [
+      "quality:low_score(0)"
+    ]
+  }
+}
