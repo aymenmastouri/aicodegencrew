@@ -2,75 +2,66 @@
 
 ## Big Picture
 
-UVZ is a front‑end web portal built with Angular that serves internal (or external) users of the BNOTK ecosystem. The UI lives in the presentation container and consumes the BNOTK Design System (Pattern Library). This task upgrades the UI framework from Angular 18 to Angular 19 and the design system from PL 11.3.1 to PL 12.6.0. The upgrade is required now because Angular 18 loses security support on 21 Nov 2025, leaving the portal exposed unless we move to a supported version. Not upgrading would either force us to buy expensive extended support or expose the system to unpatched vulnerabilities.
+UVZ is a large, browser‑based client application that provides public‑service functionality to external users (e.g., citizens, businesses). It lives in the **presentation container** of the overall system and is built with Angular, consuming the internal Design System (bnotk/ds‑ng) and a shared Pattern Library (PL). The task is to move the UI stack from Angular 18 / PL 11.3.1 to Angular 19 / PL 12.6.0 so that the product remains under active security support. This upgrade is required now because the Angular 18 LTS support window closes on 21‑Nov‑2025; without it the application would no longer receive security patches, exposing the service to vulnerabilities. The upgrade does **not** change any business logic – it only updates the technology stack and removes obsolete UI artefacts.
 
 ## Scope Boundary
 
-IN: • Upgrade Angular core, Angular CLI and related @angular/* packages to v19.
-    • Update Node.js and TypeScript to versions compatible with Angular 19.
-    • Upgrade Pattern Library (bnotk/ds‑ng) to 12.6.0.
-    • Update all listed third‑party UI libraries (ng‑bootstrap, ng‑select, ag‑grid‑angular, ag‑grid‑community) to versions that support Angular 19.
-    • The vertical action bar (deprecated) is expected to remain functional after the PL upgrade.
-    • Code, components, or styles exclusive to Angular 18 / PL 11.3.1 will be identified and excluded from the upgraded build.
-OUT: • Backend Java services, domain logic, data‑access layer, and infrastructure containers.
-    • Non‑UI related libraries (e.g., Playwright, edge‑js, log‑timestamp).
-    • Business logic tests that do not touch the UI layer (they remain untouched unless they fail after the upgrade).
+IN: All presentation‑layer code (Angular modules, components, services) that depend on Angular core, Angular CLI, RxJS, the Design System (bnotk/ds‑ng), ng‑bootstrap, ng‑select, ag‑grid, and the Pattern Library. Update Node.js, TypeScript, and the listed npm packages to versions compatible with Angular 19. Verify that the vertical action bar continues to work (it is deprecated but still supported until PL 13.2.0). Remove any leftover Angular 18 or PL 11 artefacts that are not required by the new versions.
+OUT: Backend Java services, domain and infrastructure layers, database schemas, non‑UI libraries, and any feature work unrelated to the UI stack (e.g., new business features, API changes). The upgrade does not include a migration to Angular 20/21.
 
 ## Affected Components
 
-- UVZ Frontend (presentation layer)
-- Pattern Library Integration Component (presentation layer)
+- Frontend Container – Presentation Layer (all Angular modules & components)
+- bnotk/ds‑ng (Design System library) – Presentation Layer
+- Vertical Action Bar component – Presentation Layer
 
 ## Context Boundaries
 
-**[CAUTION] Technology Constraint**
-Angular 19 requires TypeScript ≥5.0 and Node.js ≥16. The current stack lists TypeScript 4.9.5 and an unspecified Node version, so the upgrade must include a compatible TypeScript and Node release.
-_Sources: tech_versions.json: TypeScript 4.9.5, tech_versions.json: Angular 18-lts_
-
-**[BLOCKING] Dependency Risk**
-ng‑bootstrap has a custom patch referenced in the ticket; its current version may not be compatible with Angular 19. The patch must be re‑applied or a newer compatible version must be used.
-_Sources: Issue description: ng-bootstrap (Patch von UVZUSLNVV-5824 muss berücksichtigt werden)_
+**[BLOCKING] Technology Constraint**
+Angular 19 requires TypeScript ≥ 5.0 and Node.js ≥ 18. The current stack uses TypeScript 4.9.5 and an unspecified Node version that is only guaranteed for Angular 18. Both TypeScript and Node must be upgraded before the Angular upgrade can succeed.
+_Sources: tech_versions.json: TypeScript 4.9.5, tech_versions.json: Angular 18‑lts_
 
 **[CAUTION] Dependency Risk**
-Third‑party UI libraries (ng‑select, ag‑grid‑angular, ag‑grid‑community) often have major version bumps aligned with Angular major releases. Their current versions are tied to Angular 18 and may break under Angular 19.
-_Sources: Issue description: list of dependencies to update_
+All Angular packages (@angular/*) are pinned to v18‑lts. They must be moved to the matching v19 releases. Third‑party UI libraries (ng‑bootstrap, ng‑select, ag‑grid) have their own compatibility matrices; upgrading them without checking their Angular 19 support could cause runtime errors.
+_Sources: dependencies.json: @angular/core v18‑lts, dependencies.json: ag-grid-angular ^? (not listed but implied by acceptance criteria)_
 
-**[BLOCKING] Security Boundary**
-Security support for Angular 18 ends on 21 Nov 2025. Continuing to run the current version would leave the application without official security patches, violating compliance and increasing risk.
-_Sources: Issue description: support for security updates ended on 21.11.2025 for Angular 18_
+**[CAUTION] Pattern Library Constraint**
+Pattern Library 12.6.0 introduces breaking changes and deprecates the vertical action bar only up to PL 13.2.0. The upgrade must ensure the vertical action bar still functions and that no leftover PL 11 components remain.
+_Sources: Issue description: vertical action bar is deprecated but usable until PL 13.2.0_
 
-**[INFO] Pattern Library Dependency**
-Pattern Library 12.6.0 deprecates some components but still provides the vertical action bar until PL 13.2.0. The upgrade must ensure that the vertical action bar remains functional and that no removed components are still referenced.
-_Sources: Issue description: vertical action bar is still used (deprecated but allowed until PL 13.2.0)_
-
-**[CAUTION] Testing Constraint**
-Current test tooling (Karma 6.4.3, Webpack 5.80.0) may need configuration updates to work with Angular 19 and the newer CLI. Tests should be run after the upgrade to catch regressions.
+**[INFO] Testing Constraint**
+The project uses Karma 6.4.3 and Webpack 5.80.0 for unit tests and bundling. Angular 19 may require updates to the test runner configuration and Webpack loaders. Tests must be re‑run after the upgrade to catch breaking changes.
 _Sources: tech_versions.json: Karma 6.4.3, tech_versions.json: Webpack 5.80.0_
+
+**[CAUTION] Infrastructure Constraint**
+The build pipeline is based on Gradle 8.2.1 for the backend and Angular CLI for the frontend. Angular 19 may need a newer CLI version; the CI/CD scripts that invoke the CLI must be verified for compatibility.
+_Sources: tech_versions.json: Angular CLI 18‑lts, tech_versions.json: Gradle 8.2.1_
 
 
 ## Architecture Walkthrough
 
-The UVZ system is split into 5 containers. The Angular front‑end lives in the **UI container** (presentation layer, ~287 components). Within this container, the main entry point is the Angular application module, which imports the **Pattern Library module (bnotk/ds‑ng)** and various UI component libraries (ng‑bootstrap, ng‑select, ag‑grid). The vertical action bar component is a UI widget that sits in the shared layout module. Upgrading Angular and the Pattern Library touches the core Angular module, the shared layout module, and all feature modules that depend on the UI libraries. Downstream, the presentation layer communicates with the application layer via REST/GraphQL endpoints (not affected by this task). Upstream, the data‑access and domain layers remain unchanged.
+The UVZ system consists of 5 containers (e.g., Backend, Frontend, Integration, Batch, Infrastructure). The Angular application lives in the **Frontend container** and occupies the **presentation layer** (≈287 components). Within this container, UI components are built on top of the internal Design System library **bnotk/ds‑ng** and consume the shared **Pattern Library**. The vertical action bar is a UI component that sits at the top‑level layout and interacts with routing services. Upgrading Angular and the Pattern Library will ripple through all presentation components, the Design System, and any shared UI utilities (ng‑bootstrap, ng‑select, ag‑grid). Downstream, the presentation layer communicates with the application layer via HTTP services; those contracts remain unchanged, so only the UI stack is affected. The developer's work area is therefore: Frontend container → Presentation layer → all Angular modules/components → neighboring libraries (ds‑ng, PL, third‑party UI libs).
 
 ## Anticipated Questions
 
-**Q: Which Node.js and TypeScript versions do we need for Angular 19?**
-A: Angular 19 officially supports Node.js ≥16.14 and TypeScript ≥5.0. The project will need to bump both Node and TypeScript to meet these minima before the Angular upgrade can succeed.
+**Q: Which versions of Node.js and TypeScript are required for Angular 19?**
+A: Angular 19 officially supports Node.js ≥ 18 and TypeScript ≥ 5.0. The current project uses TypeScript 4.9.5, so both TypeScript and the Node runtime must be upgraded before the Angular upgrade can be applied.
 
-**Q: Do we have to modify the CI/CD pipeline (Webpack, Angular CLI) for the new versions?**
-A: Yes. The Angular CLI will be upgraded from 18‑lts to the 19 release, which may require adjustments to the Webpack configuration and build scripts. Existing build tooling (Webpack 5.80.0) is generally compatible, but the pipeline should be validated after the upgrade.
+**Q: Do the third‑party UI libraries (ng‑bootstrap, ng‑select, ag‑grid) have Angular 19 compatible releases?**
+A: Each of those libraries publishes a compatibility matrix. The upgrade task must verify that the versions listed in the acceptance criteria have a release that supports Angular 19; if not, the library version must be bumped to the latest compatible release.
 
-**Q: Will the vertical action bar still work after moving to Pattern Library 12.6.0?**
-A: The vertical action bar is deprecated but remains supported up to PL 13.2.0, so it should continue to work after the upgrade. However, the component must be tested to ensure no breaking changes were introduced in PL 12.6.0.
+**Q: Will the existing unit and e2e tests still run after the upgrade?**
+A: Tests are currently executed with Karma 6.4.3 and Playwright 1.44.1. Angular 19 may require updates to the Karma configuration and possibly to Webpack loaders. After the upgrade, the full test suite should be executed to catch any breaking changes.
 
-**Q: Are there known breaking changes in ag‑grid‑angular for Angular 19?**
-A: ag‑grid‑angular releases are usually aligned with Angular major versions. Verify the latest ag‑grid‑angular version that declares compatibility with Angular 19 and update accordingly. Check the release notes for any API changes that affect existing grid configurations.
+**Q: Is the vertical action bar still usable after moving to Pattern Library 12.6.0?**
+A: Yes, the vertical action bar is deprecated but remains supported up to PL 13.2.0. The upgrade must ensure that no PL 11 artefacts are left behind and that the component still renders correctly with PL 12.6.0.
 
-**Q: Do we need to update unit and e2e tests now?**
-A: All existing Karma/Jasmine unit tests and Playwright e2e tests should be executed after the upgrade. If they fail due to API changes in Angular or the UI libraries, the tests will need to be updated, but the primary scope is the framework upgrade itself.
+**Q: Do we need to touch any backend (Java) code for this upgrade?**
+A: No. The upgrade is confined to the frontend container (presentation layer). Backend services, domain logic, and data‑access components remain unchanged.
 
 
 ## Linked Tasks
 
-- UVZUSLNVV-5824 (this ticket)
-- BNUVZ-12529 (analysis comment "how to get to angular 21")
+- UVZUSLNVV-5824 (current upgrade ticket)
+- BNUVZ-12529 (analysis comment "how to get to angular 21" – may contain useful migration notes)
+- Potential follow‑up task to move to Angular 20/21 after this release
