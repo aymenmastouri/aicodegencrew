@@ -17,84 +17,86 @@
     }
   },
   "customer_summary": {
-    "summary": "The front‑end of the application is built with Angular 18 and uses the legacy SASS compiler that will be removed in Angular 19. To keep the application buildable after the scheduled Angular 19 upgrade, the SASS compilation must be migrated to the new Angular Builder (`@angular-devkit/build-angular:application`). If we do not perform this migration, the build will fail as soon as Angular 19 is upgraded, causing a production‑blocking outage. The migration also requires a round of regression testing to ensure that no visual or functional regressions are introduced by the new compiler.",
+    "summary": "The web application is being upgraded to Angular 19. Angular 19 removes the legacy SASS compiler that the current build uses (via Webpack) and requires the new Angular Builder (@angular-devkit/build-angular:application) which ships with the Dart‑Sass compiler. Migrating the SASS compilation step is necessary so the application can be built and released after the Angular upgrade. If the migration is not performed, the build will fail, preventing the release of new features and security patches, and could introduce regressions in the UI styling.",
     "impact_level": "medium",
     "is_bug": false,
-    "workaround": "",
+    "workaround": "Continue building with Angular 18 until the migration is completed; however the project cannot be upgraded to Angular 19 without fixing the SASS compiler configuration.",
     "eta_category": "short"
   },
   "developer_context": {
-    "big_picture": "The project is a large internal web application built with Angular (currently v18‑LTS) that serves business users of Bnotk. All UI components (≈287) live in the presentation layer and rely on SASS for styling. The company plans to upgrade the whole front‑end stack to Angular 19. Angular 19 deprecates the old SASS import mechanism, so the build will break unless the SASS compiler is switched to the new Angular Builder (`@angular-devkit/build-angular:application`). This task prepares the application for the upcoming major framework upgrade and prevents a complete front‑end build failure after the upgrade. If the migration is not done, the CI pipeline will stop, deployments will be blocked, and users will lose access to the UI.",
-    "scope_boundary": "IN: All front‑end build artefacts – `angular.json`, any custom webpack configuration, SASS files, style‑related npm scripts, and the CI/CD steps that invoke the Angular build. Unit and e2e test suites (Karma, Playwright) that compile styles. \nOUT: Backend Java services, database schemas, non‑UI domain logic, and any infrastructure that is not part of the front‑end build pipeline.",
+    "big_picture": "This repository contains the frontend of a Bnotk internal portal built with Angular. End‑users are employees who interact with the portal for daily business processes. The task is to migrate the SASS compilation from the legacy Webpack‑based compiler to the new Angular Builder that will be mandatory in Angular 19. The migration is part of a larger Angular 19 upgrade and is required now because Angular 19 will drop support for the old compiler, causing the build to break. Without the migration the team cannot ship the next version, delaying feature delivery and security updates.",
+    "scope_boundary": "IN: All Angular source files, SASS/SCSS style sheets, angular.json build configuration, any custom Webpack configuration that references the old SASS loader, CI build scripts that invoke the Angular build. OUT: Backend Java services, database schema, non‑Angular assets, unrelated npm packages, infrastructure outside the frontend container.",
     "classification_assessment": "",
     "classification_confidence": -1,
     "affected_components": [
-      "Angular Build Configuration (presentation layer)",
-      "SASS Style Sheets used by UI components (presentation layer)",
-      "CI/CD Front‑end Build Pipeline (infrastructure layer)"
+      "Frontend Angular Application (presentation layer)",
+      "Build Configuration (application layer)",
+      "SASS/SCSS style assets (presentation layer)"
     ],
     "context_boundaries": [
       {
         "category": "technology_constraint",
-        "boundary": "Angular 19 removes the legacy SASS compiler; the project must switch to the new builder (`@angular-devkit/build-angular:application`). This is a hard requirement for the upcoming framework upgrade.",
+        "boundary": "Angular 19 deprecates the legacy SASS compiler; the project must switch to @angular-devkit/build-angular:application which uses Dart‑Sass. This is a hard requirement for the upgrade to succeed.",
         "severity": "blocking",
         "source_facts": [
-          "issue_context: Migration des SASS Compiler",
-          "ADR: UVZ-09-ADR-003 Frontend Build Strategy SASS Import Deprecation"
+          "ADR: UVZ-09-ADR-003+-+Frontend+Build+Strategy+SASS+Import+Deprecation",
+          "issue description: \"migration to the new SASS compiler (Angular Builder) @angular-devkit/build-angular:application\""
         ]
       },
       {
         "category": "dependency_risk",
-        "boundary": "All `@angular/*` packages are currently pinned to v18‑LTS. Upgrading the SASS compiler implies upgrading the entire Angular package set to v19, which may introduce version mismatches with other libraries (e.g., RxJS, Angular CDK). Compatibility must be verified.",
+        "boundary": "All @angular/* packages are currently pinned to the v18‑lts line. Moving to Angular 19 will require upgrading these packages and ensuring they are compatible with the new builder and the version of the sass npm package.",
         "severity": "caution",
         "source_facts": [
           "tech_versions.json: Angular 18‑lts",
-          "dependencies.json: @angular/* v18‑lts"
+          "dependencies.json: @angular/core v18‑lts, @angular/common v18‑lts, etc."
         ]
       },
       {
         "category": "testing_constraint",
-        "boundary": "The new compiler changes the way styles are processed; unit tests (Karma) and e2e tests (Playwright) that rely on compiled CSS may start failing. Additional regression testing is required to catch visual or functional regressions.",
-        "severity": "info",
+        "boundary": "The migration may change the generated CSS output, potentially breaking visual regressions. Additional testing (unit, integration, and e2e) is required to verify that UI appearance and component behavior remain unchanged.",
+        "severity": "caution",
         "source_facts": [
-          "issue_context: \"additional testing may be necessary\"",
-          "tech_versions.json: Playwright 1.44.1, Karma 6.4.3"
+          "issue description: \"additional testing may be necessary to minimize the risk of potential regressions\""
         ]
       },
       {
-        "category": "workflow_constraint",
-        "boundary": "The CI pipeline currently invokes `ng build` with the legacy builder. The pipeline scripts must be updated to reference the new builder target, and any caching or artifact steps that assume the old output layout need review.",
-        "severity": "caution",
+        "category": "infrastructure_constraint",
+        "boundary": "The CI pipeline currently builds the frontend with Gradle 8.2.1 invoking npm scripts. The pipeline must be able to run the new Angular Builder, which may have different node version or environment requirements.",
+        "severity": "info",
         "source_facts": [
-          "issue_context: Migration to @angular-devkit/build-angular:application"
+          "tech_versions.json: Gradle 8.2.1",
+          "tech_versions.json: Node ecosystem (npm) used for Angular CLI"
         ]
       }
     ],
-    "architecture_notes": "The front‑end lives in its own container (the \"frontend\" container) and occupies the **presentation** layer of the overall system. The primary component involved is the Angular application module, which is wired to the build system via `angular.json`. This component interacts with:\n- **Style libraries** (shared SASS files) that are imported by UI components.\n- **CI/CD pipeline** (infrastructure layer) that runs `ng build` during each release.\n- **Test runners** (Karma for unit tests, Playwright for e2e) that compile the styles as part of the test build.\nThe migration will touch the build configuration (angular.json), any custom webpack config that currently handles SASS, and the CI scripts that invoke the build. All UI components that import SASS remain unchanged; only the compilation step changes. Think of the map as: **Frontend Container → Presentation Layer → Angular App (build config) → Neighbors: Style assets, CI pipeline, Test runners**.",
+    "architecture_notes": "The frontend lives in its own container (the \"frontend\" container) and occupies the presentation layer (≈287 components) plus the application layer for build configuration. The Angular app communicates with backend services via HTTP APIs (infrastructure layer). The SASS migration touches the build configuration (angular.json) and the style assets that are consumed by presentation components. Neighboring pieces are: 1) the CI/CD pipeline (Gradle) that triggers the Angular build, 2) unit test runner Karma and e2e runner Playwright that rely on the compiled CSS, and 3) the backend APIs that are unaffected but may surface UI regressions if styles break. Think of the map as: **Frontend Container → Application Layer (angular.json, builder config) → Presentation Layer (components + SCSS files) → Neighbors: CI pipeline, test suites, backend APIs**.",
     "anticipated_questions": [
       {
-        "question": "Do we need to modify existing SASS files (e.g., import statements) after switching to the new compiler?",
-        "answer": "In most cases the new Angular Builder supports the same import syntax, but the deprecation notice in the ADR mentions that certain legacy import patterns are no longer allowed. Review the SASS files for deprecated `@import` usage and replace with the modern `@use`/`@forward` syntax where needed."
+        "question": "Do I need to change any SASS import statements (e.g., the '~' syntax) after switching to the new compiler?",
+        "answer": "Yes. The ADR describes that the old '~' import syntax is deprecated. All imports should use the standard relative path or the new tilde‑less syntax supported by Dart‑Sass."
       },
       {
-        "question": "Will the Angular CLI version also need to be upgraded to 19, and does that affect other parts of the build?",
-        "answer": "Yes. The SASS compiler migration is part of the Angular 19 upgrade, so the Angular CLI must be upgraded to the 19.x series. This upgrade may bring other breaking changes (e.g., changes to the default builder, removal of Webpack configuration). Those changes should be evaluated alongside the SASS migration."
+        "question": "Will the existing Karma unit tests and Playwright e2e tests still run after the migration?",
+        "answer": "They should run, but because the compiled CSS may differ, you must run the full test suite to catch visual regressions. No test‑framework changes are required."
       },
       {
-        "question": "How does this change impact our CI/CD pipeline?",
-        "answer": "The pipeline currently calls `ng build` with the legacy builder target. After migration the target must be changed to `@angular-devkit/build-angular:application`. Any caching of build artefacts or assumptions about output directories may need adjustment."
+        "question": "Do we need to upgrade the @angular/* packages to version 19 at the same time?",
+        "answer": "The SASS migration is a prerequisite for the Angular 19 upgrade. Ideally, upgrade the Angular packages together with the builder change to avoid version mismatches."
       },
       {
-        "question": "What testing effort is expected?",
-        "answer": "Run the full suite of Karma unit tests and Playwright e2e tests after the migration. Pay special attention to visual regression tests or snapshot tests that compare rendered CSS. If failures appear, they are likely due to differences in how the new compiler processes SASS."
+        "question": "Is there a fallback if the new builder breaks the build?",
+        "answer": "You can temporarily revert the angular.json builder setting to the previous Webpack configuration, but the project will remain on Angular 18 until the migration is successful."
       },
       {
-        "question": "Are there any other Angular 19 breaking changes we should be aware of before starting?",
-        "answer": "Beyond the SASS compiler, Angular 19 introduces changes to the Ivy compiler, stricter type checking, and possible removal of deprecated APIs. While the ticket focuses on SASS, it is advisable to review the Angular 19 release notes for other breaking changes that may affect the application."
+        "question": "What specific CI changes might be needed?",
+        "answer": "Ensure the CI environment uses a Node version compatible with the new Angular CLI (usually the latest LTS) and that any custom scripts invoking the old Webpack builder are updated to use \"ng build\" with the new builder."
       }
     ],
     "linked_tasks": [
-      "UVZ-09-ADR-003 Frontend Build Strategy SASS Import Deprecation"
+      "UVZUSLNVV-5890 (this migration ticket)",
+      "UVZ-09-ADR-003 (ADR describing SASS import deprecation)",
+      "Potential Angular 19 upgrade epic (not listed here)"
     ]
   },
   "findings": {

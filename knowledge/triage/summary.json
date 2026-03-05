@@ -2,85 +2,84 @@
   "_schema_version": "1.0",
   "status": "success",
   "phase": "triage",
-  "issue_id": "BNUVZ-12529",
-  "classification": "upgrade",
+  "issue_id": "BNUVZ-12568",
+  "classification": "feature",
   "risk_level": "low",
   "entry_points_found": 0,
   "blast_radius_count": 0,
   "llm_synthesis": true,
   "llm_status": "success",
-  "duration_seconds": 32.52,
+  "duration_seconds": 29.08,
   "triage_context": {
-    "classification_type": "upgrade",
-    "classification_confidence": 0.99,
+    "classification_type": "feature",
+    "classification_confidence": 0.5,
     "llm_status": "success",
-    "big_picture": "UVZ is a client‑facing web portal built with Angular (presentation layer) that consumes backend services via REST/GraphQL. It is used by internal users and external partners to perform domain‑specific actions. The task is to move the UI stack from Angular 18 / Pattern Library 11.3.1 to Angular 19 / Pattern Library 12.6.0. This is required now because Angular 18 will no longer receive free security patches after 21‑Nov‑2025, exposing the portal to vulnerabilities and forcing the organisation to pay for a special support contract. If the upgrade is not performed, the portal will become a security liability and future feature work will be blocked by an outdated framework.",
-    "scope_boundary": "IN: • Upgrade Angular core, CLI, RxJS, and all Angular packages to v19. • Update Pattern Library to 12.6.0. • Upgrade Node.js and TypeScript to versions required by Angular 19. • Update the listed UI dependencies (ng-bootstrap with its custom patch, ng-select, ag‑grid, bnotk/ds‑ng). • Verify that the vertical action bar (deprecated but still supported) continues to work. • Code that is only needed for Angular 18 / PL 11.3.1 and not supported in the new versions will be excluded. OUT: • Backend services, database schema, domain‑logic components, infrastructure containers, and any non‑UI libraries that are not listed in the acceptance criteria.",
+    "big_picture": "This repository contains the frontend of a Bnotk internal portal built with Angular. End‑users are employees who interact with the portal for daily business processes. The task is to migrate the SASS compilation from the legacy Webpack‑based compiler to the new Angular Builder that will be mandatory in Angular 19. The migration is part of a larger Angular 19 upgrade and is required now because Angular 19 will drop support for the old compiler, causing the build to break. Without the migration the team cannot ship the next version, delaying feature delivery and security updates.",
+    "scope_boundary": "IN: All Angular source files, SASS/SCSS style sheets, angular.json build configuration, any custom Webpack configuration that references the old SASS loader, CI build scripts that invoke the Angular build. OUT: Backend Java services, database schema, non‑Angular assets, unrelated npm packages, infrastructure outside the frontend container.",
     "classification_assessment": "",
     "affected_components": [
-      "UVZ UI (presentation layer)",
-      "Pattern Library integration (presentation layer)",
-      "bnotk/ds-ng components (presentation layer)",
-      "ng-bootstrap wrapper components (presentation layer)",
-      "ag-grid Angular components (presentation layer)"
+      "Frontend Angular Application (presentation layer)",
+      "Build Configuration (application layer)",
+      "SASS/SCSS style assets (presentation layer)"
     ],
     "context_boundaries": [
       {
         "category": "technology_constraint",
-        "boundary": "Angular 19 requires TypeScript >=5.0 and Node.js >=18. The current stack uses TypeScript 4.9.5 (tech_versions.json) and an unspecified Node version, so both must be upgraded before the framework can be upgraded; otherwise the build will fail.",
+        "boundary": "Angular 19 deprecates the legacy SASS compiler; the project must switch to @angular-devkit/build-angular:application which uses Dart‑Sass. This is a hard requirement for the upgrade to succeed.",
         "severity": "blocking",
         "source_facts": [
-          "tech_versions.json: TypeScript 4.9.5",
-          "tech_versions.json: Angular 18‑lts"
+          "ADR: UVZ-09-ADR-003+-+Frontend+Build+Strategy+SASS+Import+Deprecation",
+          "issue description: \"migration to the new SASS compiler (Angular Builder) @angular-devkit/build-angular:application\""
         ]
       },
       {
         "category": "dependency_risk",
-        "boundary": "The project applies a custom patch to ng-bootstrap (mentioned in the issue description). That patch was created for Angular 18 and must be reviewed for compatibility with Angular 19; incompatibility could cause runtime errors in UI components.",
+        "boundary": "All @angular/* packages are currently pinned to the v18‑lts line. Moving to Angular 19 will require upgrading these packages and ensuring they are compatible with the new builder and the version of the sass npm package.",
         "severity": "caution",
         "source_facts": [
-          "Issue description: \"ng-bootstrap (Patch von UVZUSLNVV-5824 muss berücksichtigt werden)\""
-        ]
-      },
-      {
-        "category": "pattern_constraint",
-        "boundary": "The vertical action bar is deprecated but still supported until Pattern Library 13.2.0. After the upgrade to PL 12.6.0 it must be verified that the component still renders and that no breaking changes were introduced.",
-        "severity": "info",
-        "source_facts": [
-          "Acceptance Criteria: \"Vertical action bar is still being used (deprecated but still possible to use till PL 13.2.0)\""
+          "tech_versions.json: Angular 18‑lts",
+          "dependencies.json: @angular/core v18‑lts, @angular/common v18‑lts, etc."
         ]
       },
       {
         "category": "testing_constraint",
-        "boundary": "Current test tooling (Karma 6.4.3, Playwright 1.44.1) may have compatibility issues with Angular 19. Tests need to be run after the upgrade to confirm they still pass; if not, test‑framework versions may need to be bumped.",
+        "boundary": "The migration may change the generated CSS output, potentially breaking visual regressions. Additional testing (unit, integration, and e2e) is required to verify that UI appearance and component behavior remain unchanged.",
         "severity": "caution",
         "source_facts": [
-          "tech_versions.json: Karma 6.4.3",
-          "tech_versions.json: Playwright 1.44.1"
+          "issue description: \"additional testing may be necessary to minimize the risk of potential regressions\""
+        ]
+      },
+      {
+        "category": "infrastructure_constraint",
+        "boundary": "The CI pipeline currently builds the frontend with Gradle 8.2.1 invoking npm scripts. The pipeline must be able to run the new Angular Builder, which may have different node version or environment requirements.",
+        "severity": "info",
+        "source_facts": [
+          "tech_versions.json: Gradle 8.2.1",
+          "tech_versions.json: Node ecosystem (npm) used for Angular CLI"
         ]
       }
     ],
-    "architecture_notes": "WALKTHROUGH: UVZ is composed of 5 containers (e.g., UI‑container, API‑gateway, Auth‑service, Data‑service, Infra‑utils). The Angular code lives in the **UI‑container**, specifically in the **presentation layer** (≈287 components). The UI container imports the Pattern Library (PL) and the shared design‑system library **bnotk/ds-ng**. Neighboring components include:\n- **ng-bootstrap** wrappers used for modal/dialog UI.\n- **ng-select** components for dropdowns.\n- **ag-grid-angular** tables for data display.\n- The **vertical action bar** component, which is part of the Pattern Library.\nAll of these are wired together via Angular modules and services that communicate with the backend through the **application layer** (services) but the upgrade does not touch those services. The developer’s work will be confined to the UI‑container, updating the Angular framework, its CLI, and the UI‑specific dependencies, then cleaning up any leftover Angular‑18‑only code.",
+    "architecture_notes": "The frontend lives in its own container (the \"frontend\" container) and occupies the presentation layer (≈287 components) plus the application layer for build configuration. The Angular app communicates with backend services via HTTP APIs (infrastructure layer). The SASS migration touches the build configuration (angular.json) and the style assets that are consumed by presentation components. Neighboring pieces are: 1) the CI/CD pipeline (Gradle) that triggers the Angular build, 2) unit test runner Karma and e2e runner Playwright that rely on the compiled CSS, and 3) the backend APIs that are unaffected but may surface UI regressions if styles break. Think of the map as: **Frontend Container → Application Layer (angular.json, builder config) → Presentation Layer (components + SCSS files) → Neighbors: CI pipeline, test suites, backend APIs**.",
     "anticipated_questions": [
       {
-        "question": "Do we need to upgrade Node.js and TypeScript as part of this task?",
-        "answer": "Yes. Angular 19 requires Node.js >=18 and TypeScript >=5.0. The current stack uses TypeScript 4.9.5, so both Node and TypeScript must be upgraded before the Angular packages can be updated."
+        "question": "Do I need to change any SASS import statements (e.g., the '~' syntax) after switching to the new compiler?",
+        "answer": "Yes. The ADR describes that the old '~' import syntax is deprecated. All imports should use the standard relative path or the new tilde‑less syntax supported by Dart‑Sass."
       },
       {
-        "question": "Will the existing unit and e2e tests run after the upgrade?",
-        "answer": "They should run, but the current versions of Karma (6.4.3) and Playwright (1.44.1) may need minor version bumps to stay compatible with Angular 19. Tests must be executed after the upgrade to confirm they pass."
+        "question": "Will the existing Karma unit tests and Playwright e2e tests still run after the migration?",
+        "answer": "They should run, but because the compiled CSS may differ, you must run the full test suite to catch visual regressions. No test‑framework changes are required."
       },
       {
-        "question": "What impact does the custom ng-bootstrap patch have?",
-        "answer": "The patch was created for Angular 18. It must be reviewed and possibly adapted for Angular 19 because internal APIs of ng-bootstrap may have changed. If the patch is incompatible, UI components that rely on it could break."
+        "question": "Do we need to upgrade the @angular/* packages to version 19 at the same time?",
+        "answer": "The SASS migration is a prerequisite for the Angular 19 upgrade. Ideally, upgrade the Angular packages together with the builder change to avoid version mismatches."
       },
       {
-        "question": "Is the deprecated vertical action bar still usable after the upgrade?",
-        "answer": "Yes, according to the acceptance criteria it remains supported until Pattern Library 13.2.0. However, after moving to PL 12.6.0 it should be manually verified that no breaking changes affect its rendering or behavior."
+        "question": "Is there a fallback if the new builder breaks the build?",
+        "answer": "You can temporarily revert the angular.json builder setting to the previous Webpack configuration, but the project will remain on Angular 18 until the migration is successful."
       },
       {
-        "question": "Are there any breaking changes in Angular 19 that could affect our code?",
-        "answer": "Angular 19 introduces deprecations (e.g., removal of certain lifecycle hooks, stricter type checking) and may change default compiler options. A review of the Angular 19 release notes is required to identify any APIs used in UVZ that have been removed or altered."
+        "question": "What specific CI changes might be needed?",
+        "answer": "Ensure the CI environment uses a Node version compatible with the new Angular CLI (usually the latest LTS) and that any custom scripts invoking the old Webpack builder are updated to use \"ng build\" with the new builder."
       }
     ]
   }
