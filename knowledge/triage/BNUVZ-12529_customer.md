@@ -2,12 +2,12 @@
 
 **Impact Level:** MEDIUM
 **Type:** Enhancement/Task
-**Estimated Timeline:** medium
+**Estimated Timeline:** short
 
 ## Summary
 
-The UVZ web application currently runs on Angular 18 and Pattern Library 11.3.1. Security updates for Angular 18 stop on 21‑Nov‑2025, and the only way to keep receiving patches is to pay for a Never‑Ending‑Support contract. To stay secure, compliant and avoid additional licensing costs, the application must be upgraded now to Angular 19 together with Pattern Library 12.6.0, which are the next supported versions. If the upgrade is not performed, the system will become vulnerable to unpatched security issues after the support deadline and may eventually be forced to run on an unsupported stack.
+The UVZ web application currently runs on Angular 18 and Pattern Library 11.3.1. Security support for Angular 18 ends on 21 Nov 2025, after which the product will no longer receive free security patches. To keep the application safe and compliant, the front‑end must be upgraded to Angular 19 together with Pattern Library 12.6.0, and all related UI libraries must be aligned to the new versions. If the upgrade is not performed, the system will become vulnerable, may require costly "Never‑Ending Support" contracts, and could eventually break when newer browsers or third‑party components drop support for the old stack.
 
 ## Workaround
 
-Continue paying for Never‑Ending‑Support on Angular 18 (costly) or accept the security risk of running an unsupported framework.
+Continue paying for Never‑Ending Support from the vendor, but this incurs additional cost and does not solve the underlying obsolescence.
