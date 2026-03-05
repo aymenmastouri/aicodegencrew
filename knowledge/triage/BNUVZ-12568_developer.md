@@ -2,60 +2,67 @@
 
 ## Big Picture
 
-The project is a large, multi‑container web application (5 containers, >1000 components) whose user‑facing part is an Angular SPA living in the presentation container. End users are internal employees and external customers who interact with the UI for core business processes. This ticket addresses the need to modernise the frontend build pipeline: the current SASS compiler is deprecated and will be removed in Angular 19, so the Angular build must switch to the new @angular-devkit/build-angular:application builder. The migration is required now because the roadmap includes an Angular 19 upgrade; postponing it would make the next release impossible without a rushed, high‑risk fix.
+This repository powers the web front‑end of the BNOTK product suite. End‑users (internal staff and external customers) interact with the UI built with Angular. The UI is compiled, bundled and served by a CI/CD pipeline that currently uses Webpack and the legacy SASS compiler. The task is to switch the SASS compilation to the new Angular‑Builder that comes with Angular 19. This migration is required now because Angular 19 has deprecated the old SASS import strategy (see ADR UVZ‑09‑ADR‑003). Without the migration the build will break, future Angular upgrades will be impossible, and UI styling could regress.
 
 ## Scope Boundary
 
-IN: Update the Angular build configuration (angular.json) to use @angular-devkit/build-angular:application, adjust any SASS import syntax that the new compiler deprecates, run the full unit (Karma) and end‑to‑end (Playwright) test suites, and verify CI/CD pipeline steps that invoke the Angular build. OUT: Any changes to backend services, domain logic, data‑access components, or unrelated UI components that do not touch the build configuration or SASS files.
+IN: Update `angular.json` (or workspace config) to use `@angular-devkit/build-angular:application` for the SASS compiler, adjust SASS files according to the ADR (replace deprecated `@import` with `@use`/`@forward` where needed), run the full unit (Karma) and e2e (Playwright) test suites, and verify CI build success. OUT: Any changes to backend services, domain logic, data‑access components, or unrelated feature work. Refactoring of component code that does not touch styling is out of scope.
 
 ## Affected Components
 
-- Angular Build Configuration (presentation layer)
-- SASS Compilation Pipeline (presentation layer)
-- CI Build Job (infrastructure/container handling builds)
+- Frontend Build Pipeline (presentation layer)
+- Angular Application Configuration (presentation layer)
 
 ## Context Boundaries
 
 **[BLOCKING] Technology Constraint**
-Angular 19 will drop the legacy SASS compiler; the project must adopt the new builder to stay compatible with the upcoming framework version.
-_Sources: tech_versions.json: Angular 18-lts, ADR: UVZ-09-ADR-003 Frontend Build Strategy SASS Import Deprecation_
+Angular 19 drops support for the legacy SASS compiler; the new Angular‑Builder must be used or the build will fail.
+_Sources: tech_versions.json: Angular 18‑lts, tech_versions.json: Angular CLI 18‑lts_
 
 **[CAUTION] Dependency Risk**
-The new @angular-devkit/build-angular:application brings its own SASS version. All @angular/* packages must be upgraded in lockstep to avoid version mismatches.
-_Sources: dependencies.json: @angular/core v18-lts, dependencies.json: @angular/compiler v18-lts_
+The ADR deprecates `@import` syntax. Existing SASS files that still use `@import` will cause compilation errors after migration.
+_Sources: ADR link: UVZ‑09‑ADR‑003 Frontend Build Strategy SASS Import Deprecation_
 
-**[CAUTION] Testing Constraint**
-After changing the builder, existing Karma unit tests and Playwright e2e tests must be executed to catch regressions caused by SASS compilation differences.
-_Sources: tech_versions.json: Karma 6.4.3, tech_versions.json: Playwright 1.44.1_
+**[INFO] Testing Constraint**
+After changing the build system, all unit tests (Karma) and e2e tests (Playwright) must be re‑executed to catch regressions in styling or build output.
+_Sources: tech_versions.json: Playwright 1.44.1, tech_versions.json: Karma 6.4.3_
 
-**[INFO] Workflow Constraint**
-CI pipelines that invoke "ng build" will need to reference the new builder target; scripts or Docker images that pin the old builder may fail.
+**[CAUTION] Workflow Constraint**
+CI pipelines that invoke `ng build` with the old builder need to be updated to the new target; otherwise the pipeline will error out.
 _Sources: tech_versions.json: Gradle 8.2.1 (used for CI orchestration)_
+
+**[INFO] Infrastructure Constraint**
+The build server runs Java 17 and Gradle 8.2.1, which are compatible with Angular 19, but the Node version used by the pipeline must support the newer Sass compiler (Dart Sass).
+_Sources: tech_versions.json: Java 17, tech_versions.json: Gradle 8.2.1_
 
 
 ## Architecture Walkthrough
 
-WALKTHROUGH: The change lives entirely in the **presentation container** (the Angular SPA). Within that container, it touches the **presentation layer** (build configuration, SASS assets). The primary component is the **Angular Build Configuration** (angular.json) which is consumed by the **CI Build Job** (infrastructure container) during the pipeline. Downstream, the **Karma unit test runner** and **Playwright e2e runner** consume the compiled assets, so they are neighboring components that must be re‑run after migration. No other containers (e.g., domain, data‑access, infrastructure services) are impacted.
+WALKTHROUGH: The front‑end lives in the **frontend container** (one of the 5 top‑level containers). Within that container it belongs to the **presentation layer** (287 components). The build configuration (`angular.json`, `package.json`) is a cross‑cutting infrastructure component that sits just above the presentation components. Neighbouring pieces are:
+- The **UI component library** (also in the presentation layer) that provides reusable Angular components and SASS styles.
+- The **CI/CD pipeline** (infrastructure) that invokes `ng build` and runs Karma/Playwright tests.
+- The **Webpack builder** (currently) which will be replaced by the **Angular‑Builder**.
+Developers should start at the `angular.json` file, switch the builder for the application target to `@angular-devkit/build-angular:application`, then walk through the SASS source tree to ensure all imports comply with the new `@use`/`@forward` rules defined in the ADR. After the change, the build output flows to the same distribution folder and is consumed by the same deployment scripts, so downstream components remain unchanged.
 
 ## Anticipated Questions
 
-**Q: Do we need to upgrade the whole Angular framework to version 19 now, or only the SASS builder?**
-A: Only the builder needs to be switched to @angular-devkit/build-angular:application for the migration. The full Angular 19 upgrade can be performed later, but the builder change must happen now to avoid future incompatibility.
+**Q: Do I need to update any SASS files manually?**
+A: Yes. The ADR specifies that `@import` statements are deprecated. Any SASS file still using `@import` must be rewritten to use `@use` or `@forward`. The migration may be incremental, but the build will fail if deprecated imports remain.
 
-**Q: Will any existing .scss files need to be rewritten?**
-A: The new compiler deprecates certain import syntaxes (e.g., tilde‑based imports). Review the ADR for the exact deprecations; most files will work unchanged, but any usage of the old import style must be updated.
+**Q: Will this affect third‑party component libraries that ship their own SASS?**
+A: Potentially. If a library still uses `@import`, the new builder will raise an error. Verify the library’s version; most Angular Material packages have already migrated. If a library is outdated, either upgrade it or apply a temporary patch.
 
-**Q: How will this affect our CI/CD pipeline?**
-A: The pipeline step that runs "ng build" must reference the new builder target. Verify that the Docker image or Node version used in CI supports the newer @angular-devkit version.
+**Q: Do I need to change the Node or TypeScript version?**
+A: Angular 19 requires at least TypeScript 5.0, but the current project is on TypeScript 4.9.5. The migration task should include checking the Angular‑CLI compatibility matrix; if the CLI version for Angular 19 is not yet in the repo, a TypeScript upgrade will be required as part of the broader Angular upgrade, not just the SASS migration.
 
-**Q: Are there any known breaking changes that could cause test failures?**
-A: The SASS compiler may produce slightly different CSS output, which can affect visual regression tests. Run the full Karma and Playwright suites after migration to catch any discrepancies.
+**Q: Will the CI pipeline need changes?**
+A: The pipeline currently calls `ng build` with the legacy builder. After migration, the same command works because the target is switched, but any scripts that reference the old builder name or custom Webpack configs must be reviewed.
 
-**Q: Is there a fallback if the migration introduces issues?**
-A: You can temporarily revert the angular.json change and continue using the legacy builder on Angular 18, but this will postpone the required upgrade and must be addressed before the Angular 19 release.
+**Q: How do we know the migration didn’t break the UI?**
+A: Run the full suite of Karma unit tests and Playwright e2e tests after the change. Pay special attention to visual regression tests (if any) and components that rely on SASS variables or mixins.
 
 
 ## Linked Tasks
 
-- UVZUSLNVV-5890 (Angular 19 upgrade planning)
-- UVZ-09-ADR-003 (Frontend Build Strategy SASS Import Deprecation)
+- UVZUSLNVV-5890 (Angular 19 SASS compiler migration)
+- UVZ‑09‑ADR‑003 (Frontend Build Strategy SASS Import Deprecation)
