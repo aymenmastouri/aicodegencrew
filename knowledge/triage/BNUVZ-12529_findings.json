@@ -1,7 +1,7 @@
 {
   "_schema_version": "1.0",
   "classification": {
-    "type": "refactor",
+    "type": "upgrade",
     "confidence": 0.99,
     "signals": [
       "keyword:upgrade"
@@ -9,7 +9,8 @@
     "scores": {
       "bug": 0.0,
       "feature": 0.0,
-      "refactor": 1.0,
+      "upgrade": 1.0,
+      "refactor": 0.0,
       "investigation": 0.0
     }
   },
