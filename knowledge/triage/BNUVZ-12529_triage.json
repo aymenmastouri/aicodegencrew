@@ -1,22 +1,31 @@
 {
   "_schema_version": "1.0",
-  "status": "success",
-  "phase": "triage",
   "issue_id": "BNUVZ-12529",
-  "classification": "refactor",
-  "risk_level": "low",
-  "entry_points_found": 0,
-  "blast_radius_count": 0,
-  "llm_synthesis": true,
-  "llm_status": "success",
-  "duration_seconds": 25.92,
-  "triage_context": {
-    "classification_type": "refactor",
-    "classification_confidence": 0.99,
-    "llm_status": "success",
+  "classification": {
+    "type": "refactor",
+    "confidence": 0.99,
+    "signals": [
+      "keyword:upgrade"
+    ],
+    "scores": {
+      "bug": 0.0,
+      "feature": 0.0,
+      "refactor": 1.0,
+      "investigation": 0.0
+    }
+  },
+  "customer_summary": {
+    "summary": "The UVZ web application currently runs on Angular 18 and Pattern Library 11.3.1. Security updates for Angular 18 stop on 21 Nov 2025; after that the only way to receive patches is by paying for a Never‑Ending‑Support contract. To keep the system secure and avoid additional licensing costs, the frontend must be upgraded to Angular 19 and Pattern Library 12.6.0 now. If the upgrade is not performed, the application will become vulnerable to known security issues and may eventually be forced to run on an unsupported stack.",
+    "impact_level": "medium",
+    "is_bug": false,
+    "workaround": "Continue paying for Never‑Ending‑Support on Angular 18, but this incurs extra cost and does not eliminate the underlying security risk.",
+    "eta_category": "medium"
+  },
+  "developer_context": {
     "big_picture": "UVZ is a client‑facing (or internal) web portal built with Angular. It lives in the presentation container of a larger system that also includes Java‑based backend services. Users interact with the UI to perform business processes that are serviced by the backend APIs. The task is to move the UI stack from Angular 18 (LTS) to Angular 19 and update the shared Pattern Library to version 12.6.0. This is required now because Angular 18 will no longer receive free security patches after 21 Nov 2025, exposing the portal to vulnerabilities and forcing the business to pay for a special support contract. Not upgrading would mean operating an insecure, unsupported front‑end, which could lead to compliance breaches and increased maintenance cost.",
     "scope_boundary": "IN: • Upgrade Angular core, Angular CLI, RxJS, and all Angular‑related packages to the 19.x line. • Update the Pattern Library to 12.6.0. • Bump Node.js, TypeScript, and the listed third‑party UI libraries (ng‑bootstrap, ng‑select, ag‑grid, bnotk/ds‑ng). • Verify that the vertical action bar (still deprecated) continues to work under PL 12.6.0. • Remove code that is only required for Angular 18/PL 11.3.1 unless it is still needed by the new versions. OUT: • Backend Java services, Gradle build scripts, non‑UI infrastructure, and unrelated UI modules that are not part of the UVZ front‑end. • Test suite refactoring (only run after the upgrade, not part of the core scope). • Any UI redesign beyond keeping existing functionality.",
     "classification_assessment": "",
+    "classification_confidence": -1,
     "affected_components": [
       "UVZ Frontend (presentation layer)",
       "Pattern Library integration (presentation layer)",
@@ -81,6 +90,64 @@
         "question": "Do we need to adjust the test configuration (Karma, Jasmine) after the upgrade?",
         "answer": "Karma itself remains compatible, but the Angular testing utilities (e.g., `@angular/core/testing`) will be upgraded to the 19.x line. Update `tsconfig.spec.json` and any test harness code to match the new TypeScript version and Angular testing APIs."
       }
+    ],
+    "linked_tasks": [
+      "UVZUSLNVV-5824 (current ticket)",
+      "BNUVZ-12529 (analysis comment \"how to get to angular 21\")"
     ]
+  },
+  "findings": {
+    "classification": {
+      "type": "refactor",
+      "confidence": 0.99,
+      "signals": [
+        "keyword:upgrade"
+      ],
+      "scores": {
+        "bug": 0.0,
+        "feature": 0.0,
+        "refactor": 1.0,
+        "investigation": 0.0
+      }
+    },
+    "entry_points": [],
+    "blast_radius": {
+      "affected": [],
+      "depth": 0,
+      "component_count": 0,
+      "containers_affected": []
+    },
+    "duplicates": [
+      {
+        "chunk_id": "e7419635:0003:e23b7e00",
+        "path": "",
+        "score": 0.756,
+        "snippet": "Endpoint (`platformEndpoint`)\n** Settings Endpoint (`settingsEndpoint`)\n** Signature Endpoint (`signatureEndpoint`)\n\n==== Sonstiges\n-\n\n=== Batch-/Cron-/ und andere wiederkehrende Jobs\nKeine.\n\n=== Doku..."
+      },
+      {
+        "chunk_id": "ca76300b:0010:53467812",
+        "path": "",
+        "score": 0.749,
+        "snippet": "                a| <TO_BE_DEFINED>                                    a| URL                      a| Basis-URL des Notarverzeichnis, beispielsweise `https://nvz-uadev.bnotk.de/nvz`\n| security.cors.ena..."
+      },
+      {
+        "chunk_id": "bb287fe7:0000:f5daeccc",
+        "path": "",
+        "score": 0.747,
+        "snippet": "= Version Information\n\n|===\n\n|Version:|{build-version}.{build-number}\n\n|Build Number:|{build-number}\n\n|Publish URL:|{publish-url}/{build-version}[{publish-url}/{build-version}^, role=\"ext-link\"]\n\n|Bui..."
+      }
+    ],
+    "test_coverage": {
+      "covered": [],
+      "uncovered": [],
+      "coverage_ratio": 0.0
+    },
+    "risk_assessment": {
+      "risk_level": "low",
+      "security_sensitive": false,
+      "flags": [
+        "quality:low_score(0)"
+      ]
+    }
   }
 }
