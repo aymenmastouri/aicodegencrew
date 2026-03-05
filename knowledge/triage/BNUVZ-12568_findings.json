@@ -2,13 +2,15 @@
   "_schema_version": "1.0",
   "classification": {
     "type": "feature",
-    "confidence": 0.99,
+    "confidence": 0.5,
     "signals": [
-      "keyword:new"
+      "keyword:new",
+      "keyword:migration"
     ],
     "scores": {
       "bug": 0.0,
       "feature": 1.0,
+      "upgrade": 1.0,
       "refactor": 0.0,
       "investigation": 0.0
     }
