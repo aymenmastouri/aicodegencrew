@@ -2,93 +2,91 @@
   "_schema_version": "1.0",
   "status": "success",
   "phase": "triage",
-  "issue_id": "BNUVZ-12529",
-  "classification": "refactor",
+  "issue_id": "BNUVZ-12568",
+  "classification": "feature",
   "risk_level": "low",
   "entry_points_found": 0,
   "blast_radius_count": 0,
   "llm_synthesis": true,
   "llm_status": "success",
-  "duration_seconds": 33.42,
+  "duration_seconds": 24.66,
   "triage_context": {
-    "classification_type": "refactor",
+    "classification_type": "feature",
     "classification_confidence": 0.99,
     "llm_status": "success",
-    "big_picture": "UVZ is a client‑facing web portal built with Angular. It is used by internal users and external partners to access services provided by the backend (Java 17, Gradle). The portal’s UI lives in the presentation layer of the overall system architecture and consumes REST APIs from the application layer. This task upgrades the front‑end framework from Angular 18 to Angular 19 and updates the shared Pattern Library from 11.3.1 to 12.6.0. The upgrade is required now because Angular 18 loses security support on 21 Nov 2025, and the client wants to stay on a supported stack without paying for a special support contract. If the upgrade is postponed, the portal will become a security liability and may need an emergency migration later.",
-    "scope_boundary": "IN: • Upgrade Angular core, Angular CLI, RxJS, and all Angular packages to the 19 release. • Update Node.js and TypeScript to the versions required by Angular 19. • Upgrade Pattern Library to 12.6.0. • Update all UI‑related third‑party libraries (ng‑bootstrap, ng‑select, ag‑grid‑angular, ag‑grid‑community) to versions compatible with Angular 19, including the custom ng‑bootstrap patch referenced in this ticket. • Verify that the vertical action bar (deprecated but still supported until PL 13.2.0) continues to work. • Remove any code, components, or styles that are only needed for Angular 18/PL 11.3.1 and are not required by the new versions. • Run the full UI test suite (Karma, Playwright) and adjust configurations as needed.\nOUT: • Backend Java services, database schema, and infrastructure (Docker, CI pipelines unrelated to the front‑end build). • Non‑UI libraries that are not part of the Angular or Pattern Library stack. • Feature work unrelated to the upgrade (new UI screens, business logic changes).",
+    "big_picture": "This repository powers the web front‑end of the BNOTK product suite. End‑users (internal staff and external customers) interact with the UI built with Angular. The UI is compiled, bundled and served by a CI/CD pipeline that currently uses Webpack and the legacy SASS compiler. The task is to switch the SASS compilation to the new Angular‑Builder that comes with Angular 19. This migration is required now because Angular 19 has deprecated the old SASS import strategy (see ADR UVZ‑09‑ADR‑003). Without the migration the build will break, future Angular upgrades will be impossible, and UI styling could regress.",
+    "scope_boundary": "IN: Update `angular.json` (or workspace config) to use `@angular-devkit/build-angular:application` for the SASS compiler, adjust SASS files according to the ADR (replace deprecated `@import` with `@use`/`@forward` where needed), run the full unit (Karma) and e2e (Playwright) test suites, and verify CI build success. OUT: Any changes to backend services, domain logic, data‑access components, or unrelated feature work. Refactoring of component code that does not touch styling is out of scope.",
     "classification_assessment": "",
     "affected_components": [
-      "Angular UI components (presentation layer)",
-      "Pattern Library integration module (presentation layer)",
-      "Vertical Action Bar component (presentation layer)",
-      "ng-bootstrap wrapper components (presentation layer)",
-      "ag‑grid wrappers (presentation layer)"
+      "Frontend Build Pipeline (presentation layer)",
+      "Angular Application Configuration (presentation layer)"
     ],
     "context_boundaries": [
       {
         "category": "technology_constraint",
-        "boundary": "Angular 18 LTS loses security support on 21 Nov 2025, making the current stack non‑compliant. The upgrade to Angular 19 is therefore mandatory to retain regular security patches.",
+        "boundary": "Angular 19 drops support for the legacy SASS compiler; the new Angular‑Builder must be used or the build will fail.",
         "severity": "blocking",
         "source_facts": [
-          "tech_versions.json: Angular 18-lts"
+          "tech_versions.json: Angular 18‑lts",
+          "tech_versions.json: Angular CLI 18‑lts"
         ]
       },
       {
         "category": "dependency_risk",
-        "boundary": "Several UI libraries (ng‑bootstrap, ng‑select, ag‑grid) must be upgraded to versions that are compatible with Angular 19. The ng‑bootstrap library also requires a custom patch referenced in this ticket; missing the patch will cause runtime errors.",
+        "boundary": "The ADR deprecates `@import` syntax. Existing SASS files that still use `@import` will cause compilation errors after migration.",
         "severity": "caution",
         "source_facts": [
-          "Issue description: ng‑bootstrap (Patch von UVZUSLNVV-5824 muss berücksichtigt werden)"
-        ]
-      },
-      {
-        "category": "pattern_library_version",
-        "boundary": "Pattern Library 11.3.1 is deprecated; moving to 12.6.0 introduces new component APIs and removes old ones. The vertical action bar is deprecated but remains functional until PL 13.2.0, so it can stay for now but should be monitored.",
-        "severity": "info",
-        "source_facts": [
-          "Issue acceptance criteria: Upgrade to Pattern Library 12.6.0; vertical action bar still usable until PL 13.2.0"
+          "ADR link: UVZ‑09‑ADR‑003 Frontend Build Strategy SASS Import Deprecation"
         ]
       },
       {
         "category": "testing_constraint",
-        "boundary": "The current test stack (Karma 6.4.3, Playwright 1.44.1) may have compatibility issues with Angular 19 and the updated libraries. Test configuration files and possibly test code will need verification and minor adjustments.",
-        "severity": "caution",
+        "boundary": "After changing the build system, all unit tests (Karma) and e2e tests (Playwright) must be re‑executed to catch regressions in styling or build output.",
+        "severity": "info",
         "source_facts": [
-          "tech_versions.json: Karma 6.4.3",
-          "tech_versions.json: Playwright 1.44.1"
+          "tech_versions.json: Playwright 1.44.1",
+          "tech_versions.json: Karma 6.4.3"
         ]
       },
       {
-        "category": "technology_constraint",
-        "boundary": "Angular 19 requires Node.js ≥ 18 and TypeScript ≥ 5.0. The project currently uses Node.js/TS versions aligned with Angular 18 (TS 4.9.5). These must be upgraded before the Angular upgrade can succeed.",
-        "severity": "blocking",
+        "category": "workflow_constraint",
+        "boundary": "CI pipelines that invoke `ng build` with the old builder need to be updated to the new target; otherwise the pipeline will error out.",
+        "severity": "caution",
         "source_facts": [
-          "Analysis Input: Technology Stack – TypeScript 4.9.5",
-          "Issue acceptance criteria: node.js, typescript"
+          "tech_versions.json: Gradle 8.2.1 (used for CI orchestration)"
+        ]
+      },
+      {
+        "category": "infrastructure_constraint",
+        "boundary": "The build server runs Java 17 and Gradle 8.2.1, which are compatible with Angular 19, but the Node version used by the pipeline must support the newer Sass compiler (Dart Sass).",
+        "severity": "info",
+        "source_facts": [
+          "tech_versions.json: Java 17",
+          "tech_versions.json: Gradle 8.2.1"
         ]
       }
     ],
-    "architecture_notes": "The UVZ front‑end lives in the **frontend container** (one of the five system containers). Within that container it belongs to the **presentation layer** (≈287 components). The Angular application is the entry point (main.ts) and loads UI components that are built on top of the **Pattern Library** (shared UI component library). Key neighbours: • Application‑layer services that expose REST endpoints (HTTP client calls). • Infrastructure‑layer configuration (webpack, Angular CLI). • Testing infrastructure (Karma, Playwright) that runs in the CI pipeline. The upgrade will touch the Angular core packages, the Pattern Library module, and all UI components that depend on them, but it does not cross the container boundary into the backend Java services.",
+    "architecture_notes": "WALKTHROUGH: The front‑end lives in the **frontend container** (one of the 5 top‑level containers). Within that container it belongs to the **presentation layer** (287 components). The build configuration (`angular.json`, `package.json`) is a cross‑cutting infrastructure component that sits just above the presentation components. Neighbouring pieces are:\n- The **UI component library** (also in the presentation layer) that provides reusable Angular components and SASS styles.\n- The **CI/CD pipeline** (infrastructure) that invokes `ng build` and runs Karma/Playwright tests.\n- The **Webpack builder** (currently) which will be replaced by the **Angular‑Builder**.\nDevelopers should start at the `angular.json` file, switch the builder for the application target to `@angular-devkit/build-angular:application`, then walk through the SASS source tree to ensure all imports comply with the new `@use`/`@forward` rules defined in the ADR. After the change, the build output flows to the same distribution folder and is consumed by the same deployment scripts, so downstream components remain unchanged.",
     "anticipated_questions": [
       {
-        "question": "Which Node.js and TypeScript versions are required for Angular 19?",
-        "answer": "Angular 19 requires Node.js ≥ 18.x and TypeScript ≥ 5.0. The current project uses TypeScript 4.9.5, so both Node.js and TypeScript will need to be upgraded before the Angular packages can be updated."
+        "question": "Do I need to update any SASS files manually?",
+        "answer": "Yes. The ADR specifies that `@import` statements are deprecated. Any SASS file still using `@import` must be rewritten to use `@use` or `@forward`. The migration may be incremental, but the build will fail if deprecated imports remain."
       },
       {
-        "question": "Are there breaking changes in Angular 19 that could affect our existing code?",
-        "answer": "Angular 19 deprecates several APIs that were still available in 18, such as the vertical action bar component (still usable until PL 13.2.0). Most components will continue to work, but any usage of removed APIs must be refactored. The upgrade checklist in the Angular migration guide should be consulted."
+        "question": "Will this affect third‑party component libraries that ship their own SASS?",
+        "answer": "Potentially. If a library still uses `@import`, the new builder will raise an error. Verify the library’s version; most Angular Material packages have already migrated. If a library is outdated, either upgrade it or apply a temporary patch."
       },
       {
-        "question": "Do we need to modify the CI/CD pipeline after the upgrade?",
-        "answer": "Yes. The Angular CLI version will change, which may affect build scripts and webpack configuration. Additionally, Karma and Playwright versions may need to be aligned with Angular 19, so the CI steps that run tests will have to be verified."
+        "question": "Do I need to change the Node or TypeScript version?",
+        "answer": "Angular 19 requires at least TypeScript 5.0, but the current project is on TypeScript 4.9.5. The migration task should include checking the Angular‑CLI compatibility matrix; if the CLI version for Angular 19 is not yet in the repo, a TypeScript upgrade will be required as part of the broader Angular upgrade, not just the SASS migration."
       },
       {
-        "question": "What is the status of the custom ng‑bootstrap patch mentioned in the ticket?",
-        "answer": "The patch is part of this ticket (UVZUSLNVV‑5824) and must be applied to the ng‑bootstrap library after it is upgraded to a version compatible with Angular 19. Failing to apply it will likely cause runtime errors in components that rely on ng‑bootstrap."
+        "question": "Will the CI pipeline need changes?",
+        "answer": "The pipeline currently calls `ng build` with the legacy builder. After migration, the same command works because the target is switched, but any scripts that reference the old builder name or custom Webpack configs must be reviewed."
       },
       {
-        "question": "Will the vertical action bar continue to work after the upgrade?",
-        "answer": "Yes. The vertical action bar is deprecated but still supported in Pattern Library 12.6.0 and will remain functional until PL 13.2.0, as stated in the acceptance criteria."
+        "question": "How do we know the migration didn’t break the UI?",
+        "answer": "Run the full suite of Karma unit tests and Playwright e2e tests after the change. Pay special attention to visual regression tests (if any) and components that rely on SASS variables or mixins."
       }
     ]
   }
