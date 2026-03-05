@@ -1,22 +1,32 @@
 {
   "_schema_version": "1.0",
-  "status": "success",
-  "phase": "triage",
   "issue_id": "BNUVZ-12529",
-  "classification": "upgrade",
-  "risk_level": "low",
-  "entry_points_found": 0,
-  "blast_radius_count": 0,
-  "llm_synthesis": true,
-  "llm_status": "success",
-  "duration_seconds": 28.97,
-  "triage_context": {
-    "classification_type": "upgrade",
-    "classification_confidence": 0.99,
-    "llm_status": "success",
+  "classification": {
+    "type": "upgrade",
+    "confidence": 0.99,
+    "signals": [
+      "keyword:upgrade"
+    ],
+    "scores": {
+      "bug": 0.0,
+      "feature": 0.0,
+      "upgrade": 1.0,
+      "refactor": 0.0,
+      "investigation": 0.0
+    }
+  },
+  "customer_summary": {
+    "summary": "The UVZ web application currently runs on Angular 18 and Pattern Library 11.3.1. Security support for Angular 18 ends on 21‑Nov‑2025, after which no patches are provided unless a paid \"Never‑Ending Support\" contract is taken. To keep the system secure, compliant and maintainable, the UI must be upgraded now to Angular 19 and Pattern Library 12.6.0, together with all required runtime dependencies (Node, TypeScript, ng‑bootstrap, ng‑select, ag‑grid, etc.). If the upgrade is not performed, the application will become vulnerable to security issues and will eventually be unable to receive critical updates, risking compliance failures and potential exploitation.",
+    "impact_level": "high",
+    "is_bug": false,
+    "workaround": "",
+    "eta_category": "medium"
+  },
+  "developer_context": {
     "big_picture": "UVZ is a front‑end web portal used by internal BNOTK users to access various services. The UI is built with Angular and a proprietary Pattern Library (PL) that provides reusable UI components. This task upgrades the UI framework from Angular 18 (now out of security support) to Angular 19 and updates the Pattern Library to version 12.6.0. The upgrade is required now because the current framework will stop receiving security patches after 21‑Nov‑2025, leaving the portal exposed. Without the upgrade the portal would become non‑compliant with security policies and could be attacked, forcing a costly paid support contract or a forced migration later under tighter time pressure.",
     "scope_boundary": "IN: All Angular packages (core, CLI, CDK, animations, common, compiler, etc.), the Pattern Library (bnotk/ds-ng) to version 12.6.0, Node.js version, TypeScript version, UI‑related third‑party libs (ng‑bootstrap, ng‑select, ag‑grid‑angular, ag‑grid‑community), build tooling (Webpack, Karma, Playwright) where version compatibility is affected, and any UI code that uses deprecated Angular 18 APIs or removed PL components. OUT: Backend Java services, database schemas, non‑UI infrastructure, unrelated npm packages, and any feature work not touching the UI layer.",
     "classification_assessment": "",
+    "classification_confidence": -1,
     "affected_components": [
       "UI Root Module (presentation)",
       "Pattern Library Integration (presentation)",
@@ -98,6 +108,65 @@
         "question": "Are there any backend changes required because of the UI upgrade?",
         "answer": "No. The upgrade only touches the front‑end container and its dependencies. Backend APIs remain unchanged, so no Java or database work is needed."
       }
+    ],
+    "linked_tasks": [
+      "UVZUSLNVV-5824 (this upgrade ticket)",
+      "BNUVZ-12529 (analysis comment \"how to get to angular 21\")"
     ]
+  },
+  "findings": {
+    "classification": {
+      "type": "upgrade",
+      "confidence": 0.99,
+      "signals": [
+        "keyword:upgrade"
+      ],
+      "scores": {
+        "bug": 0.0,
+        "feature": 0.0,
+        "upgrade": 1.0,
+        "refactor": 0.0,
+        "investigation": 0.0
+      }
+    },
+    "entry_points": [],
+    "blast_radius": {
+      "affected": [],
+      "depth": 0,
+      "component_count": 0,
+      "containers_affected": []
+    },
+    "duplicates": [
+      {
+        "chunk_id": "e7419635:0003:e23b7e00",
+        "path": "",
+        "score": 0.756,
+        "snippet": "Endpoint (`platformEndpoint`)\n** Settings Endpoint (`settingsEndpoint`)\n** Signature Endpoint (`signatureEndpoint`)\n\n==== Sonstiges\n-\n\n=== Batch-/Cron-/ und andere wiederkehrende Jobs\nKeine.\n\n=== Doku..."
+      },
+      {
+        "chunk_id": "ca76300b:0010:53467812",
+        "path": "",
+        "score": 0.749,
+        "snippet": "                a| <TO_BE_DEFINED>                                    a| URL                      a| Basis-URL des Notarverzeichnis, beispielsweise `https://nvz-uadev.bnotk.de/nvz`\n| security.cors.ena..."
+      },
+      {
+        "chunk_id": "bb287fe7:0000:f5daeccc",
+        "path": "",
+        "score": 0.747,
+        "snippet": "= Version Information\n\n|===\n\n|Version:|{build-version}.{build-number}\n\n|Build Number:|{build-number}\n\n|Publish URL:|{publish-url}/{build-version}[{publish-url}/{build-version}^, role=\"ext-link\"]\n\n|Bui..."
+      }
+    ],
+    "test_coverage": {
+      "covered": [],
+      "uncovered": [],
+      "coverage_ratio": 0.0
+    },
+    "risk_assessment": {
+      "risk_level": "low",
+      "security_sensitive": false,
+      "flags": [
+        "quality:low_score(0)"
+      ]
+    }
   }
 }
