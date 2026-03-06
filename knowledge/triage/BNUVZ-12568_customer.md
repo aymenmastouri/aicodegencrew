@@ -2,8 +2,8 @@
 
 **Impact Level:** MEDIUM
 **Type:** Enhancement/Task
-**Estimated Timeline:** medium
+**Estimated Timeline:** short
 
 ## Summary
 
-The front‑end application is being upgraded to Angular 19. As part of that upgrade the SASS compilation process must switch from the legacy compiler to the new Angular Builder compiler (@angular-devkit/build-angular:application). This change is required because the old compiler is deprecated in Angular 19 and will no longer be supported, which would break the build pipeline and prevent future releases. Performing the migration now avoids a sudden breakage after the Angular version bump and gives the team time to run additional tests to catch any regressions caused by the new compiler’s handling of SASS imports.
+The frontend of the application is being upgraded to Angular 19. As part of that upgrade the SASS compiler that Angular uses has been deprecated and must be switched to the new Angular‑Builder implementation (@angular-devkit/build-angular:application). This migration is required now because the old compiler will no longer be supported in Angular 19, which would cause builds to fail and could introduce regressions in the UI styling. If the migration is not performed, the next scheduled Angular upgrade will break the CI build pipeline and users may see broken or unstyled pages.
