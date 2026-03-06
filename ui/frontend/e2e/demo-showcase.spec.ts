@@ -92,14 +92,16 @@ async function splash(page: Page) {
       <div style="font-size:22px;color:rgba(255,255,255,.6)">
         AI-Powered Development Lifecycle Automation
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-top:24px">
         <span style="font-size:11px;color:rgba(255,255,255,.3);letter-spacing:1.5px;text-transform:uppercase">by</span>
-        <img src="/assets/logos/Capgemini_Primary-logo_Capgemini-white.png" style="height:22px;opacity:.7" alt="Capgemini" />
+        <img src="/assets/logos/Capgemini_Primary-logo_Capgemini-white.png" style="height:24px;opacity:.75" alt="Capgemini" />
+        <span style="width:1px;height:16px;background:rgba(255,255,255,.15);margin:0 8px"></span>
+        <span style="font-size:14px;font-style:italic;color:rgba(255,255,255,.4);letter-spacing:.5px">Make it real</span>
       </div>
-      <div style="margin-top:20px;font-size:15px;color:rgba(255,255,255,.4);max-width:520px;text-align:center;line-height:1.6">
+      <div style="margin-top:24px;font-size:15px;color:rgba(255,255,255,.35);max-width:520px;text-align:center;line-height:1.6">
         100% on-premises — your source code and tickets never leave the company network
       </div>
-      <div style="margin-top:36px;font-size:12px;color:rgba(255,255,255,.25);letter-spacing:2px;text-transform:uppercase">
+      <div style="margin-top:40px;font-size:12px;color:rgba(255,255,255,.2);letter-spacing:2px;text-transform:uppercase">
         Live Demo
       </div>`;
     document.body.appendChild(d);
@@ -922,8 +924,13 @@ test.describe('Demo Showcase', () => {
           <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase">Time saved vs. manual analysis</div>
           <div style="font-size:22px;font-weight:600;color:#fff">4–8 hours of senior developer time <span style="color:#12abdb">→ automated</span></div>
         </div>
-        <div style="font-size:16px;color:rgba(255,255,255,.4)">
+        <div style="font-size:16px;color:rgba(255,255,255,.4);margin-bottom:32px">
           100% on-premises — source code and tickets never leave your infrastructure
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;opacity:.6">
+          <img src="/assets/logos/Capgemini_Primary-logo_Capgemini-white.png" style="height:20px" alt="Capgemini" />
+          <span style="width:1px;height:14px;background:rgba(255,255,255,.2)"></span>
+          <span style="font-size:14px;font-style:italic;color:rgba(255,255,255,.5);letter-spacing:.5px">Make it real</span>
         </div>`;
       document.body.appendChild(d);
     }, { ac: archCount, dur: durLabel });
