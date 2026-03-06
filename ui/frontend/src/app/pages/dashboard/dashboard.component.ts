@@ -64,6 +64,8 @@ import { statusLabel, isTerminal } from '../../shared/status';
           <div class="hero-by">
             <span class="hero-by-label">by</span>
             <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="hero-cap-logo" />
+            <span class="hero-tagline-sep"></span>
+            <span class="hero-tagline">Make it real</span>
           </div>
         </div>
         <div class="hero-stats">
@@ -397,6 +399,18 @@ import { statusLabel, isTerminal } from '../../shared/status';
         height: 18px;
         width: auto;
         opacity: 0.7;
+      }
+      .hero-tagline-sep {
+        width: 1px;
+        height: 14px;
+        background: rgba(255, 255, 255, 0.15);
+        margin: 0 10px;
+      }
+      .hero-tagline {
+        font-size: 12px;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.5px;
       }
       .hero-stats {
         display: flex;

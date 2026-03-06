@@ -123,10 +123,11 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
             }
           </div>
           <div class="sidenav-footer">
+            <div class="footer-tagline">Make it real</div>
             <div class="footer-row">
               <span class="footer-legal">&copy; 2026 Capgemini</span>
               <span class="footer-sep"></span>
-              <span class="footer-version">v0.6.2</span>
+              <span class="footer-version">v0.6.3</span>
             </div>
           </div>
         </div>
@@ -384,6 +385,13 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         border-top: 1px solid rgba(255, 255, 255, 0.06);
         white-space: nowrap;
         overflow: hidden;
+      }
+      .footer-tagline {
+        font-size: 11px;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.3);
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
       }
       .sidenav-rail .sidenav-footer {
         opacity: 0;
