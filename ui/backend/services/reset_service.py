@@ -140,6 +140,101 @@ def _cleanup_reset_archives(max_keep: int = 5) -> int:
     return removed
 
 
+def execute_task_reset(
+    task_ids: list[str],
+    phase_ids: list[str] | None = None,
+    cascade: bool = True,
+) -> dict:
+    """Delete output files for specific task IDs only (not the entire phase directory).
+
+    Args:
+        task_ids: Task IDs whose output files should be deleted.
+        phase_ids: Optional list of phases to reset. If None, resets all task-bearing phases
+                   (triage, plan, implement, verify, deliver).
+        cascade: If True (default), also reset downstream phases. E.g. resetting
+                 triage for a task will also reset that task's plan/implement/etc.
+
+    Returns:
+        Dict with deleted_count, affected_phases, and task_ids.
+    """
+    import re
+    safe_re = re.compile(r"^[A-Za-z0-9_-]+$")
+    for tid in task_ids:
+        if not safe_re.match(tid):
+            raise ValueError(f"Invalid task_id: {tid!r}")
+
+    target_phases = phase_ids or ["triage", "plan", "implement", "verify", "deliver"]
+
+    # Cascade: if resetting early phases, include downstream phases
+    if cascade and phase_ids:
+        target_phases = compute_cascade(phase_ids)
+        # Only keep task-bearing phases (discover/extract/analyze/document don't have per-task files)
+        task_bearing = {"triage", "plan", "implement", "verify", "deliver"}
+        target_phases = [p for p in target_phases if p in task_bearing]
+    deleted_count = 0
+    affected_phases: list[str] = []
+
+    for pid in target_phases:
+        phase_dir = settings.project_root / "knowledge" / pid
+        if not phase_dir.is_dir():
+            continue
+
+        phase_deleted = 0
+        for tid in task_ids:
+            # Match files like {task_id}_triage.json, {task_id}_plan.json,
+            # {task_id}_customer.md, {task_id}_developer.md, etc.
+            for f in phase_dir.glob(f"{tid}_*"):
+                if f.is_file():
+                    try:
+                        f.unlink()
+                        phase_deleted += 1
+                    except OSError as exc:
+                        logger.warning("Failed to delete %s: %s", f, exc)
+            # Also check for exact match (e.g. {task_id}.json without suffix)
+            exact = phase_dir / f"{tid}.json"
+            if exact.is_file():
+                try:
+                    exact.unlink()
+                    phase_deleted += 1
+                except OSError as exc:
+                    logger.warning("Failed to delete %s: %s", exact, exc)
+
+        if phase_deleted > 0:
+            affected_phases.append(pid)
+            deleted_count += phase_deleted
+
+    # Also remove task from plan checkpoint if it exists
+    checkpoint = settings.project_root / "knowledge" / "plan" / ".checkpoint_plan.json"
+    if checkpoint.exists():
+        try:
+            import json as _json
+            data = _json.loads(checkpoint.read_text(encoding="utf-8"))
+            completed = set(data.get("completed", []))
+            removed = completed & set(task_ids)
+            if removed:
+                completed -= removed
+                checkpoint.write_text(
+                    _json.dumps({"completed": sorted(completed)}, indent=2),
+                    encoding="utf-8",
+                )
+                logger.info("Removed %s from plan checkpoint", sorted(removed))
+        except Exception as exc:
+            logger.warning("Failed to update plan checkpoint: %s", exc)
+
+    ts = datetime.now(UTC).isoformat()
+    logger.info(
+        "Task reset: %d file(s) deleted for task(s) %s in phase(s) %s",
+        deleted_count, task_ids, affected_phases,
+    )
+
+    return {
+        "task_ids": task_ids,
+        "affected_phases": affected_phases,
+        "deleted_count": deleted_count,
+        "timestamp": ts,
+    }
+
+
 def execute_reset(
     phase_ids: list[str],
     cascade: bool = True,

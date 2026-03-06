@@ -12,6 +12,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { PipelineService, RunHistoryEntry, RunDetail, HistoryStats } from '../../services/pipeline.service';
 import {
@@ -180,6 +181,12 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
               <th mat-header-cell *matHeaderCellDef>Preset</th>
               <td mat-cell *matCellDef="let row">
                 {{ row.preset || '—' }}
+                @if (row.parallel_mode && row.task_ids?.length) {
+                  <span class="parallel-badge" [matTooltip]="'Parallel: ' + row.task_ids.join(', ')">
+                    <mat-icon style="font-size:14px;width:14px;height:14px;vertical-align:middle">call_split</mat-icon>
+                    {{ row.task_ids.length }}
+                  </span>
+                }
               </td>
             </ng-container>
 
@@ -1155,30 +1162,19 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.comparisonPhaseRows = [];
     this.comparisonVisible = true;
 
-    // Fetch details for both runs — only build comparison when BOTH succeed
-    let loaded = 0;
-    let failed = 0;
-    for (const runId of ids) {
-      this.pipelineSvc.getRunDetail(runId).subscribe({
-        next: (d) => {
-          this.comparisonDetails.push(d);
-          loaded++;
-          if (loaded === 2) {
-            this.buildComparisonRows();
-          }
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          failed++;
-          if (loaded + failed === ids.length && loaded < 2) {
-            this.comparisonVisible = false;
-            this.snackBar.open('Could not load run details for comparison', 'OK', { duration: 4000 });
-          }
-          this.cdr.markForCheck();
-        },
-      });
-    }
-    this.cdr.markForCheck();
+    // Fetch details for both runs in order — forkJoin guarantees array order matches ids order
+    forkJoin(ids.map(id => this.pipelineSvc.getRunDetail(id))).subscribe({
+      next: (details) => {
+        this.comparisonDetails = details;
+        this.buildComparisonRows();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.comparisonVisible = false;
+        this.snackBar.open('Could not load run details for comparison', 'OK', { duration: 4000 });
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   closeComparison(): void {

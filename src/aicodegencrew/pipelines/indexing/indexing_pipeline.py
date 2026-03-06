@@ -648,7 +648,45 @@ class IndexingPipeline:
 
         if not saved:
             # No state file, no metadata fingerprint, but ChromaDB has data.
-            # Do smart incremental check to verify what's actually changed.
+            # Try to recover from manifest before falling back to smart mode.
+            manifest_path = self._cache_dir / "repo_manifest.json"
+            if manifest_path.exists() and chroma_has_data:
+                try:
+                    manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+                    manifest_commit = manifest_data.get("commit", "")
+                    if manifest_commit and fp_type == "git":
+                        current_head = subprocess.run(
+                            ["git", "-C", str(self.config.repo_path), "rev-parse", "HEAD"],
+                            capture_output=True, text=True, timeout=5, check=False,
+                        ).stdout.strip()
+                        if current_head == manifest_commit:
+                            logger.info(
+                                f"[AUTO] State file missing but manifest commit matches HEAD "
+                                f"({current_head[:8]}). Skipping re-index ({doc_count} chunks)."
+                            )
+                            return (
+                                False,
+                                current_fp,
+                                fp_type,
+                                f"Recovered ({doc_count} chunks, HEAD={current_head[:8]})",
+                            )
+                        else:
+                            # Repo changed since last index — do smart incremental
+                            self.index_mode = "smart"
+                            logger.info(
+                                f"[AUTO->SMART] Manifest commit ({manifest_commit[:8]}) "
+                                f"differs from HEAD ({current_head[:8]}). Incremental update."
+                            )
+                            return (
+                                True,
+                                current_fp,
+                                fp_type,
+                                f"Incremental update: manifest {manifest_commit[:8]} -> HEAD {current_head[:8]}",
+                            )
+                except Exception as e:
+                    logger.warning(f"[AUTO] Could not read manifest for state recovery: {e}")
+
+            # Fallback: no manifest or read failed — smart incremental check
             self.index_mode = "smart"
             logger.info(
                 "[AUTO->SMART] No state file and no metadata fingerprint, switching to incremental update to verify"

@@ -2,6 +2,9 @@
 
 Single source of truth for phase execution status. Written by the
 orchestrator (CLI or dashboard), read by the dashboard backend.
+
+File-level locking via ``filelock`` ensures safe concurrent writes
+from parallel subprocess execution (multiple --task-id processes).
 """
 
 from __future__ import annotations
@@ -10,6 +13,7 @@ import json
 import logging
 import os
 import tempfile
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
@@ -17,6 +21,12 @@ logger = logging.getLogger(__name__)
 
 _STATE_DIR: Path | None = None
 _STALE_THRESHOLD_SECONDS = 3600  # 1 hour
+
+try:
+    from filelock import FileLock as _FileLock
+except ImportError:
+    _FileLock = None  # type: ignore[assignment,misc]
+    logger.warning("[PhaseState] filelock not installed — concurrent write safety disabled")
 
 
 def configure_state_dir(path: Path | None) -> None:
@@ -31,6 +41,26 @@ def configure_state_dir(path: Path | None) -> None:
 def _state_path() -> Path:
     base = _STATE_DIR if _STATE_DIR is not None else Path("logs")
     return base / "phase_state.json"
+
+
+@contextmanager
+def _file_lock():
+    """Acquire a cross-process lock for phase_state.json read-modify-write.
+
+    Uses filelock when available; falls back to no-op (single-process safety
+    still guaranteed by GIL / atomic writes).
+    """
+    if _FileLock is not None:
+        lock_path = str(_state_path()) + ".lock"
+        lock = _FileLock(lock_path, timeout=10)
+        try:
+            with lock:
+                yield
+        except TimeoutError:
+            logger.error("[PhaseState] Lock acquisition timed out after 10s — proceeding unlocked")
+            yield
+    else:
+        yield
 
 
 def _read_raw() -> dict:
@@ -90,72 +120,78 @@ def _is_pid_alive(pid: int) -> bool:
 
 def init_run(run_id: str) -> None:
     """Initialize a new pipeline run. Resets all phase entries."""
-    _write_atomic(
-        {
-            "version": 1,
-            "run_id": run_id,
-            "pid": os.getpid(),
-            "phases": {},
-        }
-    )
+    with _file_lock():
+        _write_atomic(
+            {
+                "version": 1,
+                "run_id": run_id,
+                "pid": os.getpid(),
+                "phases": {},
+            }
+        )
     logger.debug("[PhaseState] init_run: %s (pid=%d)", run_id, os.getpid())
 
 
 def set_phase_running(phase_id: str) -> None:
     """Mark a phase as running."""
-    data = _read_raw()
-    phases = data.setdefault("phases", {})
-    phases[phase_id] = {
-        "status": "running",
-        "started_at": datetime.now().isoformat(timespec="seconds"),
-        "completed_at": None,
-        "duration_seconds": None,
-        "error": None,
-    }
-    _write_atomic(data)
+    with _file_lock():
+        data = _read_raw()
+        phases = data.setdefault("phases", {})
+        phases[phase_id] = {
+            "status": "running",
+            "started_at": datetime.now().isoformat(timespec="seconds"),
+            "completed_at": None,
+            "duration_seconds": None,
+            "error": None,
+        }
+        _write_atomic(data)
 
 
 def set_phase_completed(phase_id: str, duration: float, status: str = "completed") -> None:
     """Mark a phase as completed (or partial)."""
-    data = _read_raw()
-    phases = data.setdefault("phases", {})
-    entry = phases.get(phase_id, {})
-    entry["status"] = status if status in ("completed", "partial", "skipped") else "completed"
-    entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
-    entry["duration_seconds"] = round(duration, 2)
-    entry["error"] = None
-    phases[phase_id] = entry
-    _write_atomic(data)
+    with _file_lock():
+        data = _read_raw()
+        phases = data.setdefault("phases", {})
+        entry = phases.get(phase_id, {})
+        entry["status"] = status if status in ("completed", "partial", "skipped") else "completed"
+        entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
+        entry["duration_seconds"] = round(duration, 2)
+        entry["error"] = None
+        phases[phase_id] = entry
+        _write_atomic(data)
 
 
 def set_phase_failed(phase_id: str, duration: float, error: str) -> None:
     """Mark a phase as failed."""
-    data = _read_raw()
-    phases = data.setdefault("phases", {})
-    entry = phases.get(phase_id, {})
-    entry["status"] = "failed"
-    entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
-    entry["duration_seconds"] = round(duration, 2)
-    entry["error"] = error[:500]
-    phases[phase_id] = entry
-    _write_atomic(data)
+    with _file_lock():
+        data = _read_raw()
+        phases = data.setdefault("phases", {})
+        entry = phases.get(phase_id, {})
+        entry["status"] = "failed"
+        entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
+        entry["duration_seconds"] = round(duration, 2)
+        entry["error"] = error[:500]
+        phases[phase_id] = entry
+        _write_atomic(data)
 
 
 def clear_phase(phase_id: str) -> None:
     """Remove a phase entry (used on reset)."""
-    data = _read_raw()
-    phases = data.get("phases", {})
-    phases.pop(phase_id, None)
-    _write_atomic(data)
+    with _file_lock():
+        data = _read_raw()
+        phases = data.get("phases", {})
+        phases.pop(phase_id, None)
+        _write_atomic(data)
 
 
 def clear_phases(phase_ids: list[str]) -> None:
     """Remove multiple phase entries (used on reset)."""
-    data = _read_raw()
-    phases = data.get("phases", {})
-    for pid in phase_ids:
-        phases.pop(pid, None)
-    _write_atomic(data)
+    with _file_lock():
+        data = _read_raw()
+        phases = data.get("phases", {})
+        for pid in phase_ids:
+            phases.pop(pid, None)
+        _write_atomic(data)
 
 
 def read_all_phases() -> dict:
@@ -163,42 +199,34 @@ def read_all_phases() -> dict:
 
     Returns dict with keys: run_id, pid, phases.
     Phases with status='running' are checked against PID liveness.
+
+    The entire read-check-write cycle is wrapped in _file_lock() to prevent
+    TOCTOU races where concurrent processes could overwrite each other's updates.
     """
-    data = _read_raw()
-    if not data:
-        return {"run_id": None, "pid": None, "phases": {}}
+    with _file_lock():
+        data = _read_raw()
+        if not data:
+            return {"run_id": None, "pid": None, "phases": {}}
 
-    pid = data.get("pid")
-    phases = data.get("phases", {})
-    modified = False
+        pid = data.get("pid")
+        phases = data.get("phases", {})
+        modified = False
 
-    for _phase_id, entry in phases.items():
-        if entry.get("status") != "running":
-            continue
+        for _phase_id, entry in phases.items():
+            if entry.get("status") != "running":
+                continue
 
-        # Crash recovery: check if orchestrator process is alive
-        process_alive = _is_pid_alive(pid) if pid else False
+            # Crash recovery: check if orchestrator process is alive
+            process_alive = _is_pid_alive(pid) if pid else False
 
-        if not process_alive:
-            # Check staleness as fallback
-            started = entry.get("started_at", "")
-            stale = False
-            if started:
-                try:
-                    start_dt = datetime.fromisoformat(started)
-                    elapsed = (datetime.now() - start_dt).total_seconds()
-                    stale = elapsed > _STALE_THRESHOLD_SECONDS
-                except ValueError:
-                    stale = True
-
-            if not process_alive or stale:
+            if not process_alive:
                 entry["status"] = "failed"
                 entry["error"] = "Process terminated unexpectedly"
                 entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
                 modified = True
 
-    if modified:
-        _write_atomic(data)
+        if modified:
+            _write_atomic(data)
 
     return {
         "run_id": data.get("run_id"),

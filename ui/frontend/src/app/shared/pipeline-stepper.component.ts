@@ -32,6 +32,8 @@ import { humanizePhaseId, formatDuration } from './phase-utils';
               <mat-icon class="step-cancel">stop</mat-icon>
             } @else if (step.status === 'skipped') {
               <mat-icon class="step-check-alt">check_circle</mat-icon>
+            } @else if (step.status === 'pending') {
+              <mat-icon class="step-queued">schedule</mat-icon>
             } @else {
               <span class="step-num">{{ i + 1 }}</span>
             }
@@ -50,6 +52,9 @@ import { humanizePhaseId, formatDuration } from './phase-utils';
           }
           @if (step.status === 'cancelled') {
             <div class="step-time step-time-cancelled">cancelled</div>
+          }
+          @if (step.status === 'pending') {
+            <div class="step-time step-time-queued">queued</div>
           }
         </div>
         @if (!last) {
@@ -184,6 +189,24 @@ import { humanizePhaseId, formatDuration } from './phase-utils';
         color: var(--cg-success);
         font-style: italic;
         opacity: 0.8;
+      }
+      /* Pending / Queued */
+      .step-pending .step-circle {
+        background: rgba(0, 112, 173, 0.04);
+        border-color: var(--cg-blue);
+        border-style: dashed;
+        opacity: 0.6;
+      }
+      .step-queued {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-blue);
+        opacity: 0.7;
+      }
+      .step-pending .step-label {
+        color: var(--cg-blue);
+        opacity: 0.6;
       }
       /* Labels */
       .step-label {

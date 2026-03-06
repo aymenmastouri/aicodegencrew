@@ -26,7 +26,20 @@ Usage:
 from .cli import main
 from .orchestrator import SDLCOrchestrator
 
-__version__ = "0.7.0"
+def _read_version() -> str:
+    """Read version from pyproject.toml (source of truth)."""
+    from pathlib import Path
+    try:
+        toml_path = Path(__file__).resolve().parents[2] / "pyproject.toml"
+        if toml_path.exists():
+            for line in toml_path.read_text(encoding="utf-8").splitlines():
+                if line.startswith("version"):
+                    return line.split("=", 1)[1].strip().strip('"').strip("'")
+    except Exception:
+        pass
+    return "0.7.1"
+
+__version__ = _read_version()
 
 __all__ = [
     "SDLCOrchestrator",

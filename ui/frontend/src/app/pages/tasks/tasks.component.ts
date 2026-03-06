@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,12 +11,16 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { ApiService, TaskSummary, TaskLifecycle, TaskPhaseSummary } from '../../services/api.service';
-import { PhaseProgress } from '../../services/pipeline.service';
+import { PipelineService, PhaseProgress } from '../../services/pipeline.service';
 import { PipelineStepperComponent } from '../../shared/pipeline-stepper.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/confirm-dialog.component';
 
 /** The 5 task-lifecycle phases in order. */
 const LIFECYCLE_PHASES = ['triage', 'plan', 'implement', 'verify', 'deliver'] as const;
@@ -91,8 +97,11 @@ interface PlanStep {
     MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
+    MatDialogModule,
+    MatSnackBarModule,
     PipelineStepperComponent,
   ],
   template: `
@@ -121,12 +130,24 @@ interface PlanStep {
         }
 
         @if (!loading && !error) {
-          <!-- Search -->
-          <mat-form-field appearance="outline" class="search-field">
-            <mat-label>Search tasks</mat-label>
-            <mat-icon matPrefix>search</mat-icon>
-            <input matInput [(ngModel)]="searchQuery" placeholder="Filter by task ID..." />
-          </mat-form-field>
+          <!-- Search + Sort bar -->
+          <div class="filter-bar">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Search tasks</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput [(ngModel)]="searchQuery" placeholder="Filter by task ID or type..." />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="sort-field">
+              <mat-label>Sort by</mat-label>
+              <mat-select [(ngModel)]="sortBy">
+                <mat-option value="id_asc">Task ID (A → Z)</mat-option>
+                <mat-option value="id_desc">Task ID (Z → A)</mat-option>
+                <mat-option value="activity_desc">Last Activity (newest)</mat-option>
+                <mat-option value="risk_desc">Risk (highest first)</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <span class="task-count">{{ filteredTasks.length }} of {{ tasks.length }} tasks</span>
+          </div>
 
           @if (filteredTasks.length === 0) {
             <div class="empty-state">
@@ -137,7 +158,10 @@ interface PlanStep {
 
           <div class="tasks-grid">
             @for (task of filteredTasks; track task.task_id) {
-              <mat-card class="task-card" (click)="openTask(task.task_id)">
+              <mat-card class="task-card" role="button" tabindex="0"
+                (click)="openTask(task.task_id)"
+                (keydown.enter)="openTask(task.task_id)"
+                [attr.aria-label]="'Open task ' + task.task_id">
                 <mat-card-content>
                   <div class="task-header">
                     <span class="task-id">{{ task.task_id }}</span>
@@ -199,6 +223,25 @@ interface PlanStep {
                 {{ getRiskLevel() }}
               </span>
             }
+          }
+          <span class="header-spacer"></span>
+          @if (lifecycle && hasAnyCompleted()) {
+            <button
+              mat-stroked-button
+              color="warn"
+              class="reset-task-btn"
+              (click)="resetTaskPhases()"
+              [disabled]="resettingTask"
+              matTooltip="Delete output files for this task only (other tasks unaffected)"
+            >
+              @if (resettingTask) {
+                <mat-progress-spinner diameter="16" mode="indeterminate" style="display:inline-block;margin-right:6px"></mat-progress-spinner>
+                Resetting...
+              } @else {
+                <mat-icon>restart_alt</mat-icon>
+                Reset Task
+              }
+            </button>
           }
         </div>
 
@@ -529,8 +572,17 @@ interface PlanStep {
     }
   `,
   styles: [`
-    /* ── Search ── */
-    .search-field { width: 100%; margin-bottom: 16px; }
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .search-field { flex: 1; min-width: 200px; }
+    .sort-field { width: 200px; }
+    .task-count {
+      font-size: 13px; color: var(--cg-gray-400); white-space: nowrap;
+      padding-bottom: 22px; /* align with form fields */
+    }
 
     /* ── Empty state ── */
     .empty-state {
@@ -588,6 +640,9 @@ interface PlanStep {
       display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
     }
     .detail-header .page-title { margin: 0; }
+    .header-spacer { flex: 1; }
+    .reset-task-btn { font-size: 13px; }
+    .reset-task-btn .mat-icon { font-size: 18px; width: 18px; height: 18px; margin-right: 4px; }
 
     /* ── Lifecycle stepper ── */
     .lifecycle-stepper {
@@ -735,10 +790,13 @@ interface PlanStep {
     }
   `],
 })
-export class TasksComponent implements OnInit {
+export class TasksComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
   // ── List view state ──
   tasks: TaskSummary[] = [];
   searchQuery = '';
+  sortBy = 'activity_desc';
   loading = false;
   error = '';
 
@@ -764,15 +822,20 @@ export class TasksComponent implements OnInit {
   implementBranch = '';
   implementBuildStatus = '';
 
+  resettingTask = false;
+
   constructor(
     private api: ApiService,
+    private pipelineSvc: PipelineService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const taskId = params.get('taskId');
       if (taskId) {
         this.selectedTaskId = taskId;
@@ -787,12 +850,26 @@ export class TasksComponent implements OnInit {
   // ── List view ──
 
   get filteredTasks(): TaskSummary[] {
-    if (!this.searchQuery) return this.tasks;
-    const q = this.searchQuery.toLowerCase();
-    return this.tasks.filter(t =>
-      t.task_id.toLowerCase().includes(q) ||
-      (t.classification_type || '').toLowerCase().includes(q)
-    );
+    let list = this.tasks;
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      list = list.filter(t =>
+        t.task_id.toLowerCase().includes(q) ||
+        (t.classification_type || '').toLowerCase().includes(q)
+      );
+    }
+    const riskOrder: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+    return [...list].sort((a, b) => {
+      switch (this.sortBy) {
+        case 'id_asc': return a.task_id.localeCompare(b.task_id);
+        case 'id_desc': return b.task_id.localeCompare(a.task_id);
+        case 'activity_desc':
+          return (b.last_activity || '').localeCompare(a.last_activity || '');
+        case 'risk_desc':
+          return (riskOrder[b.risk_level || ''] || 0) - (riskOrder[a.risk_level || ''] || 0);
+        default: return 0;
+      }
+    });
   }
 
   loadTasks(): void {
@@ -961,5 +1038,61 @@ export class TasksComponent implements OnInit {
 
   formatCategory(cat: string): string {
     return cat.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  // ── Task Reset ──
+
+  hasAnyCompleted(): boolean {
+    if (!this.lifecycle) return false;
+    return LIFECYCLE_PHASES.some(p => this.lifecycle!.phases[p]?.status === 'completed');
+  }
+
+  resetTaskPhases(): void {
+    if (!this.selectedTaskId) return;
+    const taskId = this.selectedTaskId;
+
+    // Determine which phases have output
+    const phasesWithOutput = LIFECYCLE_PHASES.filter(
+      p => this.lifecycle?.phases[p]?.status === 'completed',
+    ) as string[];
+
+    if (phasesWithOutput.length === 0) return;
+
+    const dialogData: ConfirmDialogData = {
+      title: 'Reset Task Output',
+      message: `This will permanently delete all output files for task "${taskId}".\nOther tasks are NOT affected.`,
+      details: phasesWithOutput,
+      type: 'warn',
+      icon: 'restart_alt',
+      confirmLabel: 'Reset Task',
+    };
+
+    this.dialog.open(ConfirmDialogComponent, { width: '420px', data: dialogData })
+      .afterClosed()
+      .subscribe(confirmed => {
+        if (!confirmed) return;
+
+        this.resettingTask = true;
+        this.cdr.markForCheck();
+
+        this.pipelineSvc.resetTask([taskId], phasesWithOutput).subscribe({
+          next: () => {
+            this.resettingTask = false;
+            this.snackBar.open(`Task "${taskId}" reset successfully`, 'OK', { duration: 4000 });
+            this.loadLifecycle(taskId);
+          },
+          error: (err) => {
+            this.resettingTask = false;
+            const msg = err?.error?.detail || 'Failed to reset task';
+            this.snackBar.open(msg, 'Dismiss', { duration: 6000, panelClass: 'snack-error' });
+            this.cdr.markForCheck();
+          },
+        });
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

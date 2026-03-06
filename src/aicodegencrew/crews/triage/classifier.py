@@ -37,10 +37,16 @@ _CLASSIFICATION_RULES: dict[str, dict] = {
             "enable", "extend",
         ],
     },
+    "upgrade": {
+        "keywords": [
+            "upgrade", "migrate", "migration", "update version",
+            "version bump", "major version",
+        ],
+    },
     "refactor": {
         "keywords": [
             "refactor", "cleanup", "clean up", "technical debt", "restructure",
-            "modernize", "deprecat", "migrate", "upgrade",
+            "modernize", "deprecat",
         ],
     },
     "investigation": {

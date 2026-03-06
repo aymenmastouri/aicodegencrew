@@ -891,15 +891,23 @@ class ImplementCrew:
         )
 
         for i, plan_file in enumerate(plan_files, 1):
-            task_id = plan_file.stem.replace("_plan", "")
+            task_id = plan_file.stem.removesuffix("_plan")
             logger.info("\n[Implement] === Cascade %d/%d: %s ===", i, n, task_id)
 
-            # R3: Skip tasks already committed in a previous cascade run
+            # R3: Skip tasks already committed — but verify output exists on disk
             if task_id in cascade_completed:
-                logger.info("[Implement] Skipping %s (cascade checkpoint)", task_id)
-                completed_task_ids.append(task_id)
-                succeeded += 1
-                continue
+                output_file = self.output_dir / f"{task_id}_implement_report.json"
+                if output_file.exists():
+                    logger.info("[Implement] Skipping %s (cascade checkpoint)", task_id)
+                    completed_task_ids.append(task_id)
+                    succeeded += 1
+                    continue
+                else:
+                    logger.warning(
+                        "[Implement] Checkpoint says %s done but output missing — re-running",
+                        task_id,
+                    )
+                    cascade_completed.discard(task_id)
 
             try:
                 # Capture per-task baseline metrics so reports reflect this task only
@@ -976,6 +984,10 @@ class ImplementCrew:
 
     def _resolve_plan_files(self, inputs: dict[str, Any]) -> list[Path]:
         """Find plan files from orchestrator inputs or disk."""
+        # Extract task_id filter from config (passed via --task-id CLI arg)
+        config = inputs.get("config") or {}
+        task_id_filter = config.get("task_id") if isinstance(config, dict) else None
+
         # Try orchestrator-provided file list first
         previous_results = inputs.get("previous_results")
         if isinstance(previous_results, dict):
@@ -989,12 +1001,19 @@ class ImplementCrew:
                         if path.name.endswith("_plan.json") and path.exists():
                             plan_files.append(path)
                     if plan_files:
-                        return sorted({str(p): p for p in plan_files}.values(), key=lambda p: str(p))
+                        result = sorted({str(p): p for p in plan_files}.values(), key=lambda p: str(p))
+                        if task_id_filter:
+                            result = [f for f in result if f.stem == f"{task_id_filter}_plan"]
+                        return result
 
         # Fall back to scanning plans_dir
         plans_dir = Path(self.plans_dir)
         if plans_dir.exists():
-            return sorted(plans_dir.glob("*_plan.json"))
+            all_files = sorted(plans_dir.glob("*_plan.json"))
+            if task_id_filter:
+                all_files = [f for f in all_files if f.stem == f"{task_id_filter}_plan"]
+                logger.info("[Implement] --task-id=%s → filtered to %d plan(s)", task_id_filter, len(all_files))
+            return all_files
 
         return []
 

@@ -112,6 +112,26 @@ interface FileGroup {
           </div>
         }
 
+        <!-- View Filter -->
+        <div class="view-filter">
+          <button
+            class="view-chip"
+            [class.view-active]="sectionFilter === 'all'"
+            (click)="sectionFilter = 'all'"
+          >
+            <mat-icon>inventory_2</mat-icon>
+            All Files
+          </button>
+          <button
+            class="view-chip"
+            [class.view-active]="sectionFilter === 'architecture'"
+            (click)="sectionFilter = 'architecture'"
+          >
+            <mat-icon>menu_book</mat-icon>
+            Architecture
+          </button>
+        </div>
+
         <!-- Stats Bar -->
         <div class="stats-bar">
           <div class="stat-item">
@@ -208,7 +228,7 @@ interface FileGroup {
         }
 
         <!-- ═══════ SECTION 2: Pipeline Data ═══════ -->
-        @if (dataGroups.length > 0) {
+        @if (dataGroups.length > 0 && sectionFilter === 'all') {
           <div class="section-card section-data">
             <div class="section-head">
               <div class="section-icon-wrap data-icon-wrap">
@@ -267,7 +287,7 @@ interface FileGroup {
         }
 
         <!-- ═══════ SECTION 3: Other Files ═══════ -->
-        @if (otherFiles.length > 0) {
+        @if (otherFiles.length > 0 && sectionFilter === 'all') {
           <div class="section-card section-other">
             <div class="section-head">
               <div class="section-icon-wrap other-icon-wrap">
@@ -487,6 +507,44 @@ interface FileGroup {
         font-size: 20px;
         width: 20px;
         height: 20px;
+      }
+
+      /* ── View Filter ─────────────────────────────────── */
+      .view-filter {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .view-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border: 1px solid var(--cg-gray-200);
+        border-radius: 20px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-500);
+        transition: all 0.15s;
+      }
+      .view-chip .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+      .view-chip:hover {
+        border-color: var(--cg-blue);
+        color: var(--cg-blue);
+      }
+      .view-chip.view-active {
+        background: var(--cg-blue);
+        color: #fff;
+        border-color: var(--cg-blue);
+      }
+      .view-chip.view-active .mat-icon {
+        color: #fff;
       }
 
       /* ── Stats icons ─────────────────────────────────── */
@@ -900,6 +958,8 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
   docCount = 0;
   dataCount = 0;
   diagramCount = 0;
+
+  sectionFilter: 'all' | 'architecture' = 'all';
 
   archGroups: FileGroup[] = [];
   activeArchGroup = '';

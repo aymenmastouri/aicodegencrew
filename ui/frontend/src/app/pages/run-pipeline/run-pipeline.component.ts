@@ -15,11 +15,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatBadgeModule } from '@angular/material/badge';
 import { CdkVirtualScrollViewport, ScrollingModule } from '@angular/cdk/scrolling';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { ApiService, PresetInfo, PhaseInfo } from '../../services/api.service';
-import { PipelineService, ExecutionStatus, EnvVariable, SSEEvent } from '../../services/pipeline.service';
+import { PipelineService, ExecutionStatus, EnvVariable, SSEEvent, TaskProgress } from '../../services/pipeline.service';
 import { NotificationService } from '../../services/notification.service';
 import { InputsService, InputsSummary } from '../../services/inputs.service';
 import { PipelineStepperComponent } from '../../shared/pipeline-stepper.component';
@@ -45,6 +50,10 @@ import { statusIcon } from '../../shared/status';
     MatFormFieldModule,
     MatTabsModule,
     MatTooltipModule,
+    MatSlideToggleModule,
+    MatSliderModule,
+    MatBadgeModule,
+    MatButtonToggleModule,
     ScrollingModule,
     RouterLink,
     PipelineStepperComponent,
@@ -118,6 +127,90 @@ import { statusIcon } from '../../shared/status';
               </mat-tab>
             </mat-tab-group>
 
+            <!-- Parallel Task Processing -->
+            @if (hasTriageOrPlan()) {
+              <div class="parallel-section" [class.parallel-active]="parallelEnabled">
+                <div class="parallel-header" (click)="parallelEnabled = !parallelEnabled; onParallelToggle()">
+                  <div class="parallel-header-left">
+                    <div class="parallel-icon-wrap" [class.active]="parallelEnabled">
+                      <mat-icon>{{ parallelEnabled ? 'call_split' : 'linear_scale' }}</mat-icon>
+                    </div>
+                    <div class="parallel-header-text">
+                      <span class="parallel-title">Parallel Processing</span>
+                      <span class="parallel-subtitle">
+                        @if (parallelEnabled && selectedTaskIds.length > 0) {
+                          {{ selectedTaskIds.length }} of {{ availableTaskIds.length }} tasks &middot; {{ maxParallel }}x concurrency
+                        } @else {
+                          Run each task as its own subprocess
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <mat-slide-toggle
+                    [checked]="parallelEnabled"
+                    (click)="$event.stopPropagation()"
+                    (change)="parallelEnabled = $event.checked; onParallelToggle()"
+                  ></mat-slide-toggle>
+                </div>
+
+                @if (parallelEnabled) {
+                  <div class="parallel-body">
+                    <!-- Concurrency -->
+                    <div class="concurrency-row">
+                      <span class="concurrency-label">Concurrency</span>
+                      <div class="concurrency-chips">
+                        @for (n of [1, 2, 4, 8]; track n) {
+                          <button
+                            class="concurrency-chip"
+                            [class.selected]="maxParallel === n"
+                            (click)="maxParallel = n"
+                          >{{ n }}x</button>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Task picker -->
+                    @if (availableTaskIds.length > 0) {
+                      <div class="task-picker">
+                        <div class="task-picker-header">
+                          <span class="task-picker-label">Tasks</span>
+                          <button class="task-picker-toggle" (click)="selectAllTasks()">
+                            {{ selectedTaskIds.length === availableTaskIds.length ? 'Clear all' : 'Select all' }}
+                          </button>
+                        </div>
+                        <div class="task-chips">
+                          @for (tid of availableTaskIds; track tid) {
+                            <div
+                              class="task-chip"
+                              [class.selected]="selectedTaskIds.includes(tid)"
+                              (click)="toggleTaskId(tid, !selectedTaskIds.includes(tid))"
+                            >
+                              <mat-icon class="task-chip-check">
+                                {{ selectedTaskIds.includes(tid) ? 'check_circle' : 'radio_button_unchecked' }}
+                              </mat-icon>
+                              <span class="task-chip-id">{{ tid }}</span>
+                              <button
+                                class="task-chip-reset"
+                                (click)="$event.stopPropagation(); resetSingleTask(tid)"
+                                matTooltip="Reset triage + plan output"
+                              >
+                                <mat-icon>refresh</mat-icon>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="no-tasks-empty">
+                        <mat-icon>inbox</mat-icon>
+                        <span>No tasks in <code>inputs/tasks/</code></span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
             <!-- Advanced: Input files + Env overrides -->
             <mat-expansion-panel class="advanced-panel">
               <mat-expansion-panel-header>
@@ -185,6 +278,24 @@ import { statusIcon } from '../../shared/status';
             </mat-expansion-panel>
           </mat-card-content>
 
+          <!-- Execution Preview -->
+          @if (phasesToRun().length > 0) {
+            <div class="execution-preview">
+              <mat-icon class="preview-icon">preview</mat-icon>
+              <div class="preview-content">
+                <span class="preview-label">Will execute:</span>
+                <span class="preview-phases">
+                  @for (p of phasesToRun(); track p) {
+                    <span class="preview-chip">{{ humanize(p) }}</span>
+                  }
+                </span>
+                @if (parallelEnabled && selectedTaskIds.length > 0) {
+                  <span class="preview-tasks">on {{ selectedTaskIds.length }} task(s), max {{ maxParallel }} parallel</span>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Run button inside the config card -->
           <mat-card-actions class="config-actions">
             <button
@@ -192,6 +303,7 @@ import { statusIcon } from '../../shared/status';
               color="primary"
               class="run-btn"
               [disabled]="!selectedPreset && selectedPhases.length === 0"
+              [matTooltip]="!selectedPreset && selectedPhases.length === 0 ? 'Select a preset or custom phases first' : ''"
               (click)="runPipeline()"
             >
               <mat-icon>play_arrow</mat-icon>
@@ -310,6 +422,34 @@ import { statusIcon } from '../../shared/status';
           @if (status.phase_progress.length > 0) {
             <mat-card-content>
               <app-pipeline-stepper [steps]="status.phase_progress"></app-pipeline-stepper>
+            </mat-card-content>
+          }
+
+          <!-- Per-Task Progress (parallel mode) -->
+          @if (status.parallel_mode && status.task_progress) {
+            <mat-card-content>
+              <h3 class="task-progress-title">
+                <mat-icon>call_split</mat-icon>
+                Task Progress
+                <span class="task-progress-count">
+                  {{ taskProgressCompleted() }}/{{ taskProgressTotal() }}
+                </span>
+              </h3>
+              <div class="task-progress-grid">
+                @for (entry of taskProgressEntries(); track entry.id) {
+                  <div class="task-progress-row" [class]="'task-state-' + entry.state">
+                    <mat-icon class="task-state-icon" [attr.aria-label]="entry.state">{{ taskStateIcon(entry.state) }}</mat-icon>
+                    <a [routerLink]="'/tasks/' + entry.id" class="task-id-link">{{ entry.id }}</a>
+                    <span class="task-state-badge" [class]="'badge-' + entry.state">{{ entry.state }}</span>
+                    @if (entry.state === 'running') {
+                      <mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+                    }
+                    @if (entry.state === 'failed' && entry.exit_code != null) {
+                      <span class="task-exit-code" matTooltip="Process exit code">exit {{ entry.exit_code }}</span>
+                    }
+                  </div>
+                }
+              </div>
             </mat-card-content>
           }
 
@@ -771,18 +911,411 @@ import { statusIcon } from '../../shared/status';
         user-select: none;
       }
       .log-error {
-        color: #f48771;
+        color: #ff9d8f;
       }
       .log-warning {
-        color: #cca700;
+        color: #ffd866;
       }
       .log-info {
-        color: #89d185;
+        color: #a8e6a1;
+      }
+
+      /* Parallel Task Processing */
+      .parallel-section {
+        margin: 16px 0 8px;
+        border-radius: 12px;
+        border: 1px solid var(--cg-gray-100);
+        overflow: hidden;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      }
+      .parallel-section.parallel-active {
+        border-color: rgba(0, 112, 173, 0.3);
+        box-shadow: 0 0 0 1px rgba(0, 112, 173, 0.08);
+      }
+
+      .parallel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        user-select: none;
+      }
+      .parallel-header:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+      .parallel-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .parallel-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--cg-gray-100);
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+      .parallel-icon-wrap .mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--cg-gray-500);
+        transition: color 0.25s ease;
+      }
+      .parallel-icon-wrap.active {
+        background: rgba(0, 112, 173, 0.1);
+      }
+      .parallel-icon-wrap.active .mat-icon {
+        color: var(--cg-blue);
+      }
+      .parallel-header-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .parallel-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--cg-gray-700);
+      }
+      .parallel-subtitle {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+      }
+
+      .parallel-body {
+        padding: 0 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        animation: parallel-expand 0.2s ease-out;
+      }
+      @keyframes parallel-expand {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Concurrency chips */
+      .concurrency-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .concurrency-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--cg-gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+      }
+      .concurrency-chips {
+        display: flex;
+        gap: 6px;
+      }
+      .concurrency-chip {
+        width: 40px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1.5px solid var(--cg-gray-200);
+        background: transparent;
+        color: var(--cg-gray-600);
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .concurrency-chip:hover {
+        border-color: var(--cg-blue);
+        color: var(--cg-blue);
+        background: rgba(0, 112, 173, 0.04);
+      }
+      .concurrency-chip.selected {
+        border-color: var(--cg-blue);
+        background: var(--cg-blue);
+        color: #fff;
+      }
+
+      /* Task picker */
+      .task-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .task-picker-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .task-picker-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--cg-gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .task-picker-toggle {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--cg-blue);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+        transition: background 0.15s ease;
+      }
+      .task-picker-toggle:hover {
+        background: rgba(0, 112, 173, 0.08);
+      }
+
+      .task-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .task-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px 6px 8px;
+        border-radius: 10px;
+        border: 1.5px solid var(--cg-gray-200);
+        background: var(--cg-gray-50, #f8f9fa);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+      }
+      .task-chip:hover {
+        border-color: var(--cg-blue);
+        background: rgba(0, 112, 173, 0.04);
+      }
+      .task-chip.selected {
+        border-color: var(--cg-blue);
+        background: rgba(0, 112, 173, 0.06);
+      }
+      .task-chip-check {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-gray-300);
+        transition: color 0.15s ease;
+      }
+      .task-chip.selected .task-chip-check {
+        color: var(--cg-blue);
+      }
+      .task-chip-id {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--cg-gray-700);
+      }
+      .task-chip-reset {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 2px;
+        transition: background 0.15s ease;
+        opacity: 0;
+      }
+      .task-chip:hover .task-chip-reset {
+        opacity: 1;
+      }
+      .task-chip-reset:hover {
+        background: rgba(245, 124, 0, 0.1);
+      }
+      .task-chip-reset .mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        color: var(--cg-gray-400);
+        transition: color 0.15s ease;
+      }
+      .task-chip-reset:hover .mat-icon {
+        color: var(--cg-warn, #f57c00);
+      }
+
+      /* No tasks state */
+      .no-tasks-empty {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        background: var(--cg-gray-50, #f8f9fa);
+        font-size: 13px;
+        color: var(--cg-gray-500);
+      }
+      .no-tasks-empty .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-gray-300);
+      }
+      .no-tasks-empty code {
+        background: var(--cg-gray-100);
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+      }
+
+      /* Execution Preview */
+      .execution-preview {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 16px;
+        margin: 0 16px 8px;
+        background: rgba(0, 112, 173, 0.05);
+        border: 1px solid rgba(0, 112, 173, 0.15);
+        border-radius: 8px;
+      }
+      .preview-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-blue);
+        margin-top: 2px;
+      }
+      .preview-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--cg-gray-600);
+      }
+      .preview-label {
+        font-weight: 500;
+      }
+      .preview-chip {
+        display: inline-block;
+        padding: 2px 8px;
+        background: rgba(0, 112, 173, 0.1);
+        color: var(--cg-blue);
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .preview-tasks {
+        font-size: 12px;
+        color: var(--cg-gray-500);
+      }
+
+      /* Per-Task Progress */
+      .task-progress-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--cg-gray-700);
+        margin: 8px 0;
+      }
+      .task-progress-title .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-blue);
+      }
+      .task-progress-count {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--cg-gray-500);
+      }
+      .task-progress-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .task-progress-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: var(--cg-gray-50, #f8f9fa);
+        font-size: 13px;
+        transition: background 0.15s ease;
+      }
+      .task-progress-row:hover {
+        background: var(--cg-gray-100, #f0f1f3);
+      }
+      .task-state-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      .task-state-completed .task-state-icon { color: var(--cg-success); }
+      .task-state-running .task-state-icon { color: var(--cg-blue); }
+      .task-state-failed .task-state-icon { color: var(--cg-error); }
+      .task-state-pending .task-state-icon { color: var(--cg-gray-400); }
+      .task-state-cancelled .task-state-icon { color: var(--cg-warn); }
+      /* Running pulse animation */
+      .task-state-running {
+        animation: pulse-row 2s ease-in-out infinite;
+      }
+      @keyframes pulse-row {
+        0%, 100% { background: var(--cg-gray-50, #f8f9fa); }
+        50% { background: rgba(0, 112, 173, 0.06); }
+      }
+      .task-id-link {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        font-weight: 600;
+        color: var(--cg-blue);
+        text-decoration: none;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: background 0.15s ease;
+      }
+      .task-id-link:hover {
+        text-decoration: underline;
+        background: rgba(0, 112, 173, 0.08);
+      }
+      .task-state-badge {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        flex-shrink: 0;
+      }
+      .badge-completed { background: rgba(40, 167, 69, 0.1); color: var(--cg-success); }
+      .badge-running { background: rgba(0, 112, 173, 0.1); color: var(--cg-blue); }
+      .badge-failed { background: rgba(220, 53, 69, 0.1); color: var(--cg-error); }
+      .badge-pending { background: var(--cg-gray-100); color: var(--cg-gray-500); }
+      .badge-cancelled { background: rgba(245, 124, 0, 0.1); color: var(--cg-warn); }
+      .task-exit-code {
+        font-size: 11px;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--cg-error);
+        background: rgba(220, 53, 69, 0.08);
+        padding: 1px 6px;
+        border-radius: 4px;
       }
     `,
   ],
 })
 export class RunPipelineComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   @ViewChild('logViewport') logViewportRef?: CdkVirtualScrollViewport;
 
   // Config
@@ -800,6 +1333,12 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   // Input files
   inputSummary: InputsSummary | null = null;
   inputCategoryEntries: { key: string; value: { label: string; icon: string; file_count: number } }[] = [];
+
+  // Parallel task execution
+  parallelEnabled = false;
+  maxParallel = 4;
+  availableTaskIds: string[] = [];
+  selectedTaskIds: string[] = [];
 
   // Execution
   status: ExecutionStatus | null = null;
@@ -859,6 +1398,14 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
       error: () => {},
     });
 
+    this.pipeline.getInputTaskIds().subscribe({
+      next: (res) => {
+        this.availableTaskIds = res.task_ids;
+        this.cdr.markForCheck();
+      },
+      error: () => {},
+    });
+
     this.pipeline.getEnv().subscribe({
       next: (vars) => {
         this.envVariables = vars;
@@ -869,7 +1416,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
       error: () => {},
     });
 
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       if (params['preset']) {
         this.selectedPreset = params['preset'];
         this.runModeIndex = 0;
@@ -883,6 +1430,8 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.sseSub?.unsubscribe();
     if (this.celebrationTimer) clearTimeout(this.celebrationTimer);
   }
@@ -924,7 +1473,13 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
       }
     }
 
-    const request: { preset?: string; phases?: string[]; env_overrides?: Record<string, string> } = {};
+    const request: {
+      preset?: string;
+      phases?: string[];
+      task_ids?: string[];
+      max_parallel?: number;
+      env_overrides?: Record<string, string>;
+    } = {};
     if (this.runModeIndex === 0 && this.selectedPreset) {
       request.preset = this.selectedPreset;
     } else if (this.selectedPhases.length > 0) {
@@ -932,6 +1487,19 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     }
     if (Object.keys(overrides).length > 0) {
       request.env_overrides = overrides;
+    }
+
+    // Parallel task mode — auto-filter to task-bearing phases only
+    if (this.parallelEnabled && this.selectedTaskIds.length > 0) {
+      request.task_ids = this.selectedTaskIds;
+      request.max_parallel = this.maxParallel;
+      // Use phasesToRun() which already filters to task-bearing phases
+      request.phases = this.phasesToRun();
+      delete request.preset; // Parallel routing requires explicit phases
+      if (request.phases.length === 0) {
+        this.logLines = ['ERROR: No task-bearing phases selected. Parallel mode requires triage, plan, implement, verify, or deliver.'];
+        return;
+      }
     }
 
     this.logLines = [];
@@ -1138,5 +1706,104 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     if (line.includes('WARNING') || line.includes('Warn')) return 'log-warning';
     if (line.includes('INFO') || line.includes('\u2713')) return 'log-info';
     return '';
+  }
+
+  // --- Parallel Task Methods ---
+
+  private readonly _taskBearingPhases = new Set(['triage', 'plan', 'implement', 'verify', 'deliver']);
+
+  hasTriageOrPlan(): boolean {
+    if (this.runModeIndex === 0 && this.selectedPreset) {
+      const phases = this.getPresetPhases();
+      return phases.some((p) => p === 'triage' || p === 'plan');
+    }
+    return this.selectedPhases.some((p) => p === 'triage' || p === 'plan');
+  }
+
+  /** Phases that will actually execute (for preview card). */
+  phasesToRun(): string[] {
+    let phases: string[];
+    if (this.runModeIndex === 0 && this.selectedPreset) {
+      phases = this.getPresetPhases();
+    } else {
+      phases = this.selectedPhases;
+    }
+    // In parallel mode, only task-bearing phases are sent to the backend
+    if (this.parallelEnabled && this.selectedTaskIds.length > 0) {
+      return phases.filter((p) => this._taskBearingPhases.has(p));
+    }
+    return phases;
+  }
+
+  onParallelToggle(): void {
+    if (this.parallelEnabled && this.availableTaskIds.length > 0 && this.selectedTaskIds.length === 0) {
+      // Auto-select all tasks when enabling
+      this.selectedTaskIds = [...this.availableTaskIds];
+    }
+  }
+
+  selectAllTasks(): void {
+    if (this.selectedTaskIds.length === this.availableTaskIds.length) {
+      this.selectedTaskIds = [];
+    } else {
+      this.selectedTaskIds = [...this.availableTaskIds];
+    }
+  }
+
+  toggleTaskId(taskId: string, checked: boolean | null): void {
+    if (checked) {
+      if (!this.selectedTaskIds.includes(taskId)) {
+        this.selectedTaskIds = [...this.selectedTaskIds, taskId];
+      }
+    } else {
+      this.selectedTaskIds = this.selectedTaskIds.filter((t) => t !== taskId);
+    }
+  }
+
+  taskProgressEntries(): { id: string; state: string; pid?: number; exit_code?: number }[] {
+    if (!this.status?.task_progress) return [];
+    return Object.entries(this.status.task_progress).map(([id, tp]) => ({
+      id,
+      state: (tp as TaskProgress).state,
+      pid: (tp as TaskProgress).pid ?? undefined,
+      exit_code: (tp as TaskProgress).exit_code ?? undefined,
+    }));
+  }
+
+  taskProgressCompleted(): number {
+    return this.taskProgressEntries().filter((e) => e.state === 'completed').length;
+  }
+
+  taskProgressTotal(): number {
+    return this.taskProgressEntries().length;
+  }
+
+  taskStateIcon(state: string): string {
+    switch (state) {
+      case 'completed': return 'check_circle';
+      case 'running': return 'play_circle';
+      case 'failed': return 'error';
+      case 'cancelled': return 'cancel';
+      default: return 'hourglass_empty';
+    }
+  }
+
+  resetSingleTask(taskId: string): void {
+    if (!confirm(`Reset triage + plan output for "${taskId}"?\n\nThis will delete all triage and plan files for this task only. Other tasks are NOT affected.`)) {
+      return;
+    }
+    this.pipeline.resetTask([taskId], ['triage', 'plan']).subscribe({
+      next: (res) => {
+        this.logLines = [...this.logLines, `[RESET] ${taskId}: deleted ${res.deleted_count} file(s)`];
+        this.filterLogs();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        const msg = err?.error?.detail || 'Failed to reset task';
+        this.logLines = [...this.logLines, `[RESET] ERROR: ${msg}`];
+        this.filterLogs();
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

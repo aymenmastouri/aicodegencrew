@@ -137,8 +137,14 @@ class SDLCOrchestrator:
         result = orchestrator.run(preset="document")
     """
 
-    def __init__(self, config_path: str | None = None):
-        """Initialize with optional config path."""
+    def __init__(self, config_path: str | None = None, task_id: str | None = None):
+        """Initialize with optional config path.
+
+        Args:
+            config_path: Path to phases_config.yaml.
+            task_id: Optional single task ID filter (--task-id). Injected into
+                     inputs["config"]["task_id"] so phases can filter accordingly.
+        """
         self.config_path = config_path or self._default_config_path()
         self.config = self._load_config()
         self.contract: PipelineContract = build_pipeline_contract(self.config, config_path=self.config_path)
@@ -146,6 +152,7 @@ class SDLCOrchestrator:
         self.results: dict[str, PhaseResult] = {}
         self.phase_context = PhaseContext()
         self._start_time: datetime | None = None
+        self._task_id: str | None = task_id
         # PERF-2: architecture_facts.json cached after extract phase completes.
         # Downstream phases can read from inputs["previous_results"]["facts"]
         # instead of re-loading the 2.8 MB file from disk.
@@ -315,8 +322,12 @@ class SDLCOrchestrator:
                 message="Dependencies not met",
             )
 
-        # Clean stale output before re-running (preserve checkpoint files for resume)
-        self._reset_phase_output(phase_id)
+        # Clean stale output before re-running (preserve checkpoint files for resume).
+        # In --task-id mode (parallel), only clean this task's files — not the entire dir.
+        if self._task_id:
+            self._reset_task_files(phase_id, self._task_id)
+        else:
+            self._reset_phase_output(phase_id)
 
         # Execute
         display = PHASES[phase_id].display_name if phase_id in PHASES else phase_id
@@ -329,6 +340,8 @@ class SDLCOrchestrator:
             executable = self.phases[phase_id]
             config = self._contract_from_current_config().phases.get(phase_id)
             phase_config = dict(config.config) if config else {}
+            if self._task_id:
+                phase_config["task_id"] = self._task_id
 
             # Build inputs (PERF-2: include cached facts if available)
             previous_results = {pid: r.output for pid, r in self.results.items() if r.is_success()}
@@ -456,6 +469,25 @@ class SDLCOrchestrator:
             else:
                 target.unlink()
                 logger.info(f"[Orchestrator] Deleted {rel}")
+
+    def _reset_task_files(self, phase_id: str, task_id: str) -> None:
+        """Clean only this task's output files — safe for parallel execution.
+
+        Instead of deleting the entire phase output directory (which would
+        destroy other tasks' files running in parallel), only removes files
+        matching ``{task_id}_*`` in the phase output directory.
+        """
+        base = Path.cwd()
+        for rel in get_cleanup_targets(phase_id):
+            target = base / rel
+            if not target.exists() or not target.is_dir():
+                continue
+            # Ensure the dir and logs subdir exist (parallel tasks share them)
+            (target / "logs").mkdir(parents=True, exist_ok=True)
+            # Delete only this task's files
+            for f in target.glob(f"{task_id}_*"):
+                f.unlink()
+                logger.info("[Orchestrator] Deleted %s (task-id=%s)", f.name, task_id)
 
     def _invoke_executable(self, executable: PhaseExecutable, inputs: dict[str, Any]) -> Any:
         """Invoke phase with a wall-clock timeout (ARCH-6).

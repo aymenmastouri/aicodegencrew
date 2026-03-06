@@ -26,12 +26,12 @@ test.describe('Dashboard', () => {
   test('should display pipeline phases with status', async ({ page }) => {
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
     const phaseCards = page.locator('.phase-card');
-    await expect(phaseCards).toHaveCount(8);
+    await expect(phaseCards).toHaveCount(9);
   });
 
-  test('should show phase index numbers 1-8', async ({ page }) => {
+  test('should show phase index numbers 1-9', async ({ page }) => {
     await expect(page.locator('.phase-grid')).toBeVisible({ timeout: 10_000 });
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 9; i++) {
       await expect(page.locator('.phase-index').nth(i)).toContainText(String(i + 1));
     }
   });
@@ -51,7 +51,7 @@ test.describe('Dashboard', () => {
       await expect(completed.first()).toBeVisible();
     }
     // Always true: total phase cards should be 8
-    await expect(page.locator('.phase-card')).toHaveCount(8);
+    await expect(page.locator('.phase-card')).toHaveCount(9);
   });
 
   test('should show status labels on phase cards', async ({ page }) => {
@@ -59,7 +59,7 @@ test.describe('Dashboard', () => {
     // Each phase card has a status label (completed, ready, planned, etc.)
     const labels = page.locator('.phase-card .status-label');
     const count = await labels.count();
-    expect(count).toBe(8);
+    expect(count).toBe(9);
     // Each label should have non-empty text
     const text = await labels.first().textContent();
     expect(text?.trim().length).toBeGreaterThan(0);

@@ -168,6 +168,16 @@ def _newest_mtime(task_id: str) -> str | None:
     return datetime.fromtimestamp(newest, tz=timezone.utc).isoformat()
 
 
+def get_input_task_ids() -> list[str]:
+    """Return task IDs from inputs/tasks/ directory."""
+    if not _inputs_tasks.is_dir():
+        return []
+    return sorted(
+        f.stem for f in _inputs_tasks.iterdir()
+        if f.is_file() and not f.name.startswith(".") and _SAFE_ID_RE.match(f.stem)
+    )
+
+
 def list_tasks() -> list[dict]:
     """Discover all task IDs and return a summary for each."""
     task_ids = _discover_task_ids()

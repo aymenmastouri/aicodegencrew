@@ -12,7 +12,8 @@ import threading
 import time
 import uuid
 from collections.abc import Generator
-from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -40,6 +41,8 @@ class RunInfo:
     phases: list[str]
     started_at: str
     pid: int | None = None
+    parallel_mode: bool = False
+    task_ids: list[str] = field(default_factory=list)
 
 
 _MAX_LOG_LINES = 10_000
@@ -71,6 +74,11 @@ class PipelineExecutor:
         self._started_at: float | None = None
         self._finished_at: float | None = None
         self._exit_code: int | None = None
+        # Parallel task execution state
+        self._task_processes: dict[str, subprocess.Popen] = {}
+        self._task_states: dict[str, dict] = {}  # task_id -> {state, pid, exit_code, log_lines}
+        self._task_states_lock = threading.Lock()
+        self._parallel_outcome: str | None = None  # "success" | "partial" | "failed"
 
     def start(
         self,
@@ -166,6 +174,220 @@ class PipelineExecutor:
 
             return self.current_run
 
+    def start_parallel_tasks(
+        self,
+        task_ids: list[str],
+        phases: list[str],
+        max_parallel: int = 4,
+        env_overrides: dict[str, str] | None = None,
+    ) -> RunInfo:
+        """Start parallel subprocess execution — one subprocess per task.
+
+        Each subprocess runs: python -m aicodegencrew run --phases <phases> --task-id <task_id>
+        Uses a thread pool to cap concurrency at max_parallel.
+        """
+        with self._state_lock:
+            if self.state == "running":
+                raise RuntimeError("A pipeline is already running")
+
+            run_id = uuid.uuid4().hex[:8]
+            now = datetime.now(UTC).isoformat()
+
+            # Write temp .env with overrides if needed
+            env_path = settings.env_file
+            if env_overrides:
+                env_path = settings.project_root / ".env.run"
+                self._write_env_with_overrides(env_overrides, env_path)
+
+            phase_list = self._filter_disabled_phases(list(phases))
+
+            self.current_run = RunInfo(
+                run_id=run_id,
+                preset=None,
+                phases=phase_list,
+                started_at=now,
+                parallel_mode=True,
+                task_ids=list(task_ids),
+            )
+            self.state = "running"
+            self._log_lines = []
+            self._exit_code = None
+            self._engine_run_id = None
+            self._started_at = time.monotonic()
+            self._finished_at = None
+            self._run_started_wall = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+            # Initialize per-task state
+            with self._task_states_lock:
+                self._task_processes = {}
+                self._task_states = {
+                    tid: {"state": "pending", "pid": None, "exit_code": None, "log_lines": []}
+                    for tid in task_ids
+                }
+
+        with self._log_lock:
+            self._log_lines.append(
+                f"[PARALLEL] Starting {len(task_ids)} task(s) with max_parallel={max_parallel}"
+            )
+
+        # Launch monitor thread that manages the parallel execution
+        monitor = threading.Thread(
+            target=self._run_parallel_tasks,
+            args=(task_ids, phase_list, max_parallel, env_path),
+            name=f"parallel-monitor-{run_id}",
+            daemon=True,
+        )
+        monitor.start()
+
+        return self.current_run
+
+    def _run_parallel_tasks(
+        self,
+        task_ids: list[str],
+        phases: list[str],
+        max_parallel: int,
+        env_path: Path,
+    ) -> None:
+        """Thread that manages parallel subprocess execution via a ThreadPoolExecutor."""
+        results: dict[str, int] = {}
+
+        def run_single_task(task_id: str) -> tuple[str, int]:
+            """Spawn and monitor one subprocess for a single task."""
+            cmd = [
+                sys.executable, "-m", "aicodegencrew",
+                "--env", str(env_path),
+                "run",
+                "--phases", *phases,
+                "--task-id", task_id,
+            ]
+
+            with self._log_lock:
+                self._log_lines.append(f"[PARALLEL] [{task_id}] Starting: {' '.join(cmd)}")
+
+            try:
+                proc = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    cwd=str(settings.project_root),
+                    bufsize=1,
+                )
+            except Exception as exc:
+                with self._task_states_lock:
+                    self._task_states[task_id]["state"] = "failed"
+                with self._log_lock:
+                    self._log_lines.append(f"[PARALLEL] [{task_id}] Failed to start: {exc}")
+                return task_id, 1
+
+            with self._task_states_lock:
+                self._task_processes[task_id] = proc
+                self._task_states[task_id]["state"] = "running"
+                self._task_states[task_id]["pid"] = proc.pid
+                self._task_states[task_id]["current_phase"] = None
+                self._task_states[task_id]["completed_phases"] = []
+
+            try:
+                # Read stdout line by line
+                if proc.stdout:
+                    for line in proc.stdout:
+                        line = line.rstrip("\n\r")
+                        with self._log_lock:
+                            self._log_lines.append(f"[{task_id}] {line}")
+                            if len(self._log_lines) > _MAX_LOG_LINES:
+                                self._log_lines = self._log_lines[-_MAX_LOG_LINES:]
+                        with self._task_states_lock:
+                            task_logs = self._task_states[task_id]["log_lines"]
+                            task_logs.append(line)
+                            if len(task_logs) > 500:
+                                self._task_states[task_id]["log_lines"] = task_logs[-500:]
+                            # Detect phase transitions from log output
+                            self._detect_phase_from_log(task_id, line)
+
+                try:
+                    exit_code = proc.wait(timeout=3600)  # 1h max per task
+                except subprocess.TimeoutExpired:
+                    logger.warning("[PARALLEL] [%s] Timed out after 3600s — killing", task_id)
+                    self._kill_process_tree(proc.pid)
+                    try:
+                        proc.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        proc.kill()
+                    exit_code = -1
+            except Exception as io_exc:
+                # Ensure process is killed if stdout reading or wait fails
+                logger.error("[PARALLEL] [%s] I/O error: %s — killing process", task_id, io_exc)
+                try:
+                    self._kill_process_tree(proc.pid)
+                    proc.wait(timeout=10)
+                except Exception:
+                    proc.kill()
+                exit_code = -1
+
+            with self._task_states_lock:
+                self._task_states[task_id]["exit_code"] = exit_code
+                self._task_states[task_id]["state"] = "completed" if exit_code == 0 else "failed"
+
+            with self._log_lock:
+                state_label = "completed" if exit_code == 0 else f"failed (exit={exit_code})"
+                self._log_lines.append(f"[PARALLEL] [{task_id}] {state_label}")
+
+            return task_id, exit_code
+
+        try:
+            with ThreadPoolExecutor(max_workers=min(max_parallel, len(task_ids))) as pool:
+                futures = {pool.submit(run_single_task, tid): tid for tid in task_ids}
+                for future in futures:
+                    try:
+                        task_id, exit_code = future.result()
+                        results[task_id] = exit_code
+                    except Exception as exc:
+                        tid = futures[future]
+                        results[tid] = 1
+                        with self._task_states_lock:
+                            self._task_states[tid]["state"] = "failed"
+                        with self._log_lock:
+                            self._log_lines.append(f"[PARALLEL] [{tid}] Exception: {exc}")
+
+            # Determine overall outcome
+            succeeded = sum(1 for code in results.values() if code == 0)
+            total = len(results)
+
+            with self._state_lock:
+                if succeeded == total:
+                    self.state = "completed"
+                elif succeeded > 0:
+                    self.state = "completed"  # partial success — still terminal "completed"
+                else:
+                    self.state = "failed"
+                # Store outcome for history
+                if succeeded == total:
+                    self._parallel_outcome = "success"
+                elif succeeded > 0:
+                    self._parallel_outcome = "partial"
+                else:
+                    self._parallel_outcome = "failed"
+                self._finished_at = time.monotonic()
+
+            with self._log_lock:
+                self._log_lines.append(
+                    f"[PARALLEL] All tasks finished: {succeeded}/{total} succeeded"
+                )
+
+            snapshot = None
+            with self._state_lock:
+                snapshot = self._snapshot_for_history()
+            self._append_history_entry(snapshot)
+
+        except Exception as exc:
+            logger.error("Parallel monitor thread error: %s", exc)
+            with self._state_lock:
+                if self.state == "running":
+                    self.state = "failed"
+                    self._finished_at = time.monotonic()
+                snapshot = self._snapshot_for_history()
+            self._append_history_entry(snapshot)
+
     @staticmethod
     def _filter_disabled_phases(phase_ids: list[str]) -> list[str]:
         """Hide config-disabled phases from UI progress totals/lists."""
@@ -187,6 +409,26 @@ class PipelineExecutor:
         subprocess runs detected via phase_state.json.
         """
         with self._state_lock:
+            # Case 0: Parallel mode — kill all task subprocesses
+            if self.state == "running" and self.current_run and self.current_run.parallel_mode:
+                try:
+                    with self._task_states_lock:
+                        procs_snapshot = dict(self._task_processes)
+                        for tid, proc in procs_snapshot.items():
+                            try:
+                                self._kill_process_tree(proc.pid)
+                            except Exception as exc:
+                                logger.warning("Failed to kill task %s (pid %s): %s", tid, proc.pid, exc)
+                            if tid in self._task_states:
+                                self._task_states[tid]["state"] = "cancelled"
+                    self.state = "cancelled"
+                    self._finished_at = time.monotonic()
+                    logger.info("Parallel pipeline cancelled: run_id=%s", self.current_run.run_id)
+                    return True
+                except Exception as exc:
+                    logger.error("Failed to cancel parallel pipeline: %s", exc)
+                    return False
+
             # Case 1: Dashboard-started run with live process
             if self.state == "running" and self._process is not None:
                 try:
@@ -319,6 +561,10 @@ class PipelineExecutor:
                     self.current_run = None
                     self._engine_run_id = None
                     self._run_started_wall = None
+                    # Clean parallel task state to prevent ghost tasks in UI
+                    with self._task_states_lock:
+                        self._task_processes.clear()
+                        self._task_states.clear()
             state = self.state
             started_at = self._started_at
             finished_at = self._finished_at
@@ -337,6 +583,148 @@ class PipelineExecutor:
             # Show elapsed since run started (not growing endlessly)
             elapsed = round((finished_at or time.monotonic()) - started_at, 1)
 
+        # ------------------------------------------------------------------
+        # Parallel mode: synthesise phase_progress from task states
+        # because metrics.jsonl has race conditions (first subprocess to
+        # finish marks phases "completed" while others still run).
+        # ------------------------------------------------------------------
+        if current_run and current_run.parallel_mode:
+            with self._task_states_lock:
+                task_total = len(self._task_states)
+                tasks_completed = sum(1 for ts in self._task_states.values() if ts["state"] == "completed")
+                tasks_failed = sum(1 for ts in self._task_states.values() if ts["state"] == "failed")
+                tasks_done = tasks_completed + tasks_failed
+                requested_phases = set(current_run.phases) if current_run else set()
+                task_progress = {}
+                for tid, ts in self._task_states.items():
+                    display_state = ts["state"]
+                    # If subprocess is still "running" but all requested phases are in
+                    # completed_phases, show as "completed" — subprocess is doing final
+                    # cleanup/writes and proc.wait() hasn't returned yet.
+                    if display_state == "running" and requested_phases:
+                        done_phases = set(ts.get("completed_phases", []))
+                        if requested_phases.issubset(done_phases):
+                            display_state = "completed"
+                    task_progress[tid] = {
+                        "state": display_state,
+                        "pid": ts["pid"],
+                        "exit_code": ts["exit_code"],
+                        "completed_phases": ts.get("completed_phases", []),
+                    }
+
+            # Determine per-phase status by aggregating per-task phase tracking.
+            # A phase is:
+            #   "completed" → ALL tasks have completed it
+            #   "running"   → at least one task is currently executing it
+            #   "pending"   → no task has reached it yet
+            if state == "running":
+                phase_progress = []
+                for pid in current_run.phases:
+                    tasks_on_phase = 0
+                    tasks_past_phase = 0
+                    for ts in self._task_states.values():
+                        completed_phases = ts.get("completed_phases", [])
+                        current_phase = ts.get("current_phase")
+                        task_done = ts.get("state") in ("completed", "failed")
+                        if task_done:
+                            tasks_past_phase += 1
+                        elif pid in completed_phases:
+                            tasks_past_phase += 1
+                        elif current_phase == pid:
+                            tasks_on_phase += 1
+
+                    if tasks_past_phase == task_total:
+                        p_status = PHASE_PROGRESS_COMPLETED
+                    elif tasks_on_phase > 0:
+                        p_status = PHASE_PROGRESS_RUNNING
+                    elif tasks_past_phase > 0:
+                        # Some tasks passed this phase, none currently on it
+                        # but not all done → show as completed (partial)
+                        p_status = PHASE_PROGRESS_COMPLETED
+                    else:
+                        p_status = PHASE_PROGRESS_PENDING
+
+                    phase_progress.append({
+                        "phase_id": pid,
+                        "name": pid.replace("_", " ").title(),
+                        "status": p_status,
+                        "started_at": current_run.started_at,
+                        "duration_seconds": None,
+                    })
+            else:
+                if state == "cancelled":
+                    phase_status = PHASE_PROGRESS_CANCELLED
+                elif tasks_completed == task_total:
+                    phase_status = PHASE_PROGRESS_COMPLETED
+                elif tasks_completed > 0:
+                    phase_status = PHASE_PROGRESS_PARTIAL
+                else:
+                    phase_status = PHASE_PROGRESS_FAILED
+                phase_progress = [
+                    {
+                        "phase_id": pid,
+                        "name": pid.replace("_", " ").title(),
+                        "status": phase_status,
+                        "started_at": current_run.started_at,
+                        "duration_seconds": elapsed,
+                    }
+                    for pid in current_run.phases
+                ]
+
+            total = len(current_run.phases)
+            if state == "running":
+                # Progress = fraction of phase-steps completed across all tasks.
+                # E.g. 2 tasks × 2 phases = 4 steps; triage done for both = 50%.
+                num_phases = len(current_run.phases)
+                total_steps = num_phases * task_total
+                completed_steps = 0
+                for ts in self._task_states.values():
+                    if ts["state"] in ("completed", "failed"):
+                        # Fully-done task counts for all phases
+                        completed_steps += num_phases
+                    else:
+                        completed_steps += len(ts.get("completed_phases", []))
+                progress = round(completed_steps / total_steps * 100, 1) if total_steps > 0 else 0
+                completed_count = sum(
+                    1 for p in phase_progress if p.get("status") == PHASE_PROGRESS_COMPLETED
+                )
+                skipped_count = 0
+            else:
+                progress = 100.0
+                completed_count = total
+                skipped_count = 0
+
+            live_metrics = self._read_live_metrics() if state == "running" else None
+            eta = self._estimate_eta(elapsed) if state == "running" and elapsed else None
+
+            run_outcome = None
+            if state in ("completed", "failed", "cancelled"):
+                run_outcome = self._parallel_outcome or (
+                    "success" if state == "completed" else "failed"
+                )
+
+            return {
+                "state": state,
+                "run_id": current_run.run_id,
+                "preset": current_run.preset,
+                "phases": current_run.phases,
+                "started_at": current_run.started_at,
+                "elapsed_seconds": elapsed,
+                "phase_progress": phase_progress,
+                "progress_percent": progress,
+                "completed_phase_count": completed_count,
+                "skipped_phase_count": skipped_count,
+                "total_phase_count": total,
+                "eta_seconds": eta,
+                "live_metrics": live_metrics,
+                "run_outcome": run_outcome,
+                "parallel_mode": True,
+                "task_progress": task_progress,
+            }
+
+        # ------------------------------------------------------------------
+        # Normal (non-parallel) mode: read from metrics.jsonl as before
+        # ------------------------------------------------------------------
         raw_phase_progress = (
             self._read_phase_progress() if state in ("running", "completed", "failed", "cancelled") else []
         )
@@ -395,11 +783,10 @@ class PipelineExecutor:
         # Compute run_outcome for terminal states
         run_outcome = None
         if state in ("completed", "failed", "cancelled"):
-            run_outcome = (
-                self._compute_run_outcome(phase_progress)
-                if phase_progress
-                else ("success" if state == "completed" else "failed")
-            )
+            if phase_progress:
+                run_outcome = self._compute_run_outcome(phase_progress)
+            else:
+                run_outcome = "success" if state == "completed" else "failed"
 
         return {
             "state": state,
@@ -549,7 +936,7 @@ class PipelineExecutor:
         """
         if not self.current_run:
             return None
-        return {
+        snap = {
             "run_id": self.current_run.run_id,
             "engine_run_id": self._engine_run_id,
             "state": self.state,
@@ -558,6 +945,19 @@ class PipelineExecutor:
             "started_at": self.current_run.started_at,
             "mono_started_at": self._started_at,
         }
+        # Include parallel-mode metadata for history
+        if self.current_run.parallel_mode:
+            snap["parallel_mode"] = True
+            snap["parallel_outcome"] = self._parallel_outcome
+            snap["task_ids"] = list(self.current_run.task_ids)
+            with self._task_states_lock:
+                snap["task_results"] = {
+                    tid: {"state": ts["state"], "exit_code": ts.get("exit_code")}
+                    for tid, ts in self._task_states.items()
+                }
+        else:
+            snap["parallel_mode"] = False
+        return snap
 
     def _append_history_entry(self, snapshot: dict | None) -> None:
         """Append a run entry to the JSONL history.
@@ -576,7 +976,12 @@ class PipelineExecutor:
             phase_progress = [p for p in raw_phase_progress if not self._is_unregistered_skip(p)]
             run_outcome = None
             if state in ("completed", "failed", "cancelled"):
-                if phase_progress:
+                # Parallel mode: use _parallel_outcome (not phase_state.json which may be stale)
+                if snapshot.get("parallel_mode"):
+                    run_outcome = snapshot.get("parallel_outcome") or (
+                        "success" if state == "completed" else "failed"
+                    )
+                elif phase_progress:
                     run_outcome = self._compute_run_outcome(phase_progress)
                 else:
                     # No metrics events — try phase_state.json as secondary source
@@ -595,8 +1000,7 @@ class PipelineExecutor:
                         logger.debug("Failed to read phase_state for run outcome: %s", exc)
                     if run_outcome is None:
                         run_outcome = "success" if state == "completed" else "failed"
-            append_run_to_history(
-                {
+            entry = {
                     "run_id": snapshot["run_id"],
                     "engine_run_id": snapshot["engine_run_id"],
                     "status": state,
@@ -608,7 +1012,12 @@ class PipelineExecutor:
                     "completed_at": datetime.now(UTC).isoformat(),
                     "duration_seconds": duration,
                 }
-            )
+            # Add parallel-mode metadata if present
+            if snapshot.get("parallel_mode"):
+                entry["parallel_mode"] = True
+                entry["task_ids"] = snapshot.get("task_ids", [])
+                entry["task_results"] = snapshot.get("task_results", {})
+            append_run_to_history(entry)
         except Exception as exc:
             logger.warning("Failed to write history entry: %s", exc)
 
@@ -688,6 +1097,65 @@ class PipelineExecutor:
                 return False
 
         return True
+
+    def _detect_phase_from_log(self, task_id: str, line: str) -> None:
+        """Parse subprocess log line to detect phase transitions.
+
+        Must be called with _task_states_lock held.
+        Expected log patterns:
+            [Phase] Triage (triage)
+            [Phase] Development Planning (plan)
+            [Phase] ... — completed in X.Xs
+            [Phase] ... — skipped in X.Xs
+            [Phase] ... — failed ...
+        """
+        if "[Phase]" not in line:
+            return
+
+        ts = self._task_states.get(task_id)
+        if not ts:
+            return
+
+        # Phase completion: look for "completed" / "success" / "skipped" / "partial"
+        # Orchestrator writes: "[Phase] Display — {status} in X.XXs"
+        # where status is one of: success, partial, skipped, failed
+        if "completed in" in line or "success in" in line or "skipped in" in line or "partial in" in line:
+            current = ts.get("current_phase")
+            if current:
+                completed = ts.get("completed_phases", [])
+                if current not in completed:
+                    completed.append(current)
+                ts["completed_phases"] = completed
+                ts["current_phase"] = None
+            return
+
+        if "failed" in line.lower():
+            # Mark current phase as completed (with failure) so stepper advances
+            current = ts.get("current_phase")
+            if current:
+                completed = ts.get("completed_phases", [])
+                if current not in completed:
+                    completed.append(current)
+                ts["completed_phases"] = completed
+                ts["current_phase"] = None
+            return
+
+        # Phase start: extract phase_id from parentheses, e.g. "[Phase] Triage (triage)"
+        m = re.search(r"\[Phase\]\s+.+?\((\w+)\)", line)
+        if m:
+            phase_id = m.group(1)
+            ts["current_phase"] = phase_id
+
+    def _read_phase_state_file(self) -> dict[str, dict]:
+        """Read phase_state.json written by subprocesses to get actual per-phase status."""
+        state_file = settings.project_root / "logs" / "phase_state.json"
+        if not state_file.exists():
+            return {}
+        try:
+            data = json.loads(state_file.read_text(encoding="utf-8"))
+            return data.get("phases", {})
+        except Exception:
+            return {}
 
     def _read_phase_progress(self) -> list[dict]:
         """Read phase progress from metrics.jsonl tail, including sub-phase data."""

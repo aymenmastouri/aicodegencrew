@@ -1,4 +1,4 @@
-"""Triage Crew Task — embeds all context for dual-output synthesis."""
+"""Triage Crew Tasks — analyst synthesis + reviewer validation (mini-crew)."""
 
 from crewai import Agent, Task
 
@@ -155,4 +155,70 @@ CRITICAL RULES:
             "anticipated questions, and analytical insights."
         ),
         agent=agent,
+    )
+
+
+def create_review_task(reviewer_agent: Agent) -> Task:
+    """Create the triage quality review task.
+
+    The reviewer validates the Context Analyst's output and fixes quality issues.
+    Runs as Task 2 in the sequential mini-crew — receives Task 1's output as context.
+    """
+    return Task(
+        description="""\
+TASK: Review and Validate Triage Synthesis Output
+
+You receive the output from the Issue Context Analyst (Task 1). Your job is to
+VALIDATE it against quality standards and FIX any issues.
+
+QUALITY CHECKLIST — check each point:
+
+1. big_picture (NORTH STAR):
+   - Must answer: What? Who? Why? Why NOW? What if we don't?
+   - Must be at least 2-3 sentences, not a single vague line
+   - Must contain a motivation word (why, because, needed, risk, etc.)
+   - FAIL if empty, too short (<50 chars), or missing WHY
+
+2. scope_boundary:
+   - Must explicitly state what's IN scope and OUT of scope
+   - FAIL if it doesn't mention both IN and OUT
+
+3. architecture_notes (WALKTHROUGH):
+   - Must show WHERE the work fits: container → layer → component → neighbors
+   - Must be at least 2 sentences
+   - FAIL if it's just "See components" or a single-line placeholder
+
+4. anticipated_questions:
+   - Must have 3-5 developer-relevant Q&A pairs
+   - Questions must be specific to THIS issue (not generic like "How to test?")
+   - Answers must be concrete and based on codebase knowledge
+   - FAIL if fewer than 3 questions
+
+5. context_boundaries:
+   - Must be ANALYTICAL (explain what facts MEAN for this issue)
+   - Must NOT be data copies (just listing versions/names = FAIL)
+   - Each must have source_facts citing file names
+   - Must have at least 2 boundaries
+   - FAIL if boundaries are just version listings
+
+6. customer_summary:
+   - summary must explain WHY, not just WHAT
+   - impact_level must be appropriate
+   - is_bug must be correct
+
+7. NO ACTION STEPS:
+   - Remove any "implement", "modify", "create", "fix the" instructions
+   - Triage context is for UNDERSTANDING, not PLANNING
+
+INSTRUCTIONS:
+- If ALL checks pass: return the JSON UNCHANGED
+- If issues found: FIX them and return the CORRECTED JSON
+- Your output must be VALID JSON with the same structure
+- Do NOT add new fields or change the structure
+- Do NOT add explanatory text outside the JSON""",
+        expected_output=(
+            "A validated and potentially corrected JSON object with customer_summary "
+            "and developer_context, meeting all quality standards."
+        ),
+        agent=reviewer_agent,
     )

@@ -418,7 +418,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         clean_knowledge("all")
 
     # Initialize orchestrator
-    orchestrator = SDLCOrchestrator(config_path=config.config_path)
+    orchestrator = SDLCOrchestrator(config_path=config.config_path, task_id=config.task_id)
 
     # Resolve which phases will run (strict validation)
     try:
@@ -483,6 +483,13 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         triage_files = sorted(triage_input_dir.glob("*")) if triage_input_dir.exists() else []
         triage_files = [f for f in triage_files if f.is_file() and not f.name.startswith(".")]
 
+        # Filter to single task if --task-id provided
+        if config.task_id:
+            triage_files = [f for f in triage_files if f.stem == config.task_id]
+            logger.info("[Triage] --task-id=%s → filtered to %d file(s)", config.task_id, len(triage_files))
+            if not triage_files:
+                logger.error("[Triage] --task-id=%s matched no files in %s", config.task_id, triage_input_dir)
+
         # Collect supplementary files (same as plan phase)
         triage_supplementary: dict[str, list[str]] = {}
         for env_key, category in [
@@ -515,6 +522,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
                     self._requests = requests
 
                 def kickoff(self, inputs=None):
+                    if not self._requests:
+                        logger.info("[Triage] No requests to process — skipping")
+                        return {"status": "skipped", "phase": "triage", "triaged": 0, "total": 0}
                     results = []
                     for req in self._requests:
                         try:
@@ -523,9 +533,33 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
                         except Exception as exc:
                             logger.error("[Triage] Failed to triage %s: %s", req.issue_id, exc)
                             results.append({"status": "failed", "issue_id": req.issue_id, "error": str(exc)})
-                    success_count = sum(1 for r in results if r.get("status") in ("success", "partial"))
-                    status = "success" if success_count == len(results) else ("partial" if success_count else "failed")
-                    return {"status": status, "phase": "triage", "triaged": success_count, "total": len(results)}
+                    full_success = sum(1 for r in results if r.get("status") == "success")
+                    partial_count = sum(1 for r in results if r.get("status") == "partial")
+                    failed_count = sum(1 for r in results if r.get("status") == "failed")
+
+                    if full_success == len(results):
+                        status = "success"
+                    elif failed_count == len(results):
+                        status = "failed"
+                    else:
+                        status = "partial"
+
+                    if failed_count:
+                        llm_errors = [r.get("llm_error", "unknown") for r in results if r.get("status") == "failed"]
+                        logger.error(
+                            "[Triage] %d/%d task(s) FAILED LLM synthesis — "
+                            "developer_context is EMPTY for those tasks. Errors: %s",
+                            failed_count, len(results), "; ".join(llm_errors),
+                        )
+
+                    return {
+                        "status": status,
+                        "phase": "triage",
+                        "triaged": full_success,
+                        "partial": partial_count,
+                        "failed": failed_count,
+                        "total": len(results),
+                    }
 
             orchestrator.register_phase("triage", _TriageRunner(_triage_crew, _triage_requests))
         else:
@@ -541,8 +575,10 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     if "plan" in planned_phases:
         from .hybrid.development_planning import DevelopmentPlanningPipeline
 
-        if not config.no_clean:
+        if not config.no_clean and not config.task_id:
             clean_knowledge("plan")
+        elif config.task_id:
+            logger.info("[Plan] Skipping clean_knowledge — --task-id=%s preserves other tasks' outputs", config.task_id)
 
         # Get input directory from .env (REQUIRED - no hardcoded default)
         input_dir = os.getenv("TASK_INPUT_DIR", "")
@@ -562,6 +598,13 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
         input_files = sorted(input_path.glob("*"))
         # Filter out directories and hidden files
         input_files = [f for f in input_files if f.is_file() and not f.name.startswith(".")]
+
+        # Filter to single task if --task-id provided
+        if config.task_id:
+            input_files = [f for f in input_files if f.stem == config.task_id]
+            logger.info("[Plan] --task-id=%s → filtered to %d file(s)", config.task_id, len(input_files))
+            if not input_files:
+                logger.error("[Plan] --task-id=%s matched no files in %s", config.task_id, input_dir)
 
         facts_path = str(phase1_dir / "architecture_facts.json")
         analyzed_path = str(phase2_dir / "analyzed_architecture.json")
@@ -727,6 +770,10 @@ def create_parser() -> argparse.ArgumentParser:
         help="Path to phases_config.yaml",
     )
     run_parser.add_argument(
+        "--task-id",
+        help="Process a single task ID (skip all others)",
+    )
+    run_parser.add_argument(
         "--git-url",
         help="Git repository URL (overrides GIT_REPO_URL in .env)",
     )
@@ -888,6 +935,7 @@ def main(argv: list[str] | None = None) -> int:
             no_clean=args.no_clean,
             git_repo_url=args.git_url,
             git_branch=args.branch,
+            task_id=getattr(args, "task_id", None),
         )
         logger.info(f"[CONFIG] INDEX_MODE = {config.index_mode}")
         return cmd_run(config, preset=args.preset, phases=args.phases)

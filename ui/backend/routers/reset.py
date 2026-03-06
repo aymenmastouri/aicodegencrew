@@ -11,9 +11,9 @@ from fastapi import APIRouter, HTTPException
 from aicodegencrew.phase_registry import get_resettable_phases
 
 from ..config import settings
-from ..schemas import ResetPreview, ResetRequest, ResetResult
+from ..schemas import ResetPreview, ResetRequest, ResetResult, TaskResetRequest, TaskResetResult
 from ..services.pipeline_executor import executor
-from ..services.reset_service import clear_phase_state_only, execute_reset, preview_reset
+from ..services.reset_service import clear_phase_state_only, execute_reset, execute_task_reset, preview_reset
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +93,25 @@ def clear_state(request: ResetRequest):
     """Clear phase status only (no file deletion, no cascade). Used for Discover."""
     cleared = clear_phase_state_only(request.phase_ids)
     return {"cleared": cleared}
+
+
+@router.post("/task", response_model=TaskResetResult)
+def reset_task(request: TaskResetRequest):
+    """Reset output files for specific task IDs only (granular per-task reset).
+
+    Unlike full phase reset, this only deletes files matching {task_id}_* patterns
+    in the specified phases, leaving other tasks' outputs untouched.
+    """
+    if _is_pipeline_running():
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot reset while pipeline is running",
+        )
+
+    return execute_task_reset(
+        task_ids=request.task_ids,
+        phase_ids=request.phase_ids,
+    )
 
 
 @router.post("/all", response_model=ResetResult)

@@ -1,5 +1,5 @@
 {
-  "interfaces": false,
+  "interfaces": true,
   "data_model": true,
   "runtime": true,
   "infrastructure": true,
