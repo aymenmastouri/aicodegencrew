@@ -92,7 +92,11 @@ async function splash(page: Page) {
       <div style="font-size:22px;color:rgba(255,255,255,.6)">
         AI-Powered Development Lifecycle Automation
       </div>
-      <div style="margin-top:24px;font-size:15px;color:rgba(255,255,255,.4);max-width:520px;text-align:center;line-height:1.6">
+      <div style="display:flex;align-items:center;gap:10px;margin-top:20px">
+        <span style="font-size:11px;color:rgba(255,255,255,.3);letter-spacing:1.5px;text-transform:uppercase">by</span>
+        <img src="/assets/logos/Capgemini_Primary-logo_Capgemini-white.png" style="height:22px;opacity:.7" alt="Capgemini" />
+      </div>
+      <div style="margin-top:20px;font-size:15px;color:rgba(255,255,255,.4);max-width:520px;text-align:center;line-height:1.6">
         100% on-premises — your source code and tickets never leave the company network
       </div>
       <div style="margin-top:36px;font-size:12px;color:rgba(255,255,255,.25);letter-spacing:2px;text-transform:uppercase">
@@ -267,7 +271,7 @@ test.describe('Demo Showcase', () => {
     // ═════════════════════════════════════════════════════════
 
     await chapter(page, 1, 'The Platform',
-      'Nine automated phases — from codebase understanding to delivery');
+      'Capgemini SDLC Pilot — nine automated phases from codebase understanding to delivery');
 
     await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
     await p(page, RP);
