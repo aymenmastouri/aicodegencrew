@@ -61,6 +61,10 @@ import { statusLabel, isTerminal } from '../../shared/status';
           <p class="hero-subtitle">
             AI-Powered Development Lifecycle Automation
           </p>
+          <div class="hero-by">
+            <span class="hero-by-label">by</span>
+            <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="hero-cap-logo" />
+          </div>
         </div>
         <div class="hero-stats">
           @if (health) {
@@ -376,6 +380,23 @@ import { statusLabel, isTerminal } from '../../shared/status';
         color: rgba(255, 255, 255, 0.55);
         font-size: 14px;
         margin: 0;
+      }
+      .hero-by {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .hero-by-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.35);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+      }
+      .hero-cap-logo {
+        height: 18px;
+        width: auto;
+        opacity: 0.7;
       }
       .hero-stats {
         display: flex;

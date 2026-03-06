@@ -46,6 +46,8 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
       <a routerLink="/dashboard" class="brand-link">
         <img src="assets/logos/sdlc-pilot-icon.svg" alt="" class="brand-icon" />
         <span class="brand"> <span class="brand-ai">SDLC</span> Pilot </span>
+        <span class="brand-divider"></span>
+        <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="cap-logo" />
       </a>
       <span class="flex-1"></span>
 
@@ -122,7 +124,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
           </div>
           <div class="sidenav-footer">
             <div class="footer-row">
-              <span class="footer-legal">&copy; 2026 Aymen Mastouri</span>
+              <span class="footer-legal">&copy; 2026 Capgemini</span>
               <span class="footer-sep"></span>
               <span class="footer-version">v0.6.2</span>
             </div>
@@ -153,6 +155,17 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         width: 28px;
         height: 28px;
         border-radius: 6px;
+      }
+      .brand-divider {
+        width: 1px;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        margin: 0 12px;
+      }
+      .cap-logo {
+        height: 20px;
+        width: auto;
+        opacity: 0.85;
       }
       .brand {
         font-size: 17px;
