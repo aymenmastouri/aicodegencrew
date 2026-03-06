@@ -3,9 +3,12 @@
 All crews import `create_llm()` from here instead of duplicating the logic.
 """
 
+import logging
 import os
 
 from crewai import LLM
+
+logger = logging.getLogger(__name__)
 
 # Default model - used when MODEL env var is not set.
 # In production, MODEL is always set via .env file.
@@ -59,6 +62,38 @@ def _ensure_provider_prefix(model: str) -> str:
     if any(model.lower().startswith(p) for p in _KNOWN_PREFIXES):
         return model
     return f"openai/{model}"
+
+
+def check_llm_connectivity(*, timeout: int = 10) -> tuple[bool, str]:
+    """Quick health check — can we reach the LLM API?
+
+    Returns (reachable, message). Does NOT consume tokens.
+    Tries a HEAD/GET on the base URL to verify network connectivity.
+    """
+    api_base = os.getenv("API_BASE", "")
+    if not api_base:
+        return True, "No API_BASE set — using default provider (assumed reachable)"
+
+    import urllib.request
+    import urllib.error
+
+    # Try /models endpoint (OpenAI-compatible) or just the base URL
+    for suffix in ("/v1/models", "/models", "/health", ""):
+        url = api_base.rstrip("/") + suffix
+        try:
+            req = urllib.request.Request(url, method="GET")
+            req.add_header("Authorization", f"Bearer {os.getenv('OPENAI_API_KEY', 'test')}")
+            urllib.request.urlopen(req, timeout=timeout)
+            return True, f"LLM API reachable at {api_base}"
+        except urllib.error.HTTPError as e:
+            # 401/403 = server is reachable, just auth issue (that's OK for health check)
+            if e.code in (401, 403, 404, 405):
+                return True, f"LLM API reachable at {api_base} (HTTP {e.code})"
+        except (urllib.error.URLError, OSError, TimeoutError) as e:
+            last_err = str(e)
+            continue
+
+    return False, f"LLM API UNREACHABLE at {api_base}: {last_err}"
 
 
 def create_codegen_llm(

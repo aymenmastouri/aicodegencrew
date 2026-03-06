@@ -319,6 +319,14 @@ presets:
       - analyze
       - triage
 
+  triage-plan:
+    display_name: "Triage + Plan"
+    description: "Triage Jira tickets and generate development plans (parallel-ready)"
+    icon: "bolt"
+    phases:
+      - triage
+      - plan
+
   plan:
     display_name: "Discover → Plan"
     description: "Generate implementation plans from task descriptions"

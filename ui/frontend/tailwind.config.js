@@ -7,8 +7,8 @@ module.exports = {
       colors: {
         'cg-blue': '#0070AD',
         'cg-vibrant': '#12ABDB',
-        'cg-navy': '#2B0A3D',
-        'cg-dark': '#1A1446',
+        'cg-navy': '#0F172A',
+        'cg-dark': '#1E293B',
         'cg-gray': {
           50: '#F8F9FA',
           100: '#E9ECEF',

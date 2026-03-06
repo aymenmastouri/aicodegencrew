@@ -55,13 +55,11 @@ import { statusLabel, isTerminal } from '../../shared/status';
     <div class="page-container">
       <!-- Hero -->
       <div class="hero">
-        <div class="hero-logo" aria-hidden="true">
-          <mat-icon class="hero-icon">bolt</mat-icon>
-        </div>
+        <img src="assets/logos/sdlc-pilot-icon.svg" alt="SDLC Pilot" class="hero-logo-img" />
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
           <p class="hero-subtitle">
-            AI-Powered Development Lifecycle Automation - Discover, Extract, Analyze, Document, Plan, Implement
+            AI-Powered Development Lifecycle Automation
           </p>
         </div>
         <div class="hero-stats">
@@ -190,6 +188,25 @@ import { statusLabel, isTerminal } from '../../shared/status';
           </div>
           <app-pipeline-stepper [steps]="phaseProgress" [circleSize]="38" [stepMinWidth]="90" padding="4px 0 8px">
           </app-pipeline-stepper>
+          @if (parallelMode && taskProgress.length > 0) {
+            <div class="parallel-tasks-section">
+              <div class="parallel-tasks-header">
+                <mat-icon>call_split</mat-icon>
+                <span>{{ taskProgress.length }} parallel tasks</span>
+                <span class="parallel-tasks-count">
+                  {{ taskProgressCompletedCount() }}/{{ taskProgress.length }} done
+                </span>
+              </div>
+              <div class="parallel-tasks-grid">
+                @for (tp of taskProgress; track tp.id) {
+                  <a [routerLink]="'/tasks/' + tp.id" class="ptask-chip" [class]="'ptask-' + tp.state">
+                    <mat-icon class="ptask-icon">{{ taskStateIcon(tp.state) }}</mat-icon>
+                    <span class="ptask-id">{{ tp.id }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -233,6 +250,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
                 <span class="phase-index">{{ i + 1 }}</span>
                 <span class="phase-name">{{ phase.name }}</span>
               </div>
+              <p class="phase-desc">{{ phaseDescriptions[phase.id] || '' }}</p>
               <div class="phase-bottom">
                 <span class="status-dot" [class]="'dot-' + phase.status"></span>
                 <span class="status-label">{{ getStatusLabel(phase.status) }}</span>
@@ -324,19 +342,25 @@ import { statusLabel, isTerminal } from '../../shared/status';
         align-items: center;
         gap: 24px;
         position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.06);
       }
-      .hero-logo {
+      .hero::before {
+        content: '';
         position: absolute;
-        top: 20px;
-        right: 24px;
-        height: 32px;
-        opacity: 0.5;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(18, 171, 219, 0.12) 0%, transparent 70%);
+        pointer-events: none;
       }
-      .hero-icon {
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
-        color: var(--cg-vibrant);
+      .hero-logo-img {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        flex-shrink: 0;
+        filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4));
       }
       .hero-title {
         font-size: 28px;
@@ -500,6 +524,61 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .stepper-link:hover {
         color: var(--cg-blue);
       }
+      /* Parallel tasks in execution section */
+      .parallel-tasks-section {
+        padding: 8px 0 4px;
+        border-top: 1px solid var(--cg-gray-100, #eee);
+        margin-top: 8px;
+      }
+      .parallel-tasks-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--cg-gray-600);
+        margin-bottom: 8px;
+      }
+      .parallel-tasks-header .mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: var(--cg-blue);
+      }
+      .parallel-tasks-count {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--cg-gray-400);
+      }
+      .parallel-tasks-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .ptask-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        cursor: pointer;
+      }
+      .ptask-chip:hover { transform: translateY(-1px); }
+      .ptask-icon { font-size: 14px; width: 14px; height: 14px; }
+      .ptask-id { font-family: 'Cascadia Code', 'Fira Code', monospace; }
+      .ptask-completed { background: rgba(40,167,69,0.1); color: var(--cg-success); }
+      .ptask-running { background: rgba(0,112,173,0.1); color: var(--cg-blue); animation: pulse-chip 2s ease-in-out infinite; }
+      .ptask-failed { background: rgba(220,53,69,0.1); color: var(--cg-error); }
+      .ptask-pending { background: var(--cg-gray-100); color: var(--cg-gray-500); }
+      .ptask-cancelled { background: rgba(245,124,0,0.1); color: var(--cg-warn); }
+      @keyframes pulse-chip {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
       .stepper-cancel-btn {
         font-size: 12px;
         height: 28px;
@@ -555,14 +634,17 @@ import { statusLabel, isTerminal } from '../../shared/status';
         background: #fff;
         border-radius: 10px;
         padding: 14px 16px;
+        border: 1px solid var(--cg-gray-100);
         border-left: 3px solid var(--cg-gray-200);
         cursor: pointer;
         text-decoration: none;
         color: inherit;
-        transition: box-shadow 0.15s;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
       .phase-card:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
       }
       .phase-completed {
         border-left-color: var(--cg-success);
@@ -578,6 +660,22 @@ import { statusLabel, isTerminal } from '../../shared/status';
       }
       .phase-running {
         border-left-color: var(--cg-blue);
+        background: #f0f9ff;
+        border-color: var(--cg-blue);
+        box-shadow: 0 0 0 1px rgba(18, 171, 219, 0.2), 0 4px 16px rgba(18, 171, 219, 0.12);
+        position: relative;
+        overflow: hidden;
+      }
+      .phase-running::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 60%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(18, 171, 219, 0.12), transparent);
+        animation: phase-shimmer 2s ease-in-out infinite;
+      }
+      @keyframes phase-shimmer {
+        0% { left: -60%; }
+        100% { left: 120%; }
       }
       .phase-ready {
         border-left-color: var(--cg-vibrant);
@@ -617,6 +715,17 @@ import { statusLabel, isTerminal } from '../../shared/status';
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .phase-desc {
+        font-size: 11px;
+        color: var(--cg-gray-400);
+        margin: 0 0 6px 0;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
       .phase-bottom {
         display: flex;
         align-items: center;
@@ -646,6 +755,11 @@ import { statusLabel, isTerminal } from '../../shared/status';
       }
       .dot-running {
         background: var(--cg-blue);
+        animation: dot-pulse 1.5s ease-in-out infinite;
+      }
+      @keyframes dot-pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.4); opacity: 0.7; }
       }
       .dot-ready {
         background: var(--cg-vibrant);
@@ -994,6 +1108,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   runOutcome: string = '';
   phaseProgress: PhaseProgress[] = [];
   executionElapsed = 0;
+  parallelMode = false;
+  taskProgress: { id: string; state: string; pid?: number; exit_code?: number }[] = [];
 
   private statusSub?: Subscription;
   private timerSub?: Subscription;
@@ -1002,6 +1118,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Onboarding
   setupStatus: SetupStatus | null = null;
   onboardingDismissed = localStorage.getItem('onboarding_dismissed') === 'true';
+
+  phaseDescriptions: Record<string, string> = {
+    discover: 'Indexes the repository into a searchable knowledge base',
+    extract: 'Extracts architecture facts from code structure',
+    analyze: 'Analyzes patterns, dependencies and architecture',
+    document: 'Generates C4 and Arc42 architecture documentation',
+    triage: 'Classifies and contextualizes incoming tasks',
+    plan: 'Creates detailed development plans for tasks',
+    implement: 'Generates code based on development plans',
+    verify: 'Validates implementations against requirements',
+    deliver: 'Prepares final deliverables and artifacts',
+  };
 
   setupSteps = [
     { label: 'Configure repository', link: '/settings', check: () => this.setupStatus?.repo_configured ?? false },
@@ -1279,6 +1407,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'Run Completed';
     }
   }
+  taskProgressCompletedCount(): number {
+    return this.taskProgress.filter(t => t.state === 'completed').length;
+  }
+
+  taskStateIcon(state: string): string {
+    switch (state) {
+      case 'completed': return 'check_circle';
+      case 'running': return 'play_circle';
+      case 'failed': return 'error';
+      case 'cancelled': return 'cancel';
+      default: return 'hourglass_empty';
+    }
+  }
+
   entryDisplayStatus(entry: RunHistoryEntry): string {
     if (!entry) return 'unknown';
     if (entry.status !== 'completed') return entry.status ?? 'unknown';
@@ -1424,6 +1566,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
       this.phaseProgress = s.phase_progress;
     }
+
+    // Parallel task progress
+    this.parallelMode = !!s.parallel_mode;
+    if (s.parallel_mode && s.task_progress) {
+      this.taskProgress = Object.entries(s.task_progress).map(([id, tp]: [string, any]) => ({
+        id,
+        state: tp.state || 'pending',
+        pid: tp.pid,
+        exit_code: tp.exit_code,
+      }));
+    } else {
+      this.taskProgress = [];
+    }
+
     if (s.elapsed_seconds != null) {
       this.executionElapsed = Math.round(s.elapsed_seconds);
     }
@@ -1437,6 +1593,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.dismissTimer = null;
         this.executionState = 'idle';
         this.phaseProgress = [];
+        this.parallelMode = false;
+        this.taskProgress = [];
         this.cdr.markForCheck();
       }, delay);
     }

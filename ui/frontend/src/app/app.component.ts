@@ -44,8 +44,8 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         <mat-icon class="text-white">{{ sidenavLayout === 'hidden' ? 'menu_open' : 'menu' }}</mat-icon>
       </button>
       <a routerLink="/dashboard" class="brand-link">
+        <img src="assets/logos/sdlc-pilot-icon.svg" alt="" class="brand-icon" />
         <span class="brand"> <span class="brand-ai">SDLC</span> Pilot </span>
-        <span class="brand-sub">AI-Powered Development Lifecycle Automation</span>
       </a>
       <span class="flex-1"></span>
 
@@ -145,9 +145,14 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
       .brand-link {
         text-decoration: none;
         display: flex;
-        align-items: baseline;
+        align-items: center;
         gap: 10px;
         margin-left: 12px;
+      }
+      .brand-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
       }
       .brand {
         font-size: 17px;
@@ -158,13 +163,6 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
       .brand-ai {
         color: var(--cg-vibrant);
         font-weight: 700;
-      }
-      .brand-sub {
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: rgba(255, 255, 255, 0.65);
-        font-weight: 500;
       }
 
       /* Status Indicator */
@@ -401,7 +399,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         color: rgba(255, 255, 255, 0.6);
       }
       .content-area {
-        background: var(--cg-gray-50);
+        background: #fff;
         overflow-x: hidden;
       }
 

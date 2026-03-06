@@ -18,6 +18,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from aicodegencrew import __version__
 from aicodegencrew.shared.utils.phase_state import configure_state_dir
 
 from .config import settings
@@ -31,7 +32,7 @@ configure_state_dir(settings.logs_dir)
 app = FastAPI(
     title="AICodeGenCrew Dashboard",
     description="SDLC Pipeline Dashboard API",
-    version="0.3.0",
+    version=__version__,
 )
 
 # CORS for Angular dev server
@@ -65,6 +66,7 @@ def health_check():
     """Health check endpoint."""
     return HealthResponse(
         status="ok",
+        version=__version__,
         knowledge_dir_exists=settings.knowledge_dir.exists(),
         phases_config_exists=settings.phases_config.exists(),
     )

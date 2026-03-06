@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 RunOutcome = Literal["success", "all_skipped", "partial", "failed"] | None
 
@@ -107,7 +107,7 @@ class DiagramList(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str = "ok"
-    version: str = "0.3.0"
+    version: str = ""  # set dynamically from aicodegencrew.__version__
     knowledge_dir_exists: bool = False
     phases_config_exists: bool = False
 
@@ -118,7 +118,18 @@ class HealthResponse(BaseModel):
 class RunRequest(BaseModel):
     preset: str | None = None
     phases: list[str] | None = None
+    task_ids: list[str] | None = None
+    max_parallel: int = Field(default=4, ge=1, le=16)
     env_overrides: dict[str, str] | None = None
+
+    @field_validator("task_ids")
+    @classmethod
+    def _validate_task_ids(cls, v: list[str] | None) -> list[str] | None:
+        if v is not None:
+            v = [tid.strip() for tid in v if tid and tid.strip()]
+            if not v:
+                return None  # treat empty-after-filter as None
+        return v
 
 
 class RunResponse(BaseModel):
@@ -159,6 +170,13 @@ class PhaseProgress(BaseModel):
     total_tokens: int = 0
 
 
+class TaskProgress(BaseModel):
+    state: str = "pending"  # pending | running | completed | failed | cancelled
+    pid: int | None = None
+    exit_code: int | None = None
+    completed_phases: list[str] = []
+
+
 class ExecutionStatus(BaseModel):
     state: str = "idle"  # idle | running | completed | failed | cancelled
     run_id: str | None = None
@@ -174,6 +192,8 @@ class ExecutionStatus(BaseModel):
     eta_seconds: float | None = None
     live_metrics: LiveMetrics | None = None
     run_outcome: RunOutcome = None
+    parallel_mode: bool = False
+    task_progress: dict[str, TaskProgress] | None = None
 
 
 class RunHistoryEntry(BaseModel):
@@ -235,6 +255,11 @@ class ResetRequest(BaseModel):
     cascade: bool = True
 
 
+class TaskResetRequest(BaseModel):
+    task_ids: list[str]
+    phase_ids: list[str] | None = None
+
+
 class ResetPreview(BaseModel):
     phases_to_reset: list[str]
     files_to_delete: list[str]
@@ -242,6 +267,13 @@ class ResetPreview(BaseModel):
 
 class ResetResult(BaseModel):
     reset_phases: list[str]
+    deleted_count: int
+    timestamp: str
+
+
+class TaskResetResult(BaseModel):
+    task_ids: list[str]
+    affected_phases: list[str]
     deleted_count: int
     timestamp: str
 

@@ -129,7 +129,8 @@ class DevelopmentPlanningPipeline:
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
             return set(data.get("completed", []))
-        except Exception:
+        except Exception as exc:
+            logger.warning("[Phase4] Plan checkpoint load failed (%s): %s — resuming fresh", p, exc)
             return set()
 
     def _save_plan_checkpoint(self, task_id: str, completed: set[str]) -> None:
@@ -142,11 +143,63 @@ class DevelopmentPlanningPipeline:
             encoding="utf-8",
         )
 
+    def _load_triage_from_disk(self) -> dict:
+        """Disk fallback: load triage_context from knowledge/triage/{task_id}_triage.json.
+
+        Used when plan runs in a separate subprocess without in-memory triage
+        results (e.g. parallel mode where triage and plan are triggered separately).
+
+        For single-task mode, returns the one matching context dict.
+        For multi-task mode, returns the FIRST found context dict (caller
+        uses _per_task_triage map built in _run_multi for per-task matching).
+        """
+        triage_dir = self.output_dir.parent / "triage"
+        if not triage_dir.is_dir():
+            return {}
+
+        # Determine which task IDs we need triage for
+        task_stems = {Path(f).stem for f in self.input_files}
+        first_ctx: dict = {}
+
+        for stem in sorted(task_stems):
+            triage_file = triage_dir / f"{stem}_triage.json"
+            if triage_file.exists():
+                try:
+                    data = json.loads(triage_file.read_text(encoding="utf-8"))
+                    developer = data.get("developer_context", {})
+                    classification = data.get("classification", {})
+                    ctx = {
+                        "issue_id": stem,
+                        "classification_type": classification.get("type", "unknown"),
+                        "classification_confidence": classification.get("confidence", 0),
+                        "big_picture": developer.get("big_picture", ""),
+                        "scope_boundary": developer.get("scope_boundary", ""),
+                        "classification_assessment": developer.get("classification_assessment", ""),
+                        "affected_components": developer.get("affected_components", []),
+                        "context_boundaries": developer.get("context_boundaries", []),
+                        "architecture_notes": developer.get("architecture_notes", ""),
+                        "anticipated_questions": developer.get("anticipated_questions", []),
+                    }
+                    logger.info(
+                        "[Phase4] Loaded triage_context from disk for %s: classification=%s",
+                        stem,
+                        ctx.get("classification_type"),
+                    )
+                    if not first_ctx:
+                        first_ctx = ctx
+                except Exception as exc:
+                    logger.warning("[Phase4] Failed to read triage file %s: %s", triage_file, exc)
+
+        if not first_ctx:
+            logger.info("[Phase4] No triage files found on disk for task(s): %s", sorted(task_stems))
+        return first_ctx
+
     # Triage classification → Plan task_type mapping
     _TRIAGE_TO_PLAN_TYPE: dict[str, str] = {
         "bug": "bugfix",
         "feature": "feature",
         "refactor": "refactoring",
+        "upgrade": "upgrade",
         "investigation": "feature",  # no direct equivalent
     }
 
@@ -184,14 +237,29 @@ class DevelopmentPlanningPipeline:
         if isinstance(triage_out, dict):
             triage_context = dict(triage_out.get("triage_context", {}))
             if triage_context:
+                # Check if triage LLM failed — context will be incomplete
+                triage_llm_status = triage_context.get("llm_status", "unknown")
+                if triage_llm_status == "failed":
+                    logger.warning(
+                        "[Phase4] Triage LLM synthesis FAILED — developer_context is empty. "
+                        "Plan will proceed with deterministic classification only. "
+                        "Error: %s",
+                        triage_context.get("llm_error", "unknown"),
+                    )
                 # Carry issue_id from summary level into triage_context
                 triage_context.setdefault("issue_id", triage_out.get("issue_id", ""))
                 logger.info(
-                    "[Phase4] Received triage_context: classification=%s, components=%d, boundaries=%d",
+                    "[Phase4] Received triage_context: classification=%s, llm_status=%s, components=%d, boundaries=%d",
                     triage_context.get("classification_type"),
+                    triage_llm_status,
                     len(triage_context.get("affected_components", [])),
                     len(triage_context.get("context_boundaries", [])),
                 )
+
+        # Disk fallback: when plan runs in a separate subprocess (no in-memory
+        # triage result), load triage_context from knowledge/triage/{task_id}_triage.json.
+        if not triage_context:
+            triage_context = self._load_triage_from_disk()
 
         return self.run(quality_hints=quality_hints, triage_context=triage_context)
 
@@ -274,12 +342,50 @@ class DevelopmentPlanningPipeline:
         if not parsed_tasks:
             raise ValueError("No input files could be parsed")
 
-        # Apply triage classification override (match by issue_id)
+        # Apply triage classification override (match by issue_id).
+        # ALWAYS build per-task triage map so _run_stages_2_to_5 can pick the
+        # correct context per task. Global _triage_context is only used for
+        # single-task mode; multi-task always uses per-task map.
+        self._per_task_triage: dict[str, dict] = {}
+
+        # Seed from global triage_context if it has a matching issue_id
         if self._triage_context:
             triage_issue_id = self._triage_context.get("issue_id", "")
+            if triage_issue_id:
+                self._per_task_triage[triage_issue_id] = self._triage_context
+                for task in parsed_tasks:
+                    if task.task_id == triage_issue_id:
+                        self._apply_triage_classification(task)
+
+        # Disk fallback: load triage for any tasks missing from the map
+        triage_dir = self.output_dir.parent / "triage"
+        if triage_dir.is_dir():
             for task in parsed_tasks:
-                if not triage_issue_id or task.task_id == triage_issue_id:
-                    self._apply_triage_classification(task)
+                if task.task_id in self._per_task_triage:
+                    continue  # Already have in-memory context for this task
+                triage_file = triage_dir / f"{task.task_id}_triage.json"
+                if triage_file.exists():
+                    try:
+                        data = json.loads(triage_file.read_text(encoding="utf-8"))
+                        developer = data.get("developer_context", {})
+                        classification = data.get("classification", {})
+                        ctx = {
+                            "issue_id": task.task_id,
+                            "classification_type": classification.get("type", "unknown"),
+                            "classification_confidence": classification.get("confidence", 0),
+                            "big_picture": developer.get("big_picture", ""),
+                            "scope_boundary": developer.get("scope_boundary", ""),
+                            "classification_assessment": developer.get("classification_assessment", ""),
+                            "affected_components": developer.get("affected_components", []),
+                            "context_boundaries": developer.get("context_boundaries", []),
+                            "architecture_notes": developer.get("architecture_notes", ""),
+                            "anticipated_questions": developer.get("anticipated_questions", []),
+                        }
+                        self._per_task_triage[task.task_id] = ctx
+                        self._apply_triage_classification_from_ctx(task, ctx)
+                        logger.info("[Phase4] Loaded triage from disk for %s", task.task_id)
+                    except Exception as exc:
+                        logger.warning("[Phase4] Failed to read triage for %s: %s", task.task_id, exc)
 
         # Step 2: Sort by content (priority, task_type, dependencies)
         sorted_tasks = self._sort_tasks(parsed_tasks)
@@ -305,13 +411,22 @@ class DevelopmentPlanningPipeline:
         for i, task in enumerate(sorted_tasks, 1):
             logger.info(f"\n[Phase4] === Task {i}/{len(sorted_tasks)}: {task.task_id} ===")
 
-            # R7: Skip tasks already completed in a prior run
+            # R7: Skip tasks already completed in a prior run — but only if
+            # the output file still exists on disk (guards against stale checkpoint
+            # after per-task reset deleted the output).
             if task.task_id in cascade_completed:
-                logger.info(f"[Phase4] Skipping {task.task_id} (plan checkpoint)")
                 output_file = str(self.output_dir / f"{task.task_id}_plan.json")
-                results.append({"status": "skipped", "task_id": task.task_id, "output_file": output_file})
-                succeeded += 1
-                continue
+                if Path(output_file).exists():
+                    logger.info(f"[Phase4] Skipping {task.task_id} (plan checkpoint)")
+                    results.append({"status": "skipped", "task_id": task.task_id, "output_file": output_file})
+                    succeeded += 1
+                    continue
+                else:
+                    logger.warning(
+                        "[Phase4] Checkpoint says %s is done but output file missing — re-planning",
+                        task.task_id,
+                    )
+                    cascade_completed.discard(task.task_id)
 
             try:
                 result = self._run_stages_2_to_5(task)
@@ -441,6 +556,7 @@ class DevelopmentPlanningPipeline:
 
         mapped = self._TRIAGE_TO_PLAN_TYPE.get(triage_type)
         if not mapped:
+            logger.info("[Phase4] Unmapped triage type '%s' — keeping Stage 1 task_type '%s'", triage_type, task.task_type)
             return task
 
         if mapped != task.task_type:
@@ -451,6 +567,20 @@ class DevelopmentPlanningPipeline:
             )
             task.task_type = mapped
 
+        return task
+
+    def _apply_triage_classification_from_ctx(self, task: TaskInput, ctx: dict) -> TaskInput:
+        """Override task_type from a specific triage context dict (disk fallback)."""
+        triage_type = ctx.get("classification_type", "")
+        if not triage_type or triage_type == "unknown":
+            return task
+        mapped = self._TRIAGE_TO_PLAN_TYPE.get(triage_type)
+        if mapped and mapped != task.task_type:
+            logger.info(
+                "[Phase4] Triage classification override (disk): %s → %s (triage=%s)",
+                task.task_type, mapped, triage_type,
+            )
+            task.task_type = mapped
         return task
 
     def _run_single(self, input_file: str) -> dict[str, Any]:
@@ -562,9 +692,24 @@ class DevelopmentPlanningPipeline:
         )
 
         # Stage 4: Plan Generation (LLM)
+        # Use per-task triage context if available (disk fallback), else global.
+        # IMPORTANT: validate issue_id match — global _triage_context may belong
+        # to a different task in multi-task mode.
+        effective_triage = {}
+        if hasattr(self, "_per_task_triage") and task.task_id in self._per_task_triage:
+            effective_triage = self._per_task_triage[task.task_id]
+        elif self._triage_context:
+            triage_id = self._triage_context.get("issue_id", "")
+            if triage_id and triage_id == task.task_id:
+                effective_triage = self._triage_context
+            else:
+                logger.info(
+                    "[Phase4] Skipping global triage_context (issue_id=%s != task_id=%s)",
+                    triage_id, task.task_id,
+                )
         step_start(f"Stage 4: Plan Generation ({task.task_id})")
         stage4_start = time.time()
-        plan = self.stage4.run(task, discovery_result, pattern_result, triage_context=self._triage_context)
+        plan = self.stage4.run(task, discovery_result, pattern_result, triage_context=effective_triage)
         stage4_duration = time.time() - stage4_start
         step_done(f"Stage 4: Plan Generation ({task.task_id})")
 

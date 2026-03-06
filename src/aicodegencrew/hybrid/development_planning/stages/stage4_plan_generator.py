@@ -1,15 +1,16 @@
 """
-Stage 4: Plan Generator
+Stage 4: Plan Generator — 2-agent mini-crew (planner + reviewer)
 
 Uses CrewAI Agent with MCPs to synthesize all previous stage outputs into a complete implementation plan.
+A reviewer agent validates the plan for quality, completeness, and consistency with triage context.
 
-MCPs Available:
+MCPs Available (planner only):
 - Sequential Thinking: Complex multi-step reasoning
 - Memory: Learn from past mistakes
 - Brave Search: Fetch current documentation
 - Playwright: Web scraping for migration guides
 
-Duration: 15-30 seconds (single agent task)
+Duration: 30-60 seconds (2-agent mini-crew)
 """
 
 import json
@@ -56,6 +57,7 @@ class PlanGeneratorStage:
         self.extract_facts = extract_facts or {}
         self._model = os.getenv("MODEL", "gpt-4o-mini")
         self.agent = self._create_agent()
+        self.reviewer = self._create_reviewer_agent()
 
     def _create_agent(self) -> Agent:
         """Create planning agent with MCPs.
@@ -134,6 +136,49 @@ class PlanGeneratorStage:
         logger.info("[Stage4] Created planning agent without MCPs (fallback)")
         return agent
 
+    def _create_reviewer_agent(self) -> Agent:
+        """Create the plan quality reviewer agent.
+
+        Validates the planner's output for completeness, consistency with
+        triage context, and adherence to quality standards.
+        """
+        return Agent(
+            role="Plan Quality Reviewer",
+            goal=(
+                "Review and validate the implementation plan. Ensure it is consistent "
+                "with the triage analysis, uses only discovered components, has concrete "
+                "implementation steps with file paths, and doesn't contain empty or "
+                "placeholder sections."
+            ),
+            backstory=(
+                "You are a tech lead who reviews implementation plans before they reach "
+                "developers. A bad plan leads to wasted sprints.\n\n"
+                "YOUR REVIEW CHECKLIST:\n"
+                "1. TRIAGE CONSISTENCY: Does the plan respect the triage scope boundary? "
+                "   Does it address BLOCKING context boundaries from triage?\n"
+                "2. UNDERSTANDING: Does it accurately capture WHAT is being asked and WHY?\n"
+                "3. IMPLEMENTATION STEPS: Are they ordered correctly? Does each step have "
+                "   an action verb + component name + file_path? Are there at least 3 steps?\n"
+                "4. COMPONENTS: Are all components from DISCOVERED COMPONENTS? "
+                "   No invented names or file paths?\n"
+                "5. TEST STRATEGY: Is it concrete (not just 'write unit tests')?\n"
+                "6. SECURITY: Are security_considerations populated if relevant?\n"
+                "7. ERROR HANDLING: Is error_handling section populated?\n"
+                "8. VERSIONS: If this is an upgrade, are exact versions specified?\n"
+                "9. COMPLETENESS: No empty arrays/strings where content is expected.\n"
+                "10. RISKS: Are risks realistic and specific to THIS task?\n\n"
+                "If the plan is acceptable, return it UNCHANGED as valid JSON.\n"
+                "If issues found, FIX them and return the corrected JSON.\n"
+                "Do NOT add explanatory text outside the JSON."
+            ),
+            tools=[],  # Reviewer has no tools — pure review
+            llm=create_llm(temperature=0.1),
+            allow_delegation=False,
+            verbose=True,
+            max_iter=2,
+            max_retry_limit=1,
+        )
+
     def run(
         self,
         task: TaskInput,
@@ -173,13 +218,37 @@ class PlanGeneratorStage:
             guardrail_max_retries=1,
         )
 
+        # Review task: validates the planner's output
+        review_task = Task(
+            name=f"Review: {task.summary[:50]}",
+            description=(
+                "TASK: Review and Validate the Implementation Plan\n\n"
+                "You receive the plan from the Senior Software Architect (Task 1). "
+                "Validate it against quality standards:\n\n"
+                "1. Does the plan have concrete implementation_steps (each with action, component, file_path)?\n"
+                "2. Are test_strategy, security_considerations, and error_handling populated?\n"
+                "3. Does understanding.summary accurately capture the task?\n"
+                "4. Are affected_components from the discovered components (not invented)?\n"
+                "5. Are risks specific to THIS task (not generic)?\n"
+                "6. If upgrade: are exact versions specified?\n"
+                "7. Is the plan consistent with triage scope boundaries and context boundaries?\n"
+                "8. No empty arrays or placeholder strings where content is expected?\n\n"
+                "If acceptable, return the plan JSON UNCHANGED.\n"
+                "If issues found, FIX them and return corrected JSON.\n"
+                "Output ONLY valid JSON — no explanatory text."
+            ),
+            expected_output=expected,
+            agent=self.reviewer,
+        )
+
         # Run crew
         from pathlib import Path as _Path
 
         log_dir = _Path("knowledge/plan/logs")
         log_dir.mkdir(parents=True, exist_ok=True)
 
-        result = self._kickoff_with_mcp_fallback(planning_task, task, log_dir)
+        logger.info("[Stage4] Starting 2-agent mini-crew: planner + reviewer")
+        result = self._kickoff_with_mcp_fallback(planning_task, review_task, task, log_dir)
 
         # CrewAI kickoff() returns CrewOutput with .pydantic, .json_dict, .raw
         plan = None
@@ -213,18 +282,17 @@ class PlanGeneratorStage:
     def _kickoff_with_mcp_fallback(
         self,
         planning_task: Task,
+        review_task: Task,
         task: "TaskInput",
         log_dir: "Path",
     ) -> Any:
-        """Run crew with MCP fallback: if MCP tools fail at kickoff, retry without MCPs.
+        """Run 2-agent crew with MCP fallback.
 
-        CrewAI 1.9.x has a bug where _get_native_mcp_tools raises RuntimeError
-        ('cannot access local variable tools_list') when the MCP server is unreachable.
-        This is caught at kickoff time (not agent creation time), so the fallback in
-        _create_agent doesn't help. This method catches that error and retries.
+        Agent 1 (planner) produces the plan, Agent 2 (reviewer) validates it.
+        If MCP tools fail at kickoff, retry without MCPs (CrewAI 1.9.x bug).
         """
         crew_kwargs = dict(
-            tasks=[planning_task],
+            tasks=[planning_task, review_task],
             process=Process.sequential,
             verbose=False,
             step_callback=step_callback,
@@ -234,7 +302,7 @@ class PlanGeneratorStage:
         )
 
         try:
-            crew = Crew(agents=[self.agent], **crew_kwargs)
+            crew = Crew(agents=[self.agent, self.reviewer], **crew_kwargs)
             return crew.kickoff()
 
         except RuntimeError as e:
@@ -243,7 +311,7 @@ class PlanGeneratorStage:
             logger.warning(
                 "[Stage4] MCP tools failed at kickoff (%s); retrying without MCPs", e
             )
-            # Recreate agent without MCPs and retry
+            # Recreate planner agent without MCPs and retry
             fallback_agent = Agent(
                 role=self.agent.role,
                 goal=self.agent.goal,
@@ -257,7 +325,9 @@ class PlanGeneratorStage:
                 inject_date=True,
             )
             self.agent = fallback_agent
-            crew = Crew(agents=[fallback_agent], **crew_kwargs)
+            # Re-assign the planning task to the new agent
+            planning_task.agent = fallback_agent
+            crew = Crew(agents=[fallback_agent, self.reviewer], **crew_kwargs)
             return crew.kickoff()
 
         except (ConnectionError, TimeoutError, OSError) as e:

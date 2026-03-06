@@ -35,6 +35,34 @@ def start_pipeline(request: RunRequest):
         )
 
     try:
+        # Route to parallel mode when task_ids provided with task-bearing phases
+        _TASK_BEARING_PHASES = {"triage", "plan", "implement", "verify", "deliver"}
+        if request.task_ids and request.phases:
+            non_task_phases = [p for p in request.phases if p not in _TASK_BEARING_PHASES]
+            if non_task_phases:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Parallel mode requires task-bearing phases only. "
+                    f"Invalid: {non_task_phases}. Valid: {sorted(_TASK_BEARING_PHASES)}",
+                )
+            run_info = executor.start_parallel_tasks(
+                task_ids=request.task_ids,
+                phases=request.phases,
+                max_parallel=request.max_parallel,
+                env_overrides=request.env_overrides,
+            )
+            return RunResponse(
+                run_id=run_info.run_id,
+                status="started",
+                message=f"Parallel pipeline started: {len(request.task_ids)} task(s), run_id={run_info.run_id}",
+            )
+        if request.task_ids and request.preset:
+            raise HTTPException(
+                status_code=400,
+                detail="Parallel mode requires explicit 'phases', not a 'preset'. "
+                "Convert the preset to phases on the client side.",
+            )
+
         run_info = executor.start(
             preset=request.preset,
             phases=request.phases,

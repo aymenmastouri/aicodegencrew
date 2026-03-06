@@ -39,7 +39,7 @@ from ...shared.schema_version import add_schema_version
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.logger import setup_logger
-from .agents import create_triage_agent
+from .agents import create_triage_agent, create_triage_reviewer_agent
 from .blast_radius import calculate_blast_radius
 from .classifier import classify_issue
 from .context_builder import KnowledgeLoader
@@ -47,7 +47,7 @@ from .duplicate_detector import find_duplicates
 from .entry_point_finder import find_entry_points
 from .risk_assessor import assess_risk
 from .schemas import TriageRequest
-from .tasks import create_triage_task
+from .tasks import create_review_task, create_triage_task
 from .test_coverage import check_test_coverage
 
 logger = setup_logger(__name__)
@@ -159,23 +159,40 @@ class TriageCrew:
 
         # ── Phase 2: LLM synthesis ──────────────────────────────────────
         llm_result = None
-        llm_ok = False
-        try:
-            llm_result = self._run_llm_synthesis(
-                title, description, task_info, findings, supplementary,
-                is_bug=is_bug,
-                analysis_inputs=analysis_inputs,
-            )
-            llm_ok = llm_result is not None
-        except Exception as e:
-            logger.error("[TriageCrew] LLM synthesis failed: %s", e)
+        llm_status = "failed"  # "success" | "partial" | "failed"
+        llm_error: str | None = None
+
+        # Pre-check: is LLM server reachable?
+        from ...shared.utils.llm_factory import check_llm_connectivity
+        reachable, health_msg = check_llm_connectivity(timeout=10)
+        if not reachable:
+            llm_error = f"LLM server unreachable (VPN off?): {health_msg}"
+            logger.error("[TriageCrew] %s — skipping LLM synthesis entirely", llm_error)
+        else:
+            logger.info("[TriageCrew] LLM health check: %s", health_msg)
+            try:
+                llm_result = self._run_llm_synthesis(
+                    title, description, task_info, findings, supplementary,
+                    is_bug=is_bug,
+                    analysis_inputs=analysis_inputs,
+                )
+                if llm_result is not None:
+                    llm_status = "success"
+                else:
+                    llm_error = "LLM returned no parseable JSON output"
+                    logger.error("[TriageCrew] LLM synthesis returned None — no JSON in output")
+            except Exception as e:
+                llm_error = str(e)
+                logger.error(
+                    "[TriageCrew] LLM synthesis FAILED (is VPN/LLM server reachable?): %s", e,
+                )
 
         # ── Quality gate ────────────────────────────────────────────────
         if llm_result:
             quality = self._score_triage_quality(llm_result)
             if quality["score"] < 50:
                 logger.warning("[TriageCrew] Quality score %d — partial: %s", quality["score"], quality["warnings"])
-                llm_ok = False  # downgrade to partial
+                llm_status = "partial"  # downgrade: LLM ran but output is poor
             elif quality["warnings"]:
                 logger.info("[TriageCrew] Quality score %d — warnings: %s", quality["score"], quality["warnings"])
 
@@ -239,42 +256,66 @@ class TriageCrew:
         triage_context: dict[str, Any] = {
             "classification_type": classification.get("type", "unknown"),
             "classification_confidence": classification.get("confidence", 0),
-            "big_picture": developer.get("big_picture", ""),
-            "scope_boundary": developer.get("scope_boundary", ""),
-            "classification_assessment": developer.get("classification_assessment", ""),
-            "affected_components": developer.get("affected_components", []),
-            "context_boundaries": [
-                {
-                    "category": cb.get("category", ""),
-                    "boundary": cb.get("boundary", ""),
-                    "severity": cb.get("severity", "info"),
-                    "source_facts": cb.get("source_facts", []),
-                }
-                for cb in developer.get("context_boundaries", [])
-            ] if developer else [],
-            "architecture_notes": developer.get("architecture_notes", ""),
-            "anticipated_questions": developer.get("anticipated_questions", []),
+            "llm_status": llm_status,  # "success" | "partial" | "failed"
         }
+        if llm_status != "failed":
+            # Only populate LLM-derived fields when LLM actually produced output
+            triage_context.update({
+                "big_picture": developer.get("big_picture", ""),
+                "scope_boundary": developer.get("scope_boundary", ""),
+                "classification_assessment": developer.get("classification_assessment", ""),
+                "affected_components": developer.get("affected_components", []),
+                "context_boundaries": [
+                    {
+                        "category": cb.get("category", ""),
+                        "boundary": cb.get("boundary", ""),
+                        "severity": cb.get("severity", "info"),
+                        "source_facts": cb.get("source_facts", []),
+                    }
+                    for cb in developer.get("context_boundaries", [])
+                ] if developer else [],
+                "architecture_notes": developer.get("architecture_notes", ""),
+                "anticipated_questions": developer.get("anticipated_questions", []),
+            })
+        else:
+            # LLM failed — downstream phases should know context is incomplete
+            triage_context["llm_error"] = llm_error or "LLM synthesis failed"
 
         summary = {
-            "status": "success" if llm_ok else "partial",
+            "status": llm_status,  # "success" | "partial" | "failed"
             "phase": "triage",
             "issue_id": issue_id,
             "classification": classification.get("type", "unknown"),
             "risk_level": risk.get("risk_level", "unknown"),
             "entry_points_found": len(entry_points),
             "blast_radius_count": blast_radius.get("component_count", 0),
-            "llm_synthesis": llm_ok,
+            "llm_synthesis": llm_status == "success",
+            "llm_status": llm_status,
             "duration_seconds": duration,
             "triage_context": triage_context,
         }
+        if llm_error:
+            summary["llm_error"] = llm_error
         self._write_json(summary, "summary.json")
 
-        logger.info(
-            "[TriageCrew] Done — type=%s, risk=%s, entry_points=%d, duration=%.1fs",
-            classification.get("type"), risk.get("risk_level"),
-            len(entry_points), duration,
-        )
+        if llm_status == "failed":
+            logger.error(
+                "[TriageCrew] INCOMPLETE — LLM synthesis FAILED for %s. "
+                "Deterministic analysis saved but developer_context is EMPTY. "
+                "Check VPN/LLM server connectivity. Error: %s",
+                issue_id, llm_error,
+            )
+        elif llm_status == "partial":
+            logger.warning(
+                "[TriageCrew] Done (partial) — LLM output below quality threshold for %s",
+                issue_id,
+            )
+        else:
+            logger.info(
+                "[TriageCrew] Done — type=%s, risk=%s, entry_points=%d, duration=%.1fs",
+                classification.get("type"), risk.get("risk_level"),
+                len(entry_points), duration,
+            )
         return summary
 
     # ── Quick (deterministic only) ──────────────────────────────────────
@@ -633,7 +674,11 @@ class TriageCrew:
         is_bug: bool = False,
         analysis_inputs: str = "",
     ) -> dict | None:
-        """Run single-agent CrewAI crew for triage synthesis."""
+        """Run 2-agent mini-crew for triage synthesis.
+
+        Agent 1 (Issue Context Analyst): produces initial synthesis.
+        Agent 2 (Triage Quality Reviewer): validates and fixes quality issues.
+        """
         task_context = f"Title: {title}\nDescription: {description}"
         if task_info.get("priority"):
             task_context += f"\nPriority: {task_info['priority']}"
@@ -645,21 +690,26 @@ class TriageCrew:
         findings_json = json.dumps(findings, indent=2, ensure_ascii=False, default=str)
         supplementary_text = "\n\n".join(f"[{k}]\n{v}" for k, v in supplementary.items())
 
-        agent = create_triage_agent(
+        # Agent 1: Issue Context Analyst (has tools for querying knowledge)
+        analyst = create_triage_agent(
             facts_dir=self.facts_dir,
             chroma_dir=self.chroma_dir,
         )
-        task = create_triage_task(
-            agent, task_context, findings_json, supplementary_text,
+        analyst_task = create_triage_task(
+            analyst, task_context, findings_json, supplementary_text,
             is_bug=is_bug, analysis_inputs=analysis_inputs,
         )
+
+        # Agent 2: Quality Reviewer (no tools — pure review)
+        reviewer = create_triage_reviewer_agent()
+        review_task = create_review_task(reviewer)
 
         log_dir = self.output_dir / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
 
         crew = Crew(
-            agents=[agent],
-            tasks=[task],
+            agents=[analyst, reviewer],
+            tasks=[analyst_task, review_task],
             process=Process.sequential,
             verbose=True,
             step_callback=step_callback,
@@ -668,10 +718,11 @@ class TriageCrew:
             embedder=get_crew_embedder(),
         )
 
+        logger.info("[TriageCrew] Starting 2-agent mini-crew: analyst + reviewer")
         result = crew.kickoff()
         raw = result.raw if hasattr(result, "raw") else str(result)
 
-        # Try to parse JSON from the LLM output
+        # Try to parse JSON from the LLM output (reviewer's corrected version)
         return self._extract_json(raw)
 
     @staticmethod

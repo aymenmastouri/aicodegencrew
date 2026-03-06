@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 export interface RunRequest {
   preset?: string;
   phases?: string[];
+  task_ids?: string[];
+  max_parallel?: number;
   env_overrides?: Record<string, string>;
 }
 
@@ -37,6 +39,12 @@ export interface PhaseProgress {
   total_tokens?: number;
 }
 
+export interface TaskProgress {
+  state: string; // 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+  pid?: number;
+  exit_code?: number;
+}
+
 export interface ExecutionStatus {
   state: string;
   run_id?: string;
@@ -52,6 +60,8 @@ export interface ExecutionStatus {
   eta_seconds?: number;
   live_metrics?: LiveMetrics;
   run_outcome?: string; // 'success' | 'all_skipped' | 'partial' | 'failed'
+  parallel_mode?: boolean;
+  task_progress?: Record<string, TaskProgress>;
 }
 
 export interface RunHistoryEntry {
@@ -68,6 +78,8 @@ export interface RunHistoryEntry {
   phase_results: Record<string, unknown>[];
   deleted_count?: number;
   total_tokens?: number;
+  parallel_mode?: boolean;
+  task_ids?: string[];
 }
 
 export interface PhaseResultEntry {
@@ -234,6 +246,22 @@ export class PipelineService {
         eventSource.close();
       };
     });
+  }
+
+  // Task IDs for parallel execution
+  getInputTaskIds(): Observable<{ task_ids: string[] }> {
+    return this.http.get<{ task_ids: string[] }>(`${this.base}/tasks/input-ids`);
+  }
+
+  // Per-task reset
+  resetTask(
+    taskIds: string[],
+    phaseIds?: string[],
+  ): Observable<{ task_ids: string[]; affected_phases: string[]; deleted_count: number; timestamp: string }> {
+    return this.http.post<{ task_ids: string[]; affected_phases: string[]; deleted_count: number; timestamp: string }>(
+      `${this.base}/reset/task`,
+      { task_ids: taskIds, phase_ids: phaseIds || null },
+    );
   }
 
   // Environment config

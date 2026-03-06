@@ -44,7 +44,8 @@ sequenceDiagram
 
 Phases are resolved in priority order:
 1. **Explicit list** (`--phases extract analyze`) - validated against config
-2. **Preset** (`--preset document`) - expanded from `phases_config.yaml`
+2. **Preset** (`--preset document`) - expand
+ed from `phases_config.yaml`
 3. **Default** - all enabled phases sorted by order
 
 Phase and preset resolution is driven by `PipelineContract` (`src/aicodegencrew/pipeline_contract.py`), which merges static phase metadata with runtime config.

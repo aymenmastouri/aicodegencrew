@@ -51,7 +51,7 @@ export default defineConfig({
       name: 'chromium',
       use: { browserName: 'chromium' },
       // Exclude the long-running demo recording — run it manually with --project=demo
-      testIgnore: ['**/demo-showcase.spec.ts'],
+      testIgnore: ['**/demo-showcase.spec.ts', '**/demo-parallel.spec.ts'],
     },
     {
       name: 'demo',
@@ -60,11 +60,12 @@ export default defineConfig({
       use: {
         browserName: 'chromium',
         viewport: { width: 1920, height: 1080 },
-        deviceScaleFactor: 2,
+        deviceScaleFactor: 1,
         video: {
           mode: 'on',
           size: { width: 1920, height: 1080 },
         },
+        headless: false,
         launchOptions: { slowMo: 400 },
       },
     },
