@@ -81,7 +81,7 @@ async function splash(page: Page) {
     d.id = 'ds';
     Object.assign(d.style, {
       position:'fixed',inset:'0',zIndex:'100000',
-      background:'linear-gradient(135deg,#0f172a,#1e293b)',
+      background:'linear-gradient(135deg,#001B3D,#002B5C)',
       display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
       fontFamily:'system-ui,sans-serif',color:'#fff',transition:'opacity .8s',
     });
@@ -122,7 +122,7 @@ async function chapter(page: Page, n: number, title: string, sub: string) {
     d.id = 'ch';
     Object.assign(d.style, {
       position:'fixed',inset:'0',zIndex:'100000',
-      background:'linear-gradient(135deg,#0f172a,#1e293b)',
+      background:'linear-gradient(135deg,#001B3D,#002B5C)',
       display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
       fontFamily:'system-ui,sans-serif',color:'#fff',transition:'opacity .6s',
     });
@@ -893,7 +893,7 @@ test.describe('Demo Showcase', () => {
       d.id = 'ch';
       Object.assign(d.style, {
         position:'fixed',inset:'0',zIndex:'100000',
-        background:'linear-gradient(135deg,#0f172a,#1e293b)',
+        background:'linear-gradient(135deg,#001B3D,#002B5C)',
         display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
         fontFamily:'system-ui,sans-serif',color:'#fff',transition:'opacity .8s',
       });

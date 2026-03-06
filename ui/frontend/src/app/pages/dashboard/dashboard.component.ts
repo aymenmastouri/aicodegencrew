@@ -55,7 +55,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
     <div class="page-container">
       <!-- Hero -->
       <div class="hero">
-        <img src="assets/logos/sdlc-pilot-icon.svg" alt="SDLC Pilot" class="hero-logo-img" />
+        <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="SDLC Pilot" class="hero-logo-img" />
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
           <p class="hero-subtitle">
@@ -358,15 +358,14 @@ import { statusLabel, isTerminal } from '../../shared/status';
         right: -20%;
         width: 400px;
         height: 400px;
-        background: radial-gradient(circle, rgba(18, 171, 219, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(0, 112, 173, 0.15) 0%, transparent 70%);
         pointer-events: none;
       }
       .hero-logo-img {
-        width: 52px;
-        height: 52px;
-        border-radius: 12px;
+        width: 48px;
+        height: 48px;
         flex-shrink: 0;
-        filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4));
+        filter: drop-shadow(0 2px 8px rgba(0, 112, 173, 0.4));
       }
       .hero-title {
         font-size: 28px;
@@ -645,9 +644,14 @@ import { statusLabel, isTerminal } from '../../shared/status';
         gap: 8px;
       }
       .btn-reset {
+        color: var(--cg-gray-500, #64748b) !important;
+        border-color: var(--cg-gray-200, #e2e8f0) !important;
+        font-size: 13px !important;
+        transition: color 0.2s, border-color 0.2s;
+      }
+      .btn-reset:hover {
         color: var(--cg-error, #dc3545) !important;
         border-color: rgba(220, 53, 69, 0.3) !important;
-        font-size: 13px !important;
       }
       .view-all {
         font-size: 13px;

@@ -663,6 +663,12 @@ import { statusIcon } from '../../shared/status';
         font-size: 15px;
         padding: 0 32px;
         height: 44px;
+        background: var(--cg-blue) !important;
+        color: #fff !important;
+      }
+      .run-btn:disabled {
+        background: var(--cg-gray-200) !important;
+        color: var(--cg-gray-400) !important;
       }
 
       /* Execution section */

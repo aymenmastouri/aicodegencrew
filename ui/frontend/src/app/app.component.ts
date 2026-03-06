@@ -44,7 +44,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         <mat-icon class="text-white">{{ sidenavLayout === 'hidden' ? 'menu_open' : 'menu' }}</mat-icon>
       </button>
       <a routerLink="/dashboard" class="brand-link">
-        <img src="assets/logos/sdlc-pilot-icon.svg" alt="" class="brand-icon" />
+        <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="" class="brand-icon" />
         <span class="brand"> <span class="brand-ai">SDLC</span> Pilot </span>
         <span class="brand-divider"></span>
         <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="cap-logo" />
@@ -153,9 +153,8 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         margin-left: 12px;
       }
       .brand-icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
+        width: 26px;
+        height: 26px;
       }
       .brand-divider {
         width: 1px;
@@ -420,7 +419,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         color: rgba(255, 255, 255, 0.6);
       }
       .content-area {
-        background: #fff;
+        background: #F7F9FC;
         overflow-x: hidden;
       }
 
