@@ -28,6 +28,7 @@ from aicodegencrew.pipeline_contract import (
     compute_run_outcome,
     normalize_phase_progress_status,
 )
+from aicodegencrew.shared.utils.phase_state import init_run as _init_phase_state
 
 from ..config import settings
 
@@ -229,6 +230,11 @@ class PipelineExecutor:
             self._log_lines.append(
                 f"[PARALLEL] Starting {len(task_ids)} task(s) with max_parallel={max_parallel}"
             )
+
+        # Initialize phase_state.json ONCE before spawning subprocesses.
+        # Each subprocess skips init_run() when --task-id is set, so this
+        # is the single point of initialization for the run.
+        _init_phase_state(run_id)
 
         # Launch monitor thread that manages the parallel execution
         monitor = threading.Thread(
@@ -638,9 +644,9 @@ class PipelineExecutor:
                     elif tasks_on_phase > 0:
                         p_status = PHASE_PROGRESS_RUNNING
                     elif tasks_past_phase > 0:
-                        # Some tasks passed this phase, none currently on it
-                        # but not all done → show as completed (partial)
-                        p_status = PHASE_PROGRESS_COMPLETED
+                        # Some tasks passed this phase, none currently on it,
+                        # but not all done → still running (waiting for remaining tasks)
+                        p_status = PHASE_PROGRESS_RUNNING
                     else:
                         p_status = PHASE_PROGRESS_PENDING
 

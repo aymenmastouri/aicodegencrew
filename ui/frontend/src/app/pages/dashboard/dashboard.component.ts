@@ -178,6 +178,15 @@ import { statusLabel, isTerminal } from '../../shared/status';
             </div>
             <div class="stepper-right">
               @if (executionState === 'running') {
+                <div class="progress-ring-wrap" [matTooltip]="progressDoneCount() + '/' + phaseProgress.length + ' phases'">
+                  <svg class="progress-ring" viewBox="0 0 36 36">
+                    <circle class="progress-ring-bg" cx="18" cy="18" r="15.5" />
+                    <circle class="progress-ring-fg" cx="18" cy="18" r="15.5"
+                      [style.stroke-dasharray]="progressCircle()"
+                      [style.stroke-dashoffset]="'0'" />
+                  </svg>
+                  <span class="progress-ring-text">{{ progressPercent() }}%</span>
+                </div>
                 <div class="stepper-elapsed">
                   <mat-icon class="elapsed-icon">timer</mat-icon>
                   {{ formatElapsed(executionElapsed) }}
@@ -250,10 +259,10 @@ import { statusLabel, isTerminal } from '../../shared/status';
         </div>
       } @else if (pipeline && pipeline.phases.length > 0) {
         <div class="phase-grid">
-          @for (phase of pipeline.phases; track phase.id; let i = $index) {
+          @for (phase of pipeline.phases; track phase.id) {
             <div class="phase-card" [class]="'phase-' + phase.status" (click)="onPhaseClick(phase)">
               <div class="phase-top">
-                <span class="phase-index">{{ i + 1 }}</span>
+                <mat-icon class="phase-icon">{{ phaseIcons[phase.id] || 'settings' }}</mat-icon>
                 <span class="phase-name">{{ phase.name }}</span>
               </div>
               <p class="phase-desc">{{ phaseDescriptions[phase.id] || '' }}</p>
@@ -264,6 +273,9 @@ import { statusLabel, isTerminal } from '../../shared/status';
                   <span class="eta-chip" matTooltip="Estimated based on last 10 runs">
                     ~{{ formatDuration(phase.avg_duration_seconds) }}
                   </span>
+                }
+                @if (phase.duration_seconds && (phase.status === 'completed' || phase.status === 'failed' || phase.status === 'partial')) {
+                  <span class="duration-chip">{{ formatDuration(phase.duration_seconds) }}</span>
                 }
                 @if (isPhaseTerminal(phase.status)) {
                   <button
@@ -281,9 +293,15 @@ import { statusLabel, isTerminal } from '../../shared/status';
         </div>
       } @else {
         <div class="empty-state">
-          <mat-icon class="empty-icon">inbox</mat-icon>
-          <p>No pipeline data yet.</p>
-          <button mat-flat-button color="primary" routerLink="/run">Get Started</button>
+          <div class="empty-icon-wrap">
+            <mat-icon class="empty-icon">rocket_launch</mat-icon>
+          </div>
+          <h3 class="empty-title">Ready to launch your first pipeline</h3>
+          <p>Index your repository, analyze architecture, and generate development plans — all AI-powered.</p>
+          <button mat-flat-button class="empty-cta" routerLink="/run">
+            <mat-icon>play_arrow</mat-icon>
+            Get Started
+          </button>
         </div>
       }
 
@@ -295,7 +313,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
         </div>
         <div class="activity-card">
           @for (entry of recentHistory; track entry.run_id) {
-            <div class="activity-row">
+            <a class="activity-row" [routerLink]="'/history/' + entry.run_id">
               <span class="activity-trigger" [class]="'at-' + (entry.trigger || 'pipeline')">
                 {{ entry.trigger === 'reset' ? 'Reset' : 'Run' }}
               </span>
@@ -308,8 +326,8 @@ import { statusLabel, isTerminal } from '../../shared/status';
               <span class="flex-1"></span>
               <span class="status-dot sm" [class]="'dot-' + entryDisplayStatus(entry)"></span>
               <span class="activity-status">{{ entryStatusLabel(entry) }}</span>
-              <span class="activity-time">{{ entry.started_at | date: 'short' }}</span>
-            </div>
+              <span class="activity-time" [matTooltip]="entry.started_at | date: 'medium'">{{ timeAgo(entry.started_at) }}</span>
+            </a>
           }
         </div>
       }
@@ -321,7 +339,9 @@ import { statusLabel, isTerminal } from '../../shared/status';
       <div class="action-grid">
         @for (link of quickLinks; track link.route) {
           <a class="action-card" [routerLink]="link.route">
-            <mat-icon class="action-icon">{{ link.icon }}</mat-icon>
+            <span class="action-icon-circle">
+              <mat-icon class="action-icon">{{ link.icon }}</mat-icon>
+            </span>
             <div>
               <div class="action-label">{{ link.label }}</div>
               <div class="action-desc">{{ link.description }}</div>
@@ -457,8 +477,19 @@ import { statusLabel, isTerminal } from '../../shared/status';
         overflow: hidden;
       }
       .stepper-running {
-        border-color: rgba(0, 112, 173, 0.2);
-        background: linear-gradient(135deg, #fff 0%, rgba(0, 112, 173, 0.02) 100%);
+        border-color: transparent;
+        background:
+          linear-gradient(#fff, #fff) padding-box,
+          linear-gradient(var(--stepper-glow-angle, 0deg), rgba(0, 112, 173, 0.5), rgba(18, 171, 219, 0.15), rgba(0, 112, 173, 0.5)) border-box;
+        animation: stepper-border-spin 3s linear infinite;
+      }
+      @property --stepper-glow-angle {
+        syntax: '<angle>';
+        initial-value: 0deg;
+        inherits: false;
+      }
+      @keyframes stepper-border-spin {
+        to { --stepper-glow-angle: 360deg; }
       }
       .stepper-completed {
         border-color: rgba(40, 167, 69, 0.2);
@@ -531,6 +562,37 @@ import { statusLabel, isTerminal } from '../../shared/status';
         display: flex;
         align-items: center;
         gap: 10px;
+      }
+      .progress-ring-wrap {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .progress-ring {
+        width: 36px;
+        height: 36px;
+        transform: rotate(-90deg);
+      }
+      .progress-ring-bg {
+        fill: none;
+        stroke: var(--cg-gray-100);
+        stroke-width: 3;
+      }
+      .progress-ring-fg {
+        fill: none;
+        stroke: var(--cg-blue);
+        stroke-width: 3;
+        stroke-linecap: round;
+        transition: stroke-dasharray 0.6s ease;
+      }
+      .progress-ring-text {
+        position: absolute;
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--cg-blue);
       }
       .stepper-elapsed {
         display: flex;
@@ -699,22 +761,30 @@ import { statusLabel, isTerminal } from '../../shared/status';
       }
       .phase-running {
         border-left-color: var(--cg-blue);
-        background: #f0f9ff;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e6f4ff 100%);
         border-color: var(--cg-blue);
-        box-shadow: 0 0 0 1px rgba(18, 171, 219, 0.2), 0 4px 16px rgba(18, 171, 219, 0.12);
+        box-shadow:
+          0 0 0 1px rgba(0, 112, 173, 0.25),
+          0 4px 20px rgba(0, 112, 173, 0.18),
+          0 0 40px rgba(18, 171, 219, 0.08);
         position: relative;
         overflow: hidden;
+        animation: phase-pulse 2.5s ease-in-out infinite;
       }
       .phase-running::after {
         content: '';
         position: absolute;
         top: 0; left: -100%; width: 60%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(18, 171, 219, 0.12), transparent);
+        background: linear-gradient(90deg, transparent, rgba(0, 112, 173, 0.10), transparent);
         animation: phase-shimmer 2s ease-in-out infinite;
       }
       @keyframes phase-shimmer {
         0% { left: -60%; }
         100% { left: 120%; }
+      }
+      @keyframes phase-pulse {
+        0%, 100% { box-shadow: 0 0 0 1px rgba(0, 112, 173, 0.25), 0 4px 20px rgba(0, 112, 173, 0.18), 0 0 40px rgba(18, 171, 219, 0.08); }
+        50% { box-shadow: 0 0 0 2px rgba(0, 112, 173, 0.35), 0 4px 24px rgba(0, 112, 173, 0.25), 0 0 60px rgba(18, 171, 219, 0.15); }
       }
       .phase-ready {
         border-left-color: var(--cg-vibrant);
@@ -733,19 +803,25 @@ import { statusLabel, isTerminal } from '../../shared/status';
         gap: 8px;
         margin-bottom: 8px;
       }
-      .phase-index {
-        width: 22px;
-        height: 22px;
-        border-radius: 6px;
-        background: var(--cg-gray-100);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--cg-gray-500);
+      .phase-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--cg-gray-400);
         flex-shrink: 0;
       }
+      .phase-completed .phase-icon {
+        color: var(--cg-success);
+        animation: icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+      @keyframes icon-pop {
+        0% { transform: scale(0.6); opacity: 0.5; }
+        60% { transform: scale(1.15); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      .phase-running .phase-icon { color: var(--cg-blue); }
+      .phase-failed .phase-icon { color: var(--cg-error); }
+      .phase-ready .phase-icon { color: var(--cg-vibrant); }
       .phase-name {
         font-size: 13px;
         font-weight: 500;
@@ -861,26 +937,65 @@ import { statusLabel, isTerminal } from '../../shared/status';
         border-radius: 8px;
         white-space: nowrap;
       }
+      .duration-chip {
+        font-size: 10px;
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
+        color: var(--cg-gray-400);
+        margin-left: auto;
+        white-space: nowrap;
+      }
 
       /* Empty */
       .empty-state {
         text-align: center;
-        padding: 40px 24px;
+        padding: 48px 24px;
         background: #fff;
-        border-radius: 12px;
-        border: 2px dashed var(--cg-gray-200);
+        border-radius: 16px;
+        border: 1px solid var(--cg-gray-100);
+      }
+      .empty-icon-wrap {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(0, 112, 173, 0.10), rgba(18, 171, 219, 0.08));
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
       }
       .empty-icon {
-        font-size: 40px;
-        width: 40px;
-        height: 40px;
-        color: var(--cg-gray-200);
-        margin-bottom: 8px;
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: var(--cg-blue);
+      }
+      .empty-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--cg-gray-900);
+        margin: 0 0 6px;
       }
       .empty-state p {
         color: var(--cg-gray-500);
-        margin-bottom: 14px;
-        font-size: 14px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        max-width: 380px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.5;
+      }
+      .empty-cta {
+        background: linear-gradient(135deg, var(--cg-blue), var(--cg-vibrant)) !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        padding: 8px 28px !important;
+        border-radius: 10px !important;
+      }
+      .empty-cta .mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-right: 4px;
       }
 
       /* Recent Activity - Clean rows */
@@ -896,6 +1011,13 @@ import { statusLabel, isTerminal } from '../../shared/status';
         padding: 9px 16px;
         border-bottom: 1px solid var(--cg-gray-50);
         font-size: 13px;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.15s;
+        cursor: pointer;
+      }
+      .activity-row:hover {
+        background: var(--cg-gray-50, #f8fafc);
       }
       .activity-row:last-child {
         border-bottom: none;
@@ -968,12 +1090,25 @@ import { statusLabel, isTerminal } from '../../shared/status';
       .action-card:hover {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
       }
-      .action-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
-        color: var(--cg-blue);
+      .action-icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(0, 112, 173, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
+        transition: background 0.2s;
+      }
+      .action-card:hover .action-icon-circle {
+        background: rgba(0, 112, 173, 0.14);
+      }
+      .action-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--cg-blue);
       }
       .action-label {
         font-weight: 500;
@@ -1157,6 +1292,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Onboarding
   setupStatus: SetupStatus | null = null;
   onboardingDismissed = localStorage.getItem('onboarding_dismissed') === 'true';
+
+  phaseIcons: Record<string, string> = {
+    discover: 'search',
+    extract: 'data_object',
+    analyze: 'analytics',
+    document: 'description',
+    triage: 'filter_list',
+    plan: 'architecture',
+    implement: 'code',
+    verify: 'verified',
+    deliver: 'rocket_launch',
+  };
 
   phaseDescriptions: Record<string, string> = {
     discover: 'Indexes the repository into a searchable knowledge base',
@@ -1477,6 +1624,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return formatDurationUtil(seconds);
   }
 
+  progressDoneCount(): number {
+    return this.phaseProgress.filter(p => ['completed', 'failed', 'partial', 'skipped'].includes(p.status)).length;
+  }
+
+  progressPercent(): number {
+    if (!this.phaseProgress.length) return 0;
+    return Math.round((this.progressDoneCount() / this.phaseProgress.length) * 100);
+  }
+
+  progressCircle(): string {
+    const circ = 2 * Math.PI * 15.5; // r=15.5
+    const done = this.phaseProgress.length ? this.progressDoneCount() / this.phaseProgress.length : 0;
+    return `${done * circ} ${circ}`;
+  }
+
+  phaseHoverTip(phase: PhaseStatus): string {
+    const parts: string[] = [];
+    if (phase.last_run) parts.push(`Last run: ${this.timeAgo(phase.last_run)}`);
+    if (phase.duration_seconds) parts.push(`Duration: ${this.formatDuration(phase.duration_seconds)}`);
+    if (phase.avg_duration_seconds) parts.push(`Avg: ${this.formatDuration(phase.avg_duration_seconds)}`);
+    return parts.join(' · ') || phase.name;
+  }
+
+  timeAgo(dateStr?: string): string {
+    if (!dateStr) return '';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const s = Math.floor(diff / 1000);
+    if (s < 60) return 'just now';
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m} min ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 7) return `${d}d ago`;
+    return new Date(dateStr).toLocaleDateString();
+  }
+
   cancelPipeline(): void {
     this.pipelineSvc.cancelPipeline().subscribe({
       next: () => {
@@ -1627,7 +1811,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // to avoid resetting the timer on every poll cycle.
     const isTerminal = s.state === 'completed' || s.state === 'failed' || s.state === 'cancelled';
     if (isTerminal && prevState !== s.state && !this.dismissTimer) {
-      const delay = s.state === 'cancelled' ? 5000 : s.state === 'completed' ? 15000 : 30000;
+      const delay = s.state === 'cancelled' ? 5000 : s.state === 'completed' ? 10000 : 30000;
       this.dismissTimer = setTimeout(() => {
         this.dismissTimer = null;
         this.executionState = 'idle';

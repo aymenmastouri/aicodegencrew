@@ -146,12 +146,14 @@ async function sub(page: Page, text: string, ms = RP) {
     const d = document.createElement('div');
     d.id = 'sub';
     Object.assign(d.style, {
-      position:'fixed',bottom:'32px',left:'50%',transform:'translateX(-50%)',
-      background:'rgba(0,0,0,.82)',color:'#fff',
-      padding:'12px 32px',borderRadius:'10px',
-      fontSize:'18px',fontWeight:'500',fontFamily:'system-ui,sans-serif',
+      position:'fixed',top:'80px',left:'50%',transform:'translateX(-50%)',
+      background:'rgba(0,27,61,.92)',color:'#fff',
+      padding:'16px 36px',borderRadius:'14px',
+      fontSize:'19px',fontWeight:'500',fontFamily:'system-ui,sans-serif',
       zIndex:'99999',pointerEvents:'none',
-      maxWidth:'80%',textAlign:'center',boxShadow:'0 4px 24px rgba(0,0,0,.3)',
+      maxWidth:'80%',textAlign:'center',boxShadow:'0 6px 32px rgba(0,0,0,.4)',
+      borderBottom:'2px solid #12abdb',
+      backdropFilter:'blur(8px)',
     });
     d.textContent = t;
     document.body.appendChild(d);
@@ -286,7 +288,7 @@ test.describe('Demo Showcase', () => {
     if (await grid.isVisible({ timeout: 5000 }).catch(() => false)) {
       await grid.evaluate(e => e.scrollIntoView({ behavior: 'smooth', block: 'start' }));
       await p(page, P);
-      await sub(page, 'Nine fully automated phases — no manual intervention required', LP);
+      await sub(page, 'Nine phases — each with its own icon — fully automated, zero manual intervention', LP);
       await hideSub(page);
 
       // Knowledge layer
@@ -466,7 +468,8 @@ test.describe('Demo Showcase', () => {
     await page.goto('/inputs');
     await page.locator('.categories-grid, .category-card').first()
       .waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
-    await p(page, LP);
+    await sub(page, 'Inputs — this is where your Jira tickets and project documentation are uploaded', RP);
+    await hideSub(page);
 
     // Stats bar — total file count
     const statsBar = page.locator('.stats-bar');
@@ -496,6 +499,8 @@ test.describe('Demo Showcase', () => {
     // -- Settings --
     await page.goto('/settings');
     await p(page, LP);
+    await sub(page, 'Settings — configure the target repository and LLM connection', RP);
+    await hideSub(page);
 
     // General tab — repository path
     await sub(page, 'Target repository — SDLC Pilot analyses this exact codebase to understand your architecture', DR);
@@ -519,6 +524,8 @@ test.describe('Demo Showcase', () => {
 
     await page.locator('.config-card').waitFor({ state: 'visible', timeout: 10_000 });
     await p(page, P);
+    await sub(page, 'Run Pipeline — configure preset, parallelism, and task selection', RP);
+    await hideSub(page);
 
     // 1. Select preset (retry if options not loaded yet)
     const matSelect = page.locator('.config-card mat-select');
@@ -598,12 +605,12 @@ test.describe('Demo Showcase', () => {
     await p(page, LP);  // LP=1500ms, was 3000ms
 
     // 4. Verify started — API fallback if GUI click missed
-    let started = await pollPipeline(page, d => d.state === 'running', 10_000);
+    let started = await pollPipeline(page, d => d.state === 'running' || d.state === 'completed', 10_000);
     if (!started) {
       await page.request.post(`${API}/pipeline/run`, {
         data: { phases: ['triage','plan'], task_ids: ['BNUVZ-12529','BNUVZ-12568'], max_parallel: 2 },
       }).catch(() => {});
-      started = await pollPipeline(page, d => d.state === 'running', 10_000);
+      started = await pollPipeline(page, d => d.state === 'running' || d.state === 'completed', 15_000);
     }
 
     // 5. Show running state — pipeline UI + use wait time to show Metrics + History
@@ -625,24 +632,78 @@ test.describe('Demo Showcase', () => {
         await sub(page, 'Complete execution log — every AI decision is recorded for full traceability', LP);
       }
 
-      // While waiting for the pipeline, show Metrics and History pages
+      // Dashboard interlude — show running stepper with progress ring
       await hideSub(page);
+      await p(page, P);
+      await page.goto('/dashboard');
       await p(page, LP);
-      await page.goto('/metrics');
+
+      const stepperCard = page.locator('.stepper-card');
+      if (await stepperCard.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await sub(page, 'Live dashboard — rotating border glow and progress ring show real-time pipeline state', DR);
+        await hideSub(page);
+      }
+
+      // Show phase cards with running glow
+      const runningCard = page.locator('.phase-running').first();
+      if (await runningCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await runningCard.evaluate(e => e.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        await sub(page, 'Running phases pulse with a blue shimmer — you always know what is executing', RP);
+        await hideSub(page);
+      }
+
+      // Quick visit to MCP Servers
+      await page.goto('/mcps');
       await p(page, LP);
-      await sub(page, 'Metrics — phase durations, throughput, and success rates across all runs', DR);
+      await sub(page, 'MCP Servers — Model Context Protocol integrations that give AI agents access to external tools', DR);
+      await hideSub(page);
+      await sub(page, 'Each MCP provides specialised capabilities — filesystem access, web search, sequential thinking, and more', DR);
       await hideSub(page);
       await scrollDown(page, 400, 2000);
       await p(page, P);
 
+      // Quick visit to Collectors
+      await page.goto('/collectors');
+      await p(page, LP);
+      await sub(page, 'Collectors — deterministic scanners that extract structured facts from the codebase', DR);
+      await hideSub(page);
+      await sub(page, 'Each collector targets a specific dimension — components, dependencies, interfaces, error handling, and more', DR);
+      await hideSub(page);
+
+      // Highlight 2 example rows (no content expand)
+      const collectorRows = page.locator('.collector-row');
+      const nRows = await collectorRows.count();
+      if (nRows >= 2) {
+        const row0 = collectorRows.nth(0);
+        await row0.evaluate(e => {
+          e.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          (e as HTMLElement).style.outline = '2px solid #12abdb';
+          (e as HTMLElement).style.outlineOffset = '2px';
+        });
+        const name0 = await row0.locator('.collector-name').textContent().catch(() => 'Collector');
+        await sub(page, `Example: ${name0?.trim()} — automatically discovers and catalogues architecture facts`, RP);
+        await row0.evaluate(e => { (e as HTMLElement).style.outline = ''; (e as HTMLElement).style.outlineOffset = ''; });
+        await hideSub(page);
+
+        const row1 = collectorRows.nth(1);
+        await row1.evaluate(e => {
+          e.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          (e as HTMLElement).style.outline = '2px solid #12abdb';
+          (e as HTMLElement).style.outlineOffset = '2px';
+        });
+        const name1 = await row1.locator('.collector-name').textContent().catch(() => 'Collector');
+        await sub(page, `Example: ${name1?.trim()} — feeds structured data into the AI analysis pipeline`, RP);
+        await row1.evaluate(e => { (e as HTMLElement).style.outline = ''; (e as HTMLElement).style.outlineOffset = ''; });
+        await hideSub(page);
+      }
+
+      // Quick visit to History
       await page.goto('/history');
       await p(page, LP);
-      await sub(page, 'Full audit trail — every pipeline run logged with inputs, outputs, and timestamps', DR);
+      await sub(page, 'Full audit trail — every pipeline run with inputs, outputs, and timestamps', RP);
       await hideSub(page);
       await scrollDown(page, 300, 1500);
-      await p(page, LP);
-      await sub(page, 'Reproducible results — any run can be reviewed or re-executed at any time', RP);
-      await hideSub(page);
+      await p(page, P);
 
       // Return to run page
       await page.goto('/run');
@@ -670,6 +731,23 @@ test.describe('Demo Showcase', () => {
       await sub(page, 'Pipeline did not complete — check LLM connectivity', DR);
       await hideSub(page);
     } else {
+      // Dashboard first — show triage completed state
+      await page.goto('/dashboard');
+      await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
+      await p(page, LP);
+      await sub(page, 'Triage phase completed — both tickets have been analysed by the AI', RP);
+      await hideSub(page);
+
+      // Scroll to phase cards to show completed triage
+      const triageCard = page.locator('.phase-card:has(.phase-name:has-text("Triage"))').first();
+      if (await triageCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await triageCard.evaluate(e => e.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        await p(page, P);
+        await sub(page, 'Triage completed — now let\'s look at what the AI discovered', RP);
+        await hideSub(page);
+      }
+
+      // Navigate to tasks page
       await page.goto('/tasks');
       await p(page, LP);
 
@@ -679,58 +757,31 @@ test.describe('Demo Showcase', () => {
 
       const nCards = await cards.count();
       if (nCards > 0) {
-        // ── First task: full walkthrough ──
+        // ── First task: focused walkthrough ──
         const id1 = await taskId(page, 0);
         await cards.first().click();
         await p(page, LP);
 
         await scrollEl(page, '.summary-grid');
-        await sub(page, `${id1} — Priority, classification, and business impact at a glance`, DR);
+        await sub(page, `${id1} — Priority, classification, and business impact at a glance`, RP);
         await hideSub(page);
-
-        // Highlight confidence badge if visible
-        const confBadge = page.locator('.confidence-badge, .confidence-chip, [class*="confidence"]').first();
-        if (await confBadge.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await confBadge.scrollIntoViewIfNeeded();
-          await sub(page, 'AI classification confidence score — green means high certainty, amber means review recommended', DR);
-          await hideSub(page);
-        }
-
-        await scrollEl(page, '.summary-text');
-        await p(page, LP);
 
         await scrollH4(page, 'Big Picture');
-        await sub(page, 'The AI explains what this ticket is about and why it matters to the business', DR);
+        await sub(page, 'Big Picture — what this ticket is about and why it matters to the business', DR);
         await hideSub(page);
-        await scrollDown(page, 250, 1500);
 
         await scrollH4(page, 'Scope Boundary');
-        await sub(page, 'Clear definition of what must change — and what must not be touched', DR);
+        await sub(page, 'Scope Boundary — what must change and what must not be touched', RP);
         await hideSub(page);
-        await scrollDown(page, 200, 1200);
 
-        await scrollH4(page, 'Architecture Walkthrough');
-        await sub(page, 'Precise location in the system architecture — no guesswork required', DR);
+        // Smooth scroll through Architecture + Questions + Boundaries in one flow
+        await scrollDown(page, 600, 3000);
+        await sub(page, 'Architecture walkthrough, anticipated questions, and risk boundaries — all AI-generated', DR);
         await hideSub(page);
-        await scrollDown(page, 300, 1800);
 
-        await scrollEl(page, '.questions-list');
-        await sub(page, 'Anticipated developer questions — answered before work begins', DR);
+        await scrollDown(page, 600, 3000);
+        await sub(page, 'Affected components and technical constraints identified automatically', RP);
         await hideSub(page);
-        await scrollDown(page, 350, 2000);
-
-        await scrollEl(page, '.boundaries-list');
-        await sub(page, 'Risk assessment and technical constraints — identified proactively', DR);
-        await hideSub(page);
-        await scrollDown(page, 250, 1500);
-
-        const compSec = page.locator('.context-section:has(h4:has-text("Affected Components"))');
-        if (await compSec.isVisible({ timeout: 2000 }).catch(() => false)) {
-          await compSec.evaluate(e => e.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-          await p(page, P);
-          await sub(page, 'All impacted components identified automatically — no manual analysis needed', RP);
-          await hideSub(page);
-        }
 
         await scrollTop(page);
 
@@ -744,31 +795,23 @@ test.describe('Demo Showcase', () => {
           await p(page, LP);
         }
 
-        // ── Second task: shorter walkthrough ──
+        // ── Second task: quick overview ──
         const cards2 = page.locator('.task-card');
         if ((await cards2.count()) > 1) {
           const id2 = await taskId(page, 1);
-          await sub(page, 'Second ticket — processed simultaneously, same level of detail', P);
           await cards2.nth(1).click();
           await p(page, LP);
-          await hideSub(page);
 
           await scrollEl(page, '.summary-grid');
-          await sub(page, `${id2} — Business impact and classification`, RP);
+          await sub(page, `${id2} — same analytical depth, processed simultaneously`, RP);
           await hideSub(page);
 
           await scrollH4(page, 'Big Picture');
-          await sub(page, `${id2} — Strategic context and motivation`, DR);
+          await sub(page, `${id2} — strategic context and developer orientation`, RP);
           await hideSub(page);
-          await scrollDown(page, 200, 1200);
 
-          await scrollEl(page, '.questions-list');
-          await sub(page, `${id2} — Developer questions addressed before implementation`, DR);
-          await hideSub(page);
-          await scrollDown(page, 200, 1200);
-
-          await scrollEl(page, '.boundaries-list');
-          await sub(page, `${id2} — Risks and constraints identified at the triage stage`, RP);
+          await scrollDown(page, 800, 4000);
+          await sub(page, `${id2} — full triage with questions, risks, and affected components`, RP);
           await hideSub(page);
 
           await scrollTop(page);
@@ -777,17 +820,33 @@ test.describe('Demo Showcase', () => {
     }
 
 
+    // ── Run Pipeline: watch live terminal while plan executes ──
+    await hideSub(page);
+
+    await page.goto('/run');
+    await p(page, LP);
+    await sub(page, 'Run Pipeline — live terminal shows each phase executing in real time', RP);
+    await hideSub(page);
+
+    const planDone = await pollPipeline(page, d => {
+      // State fully terminal
+      if (['completed','failed'].includes(d.state)) return true;
+      // All tasks done even if subprocess hasn't exited yet
+      if (d.parallel_mode && d.task_progress) {
+        const tasks = Object.values(d.task_progress) as any[];
+        if (tasks.length > 0 && tasks.every((t: any) => ['completed','failed'].includes(t.state))) return true;
+      }
+      return false;
+    }, 300_000);
+
+    // Pipeline done — go straight to Development Plans, no time wasted
+
     // ═════════════════════════════════════════════════════════
     //  CHAPTER 6 — DEVELOPMENT PLANS
     // ═════════════════════════════════════════════════════════
 
-    await hideSub(page);
     await chapter(page, 6, 'Development Plans',
       'Structured, actionable implementation plans — ready for the development team');
-
-    // Wait for pipeline to finish
-    const planDone = await pollPipeline(page,
-      d => ['completed','failed'].includes(d.state), 300_000);
 
     if (!planDone || planDone.state === 'failed') {
       await sub(page, 'Pipeline did not complete — check LLM connectivity', DR);
@@ -797,11 +856,15 @@ test.describe('Demo Showcase', () => {
       await page.locator('.doc-group-header').first()
         .waitFor({ state: 'visible', timeout: 15_000 }).catch(() => {});
       await p(page, P);
+      await sub(page, 'Reports page — all generated documentation organised by category', RP);
+      await hideSub(page);
 
       const planTab = page.getByRole('tab', { name: /Development Plans/i });
       if (await planTab.isVisible({ timeout: 5000 }).catch(() => false)) {
         await planTab.click();
         await p(page, LP);
+        await sub(page, 'Development Plans tab — one structured plan per task, ready for the team', RP);
+        await hideSub(page);
 
         const ph0 = page.getByRole('button', { name: /BNUVZ-12529/ });
         const ph1 = page.getByRole('button', { name: /BNUVZ-12568/ });
@@ -809,58 +872,50 @@ test.describe('Demo Showcase', () => {
         const has0 = await ph0.isVisible().catch(() => false);
         const has1 = await ph1.isVisible().catch(() => false);
 
-        // First plan: full walkthrough
+        // First plan: focused walkthrough
         if (has0) {
           const lbl = (await ph0.locator('.mono').textContent().catch(() => null) ?? 'BNUVZ-12529').trim();
           await ph0.click();
           await p(page, LP);
 
           await scrollEl(page, '.overview-card');
-          await sub(page, `${lbl} — Complexity assessment, estimated file changes, and effort in hours`, DR);
+          await sub(page, `${lbl} — Complexity assessment, estimated file changes, and effort`, DR);
           await hideSub(page);
 
-          await sub(page, `${lbl} — Functional requirements and acceptance criteria derived from the ticket`, DR);
-          await scrollDown(page, 500, 4000);
+          await sub(page, `${lbl} — Requirements, affected files, and implementation steps`, RP);
+          await scrollDown(page, 700, 3000);
           await hideSub(page);
 
-          await sub(page, `${lbl} — Exact files that require modification, with rationale`, DR);
-          await scrollDown(page, 500, 4000);
+          await sub(page, `${lbl} — Step-by-step implementation with precise instructions per file`, RP);
+          await scrollDown(page, 700, 3000);
           await hideSub(page);
 
-          await sub(page, `${lbl} — Step-by-step implementation sequence with precise instructions per file`, DR);
-          await scrollDown(page, 600, 5000);
+          await sub(page, `${lbl} — Component dependencies and residual risks`, RP);
+          await scrollDown(page, 700, 3000);
           await hideSub(page);
-
-          await sub(page, `${lbl} — Affected components, integration points, and residual risks`, DR);
-          await scrollDown(page, 600, 5000);
-          await hideSub(page);
-          await scrollDown(page, 400, 3000);
 
           await scrollTop(page);
           await ph0.click();
           await p(page, FP);
         }
 
-        // Second plan: shorter
+        // Second plan: quick overview
         if (has1) {
           const lbl = (await ph1.locator('.mono').textContent().catch(() => null) ?? 'BNUVZ-12568').trim();
           await ph1.click();
           await p(page, LP);
 
           await scrollEl(page, '.overview-card');
-          await sub(page, `${lbl} — Same analytical depth, generated concurrently with the first ticket`, DR);
+          await sub(page, `${lbl} — Same depth, generated concurrently with the first ticket`, RP);
           await hideSub(page);
 
-          await sub(page, `${lbl} — Requirements and exact files to be modified`, DR);
-          await scrollDown(page, 500, 4000);
+          await sub(page, `${lbl} — Requirements, files, and implementation steps`, RP);
+          await scrollDown(page, 700, 3000);
           await hideSub(page);
 
-          await sub(page, `${lbl} — Ordered implementation steps ready for the developer`, DR);
-          await scrollDown(page, 600, 5000);
+          await sub(page, `${lbl} — Risks and component dependencies`, RP);
+          await scrollDown(page, 700, 3000);
           await hideSub(page);
-
-          await sub(page, `${lbl} — Component dependencies and risk assessment`, DR);
-          await scrollDown(page, 500, 4000);
 
           await scrollTop(page);
           await ph1.click();
@@ -882,6 +937,27 @@ test.describe('Demo Showcase', () => {
     // ═════════════════════════════════════════════════════════
     //  FINALE
     // ═════════════════════════════════════════════════════════
+
+    // Dashboard beauty shot — completed stepper
+    await page.goto('/dashboard');
+    await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
+    await p(page, LP);
+
+    const completedStepper = page.locator('.stepper-completed, .stepper-card');
+    if (await completedStepper.first().isVisible({ timeout: 3000 }).catch(() => false)) {
+      await sub(page, 'All phases completed — full pipeline run visible at a glance', RP);
+      await hideSub(page);
+    }
+
+    // Show activity rows (clickable)
+    const actRow = page.locator('.activity-row').first();
+    if (await actRow.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await actRow.evaluate(e => e.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+      await sub(page, 'Activity history — click any row for the full run details', RP);
+      await hideSub(page);
+    }
+    await scrollTop(page);
+    await p(page, P);
 
     const durSec = Math.round((Date.now() - t0) / 1000);
     const durLabel = durSec < 60 ? `${durSec}s` : `${Math.floor(durSec/60)}m ${durSec%60}s`;
@@ -942,10 +1018,9 @@ test.describe('Demo Showcase', () => {
     });
     await p(page, 1000);
 
-    // Final dashboard
+    // Final dashboard — already shown in beauty shot, just land here
     await page.goto('/dashboard');
     await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
-    await sub(page, 'SDLC Pilot — submit a Jira ticket, receive a complete, implementation-ready development plan', RP);
-    await hideSub(page);
+    await p(page, RP);
   });
 });
