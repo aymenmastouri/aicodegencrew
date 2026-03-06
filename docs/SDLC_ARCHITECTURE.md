@@ -1,6 +1,6 @@
 # SDLC Pilot — Architecture Overview
 
-> **Status**: v0.6.3 | **Author**: Aymen Mastouri | **Updated**: 2026-02-23
+> **Status**: v0.7.2 | **Author**: Aymen Mastouri | **Updated**: 2026-03-06
 
 ---
 

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.7.2] - 2026-03-06
+
+### Changed
+
+- Version is now single-sourced from `pyproject.toml` — no more hardcoded versions
+- Frontend footer version loaded dynamically from `/api/health` endpoint
+- Updated README badge, docs, and e2e tests to use dynamic version
+
+### Fixed
+
+- Demo fixes: parallel phase status, Run Pipeline wait, faster completion detection
+
 ## [0.7.1] - 2026-02-21
 
 Deep audit of all pipeline phases — 64 bugs fixed across Phases 2-5. Demo rewritten for managers.
