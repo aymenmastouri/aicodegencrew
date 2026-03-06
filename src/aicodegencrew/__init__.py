@@ -37,7 +37,7 @@ def _read_version() -> str:
                     return line.split("=", 1)[1].strip().strip('"').strip("'")
     except Exception:
         pass
-    return "0.7.1"
+    return "0.7.2"
 
 __version__ = _read_version()
 

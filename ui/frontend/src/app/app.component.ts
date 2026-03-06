@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
@@ -127,7 +128,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
             <div class="footer-row">
               <span class="footer-legal">&copy; 2026 Capgemini</span>
               <span class="footer-sep"></span>
-              <span class="footer-version">v0.6.3</span>
+              <span class="footer-version">v{{ appVersion }}</span>
             </div>
           </div>
         </div>
@@ -444,9 +445,15 @@ export class AppComponent implements OnInit, OnDestroy {
   private mediaRail!: MediaQueryList;
   private mediaFull!: MediaQueryList;
 
-  constructor(public notifSvc: NotificationService) {}
+  appVersion = '…';
+
+  constructor(public notifSvc: NotificationService, private http: HttpClient) {}
 
   ngOnInit(): void {
+    this.http.get<{ version: string }>('/api/health').subscribe({
+      next: (res) => (this.appVersion = res.version),
+      error: () => (this.appVersion = '?'),
+    });
     // < 1024px → overlay (hidden by default)
     this.mediaOverlay = window.matchMedia('(max-width: 1023px)');
     // 1024–1439px → rail
