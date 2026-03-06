@@ -206,7 +206,12 @@ class SDLCOrchestrator:
         # Use the logger's RUN_ID so that phase_state.json and metrics.jsonl
         # share the same run_id (avoids mismatch in executor progress tracking).
         run_id = RUN_ID
-        init_run(run_id)
+
+        # In parallel (per-task) mode the parent process (PipelineExecutor)
+        # has already initialised phase_state.json.  Calling init_run() here
+        # would wipe state written by sibling subprocesses.
+        if not self._task_id:
+            init_run(run_id)
 
         # Determine phases to run
         phases_to_run = self._resolve_phases(preset, phases)

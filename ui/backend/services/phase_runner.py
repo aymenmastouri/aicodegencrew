@@ -248,4 +248,18 @@ def get_pipeline_status() -> PipelineStatus:
             )
         )
 
+    # When running in parallel mode, override phase statuses from the executor's
+    # in-memory aggregation — phase_state.json is per-subprocess and may show a
+    # phase as "completed" when only 1 of N tasks has finished it.
+    from .pipeline_executor import executor  # late import to avoid circular
+    run_status = executor.get_status()
+    if run_status.get("state") == "running" and run_status.get("parallel_mode"):
+        exec_phases = {p["phase_id"]: p["status"] for p in run_status.get("phase_progress", [])}
+        for s in statuses:
+            if s.id in exec_phases:
+                s.status = exec_phases[s.id]
+                if s.status == PHASE_PROGRESS_RUNNING:
+                    s.duration_seconds = None  # don't show duration while running
+                    any_running = True
+
     return PipelineStatus(phases=statuses, is_running=any_running)

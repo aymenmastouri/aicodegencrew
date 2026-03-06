@@ -135,10 +135,16 @@ do_start() {
         return 1
     fi
 
-    # Start backend
+    # Start backend (use venv python if available)
     echo -e "  Starting backend..."
     cd "$ROOT"
-    python -m uvicorn ui.backend.main:app --host 127.0.0.1 --port $BACKEND_PORT --reload \
+    PYTHON="python"
+    if [ -f "$ROOT/.venv/Scripts/python.exe" ]; then
+        PYTHON="$ROOT/.venv/Scripts/python.exe"
+    elif [ -f "$ROOT/.venv/bin/python" ]; then
+        PYTHON="$ROOT/.venv/bin/python"
+    fi
+    "$PYTHON" -m uvicorn ui.backend.main:app --host 127.0.0.1 --port $BACKEND_PORT --reload \
         > "$BACKEND_LOG" 2>&1 &
     echo $! > "$BACKEND_PID_FILE"
 
