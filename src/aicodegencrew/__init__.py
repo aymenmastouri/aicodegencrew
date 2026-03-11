@@ -1,3 +1,11 @@
+# Inject OS/Windows certificate store FIRST — before any HTTP library loads.
+# Corporate environments use self-signed CAs that are not in certifi's bundle.
+try:
+    import truststore as _truststore
+    _truststore.inject_into_ssl()
+except ImportError:
+    pass  # graceful fallback if truststore is not installed
+
 """
 AI Code Generation Crew — SDLC Automation Platform
 

@@ -6,6 +6,15 @@ All crews import `create_llm()` from here instead of duplicating the logic.
 import logging
 import os
 
+# Inject the OS/Windows certificate store BEFORE any HTTP library is imported
+# so that corporate self-signed CAs are trusted by Python's SSL stack.
+# (certifi bundle does not include corporate / on-prem CA certificates)
+try:
+    import truststore
+    truststore.inject_into_ssl()
+except ImportError:
+    pass  # truststore not installed — fall back to certifi bundle
+
 from crewai import LLM
 
 logger = logging.getLogger(__name__)
@@ -32,15 +41,19 @@ def create_llm(
     """
     model = model_override or os.getenv("MODEL", _DEFAULT_MODEL)
     api_base = os.getenv("API_BASE", "")
+    api_key = os.getenv("OPENAI_API_KEY", "")
     max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
 
     if max_tokens < 1:
         max_tokens = 4000
 
+    model = _ensure_provider_prefix(model)
+
     llm = LLM(
         model=model,
         base_url=api_base,
+        api_key=api_key,
         temperature=temperature,
         max_tokens=max_tokens,
         timeout=timeout,
