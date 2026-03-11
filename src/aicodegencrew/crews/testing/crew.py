@@ -15,7 +15,6 @@ Supported languages: Java (JUnit 5 + Mockito) and TypeScript (Angular TestBed / 
 """
 
 import json
-import os
 import time
 from pathlib import Path
 from typing import Any
@@ -26,13 +25,10 @@ from ...hybrid.code_generation.tools.code_reader_tool import EXT_TO_LANG, CodeRe
 from ...hybrid.code_generation.tools.test_writer_tool import TestWriterTool
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
-from ...shared.utils.llm_factory import create_llm
+from ...shared.utils.llm_factory import create_codegen_llm
 from ...shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
-
-# ── Model config ────────────────────────────────────────────────────────────
-_CODEGEN_MODEL: str = os.getenv("CODEGEN_MODEL", os.getenv("MODEL", "gpt-oss-codegen-14b"))
 
 # Languages we generate tests for (others skipped)
 _TESTABLE_LANGS = {"java", "typescript"}
@@ -331,7 +327,7 @@ class TestingCrew:
                 "never just describe the tests."
             ),
             tools=[reader, writer],
-            llm=create_llm(model_override=_CODEGEN_MODEL),
+            llm=create_codegen_llm(),
             verbose=True,
             max_iter=4,
             max_retry_limit=1,
