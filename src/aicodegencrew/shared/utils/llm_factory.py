@@ -96,6 +96,70 @@ def check_llm_connectivity(*, timeout: int = 10) -> tuple[bool, str]:
     return False, f"LLM API UNREACHABLE at {api_base}: {last_err}"
 
 
+def create_fast_llm(
+    *,
+    temperature: float = 0.1,
+    timeout: int = 120,
+) -> LLM:
+    """Create a CrewAI LLM instance for simple, fast tasks.
+
+    Reads FAST_MODEL (falls back to MODEL) — intended for light tasks like
+    triage, classification, and formatting where speed matters more than depth.
+    """
+    model = os.getenv("FAST_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
+    api_base = os.getenv("API_BASE", "")
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
+    context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
+
+    if max_tokens < 1:
+        max_tokens = 4000
+
+    model = _ensure_provider_prefix(model)
+
+    llm = LLM(
+        model=model,
+        base_url=api_base,
+        api_key=os.getenv("OPENAI_API_KEY", ""),
+        temperature=temperature,
+        max_tokens=max_tokens,
+        timeout=timeout,
+    )
+    llm.context_window_size = context_window
+    return llm
+
+
+def create_vision_llm(
+    *,
+    temperature: float = 0.1,
+    timeout: int = 300,
+) -> LLM:
+    """Create a CrewAI LLM instance for vision/multimodal tasks.
+
+    Reads VISION_MODEL (falls back to MODEL) — intended for tasks that process
+    images, diagrams, screenshots, or OCR-heavy documents.
+    """
+    model = os.getenv("VISION_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
+    api_base = os.getenv("API_BASE", "")
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
+    context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
+
+    if max_tokens < 1:
+        max_tokens = 4000
+
+    model = _ensure_provider_prefix(model)
+
+    llm = LLM(
+        model=model,
+        base_url=api_base,
+        api_key=os.getenv("OPENAI_API_KEY", ""),
+        temperature=temperature,
+        max_tokens=max_tokens,
+        timeout=timeout,
+    )
+    llm.context_window_size = context_window
+    return llm
+
+
 def create_codegen_llm(
     *,
     temperature: float = 0.1,
