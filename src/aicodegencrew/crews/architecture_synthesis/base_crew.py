@@ -29,7 +29,7 @@ from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.tools import RAGQueryTool, SymbolQueryTool
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
-from ...shared.utils.llm_factory import create_llm
+from ...shared.utils.llm_factory import create_fast_llm, create_llm
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 from .tools import (
@@ -203,9 +203,7 @@ class MiniCrewBase(ABC):
         for cheaper/faster model on simple, formulaic tasks.
         """
         if use_fast_model:
-            fast_model = os.getenv("FAST_MODEL")
-            if fast_model:
-                return create_llm(model_override=fast_model)
+            return create_fast_llm()
         return create_llm()
 
     # -------------------------------------------------------------------------
