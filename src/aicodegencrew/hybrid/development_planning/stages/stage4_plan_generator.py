@@ -23,7 +23,7 @@ from crewai import Agent, Crew, Process, Task
 from ....shared.mcp import get_phase4_mcps
 from ....shared.utils.crew_callbacks import step_callback, task_callback
 from ....shared.utils.embedder_config import get_crew_embedder
-from ....shared.utils.llm_factory import create_llm
+from ....shared.utils.llm_factory import create_fast_llm, create_llm
 from ....shared.utils.logger import setup_logger
 from ....shared.utils.task_guardrails import validate_plan_json
 from ..schemas import ImplementationPlan, TaskInput
@@ -172,7 +172,7 @@ class PlanGeneratorStage:
                 "Do NOT add explanatory text outside the JSON."
             ),
             tools=[],  # Reviewer has no tools — pure review
-            llm=create_llm(temperature=0.1),
+            llm=create_fast_llm(temperature=0.1),
             allow_delegation=False,
             verbose=True,
             max_iter=2,

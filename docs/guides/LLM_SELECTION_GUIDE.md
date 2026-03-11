@@ -79,8 +79,8 @@
 ---
 
 ### Phase 4 — Triage (Issue-Klassifizierung)
-- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`)
-- **Funktion:** `create_llm(temperature=0.2)`
+- **LLM:** `FAST_MODEL` → **GPT-OSS-120B** (`openai/chat`)
+- **Funktion:** `create_fast_llm(temperature=0.2)`
 - **Typ:** Hybrid (deterministisch + LLM-Synthese)
 - **Deterministische Phase (kein LLM, <5 s):**
   - Issue-Klassifizierung, Blast-Radius (BFS), Entry-Points, Duplikat-Erkennung (ChromaDB)
@@ -92,10 +92,11 @@
 ---
 
 ### Phase 5 — Plan (Implementierungsplanung)
-- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`)
-- **Funktion:** `create_llm()` (1 Aufruf pro Task)
+- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`) für Planner, `FAST_MODEL` → **GPT-OSS-120B** für Reviewer
+- **Funktion:** `create_llm()` (Planner) + `create_fast_llm()` (Reviewer)
 - **Typ:** Hybrid (5-Stufen-Pipeline, nur Stufe 4 = LLM)
-- **Warum Kimi-K2.5:** JSON-Schema-Compliance kritisch (Pydantic-Validierung); komplexes Reasoning über Abhängigkeitsgraphen; langer strukturierter Output
+- **Warum Kimi-K2.5 für Planner:** JSON-Schema-Compliance kritisch (Pydantic-Validierung); komplexes Reasoning über Abhängigkeitsgraphen; langer strukturierter Output
+- **Warum GPT-OSS-120B für Reviewer:** Reine Qualitätsprüfung, keine Code-Generierung — schneller & günstiger
 - **Pipeline:**
   1. Input Parser (deterministisch, <1 s) — JIRA XML, DOCX, Excel
   2. Component Discovery (RAG + Scoring, 2–5 s)
@@ -149,8 +150,8 @@
 | 1 | Extract | — | keines | — |
 | 2 | Analyze | `create_llm()` | Kimi-K2.5 | 196 608 |
 | 3 | Document | `create_llm()` | Kimi-K2.5 | 196 608 |
-| 4 | Triage | `create_llm()` | Kimi-K2.5 | 196 608 |
-| 5 | Plan | `create_llm()` | Kimi-K2.5 | 196 608 |
+| 4 | Triage | `create_fast_llm()` | GPT-OSS-120B | 131 072 |
+| 5 | Plan | `create_llm()` + `create_fast_llm()` | Kimi-K2.5 + GPT-OSS-120B | 196 608 |
 | 6 | Implement | `create_codegen_llm()` | Qwen3-Coder-Next | 262 144 |
 | 7 | Verify | `create_codegen_llm()` | Qwen3-Coder-Next | 262 144 |
 | 8 | Deliver | `create_llm()` | Kimi-K2.5 | 196 608 |
@@ -170,7 +171,7 @@
 | Langer strukturierter Output | 3 (Arc42) | Kimi-K2.5 |
 | Code schreiben + Build-Error-Recovery | 6, 7 | Qwen3-Coder-Next (`code`) |
 | Tool-Use + agentic Loops | 6 | Qwen3-Coder-Next |
-| Schnelle Klassifizierung | 3 (einfache Agents) | GPT-OSS-120B (`chat`) |
+| Schnelle Klassifizierung | 3, 4 (Triage), 5 (Reviewer) | GPT-OSS-120B (`chat`) |
 | OCR / Diagramme / Bilder | zukünftig | Mistral-Small-3.1-24B (`vision`) |
 | Vektorsuche (RAG) | alle | Platform `embed` |
 
