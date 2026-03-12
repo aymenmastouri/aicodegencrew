@@ -182,7 +182,7 @@
 ```env
 # Sovereign AI Platform — ein Endpunkt, ein API-Key für alle Modelle
 API_BASE=https://litellm.bnotk.sovai-de.apps.ce.capgemini.com/v1
-OPENAI_API_KEY=sk-gX7FLpLxfFUyORK8rv1Rog
+OPENAI_API_KEY=sk-your-api-key-here
 
 # Kimi-K2.5 (1T MoE, 32B active, 384 experts, 196K ctx)
 MODEL=openai/complex_tasks
