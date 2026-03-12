@@ -379,9 +379,18 @@ SDLC Pilot is **proprietary** software. Three delivery modes:
 
 ```bash
 pip install -e ".[dev]"
-pytest tests/ -v                          # full suite (~20s)
-pytest tests/ --ignore=tests/e2e          # unit + integration only
-pytest tests/unit/collectors/ -v          # collector unit tests only (~5s)
+
+# Full suite (exkl. bekannter Langläufer)
+pytest tests/ -q --ignore=tests/test_delivery.py
+
+# Nur unit + integration
+pytest tests/ --ignore=tests/e2e
+
+# Nur Collector-Unit-Tests (~5s)
+pytest tests/unit/collectors/ -v
+
+# Linting (Python + Backend)
+ruff check src/ tests/ ui/backend
 ```
 
 ---
