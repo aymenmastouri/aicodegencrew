@@ -621,6 +621,85 @@ class TestManyTaskScenarios:
 
 
 # =============================================================================
+# Cancel & phase_state.json Consistency
+# =============================================================================
+
+
+class TestParallelCancelAndPhaseState:
+    """Ensure cancel() and stale subprocess handling keep phase_state.json consistent."""
+
+    def test_cancel_parallel_marks_tasks_cancelled_and_state_terminal(self, mock_settings, tmp_project):
+        from ui.backend.services.pipeline_executor import PipelineExecutor
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+        executor.current_run = None
+
+        # Simulate a running parallel run with two tasks and fake Popen objects
+        class _FakeProc:
+            def __init__(self, pid: int):
+                self.pid = pid
+
+        executor.state = "running"
+        executor.current_run = executor.current_run = type("R", (), {"run_id": "test-par", "parallel_mode": True})()
+        with executor._task_states_lock:
+            executor._task_processes = {"T1": _FakeProc(1111), "T2": _FakeProc(2222)}
+            executor._task_states = {
+                "T1": {"state": "running", "pid": 1111, "exit_code": None, "log_lines": []},
+                "T2": {"state": "running", "pid": 2222, "exit_code": None, "log_lines": []},
+            }
+
+        # Monkeypatch kill to avoid actually killing anything
+        with patch.object(executor, "_kill_process_tree") as kill_tree:
+            cancelled = executor.cancel()
+
+        assert cancelled is True
+        assert executor.state == "cancelled"
+        with executor._task_states_lock:
+            assert executor._task_states["T1"]["state"] == "cancelled"
+            assert executor._task_states["T2"]["state"] == "cancelled"
+        kill_tree.assert_called()  # at least once
+
+    def test_cancel_stale_subprocess_marks_running_phases_cancelled(self, mock_settings, tmp_project, monkeypatch):
+        from ui.backend.services.pipeline_executor import PipelineExecutor
+
+        # Prepare a fake phase_state.json with a dead PID and running phases
+        state_path = tmp_project / "logs" / "phase_state.json"
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        state_path.write_text(
+            json.dumps(
+                {
+                    "run_id": "cli-run",
+                    "pid": 999999,  # non-existent
+                    "phases": {
+                        "triage": {"status": "running", "started_at": "2026-03-09T10:00:00"},
+                        "plan": {"status": "completed", "duration_seconds": 12.3},
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        # os.kill should report the process as dead
+        def _fake_kill(pid: int, sig: int) -> None:
+            raise ProcessLookupError()
+
+        monkeypatch.setattr("os.kill", _fake_kill)
+
+        executor = PipelineExecutor.__new__(PipelineExecutor)
+        executor._init()
+
+        # Point logs_dir at tmp_project/logs via patched settings fixture
+        cancelled = executor._cancel_stale_subprocess()
+        assert cancelled is True
+
+        # phase_state.json should now mark running phase as cancelled/failed, but file must remain valid JSON
+        data = json.loads(state_path.read_text(encoding="utf-8"))
+        phases = data.get("phases", {})
+        assert phases["triage"]["status"] in {"cancelled", "failed"}
+
+
+# =============================================================================
 # History Entry — Parallel Metadata
 # =============================================================================
 
