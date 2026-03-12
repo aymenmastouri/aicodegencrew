@@ -170,9 +170,13 @@ class TestInvokeExecutable:
 
         class _FakeFuture:
             def result(self, timeout: float | None = None):  # pragma: no cover - invoked via ThreadPoolExecutor stub
-                raise orchestrator.__class__._SDLCOrchestrator__timeout  # type: ignore[attr-defined]
+                import concurrent.futures
+                raise concurrent.futures.TimeoutError()
 
         class _FakeExecutor:
+            def __init__(self, *args, **kwargs):  # pragma: no cover - accept ThreadPoolExecutor kwargs
+                pass
+
             def __enter__(self):  # pragma: no cover - context manager protocol
                 return self
 

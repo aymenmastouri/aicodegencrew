@@ -135,7 +135,7 @@ class TestMiniCrewBaseLLMFactory:
 
             MockLLM.assert_called_once()
             call_kwargs = MockLLM.call_args[1]
-            assert call_kwargs["model"] == "test-model"
+            assert call_kwargs["model"] == "openai/test-model"
             assert call_kwargs["base_url"] == "http://localhost:11434"
             assert call_kwargs["max_tokens"] == 2000
             # context_window_size set after construction
