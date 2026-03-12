@@ -24,7 +24,27 @@ Runs entirely on your infrastructure. No data leaves your network.
 
 ## 1. Installation
 
-### Prerequisites
+### Quick Start with Docker (no Python/Node needed)
+
+> Only requirement: **Docker Desktop** must be installed and running.
+
+```bash
+git clone <repo-url> aicodegencrew && cd aicodegencrew
+cp .env.example .env              # edit .env: set OPENAI_API_KEY
+./start.sh                        # builds + starts Dashboard
+```
+
+Open **http://localhost** — the Dashboard is ready.
+
+| Command | Description |
+|---------|-------------|
+| `./start.sh` | Start Dashboard |
+| `./start.sh stop` | Stop Dashboard |
+| `./start.sh logs` | Show live logs |
+
+### Quick Start for Developers (Python + Node)
+
+#### Prerequisites
 
 | Service | Purpose | How to check | Required? |
 |---------|---------|--------------|-----------|
@@ -36,7 +56,7 @@ Runs entirely on your infrastructure. No data leaves your network.
 > Ollama and LLM API are **not needed** to start the Dashboard UI.
 > They are only required when running actual pipeline phases.
 
-### Quick Start (copy-paste)
+#### Setup (copy-paste)
 
 ```bash
 # 1. Clone & enter

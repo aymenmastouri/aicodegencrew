@@ -1,0 +1,24 @@
+# =============================================================================
+# AICodeGenCrew Backend — lightweight dev/demo image
+# =============================================================================
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install backend + core dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# truststore for corporate SSL (uses OS cert store)
+RUN pip install --no-cache-dir truststore>=0.9.0
+
+# Copy backend code
+COPY . /app/ui/backend/
+
+# Core package will be mounted or copied via docker-compose
+ENV PYTHONPATH=/app/src:/app
+ENV PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 8001
+
+CMD ["python", "-m", "uvicorn", "ui.backend.main:app", "--host", "0.0.0.0", "--port", "8001"]
