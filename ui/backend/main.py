@@ -74,36 +74,54 @@ def health_check():
 
 @app.get("/api/health/setup-status")
 def setup_status():
-    """Check onboarding setup completeness."""
+    """Check onboarding setup completeness with explicit error reasons.
+
+    The UI can use the boolean flags for quick checks and the 'errors' list
+    to surface concrete misconfigurations to the user.
+    """
     from .services.env_manager import read_env
+
+    errors: list[str] = []
 
     try:
         env_vals = read_env()
-    except Exception:
+    except Exception as exc:  # pragma: no cover - defensive guardrail
         env_vals = {}
+        errors.append(f"Failed to read .env: {exc}")
 
     project_path = env_vals.get("PROJECT_PATH", "")
     repo_configured = bool(project_path) and Path(project_path).is_dir()
+    if not repo_configured:
+        errors.append(
+            "PROJECT_PATH is not configured or does not point to an existing directory.",
+        )
+
     llm_configured = all(env_vals.get(k) for k in ("LLM_PROVIDER", "MODEL", "API_BASE"))
+    if not llm_configured:
+        missing = [k for k in ("LLM_PROVIDER", "MODEL", "API_BASE") if not env_vals.get(k)]
+        errors.append(f"Missing LLM configuration: {', '.join(missing)}.")
 
     # Check for input files in configured task input dir
     task_input_dir = settings.project_root / env_vals.get("TASK_INPUT_DIR", "task_inputs")
     try:
         has_input_files = task_input_dir.is_dir() and any(task_input_dir.iterdir())
-    except Exception:
+    except Exception as exc:  # pragma: no cover - defensive guardrail
         has_input_files = False
+        errors.append(f"Failed to inspect TASK_INPUT_DIR='{task_input_dir}': {exc}")
 
     # Check run history
     try:
         has_run_history = settings.run_history.exists() and settings.run_history.stat().st_size > 0
-    except Exception:
+    except Exception as exc:  # pragma: no cover - defensive guardrail
         has_run_history = False
+        errors.append(f"Failed to read run history file '{settings.run_history}': {exc}")
 
     return {
         "repo_configured": repo_configured,
         "llm_configured": llm_configured,
         "has_input_files": has_input_files,
         "has_run_history": has_run_history,
+        "errors": errors,
     }
 
 

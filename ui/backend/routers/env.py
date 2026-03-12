@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from ..config import settings
 from ..schemas import EnvUpdate, EnvVariable
@@ -20,7 +20,12 @@ def get_env():
 @router.put("")
 def update_env(request: EnvUpdate):
     """Update .env values."""
-    write_env(request.values)
+    try:
+        write_env(request.values)
+    except Exception as exc:
+        # Surface configuration write issues as a clear API error so the UI can
+        # give actionable feedback instead of failing silently.
+        raise HTTPException(status_code=500, detail=f"Failed to update environment: {exc}") from exc
     return {"success": True, "message": f"Updated {len(request.values)} variables"}
 
 
