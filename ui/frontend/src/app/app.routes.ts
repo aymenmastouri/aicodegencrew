@@ -47,6 +47,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/settings/settings.component').then((m) => m.SettingsComponent),
   },
   {
+    path: 'onboarding',
+    loadComponent: () => import('./pages/onboarding/onboarding.component').then((m) => m.OnboardingComponent),
+  },
+  {
     path: 'mcps',
     loadComponent: () => import('./pages/mcps/mcps.component').then((m) => m.McpsComponent),
   },
