@@ -484,7 +484,8 @@ ruff check src/ tests/ ui/backend
 |----------|-------------|
 | [SDLC Architecture](docs/SDLC_ARCHITECTURE.md) | Cross-architecture parent + links to all phase docs |
 | [Phase 5 — Implement](docs/phases/phase-5-implement/README.md) | Code generation + build verify architecture |
-| [User Guide](docs/guides/USER_GUIDE.md) | Installation, configuration, CLI, troubleshooting |
+| [Docker Release Guide](docs/guides/DOCKER_RELEASE_GUIDE.md) | Build, distribute, and run Docker images |
+| [Corporate SSL Guide](docs/guides/CORPORATE_SSL_GUIDE.md) | Corporate proxy / certificate setup |
 | [Delivery Guide](docs/guides/DELIVERY_GUIDE.md) | Release process and deployment |
 | [MCP Knowledge Server](docs/guides/MCP_KNOWLEDGE_SERVER.md) | MCP server for CrewAI tools |
 | [Phase Configuration](config/phases_config.yaml) | Phase definitions and presets |
