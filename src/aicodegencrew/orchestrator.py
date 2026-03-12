@@ -345,6 +345,9 @@ class SDLCOrchestrator:
             executable = self.phases[phase_id]
             config = self._contract_from_current_config().phases.get(phase_id)
             phase_config = dict(config.config) if config else {}
+            # Make phase_id explicit in the config so timeout/error paths can
+            # report a clear identifier instead of falling back to "unknown".
+            phase_config["phase_id"] = phase_id
             if self._task_id:
                 phase_config["task_id"] = self._task_id
 
