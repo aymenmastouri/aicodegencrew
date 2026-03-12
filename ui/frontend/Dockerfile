@@ -1,5 +1,6 @@
 # =============================================================================
-# AICodeGenCrew Frontend - SECURE Multi-Stage Build
+# AICodeGenCrew Frontend — Multi-Stage Build
+# Build context: project root (so certs/ is accessible)
 # Angular compiled to minified+hashed JS. No source in final image.
 # =============================================================================
 
@@ -10,12 +11,17 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
+# Install Capgemini corporate CA so npm registry works behind TLS proxy
+COPY certs/CapgeminiPKIRootCA.crt /usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt
+
 # Install dependencies
-COPY package.json package-lock.json* ./
+COPY ui/frontend/package.json ui/frontend/package-lock.json* ./
 RUN npm ci --ignore-scripts
 
 # Copy source and build production
-COPY . .
+COPY ui/frontend/ .
 RUN npm run build
 
 # ---------------------------------------------------------------------------
@@ -23,15 +29,10 @@ RUN npm run build
 # ---------------------------------------------------------------------------
 FROM nginx:alpine AS final
 
-# Remove unnecessary tools that could be used to inspect
-RUN rm -rf /usr/bin/wget /usr/bin/curl /usr/sbin/apk \
-    && rm -rf /var/cache/apk/*
-
 # Copy only the compiled Angular bundle (minified + tree-shaken + hashed)
 COPY --from=build /app/dist/dashboard/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY ui/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-# No source code, no node_modules, no TypeScript — only .js/.css/.html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
