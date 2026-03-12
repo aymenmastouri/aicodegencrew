@@ -1,6 +1,6 @@
 # =============================================================================
 # AICodeGenCrew Backend — lightweight dev/demo image
-# Build context: project root (so certs/ and src/ are accessible)
+# Build context: project root (so certs/, src/, pyproject.toml are accessible)
 # =============================================================================
 FROM python:3.12-slim
 
@@ -10,18 +10,18 @@ WORKDIR /app
 COPY certs/CapgeminiPKIRootCA.crt /usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt
 RUN update-ca-certificates
 
-# Install backend + core dependencies
-COPY ui/backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install backend-specific dependencies
+COPY ui/backend/requirements.txt /tmp/backend-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/backend-requirements.txt
 
-# truststore for corporate SSL (uses OS cert store — now includes Capgemini CA)
-RUN pip install --no-cache-dir truststore>=0.9.0
+# Install core package with all its dependencies (requests, crewai, etc.)
+COPY pyproject.toml README.md ./
+COPY src/ /app/src/
+RUN pip install --no-cache-dir -e . && \
+    pip install --no-cache-dir truststore>=0.9.0
 
 # Copy backend code
 COPY ui/backend/ /app/ui/backend/
-
-# Copy core aicodegencrew package
-COPY src/ /app/src/
 
 ENV PYTHONPATH=/app/src:/app
 ENV PYTHONDONTWRITEBYTECODE=1
