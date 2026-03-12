@@ -10,6 +10,7 @@ services:
     volumes:
       - ../knowledge:/app/knowledge
       - ../logs:/app/logs
+      - ../config:/app/config:ro
       - ../.env:/app/.env
       - ../.env.example:/app/.env.example:ro
     environment:
