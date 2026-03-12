@@ -116,7 +116,7 @@ Im entpackten Ordner:
 4. `sk-your-api-key-here` mit dem echten API-Key ersetzen
 5. Speichern (Strg+S) und schließen
 
-> Den API-Key bekommst du vom Team-Lead.
+> Den API-Key findest du im internen Wiki oder frage im Team-Channel.
 
 ### Schritt 3: Starten
 
