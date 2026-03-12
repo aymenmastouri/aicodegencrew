@@ -3,15 +3,13 @@ version: "3.8"
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile.dev
+      context: ..
+      dockerfile: ui/backend/Dockerfile.dev
     ports:
       - "8001:8001"
     volumes:
       - ../knowledge:/app/knowledge
       - ../logs:/app/logs
-      - ../src/aicodegencrew/config:/app/src/aicodegencrew/config:ro
-      - ../src:/app/src:ro
       - ../.env:/app/.env
       - ../.env.example:/app/.env.example:ro
     environment:
