@@ -1,0 +1,39 @@
+# Git
+.git/
+.gitignore
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Node (frontend has its own context, but just in case)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime outputs
+knowledge/
+logs/
+reports/
+architecture-docs/
+knowledge-*/
+
+# Docker
+.dockerignore
+
+# Presentations
+*.pptx
+*.ppt
+
+# Misc
+.claude/
+.env
+.env.run
+*.log
