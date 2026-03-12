@@ -26,27 +26,49 @@ Runs entirely on your infrastructure. No data leaves your network.
 
 ### Prerequisites
 
-| Service | Purpose | How to check |
-|---------|---------|--------------|
-| **Python 3.10-3.12** | Core pipeline | `python --version` |
-| **Node.js 18+** | Dashboard frontend | `node --version` |
-| **Ollama** | Embeddings | `curl http://127.0.0.1:11434/api/tags` |
-| **LLM API** | Code generation (requires VPN) | `curl $API_BASE/v1/models` |
+| Service | Purpose | How to check | Required? |
+|---------|---------|--------------|-----------|
+| **Python 3.10-3.12** | Core pipeline | `python --version` | Yes |
+| **Node.js 18+** | Dashboard frontend | `node --version` | Yes |
+| **Ollama** | Embeddings (Phase 0) | `curl http://127.0.0.1:11434/api/tags` | Only for pipeline |
+| **LLM API** | AI phases (2-8) | `curl $API_BASE/v1/models` | Only for pipeline |
 
-### Setup
+> Ollama and LLM API are **not needed** to start the Dashboard UI.
+> They are only required when running actual pipeline phases.
+
+### Quick Start (copy-paste)
 
 ```bash
+# 1. Clone & enter
 git clone <repo-url> aicodegencrew && cd aicodegencrew
-python -m venv .venv && .venv\Scripts\activate   # Windows
+
+# 2. Python environment
+python -m venv .venv
+.venv\Scripts\activate                            # Windows
+# source .venv/bin/activate                       # Linux/macOS
 pip install -e ".[dev,parsers]"
-cp .env.example .env                              # edit with your settings
-ollama pull nomic-embed-text:latest               # embedding model
+
+# 3. Configuration
+cp .env.example .env
+# Edit .env: set PROJECT_PATH, OPENAI_API_KEY, and verify API_BASE
+
+# 4. Frontend dependencies (one-time)
+cd ui/frontend && npm install && cd ../..
+npm install                                       # root: installs concurrently
+
+# 5. Start Dashboard
+npm run dev                                       # opens http://localhost:4200
+
+# 6. (Optional) Embeddings for pipeline
+# ollama pull nomic-embed-text:latest
 ```
 
-Frontend dependencies (one-time):
-```bash
-cd ui/frontend && npm install && cd ../..
-```
+### Verify Setup
+
+After `npm run dev`, check:
+- Dashboard: http://localhost:4200
+- Backend health: http://localhost:8001/api/health
+- Setup status: http://localhost:8001/api/health/setup-status
 
 ---
 
