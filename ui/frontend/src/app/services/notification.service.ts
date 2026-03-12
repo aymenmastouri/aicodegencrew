@@ -109,8 +109,11 @@ export class NotificationService implements OnDestroy {
       .pipe(
         switchMap(() =>
           this.pipelineSvc.getStatus().pipe(
-            catchError(() =>
-              of({
+            catchError((err) => {
+              // Surface backend connectivity/status errors instead of silently
+              // degrading to "idle" so users understand why no progress appears.
+              this.error('Konnte Pipeline-Status nicht laden. Bitte Backend/Verbindung prüfen.');
+              return of({
                 state: 'idle',
                 run_id: undefined,
                 phases: [] as string[],
@@ -120,8 +123,8 @@ export class NotificationService implements OnDestroy {
                 total_phase_count: 0,
                 elapsed_seconds: 0,
                 eta_seconds: undefined,
-              }),
-            ),
+              });
+            }),
           ),
         ),
       )

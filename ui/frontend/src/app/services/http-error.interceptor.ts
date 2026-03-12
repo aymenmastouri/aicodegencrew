@@ -1,0 +1,38 @@
+import { Injectable } from '@angular/core';
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+  HttpErrorResponse,
+} from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { NotificationService } from './notification.service';
+
+@Injectable()
+export class HttpErrorInterceptor implements HttpInterceptor {
+  constructor(private notif: NotificationService) {}
+
+  intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+    return next.handle(req).pipe(
+      catchError((error: unknown) => {
+        if (error instanceof HttpErrorResponse) {
+          const status = error.status;
+          const detail = (error.error && (error.error.detail || error.error.message)) || error.message;
+
+          // Let 0 (network), 4xx, 5xx bubble up as user-visible errors.
+          if (status === 0) {
+            this.notif.error('Keine Verbindung zum Backend. Bitte Server/Netzwerk prüfen.');
+          } else if (status >= 500) {
+            this.notif.error(`Serverfehler (${status}): ${detail}`);
+          } else if (status >= 400) {
+            this.notif.error(`Anfrage fehlgeschlagen (${status}): ${detail}`);
+          }
+        }
+        return throwError(() => error);
+      }),
+    );
+  }
+}
+
