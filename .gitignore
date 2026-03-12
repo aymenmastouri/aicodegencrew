@@ -183,3 +183,11 @@ reports/*.md
 !knowledge/.gitkeep
 !reports/.gitkeep
 !logs/.gitkeep
+
+# =============================================================================
+# PRESENTATIONS & MARKETING ASSETS (not source code)
+# =============================================================================
+*.pptx
+*.ppt
+fill_pptx.py
+sdlc_overview.png
