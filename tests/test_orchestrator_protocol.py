@@ -164,6 +164,32 @@ class TestInvokeExecutable:
         with pytest.raises(RuntimeError, match="LLM down"):
             orchestrator._invoke_executable(phase, {})
 
+    def test_timeout_error_includes_phase_id(self, orchestrator, monkeypatch):
+        """TimeoutError message should include the phase_id for easier debugging."""
+        phase = MagicMock()
+
+        class _FakeFuture:
+            def result(self, timeout: float | None = None):  # pragma: no cover - invoked via ThreadPoolExecutor stub
+                raise orchestrator.__class__._SDLCOrchestrator__timeout  # type: ignore[attr-defined]
+
+        class _FakeExecutor:
+            def __enter__(self):  # pragma: no cover - context manager protocol
+                return self
+
+            def __exit__(self, exc_type, exc, tb):  # pragma: no cover - context manager protocol
+                return False
+
+            def submit(self, fn, *args, **kwargs):  # pragma: no cover - used by _invoke_executable
+                return _FakeFuture()
+
+        monkeypatch.setattr("aicodegencrew.orchestrator._cf.ThreadPoolExecutor", _FakeExecutor)
+
+        inputs = {"config": {"phase_id": "discover"}}
+        with pytest.raises(TimeoutError) as excinfo:
+            orchestrator._invoke_executable(phase, inputs)
+
+        assert "discover" in str(excinfo.value)
+
 
 # =============================================================================
 # Orchestrator Registration + Execution Tests
