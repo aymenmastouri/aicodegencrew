@@ -1,6 +1,6 @@
 @echo off
 REM =============================================================================
-REM SDLC Pilot — One-Click Start (Docker) for Windows CMD/PowerShell
+REM SDLC Pilot - One-Click Start (Docker) for Windows CMD/PowerShell
 REM
 REM Usage:
 REM   start.bat                    start Dashboard
@@ -24,7 +24,7 @@ if "%1"=="logs" (
 
 echo.
 echo =========================================
-echo   SDLC Pilot — Dashboard Startup
+echo   SDLC Pilot - Dashboard Startup
 echo =========================================
 echo.
 
