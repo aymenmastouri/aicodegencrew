@@ -22,25 +22,66 @@ Runs entirely on your infrastructure. No data leaves your network.
 
 ---
 
-## 1. Installation
+## 1. Quick Start (Docker — empfohlen)
 
-### Quick Start with Docker (no Python/Node needed)
+Du brauchst nur **2 Programme** auf deinem Rechner:
 
-> Only requirement: **Docker Desktop** must be installed and running.
+1. **Git** — [Download](https://git-scm.com/downloads) (bei Capgemini meist vorinstalliert)
+2. **Docker Desktop** — [Download](https://www.docker.com/products/docker-desktop)
 
-```bash
-git clone <repo-url> aicodegencrew && cd aicodegencrew
-cp .env.example .env              # edit .env: set OPENAI_API_KEY
-./start.sh                        # builds + starts Dashboard
+### Schritt 1: Repository herunterladen
+
+Öffne ein Terminal (Windows: PowerShell oder CMD) und tippe:
+
+```
+git clone https://bnotkca.pl.s2-eu.capgemini.com/gitlab/ai-group/aicodegencrew.git
+cd aicodegencrew
 ```
 
-Open **http://localhost** — the Dashboard is ready.
+### Schritt 2: Konfiguration
 
-| Command | Description |
-|---------|-------------|
-| `./start.sh` | Start Dashboard |
-| `./start.sh stop` | Stop Dashboard |
-| `./start.sh logs` | Show live logs |
+```
+copy .env.example .env
+```
+
+Öffne die Datei `.env` mit einem Texteditor (Rechtsklick → "Öffnen mit" → Notepad).
+Suche die Zeile:
+```
+OPENAI_API_KEY=sk-your-api-key-here
+```
+Ersetze `sk-your-api-key-here` mit dem echten API-Key (bekommst du vom Team-Lead).
+Speichern und schließen.
+
+### Schritt 3: Starten
+
+Stelle sicher, dass **Docker Desktop gestartet** ist (blaues Wal-Icon im System-Tray).
+
+Dann im Terminal:
+
+| Windows CMD / PowerShell | Git Bash / Linux / macOS |
+|--------------------------|--------------------------|
+| `start.bat` | `./start.sh` |
+
+Beim ersten Mal dauert es **2-3 Minuten** (Downloads). Danach startet es in Sekunden.
+
+### Schritt 4: Dashboard öffnen
+
+Öffne im Browser: **http://localhost**
+
+Fertig!
+
+### Stoppen / Logs
+
+| Aktion | Windows | Git Bash |
+|--------|---------|----------|
+| Stoppen | `start.bat stop` | `./start.sh stop` |
+| Logs anzeigen | `start.bat logs` | `./start.sh logs` |
+
+---
+
+## 2. Installation für Entwickler (Python + Node)
+
+> Nur nötig wenn du am Code mitarbeiten willst. Für die Demo reicht Docker (siehe oben).
 
 ### Quick Start for Developers (Python + Node)
 
@@ -92,7 +133,7 @@ After `npm run dev`, check:
 
 ---
 
-## 2. SDLC Dashboard (Web UI)
+## 3. SDLC Dashboard (Web UI)
 
 The Dashboard is the primary interface. It runs a **FastAPI backend** (port 8001) and an **Angular frontend** (port 4200).
 
@@ -183,7 +224,7 @@ docker-compose -f ui/docker-compose.ui.yml up --build
 
 ---
 
-## 3. Core Pipeline (CLI)
+## 4. Core Pipeline (CLI)
 
 The pipeline can run **independently** without the Dashboard, directly from the command line.
 
@@ -282,7 +323,7 @@ aicodegencrew run --phases plan implement --index-mode off --no-clean
 
 ---
 
-## 4. Configuration
+## 5. Configuration
 
 Copy `.env.example` to `.env` and configure:
 
@@ -318,7 +359,7 @@ Copy `.env.example` to `.env` and configure:
 
 ---
 
-## 5. Architecture
+## 6. Architecture
 
 ### SDLC Phases
 
@@ -356,7 +397,7 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + symbols + evide
 
 ---
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
@@ -371,7 +412,7 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + symbols + evide
 
 ---
 
-## 7. Scripts Reference
+## 8. Scripts Reference
 
 | Script | Description |
 |--------|-------------|
@@ -401,7 +442,7 @@ python scripts/build_release.py --bump patch --docker   # + Docker image
 
 ---
 
-## 8. Deployment
+## 9. Deployment
 
 SDLC Pilot is **proprietary** software. Three delivery modes:
 
@@ -415,7 +456,7 @@ SDLC Pilot is **proprietary** software. Three delivery modes:
 
 ---
 
-## 9. Testing
+## 10. Testing
 
 815+ tests, no LLM or network required (except `tests/e2e/`).
 
@@ -437,7 +478,7 @@ ruff check src/ tests/ ui/backend
 
 ---
 
-## 10. Documentation
+## 11. Documentation
 
 | Document | Description |
 |----------|-------------|
