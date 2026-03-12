@@ -120,7 +120,7 @@ OPENAI_API_KEY=sk-your-api-key-here
 `sk-your-api-key-here` durch den echten API-Key ersetzen.
 Speichern (Windows: Strg+S, macOS: Cmd+S) und schließen.
 
-> Den API-Key bekommst du vom Team-Lead.
+> Den API-Key findest du im internen Wiki oder frage im Team-Channel.
 
 ### Schritt 3: Starten
 
