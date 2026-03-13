@@ -140,7 +140,8 @@ def _parse_example_file() -> list[tuple[str, str]]:
 
             if stripped.startswith("#"):
                 comment = stripped.lstrip("#").strip()
-                if comment:
+                # Skip section header decorations (e.g. "── Repository ───")
+                if comment and not comment.startswith("──") and not re.match(r"^[-─═=\s]+$", comment):
                     pending_comments.append(comment)
                 continue
 

@@ -23,11 +23,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
 
           // Let 0 (network), 4xx, 5xx bubble up as user-visible errors.
           if (status === 0) {
-            this.notif.error('Keine Verbindung zum Backend. Bitte Server/Netzwerk prüfen.');
+            this.notif.error('Cannot reach backend. Check server/network.');
           } else if (status >= 500) {
-            this.notif.error(`Serverfehler (${status}): ${detail}`);
+            this.notif.error(`Server error (${status}): ${detail}`);
           } else if (status >= 400) {
-            this.notif.error(`Anfrage fehlgeschlagen (${status}): ${detail}`);
+            this.notif.error(`Request failed (${status}): ${detail}`);
           }
         }
         return throwError(() => error);

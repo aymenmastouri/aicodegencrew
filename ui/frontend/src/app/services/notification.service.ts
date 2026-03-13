@@ -112,7 +112,7 @@ export class NotificationService implements OnDestroy {
             catchError((err) => {
               // Surface backend connectivity/status errors instead of silently
               // degrading to "idle" so users understand why no progress appears.
-              this.error('Konnte Pipeline-Status nicht laden. Bitte Backend/Verbindung prüfen.');
+              this.error('Could not load pipeline status. Check backend connection.');
               return of({
                 state: 'idle',
                 run_id: undefined,

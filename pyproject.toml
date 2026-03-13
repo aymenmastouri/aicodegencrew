@@ -1,6 +1,6 @@
 [project]
 name = "aicodegencrew"
-version = "0.7.2"
+version = "0.7.3"
 description = "AI-powered SDLC automation platform — from architecture analysis to code generation"
 authors = [{ name = "Aymen Mastouri", email = "aymen.a.mastouri@capgemini.com" }]
 requires-python = ">=3.10,<3.13"
