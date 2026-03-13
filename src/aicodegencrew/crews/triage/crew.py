@@ -28,6 +28,8 @@ Output: knowledge/triage/{issue_id}_findings.json
 """
 
 import json
+import os
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -38,6 +40,7 @@ from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.schema_version import add_schema_version
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
+from ...shared.utils.env_flags import get_bool_env
 from ...shared.utils.logger import setup_logger
 from .agents import create_triage_agent, create_triage_reviewer_agent
 from .blast_radius import calculate_blast_radius
@@ -188,10 +191,14 @@ class TriageCrew:
                 )
 
         # ── Quality gate ────────────────────────────────────────────────
+        quality_threshold = int(os.environ.get("TRIAGE_QUALITY_THRESHOLD", "50"))
         if llm_result:
             quality = self._score_triage_quality(llm_result)
-            if quality["score"] < 50:
-                logger.warning("[TriageCrew] Quality score %d — partial: %s", quality["score"], quality["warnings"])
+            if quality["score"] < quality_threshold:
+                logger.warning(
+                    "[TriageCrew] Quality score %d < threshold %d — partial: %s",
+                    quality["score"], quality_threshold, quality["warnings"],
+                )
                 llm_status = "partial"  # downgrade: LLM ran but output is poor
             elif quality["warnings"]:
                 logger.info("[TriageCrew] Quality score %d — warnings: %s", quality["score"], quality["warnings"])
@@ -278,8 +285,14 @@ class TriageCrew:
                 "anticipated_questions": developer.get("anticipated_questions", []),
             })
         else:
-            # LLM failed — downstream phases should know context is incomplete
+            # LLM failed — build fallback triage_context from deterministic results
+            # so Plan phase can still work with partial information
             triage_context["llm_error"] = llm_error or "LLM synthesis failed"
+            triage_context.update(
+                self._build_deterministic_fallback(
+                    classification, entry_points, blast_radius, risk,
+                )
+            )
 
         summary = {
             "status": llm_status,  # "success" | "partial" | "failed"
@@ -707,11 +720,13 @@ class TriageCrew:
         log_dir = self.output_dir / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
 
+        _memory_enabled = get_bool_env("CREWAI_MEMORY_ENABLED", default=True)
         crew = Crew(
             agents=[analyst, reviewer],
             tasks=[analyst_task, review_task],
             process=Process.sequential,
             verbose=True,
+            memory=_memory_enabled,
             step_callback=step_callback,
             task_callback=task_callback,
             output_log_file=str(log_dir / "synthesis.json"),
@@ -724,6 +739,73 @@ class TriageCrew:
 
         # Try to parse JSON from the LLM output (reviewer's corrected version)
         return self._extract_json(raw)
+
+    @staticmethod
+    def _build_deterministic_fallback(
+        classification: dict,
+        entry_points: list[dict],
+        blast_radius: dict,
+        risk: dict,
+    ) -> dict[str, Any]:
+        """Build minimal triage_context from deterministic results.
+
+        Called when LLM synthesis fails so that the downstream Plan phase
+        still receives actionable context instead of empty fields.
+        """
+        affected_components = []
+        for ep in entry_points:
+            name = ep.get("component", "") if isinstance(ep, dict) else ""
+            if name and name not in affected_components:
+                affected_components.append(name)
+        for item in blast_radius.get("affected", []):
+            name = item.get("component", "") if isinstance(item, dict) else ""
+            if name and name not in affected_components:
+                affected_components.append(name)
+
+        risk_level = risk.get("risk_level", "unknown")
+        risk_flags = risk.get("flags", [])
+
+        # Build a synthetic scope_boundary from blast radius
+        containers = blast_radius.get("containers_affected", [])
+        scope_parts = []
+        if containers:
+            scope_parts.append(f"Affected containers: {', '.join(containers)}.")
+        scope_parts.append(
+            f"Blast radius: {blast_radius.get('component_count', 0)} components, "
+            f"depth {blast_radius.get('depth', 0)}."
+        )
+
+        # Build synthetic context_boundaries from risk flags
+        context_boundaries = []
+        if risk.get("security_sensitive"):
+            context_boundaries.append({
+                "category": "security_boundary",
+                "boundary": "Security-sensitive components affected — review required.",
+                "severity": "caution",
+                "source_facts": ["deterministic_risk_assessment"],
+            })
+        if risk_flags:
+            context_boundaries.append({
+                "category": "technology_constraint",
+                "boundary": f"Risk flags: {', '.join(risk_flags)}.",
+                "severity": "caution" if risk_level in ("medium", "high") else "info",
+                "source_facts": ["deterministic_risk_assessment"],
+            })
+
+        return {
+            "big_picture": (
+                f"[Deterministic fallback — LLM unavailable] "
+                f"{classification.get('type', 'unknown').title()} issue affecting "
+                f"{len(affected_components)} component(s). "
+                f"Risk level: {risk_level}."
+            ),
+            "scope_boundary": " ".join(scope_parts),
+            "classification_assessment": "",
+            "affected_components": affected_components,
+            "context_boundaries": context_boundaries,
+            "architecture_notes": "",
+            "anticipated_questions": [],
+        }
 
     @staticmethod
     def _score_triage_quality(result: dict) -> dict:
@@ -751,15 +833,23 @@ class TriageCrew:
             score -= 15
             warnings.append(f"context_boundaries count={len(boundaries)} (<2)")
 
-        # Parrot detection: boundary that just lists versions without analysis
-        import re
-        version_pattern = re.compile(r"^\s*[\w.-]+\s+\d+\.\d+")
+        # Parrot detection: boundary that just lists versions without analysis.
+        # A line is "parroting" only if it's JUST "Name Version" with no analytical
+        # content (e.g., "Spring Boot 3.2" alone). Lines that mention a version
+        # within a sentence (e.g., "requires Spring Boot 3.2 due to...") are fine.
+        bare_version_pattern = re.compile(
+            r"^[-•*]?\s*[\w.-]+\s+v?\d+\.\d+[\w.-]*\s*$"
+        )
         for b in boundaries:
             text = b.get("boundary", "") if isinstance(b, dict) else ""
-            # If more than half the lines are just "name version" patterns
             lines = [ln for ln in text.split("\n") if ln.strip()]
-            version_lines = sum(1 for ln in lines if version_pattern.match(ln.strip()))
-            if lines and version_lines > len(lines) / 2:
+            if len(lines) < 3:
+                # Too few lines to judge — skip parrot check
+                continue
+            bare_version_lines = sum(
+                1 for ln in lines if bare_version_pattern.match(ln.strip())
+            )
+            if bare_version_lines > len(lines) / 2:
                 score -= 10
                 warnings.append(f"parrot detected in boundary: {b.get('category', '?')}")
 
@@ -768,18 +858,25 @@ class TriageCrew:
                 score -= 5
                 warnings.append(f"no source_facts in boundary: {b.get('category', '?')}")
 
-        # Action steps leaked — check context_boundaries and architecture_notes only
-        # (scope_boundary legitimately contains words like "change", "update")
-        action_words = ["implement", "modify", "change the", "update the", "add a", "create a", "fix the"]
+        # Action steps leaked — only flag imperative instructions (sentence-initial
+        # action verbs), not descriptive mentions like "this will add a layer..."
+        # Only check fields that should be purely analytical:
+        #   scope_boundary, context_boundaries, architecture_notes
+        action_pattern = re.compile(
+            r"(?:^|[.!?;]\s+|[-•*]\s+)"  # sentence/list start
+            r"(implement|modify|change the|update the|add a|create a|fix the|remove the)\b",
+            re.IGNORECASE,
+        )
         check_fields = {
-            "context_boundaries": json.dumps(boundaries, ensure_ascii=False).lower(),
-            "architecture_notes": dev.get("architecture_notes", "").lower(),
+            "scope_boundary": dev.get("scope_boundary", ""),
+            "context_boundaries": json.dumps(boundaries, ensure_ascii=False),
+            "architecture_notes": dev.get("architecture_notes", ""),
         }
         for field_name, field_text in check_fields.items():
-            for word in action_words:
-                if word in field_text:
-                    score -= 5
-                    warnings.append(f"action step leaked in {field_name}: '{word}'")
+            matches = action_pattern.findall(field_text)
+            for match in matches:
+                score -= 5
+                warnings.append(f"action step leaked in {field_name}: '{match}'")
 
         # Anticipated questions check (Point 4: Stupid Questions)
         questions = dev.get("anticipated_questions", [])
@@ -809,8 +906,6 @@ class TriageCrew:
 
     def _extract_json(self, text: str) -> dict | None:
         """Extract JSON object from LLM output text."""
-        import re
-
         # Try direct JSON parse first
         try:
             return json.loads(text)

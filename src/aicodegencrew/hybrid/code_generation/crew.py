@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import subprocess
 import time
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,7 @@ from ...shared.mcp import get_phase5_mcps
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.crewai_patches import apply_patches
 from ...shared.utils.embedder_config import get_crew_embedder
+from ...shared.utils.env_flags import get_bool_env
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
 
@@ -413,12 +415,13 @@ class ImplementCrew:
 
         log_dir = self.output_dir / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
+        _memory_enabled = get_bool_env("CREWAI_MEMORY_ENABLED", default=True)
         crew = Crew(
             agents=[developer],
             tasks=[task],
             process=Process.sequential,
             verbose=_VERBOSE,
-            memory=False,
+            memory=_memory_enabled,
             planning=False,
             max_rpm=_MAX_RPM,
             step_callback=step_callback,
@@ -520,12 +523,13 @@ class ImplementCrew:
 
         log_dir = self.output_dir / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
+        _memory_enabled = get_bool_env("CREWAI_MEMORY_ENABLED", default=True)
         crew = Crew(
             agents=[developer],
             tasks=[task],
             process=Process.sequential,
             verbose=_VERBOSE,
-            memory=False,
+            memory=_memory_enabled,
             planning=False,
             max_rpm=_MAX_RPM,
             step_callback=step_callback,
@@ -687,6 +691,11 @@ class ImplementCrew:
             )
 
         # ── 2. Build-fix loop ───────────────────────────────────────────────
+        # Capture baseline commit for auto-rollback if all retries fail
+        baseline_commit = self._get_baseline_commit()
+        if baseline_commit:
+            logger.info("[Implement] Baseline commit for rollback: %s", baseline_commit[:8])
+
         raw_build_outputs: list[str] = []
         for attempt in range(1, MAX_BUILD_RETRIES + 1):
             logger.info("[Implement] Build-fix attempt %d/%d", attempt, MAX_BUILD_RETRIES)
@@ -705,6 +714,10 @@ class ImplementCrew:
                 self._execute_fix(
                     plan, staging, build_errors, failed_files, dependency_order_paths, import_index, generation_order
                 )
+
+            # 2a-post. Invalidate import index entries for staged files so the
+            # import fixer and subsequent fix iterations see current symbols.
+            self._invalidate_import_index_for_staging(staging, import_index)
 
             generated_files = self._staging_to_generated_files(staging)
 
@@ -733,7 +746,17 @@ class ImplementCrew:
             if attempt < MAX_BUILD_RETRIES:
                 logger.warning("[Implement] Build failed on attempt %d, retrying with fix task", attempt)
             else:
-                logger.warning("[Implement] Build failed after %d attempts, exiting loop", MAX_BUILD_RETRIES)
+                logger.error(
+                    "[Implement] Build failed after %d attempts for task %s — "
+                    "auto-rolling back to baseline commit",
+                    MAX_BUILD_RETRIES,
+                    plan.task_id,
+                )
+                if baseline_commit and not self.dry_run:
+                    self._rollback_to_commit(baseline_commit, plan.task_id)
+                    # Clear staging since we rolled back — prevents OutputWriter
+                    # from committing broken code
+                    staging.clear()
 
         # ── 3. Strategy: verification enrichment ─────────────────────────
         rich_report = strategy.enrich_verification(
@@ -979,6 +1002,89 @@ class ImplementCrew:
                 "duration_seconds": total_duration,
             },
         }
+
+    # ── Import index invalidation ────────────────────────────────────────
+
+    @staticmethod
+    def _invalidate_import_index_for_staging(
+        staging: dict[str, dict[str, Any]],
+        import_index: ImportIndex,
+    ) -> None:
+        """Invalidate and re-index import index entries for all staged files.
+
+        After the code generator writes files, existing symbol entries for
+        those files may be stale (renamed classes, removed exports, etc.).
+        This ensures the import fixer and subsequent fix iterations resolve
+        against the current file contents.
+        """
+        if not staging or import_index is None:
+            return
+
+        total_removed = 0
+        for file_path in staging:
+            removed = import_index.invalidate_file(file_path)
+            total_removed += removed
+
+        if total_removed > 0:
+            logger.info(
+                "[Implement] Invalidated %d import index entries for %d staged files",
+                total_removed,
+                len(staging),
+            )
+
+    # ── Git rollback on max retries failure ──────────────────────────────
+
+    def _get_baseline_commit(self) -> str | None:
+        """Get the current HEAD commit SHA as a baseline for rollback."""
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=str(self.repo_path),
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            if result.returncode == 0:
+                return result.stdout.strip()
+        except Exception:
+            pass
+        return None
+
+    def _rollback_to_commit(self, commit_sha: str, task_id: str) -> bool:
+        """Reset the working tree to a baseline commit after max retries failure.
+
+        Uses 'git reset --hard' to discard all staged and unstaged changes
+        that were made during the failed code generation attempt.
+        """
+        try:
+            result = subprocess.run(
+                ["git", "reset", "--hard", commit_sha],
+                cwd=str(self.repo_path),
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                logger.info(
+                    "[Implement] ROLLBACK: Reset to baseline commit %s after max retries for task %s",
+                    commit_sha[:8],
+                    task_id,
+                )
+                return True
+            else:
+                logger.error(
+                    "[Implement] ROLLBACK FAILED: git reset returned %d for task %s: %s",
+                    result.returncode,
+                    task_id,
+                    result.stderr.strip(),
+                )
+        except Exception as e:
+            logger.error(
+                "[Implement] ROLLBACK FAILED: exception during git reset for task %s: %s",
+                task_id,
+                e,
+            )
+        return False
 
     # ── Helpers ─────────────────────────────────────────────────────────────
 

@@ -11,7 +11,8 @@ Input:  knowledge/implement/{task_id}_report.json  (CodegenReport JSON)
 Output: knowledge/verify/{task_id}_verify.json
         Test files written to target repo (not committed — no git branch management)
 
-Supported languages: Java (JUnit 5 + Mockito) and TypeScript (Angular TestBed / Jasmine).
+Supported languages: Java (JUnit 5 + Mockito), TypeScript (Angular TestBed / Jasmine),
+Python (pytest), C# (xUnit + Moq), and Go (testing package).
 """
 
 import json
@@ -31,7 +32,7 @@ from ...shared.utils.logger import setup_logger
 logger = setup_logger(__name__)
 
 # Languages we generate tests for (others skipped)
-_TESTABLE_LANGS = {"java", "typescript"}
+_TESTABLE_LANGS = {"java", "typescript", "python", "csharp", "go"}
 
 
 # =============================================================================
@@ -53,10 +54,13 @@ def _is_test_file(file_path: str) -> bool:
         stem.endswith("test")
         or stem.endswith("tests")
         or stem.endswith("spec")
+        or stem.startswith("test_")       # Python: test_service.py
+        or stem.endswith("_test")         # Go: handler_test.go
         or ".spec." in lower
         or ".test." in lower
         or "/src/test/" in lower
         or "/__tests__/" in lower
+        or "/tests/" in lower             # Python tests/ directory
     )
 
 
@@ -65,6 +69,9 @@ def _infer_test_path(source_path: str) -> str:
 
     Java:       src/main/java/…/FooService.java  →  src/test/java/…/FooServiceTest.java
     TypeScript: src/app/foo/foo.component.ts     →  src/app/foo/foo.component.spec.ts
+    Python:     src/mypackage/service.py         →  tests/test_service.py
+    C#:         Src/Services/FooService.cs       →  Tests/Services/FooServiceTests.cs
+    Go:         pkg/handler/handler.go           →  pkg/handler/handler_test.go
     """
     normalized = source_path.replace("\\", "/")
     p = Path(normalized)
@@ -77,10 +84,29 @@ def _infer_test_path(source_path: str) -> str:
         parent_fwd = str(p.parent).replace("\\", "/")
         return f"{parent_fwd}/{stem}Test.java"
 
-    parent_fwd = str(p.parent).replace("\\", "/")
     if ext in (".ts", ".tsx"):
+        parent_fwd = str(p.parent).replace("\\", "/")
         return f"{parent_fwd}/{stem}.spec{ext}"
 
+    if ext == ".py":
+        # Place tests in a parallel tests/ directory or alongside the source
+        parent_fwd = str(p.parent).replace("\\", "/")
+        # If source lives under src/, mirror into tests/
+        if "/src/" in parent_fwd:
+            test_parent = parent_fwd.replace("/src/", "/tests/", 1)
+        else:
+            test_parent = parent_fwd
+        return f"{test_parent}/test_{stem}.py"
+
+    if ext == ".cs":
+        parent_fwd = str(p.parent).replace("\\", "/")
+        return f"{parent_fwd}/{stem}Tests.cs"
+
+    if ext == ".go":
+        parent_fwd = str(p.parent).replace("\\", "/")
+        return f"{parent_fwd}/{stem}_test.go"
+
+    parent_fwd = str(p.parent).replace("\\", "/")
     return f"{parent_fwd}/{stem}.test{ext}"
 
 
@@ -91,6 +117,25 @@ def _framework_hint(source_path: str, language: str) -> str:
             "JUnit 5 + Mockito. Use @ExtendWith(MockitoExtension.class), @Mock for "
             "dependencies, @InjectMocks for the SUT. Assert with AssertJ "
             "(org.assertj.core.api.Assertions.assertThat)."
+        )
+    if language == "python":
+        return (
+            "pytest. Use plain functions prefixed with test_, pytest.fixture for "
+            "setup, unittest.mock.patch / MagicMock for mocking dependencies. "
+            "Assert with plain assert statements and pytest.raises for exceptions."
+        )
+    if language == "csharp":
+        return (
+            "xUnit. Use [Fact] for simple tests, [Theory] + [InlineData] for "
+            "parameterised tests. Mock dependencies with Moq (Mock<T>, Setup, "
+            "Verify). Assert with Assert.Equal, Assert.Throws<T>."
+        )
+    if language == "go":
+        return (
+            "Go testing package. Use func TestXxx(t *testing.T) naming. "
+            "Use t.Run() for subtests, t.Errorf / t.Fatalf for assertions. "
+            "For table-driven tests use []struct with a name field. "
+            "Mock interfaces by defining stub structs that implement them."
         )
     # TypeScript
     lower = source_path.lower()
@@ -322,7 +367,8 @@ class TestingCrew:
             ),
             backstory=(
                 "You are a senior test engineer who specialises in JUnit 5 / Mockito "
-                "(Java) and Angular TestBed / Jasmine (TypeScript). "
+                "(Java), Angular TestBed / Jasmine (TypeScript), pytest (Python), "
+                "xUnit / Moq (C#), and Go testing package. "
                 "You always call write_test to save the generated test file — "
                 "never just describe the tests."
             ),

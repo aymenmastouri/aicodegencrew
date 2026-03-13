@@ -918,6 +918,7 @@ class TestOrchestratorRun:
         with (
             patch.object(orchestrator, "_git_commit_after_phase"),
             patch.object(orchestrator, "_check_dependencies", return_value=True),
+            patch.object(orchestrator, "_check_partial_output", return_value=None),
         ):
             result = orchestrator.run(
                 phases=["discover", "extract"],

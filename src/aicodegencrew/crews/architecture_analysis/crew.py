@@ -34,6 +34,7 @@ from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.utils.llm_factory import create_llm
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
+from ...shared.utils.env_flags import get_bool_env
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.task_guardrails import validate_json_output
 from ...shared.utils.tool_guardrails import install_guardrails, uninstall_guardrails
@@ -108,6 +109,7 @@ class ArchitectureAnalysisCrew:
         MCPs provide tools automatically — CrewAI handles tool discovery.
         """
         config = AGENT_CONFIGS[agent_key]
+        _delegation_enabled = get_bool_env("CREWAI_DELEGATION_ENABLED", default=False)
         return Agent(
             role=config["role"],
             goal=config["goal"],
@@ -118,7 +120,7 @@ class ArchitectureAnalysisCrew:
             verbose=True,
             max_iter=25,
             max_retry_limit=3,
-            allow_delegation=False,
+            allow_delegation=_delegation_enabled,
             respect_context_window=True,
             inject_date=True,
         )
@@ -330,6 +332,7 @@ class ArchitectureAnalysisCrew:
             try:
                 log_dir = self._analysis_dir / "logs"
                 log_dir.mkdir(parents=True, exist_ok=True)
+                _planning_enabled = get_bool_env("CREWAI_PLANNING_ENABLED", default=True)
                 crew = Crew(
                     agents=[tasks[0].agent],
                     tasks=tasks,
@@ -337,7 +340,7 @@ class ArchitectureAnalysisCrew:
                     verbose=True,
                     memory=False,
                     max_rpm=30,
-                    planning=False,
+                    planning=_planning_enabled,
                     step_callback=step_callback,
                     task_callback=task_callback,
                     output_log_file=str(log_dir / f"{name}.json"),

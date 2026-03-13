@@ -53,8 +53,23 @@ _ARC42_REQUIRED: list[str] = [
     "06-runtime-view",
 ]
 
-# Placeholder markers to detect in documentation files
-_PLACEHOLDER_RE = re.compile(r"\b(TODO|FIXME|PLACEHOLDER|TBD|XXX)\b", re.IGNORECASE)
+# Placeholder markers to detect in documentation files.
+# Matches only when the keyword appears at the start of a comment, on its own
+# line, or as a standalone marker (e.g. "TODO: fix this", "<!-- FIXME -->",
+# "TBD").  Does NOT match incidental prose like "TODO list" or "see FIXME policy".
+_PLACEHOLDER_RE = re.compile(
+    r"(?:"
+    # Keyword on an otherwise-empty line (possibly with leading whitespace / bullets)
+    r"^\s*(?:[*\-#>]*\s*)(TODO|FIXME|PLACEHOLDER|TBD|XXX)\s*[:.\-!]?\s*$"
+    r"|"
+    # Keyword at the start of a comment-style marker: "// TODO", "# FIXME", "<!-- TBD"
+    r"(?:\/\/|#|<!--|/\*|\*)\s*(TODO|FIXME|PLACEHOLDER|TBD|XXX)\b"
+    r"|"
+    # Keyword followed by a colon (common: "TODO: describe this")
+    r"\b(TODO|FIXME|PLACEHOLDER|TBD|XXX)\s*:"
+    r")",
+    re.IGNORECASE | re.MULTILINE,
+)
 
 
 class ReviewCrew:
@@ -118,8 +133,11 @@ class ReviewCrew:
             logger.error("[ReviewCrew] LLM synthesis failed: %s", e)
 
         duration = round(time.monotonic() - t0, 2)
-        issue_count = len(consistency.get("missing_containers", [])) + len(
-            consistency.get("missing_arc42_chapters", [])
+        coherence_mismatches = consistency.get("c4_arc42_coherence", {}).get("mismatch_count", 0)
+        issue_count = (
+            len(consistency.get("missing_containers", []))
+            + len(consistency.get("missing_arc42_chapters", []))
+            + coherence_mismatches
         )
         summary = {
             "status": "success" if llm_ok else "partial",
@@ -157,6 +175,9 @@ class ReviewCrew:
             "context_diagram": (self.c4_dir / "c4-context.md").exists(),
         }
 
+        # Cross-check C4 containers against arc42 references
+        c4_arc42_coherence = self._check_c4_arc42_coherence(containers_in_c4)
+
         return {
             "containers_in_facts": containers_in_facts,
             "containers_found_in_c4": containers_in_c4,
@@ -165,6 +186,7 @@ class ReviewCrew:
             "arc42_chapters_present": chapters_present,
             "missing_arc42_chapters": missing_chapters,
             "c4_files": c4_files,
+            "c4_arc42_coherence": c4_arc42_coherence,
         }
 
     def _check_quality(self, consistency: dict) -> dict[str, Any]:
@@ -183,6 +205,11 @@ class ReviewCrew:
         # Deduct for hallucinated / extra containers (up to -15)
         extra_containers = consistency.get("extra_containers", [])
         score -= min(len(extra_containers) * 5, 15)
+
+        # Deduct for C4 / arc42 coherence mismatches (up to -15)
+        coherence = consistency.get("c4_arc42_coherence", {})
+        mismatch_count = coherence.get("mismatch_count", 0)
+        score -= min(mismatch_count * 3, 15)
 
         # Deduct for excessive placeholder text
         placeholder_count = sum(len(v) for v in placeholders.values())
@@ -246,6 +273,67 @@ class ReviewCrew:
                 if chapter not in present and stem.startswith(chapter):
                     present.append(chapter)
         return present
+
+    def _check_c4_arc42_coherence(self, containers_in_c4: list[str]) -> dict[str, Any]:
+        """Cross-check container names between C4 diagrams and arc42 chapters.
+
+        Extracts container references from arc42 Markdown files and compares
+        against container names found in C4 diagrams.  Flags containers that
+        appear in one but not the other.
+
+        Returns:
+            Dict with ``in_c4_not_arc42``, ``in_arc42_not_c4``, and ``mismatch_count``.
+        """
+        containers_in_arc42: set[str] = set()
+        if self.arc42_dir.exists():
+            for md_file in self.arc42_dir.glob("*.md"):
+                try:
+                    text = md_file.read_text(encoding="utf-8", errors="replace")
+                    # Match container names (case-insensitive substring search)
+                    text_lower = text.lower()
+                    for name in containers_in_c4:
+                        if name.lower() in text_lower:
+                            containers_in_arc42.add(name)
+                except Exception:
+                    pass
+
+        c4_set = set(containers_in_c4)
+        in_c4_not_arc42 = sorted(c4_set - containers_in_arc42)
+        in_arc42_not_c4: list[str] = []  # arc42 doesn't define containers; only flags C4-side
+
+        # Additionally, scan arc42 for capitalized multi-word names that look
+        # like container names but are NOT in the C4 set.  This catches arc42
+        # referencing containers that the C4 diagrams never defined.
+        _container_like_re = re.compile(
+            r"\b([A-Z][a-zA-Z0-9]*(?:\s+[A-Z][a-zA-Z0-9]*)+)\b"
+        )
+        if self.arc42_dir.exists():
+            c4_lower = {n.lower() for n in containers_in_c4}
+            candidate_names: set[str] = set()
+            for md_file in self.arc42_dir.glob("*.md"):
+                try:
+                    text = md_file.read_text(encoding="utf-8", errors="replace")
+                    for m in _container_like_re.finditer(text):
+                        candidate_names.add(m.group(1))
+                except Exception:
+                    pass
+            # Filter: only keep candidates that are plausible container names
+            # (contain "Service", "Database", "API", "Gateway", "Queue", "Store", etc.)
+            _infra_hints = {"service", "database", "db", "api", "gateway", "queue",
+                            "store", "cache", "broker", "server", "app", "frontend",
+                            "backend", "proxy", "worker", "scheduler", "engine"}
+            for cand in candidate_names:
+                cand_lower = cand.lower()
+                if cand_lower not in c4_lower and any(h in cand_lower for h in _infra_hints):
+                    in_arc42_not_c4.append(cand)
+            in_arc42_not_c4.sort()
+
+        mismatch_count = len(in_c4_not_arc42) + len(in_arc42_not_c4)
+        return {
+            "in_c4_not_arc42": in_c4_not_arc42,
+            "in_arc42_not_c4": in_arc42_not_c4,
+            "mismatch_count": mismatch_count,
+        }
 
     def _scan_placeholders(self) -> dict[str, list[str]]:
         """Scan all .md files in document_dir for placeholder markers.
