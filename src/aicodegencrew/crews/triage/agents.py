@@ -3,7 +3,7 @@
 from crewai import Agent
 
 from ...shared.tools import FactsQueryTool, RAGQueryTool, SymbolQueryTool
-from ...shared.utils.llm_factory import create_fast_llm
+from ...shared.utils.llm_factory import create_fast_llm, create_llm
 
 
 def create_triage_agent(facts_dir: str, chroma_dir: str) -> Agent:
@@ -51,7 +51,7 @@ def create_triage_agent(facts_dir: str, chroma_dir: str) -> Agent:
             RAGQueryTool(chroma_dir=chroma_dir),
             SymbolQueryTool(),
         ],
-        llm=create_fast_llm(temperature=0.2),
+        llm=create_llm(temperature=0.2),
         verbose=True,
         allow_delegation=False,
         max_iter=6,

@@ -45,6 +45,9 @@ def create_llm(
     max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
 
+    if not api_key:
+        logger.warning("[LLM] OPENAI_API_KEY is empty — LLM calls will fail")
+
     if max_tokens < 1:
         max_tokens = 4000
 

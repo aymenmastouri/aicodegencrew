@@ -25,8 +25,7 @@ class MigrationCollector(DimensionCollector):
 
     DIMENSION = "migrations"
 
-    # Skip directories
-    SKIP_DIRS = {"node_modules", "dist", "build", "target", ".git", "bin"}
+    # Inherit SKIP_DIRS from base (includes .venv, venv, node_modules, etc.)
 
     # Known SQL script directories
     SQL_SCRIPT_DIRS = [
@@ -69,10 +68,7 @@ class MigrationCollector(DimensionCollector):
         self._log_end()
         return self.output
 
-    def _should_skip(self, path: Path) -> bool:
-        """Check if path should be skipped."""
-        path_str = str(path).lower()
-        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
+    # _should_skip inherited from base class
 
     def _collect_liquibase(self):
         """Collect Liquibase changelog facts."""
@@ -299,34 +295,11 @@ class MigrationCollector(DimensionCollector):
 
     def _collect_custom_sql_scripts(self):
         """Collect custom SQL scripts (DB-Admin, corrections, init, etc.)."""
-        sql_files: list[Path] = []
-
-        # Search in known SQL directories
-        for sql_dir in self.SQL_SCRIPT_DIRS:
-            for search_path in self.repo_path.rglob(sql_dir):
-                if not search_path.is_dir() or self._should_skip(search_path):
-                    continue
-
-                for sql_file in search_path.glob("*.sql"):
-                    if sql_file not in self._processed_files:
-                        sql_files.append(sql_file)
-
-        # Also search for SQL files with specific naming patterns
-        patterns = [
-            "*.sql",
-            "*_fix*.sql",
-            "*_patch*.sql",
-            "*_correction*.sql",
-            "*_hotfix*.sql",
-            "*init*.sql",
-            "*setup*.sql",
-            "*seed*.sql",
+        # Search for all SQL files using _find_files (proper directory pruning)
+        sql_files = [
+            f for f in self._find_files("*.sql")
+            if f not in self._processed_files
         ]
-
-        for pattern in patterns:
-            for sql_file in self.repo_path.rglob(pattern):
-                if sql_file not in self._processed_files and not self._should_skip(sql_file):
-                    sql_files.append(sql_file)
 
         # Remove duplicates
         sql_files = list(set(sql_files) - self._processed_files)

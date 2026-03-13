@@ -32,8 +32,7 @@ class OpenAPICollector(DimensionCollector):
 
     DIMENSION = "openapi"
 
-    # Skip directories
-    SKIP_DIRS = {"node_modules", "dist", "build", ".git", "coverage"}
+    # Inherit SKIP_DIRS from base (includes .venv, venv, node_modules, etc.)
 
     # OpenAPI spec file patterns
     SPEC_PATTERNS = [
@@ -71,17 +70,10 @@ class OpenAPICollector(DimensionCollector):
         self._log_end()
         return self.output
 
-    def _should_skip(self, path: Path) -> bool:
-        """Check if path should be skipped."""
-        path_str = str(path).lower()
-        return any(skip_dir in path_str for skip_dir in self.SKIP_DIRS)
-
     def _collect_spec_files(self):
         """Find and parse OpenAPI/Swagger spec files."""
         for pattern in self.SPEC_PATTERNS:
-            for spec_file in self.repo_path.rglob(pattern):
-                if self._should_skip(spec_file):
-                    continue
+            for spec_file in self._find_files(pattern):
                 self._parse_spec_file(spec_file)
 
     def _parse_spec_file(self, file_path: Path):
@@ -189,15 +181,12 @@ class OpenAPICollector(DimensionCollector):
             ("*Api.ts", r"class\s+(\w+Api)"),
         ]
 
-        # Search in generated directories
-        for gen_dir in self.GENERATED_DIRS:
-            for search_path in self.repo_path.rglob(gen_dir):
-                if not search_path.is_dir() or self._should_skip(search_path):
-                    continue
-
-                for file_pattern, class_regex in patterns:
-                    for ts_file in search_path.glob(file_pattern):
-                        self._process_generated_client(ts_file, class_regex)
+        # Search in generated directories (use _find_files for proper pruning)
+        for file_pattern, class_regex in patterns:
+            for ts_file in self._find_files(file_pattern):
+                # Only process files inside known generated dirs
+                if any(gd in ts_file.parts for gd in self.GENERATED_DIRS):
+                    self._process_generated_client(ts_file, class_regex)
 
     def _process_generated_client(self, file_path: Path, class_regex: str):
         """Process a generated API client file."""

@@ -48,12 +48,25 @@ _CHROMA_INTERNALS = (
 def derive_project_slug(repo_path: str | Path) -> str:
     """Derive a filesystem-safe slug from a repository path.
 
+    Inside Docker the repo is mounted at a generic path like ``/project``.
+    To keep per-project isolation, ``PROJECT_PATH_HOST`` carries the
+    original host path so the slug reflects the real repo name.
+
     >>> derive_project_slug("C:\\\\uvz")
     'uvz'
     >>> derive_project_slug("/home/user/my-app")
     'my-app'
     """
-    name = Path(repo_path).resolve().name
+    import os
+
+    resolved = Path(repo_path).resolve()
+    # Inside Docker the mount point is /project or /repo — use host path instead
+    if resolved.name in ("project", "repo"):
+        host_path = os.getenv("PROJECT_PATH_HOST", "")
+        if host_path:
+            resolved = Path(host_path)
+
+    name = resolved.name
     # lowercase, keep alphanumeric + hyphen + underscore
     slug = re.sub(r"[^a-z0-9_-]", "", name.lower())
     return slug or "default"

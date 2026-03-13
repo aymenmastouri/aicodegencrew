@@ -82,9 +82,10 @@ class SpringServiceCollector(DimensionCollector):
             if c.exists():
                 return c
 
-        for path in self.repo_path.rglob("src/main/java"):
-            if path.is_dir():
-                return path
+        for path in self._find_files("src"):
+            java_path = path.parent / "main" / "java"
+            if java_path.is_dir():
+                return java_path
         return None
 
     def _identify_service(self, file_path: Path):

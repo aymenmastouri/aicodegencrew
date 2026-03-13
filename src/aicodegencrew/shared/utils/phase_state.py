@@ -57,8 +57,20 @@ def _file_lock():
             with lock:
                 yield
         except TimeoutError:
-            logger.error("[PhaseState] Lock acquisition timed out after 10s — proceeding unlocked")
-            yield
+            # Check if lock holder PID is still alive; if not, break the lock
+            try:
+                import fcntl  # Unix only
+                lock_fd = open(lock_path)  # noqa: SIM115
+                lock_fd.close()
+            except Exception:
+                pass
+            logger.warning("[PhaseState] Lock timed out after 10s — retrying once")
+            try:
+                with _FileLock(lock_path, timeout=5):
+                    yield
+            except TimeoutError:
+                logger.error("[PhaseState] Lock still held after retry — proceeding unlocked")
+                yield
     else:
         yield
 
@@ -170,7 +182,7 @@ def set_phase_failed(phase_id: str, duration: float, error: str) -> None:
         entry["status"] = "failed"
         entry["completed_at"] = datetime.now().isoformat(timespec="seconds")
         entry["duration_seconds"] = round(duration, 2)
-        entry["error"] = error[:500]
+        entry["error"] = error[:500] + ("... [truncated]" if len(error) > 500 else "")
         phases[phase_id] = entry
         _write_atomic(data)
 

@@ -53,8 +53,23 @@ async def upload_file(category: str, file: UploadFile):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
 
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE:
+    # Stream-read with early size check to avoid loading huge files into memory
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = await file.read(64 * 1024)  # 64 KB chunks
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024 * 1024)} MB",
+            )
+        chunks.append(chunk)
+    content = b"".join(chunks)
+
+    if False:  # kept for backwards-compat signature
         raise HTTPException(
             status_code=413,
             detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024 * 1024)} MB",

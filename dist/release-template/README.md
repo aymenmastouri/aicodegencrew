@@ -54,9 +54,9 @@ The `.env` file contains model settings that map to the Sovereign AI Platform. E
 
 | Variable | Default | Used by | Purpose |
 |----------|---------|---------|---------|
-| `MODEL` | `openai/complex_tasks` | Analyze, Document, Plan, Verify, Deliver | Deep reasoning, architecture analysis (large context) |
-| `FAST_MODEL` | `openai/chat` | Triage, classification | Fast, lightweight tasks |
-| `CODEGEN_MODEL` | `openai/code` | Implement | Code generation, tool use |
+| `MODEL` | `openai/complex_tasks` | Analyze, Triage, Document, Plan, Verify, Deliver | Deep reasoning, architecture analysis (large context) |
+| `FAST_MODEL` | `openai/chat` | Classification, reviews | Fast, lightweight tasks |
+| `CODEGEN_MODEL` | `openai/code` | Implement, Verify | Code generation, test generation |
 | `VISION_MODEL` | `openai/vision` | OCR, document analysis | Multimodal (images + text) |
 | `EMBED_MODEL` | `embed` | Discover (indexing) | Vector embeddings for semantic search |
 

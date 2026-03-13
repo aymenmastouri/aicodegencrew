@@ -83,7 +83,7 @@ def test_update_env_propagates_write_errors(tmp_path, monkeypatch):
     monkeypatch.setattr(env_router, "write_env", _boom)
 
     client = TestClient(app)
-    resp = client.put("/api/env", json={"values": {"FOO": "bar"}})
+    resp = client.put("/api/env", json={"values": {"PROJECT_PATH": "/tmp/test"}})
     assert resp.status_code == 500
     assert "Failed to update environment" in resp.json()["detail"]
 

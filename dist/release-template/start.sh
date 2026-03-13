@@ -102,8 +102,11 @@ fi
 info "Repository path configured."
 
 # Create data directories and fix ownership for container user (appuser UID 999)
-mkdir -p knowledge logs reports config inputs
-chown -R 999:999 knowledge logs reports config inputs .env .env.example 2>/dev/null || sudo chown -R 999:999 knowledge logs reports config inputs .env .env.example 2>/dev/null || true
+# Use docker alpine to create dirs as UID 999 (avoids permission issues on re-deploy)
+docker run --rm -v "$(pwd):/work" -w /work alpine sh -c \
+  "mkdir -p knowledge logs reports config inputs/tasks inputs/requirements inputs/logs inputs/reference && chown -R 999:999 knowledge logs reports config inputs && chown 999:999 .env .env.example 2>/dev/null; true" 2>/dev/null \
+  || { mkdir -p knowledge logs reports config inputs/tasks inputs/requirements inputs/logs inputs/reference; \
+       chown -R 999:999 knowledge logs reports config inputs .env .env.example 2>/dev/null || sudo chown -R 999:999 knowledge logs reports config inputs .env .env.example 2>/dev/null || true; }
 
 # ── Start ────────────────────────────────────────────────────────────────────
 echo ""
@@ -129,7 +132,7 @@ info "  Dashboard is ready!"
 info ""
 info "  Open: http://localhost"
 info ""
-info "  Backend API: http://localhost:8001/api/health"
+info "  Backend API: http://localhost/api/health"
 info "========================================="
 echo ""
 echo "Commands:"

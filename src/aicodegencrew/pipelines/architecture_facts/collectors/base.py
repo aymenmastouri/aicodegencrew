@@ -298,6 +298,10 @@ class DimensionCollector(ABC):
         ".idea",
         ".gradle",
         "out",
+        "site-packages",
+        ".cache",
+        "coverage",
+        "bin",
     }
 
     def __init__(self, repo_path: Path):

@@ -353,8 +353,8 @@ curl -X POST http://localhost:8001/api/reset
 
 | Variable | Modell | Verwendet für |
 |----------|--------|---------------|
-| `MODEL` | Kimi-K2.5 | Analyse, Docs, Planung, Reviews |
-| `FAST_MODEL` | GPT-OSS-120B | Schnelle Tasks (Triage, Klassifizierung) |
+| `MODEL` | Kimi-K2.5 | Analyse, Triage, Docs, Planung, Reviews |
+| `FAST_MODEL` | GPT-OSS-120B | Schnelle Tasks (Klassifizierung, Reviews) |
 | `CODEGEN_MODEL` | Qwen3-Coder-Next | Code-Generierung, Tests |
 | `VISION_MODEL` | Mistral-Small-3.1-24B | OCR, Diagramme, Screenshots |
 

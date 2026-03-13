@@ -27,7 +27,8 @@ def append_run_to_history(entry: dict) -> None:
 
 
 def _read_all_entries() -> list[dict]:
-    """Read all JSONL entries (with legacy fallback). Internal helper."""
+    """Read all JSONL entries (with legacy fallback). Caps at 5000 entries."""
+    _MAX_ENTRIES = 5000
     path = _history_path()
     entries: list[dict] = []
 
@@ -41,6 +42,9 @@ def _read_all_entries() -> list[dict]:
                             entries.append(json.loads(line))
                         except json.JSONDecodeError:
                             continue
+            # Keep only the most recent entries
+            if len(entries) > _MAX_ENTRIES:
+                entries = entries[-_MAX_ENTRIES:]
         except OSError as exc:
             logger.warning("Failed to read run history: %s", exc)
 

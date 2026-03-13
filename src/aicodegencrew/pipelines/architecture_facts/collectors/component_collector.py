@@ -204,9 +204,7 @@ class ComponentCollector(DimensionCollector):
     def _detect_spring(self) -> bool:
         """Detect if project has Spring Boot."""
         # Check Maven
-        for pom in self.repo_path.rglob("pom.xml"):
-            if "node_modules" in str(pom) or "deployment" in str(pom):
-                continue
+        for pom in self._find_files("pom.xml"):
             try:
                 content = pom.read_text(encoding="utf-8", errors="ignore")
                 if "spring-boot" in content.lower():
@@ -215,9 +213,7 @@ class ComponentCollector(DimensionCollector):
                 continue
 
         # Check Gradle
-        for gradle in list(self.repo_path.rglob("build.gradle")) + list(self.repo_path.rglob("build.gradle.kts")):
-            if "node_modules" in str(gradle) or "deployment" in str(gradle) or "buildSrc" in str(gradle):
-                continue
+        for gradle in self._find_files("build.gradle") + self._find_files("build.gradle.kts"):
             try:
                 content = gradle.read_text(encoding="utf-8", errors="ignore")
                 if "org.springframework.boot" in content or "spring-boot" in content.lower():
@@ -239,10 +235,9 @@ class ComponentCollector(DimensionCollector):
             if angular_json.exists():
                 return angular_json.parent
 
-        # Search deeper
-        for angular_json in self.repo_path.rglob("angular.json"):
-            if "node_modules" not in str(angular_json) and "deployment" not in str(angular_json):
-                return angular_json.parent
+        # Search deeper (using _find_files for proper pruning)
+        for angular_json in self._find_files("angular.json"):
+            return angular_json.parent
 
         return None
 

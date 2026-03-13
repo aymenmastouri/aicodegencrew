@@ -314,7 +314,7 @@ class SystemCollector(DimensionCollector):
         context_pattern = context_name.lower()
         count = 0
 
-        for java_file in java_root.rglob("*.java"):
+        for java_file in self._find_files("*.java", java_root):
             try:
                 with open(java_file, encoding="utf-8", errors="ignore") as f:
                     first_lines = f.read(500)

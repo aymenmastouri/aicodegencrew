@@ -80,7 +80,7 @@ class AngularModuleCollector(DimensionCollector):
                 return c
 
         # Search for app.module.ts
-        for path in self.repo_path.rglob("app.module.ts"):
+        for path in self._find_files("app.module.ts"):
             return path.parent
 
         return None

@@ -78,7 +78,7 @@ class AngularComponentCollector(DimensionCollector):
             if c.exists():
                 return c
 
-        for path in self.repo_path.rglob("app.module.ts"):
+        for path in self._find_files("app.module.ts"):
             return path.parent
 
         return None
