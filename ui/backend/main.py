@@ -88,6 +88,17 @@ _RATE_LIMITED_PATHS: set[str] = {
 _rate_limit_log: dict[tuple[str, str], list[float]] = defaultdict(list)
 
 
+_MAX_BODY_SIZE = 25 * 1024 * 1024  # 25 MB — matches nginx client_max_body_size
+
+
+@app.middleware("http")
+async def body_size_limit_middleware(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > _MAX_BODY_SIZE:
+        return JSONResponse(status_code=413, content={"detail": "Request body too large (max 25 MB)."})
+    return await call_next(request)
+
+
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
     if request.method == "POST" and request.url.path in _RATE_LIMITED_PATHS:

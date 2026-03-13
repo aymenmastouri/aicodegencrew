@@ -401,6 +401,14 @@ class PipelineExecutor:
                 snapshot = self._snapshot_for_history()
             self._append_history_entry(snapshot)
 
+            # Clean up temporary .env.run file
+            try:
+                env_run_path = settings.project_root / ".env.run"
+                if env_run_path.exists():
+                    env_run_path.unlink()
+            except Exception:
+                pass
+
         except Exception as exc:
             logger.error("Parallel monitor thread error: %s", exc)
             with self._state_lock:
