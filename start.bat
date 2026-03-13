@@ -91,3 +91,4 @@ echo Commands:
 echo   start.bat logs     Show live logs
 echo   start.bat stop     Stop the Dashboard
 echo.
+pause
