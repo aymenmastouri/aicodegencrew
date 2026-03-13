@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 # In production, MODEL is always set via .env file.
 _DEFAULT_MODEL = "gpt-4o-mini"
 
+# Rate-limit retry defaults — passed to litellm.completion() via LLM kwargs.
+# litellm uses tenacity under the hood to retry on HTTP 429 responses.
+_DEFAULT_NUM_RETRIES = 3
+
 
 def create_llm(
     *,
@@ -42,14 +46,14 @@ def create_llm(
     model = model_override or os.getenv("MODEL", _DEFAULT_MODEL)
     api_base = os.getenv("API_BASE", "")
     api_key = os.getenv("OPENAI_API_KEY", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "8000"))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
 
     if not api_key:
         logger.warning("[LLM] OPENAI_API_KEY is empty — LLM calls will fail")
 
     if max_tokens < 1:
-        max_tokens = 4000
+        max_tokens = 8000
 
     model = _ensure_provider_prefix(model)
 
@@ -60,6 +64,8 @@ def create_llm(
         temperature=temperature,
         max_tokens=max_tokens,
         timeout=timeout,
+        num_retries=_DEFAULT_NUM_RETRIES,
+        retry_strategy="exponential_backoff_retry",
     )
     # Set context window size directly (not via constructor kwargs,
     # which would pass it as additional_params to the API call)
@@ -124,11 +130,11 @@ def create_fast_llm(
     """
     model = os.getenv("FAST_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
     api_base = os.getenv("API_BASE", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "8000"))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
 
     if max_tokens < 1:
-        max_tokens = 4000
+        max_tokens = 8000
 
     model = _ensure_provider_prefix(model)
 
@@ -139,6 +145,8 @@ def create_fast_llm(
         temperature=temperature,
         max_tokens=max_tokens,
         timeout=timeout,
+        num_retries=_DEFAULT_NUM_RETRIES,
+        retry_strategy="exponential_backoff_retry",
     )
     llm.context_window_size = context_window
     return llm
@@ -156,11 +164,11 @@ def create_vision_llm(
     """
     model = os.getenv("VISION_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
     api_base = os.getenv("API_BASE", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "8000"))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
 
     if max_tokens < 1:
-        max_tokens = 4000
+        max_tokens = 8000
 
     model = _ensure_provider_prefix(model)
 
@@ -171,6 +179,8 @@ def create_vision_llm(
         temperature=temperature,
         max_tokens=max_tokens,
         timeout=timeout,
+        num_retries=_DEFAULT_NUM_RETRIES,
+        retry_strategy="exponential_backoff_retry",
     )
     llm.context_window_size = context_window
     return llm
@@ -196,11 +206,11 @@ def create_codegen_llm(
     model = os.getenv("CODEGEN_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
     api_base = os.getenv("CODEGEN_API_BASE") or os.getenv("API_BASE", "")
     api_key = os.getenv("CODEGEN_API_KEY") or os.getenv("OPENAI_API_KEY", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "4000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "8000"))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
 
     if max_tokens < 1:
-        max_tokens = 4000
+        max_tokens = 8000
 
     model = _ensure_provider_prefix(model)
 
@@ -211,6 +221,8 @@ def create_codegen_llm(
         temperature=temperature,
         max_tokens=max_tokens,
         timeout=timeout,
+        num_retries=_DEFAULT_NUM_RETRIES,
+        retry_strategy="exponential_backoff_retry",
     )
     llm.context_window_size = context_window
     return llm

@@ -36,6 +36,21 @@ def _reset_step_tracker_singleton():
     StepTracker._instance = old
 
 
+@pytest.fixture(autouse=True)
+def _reset_guardrail_globals():
+    """Reset tool_guardrails module-level globals between tests."""
+    import aicodegencrew.shared.utils.tool_guardrails as tg
+
+    old_installed = tg._global_hook_installed
+    old_trackers = tg._thread_trackers.copy()
+    tg._global_hook_installed = False
+    tg._thread_trackers.clear()
+    yield
+    tg._global_hook_installed = old_installed
+    tg._thread_trackers.clear()
+    tg._thread_trackers.update(old_trackers)
+
+
 @pytest.fixture()
 def fresh_logger(tmp_path, monkeypatch):
     """Return a throwaway logger with a metrics handler writing to *tmp_path*.
@@ -281,7 +296,7 @@ class TestTokenBudgetDefaults:
         import importlib
         import aicodegencrew.shared.utils.token_budget as tb
         importlib.reload(tb)
-        assert tb.MAX_LLM_OUTPUT_TOKENS == 16_000
+        assert tb.MAX_LLM_OUTPUT_TOKENS == 8_000
 
     def test_tool_max_chars_calculation(self):
         from aicodegencrew.shared.utils.token_budget import (
@@ -586,5 +601,5 @@ class TestInstallUninstallGuardrails:
 
             tracker = install_guardrails()
             uninstall_guardrails(tracker)
-            # Second uninstall -- _hook_ref is now None, should be a no-op
+            # Second uninstall -- _installed_tid is now None, should be a no-op
             uninstall_guardrails(tracker)

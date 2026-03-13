@@ -167,7 +167,8 @@ class ArchitectureSynthesisCrew:
             output_dir=str(self.output_dir),
         )
         c4_result = self.c4_crew.run()
-        results.append(f"C4 Crew Result:\n{c4_result}")
+        c4_result_text = c4_result.get("result", "") if isinstance(c4_result, dict) else str(c4_result)
+        results.append(f"C4 Crew Result:\n{c4_result_text}")
 
         logger.info("C4 Crew completed")
 
@@ -183,7 +184,8 @@ class ArchitectureSynthesisCrew:
             output_dir=str(self.output_dir),
         )
         arc42_result = self.arc42_crew.run()
-        results.append(f"Arc42 Crew Result:\n{arc42_result}")
+        arc42_result_text = arc42_result.get("result", "") if isinstance(arc42_result, dict) else str(arc42_result)
+        results.append(f"Arc42 Crew Result:\n{arc42_result_text}")
 
         logger.info("Arc42 Crew completed")
 
@@ -210,7 +212,7 @@ class ArchitectureSynthesisCrew:
             "degradation_reasons": degraded_reasons,
         }
 
-    def run_c4_only(self) -> str:
+    def run_c4_only(self) -> dict:
         """Run only the C4 Crew."""
         self._validate_prerequisites()
         logger.info("Running C4 Crew only...")
@@ -222,7 +224,7 @@ class ArchitectureSynthesisCrew:
         )
         return self.c4_crew.run()
 
-    def run_arc42_only(self) -> str:
+    def run_arc42_only(self) -> dict:
         """Run only the Arc42 Crew."""
         self._validate_prerequisites()
         logger.info("Running Arc42 Crew only...")

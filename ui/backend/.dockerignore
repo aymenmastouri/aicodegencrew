@@ -1,0 +1,41 @@
+# =============================================================================
+# Backend Docker Build — Ignore List
+# Keeps build context small and prevents leaking secrets/dev files.
+# =============================================================================
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Dev/Test files
+tests/
+*.test.*
+Dockerfile.dev
+
+# Secrets — never include in build context
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and runtime data
+logs/
+*.log

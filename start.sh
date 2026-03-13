@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 # =============================================================================
-# SDLC Pilot — One-Click Start (Docker)
+# SDLC Pilot — Development Start (local Docker build)
 #
 # Usage:
-#   ./start.sh                    # start Dashboard
+#   ./start.sh                    # build + start Dashboard
 #   ./start.sh stop               # stop Dashboard
 #   ./start.sh logs               # show logs
 #
-# Prerequisites: Docker Desktop (Windows/macOS) or Docker Engine (Linux/WSL).
+# For production release: use deploy.sh instead.
 # =============================================================================
 
 set -e
 
-COMPOSE_FILE="ui/docker-compose.ui.yml"
+cd "$(dirname "$0")"
 
-# ── Detect docker compose command (v2 preferred, v1 fallback) ────────────────
+# ── Detect docker compose command ─────────────────────────────────────────────
 if docker compose version &> /dev/null; then
     DC="docker compose"
 elif command -v docker-compose &> /dev/null; then
@@ -25,7 +25,7 @@ else
     exit 1
 fi
 
-# ── Colors ───────────────────────────────────────────────────────────────────
+# ── Colors ────────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -35,24 +35,24 @@ info()  { echo -e "${GREEN}[OK]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-# ── Stop ─────────────────────────────────────────────────────────────────────
+# ── Stop ──────────────────────────────────────────────────────────────────────
 if [ "${1}" = "stop" ]; then
     echo "Stopping SDLC Pilot..."
-    $DC -f "$COMPOSE_FILE" down
+    $DC down
     info "Dashboard stopped."
     exit 0
 fi
 
-# ── Logs ─────────────────────────────────────────────────────────────────────
+# ── Logs ──────────────────────────────────────────────────────────────────────
 if [ "${1}" = "logs" ]; then
-    $DC -f "$COMPOSE_FILE" logs -f
+    $DC logs -f
     exit 0
 fi
 
-# ── Pre-flight checks ───────────────────────────────────────────────────────
+# ── Pre-flight checks ────────────────────────────────────────────────────────
 echo ""
 echo "========================================="
-echo "  SDLC Pilot — Dashboard Startup"
+echo "  SDLC Pilot — Dashboard Startup (Dev)"
 echo "========================================="
 echo ""
 
@@ -62,7 +62,6 @@ if ! docker info &> /dev/null 2>&1; then
     error "Please start Docker Desktop (or 'sudo systemctl start docker' on Linux)."
     exit 1
 fi
-
 info "Docker is running."
 
 # Check .env
@@ -88,19 +87,30 @@ if grep -q "sk-your-api-key-here" .env; then
     error "Then run ./start.sh again."
     exit 1
 fi
-
 info ".env configured."
 
 # Create required directories
-mkdir -p knowledge logs reports
+mkdir -p knowledge logs reports inputs
 
-# ── Start ────────────────────────────────────────────────────────────────────
+# ── Build source bundle ───────────────────────────────────────────────────────
+echo ""
+echo "Preparing build context..."
+rm -rf ui/backend/src_bundle ui/backend/certs
+cp -r src/aicodegencrew ui/backend/src_bundle
+cp pyproject.toml ui/backend/src_bundle/pyproject.toml
+[ -d certs ] && cp -r certs ui/backend/certs
+info "Source bundle ready."
+
+# ── Start ─────────────────────────────────────────────────────────────────────
 echo ""
 echo "Building and starting Dashboard..."
-echo "(First time takes 2-3 minutes to download dependencies)"
+echo "(First build takes 5-10 minutes)"
 echo ""
 
-$DC -f "$COMPOSE_FILE" up --build -d
+$DC up --build -d
+
+# Cleanup
+rm -rf ui/backend/src_bundle ui/backend/certs
 
 echo ""
 info "========================================="
@@ -108,7 +118,7 @@ info "  Dashboard is ready!"
 info ""
 info "  Open: http://localhost"
 info ""
-info "  Backend API: http://localhost:8001/api/health"
+info "  Backend API: http://localhost/api/health"
 info "========================================="
 echo ""
 echo "Commands:"

@@ -52,9 +52,10 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
         "required_keys": [
             "macro_architecture",
             "micro_architecture",
-            "container_analyses",
+            "quality",
+            "executive_summary",
         ],
-        "description": "AI-analyzed architecture JSON (MapReduce crew output)",
+        "description": "AI-analyzed architecture JSON",
     },
     "document": {
         "required_paths": [

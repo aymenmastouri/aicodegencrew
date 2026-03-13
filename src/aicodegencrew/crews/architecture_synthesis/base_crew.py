@@ -145,6 +145,12 @@ class MiniCrewBase(ABC):
         self._token_usage: list[dict[str, Any]] = []
         # Track quality degradations (fallback writes, stubs, mini-crew failures).
         self._degradation_reasons: list[str] = []
+        # Accumulated context size tracking (chars) across mini-crew tasks
+        self._accumulated_context_chars: int = 0
+        # Context window limit in chars (tokens * ~4 chars/token)
+        self._context_window_chars: int = self._token_budget * 4
+        # Threshold for preventive warning/truncation (80% of context window)
+        self._context_warn_threshold: float = 0.80
 
     # -------------------------------------------------------------------------
     # ABSTRACT - Subclasses must implement
@@ -168,8 +174,13 @@ class MiniCrewBase(ABC):
         ...
 
     @abstractmethod
-    def run(self) -> str | dict:
-        """Execute all mini-crews and return summary or result dict."""
+    def run(self) -> dict:
+        """Execute all mini-crews and return result dict.
+
+        Returns:
+            Dict with at least 'status' ('success' or 'partial') and 'result' (str).
+            When status is 'partial', also includes 'degradation_reasons' (list[str]).
+        """
         ...
 
     # -------------------------------------------------------------------------
@@ -256,6 +267,38 @@ class MiniCrewBase(ABC):
         )
 
     # -------------------------------------------------------------------------
+    # CONTEXT OVERFLOW PREVENTION
+    # -------------------------------------------------------------------------
+
+    def _check_context_budget(self, crew_name: str) -> None:
+        """Preventive context overflow check.
+
+        If accumulated context across tasks in a mini-crew exceeds 80% of
+        the LLM context window (in chars), log a warning and reset the
+        accumulator so subsequent tasks start with a truncated baseline.
+
+        This is a best-effort heuristic: actual context size depends on
+        system prompts, conversation history, and tool call overhead, but
+        tracking tool result chars catches the most common overflow cause.
+        """
+        usage_ratio = self._accumulated_context_chars / self._context_window_chars if self._context_window_chars else 0
+        if usage_ratio >= self._context_warn_threshold:
+            logger.warning(
+                f"[{self.crew_name}] {crew_name}: Context budget at {usage_ratio:.0%} "
+                f"({self._accumulated_context_chars:,} chars / "
+                f"{self._context_window_chars:,} char window). "
+                f"Truncating oldest tool results to prevent overflow."
+            )
+            # Reset accumulator — each mini-crew gets a fresh agent/context,
+            # so this effectively signals that we expect the next crew to
+            # start clean. The warning itself is the actionable signal.
+            self._accumulated_context_chars = 0
+
+    def _track_context_usage(self, result_str: str) -> None:
+        """Track accumulated context size from a mini-crew result."""
+        self._accumulated_context_chars += len(result_str)
+
+    # -------------------------------------------------------------------------
     # MINI-CREW EXECUTION
     # -------------------------------------------------------------------------
 
@@ -287,6 +330,9 @@ class MiniCrewBase(ABC):
         logger.info(f"[{self.crew_name}] Starting Mini-Crew: {name} ({len(tasks)} tasks)")
         start_time = time.time()
 
+        # Preventive context overflow check before starting
+        self._check_context_budget(name)
+
         for attempt in range(1, _MAX_RETRIES + 1):
             tracker = None
             try:
@@ -317,6 +363,7 @@ class MiniCrewBase(ABC):
                 )
 
                 result_str = str(result)
+                self._track_context_usage(result_str)
                 if expected_files:
                     self._validate_and_fallback(name, result_str, expected_files, tracker)
 

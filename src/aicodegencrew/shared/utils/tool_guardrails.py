@@ -8,6 +8,10 @@ Prevents on-prem model failure modes:
 Uses CrewAI's native before_tool_call hook to block calls at the
 framework level, without touching MCP tools or doc_writer.
 
+Thread-safety: each thread gets its own ToolCallTracker state.  A single
+global hook dispatches to the tracker for the calling thread, so parallel
+mini-crews never corrupt each other's budgets.
+
 Usage:
     tracker = install_guardrails()
     try:
@@ -18,6 +22,7 @@ Usage:
 
 import json
 import logging
+import threading
 
 from crewai.hooks.tool_hooks import (
     register_before_tool_call_hook,
@@ -33,6 +38,31 @@ logger = logging.getLogger(__name__)
 # Phase 5 (implement): write_code
 _OUTPUT_TOOLS = frozenset({"doc_writer", "create_drawio_diagram", "write_code"})
 
+# ---------------------------------------------------------------------------
+# Thread-local hook dispatcher
+# ---------------------------------------------------------------------------
+# Instead of each ToolCallTracker registering its own global hook (which
+# accumulate and fire across all threads), we keep ONE global hook that
+# dispatches to whichever tracker belongs to the calling thread.
+
+_lock = threading.Lock()
+_thread_trackers: dict[int, "ToolCallTracker"] = {}  # thread-id -> tracker
+_global_hook_installed = False
+
+
+def _dispatcher_hook(context) -> bool | None:
+    """Single global CrewAI before_tool_call hook.
+
+    Looks up the ToolCallTracker for the current thread and delegates to it.
+    If the current thread has no tracker, the call is allowed (return None).
+    """
+    tid = threading.current_thread().ident
+    with _lock:
+        tracker = _thread_trackers.get(tid)
+    if tracker is None:
+        return None  # no guardrail for this thread
+    return tracker._before_hook(context)
+
 
 class ToolCallTracker:
     """Tracks tool calls per crew execution and enforces budgets.
@@ -46,7 +76,7 @@ class ToolCallTracker:
         self.max_identical = max_identical
         self.max_total = max_total
         self.calls: list[str] = []  # list of "tool:args_hash" keys
-        self._hook_ref = None
+        self._installed_tid: int | None = None  # thread id where install() was called
 
     def _make_key(self, tool_name: str, tool_input: dict) -> str:
         """Create a deterministic key from tool name + input."""
@@ -94,21 +124,44 @@ class ToolCallTracker:
         return None  # Allow
 
     def install(self) -> None:
-        """Register the before_tool_call hook with CrewAI."""
-        self._hook_ref = self._before_hook
-        register_before_tool_call_hook(self._hook_ref)
+        """Register this tracker for the current thread."""
+        global _global_hook_installed
+
+        tid = threading.current_thread().ident
+        self._installed_tid = tid
+
+        with _lock:
+            _thread_trackers[tid] = self
+
+            # Register the shared dispatcher hook once (first thread wins)
+            if not _global_hook_installed:
+                register_before_tool_call_hook(_dispatcher_hook)
+                _global_hook_installed = True
+
         logger.info(f"[GUARDRAIL] Installed (max_identical={self.max_identical}, max_total={self.max_total})")
 
     def uninstall(self) -> None:
-        """Unregister the hook (prevents cross-crew leaking)."""
-        if self._hook_ref:
-            unregister_before_tool_call_hook(self._hook_ref)
-            total = len(self.calls)
-            unique = len(set(self.calls))
-            logger.info(
-                f"[GUARDRAIL] Uninstalled. Stats: {total} total calls, {unique} unique, {total - unique} duplicates"
-            )
-            self._hook_ref = None
+        """Unregister this tracker for its thread (prevents cross-crew leaking)."""
+        global _global_hook_installed
+
+        tid = self._installed_tid
+        if tid is None:
+            return
+
+        with _lock:
+            _thread_trackers.pop(tid, None)
+
+            # Remove the global hook only when no threads are using it
+            if not _thread_trackers and _global_hook_installed:
+                unregister_before_tool_call_hook(_dispatcher_hook)
+                _global_hook_installed = False
+
+        total = len(self.calls)
+        unique = len(set(self.calls))
+        logger.info(
+            f"[GUARDRAIL] Uninstalled. Stats: {total} total calls, {unique} unique, {total - unique} duplicates"
+        )
+        self._installed_tid = None
 
 
 def install_guardrails(max_identical: int = 3, max_total: int = 25) -> ToolCallTracker:

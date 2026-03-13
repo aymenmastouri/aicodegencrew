@@ -94,7 +94,7 @@ class OllamaEmbeddingsTool(BaseTool):
             }
 
         # Configuration from environment
-        max_text_length = int(os.getenv("EMBED_MAX_TEXT_LENGTH", "800"))
+        max_text_length = int(os.getenv("EMBED_MAX_TEXT_LENGTH", "2000"))
         use_batching = os.getenv("EMBED_USE_BATCHING", "true").lower() in {"1", "true", "yes"}
         initial_batch_size = int(os.getenv("EMBED_BATCH_SIZE", "50"))
         min_batch_size = int(os.getenv("EMBED_MIN_BATCH_SIZE", "5"))
