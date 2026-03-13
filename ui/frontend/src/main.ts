@@ -1,6 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideZonelessChangeDetection } from '@angular/core';
 
@@ -14,7 +14,7 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()),
     provideAnimationsAsync(),
-    HttpErrorInterceptor,
+    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
   ],
 }).catch((err) => {
   document.body.style.cssText = 'padding:40px;font-family:monospace;color:red;white-space:pre-wrap';

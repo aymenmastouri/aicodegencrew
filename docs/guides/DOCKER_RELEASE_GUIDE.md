@@ -34,7 +34,7 @@ This builds two multi-stage images:
 ### Step 2: Tag Images
 
 ```bash
-VERSION=0.7.2
+VERSION=0.7.3
 
 docker tag ui-backend:latest  sdlc-pilot/backend:${VERSION}
 docker tag ui-backend:latest  sdlc-pilot/backend:latest
@@ -58,24 +58,36 @@ docker run --rm sdlc-pilot/backend:latest find /app/src -name "*.pyc" | head -10
 
 ### Step 4: Prepare the Release Directory
 
+All release-specific files are versioned in `dist/release-template/`. Copy them into a versioned output folder:
+
 ```bash
-VERSION=0.7.2
+VERSION=0.7.3
 RELEASE_DIR=dist/sdlc-pilot-v${VERSION}/sdlc-pilot-v${VERSION}
 mkdir -p ${RELEASE_DIR}
+cp -r dist/release-template/* ${RELEASE_DIR}/
+cp -r config ${RELEASE_DIR}/
+cp LICENSE ${RELEASE_DIR}/
+cp start.bat start.sh ${RELEASE_DIR}/
 ```
 
-Copy these files into the release directory:
+Contents of `dist/release-template/` (versioned in git):
 
-| File | Source | Notes |
-|------|--------|-------|
-| `docker-compose.yml` | `dist/sdlc-pilot-v${VERSION}/` | Release compose (uses `sdlc-pilot/*` images) |
-| `.env.example` | `dist/sdlc-pilot-v${VERSION}/` | All fields for Settings UI schema |
-| `start.bat` | `dist/sdlc-pilot-v${VERSION}/` | Windows launcher |
-| `start.sh` | `dist/sdlc-pilot-v${VERSION}/` | macOS/Linux launcher (LF line endings!) |
-| `clean.bat` | `dist/sdlc-pilot-v${VERSION}/` | Windows full cleanup |
-| `clean.sh` | `dist/sdlc-pilot-v${VERSION}/` | macOS/Linux full cleanup (LF line endings!) |
-| `README.md` | `dist/sdlc-pilot-v${VERSION}/` | End-user documentation |
-| `LICENSE` | `dist/sdlc-pilot-v${VERSION}/` | Capgemini SE proprietary license |
+| File | Purpose |
+|------|---------|
+| `docker-compose.yml` | Release compose (uses `sdlc-pilot/*` images) |
+| `.env.example` | All fields for Settings UI schema (no `──` decorations) |
+| `README.md` | End-user documentation |
+| `clean.bat` | Windows full cleanup |
+| `clean.sh` | macOS/Linux full cleanup |
+| `config/phases_config.yaml` | Default pipeline phase & preset configuration |
+
+From project root:
+
+| File | Purpose |
+|------|---------|
+| `LICENSE` | Capgemini SE proprietary license |
+| `start.bat` | Windows launcher |
+| `start.sh` | macOS/Linux launcher |
 
 > **IMPORTANT:** Never include `.env` with real API keys. Only `.env.example` with placeholders.
 
@@ -98,7 +110,7 @@ zip -r ../sdlc-pilot-v${VERSION}.zip sdlc-pilot-v${VERSION}/
 Final ZIP structure (~376 MB):
 
 ```
-sdlc-pilot-v0.7.2/
+sdlc-pilot-v0.7.3/
 ├── .env.example                    ← Configuration template
 ├── docker-compose.yml              ← Container orchestration
 ├── start.bat                       ← Windows launcher
@@ -107,18 +119,24 @@ sdlc-pilot-v0.7.2/
 ├── clean.sh                        ← macOS/Linux full cleanup
 ├── README.md                       ← End-user guide
 ├── LICENSE                         ← Capgemini SE proprietary
+├── config/
+│   └── phases_config.yaml          ← Pipeline phase & preset configuration
 ├── sdlc-pilot-backend.tar.gz      ← Backend image (~350 MB)
 └── sdlc-pilot-frontend.tar.gz     ← Frontend image (~27 MB)
 ```
 
-### One-Liner (Build → Tag → Export → ZIP)
+### One-Liner (Build → Tag → Copy → Export → ZIP)
 
 ```bash
-VERSION=0.7.2 && \
+VERSION=0.7.3 && \
 RELEASE_DIR=dist/sdlc-pilot-v${VERSION}/sdlc-pilot-v${VERSION} && \
 docker compose -f ui/docker-compose.ui.yml build --no-cache && \
 docker tag ui-backend:latest sdlc-pilot/backend:latest && \
 docker tag ui-frontend:latest sdlc-pilot/frontend:latest && \
+mkdir -p ${RELEASE_DIR} && \
+cp -r dist/release-template/* ${RELEASE_DIR}/ && \
+cp -r config ${RELEASE_DIR}/ && \
+cp LICENSE start.bat start.sh ${RELEASE_DIR}/ && \
 docker save sdlc-pilot/backend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-backend.tar.gz && \
 docker save sdlc-pilot/frontend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-frontend.tar.gz && \
 cd dist/sdlc-pilot-v${VERSION} && zip -r ../sdlc-pilot-v${VERSION}.zip sdlc-pilot-v${VERSION}/
@@ -136,7 +154,7 @@ After installation, start Docker Desktop and wait until the whale icon appears i
 
 ### Step 1: Extract ZIP
 
-Extract `sdlc-pilot-v0.7.2.zip` (right-click → "Extract All" on Windows).
+Extract `sdlc-pilot-v0.7.3.zip` (right-click → "Extract All" on Windows).
 
 ### Step 2: Configure
 
@@ -270,6 +288,7 @@ Browser (http://localhost)
 - [ ] All scripts and README are in English
 - [ ] Docker images load and start successfully from a clean state
 - [ ] Dashboard accessible at http://localhost after `start.bat`
+- [ ] Run Pipeline → "Select Preset" dropdown shows options (confirms config/ is in ZIP)
 - [ ] Settings UI shows all field groups (LLM, Indexing, Output, Logging, etc.)
 - [ ] File uploads persist across container restarts (inputs/ volume)
 - [ ] `clean.bat` / `clean.sh` fully removes containers, images, and data

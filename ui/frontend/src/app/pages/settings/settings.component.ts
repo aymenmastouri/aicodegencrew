@@ -61,6 +61,10 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
     { label: 'ERROR', value: 'ERROR' },
     { label: 'CRITICAL', value: 'CRITICAL' },
   ],
+  CREWAI_TRACING_ENABLED: [
+    { label: 'Enabled', value: 'true' },
+    { label: 'Disabled', value: 'false' },
+  ],
 };
 
 @Component({
@@ -258,10 +262,16 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                 }
 
                 @if (presets.length > 0) {
-                  <div class="section-label">Presets</div>
+                  <div class="section-label">Presets — click to apply</div>
                   <div class="preset-grid">
                     @for (preset of presets; track preset.name) {
-                      <div class="preset-card">
+                      <div
+                        class="preset-card"
+                        [class.preset-active]="isPresetActive(preset)"
+                        (click)="applyPreset(preset)"
+                        [matTooltip]="isRunning ? 'Pipeline is running' : 'Apply preset: ' + (preset.display_name || preset.name)"
+                        [class.preset-disabled]="isRunning"
+                      >
                         <mat-icon class="preset-icon">{{ preset.icon }}</mat-icon>
                         <div class="preset-info">
                           <div class="preset-name">{{ preset.display_name || preset.name }}</div>
@@ -288,16 +298,19 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
                         <mat-form-field appearance="outline">
                           <mat-label>{{ v.name }}</mat-label>
                           @if (getOptions(v.name); as opts) {
-                            <mat-select [(ngModel)]="v.value">
+                            <mat-select [(ngModel)]="v.value" [required]="v.required">
                               @for (opt of opts; track opt.value) {
                                 <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                               }
                             </mat-select>
                           } @else {
-                            <input matInput [(ngModel)]="v.value" />
+                            <input matInput [(ngModel)]="v.value" [required]="v.required" />
                           }
                           @if (v.description) {
                             <mat-hint>{{ v.description }}</mat-hint>
+                          }
+                          @if (v.required) {
+                            <mat-error>{{ v.name }} is required</mat-error>
                           }
                         </mat-form-field>
                       </div>
@@ -355,6 +368,12 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
       }
       .field-item mat-form-field {
         width: 100%;
+      }
+      .field-item .mat-mdc-form-field-hint {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
       }
       .tab-actions {
         display: flex;
@@ -436,7 +455,16 @@ const FIELD_OPTIONS: Record<string, { label: string; value: string }[]> = {
         transition: border-color 0.15s;
       }
       .preset-card:hover {
-        border-color: var(--cg-gray-200);
+        border-color: var(--cg-blue, #1976d2);
+        cursor: pointer;
+      }
+      .preset-active {
+        border-color: var(--cg-blue, #1976d2);
+        background: rgba(25, 118, 210, 0.04);
+      }
+      .preset-disabled {
+        opacity: 0.5;
+        pointer-events: none;
       }
       .preset-icon {
         font-size: 24px;
@@ -633,6 +661,23 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  applyPreset(preset: PresetInfo): void {
+    if (this.isRunning) return;
+    const presetPhaseIds = new Set(preset.phases);
+    for (const p of this.phaseToggles) {
+      if (!p.required) {
+        p.enabled = presetPhaseIds.has(p.id);
+      }
+    }
+    this.snackBar.open(`Preset "${preset.display_name || preset.name}" applied (not saved yet)`, 'OK', { duration: 3000 });
+    this.cdr.markForCheck();
+  }
+
+  isPresetActive(preset: PresetInfo): boolean {
+    const presetPhaseIds = new Set(preset.phases);
+    return this.phaseToggles.every((p) => p.required || p.enabled === presetPhaseIds.has(p.id));
   }
 
   resetTab(tab: string): void {

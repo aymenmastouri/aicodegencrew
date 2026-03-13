@@ -1,0 +1,50 @@
+services:
+  backend:
+    image: sdlc-pilot/backend:latest
+    container_name: sdlc-pilot-backend
+    expose:
+      - "8001"
+    env_file:
+      - .env
+    volumes:
+      - ./knowledge:/app/knowledge
+      - ./logs:/app/logs
+      - ./inputs:/app/inputs
+      - ./config:/app/config
+      - ./.env:/app/.env
+      - ./.env.example:/app/.env.example:ro
+      - ${PROJECT_PATH}:/project:ro
+    environment:
+      AICODEGENCREW_ROOT: /app
+      PROJECT_PATH: /project
+      DASHBOARD_CORS_ORIGINS: "http://localhost:4200,http://localhost,http://localhost:80"
+      PYTHONPATH: /app/src
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    mem_limit: 2g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    image: sdlc-pilot/frontend:latest
+    container_name: sdlc-pilot-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
