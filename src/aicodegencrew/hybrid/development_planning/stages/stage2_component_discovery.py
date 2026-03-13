@@ -44,28 +44,14 @@ def _semantic_search_subprocess(
 ) -> None:
     """Run ChromaDB semantic search in an isolated subprocess."""
     try:
-        import chromadb
-        from chromadb.config import Settings
+        from aicodegencrew.shared.utils.chroma_client import create_chroma_client
 
-        http_cfg = get_chroma_http_config()
-        if http_cfg is not None:
-            host, port, ssl = http_cfg
-            client = chromadb.HttpClient(
-                host=host,
-                port=port,
-                ssl=ssl,
-                settings=Settings(anonymized_telemetry=False),
-            )
-        else:
-            chroma_path = Path(chroma_dir)
-            if not chroma_path.exists():
-                result_queue.put({})
-                return
+        chroma_path = Path(chroma_dir)
+        if not chroma_path.exists() and not get_chroma_http_config():
+            result_queue.put({})
+            return
 
-            client = chromadb.PersistentClient(
-                path=str(chroma_path),
-                settings=Settings(anonymized_telemetry=False),
-            )
+        client = create_chroma_client(persistent_path=str(chroma_path))
         collection = client.get_collection(name="repo_docs")
 
         # Embed query via Ollama (short timeout — fail fast)

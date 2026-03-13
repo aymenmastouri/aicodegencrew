@@ -32,17 +32,13 @@ def find_duplicates(
         return []
 
     try:
-        import chromadb
-        from chromadb.config import Settings as ChromaSettings
+        from ...shared.utils.chroma_client import create_chroma_client
     except ImportError:
         logger.warning("[DuplicateDetector] chromadb not installed — skipping")
         return []
 
     try:
-        client = chromadb.PersistentClient(
-            path=chroma_dir,
-            settings=ChromaSettings(anonymized_telemetry=False),
-        )
+        client = create_chroma_client(persistent_path=chroma_dir)
         collection = client.get_collection("repo_docs")
     except Exception as e:
         logger.warning("[DuplicateDetector] Could not open ChromaDB: %s", e)
