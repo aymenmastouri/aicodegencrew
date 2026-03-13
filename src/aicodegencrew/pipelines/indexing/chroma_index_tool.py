@@ -16,7 +16,7 @@ from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
 from ...shared.paths import CHROMA_DIR, get_chroma_dir
-from ...shared.utils.chroma_client import get_chroma_http_config
+from ...shared.utils.chroma_client import create_chroma_client, get_chroma_http_config
 from ...shared.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -95,32 +95,10 @@ class ChromaIndexTool(BaseTool):
         Client is created only when first needed.
         """
         if not hasattr(self, "_client"):
-            http_cfg = get_chroma_http_config()
-            if http_cfg is not None:
-                host, port, ssl = http_cfg
-                logger.info(f"Initializing ChromaDB HTTP client at: {host}:{port} (ssl={ssl})")
-                self._client = chromadb.HttpClient(
-                    host=host,
-                    port=port,
-                    ssl=ssl,
-                    settings=Settings(
-                        anonymized_telemetry=False,
-                    ),
-                )
-            else:
-                chroma_dir = self.chroma_dir or get_chroma_dir()
-                Path(chroma_dir).mkdir(parents=True, exist_ok=True)
-
-                logger.info(f"Initializing ChromaDB client at: {chroma_dir}")
-
-                self._client = chromadb.PersistentClient(
-                    path=chroma_dir,
-                    settings=Settings(
-                        anonymized_telemetry=False,
-                        allow_reset=True,
-                    ),
-                )
-
+            chroma_dir = self.chroma_dir or get_chroma_dir()
+            Path(chroma_dir).mkdir(parents=True, exist_ok=True)
+            logger.info(f"Initializing ChromaDB client at: {chroma_dir}")
+            self._client = create_chroma_client(persistent_path=chroma_dir)
             logger.info("ChromaDB client initialized")
         return self._client
 

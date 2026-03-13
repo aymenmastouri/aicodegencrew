@@ -16,7 +16,7 @@ from typing import Any, ClassVar
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from ..utils.chroma_client import get_chroma_http_config
+from ..utils.chroma_client import create_chroma_client, get_chroma_http_config
 from ..utils.logger import setup_logger
 from ..utils.ollama_client import OllamaClient
 from ..utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, truncate_response
@@ -138,19 +138,11 @@ class RAGQueryTool(BaseTool):
             return self._collection
 
         try:
-            import chromadb
-            from chromadb.config import Settings
-
             http_cfg = get_chroma_http_config()
             if http_cfg is not None:
-                host, port, ssl = http_cfg
-                logger.info(f"Connecting to ChromaDB server at {host}:{port} (ssl={ssl})")
-                self._client = chromadb.HttpClient(
-                    host=host,
-                    port=port,
-                    ssl=ssl,
-                    settings=Settings(anonymized_telemetry=False),
-                )
+                host, port, _ssl = http_cfg
+                logger.info(f"Connecting to ChromaDB server at {host}:{port} (ssl={_ssl})")
+                self._client = create_chroma_client()
             else:
                 chroma_path = self._find_chroma_path()
 
@@ -158,13 +150,7 @@ class RAGQueryTool(BaseTool):
                     logger.warning(f"ChromaDB not found. Searched paths: {self.CHROMA_PATHS}")
                     return None
 
-                self._client = chromadb.PersistentClient(
-                    path=chroma_path,
-                    settings=Settings(
-                        anonymized_telemetry=False,
-                        allow_reset=True,
-                    ),
-                )
+                self._client = create_chroma_client(persistent_path=chroma_path)
 
             # Open collection WITHOUT an embedding_function.
             # The indexing pipeline (Phase 0) creates the collection without one
