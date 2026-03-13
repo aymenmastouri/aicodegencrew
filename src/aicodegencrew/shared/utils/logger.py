@@ -188,6 +188,26 @@ class StepTracker:
 
 
 # =============================================================================
+# Run ID Formatter — safe format that never raises KeyError on run_id
+# =============================================================================
+
+
+class RunIdFormatter(logging.Formatter):
+    """Formatter that injects ``run_id`` into log records before formatting.
+
+    Standard ``logging.Formatter`` raises ``KeyError`` if the format string
+    contains ``%(run_id)s`` but no filter has added the attribute to the
+    record.  This subclass provides a safe default so that logging never
+    crashes, even during early import-time logging before filters are wired.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        if not hasattr(record, "run_id"):
+            record.run_id = RUN_ID  # type: ignore[attr-defined]
+        return super().format(record)
+
+
+# =============================================================================
 # JSON Formatter for structured logs (metrics.jsonl)
 # =============================================================================
 
@@ -344,7 +364,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             console = logging.StreamHandler(sys.stdout)
             console.setLevel(log_level)
             console.setFormatter(
-                logging.Formatter(
+                RunIdFormatter(
                     "%(asctime)s - %(name)s - %(levelname)s - [%(run_id)s] %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S",
                 )
@@ -359,7 +379,7 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             session = logging.FileHandler(CURRENT_LOG, mode="w", encoding="utf-8")
             session.setLevel(logging.DEBUG)
             session.setFormatter(
-                logging.Formatter(
+                RunIdFormatter(
                     "%(asctime)s.%(msecs)03d | %(levelname)-5s | [%(run_id)s] %(message)s", datefmt="%H:%M:%S"
                 )
             )
