@@ -87,13 +87,16 @@ Beispiel:
 
 ```
 PROJECT_PATH=/mnt/c/projects/mein-projekt
-OPENAI_API_KEY=sk-gX7FLpLxfFUyORK8rv1Rog
+OPENAI_API_KEY=sk-abc123def456
 ```
 
 Speichern: **Strg+O**, Enter, **Strg+X**
 
 > **PROJECT_PATH** = Pfad zu dem Repository das analysiert werden soll.
 > Windows-Pfad `C:\projects\myapp` wird in Ubuntu zu `/mnt/c/projects/myapp`.
+>
+> **API_BASE** ist bereits voreingestellt und muss nicht geaendert werden.
+> Nur **PROJECT_PATH** und **OPENAI_API_KEY** muessen gesetzt werden.
 
 ---
 

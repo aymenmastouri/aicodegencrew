@@ -51,9 +51,10 @@ class OllamaClient:
 
         # Create session for reuse
         self._session = requests.Session()
-        # On Windows/corporate setups, env proxies can cause localhost requests to hang.
-        # We explicitly ignore proxy env vars for Ollama (local service).
-        self._session.trust_env = False
+        if not self._openai_compat:
+            # For local Ollama only: ignore proxy env vars that can cause
+            # localhost requests to hang on Windows/corporate setups.
+            self._session.trust_env = False
 
         # Remove trailing slash
         self.base_url = self.base_url.rstrip("/")
