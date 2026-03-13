@@ -15,6 +15,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 import { ApiService, ReportList, BranchList } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
@@ -2141,7 +2142,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
   renderMarkdown(text: string): SafeHtml {
     if (this.mdCache[text]) return this.mdCache[text];
     const html = marked.parse(text) as string;
-    const safe = this.sanitizer.bypassSecurityTrustHtml(html);
+    const clean = DOMPurify.sanitize(html);
+    const safe = this.sanitizer.bypassSecurityTrustHtml(clean);
     this.mdCache[text] = safe;
     return safe;
   }
@@ -2195,7 +2197,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
     html = html.replace(/<img[^>]*class="emoticon"[^>]*>/g, '');
     // Wrap in paragraph if not already
     if (!html.startsWith('<')) html = '<p>' + html + '</p>';
-    return html;
+    // Sanitize to prevent XSS from JIRA content
+    return DOMPurify.sanitize(html);
   }
 
   /** Format minutes to human readable */

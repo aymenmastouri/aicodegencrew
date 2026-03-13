@@ -371,16 +371,30 @@ def assemble_release(version: str, wheel: Path, docker_tar: Path | None):
         shutil.copy2(docker_tar, RELEASE / docker_tar.name)
 
     # Configuration
-    shutil.copy2(ROOT / ".env.example", RELEASE / ".env.example")
-    shutil.copy2(ROOT / "docker-compose.yml", RELEASE / "docker-compose.yml")
+    for src, dst in [
+        (ROOT / ".env.example", RELEASE / ".env.example"),
+        (ROOT / "docker-compose.yml", RELEASE / "docker-compose.yml"),
+    ]:
+        if not src.exists():
+            print(f"  WARNING: Required file missing, skipping: {src}")
+            continue
+        shutil.copy2(src, dst)
 
     # Config directory
     config_dest = RELEASE / "config"
     config_dest.mkdir()
-    shutil.copy2(ROOT / "config" / "phases_config.yaml", config_dest / "phases_config.yaml")
+    config_src = ROOT / "config" / "phases_config.yaml"
+    if config_src.exists():
+        shutil.copy2(config_src, config_dest / "phases_config.yaml")
+    else:
+        print(f"  WARNING: Config file missing: {config_src}")
 
     # Documentation
-    shutil.copy2(ROOT / "docs" / "USER_GUIDE.md", RELEASE / "USER_GUIDE.md")
+    user_guide = ROOT / "docs" / "USER_GUIDE.md"
+    if user_guide.exists():
+        shutil.copy2(user_guide, RELEASE / "USER_GUIDE.md")
+    else:
+        print(f"  WARNING: USER_GUIDE.md not found at {user_guide}, skipping")
 
     # Generate PDF from USER_GUIDE.md
     generate_pdf_from_markdown(
@@ -467,6 +481,7 @@ def assemble_release(version: str, wheel: Path, docker_tar: Path | None):
         'read -p "Press Enter to continue..."\n',
         encoding="utf-8",
     )
+    install_sh.chmod(0o755)
     uninstall_sh.chmod(0o755)
 
     print(f"  Release directory: {RELEASE}")

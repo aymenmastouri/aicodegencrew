@@ -131,6 +131,23 @@ class RunRequest(BaseModel):
                 return None  # treat empty-after-filter as None
         return v
 
+    @field_validator("env_overrides")
+    @classmethod
+    def _validate_env_overrides(cls, v: dict[str, str] | None) -> dict[str, str] | None:
+        if v is None:
+            return v
+        # Only allow safe environment variable keys (alphanumeric + underscore)
+        import re
+        _SAFE_KEY = re.compile(r"^[A-Z][A-Z0-9_]{0,63}$")
+        # Block sensitive keys that could compromise security
+        _BLOCKED_KEYS = {"PATH", "LD_PRELOAD", "LD_LIBRARY_PATH", "PYTHONPATH", "HOME", "USER"}
+        for key in v:
+            if not _SAFE_KEY.match(key):
+                raise ValueError(f"Invalid env key: '{key}'. Must be uppercase alphanumeric with underscores.")
+            if key in _BLOCKED_KEYS:
+                raise ValueError(f"Cannot override system variable: '{key}'")
+        return v
+
 
 class RunResponse(BaseModel):
     run_id: str

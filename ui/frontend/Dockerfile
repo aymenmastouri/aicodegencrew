@@ -11,10 +11,13 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Install Capgemini corporate CA so npm registry works behind TLS proxy
-COPY certs/CapgeminiPKIRootCA.crt /usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt
-RUN apk add --no-cache ca-certificates && update-ca-certificates
-ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt
+# Install corporate CA certificate if present (optional, for TLS proxy environments)
+COPY certs/CapgeminiPKIRootCA.cr[t] /usr/local/share/ca-certificates/
+RUN apk add --no-cache ca-certificates && \
+    if [ -f /usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt ]; then \
+        update-ca-certificates && \
+        export NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt; \
+    fi
 
 # Install dependencies
 COPY ui/frontend/package.json ui/frontend/package-lock.json* ./

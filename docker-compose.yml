@@ -20,14 +20,14 @@ services:
     image: aicodegencrew:latest
     # Host networking for access to:
     #   - Ollama (localhost:11434) for embeddings
-    #   - On-prem LLM (sov-ai-platform.nue.local.vm:4000)
+    #   - On-prem LLM endpoint (configure API_BASE in .env)
     network_mode: "host"
     env_file: .env
     volumes:
       # User configuration (read-only)
       - ./.env:/app/.env:ro
       # Task input files from TASK_INPUT_DIR (read-only)
-      - ${TASK_INPUT_DIR}:/app/inputs/tasks:ro
+      - ${TASK_INPUT_DIR:-./inputs/tasks}:/app/inputs/tasks:ro
       # All phase outputs (single mount for entire knowledge directory)
       - ./knowledge:/app/knowledge
       # Export: Phase 3 architecture docs (C4 + Arc42) for the architect
@@ -36,7 +36,7 @@ services:
       - ${PROJECT_PATH:-.}:/repo:ro
     environment:
       # Inside container, paths are remapped
-      - TZ=Europe/Berlin
+      - TZ=${TZ:-Europe/Berlin}
       - PROJECT_PATH=/repo
       - PROJECT_PATH_HOST=${PROJECT_PATH:-.}
       - TASK_INPUT_DIR=/app/inputs/tasks

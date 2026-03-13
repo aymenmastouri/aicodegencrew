@@ -8,20 +8,36 @@ REM   start.bat stop               stop Dashboard
 REM   start.bat logs               show logs
 REM =============================================================================
 
-REM Ins Verzeichnis der start.bat wechseln (wichtig bei Doppelklick)
+REM Switch to the directory of this batch file (important for double-click)
 cd /d "%~dp0"
 
 set COMPOSE_FILE=ui/docker-compose.ui.yml
 
+REM Detect docker compose command (v2 preferred, v1 fallback)
+set DC=
+docker compose version >nul 2>&1
+if not errorlevel 1 (
+    set DC=docker compose
+) else (
+    docker-compose version >nul 2>&1
+    if not errorlevel 1 (
+        set DC=docker-compose
+    ) else (
+        echo [ERROR] Neither 'docker compose' nor 'docker-compose' found.
+        echo         Install Docker Desktop: https://www.docker.com/products/docker-desktop
+        exit /b 1
+    )
+)
+
 if "%1"=="stop" (
     echo Stopping SDLC Pilot...
-    docker compose -f %COMPOSE_FILE% down
+    %DC% -f "%COMPOSE_FILE%" down
     echo [OK] Dashboard stopped.
     exit /b 0
 )
 
 if "%1"=="logs" (
-    docker compose -f %COMPOSE_FILE% logs -f
+    %DC% -f "%COMPOSE_FILE%" logs -f
     exit /b 0
 )
 
@@ -76,7 +92,7 @@ echo Building and starting Dashboard...
 echo (First time takes 2-3 minutes)
 echo.
 
-docker compose -f %COMPOSE_FILE% up --build -d
+%DC% -f "%COMPOSE_FILE%" up --build -d
 
 echo.
 echo =========================================

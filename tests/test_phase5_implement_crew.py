@@ -222,7 +222,8 @@ def test_task_source_reader_reads_matching_jira_xml(tmp_path: Path) -> None:
     assert "Summary: Implement endpoint" in result["excerpt"]
 
 
-def test_task_source_reader_returns_error_without_task_input_dir() -> None:
+def test_task_source_reader_returns_error_without_task_input_dir(monkeypatch) -> None:
+    monkeypatch.delenv("TASK_INPUT_DIR", raising=False)
     result = TaskSourceReader(task_input_dir="").run(task_id="T-123")
     assert result["found"] is False
     assert "TASK_INPUT_DIR is not configured" in result["error"]

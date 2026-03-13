@@ -5,7 +5,7 @@
 
 **AI-Powered Development Lifecycle Automation**
 
-[![Version](https://img.shields.io/badge/version-0.7.2-blue.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-0.7.4-blue.svg)](#changelog)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Angular 21](https://img.shields.io/badge/dashboard-Angular%2021-red.svg)](#3-sdlc-dashboard-web-ui)
 [![Tests](https://img.shields.io/badge/tests-745%20passed-brightgreen.svg)](#10-testing)

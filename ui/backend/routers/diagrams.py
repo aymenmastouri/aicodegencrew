@@ -40,11 +40,13 @@ def get_diagram_file(path: str):
     """Download a diagram file."""
     file_path = settings.knowledge_dir / path
 
-    # Security: prevent path traversal
+    # Security: prevent path traversal and symlink attacks
     try:
-        file_path.resolve().relative_to(settings.knowledge_dir.resolve())
+        file_path.resolve(strict=False).relative_to(settings.knowledge_dir.resolve())
     except ValueError:
         raise HTTPException(status_code=400, detail="Path traversal not allowed")
+    if file_path.is_symlink():
+        raise HTTPException(status_code=400, detail="Symlinks are not allowed")
 
     if file_path.suffix.lower() not in _ALLOWED_DIAGRAM_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Only .drawio and .mmd files are allowed")

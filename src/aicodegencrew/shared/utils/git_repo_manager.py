@@ -177,14 +177,17 @@ class GitRepoManager:
     def _build_authenticated_url(self) -> str:
         """Insert credentials into the HTTPS URL (in-memory only).
 
-        Example: https://user:token@gitlab.example.com/team/project.git
+        Note: Credentials in URLs can appear in process listings.
+        Prefer GIT_ASKPASS where possible (see _get_credential_env).
         """
         if not self._username or not self._password:
             return self.repo_url
 
+        from urllib.parse import quote
+
         parsed = urlparse(self.repo_url)
-        # Rebuild with credentials
-        auth_url = f"{parsed.scheme}://{self._username}:{self._password}@{parsed.hostname}"
+        # URL-encode credentials to handle special characters safely
+        auth_url = f"{parsed.scheme}://{quote(self._username, safe='')}:{quote(self._password, safe='')}@{parsed.hostname}"
         if parsed.port:
             auth_url += f":{parsed.port}"
         auth_url += parsed.path
