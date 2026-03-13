@@ -456,7 +456,7 @@ class ImplementCrew:
                         self.total_tokens += int(getattr(token_usage, "total_tokens", 0))
             except (ConnectionError, TimeoutError, OSError) as e:
                 # Transient network/API errors — re-raise so the caller can retry or abort.
-                # These indicate VPN drops, LLM API outages, etc. where proceeding makes no sense.
+                # These indicate network issues, LLM API outages, etc. where proceeding makes no sense.
                 logger.error("[Implement] Transient error during crew execution: %s", e)
                 raise
             except Exception as e:

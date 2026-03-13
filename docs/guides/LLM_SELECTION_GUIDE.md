@@ -1,7 +1,7 @@
 # LLM Selection Guide — AICodeGenCrew
 
 > **Stand**: Capgemini Sovereign AI Platform (`litellm.bnotk.sovai-de.apps.ce.capgemini.com`)
-> Alle Modelle laufen On-Prem / Sovereign (kein Datenschutzproblem, kein VPN-Konflikt).
+> Alle Modelle laufen On-Prem / Sovereign (kein Datenschutzproblem).
 
 ---
 

@@ -397,7 +397,7 @@ class TechStackVersionCollector(DimensionCollector):
         """Walk repo, pruning SKIP_DIRS at directory level (faster than rglob on large trees).
 
         Using os.walk with in-place dir list modification avoids descending into
-        node_modules, dist, target etc. — critical when VPN slows filesystem ops 10-20x.
+        node_modules, dist, target etc. — critical on slow filesystems with large dependency trees.
         """
         results = []
         for dirpath, dirnames, filenames in os.walk(self.repo_path):

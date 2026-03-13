@@ -51,7 +51,7 @@ Read codegen report → Identify changed files → Query test patterns
 
 ## 6. Risks & Open Points
 
-- Test execution requires build environment (same VPN vs build issue as Phase 5)
+- Test execution requires build environment (same build-tool dependency as Phase 5)
 - Test quality depends on LLM understanding of business logic
 - May need fallback to template-based test generation for simpler cases
 

@@ -432,7 +432,6 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + Symbole)
 | SSL CERTIFICATE_VERIFY_FAILED | Siehe [Corporate SSL Guide](docs/guides/CORPORATE_SSL_GUIDE.md) |
 | Ollama läuft nicht | `ollama serve` dann `curl http://127.0.0.1:11434/api/tags` |
 | Indexierung hängt | `rm knowledge/discover/.index.lock` |
-| Build scheitert mit VPN | VPN für Build deaktivieren, für LLM aktivieren |
 | Orphan uvicorn Prozesse | `./scripts/dev.sh stop` (killt auch Orphans) |
 | Pipeline-Crash | Dashboard läuft weiter (Subprocess-Isolation). `logs/current.log` prüfen |
 

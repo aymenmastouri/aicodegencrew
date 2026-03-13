@@ -166,7 +166,7 @@ class TriageCrew:
         from ...shared.utils.llm_factory import check_llm_connectivity
         reachable, health_msg = check_llm_connectivity(timeout=10)
         if not reachable:
-            llm_error = f"LLM server unreachable (VPN off?): {health_msg}"
+            llm_error = f"LLM server unreachable: {health_msg}"
             logger.error("[TriageCrew] %s — skipping LLM synthesis entirely", llm_error)
         else:
             logger.info("[TriageCrew] LLM health check: %s", health_msg)
@@ -184,7 +184,7 @@ class TriageCrew:
             except Exception as e:
                 llm_error = str(e)
                 logger.error(
-                    "[TriageCrew] LLM synthesis FAILED (is VPN/LLM server reachable?): %s", e,
+                    "[TriageCrew] LLM synthesis FAILED (is LLM server reachable?): %s", e,
                 )
 
         # ── Quality gate ────────────────────────────────────────────────
@@ -302,7 +302,7 @@ class TriageCrew:
             logger.error(
                 "[TriageCrew] INCOMPLETE — LLM synthesis FAILED for %s. "
                 "Deterministic analysis saved but developer_context is EMPTY. "
-                "Check VPN/LLM server connectivity. Error: %s",
+                "Check LLM server connectivity. Error: %s",
                 issue_id, llm_error,
             )
         elif llm_status == "partial":

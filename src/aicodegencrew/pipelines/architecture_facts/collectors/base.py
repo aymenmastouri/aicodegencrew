@@ -332,7 +332,7 @@ class DimensionCollector(ABC):
 
         Uses os.walk() with in-place dirnames modification so skip directories
         (node_modules, dist, target, .git, etc.) are never traversed at all.
-        This is critical on VPN/slow filesystems where rglob over node_modules
+        This is critical on slow filesystems where rglob over node_modules
         (thousands of files) causes 10-20x slowdowns.
         """
         search_root = root or self.repo_path
