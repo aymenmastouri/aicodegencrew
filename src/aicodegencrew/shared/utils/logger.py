@@ -36,6 +36,47 @@ RUN_ID = str(uuid.uuid4())[:8]
 
 
 # =============================================================================
+# Run ID Filter — injects run_id into every log record for correlation
+# =============================================================================
+
+
+class RunIdFilter(logging.Filter):
+    """Logging filter that adds ``run_id`` to every log record.
+
+    This enables correlation of log messages across phases within a single
+    pipeline run. The ``run_id`` field is available in format strings as
+    ``%(run_id)s``.
+    """
+
+    def __init__(self, run_id: str | None = None):
+        super().__init__()
+        self.run_id = run_id or RUN_ID
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.run_id = self.run_id  # type: ignore[attr-defined]
+        return True
+
+
+def set_run_id(new_run_id: str) -> None:
+    """Update the run_id on all RunIdFilter instances attached to the logger.
+
+    Called at pipeline start to set the correlation ID, and may be called
+    at pipeline end to clear it.
+    """
+    global RUN_ID
+    RUN_ID = new_run_id
+    _logger = logging.getLogger("aicodegencrew")
+    for handler in _logger.handlers:
+        for f in handler.filters:
+            if isinstance(f, RunIdFilter):
+                f.run_id = new_run_id
+    # Also update filters on the logger itself
+    for f in _logger.filters:
+        if isinstance(f, RunIdFilter):
+            f.run_id = new_run_id
+
+
+# =============================================================================
 # Configuration
 # =============================================================================
 
@@ -159,6 +200,7 @@ class JsonFormatter(logging.Formatter):
             "ts": datetime.fromtimestamp(record.created).isoformat(),
             "level": record.levelname,
             "logger": record.name,
+            "run_id": getattr(record, "run_id", RUN_ID),
             "msg": record.getMessage(),
         }
         if hasattr(record, "metric_data"):
@@ -272,6 +314,10 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
 
     logger.setLevel(logging.DEBUG)
 
+    # Always attach RunIdFilter so %(run_id)s resolves even for child loggers
+    # or when setup_logger is called before the root logger is initialised.
+    logger.addFilter(RunIdFilter(RUN_ID))
+
     # Only do full setup once (for main logger)
     if not _initialized and name == "aicodegencrew":
         _initialized = True
@@ -298,7 +344,10 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             console = logging.StreamHandler(sys.stdout)
             console.setLevel(log_level)
             console.setFormatter(
-                logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+                logging.Formatter(
+                    "%(asctime)s - %(name)s - %(levelname)s - [%(run_id)s] %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S",
+                )
             )
             console.addFilter(lambda r: not hasattr(r, "metric_data"))
             logger.addHandler(console)
@@ -310,7 +359,9 @@ def setup_logger(name: str = "aicodegencrew", level: str | None = None) -> loggi
             session = logging.FileHandler(CURRENT_LOG, mode="w", encoding="utf-8")
             session.setLevel(logging.DEBUG)
             session.setFormatter(
-                logging.Formatter("%(asctime)s.%(msecs)03d | %(levelname)-5s | %(message)s", datefmt="%H:%M:%S")
+                logging.Formatter(
+                    "%(asctime)s.%(msecs)03d | %(levelname)-5s | [%(run_id)s] %(message)s", datefmt="%H:%M:%S"
+                )
             )
             session.addFilter(lambda r: not hasattr(r, "metric_data"))
             # Unbuffered for real-time viewing

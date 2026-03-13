@@ -63,9 +63,16 @@ class DependencyChecker:
         validator = PhaseOutputValidator()
 
         for dep in dependencies:
-            # Tier 1: succeeded in this session
+            # Tier 1: succeeded in this session (includes 'partial' status)
             result = self._results.get(dep)
             if result is not None and result.is_success():
+                if getattr(result, "status", None) == "partial":
+                    logger.warning(
+                        "[DependencyChecker] Dependency %s is PARTIAL — %s will proceed "
+                        "with degraded upstream data (deterministic-only recommended)",
+                        dep,
+                        phase_id,
+                    )
                 continue
 
             # Tier 2: output files exist from a previous run (CWD-relative)

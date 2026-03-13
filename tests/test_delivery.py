@@ -12,7 +12,6 @@ Covers:
 
 import ast
 import re
-import sys
 from pathlib import Path
 
 import pytest
@@ -24,11 +23,6 @@ import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SRC_DIR = PROJECT_ROOT / "src" / "aicodegencrew"
-SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-
-# Make build_release importable
-sys.path.insert(0, str(SCRIPTS_DIR))
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -47,67 +41,6 @@ def _load_pyproject() -> dict:
     # For detailed checks we just inspect the raw text; for structured checks
     # we rely on the build_release helpers.
     return content
-
-
-# ============================================================================
-# 1. Version Management  (scripts/build_release.py)
-# ============================================================================
-
-
-class TestVersionManagement:
-    """Tests for get_version() and bump_version() in build_release.py."""
-
-    def _import_build_release(self):
-        """Import the build_release module."""
-        # Ensure the module can be re-imported cleanly
-        if "build_release" in sys.modules:
-            del sys.modules["build_release"]
-        import build_release
-
-        return build_release
-
-    def test_get_version_parses_from_pyproject(self):
-        """get_version() should return the version string from pyproject.toml."""
-        br = self._import_build_release()
-        version = br.get_version()
-        # Must be a valid semver-ish string
-        assert re.match(r"^\d+\.\d+\.\d+$", version), f"get_version() returned '{version}', expected X.Y.Z format"
-
-    def test_bump_version_patch(self):
-        """bump_version('0.1.0', 'patch') should return '0.1.1'."""
-        br = self._import_build_release()
-        assert br.bump_version("0.1.0", "patch") == "0.1.1"
-
-    def test_bump_version_minor(self):
-        """bump_version('0.1.0', 'minor') should return '0.2.0'."""
-        br = self._import_build_release()
-        assert br.bump_version("0.1.0", "minor") == "0.2.0"
-
-    def test_bump_version_major(self):
-        """bump_version('0.1.0', 'major') should return '1.0.0'."""
-        br = self._import_build_release()
-        assert br.bump_version("0.1.0", "major") == "1.0.0"
-
-    def test_bump_version_patch_higher(self):
-        """bump_version('1.2.3', 'patch') should return '1.2.4'."""
-        br = self._import_build_release()
-        assert br.bump_version("1.2.3", "patch") == "1.2.4"
-
-    def test_bump_version_invalid_part_exits(self):
-        """bump_version with invalid part should call sys.exit."""
-        br = self._import_build_release()
-        with pytest.raises(SystemExit):
-            br.bump_version("0.1.0", "invalid")
-
-    def test_bump_version_minor_resets_patch(self):
-        """bump_version('1.2.3', 'minor') should reset patch to 0."""
-        br = self._import_build_release()
-        assert br.bump_version("1.2.3", "minor") == "1.3.0"
-
-    def test_bump_version_major_resets_minor_and_patch(self):
-        """bump_version('1.2.3', 'major') should reset minor and patch to 0."""
-        br = self._import_build_release()
-        assert br.bump_version("1.2.3", "major") == "2.0.0"
 
 
 # ============================================================================

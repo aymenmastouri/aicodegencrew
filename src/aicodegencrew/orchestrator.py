@@ -30,7 +30,7 @@ from .pipeline_contract import (
     normalize_phase_result_status,
     phase_result_to_phase_state_status,
 )
-from .shared.utils.logger import RUN_ID, log_metric, logger
+from .shared.utils.logger import RUN_ID, log_metric, logger, set_run_id
 from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_failed, set_phase_running
 
 # =============================================================================
@@ -157,6 +157,8 @@ class SDLCOrchestrator:
         # Downstream phases can read from inputs["previous_results"]["facts"]
         # instead of re-loading the 2.8 MB file from disk.
         self._facts_cache: dict = {}
+        # Token usage tracking per phase (populated after each crew/pipeline finishes)
+        self._token_usage: dict[str, dict[str, int]] = {}
 
         logger.info("[Orchestrator] Initialized")
 
@@ -201,6 +203,7 @@ class SDLCOrchestrator:
         self._start_time = datetime.now()
         self.results.clear()
         self._facts_cache.clear()
+        self._token_usage.clear()
         self.contract = self._contract_from_current_config()
 
         # Use the logger's RUN_ID so that phase_state.json and metrics.jsonl
@@ -352,7 +355,16 @@ class SDLCOrchestrator:
                 phase_config["task_id"] = self._task_id
 
             # Build inputs (PERF-2: include cached facts if available)
-            previous_results = {pid: r.output for pid, r in self.results.items() if r.is_success()}
+            # Include both successful and partial upstream results so downstream
+            # phases can adapt (graceful degradation). Partial results carry a
+            # "_upstream_status" marker that downstream phases can inspect.
+            previous_results: dict[str, Any] = {}
+            for pid, r in self.results.items():
+                if r.is_success():
+                    result_output = r.output if r.output is not None else {}
+                    if isinstance(result_output, dict) and r.status == "partial":
+                        result_output = {**result_output, "_upstream_status": "partial"}
+                    previous_results[pid] = result_output
             if self._facts_cache:
                 previous_results["facts"] = self._facts_cache
             inputs = {
@@ -385,12 +397,31 @@ class SDLCOrchestrator:
             metric_status = phase_result_to_phase_state_status(phase_status)
             phase_state_status = metric_status
 
+            # ── Token usage extraction ──
+            phase_tokens = self._extract_phase_token_usage(phase_id, output)
+            if phase_tokens:
+                self._token_usage[phase_id] = phase_tokens
+                logger.info(
+                    "[Phase] %s — tokens: %s total (%s prompt, %s completion)",
+                    display,
+                    f"{phase_tokens.get('total_tokens', 0):,}",
+                    f"{phase_tokens.get('prompt_tokens', 0):,}",
+                    f"{phase_tokens.get('completion_tokens', 0):,}",
+                )
+
             logger.info(f"[Phase] {display} — {phase_status} in {duration:.2f}s")
-            log_metric("phase_complete", phase_id=phase_id, duration_seconds=round(duration, 2), status=metric_status)
+            log_metric(
+                "phase_complete",
+                phase_id=phase_id,
+                duration_seconds=round(duration, 2),
+                status=metric_status,
+                **({f"tokens_{k}": v for k, v in phase_tokens.items()} if phase_tokens else {}),
+            )
             set_phase_completed(phase_id, duration, status=phase_state_status)
             self.phase_context.metrics[phase_id] = {
                 "duration_seconds": round(duration, 2),
                 "status": metric_status,
+                **({"token_usage": phase_tokens} if phase_tokens else {}),
             }
             self.phase_context.set_phase_result(
                 phase_id=phase_id, status=phase_status, output=output, message=phase_message
@@ -427,6 +458,41 @@ class SDLCOrchestrator:
 
         except Exception as e:
             duration = (datetime.now() - start).total_seconds()
+
+            # ── Graceful degradation: check for partial output on disk ──
+            partial_output = self._check_partial_output(phase_id)
+            if partial_output:
+                logger.warning(
+                    "[Phase] %s — failed with partial output (%d artifacts): %s",
+                    display,
+                    partial_output.get("artifact_count", 0),
+                    e,
+                )
+                log_metric(
+                    "phase_partial",
+                    phase_id=phase_id,
+                    duration_seconds=round(duration, 2),
+                    error=str(e)[:500],
+                    artifact_count=partial_output.get("artifact_count", 0),
+                )
+                metric_status = phase_result_to_phase_state_status("partial")
+                set_phase_completed(phase_id, duration, status=metric_status)
+                self.phase_context.errors.append(f"{phase_id}: {e} (partial output preserved)")
+                degraded_output = {"status": "partial", "phase": phase_id, "message": str(e), **partial_output}
+                self.phase_context.set_phase_result(
+                    phase_id=phase_id,
+                    status="partial",
+                    output=degraded_output,
+                    message=f"Partial: {e}",
+                )
+                return PhaseResult(
+                    phase_id=phase_id,
+                    status="partial",
+                    message=f"Partial: {e}",
+                    output=degraded_output,
+                    duration_seconds=duration,
+                )
+
             logger.error(f"[Phase] {display} — failed: {e}", exc_info=True)
             log_metric("phase_failed", phase_id=phase_id, duration_seconds=round(duration, 2), error=str(e)[:500])
             set_phase_failed(phase_id, duration, str(e))
@@ -439,6 +505,145 @@ class SDLCOrchestrator:
                 message=str(e),
                 duration_seconds=duration,
             )
+
+    def _check_partial_output(self, phase_id: str) -> dict[str, Any] | None:
+        """Check if a failed phase left usable partial output on disk.
+
+        Returns a dict with artifact info if partial output exists, else None.
+        Used for graceful degradation: a phase that crashes after writing some
+        files can be marked 'partial' instead of 'failed', allowing downstream
+        phases to proceed with degraded input.
+        """
+        from .phase_registry import PHASES
+
+        desc = PHASES.get(phase_id)
+        if not desc:
+            return None
+
+        base = Path.cwd()
+        primary = base / desc.primary_output
+        if not primary.exists():
+            return None
+
+        # Count artifacts
+        if primary.is_dir():
+            artifacts = list(primary.rglob("*"))
+            files = [a for a in artifacts if a.is_file() and not a.name.startswith(".checkpoint")]
+            if not files:
+                return None
+            return {
+                "artifact_count": len(files),
+                "partial_output_dir": str(primary),
+            }
+        else:
+            # Single file output — check it has content
+            try:
+                size = primary.stat().st_size
+                if size > 0:
+                    return {
+                        "artifact_count": 1,
+                        "partial_output_file": str(primary),
+                    }
+            except OSError:
+                pass
+            return None
+
+    def _get_upstream_status(self, phase_id: str) -> str | None:
+        """Return the status of an upstream phase, or None if not yet run.
+
+        Downstream phases can use this to adapt their behavior:
+        - 'success': full upstream output available
+        - 'partial': degraded upstream output — use deterministic data only
+        - 'skipped'/'failed'/None: upstream not available
+        """
+        result = self.results.get(phase_id)
+        return result.status if result else None
+
+    @staticmethod
+    def _extract_phase_token_usage(phase_id: str, output: Any) -> dict[str, int]:
+        """Extract token usage metrics from a phase's output dict.
+
+        Crew-based phases typically include ``total_tokens``, ``prompt_tokens``,
+        ``completion_tokens`` either at the top level or nested under
+        ``token_usage``/``metrics``. Pipeline phases (discover, extract) may not
+        report tokens at all — returns empty dict in that case.
+        """
+        if not isinstance(output, dict):
+            return {}
+
+        tokens: dict[str, int] = {}
+
+        # Path 1: top-level keys (implement phase, triage)
+        if "total_tokens" in output:
+            tokens["total_tokens"] = int(output.get("total_tokens", 0))
+            tokens["prompt_tokens"] = int(output.get("prompt_tokens", 0))
+            tokens["completion_tokens"] = int(output.get("completion_tokens", 0))
+            return tokens
+
+        # Path 2: nested under "token_usage" (architecture_synthesis base_crew pattern)
+        usage = output.get("token_usage")
+        if isinstance(usage, dict):
+            tokens["total_tokens"] = int(usage.get("total_tokens", 0))
+            tokens["prompt_tokens"] = int(usage.get("prompt_tokens", 0))
+            tokens["completion_tokens"] = int(usage.get("completion_tokens", 0))
+            return tokens
+
+        # Path 3: nested under "metrics" (some phases embed it there)
+        metrics = output.get("metrics")
+        if isinstance(metrics, dict) and "total_tokens" in metrics:
+            tokens["total_tokens"] = int(metrics.get("total_tokens", 0))
+            tokens["prompt_tokens"] = int(metrics.get("prompt_tokens", 0))
+            tokens["completion_tokens"] = int(metrics.get("completion_tokens", 0))
+            return tokens
+
+        return {}
+
+    def _log_token_summary(self) -> None:
+        """Log a summary of token usage across all phases at the end of a pipeline run."""
+        if not self._token_usage:
+            return
+
+        logger.info("")
+        logger.info("=" * 60)
+        logger.info("[Orchestrator] TOKEN USAGE SUMMARY")
+        logger.info("=" * 60)
+
+        grand_total = 0
+        grand_prompt = 0
+        grand_completion = 0
+
+        for pid, tokens in self._token_usage.items():
+            total = tokens.get("total_tokens", 0)
+            prompt = tokens.get("prompt_tokens", 0)
+            completion = tokens.get("completion_tokens", 0)
+            grand_total += total
+            grand_prompt += prompt
+            grand_completion += completion
+            logger.info(
+                "  %-15s %10s total  (%s prompt, %s completion)",
+                pid,
+                f"{total:,}",
+                f"{prompt:,}",
+                f"{completion:,}",
+            )
+
+        logger.info("-" * 60)
+        logger.info(
+            "  %-15s %10s total  (%s prompt, %s completion)",
+            "TOTAL",
+            f"{grand_total:,}",
+            f"{grand_prompt:,}",
+            f"{grand_completion:,}",
+        )
+        logger.info("=" * 60)
+
+        log_metric(
+            "pipeline_token_summary",
+            total_tokens=grand_total,
+            prompt_tokens=grand_prompt,
+            completion_tokens=grand_completion,
+            per_phase=self._token_usage,
+        )
 
     def _reset_phase_output(self, phase_id: str) -> None:
         """Clean stale output files before re-running a phase.
@@ -551,6 +756,9 @@ class SDLCOrchestrator:
             total_seconds = delta.total_seconds()
 
         run_outcome = self._compute_run_outcome()
+
+        # Log token usage summary before final status
+        self._log_token_summary()
 
         logger.info("=" * 60)
         logger.info(f"[Orchestrator] Pipeline {status.upper()}: {message}")

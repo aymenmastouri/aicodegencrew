@@ -137,6 +137,62 @@ class ImportIndex:
         rel = _compute_ts_relative_import(from_file, best.file_path)
         return f"import {{ {symbol} }} from '{rel}';"
 
+    def invalidate_file(self, file_path: str) -> int:
+        """Remove all index entries originating from a given file.
+
+        Called after the code generator writes/modifies a file so that stale
+        symbol entries (e.g. renamed or removed exports) do not pollute
+        subsequent import resolution within the same build-fix loop.
+
+        Returns the number of entries removed.
+        """
+        entries = self.by_file.pop(file_path, [])
+        if not entries:
+            return 0
+
+        removed = 0
+        for entry in entries:
+            sym_list = self.by_symbol.get(entry.symbol)
+            if sym_list is not None:
+                before = len(sym_list)
+                self.by_symbol[entry.symbol] = [e for e in sym_list if e.file_path != file_path]
+                removed += before - len(self.by_symbol[entry.symbol])
+                # Clean up empty symbol lists
+                if not self.by_symbol[entry.symbol]:
+                    del self.by_symbol[entry.symbol]
+
+        logger.info(
+            "[ImportIndex] Invalidated %d entries for %s",
+            removed,
+            file_path,
+        )
+        return removed
+
+    def reindex_file(self, file_path: str, repo_path: str) -> int:
+        """Re-scan a single file and add its exports back to the index.
+
+        Called after invalidate_file() to refresh the index with the file's
+        current content (from the staging area or disk).
+
+        Returns the number of entries added.
+        """
+        from pathlib import Path as _Path
+
+        ext = _Path(file_path).suffix.lower()
+        if ext not in _JAVA_EXTS and ext not in _TS_EXTS:
+            return 0
+
+        try:
+            content = _Path(file_path).read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            return 0
+
+        if ext in _JAVA_EXTS:
+            return ImportIndexBuilder._index_java_file_static(self, file_path, content)
+        elif ext in _TS_EXTS:
+            return ImportIndexBuilder._index_ts_file_static(self, file_path, content)
+        return 0
+
     def __repr__(self) -> str:
         return f"ImportIndex(symbols={len(self.by_symbol)}, files={len(self.by_file)})"
 
@@ -262,7 +318,24 @@ class ImportIndexBuilder:
 
         return count
 
+    @staticmethod
+    def _index_java_file_static(index: ImportIndex, file_path: str, content: str) -> int:
+        """Index a Java file (static version for reindex_file)."""
+        return ImportIndexBuilder._do_index_java(index, file_path, content)
+
+    @staticmethod
+    def _index_ts_file_static(index: ImportIndex, file_path: str, content: str) -> int:
+        """Index a TS file (static version for reindex_file)."""
+        return ImportIndexBuilder._do_index_ts(index, file_path, content)
+
     def _index_java_file(self, index: ImportIndex, file_path: str, content: str) -> int:
+        return self._do_index_java(index, file_path, content)
+
+    def _index_ts_file(self, index: ImportIndex, file_path: str, content: str) -> int:
+        return self._do_index_ts(index, file_path, content)
+
+    @staticmethod
+    def _do_index_java(index: ImportIndex, file_path: str, content: str) -> int:
         count = 0
         pkg_match = _JAVA_PACKAGE_RE.search(content)
         package = pkg_match.group(1) if pkg_match else ""
@@ -283,7 +356,8 @@ class ImportIndexBuilder:
             count += 1
         return count
 
-    def _index_ts_file(self, index: ImportIndex, file_path: str, content: str) -> int:
+    @staticmethod
+    def _do_index_ts(index: ImportIndex, file_path: str, content: str) -> int:
         count = 0
         seen: set[str] = set()
 

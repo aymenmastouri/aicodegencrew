@@ -12,6 +12,7 @@ Success Rate: 95%+ (deterministic stages don't fail)
 """
 
 import json
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -194,6 +195,48 @@ class DevelopmentPlanningPipeline:
             logger.info("[Phase4] No triage files found on disk for task(s): %s", sorted(task_stems))
         return first_ctx
 
+    def _wait_for_triage_then_load(self) -> dict:
+        """Wait for triage results to appear on disk, then load them.
+
+        When triage and plan run in parallel (e.g. orchestrated by different
+        workers), triage may not have finished writing its output yet.  This
+        method polls for triage files with a configurable timeout before
+        falling back to deterministic-only data.
+
+        Timeout is controlled by the PLAN_TRIAGE_WAIT_TIMEOUT env var
+        (default: 120 seconds).  A value of 0 disables waiting entirely.
+        """
+        timeout = int(os.environ.get("PLAN_TRIAGE_WAIT_TIMEOUT", "120"))
+        if timeout <= 0:
+            return self._load_triage_from_disk()
+
+        triage_dir = self.output_dir.parent / "triage"
+        task_stems = {Path(f).stem for f in self.input_files}
+        poll_interval = 2  # seconds
+
+        elapsed = 0.0
+        while elapsed < timeout:
+            # Quick check: do any triage files exist for our tasks?
+            if triage_dir.is_dir():
+                found_any = any(
+                    (triage_dir / f"{stem}_triage.json").exists()
+                    for stem in task_stems
+                )
+                if found_any:
+                    ctx = self._load_triage_from_disk()
+                    if ctx:
+                        return ctx
+
+            time.sleep(poll_interval)
+            elapsed += poll_interval
+
+        logger.warning(
+            "[Phase4] Triage wait timed out after %ds — proceeding with deterministic-only data "
+            "(no triage context). Set PLAN_TRIAGE_WAIT_TIMEOUT=0 to disable waiting.",
+            timeout,
+        )
+        return {}
+
     # Triage classification → Plan task_type mapping
     _TRIAGE_TO_PLAN_TYPE: dict[str, str] = {
         "bug": "bugfix",
@@ -259,7 +302,7 @@ class DevelopmentPlanningPipeline:
         # Disk fallback: when plan runs in a separate subprocess (no in-memory
         # triage result), load triage_context from knowledge/triage/{task_id}_triage.json.
         if not triage_context:
-            triage_context = self._load_triage_from_disk()
+            triage_context = self._wait_for_triage_then_load()
 
         return self.run(quality_hints=quality_hints, triage_context=triage_context)
 

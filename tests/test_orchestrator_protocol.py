@@ -6,7 +6,7 @@ and that _invoke_executable() dispatches correctly.
 """
 
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import yaml
@@ -226,7 +226,8 @@ class TestOrchestratorWithMockPhases:
         phase.kickoff.side_effect = ValueError("bad input")
 
         orchestrator.register("discover", phase)
-        result = orchestrator._execute_phase("discover")
+        with patch.object(orchestrator, "_check_partial_output", return_value=None):
+            result = orchestrator._execute_phase("discover")
 
         assert result.status == "failed"
         assert "bad input" in result.message
