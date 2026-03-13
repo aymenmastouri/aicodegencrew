@@ -1,143 +1,193 @@
 # SDLC Pilot - Dashboard
 
-AI-powered Software Development Lifecycle assistant. Runs entirely in Docker — no Python, Node.js, or other tools required.
+AI-powered Software Development Lifecycle assistant.
 
-## Prerequisites
+---
 
-**Docker** — one of the following:
+## Schritt 1: WSL2 + Ubuntu installieren (einmalig)
 
-| Environment | Installation |
-|-------------|-------------|
-| **WSL2 (Windows, no license needed)** | Inside WSL2 (Ubuntu): `sudo apt-get install -y docker.io docker-compose-plugin` |
-| **Linux** | Install Docker Engine via your package manager |
-| **Docker Desktop (if licensed)** | Download from https://www.docker.com/products/docker-desktop |
+> WSL2 ist ein eingebautes Linux in Windows. Keine extra Lizenz noetig.
 
-> **WSL2 setup (one-time):**
-> ```bash
-> sudo apt-get update
-> sudo apt-get install -y docker.io docker-compose-plugin
-> sudo usermod -aG docker $USER
-> # Close and reopen WSL, then:
-> sudo service docker start
+1. **Windows-Taste** druecken, **"Microsoft Store"** eingeben, oeffnen
+2. Im Store nach **"Ubuntu"** suchen
+3. **"Ubuntu 22.04 LTS"** (oder neuer) installieren und **"Oeffnen"** klicken
+4. Beim ersten Start: **Benutzername** und **Passwort** festlegen (merken!)
+
+> Falls "Ubuntu" nicht im Store erscheint:
+> **PowerShell als Administrator** oeffnen und eingeben:
 > ```
+> wsl --install
+> ```
+> Danach PC neu starten und Ubuntu aus dem Startmenue oeffnen.
 
-## Quick Start
+---
 
-### 1. Configure
+## Schritt 2: Docker in Ubuntu installieren (einmalig)
 
-Copy the example configuration:
+Ubuntu oeffnen (aus dem Startmenue) und diese 4 Zeilen **nacheinander** eingeben:
 
-| OS | Command |
-|----|---------|
-| Windows CMD | `copy .env.example .env` |
-| WSL2 / Linux | `cp .env.example .env` |
-
-Open `.env` in any text editor and set **at minimum** these two values:
-
-```
-# Windows (CMD / PowerShell):
-PROJECT_PATH=C:\projects\myapp
-
-# WSL2 / Linux:
-PROJECT_PATH=/mnt/c/projects/myapp        # or /home/user/projects/myapp
-
-OPENAI_API_KEY=sk-your-actual-key          # your API key
+```bash
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose-plugin
+sudo usermod -aG docker $USER
 ```
 
-> **Note:** `PROJECT_PATH` is your repository path on your machine.
-> In Docker mode, the container mounts it automatically as a read-only volume.
-> Changing this value requires a restart (`start.bat stop` then `start.bat`, or `./start.sh stop` then `./start.sh`).
+Danach Ubuntu **schliessen und neu oeffnen** (damit die Rechte aktiv werden).
 
-#### LLM Model Configuration
+Docker starten:
 
-The `.env` file contains model settings that map to the Sovereign AI Platform. Each model serves a specific purpose:
+```bash
+sudo service docker start
+```
 
-| Variable | Default | Used by | Purpose |
-|----------|---------|---------|---------|
-| `MODEL` | `openai/complex_tasks` | Analyze, Triage, Document, Plan, Verify, Deliver | Deep reasoning, architecture analysis (large context) |
-| `FAST_MODEL` | `openai/chat` | Classification, reviews | Fast, lightweight tasks |
-| `CODEGEN_MODEL` | `openai/code` | Implement, Verify | Code generation, test generation |
-| `VISION_MODEL` | `openai/vision` | OCR, document analysis | Multimodal (images + text) |
-| `EMBED_MODEL` | `embed` | Discover (indexing) | Vector embeddings for semantic search |
+Pruefen ob Docker laeuft:
 
-> **Note:** All models are accessed via `API_BASE` (Sovereign AI Platform). No local Ollama or GPU required. The default values work out of the box — only change them if your platform uses different model aliases.
+```bash
+docker info
+```
 
-### 2. Start the Dashboard
+Wenn eine Ausgabe mit "Server Version" erscheint, funktioniert Docker.
 
-| OS | Command |
-|----|---------|
-| Windows | Double-click **`start.bat`** or run it from CMD |
-| WSL2 / Linux | `chmod +x start.sh clean.sh && ./start.sh` |
+---
 
-On first launch, Docker images are loaded from the included `.tar.gz` files (~1-2 minutes). Subsequent starts take ~5 seconds.
+## Schritt 3: ZIP-Datei nach Ubuntu kopieren
 
-### 3. Open the Dashboard
+Die ZIP-Datei liegt z.B. unter `C:\Users\IhrName\Downloads\`.
+Ubuntu kann auf Windows-Dateien zugreifen ueber `/mnt/c/`.
 
-Open **http://localhost** in your browser.
+In Ubuntu eingeben:
 
-## Commands
+```bash
+cd ~
+cp /mnt/c/Users/IhrName/Downloads/sdlc-pilot-v0.7.4.zip .
+unzip sdlc-pilot-v0.7.4.zip
+cd sdlc-pilot-v0.7.4
+```
 
-| Action | Windows | WSL2 / Linux |
-|--------|---------|-------------|
-| Start | `start.bat` | `./start.sh` |
-| Stop | `start.bat stop` | `./start.sh stop` |
-| View logs | `start.bat logs` | `./start.sh logs` |
-| Restart | `start.bat stop` then `start.bat` | `./start.sh stop` then `./start.sh` |
-| Full cleanup | `clean.bat` | `./clean.sh` |
+> **Wichtig:** Ersetzen Sie `IhrName` durch Ihren Windows-Benutzernamen.
+> Den Benutzernamen finden Sie z.B. in `C:\Users\` im Windows Explorer.
 
-> `clean.bat` / `clean.sh` stops everything, removes containers, volumes, images, and data directories. Your `.env` is preserved.
+---
 
-## Updating to a New Version
+## Schritt 4: Konfiguration
 
-1. Stop the dashboard: `start.bat stop`
-2. Extract the new ZIP
-3. Copy your existing `.env` into the new folder
-4. Start: `start.bat`
+```bash
+cp .env.example .env
+nano .env
+```
 
-## Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| "Docker is not running" | **WSL2:** `sudo service docker start` — **Docker Desktop:** Start app, wait for tray icon |
-| "API key not configured" | Open `.env` and set `OPENAI_API_KEY` |
-| "Repository path not configured" | Open `.env` and set `PROJECT_PATH` to your repo |
-| Browser shows nothing | Wait 30 seconds, reload http://localhost |
-| Port 80 already in use | Stop other web servers (IIS, XAMPP, Apache, Skype) |
-| `start.bat` closes instantly | Right-click > "Run as administrator" |
-| WSL2: permission denied on `start.sh` | `chmod +x start.sh clean.sh` then `./start.sh` |
-| WSL2: Docker daemon not running | `sudo service docker start` |
-| Image loading fails | Verify `.tar.gz` files are in the same folder |
-
-## Architecture
+In der Datei diese zwei Zeilen aendern:
 
 ```
-Browser (http://localhost)
+PROJECT_PATH=/mnt/c/Pfad/zu/Ihrem/Repository
+OPENAI_API_KEY=sk-Ihr-echter-API-Key
+```
+
+Beispiel:
+
+```
+PROJECT_PATH=/mnt/c/projects/mein-projekt
+OPENAI_API_KEY=sk-gX7FLpLxfFUyORK8rv1Rog
+```
+
+Speichern: **Strg+O**, Enter, **Strg+X**
+
+> **PROJECT_PATH** = Pfad zu dem Repository das analysiert werden soll.
+> Windows-Pfad `C:\projects\myapp` wird in Ubuntu zu `/mnt/c/projects/myapp`.
+
+---
+
+## Schritt 5: Dashboard starten
+
+```bash
+chmod +x start.sh clean.sh
+./start.sh
+```
+
+Beim **ersten Start** werden Docker-Images geladen (dauert 1-2 Minuten).
+Danach startet das Dashboard in ca. 5 Sekunden.
+
+Wenn Sie diese Meldung sehen:
+
+```
+[OK] Dashboard is ready!
+[OK] Open: http://localhost
+```
+
+Dann oeffnen Sie **http://localhost** im Windows-Browser (Chrome, Edge, Firefox).
+
+---
+
+## Dashboard bedienen
+
+| Aktion | Befehl |
+|--------|--------|
+| **Starten** | `./start.sh` |
+| **Stoppen** | `./start.sh stop` |
+| **Logs anzeigen** | `./start.sh logs` |
+| **Komplett zuruecksetzen** | `./clean.sh` |
+
+> Nach `clean.sh` koennen Sie mit `./start.sh` alles neu starten.
+> Ihre `.env`-Konfiguration und `config/` bleiben erhalten.
+
+---
+
+## Haeufige Probleme
+
+| Problem | Loesung |
+|---------|---------|
+| "Docker is not running" | `sudo service docker start` in Ubuntu eingeben |
+| "API key not configured" | `.env` oeffnen und `OPENAI_API_KEY` setzen |
+| "Repository path not configured" | `.env` oeffnen und `PROJECT_PATH` setzen |
+| Browser zeigt nichts an | 30 Sekunden warten, http://localhost neu laden |
+| Port 80 belegt | Andere Webserver stoppen (IIS, XAMPP, Skype) |
+| "permission denied" bei start.sh | `chmod +x start.sh clean.sh` eingeben |
+| "Cannot connect to Docker daemon" | `sudo service docker start` eingeben |
+| Ubuntu vergisst Docker nach Neustart | Nach jedem Windows-Neustart einmal `sudo service docker start` eingeben |
+
+---
+
+## Update auf neue Version
+
+1. `./start.sh stop`
+2. Neue ZIP-Datei nach Ubuntu kopieren und entpacken (wie Schritt 3)
+3. Alte `.env` in den neuen Ordner kopieren: `cp ../sdlc-pilot-v0.7.4/.env .`
+4. `./start.sh`
+
+---
+
+## LLM-Modell-Konfiguration (optional)
+
+Die `.env`-Datei enthaelt Modell-Einstellungen. Die Standardwerte funktionieren sofort — nur aendern wenn noetig:
+
+| Variable | Standard | Zweck |
+|----------|----------|-------|
+| `MODEL` | `openai/complex_tasks` | Architektur-Analyse, Planung |
+| `FAST_MODEL` | `openai/chat` | Schnelle Aufgaben (Triage, Reviews) |
+| `CODEGEN_MODEL` | `openai/code` | Code-Generierung |
+| `VISION_MODEL` | `openai/vision` | OCR, Dokumenten-Analyse |
+| `EMBED_MODEL` | `embed` | Semantische Suche |
+
+---
+
+## Architektur
+
+```
+Windows-Browser (http://localhost)
     |
     v
-+---------------------+
-|  Frontend (nginx)    |  Port 80
-|  Angular SPA         |
-|  Proxy: /api/* ------+--> Backend
-+---------------------+
-                            |
-                       +----v--------------------+
-                       |  Backend (FastAPI)       |  Port 8001 (internal)
-                       |  Python 3.12             |
-                       |  /project --> your repo  |
-                       +-------------------------+
-                                  |  HTTPS
-                                  v
-                       Sovereign AI Platform
-                       (LLM API)
++-----------------------+
+|  Frontend (nginx)     |  Port 80
+|  Angular Dashboard    |
+|  /api/* --------------|---> Backend
++-----------------------+
+                              |
+                         +----v--------------------+
+                         |  Backend (FastAPI)       |
+                         |  Python 3.12             |
+                         |  /project --> Ihr Repo   |
+                         +-------------------------+
+                                    |
+                                    v
+                         LLM API (Sovereign AI Platform)
 ```
-
-## Persistent Data
-
-| Container Path | Local Path | Purpose |
-|----------------|-----------|---------|
-| `/project` | `PROJECT_PATH` from `.env` | Repository to analyze (read-only) |
-| `/app/knowledge` | `./knowledge/` | Pipeline results |
-| `/app/logs` | `./logs/` | Log files |
-| `/app/inputs` | `./inputs/` | Uploaded task files, requirements, etc. |
-| `/app/config` | `./config/` | Pipeline phase configuration |
-| `/app/.env` | `./.env` | API keys and settings |

@@ -77,7 +77,6 @@ if not errorlevel 1 (
     echo   Then run start.bat again.
     exit /b 1
 )
-
 echo [OK] .env configured.
 
 findstr /C:"path\to\your\repo" .env >nul 2>&1
@@ -91,16 +90,6 @@ if not errorlevel 1 (
     exit /b 1
 )
 echo [OK] Repository path configured.
-
-REM Create directories
-if not exist knowledge mkdir knowledge
-if not exist logs mkdir logs
-if not exist reports mkdir reports
-if not exist config mkdir config
-if not exist inputs\tasks mkdir inputs\tasks
-if not exist inputs\requirements mkdir inputs\requirements
-if not exist inputs\logs mkdir inputs\logs
-if not exist inputs\reference mkdir inputs\reference
 
 REM Load Docker images on first run
 docker image inspect sdlc-pilot/backend:latest >nul 2>&1
@@ -124,7 +113,7 @@ echo   Dashboard is ready!
 echo.
 echo   Open: http://localhost
 echo.
-echo   Backend API: http://localhost:8001/api/health
+echo   Backend API: http://localhost/api/health
 echo =========================================
 echo.
 echo Commands:

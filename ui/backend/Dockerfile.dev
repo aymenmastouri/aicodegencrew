@@ -41,9 +41,9 @@ FROM python:3.12-slim AS final
 
 WORKDIR /app
 
-# Install only curl (healthcheck) — no build tools, no compilers
+# Install curl (healthcheck) + gosu (drop root to appuser in entrypoint)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
+    apt-get install -y --no-install-recommends curl gosu && \
     rm -rf /var/lib/apt/lists/*
 
 # Install corporate CA certificate if present (optional, for TLS proxy environments)
@@ -63,15 +63,19 @@ COPY --from=build /app/ui/backend/ /app/ui/backend/
 ENV PYTHONPATH=/app/src:/app
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Run as non-root user
+# Create non-root user
 RUN useradd -r -m -s /bin/false appuser && \
     mkdir -p /app/knowledge /app/logs /app/inputs /app/config && \
     chown -R appuser:appuser /app
-USER appuser
+
+# Entrypoint: fix bind-mount permissions as root, then drop to appuser
+COPY ui/backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8001
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8001/api/health || exit 1
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["python", "-m", "uvicorn", "ui.backend.main:app", "--host", "0.0.0.0", "--port", "8001"]
