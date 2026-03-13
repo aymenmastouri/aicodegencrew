@@ -1,5 +1,7 @@
 """Service for reading log files."""
 
+from collections import deque
+
 from ..config import settings
 from ..schemas import LogResponse
 
@@ -20,11 +22,13 @@ def read_log(filename: str = "current.log", tail: int = 200) -> LogResponse:
     except ValueError:
         raise ValueError("Path traversal not allowed")
 
+    total = 0
     with open(resolved, encoding="utf-8", errors="replace") as f:
-        all_lines = f.readlines()
-
-    total = len(all_lines)
-    lines = [line.rstrip("\n") for line in all_lines[-tail:]]
+        last_lines: deque[str] = deque(f, maxlen=tail)
+        # Count total lines: deque consumed the iterator, so we need a separate pass
+    with open(resolved, encoding="utf-8", errors="replace") as f:
+        total = sum(1 for _ in f)
+    lines = [line.rstrip("\n") for line in last_lines]
 
     return LogResponse(lines=lines, total_lines=total, file_path=str(log_path))
 

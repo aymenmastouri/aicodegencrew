@@ -69,12 +69,6 @@ async def upload_file(category: str, file: UploadFile):
         chunks.append(chunk)
     content = b"".join(chunks)
 
-    if False:  # kept for backwards-compat signature
-        raise HTTPException(
-            status_code=413,
-            detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024 * 1024)} MB",
-        )
-
     try:
         result = save_uploaded_file(category, file.filename, content)
     except ValueError as e:
