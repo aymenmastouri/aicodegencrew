@@ -12,6 +12,7 @@ Usage:
     uvicorn ui.backend.main:app --reload --port 8001
 """
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -89,7 +90,8 @@ def setup_status():
         env_vals = {}
         errors.append(f"Failed to read .env: {exc}")
 
-    project_path = env_vals.get("PROJECT_PATH", "")
+    # Prefer os.environ (set by docker-compose) over .env file value
+    project_path = os.environ.get("PROJECT_PATH") or env_vals.get("PROJECT_PATH", "")
     repo_configured = bool(project_path) and Path(project_path).is_dir()
     if not repo_configured:
         errors.append(
@@ -102,7 +104,7 @@ def setup_status():
         errors.append(f"Missing LLM configuration: {', '.join(missing)}.")
 
     # Check for input files in configured task input dir
-    task_input_dir = settings.project_root / env_vals.get("TASK_INPUT_DIR", "task_inputs")
+    task_input_dir = settings.project_root / env_vals.get("TASK_INPUT_DIR", "inputs/tasks")
     try:
         has_input_files = task_input_dir.is_dir() and any(task_input_dir.iterdir())
     except Exception as exc:  # pragma: no cover - defensive guardrail

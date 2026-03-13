@@ -126,7 +126,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
           <div class="sidenav-footer">
             <div class="footer-tagline">Make it real</div>
             <div class="footer-row">
-              <span class="footer-legal">&copy; 2026 Capgemini</span>
+              <span class="footer-legal">&copy; 2025–2026 Capgemini SE. All rights reserved.</span>
               <span class="footer-sep"></span>
               <span class="footer-version">v{{ appVersion }}</span>
             </div>

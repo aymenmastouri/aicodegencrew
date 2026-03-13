@@ -1,228 +1,275 @@
 # Docker Release Guide
 
-Anleitung zum Bauen, Verteilen und Starten des SDLC Pilot Dashboards.
+Step-by-step instructions for building, packaging, and distributing the SDLC Pilot Dashboard as a self-contained Docker ZIP.
 
 ---
 
-## Teil 1: Release erstellen (für dich als Entwickler)
+## Part 1: Build a Release (Developer)
 
-### Voraussetzungen
+### Prerequisites
 
-- Docker Desktop gestartet
-- Du bist im Projektverzeichnis (`cd aicodegencrew`)
+- Docker Desktop running
+- Working directory: project root (`cd aicodegencrew`)
+- Capgemini CA certificate at `certs/CapgeminiPKIRootCA.crt`
 
-### Schritt 1: Images bauen
+### Step 1: Build Docker Images
 
 ```bash
-docker compose -f ui/docker-compose.ui.yml build
+docker compose -f ui/docker-compose.ui.yml build --no-cache
 ```
 
-Das baut zwei Images:
-- **Backend** (Python/FastAPI) — ca. 350 MB
-- **Frontend** (Angular/nginx) — ca. 27 MB
+This builds two multi-stage images:
 
-Das Capgemini CA-Zertifikat (`certs/CapgeminiPKIRootCA.crt`) wird
-automatisch in beide Images eingebacken, damit HTTPS zur Sovereign AI
-Platform funktioniert.
+| Image | Base | Size | Contents |
+|-------|------|------|----------|
+| `ui-backend` | python:3.12-slim | ~350 MB | FastAPI + compiled .pyc bytecode (no .py source) |
+| `ui-frontend` | nginx:alpine | ~27 MB | Minified Angular bundle |
 
-### Schritt 2: Images taggen
+**Source code protection:** The backend Dockerfile (`ui/backend/Dockerfile.dev`) uses a two-stage build:
+1. **Build stage:** installs dependencies, compiles all `.py` → `.pyc` with `compileall -b`, then deletes every `.py` file
+2. **Final stage:** copies only bytecode + installed packages — zero Python source in the image
+
+**Corporate SSL:** The Capgemini Root CA is baked into both images so HTTPS to the Sovereign AI Platform works without extra configuration.
+
+### Step 2: Tag Images
 
 ```bash
-docker tag ui-backend:latest  sdlc-pilot/backend:0.7.2
+VERSION=0.7.2
+
+docker tag ui-backend:latest  sdlc-pilot/backend:${VERSION}
 docker tag ui-backend:latest  sdlc-pilot/backend:latest
-docker tag ui-frontend:latest sdlc-pilot/frontend:0.7.2
+docker tag ui-frontend:latest sdlc-pilot/frontend:${VERSION}
 docker tag ui-frontend:latest sdlc-pilot/frontend:latest
 ```
 
-> Version (`0.7.2`) an die aktuelle Version in `pyproject.toml` anpassen.
+> Update `VERSION` to match `pyproject.toml`.
 
-### Schritt 3: Images als Dateien exportieren
-
-```bash
-docker save sdlc-pilot/backend:latest sdlc-pilot/backend:0.7.2 \
-  | gzip > dist/docker-release/sdlc-pilot-backend.tar.gz
-
-docker save sdlc-pilot/frontend:latest sdlc-pilot/frontend:0.7.2 \
-  | gzip > dist/docker-release/sdlc-pilot-frontend.tar.gz
-```
-
-### Schritt 4: Release-Paket zusammenstellen
-
-Das Verzeichnis `dist/docker-release/` enthält bereits alle nötigen
-Dateien. Nach dem Export der Images ist es komplett:
-
-```
-dist/docker-release/
-├── start.bat                       ← Startskript (Windows CMD/PowerShell)
-├── start.sh                        ← Startskript (Git Bash / Linux / macOS)
-├── docker-compose.yml              ← Container-Konfiguration
-├── .env.example                    ← Konfigurations-Vorlage
-├── README.md                       ← Anleitung fuer Endbenutzer
-├── config/
-│   └── phases_config.yaml          ← Pipeline-Phasen-Konfiguration
-├── sdlc-pilot-backend.tar.gz      ← Backend-Image (~350 MB)
-└── sdlc-pilot-frontend.tar.gz     ← Frontend-Image (~27 MB)
-```
-
-### Schritt 5: ZIP erstellen und versenden
+### Step 3: Verify No Source Code in Backend Image
 
 ```bash
-cd dist
-zip -r sdlc-pilot-v0.7.2.zip docker-release/
+docker run --rm sdlc-pilot/backend:latest find /app/src /app/ui/backend -name "*.py" | head -20
 ```
 
-Die ZIP-Datei (~375 MB) per Teams, SharePoint oder Netzlaufwerk teilen.
-
-### Alles in einem Befehl
+Expected output: empty (no `.py` files). To confirm `.pyc` files exist:
 
 ```bash
-# Bauen + Taggen + Exportieren + Zippen
-docker compose -f ui/docker-compose.ui.yml build \
-  && docker tag ui-backend:latest sdlc-pilot/backend:latest \
-  && docker tag ui-frontend:latest sdlc-pilot/frontend:latest \
-  && mkdir -p dist/docker-release \
-  && docker save sdlc-pilot/backend:latest | gzip > dist/docker-release/sdlc-pilot-backend.tar.gz \
-  && docker save sdlc-pilot/frontend:latest | gzip > dist/docker-release/sdlc-pilot-frontend.tar.gz \
-  && cd dist && zip -r sdlc-pilot-v0.7.2.zip docker-release/
+docker run --rm sdlc-pilot/backend:latest find /app/src -name "*.pyc" | head -10
+```
+
+### Step 4: Prepare the Release Directory
+
+```bash
+VERSION=0.7.2
+RELEASE_DIR=dist/sdlc-pilot-v${VERSION}/sdlc-pilot-v${VERSION}
+mkdir -p ${RELEASE_DIR}
+```
+
+Copy these files into the release directory:
+
+| File | Source | Notes |
+|------|--------|-------|
+| `docker-compose.yml` | `dist/sdlc-pilot-v${VERSION}/` | Release compose (uses `sdlc-pilot/*` images) |
+| `.env.example` | `dist/sdlc-pilot-v${VERSION}/` | All fields for Settings UI schema |
+| `start.bat` | `dist/sdlc-pilot-v${VERSION}/` | Windows launcher |
+| `start.sh` | `dist/sdlc-pilot-v${VERSION}/` | macOS/Linux launcher (LF line endings!) |
+| `clean.bat` | `dist/sdlc-pilot-v${VERSION}/` | Windows full cleanup |
+| `clean.sh` | `dist/sdlc-pilot-v${VERSION}/` | macOS/Linux full cleanup (LF line endings!) |
+| `README.md` | `dist/sdlc-pilot-v${VERSION}/` | End-user documentation |
+| `LICENSE` | `dist/sdlc-pilot-v${VERSION}/` | Capgemini SE proprietary license |
+
+> **IMPORTANT:** Never include `.env` with real API keys. Only `.env.example` with placeholders.
+
+> **IMPORTANT:** `start.sh` and `clean.sh` must have LF line endings (not CRLF), otherwise they fail on macOS/Linux.
+
+### Step 5: Export Docker Images
+
+```bash
+docker save sdlc-pilot/backend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-backend.tar.gz
+docker save sdlc-pilot/frontend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-frontend.tar.gz
+```
+
+### Step 6: Create ZIP
+
+```bash
+cd dist/sdlc-pilot-v${VERSION}
+zip -r ../sdlc-pilot-v${VERSION}.zip sdlc-pilot-v${VERSION}/
+```
+
+Final ZIP structure (~376 MB):
+
+```
+sdlc-pilot-v0.7.2/
+├── .env.example                    ← Configuration template
+├── docker-compose.yml              ← Container orchestration
+├── start.bat                       ← Windows launcher
+├── start.sh                        ← macOS/Linux launcher
+├── clean.bat                       ← Windows full cleanup
+├── clean.sh                        ← macOS/Linux full cleanup
+├── README.md                       ← End-user guide
+├── LICENSE                         ← Capgemini SE proprietary
+├── sdlc-pilot-backend.tar.gz      ← Backend image (~350 MB)
+└── sdlc-pilot-frontend.tar.gz     ← Frontend image (~27 MB)
+```
+
+### One-Liner (Build → Tag → Export → ZIP)
+
+```bash
+VERSION=0.7.2 && \
+RELEASE_DIR=dist/sdlc-pilot-v${VERSION}/sdlc-pilot-v${VERSION} && \
+docker compose -f ui/docker-compose.ui.yml build --no-cache && \
+docker tag ui-backend:latest sdlc-pilot/backend:latest && \
+docker tag ui-frontend:latest sdlc-pilot/frontend:latest && \
+docker save sdlc-pilot/backend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-backend.tar.gz && \
+docker save sdlc-pilot/frontend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-frontend.tar.gz && \
+cd dist/sdlc-pilot-v${VERSION} && zip -r ../sdlc-pilot-v${VERSION}.zip sdlc-pilot-v${VERSION}/
 ```
 
 ---
 
-## Teil 2: Dashboard starten (für Endbenutzer / Manager / Entwickler)
+## Part 2: Install & Run (End Users)
 
-### Voraussetzung
+### Prerequisite
 
-**Docker Desktop** installieren und starten.
-Download: https://www.docker.com/products/docker-desktop
+**Docker Desktop** — download from https://www.docker.com/products/docker-desktop
 
-Nach der Installation: Docker Desktop starten und warten bis das
-blaue Wal-Icon in der Taskleiste (unten rechts) erscheint.
+After installation, start Docker Desktop and wait until the whale icon appears in the system tray.
 
-### Schritt 1: ZIP entpacken
+### Step 1: Extract ZIP
 
-Die Datei `sdlc-pilot-v0.7.2.zip` entpacken (Rechtsklick → "Alle extrahieren").
+Extract `sdlc-pilot-v0.7.2.zip` (right-click → "Extract All" on Windows).
 
-### Schritt 2: API-Key eintragen
+### Step 2: Configure
 
-Im entpackten Ordner:
-
-1. `.env.example` kopieren und als `.env` speichern
-   (oder im Terminal: `copy .env.example .env`)
-2. `.env` mit Notepad öffnen (Rechtsklick → Öffnen mit → Notepad)
-3. Diese Zeile suchen:
+1. Copy `.env.example` to `.env`:
+   - Windows: `copy .env.example .env`
+   - macOS/Linux: `cp .env.example .env`
+2. Open `.env` in a text editor and set at minimum:
    ```
-   OPENAI_API_KEY=sk-your-api-key-here
+   PROJECT_PATH=C:\projects\myapp          # path to the repo to analyze
+   OPENAI_API_KEY=sk-your-actual-key       # your API key
    ```
-4. `sk-your-api-key-here` mit dem echten API-Key ersetzen
-5. Speichern (Strg+S) und schließen
 
-> Den API-Key findest du im internen Wiki oder frage im Team-Channel.
+### Step 3: Start
 
-### Schritt 3: Starten
+| OS | Command |
+|----|---------|
+| Windows | Double-click `start.bat` |
+| macOS/Linux | `./start.sh` |
 
-Doppelklick auf **`start.bat`**.
+First launch loads Docker images from `.tar.gz` files (~1-2 minutes). Subsequent starts take ~5 seconds.
 
-Was passiert:
-1. Skript prüft ob Docker läuft → falls nicht, Fehlermeldung
-2. Skript prüft ob `.env` existiert und API-Key gesetzt → falls nicht, Fehlermeldung
-3. Beim ersten Mal: Images werden geladen (~1-2 Minuten)
-4. Container werden gestartet (~5 Sekunden)
-5. Meldung: "Dashboard ist bereit!"
+### Step 4: Open Dashboard
 
-### Schritt 4: Dashboard öffnen
+Open **http://localhost** in your browser.
 
-Im Browser: **http://localhost**
+### Commands
+
+| Action | Windows | macOS / Linux |
+|--------|---------|---------------|
+| Start | `start.bat` | `./start.sh` |
+| Stop | `start.bat stop` | `./start.sh stop` |
+| View logs | `start.bat logs` | `./start.sh logs` |
+| Restart | `start.bat stop` then `start.bat` | `./start.sh stop` then `./start.sh` |
+| Full cleanup | `clean.bat` | `./clean.sh` |
+
+> `clean.bat` / `clean.sh` stops containers, removes volumes, deletes images, and clears data directories (knowledge, logs, inputs, config). Your `.env` is preserved.
+
+### Updating to a New Version
+
+1. Stop: `start.bat stop`
+2. Extract the new ZIP
+3. Copy your existing `.env` into the new folder
+4. Start: `start.bat`
 
 ---
 
-## Bedienung
+## Part 3: Troubleshooting
 
-| Aktion | Windows CMD/PowerShell | Git Bash / Linux |
-|--------|------------------------|------------------|
-| Starten | `start.bat` | `./start.sh` |
-| Stoppen | `start.bat stop` | `./start.sh stop` |
-| Logs anzeigen | `start.bat logs` | `./start.sh logs` |
-| Neustarten | `start.bat stop` dann `start.bat` | `./start.sh stop` dann `./start.sh` |
-
----
-
-## Update auf neue Version
-
-1. Neue ZIP-Datei erhalten (`sdlc-pilot-vX.Y.Z.zip`)
-2. Dashboard stoppen: `start.bat stop`
-3. Neue Images laden:
-   ```
-   docker load -i sdlc-pilot-backend.tar.gz
-   docker load -i sdlc-pilot-frontend.tar.gz
-   ```
-4. Dashboard starten: `start.bat`
-
-> Die `.env` Konfiguration bleibt erhalten — nur die Images werden ersetzt.
+| Problem | Solution |
+|---------|----------|
+| "Docker is not running" | Start Docker Desktop, wait for the system tray icon |
+| "API key not configured" | Open `.env` and set `OPENAI_API_KEY` |
+| "Repository path not configured" | Open `.env` and set `PROJECT_PATH` to your repo |
+| Browser shows nothing | Wait 30 seconds, reload http://localhost |
+| Port 80 already in use | Stop other web servers (IIS, XAMPP, Apache, Skype) |
+| `start.bat` closes instantly | Right-click → "Run as administrator" |
+| Image loading fails | Verify `.tar.gz` files are in the same folder |
 
 ---
 
-## Problembehebung
-
-| Problem | Lösung |
-|---------|--------|
-| "Docker ist nicht gestartet" | Docker Desktop öffnen, warten bis Wal-Icon erscheint |
-| "API-Key nicht eingetragen" | `.env` Datei mit Notepad öffnen, Key eintragen |
-| Browser zeigt nichts | 30 Sekunden warten, http://localhost neu laden |
-| Port 80 belegt | Anderen Webserver stoppen (IIS, XAMPP, Skype) |
-| `start.bat` schließt sofort | Rechtsklick → "Als Administrator ausführen" |
-| Images laden scheitert | Prüfen ob .tar.gz Dateien im gleichen Ordner liegen |
-
----
-
-## Technische Details
-
-### Architektur
+## Part 4: Architecture
 
 ```
 Browser (http://localhost)
-    │
-    ▼
-┌─────────────────────┐
-│  Frontend (nginx)    │  Port 80
-│  Angular 21 SPA      │
-│  Proxy: /api/* ──────┼──► Backend
-└─────────────────────┘
-                            │
-                       ┌────▼────────────────┐
-                       │  Backend (FastAPI)   │  Port 8001
-                       │  Python 3.12         │
-                       │  + Capgemini CA      │
-                       │  + truststore        │
-                       └──────────┬──────────┘
-                                  │ HTTPS
-                                  ▼
+    |
+    v
++---------------------+
+|  Frontend (nginx)    |  Port 80
+|  Angular SPA         |
+|  Proxy: /api/* ------+--> Backend
++---------------------+
+                            |
+                       +----v--------------------+
+                       |  Backend (FastAPI)       |  Port 8001 (internal)
+                       |  Python 3.12             |
+                       |  Bytecode only (.pyc)    |
+                       |  + Capgemini CA          |
+                       |  + truststore            |
+                       |  /project --> user repo  |
+                       +-------------------------+
+                                  |  HTTPS
+                                  v
                        Sovereign AI Platform
                        (LLM API)
 ```
 
-### SSL/Zertifikate
-
-Das Capgemini Root-CA-Zertifikat (`CapgeminiPKIRootCA.crt`) ist in
-beide Docker Images eingebacken:
-
-- **Backend:** `update-ca-certificates` + `truststore.inject_into_ssl()`
-- **Frontend:** `NODE_EXTRA_CA_CERTS` (für npm ci während Build)
-
-Dadurch funktionieren HTTPS-Verbindungen zur Sovereign AI Platform
-ohne zusätzliche Konfiguration.
-
 ### Ports
 
-| Port | Service | Zweck |
-|------|---------|-------|
-| 80 | Frontend (nginx) | Dashboard UI + API-Proxy |
-| 8001 | Backend (FastAPI) | REST API (intern, muss nicht exponiert werden) |
+| Port | Service | Purpose |
+|------|---------|---------|
+| 80 | Frontend (nginx) | Dashboard UI + API reverse proxy |
+| 8001 | Backend (FastAPI) | REST API (internal only, not exposed to host) |
 
-### Volumes (persistente Daten)
+### Volumes (Persistent Data)
 
-| Pfad im Container | Lokaler Pfad | Zweck |
-|--------------------|-------------|-------|
-| `/app/knowledge` | `./knowledge/` | Pipeline-Ergebnisse |
-| `/app/logs` | `./logs/` | Log-Dateien |
-| `/app/config` | `./config/` | Pipeline-Konfiguration |
-| `/app/.env` | `./.env` | API-Keys und Einstellungen |
+| Container Path | Local Path | Purpose |
+|----------------|-----------|---------|
+| `/project` | `PROJECT_PATH` from `.env` | Repository to analyze (read-only) |
+| `/app/knowledge` | `./knowledge/` | Pipeline results |
+| `/app/logs` | `./logs/` | Log files |
+| `/app/inputs` | `./inputs/` | Uploaded task files, requirements, etc. |
+| `/app/config` | `./config/` | Pipeline phase configuration |
+| `/app/.env` | `./.env` | API keys and settings (read-write) |
+| `/app/.env.example` | `./.env.example` | Schema template for Settings UI (read-only) |
+
+### Key Design Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| Multi-stage Dockerfile (bytecode only) | Protects proprietary source code — no `.py` files in shipped images |
+| `env_file` + `environment` override | `.env` loads all user config; `PROJECT_PATH` is overridden to `/project` (Docker mount point) |
+| `truststore` + baked-in CA cert | Corporate HTTPS works without user configuration |
+| Non-root `appuser` | Security best practice |
+| `curl` in backend image | Required for Docker healthcheck |
+| `client_max_body_size 25m` in nginx | Supports file uploads up to 25 MB |
+| `.env.example` mounted read-only | Backend reads it to generate Settings UI field schema |
+| `start_period: 30s` healthcheck | Prevents false-negative on slow machines during startup |
+
+---
+
+## Part 5: Checklist Before Shipping
+
+- [ ] Version in `pyproject.toml` updated
+- [ ] `.env.example` has all fields (drives Settings UI schema)
+- [ ] `.env` with real keys is NOT included in ZIP
+- [ ] `start.sh` and `clean.sh` have LF line endings
+- [ ] `start.bat` has no parentheses in echo lines inside if-blocks (CMD parser limitation)
+- [ ] Backend image has 0 `.py` files (verify with Step 3 above)
+- [ ] `LICENSE` has correct contact email and copyright year
+- [ ] Footer in `app.component.ts` matches LICENSE copyright
+- [ ] All scripts and README are in English
+- [ ] Docker images load and start successfully from a clean state
+- [ ] Dashboard accessible at http://localhost after `start.bat`
+- [ ] Settings UI shows all field groups (LLM, Indexing, Output, Logging, etc.)
+- [ ] File uploads persist across container restarts (inputs/ volume)
+- [ ] `clean.bat` / `clean.sh` fully removes containers, images, and data
