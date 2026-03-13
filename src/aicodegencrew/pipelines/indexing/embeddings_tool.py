@@ -41,14 +41,14 @@ class OllamaEmbeddingsTool(BaseTool):
     circuit_breaker_threshold: int = 5  # Consecutive failures before cooldown
 
     def _get_client(self) -> OllamaClient:
-        """Lazy initialization of Ollama client.
+        """Lazy initialization of embedding client.
 
         Returns:
-            Configured OllamaClient instance
+            Configured OllamaClient instance (uses API_BASE when set)
         """
         if not hasattr(self, "_client"):
             self._client = OllamaClient()
-            logger.info("Ollama embeddings client initialized")
+            logger.info("Embeddings client initialized (openai_compat=%s)", self._client._openai_compat)
         return self._client
 
     def _run(
@@ -89,8 +89,8 @@ class OllamaEmbeddingsTool(BaseTool):
         if not client.health_check():
             return {
                 "success": False,
-                "error": "Ollama API is not accessible. Please ensure Ollama is running.",
-                "help": "Try: ollama serve (in separate terminal)",
+                "error": "Embedding API is not accessible. Check API_BASE and OPENAI_API_KEY in .env.",
+                "help": "Verify your API connection settings in .env",
             }
 
         # Configuration from environment

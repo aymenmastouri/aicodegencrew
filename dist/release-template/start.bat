@@ -1,26 +1,20 @@
 @echo off
 REM =============================================================================
-REM SDLC Pilot - One-Click Dashboard Launcher
+REM SDLC Pilot - One-Click Start (Docker) for Windows CMD/PowerShell
 REM
 REM Usage:
-REM   start.bat              Start the dashboard
-REM   start.bat stop         Stop the dashboard
-REM   start.bat logs         Show live logs
+REM   start.bat                    start Dashboard
+REM   start.bat stop               stop Dashboard
+REM   start.bat logs               show logs
 REM =============================================================================
 
-REM Change to the directory where this script lives
+REM Ins Verzeichnis der start.bat wechseln (wichtig bei Doppelklick)
 cd /d "%~dp0"
 
-echo.
-echo =========================================
-echo   SDLC Pilot - Dashboard
-echo =========================================
-echo.
-
 if "%1"=="stop" (
+    echo Stopping SDLC Pilot...
     docker compose down
     echo [OK] Dashboard stopped.
-    pause
     exit /b 0
 )
 
@@ -29,33 +23,30 @@ if "%1"=="logs" (
     exit /b 0
 )
 
-REM --- Pre-flight checks ---
+echo.
+echo =========================================
+echo   SDLC Pilot - Dashboard Startup
+echo =========================================
+echo.
 
-REM 1. Docker
+REM Check Docker
 docker info >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Docker is not running.
-    echo.
-    echo   Please start Docker Desktop and wait until the icon
-    echo   appears in your system tray, then run start.bat again.
-    echo.
-    pause
+    echo         Please start Docker Desktop first.
     exit /b 1
 )
 echo [OK] Docker is running.
 
-REM 2. Environment file
+REM Check .env
 if not exist ".env" (
     copy .env.example .env >nul
-    echo [!] .env file created from template.
+    echo [!] .env created from template.
     echo.
-    echo   Please open .env with a text editor and configure:
-    echo     PROJECT_PATH=C:\path\to\your\repo
-    echo     OPENAI_API_KEY=sk-your-actual-key
+    echo     Please edit .env and set your API key:
+    echo       OPENAI_API_KEY=sk-your-actual-key
     echo.
-    echo   Then run start.bat again.
-    echo.
-    pause
+    echo     Then run start.bat again.
     exit /b 1
 )
 
@@ -68,11 +59,10 @@ if not errorlevel 1 (
     echo   with your actual API key.
     echo.
     echo   Then run start.bat again.
-    echo.
-    pause
     exit /b 1
 )
-echo [OK] API key configured.
+
+echo [OK] .env configured.
 
 findstr /C:"path\to\your\repo" .env >nul 2>&1
 if not errorlevel 1 (
@@ -82,43 +72,43 @@ if not errorlevel 1 (
     echo     PROJECT_PATH=C:\projects\myapp
     echo.
     echo   Then run start.bat again.
-    echo.
-    pause
     exit /b 1
 )
 echo [OK] Repository path configured.
 
-REM 3. Create data directories
+REM Create directories
 if not exist knowledge mkdir knowledge
 if not exist logs mkdir logs
-if not exist inputs mkdir inputs
+if not exist reports mkdir reports
 if not exist config mkdir config
 
-REM 4. Load Docker images on first run
+REM Load Docker images on first run
 docker image inspect sdlc-pilot/backend:latest >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo Loading Docker images -- this only happens once, ~1-2 minutes...
+    echo Loading Docker images -- this only happens once...
     docker load -i sdlc-pilot-backend.tar.gz
     docker load -i sdlc-pilot-frontend.tar.gz
     echo [OK] Images loaded.
 )
 
-REM --- Start ---
 echo.
-echo Starting dashboard...
+echo Starting Dashboard...
+echo.
+
 docker compose up -d
 
 echo.
 echo =========================================
-echo.
 echo   Dashboard is ready!
 echo.
-echo   Open in browser: http://localhost
+echo   Open: http://localhost
 echo.
+echo   Backend API: http://localhost:8001/api/health
 echo =========================================
 echo.
-echo   start.bat stop    Stop the dashboard
-echo   start.bat logs    Show live logs
+echo Commands:
+echo   start.bat logs     Show live logs
+echo   start.bat stop     Stop the Dashboard
 echo.
 pause

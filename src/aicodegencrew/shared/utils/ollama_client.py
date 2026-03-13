@@ -28,7 +28,18 @@ class OllamaClient:
             timeout: Request timeout in seconds
             max_retries: Maximum number of retry attempts
         """
-        self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        # If API_BASE is set (e.g. LiteLLM / Sovereign AI Platform),
+        # use its OpenAI-compatible /v1/embeddings endpoint instead of Ollama.
+        api_base = os.getenv("API_BASE", "")
+        if api_base and not base_url and not os.getenv("OLLAMA_BASE_URL"):
+            self.base_url = api_base.rstrip("/")
+            self._openai_compat = True
+            self._api_key = os.getenv("OPENAI_API_KEY", "")
+        else:
+            self.base_url = (base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")).rstrip("/")
+            self._openai_compat = False
+            self._api_key = ""
+
         self.model = model or os.getenv("EMBED_MODEL", "nomic-embed-text:latest")
         # Explicit constructor args should override env vars; env is the fallback.
         if timeout is None:
@@ -59,6 +70,9 @@ class OllamaClient:
         Raises:
             RuntimeError: If embedding generation fails after retries
         """
+        if self._openai_compat:
+            return self._embed_openai([text])[0]
+
         url = f"{self.base_url}/api/embed"
         payload = {
             "model": self.model,
@@ -138,6 +152,9 @@ class OllamaClient:
         if not texts:
             return []
 
+        if self._openai_compat:
+            return self._embed_openai(texts)
+
         url = f"{self.base_url}/api/embed"
         payload = {
             "model": self.model,
@@ -215,17 +232,51 @@ class OllamaClient:
                 else:
                     raise RuntimeError(f"Failed to generate batch embeddings after {self.max_retries} attempts: {e}")
 
-    def health_check(self) -> bool:
-        """Check if Ollama API is accessible.
+    def _embed_openai(self, texts: list[str]) -> list[list[float]]:
+        """Generate embeddings via OpenAI-compatible API (LiteLLM / SAI Platform)."""
+        url = f"{self.base_url}/embeddings"
+        payload = {
+            "model": self.model,
+            "input": texts,
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self._api_key}",
+        }
+        timeout = (10, max(30, len(texts) * 0.5))
 
-        Returns:
-            True if API is healthy
-        """
+        for attempt in range(self.max_retries):
+            try:
+                response = self._session.post(url, json=payload, headers=headers, timeout=timeout)
+                if response.status_code >= 500:
+                    logger.warning(
+                        f"Embedding API error {response.status_code} (attempt {attempt + 1}/{self.max_retries})"
+                    )
+                    time.sleep(min(30.0, 5.0 * (2 ** attempt)))
+                    response.raise_for_status()
+                response.raise_for_status()
+                data = response.json()
+                # OpenAI format: {"data": [{"embedding": [...], "index": 0}, ...]}
+                embeddings = [item["embedding"] for item in sorted(data["data"], key=lambda x: x["index"])]
+                if len(embeddings) != len(texts):
+                    raise ValueError(f"Expected {len(texts)} embeddings, got {len(embeddings)}")
+                return embeddings
+            except requests.exceptions.RequestException as e:
+                logger.warning(f"Embedding API request failed (attempt {attempt + 1}/{self.max_retries}): {e}")
+                if attempt < self.max_retries - 1:
+                    time.sleep(min(10.0, 2.0 * (2 ** attempt)))
+                else:
+                    raise RuntimeError(f"Embedding failed: {e}")
+
+    def health_check(self) -> bool:
+        """Check if embedding API is accessible."""
         try:
-            response = self._session.get(
-                f"{self.base_url}/api/tags",
-                timeout=(2, 5),
-            )
+            if self._openai_compat:
+                # OpenAI-compatible: try /models endpoint
+                headers = {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
+                response = self._session.get(f"{self.base_url}/models", headers=headers, timeout=(5, 10))
+            else:
+                response = self._session.get(f"{self.base_url}/api/tags", timeout=(2, 5))
             return response.status_code == 200
         except requests.exceptions.RequestException:
             return False

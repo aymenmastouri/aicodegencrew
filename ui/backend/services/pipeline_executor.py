@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import platform
 import re
 import subprocess
@@ -95,11 +96,18 @@ class PipelineExecutor:
             run_id = uuid.uuid4().hex[:8]
             now = datetime.now(UTC).isoformat()
 
+            # Ensure PROJECT_PATH from container environment is preserved
+            # (load_dotenv override=True in CLI would overwrite it with host path from .env)
+            _overrides = dict(env_overrides or {})
+            container_project_path = os.environ.get("PROJECT_PATH")
+            if container_project_path:
+                _overrides.setdefault("PROJECT_PATH", container_project_path)
+
             # Write temp .env with overrides if needed
             env_path = settings.env_file
-            if env_overrides:
+            if _overrides:
                 env_path = settings.project_root / ".env.run"
-                self._write_env_with_overrides(env_overrides, env_path)
+                self._write_env_with_overrides(_overrides, env_path)
 
             # Build command — --env is a global arg, must come BEFORE the subcommand
             cmd = [sys.executable, "-m", "aicodegencrew", "--env", str(env_path), "run"]
@@ -194,11 +202,17 @@ class PipelineExecutor:
             run_id = uuid.uuid4().hex[:8]
             now = datetime.now(UTC).isoformat()
 
+            # Ensure PROJECT_PATH from container environment is preserved
+            _overrides = dict(env_overrides or {})
+            container_project_path = os.environ.get("PROJECT_PATH")
+            if container_project_path:
+                _overrides.setdefault("PROJECT_PATH", container_project_path)
+
             # Write temp .env with overrides if needed
             env_path = settings.env_file
-            if env_overrides:
+            if _overrides:
                 env_path = settings.project_root / ".env.run"
-                self._write_env_with_overrides(env_overrides, env_path)
+                self._write_env_with_overrides(_overrides, env_path)
 
             phase_list = self._filter_disabled_phases(list(phases))
 

@@ -1,8 +1,9 @@
 @echo off
 REM =============================================================================
 REM SDLC Pilot - Full Cleanup
-REM Stops containers, removes volumes, and deletes Docker images.
-REM Your .env and uploaded files are NOT deleted.
+REM Stops containers, removes volumes, deletes Docker images,
+REM and wipes ALL data directories (knowledge, logs, inputs, config, reports).
+REM Only .env and .env.example are preserved.
 REM =============================================================================
 
 cd /d "%~dp0"
@@ -13,23 +14,29 @@ echo   SDLC Pilot - Full Cleanup
 echo =========================================
 echo.
 
-REM 1. Stop containers and remove volumes
-echo [1/3] Stopping containers...
+REM 1. Clean data directories via container (handles file ownership)
+echo [1/4] Cleaning data directories via container...
+docker exec sdlc-pilot-backend rm -rf /app/knowledge/* /app/logs/* /app/inputs/* /app/config/* 2>nul
+echo [OK] Data cleaned.
+
+REM 2. Stop containers and remove volumes
+echo [2/4] Stopping containers...
 docker compose down -v 2>nul
 echo [OK] Containers stopped.
 
-REM 2. Remove Docker images
-echo [2/3] Removing Docker images...
+REM 3. Remove Docker images
+echo [3/4] Removing Docker images...
 docker rmi sdlc-pilot/backend:latest 2>nul
 docker rmi sdlc-pilot/frontend:latest 2>nul
 echo [OK] Images removed.
 
-REM 3. Clean up data directories
-echo [3/3] Cleaning data directories...
+REM 4. Remove data directories
+echo [4/4] Removing data directories...
 if exist knowledge rmdir /s /q knowledge
 if exist logs rmdir /s /q logs
 if exist inputs rmdir /s /q inputs
 if exist config rmdir /s /q config
+if exist reports rmdir /s /q reports
 echo [OK] Data directories removed.
 
 echo.
