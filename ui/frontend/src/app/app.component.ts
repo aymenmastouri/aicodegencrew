@@ -123,19 +123,19 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
               </mat-nav-list>
             }
           </div>
-          <div class="sidenav-footer">
-            <div class="footer-tagline">Make it real</div>
-            <div class="footer-row">
-              <span class="footer-legal">&copy; 2025–2026 Capgemini SE. All rights reserved.</span>
-              <span class="footer-sep"></span>
-              <span class="footer-version">v{{ appVersion }}</span>
-            </div>
-          </div>
+          <div class="sidenav-footer"></div>
         </div>
       </mat-sidenav>
 
       <mat-sidenav-content class="p-0 content-area">
-        <router-outlet />
+        <div class="content-wrap">
+          <router-outlet />
+        </div>
+        <footer class="page-footer">
+          <span>&copy; 2025–2026 Capgemini. All rights reserved.</span>
+          <span class="page-footer-sep">·</span>
+          <span class="page-footer-version">v{{ appVersion }}</span>
+        </footer>
       </mat-sidenav-content>
     </mat-sidenav-container>
   `,
@@ -386,42 +386,32 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         white-space: nowrap;
         overflow: hidden;
       }
-      .footer-tagline {
-        font-size: 11px;
-        font-style: italic;
-        color: rgba(255, 255, 255, 0.3);
-        margin-bottom: 8px;
-        letter-spacing: 0.5px;
-      }
       .sidenav-rail .sidenav-footer {
-        opacity: 0;
-        padding: 8px;
         height: 0;
-        overflow: hidden;
-      }
-      .footer-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .footer-legal {
-        font-size: 10px;
-        color: rgba(255, 255, 255, 0.6);
-      }
-      .footer-sep {
-        width: 3px;
-        height: 3px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.15);
-      }
-      .footer-version {
-        font-size: 10px;
-        font-family: monospace;
-        color: rgba(255, 255, 255, 0.6);
       }
       .content-area {
         background: #F7F9FC;
         overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .content-wrap {
+        flex: 1;
+      }
+      .page-footer {
+        padding: 12px 24px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        text-align: center;
+        font-size: 11px;
+        color: rgba(0, 27, 61, 0.4);
+        background: #F7F9FC;
+      }
+      .page-footer-sep {
+        margin: 0 6px;
+        color: rgba(0, 27, 61, 0.2);
+      }
+      .page-footer-version {
+        font-family: 'Cascadia Code', 'Fira Code', monospace;
       }
 
       /* Hide tagline on small screens */

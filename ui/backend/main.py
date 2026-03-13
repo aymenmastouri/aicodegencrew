@@ -12,12 +12,16 @@ Usage:
     uvicorn ui.backend.main:app --reload --port 8001
 """
 
+import logging
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+logger = logging.getLogger(__name__)
 
 from aicodegencrew import __version__
 from aicodegencrew.shared.utils.phase_state import configure_state_dir
@@ -30,10 +34,29 @@ from .schemas import HealthResponse
 # regardless of the process CWD when uvicorn is started.
 configure_state_dir(settings.logs_dir)
 
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Startup and graceful shutdown."""
+    logger.info("SDLC Pilot Backend v%s starting...", __version__)
+    yield
+    # Shutdown: stop any running pipeline gracefully
+    logger.info("Shutting down — stopping running pipelines...")
+    try:
+        from .services.pipeline_executor import PipelineExecutor
+        executor = PipelineExecutor()
+        if executor.state == "running":
+            executor.cancel()
+            logger.info("Pipeline cancelled.")
+    except Exception:
+        pass
+    logger.info("Shutdown complete.")
+
+
 app = FastAPI(
     title="AICodeGenCrew Dashboard",
     description="SDLC Pipeline Dashboard API",
     version=__version__,
+    lifespan=lifespan,
 )
 
 # CORS for Angular dev server
