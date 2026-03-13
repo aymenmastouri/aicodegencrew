@@ -879,6 +879,23 @@ def create_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     """Main CLI entry point."""
+    import signal
+
+    # Graceful shutdown: mark running phases as failed on interrupt
+    def _shutdown_handler(signum, frame):
+        from .shared.utils.phase_state import read_all_phases, set_phase_failed
+        try:
+            state = read_all_phases()
+            for phase_id, entry in state.get("phases", {}).items():
+                if entry.get("status") == "running":
+                    set_phase_failed(phase_id, 0.0, "Interrupted by user (SIGINT/SIGTERM)")
+        except Exception:
+            pass
+        raise SystemExit(130)
+
+    signal.signal(signal.SIGINT, _shutdown_handler)
+    signal.signal(signal.SIGTERM, _shutdown_handler)
+
     parser = create_parser()
     args = parser.parse_args(argv)
 

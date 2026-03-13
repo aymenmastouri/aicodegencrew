@@ -24,7 +24,7 @@
 
 | Env-Variable | Alias | Modell | Verwendet von |
 |---|---|---|---|
-| `MODEL` | `openai/complex_tasks` | Kimi-K2.5 | Alle Standard-Crews (Analyse, Docs, Triage, Deliver) |
+| `MODEL` | `openai/complex_tasks` | Kimi-K2.5 | Alle Standard-Crews (Analyse, Triage, Docs, Deliver) |
 | `FAST_MODEL` | `openai/chat` | GPT-OSS-120B | Schnelle / einfache Tasks (Klassifizierung, Formatting) |
 | `CODEGEN_MODEL` | `openai/code` | Qwen3-Coder-Next | Code-Generierung + Test-Generierung |
 | `VISION_MODEL` | `openai/vision` | Mistral-Small-3.1-24B | OCR, Diagramm-Analyse, Screenshot-Verarbeitung |
@@ -79,8 +79,8 @@
 ---
 
 ### Phase 4 — Triage (Issue-Klassifizierung)
-- **LLM:** `FAST_MODEL` → **GPT-OSS-120B** (`openai/chat`)
-- **Funktion:** `create_fast_llm(temperature=0.2)`
+- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`)
+- **Funktion:** `create_llm(temperature=0.2)`
 - **Typ:** Hybrid (deterministisch + LLM-Synthese)
 - **Deterministische Phase (kein LLM, <5 s):**
   - Issue-Klassifizierung, Blast-Radius (BFS), Entry-Points, Duplikat-Erkennung (ChromaDB)
@@ -150,7 +150,7 @@
 | 1 | Extract | — | keines | — |
 | 2 | Analyze | `create_llm()` | Kimi-K2.5 | 196 608 |
 | 3 | Document | `create_llm()` | Kimi-K2.5 | 196 608 |
-| 4 | Triage | `create_fast_llm()` | GPT-OSS-120B | 131 072 |
+| 4 | Triage | `create_llm()` | Kimi-K2.5 | 196 608 |
 | 5 | Plan | `create_llm()` + `create_fast_llm()` | Kimi-K2.5 + GPT-OSS-120B | 196 608 |
 | 6 | Implement | `create_codegen_llm()` | Qwen3-Coder-Next | 262 144 |
 | 7 | Verify | `create_codegen_llm()` | Qwen3-Coder-Next | 262 144 |
@@ -171,7 +171,7 @@
 | Langer strukturierter Output | 3 (Arc42) | Kimi-K2.5 |
 | Code schreiben + Build-Error-Recovery | 6, 7 | Qwen3-Coder-Next (`code`) |
 | Tool-Use + agentic Loops | 6 | Qwen3-Coder-Next |
-| Schnelle Klassifizierung | 3, 4 (Triage), 5 (Reviewer) | GPT-OSS-120B (`chat`) |
+| Schnelle Klassifizierung | 3, 5 (Reviewer) | GPT-OSS-120B (`chat`) |
 | OCR / Diagramme / Bilder | zukünftig | Mistral-Small-3.1-24B (`vision`) |
 | Vektorsuche (RAG) | alle | Platform `embed` |
 

@@ -333,7 +333,7 @@ class ContainerCollector(DimensionCollector):
         if not java_root.exists():
             java_root = root
 
-        java_files = list(java_root.rglob("*.java"))[:100]  # Limit search
+        java_files = self._find_files("*.java", java_root)[:100]  # Limit search
 
         for java_file in java_files:
             try:

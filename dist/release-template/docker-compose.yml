@@ -17,6 +17,7 @@ services:
     environment:
       AICODEGENCREW_ROOT: /app
       PROJECT_PATH: /project
+      PROJECT_PATH_HOST: ${PROJECT_PATH}
       DASHBOARD_CORS_ORIGINS: "http://localhost:4200,http://localhost,http://localhost:80"
       PYTHONPATH: /app/src
     restart: unless-stopped

@@ -232,7 +232,7 @@ class ImportIndexBuilder:
             dirs[:] = [
                 d
                 for d in dirs
-                if d not in ("node_modules", ".git", "build", "dist", "target", "__pycache__", ".gradle")
+                if d not in ("node_modules", ".git", "build", "dist", "target", "__pycache__", ".gradle", ".venv", "venv", "site-packages")
             ]
             for fname in files:
                 ext = Path(fname).suffix.lower()

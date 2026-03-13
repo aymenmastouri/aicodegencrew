@@ -9,6 +9,7 @@ Implements all 3 pipeline hooks for task_type="upgrade":
 from __future__ import annotations
 
 import json
+import os
 import platform
 import re
 import shlex
@@ -663,15 +664,15 @@ class UpgradeStrategy(TaskTypeStrategy):
         """Take a snapshot of file modification times for change detection."""
         snapshot: dict[str, float] = {}
         root_path = Path(root)
-        skip_dirs = {"node_modules", ".git", "dist", "build", "__pycache__", ".cache"}
+        skip_dirs = {"node_modules", ".git", "dist", "build", "__pycache__", ".cache", ".venv", "venv", "site-packages"}
 
         try:
-            for path in root_path.rglob("*"):
-                if any(skip in path.parts for skip in skip_dirs):
-                    continue
-                if path.is_file():
-                    rel = str(path.relative_to(root_path)).replace("\\", "/")
-                    snapshot[rel] = path.stat().st_mtime
+            for dirpath, dirnames, filenames in os.walk(root_path):
+                dirnames[:] = [d for d in dirnames if d not in skip_dirs]
+                for fname in filenames:
+                    full = Path(dirpath) / fname
+                    rel = str(full.relative_to(root_path)).replace("\\", "/")
+                    snapshot[rel] = full.stat().st_mtime
         except Exception:
             pass
 

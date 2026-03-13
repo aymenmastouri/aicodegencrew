@@ -53,7 +53,7 @@ class SpringConfigCollector(DimensionCollector):
     ]
 
     # Skip directories
-    SKIP_DIRS = {"node_modules", "dist", "build", "target", ".git", "bin", "generated"}
+    SKIP_DIRS = DimensionCollector.SKIP_DIRS | {"generated"}
 
     def __init__(self, repo_path: Path, container_id: str = "backend"):
         super().__init__(repo_path)
@@ -150,24 +150,22 @@ class SpringConfigCollector(DimensionCollector):
 
         found_files: set[Path] = set()
 
-        # Strategy 1: Search in known config directories
+        # Strategy 1: Search in known config directories (direct paths, no rglob)
         for config_dir in self.CONFIG_SEARCH_DIRS:
-            for search_path in self.repo_path.rglob(config_dir):
-                if not search_path.is_dir():
-                    continue
-                if self._should_skip_path(search_path):
-                    continue
+            search_path = self.repo_path / config_dir
+            if not search_path.is_dir():
+                continue
 
-                for pattern in config_patterns:
-                    for config_file in search_path.glob(pattern):
-                        found_files.add(config_file)
+            for pattern in config_patterns:
+                for config_file in search_path.glob(pattern):
+                    found_files.add(config_file)
 
-                # Also check subdirectories (e.g., distResources/dev/, distResources/prod/)
-                for subdir in search_path.iterdir():
-                    if subdir.is_dir() and not self._should_skip_path(subdir):
-                        for pattern in config_patterns:
-                            for config_file in subdir.glob(pattern):
-                                found_files.add(config_file)
+            # Also check subdirectories (e.g., distResources/dev/, distResources/prod/)
+            for subdir in search_path.iterdir():
+                if subdir.is_dir() and not self._should_skip_path(subdir):
+                    for pattern in config_patterns:
+                        for config_file in subdir.glob(pattern):
+                            found_files.add(config_file)
 
         # Strategy 2: Global recursive search for any config files (with SKIP_DIRS pruning)
         for pattern in config_patterns:
@@ -305,12 +303,12 @@ class SpringConfigCollector(DimensionCollector):
             "qa",
         }
         for config_dir in self.CONFIG_SEARCH_DIRS:
-            for search_path in self.repo_path.rglob(config_dir):
-                if not search_path.is_dir():
-                    continue
-                for subdir in search_path.iterdir():
-                    if subdir.is_dir() and subdir.name.lower() in env_dir_names:
-                        environments_found.add(subdir.name.lower())
+            search_path = self.repo_path / config_dir
+            if not search_path.is_dir():
+                continue
+            for subdir in search_path.iterdir():
+                if subdir.is_dir() and subdir.name.lower() in env_dir_names:
+                    environments_found.add(subdir.name.lower())
 
         # Create profile facts
         for profile in profiles_found:

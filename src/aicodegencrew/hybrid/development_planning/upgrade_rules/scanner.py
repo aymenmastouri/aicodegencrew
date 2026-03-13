@@ -17,7 +17,7 @@ logger = setup_logger(__name__)
 class UpgradeCodeScanner:
     """Scans source code for upgrade-relevant patterns."""
 
-    SKIP_DIRS = {"node_modules", ".git", "dist", "build", "__pycache__", ".cache"}
+    SKIP_DIRS = {"node_modules", ".git", "dist", "build", "__pycache__", ".cache", ".venv", "venv", "site-packages"}
 
     # File globs that belong to the frontend (Angular/React/Vue)
     _FRONTEND_GLOBS = frozenset({

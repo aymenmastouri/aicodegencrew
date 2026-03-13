@@ -35,7 +35,14 @@ from .cli import main
 from .orchestrator import SDLCOrchestrator
 
 def _read_version() -> str:
-    """Read version from pyproject.toml (source of truth)."""
+    """Read version from pyproject.toml or importlib.metadata."""
+    # 1. Try importlib.metadata (works when package is installed, e.g. in Docker)
+    try:
+        from importlib.metadata import version
+        return version("aicodegencrew")
+    except Exception:
+        pass
+    # 2. Fallback: read pyproject.toml (dev mode)
     from pathlib import Path
     try:
         toml_path = Path(__file__).resolve().parents[2] / "pyproject.toml"
@@ -45,7 +52,7 @@ def _read_version() -> str:
                     return line.split("=", 1)[1].strip().strip('"').strip("'")
     except Exception:
         pass
-    return "0.7.2"
+    return "0.7.3"
 
 __version__ = _read_version()
 

@@ -23,7 +23,9 @@ class ErrorHandlingCollector(DimensionCollector):
 
     DIMENSION = "error_handling"
 
-    SKIP_DIRS = {"node_modules", "dist", "build", "target", ".git", "deployment", "bin", "generated"}
+    # Inherit SKIP_DIRS from base (includes .venv, venv, node_modules, etc.)
+    # Add deployment-specific extras
+    SKIP_DIRS = DimensionCollector.SKIP_DIRS | {"deployment", "bin", "generated"}
 
     # Java patterns
     EXCEPTION_HANDLER_PATTERN = re.compile(

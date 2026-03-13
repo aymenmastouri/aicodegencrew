@@ -267,11 +267,16 @@ def _acquire_index_lock(lock_path: Path, timeout_s: int) -> bool:
 
 
 def _release_index_lock(lock_path: Path) -> None:
-    try:
-        if lock_path.exists():
-            lock_path.unlink()
-    except Exception:
-        pass
+    for attempt in range(3):
+        try:
+            if lock_path.exists():
+                lock_path.unlink()
+            return
+        except PermissionError:
+            import time as _t
+            _t.sleep(0.5)
+        except Exception:
+            return
 
 
 # ---------------------------------------------------------------------------
@@ -879,6 +884,11 @@ class IndexingPipeline:
                 logger.error(f"Batch {batch_num} failed: {e}")
                 self.metrics.batches_failed += 1
 
+            # Free memory between batches for large repos
+            if batch_num % 5 == 0:
+                import gc
+                gc.collect()
+
     def _process_batch(self, batch_paths: list[str], fingerprint: str, fp_type: str) -> None:
         # Read
         read_res = self.reader_tool._run(
@@ -1033,6 +1043,15 @@ class IndexingPipeline:
                 )
             if pct > 5:
                 logger.warning(f"Embedding failure rate {pct:.1f}% ({none_count}/{len(embeddings_batch)} None)")
+
+        # Filter out None embeddings before upserting to prevent corrupt entries
+        if none_count > 0:
+            valid = [(c, e) for c, e in zip(chunks_batch, embeddings_batch) if e is not None]
+            if valid:
+                chunks_batch, embeddings_batch = [list(x) for x in zip(*valid)]
+            else:
+                logger.warning("All embeddings in batch are None — skipping upsert")
+                return
 
         # Store (fingerprint is updated AFTER all batches complete, not per-batch,
         # so a cancelled run doesn't leave a stale fingerprint in metadata)
