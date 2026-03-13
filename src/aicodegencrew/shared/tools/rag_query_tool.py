@@ -265,7 +265,7 @@ class RAGQueryTool(BaseTool):
             # Embed query ourselves (avoids ChromaDB embedding function conflict)
             query_embedding = self._embedder.embed([query])
             if not query_embedding:
-                return json.dumps({"error": "Embedding failed — Ollama may be unavailable", "results": []})
+                return json.dumps({"error": "Embedding failed — check API_BASE and OPENAI_API_KEY in .env", "results": []})
             results = collection.query(
                 query_embeddings=query_embedding,
                 n_results=fetch_limit,

@@ -8,9 +8,22 @@ Step-by-step instructions for building, packaging, and distributing the SDLC Pil
 
 ### Prerequisites
 
-- Docker Desktop running
+- **Docker Engine** installed and running (WSL2, Linux, or Docker Desktop)
+  - **WSL2 (recommended for Windows):** Install Docker Engine inside your WSL2 distro — no Docker Desktop license required
+    ```bash
+    # Inside WSL2 (Ubuntu):
+    sudo apt-get update
+    sudo apt-get install -y docker.io docker-compose-plugin
+    sudo usermod -aG docker $USER
+    # Start Docker daemon:
+    sudo service docker start
+    ```
+  - **Linux:** Install Docker Engine via your package manager
+  - **Docker Desktop:** Also works if you have a license
 - Working directory: project root (`cd aicodegencrew`)
 - Capgemini CA certificate at `certs/CapgeminiPKIRootCA.crt`
+
+> **WSL2 note:** All build commands below run inside WSL2. If your project is on the Windows filesystem, access it via `/mnt/c/projects/aicodegencrew`.
 
 ### Step 1: Build Docker Images
 
@@ -68,7 +81,6 @@ cp -r dist/release-template/* ${RELEASE_DIR}/
 cp dist/release-template/.env.example ${RELEASE_DIR}/
 cp -r config ${RELEASE_DIR}/
 cp LICENSE ${RELEASE_DIR}/
-cp start.bat start.sh ${RELEASE_DIR}/
 ```
 
 Contents of `dist/release-template/` (versioned in git):
@@ -78,6 +90,8 @@ Contents of `dist/release-template/` (versioned in git):
 | `docker-compose.yml` | Release compose (uses `sdlc-pilot/*` images) |
 | `.env.example` | All fields for Settings UI schema (no `──` decorations) |
 | `README.md` | End-user documentation |
+| `start.bat` | Windows launcher (loads images, checks env, starts) |
+| `start.sh` | macOS/Linux launcher (same) |
 | `clean.bat` | Windows full cleanup |
 | `clean.sh` | macOS/Linux full cleanup |
 | `config/phases_config.yaml` | Default pipeline phase & preset configuration |
@@ -87,8 +101,6 @@ From project root:
 | File | Purpose |
 |------|---------|
 | `LICENSE` | Capgemini SE proprietary license |
-| `start.bat` | Windows launcher |
-| `start.sh` | macOS/Linux launcher |
 
 > **IMPORTANT:** Never include `.env` with real API keys. Only `.env.example` with placeholders.
 
@@ -138,7 +150,7 @@ mkdir -p ${RELEASE_DIR} && \
 cp -r dist/release-template/* ${RELEASE_DIR}/ && \
 cp dist/release-template/.env.example ${RELEASE_DIR}/ && \
 cp -r config ${RELEASE_DIR}/ && \
-cp LICENSE start.bat start.sh ${RELEASE_DIR}/ && \
+cp LICENSE ${RELEASE_DIR}/ && \
 docker save sdlc-pilot/backend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-backend.tar.gz && \
 docker save sdlc-pilot/frontend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-frontend.tar.gz && \
 cd dist/sdlc-pilot-v${VERSION} && zip -r ../sdlc-pilot-v${VERSION}.zip sdlc-pilot-v${VERSION}/
@@ -150,22 +162,34 @@ cd dist/sdlc-pilot-v${VERSION} && zip -r ../sdlc-pilot-v${VERSION}.zip sdlc-pilo
 
 ### Prerequisite
 
-**Docker Desktop** — download from https://www.docker.com/products/docker-desktop
+**Docker Engine** — one of the following:
 
-After installation, start Docker Desktop and wait until the whale icon appears in the system tray.
+| Environment | How to install |
+|-------------|----------------|
+| **WSL2 (Windows, no license needed)** | `sudo apt-get install -y docker.io docker-compose-plugin` inside WSL2 |
+| **Linux** | Install via package manager (apt, dnf, etc.) |
+| **Docker Desktop (if licensed)** | Download from https://www.docker.com/products/docker-desktop |
+
+> **WSL2:** After installing, start the daemon with `sudo service docker start` and ensure your user is in the docker group (`sudo usermod -aG docker $USER`, then restart WSL).
 
 ### Step 1: Extract ZIP
 
-Extract `sdlc-pilot-v0.7.3.zip` (right-click → "Extract All" on Windows).
+- **Windows:** Right-click → "Extract All" or `Expand-Archive sdlc-pilot-v0.7.3.zip`
+- **WSL2/Linux:** `unzip sdlc-pilot-v0.7.3.zip`
 
 ### Step 2: Configure
 
 1. Copy `.env.example` to `.env`:
-   - Windows: `copy .env.example .env`
-   - macOS/Linux: `cp .env.example .env`
+   - Windows CMD: `copy .env.example .env`
+   - WSL2/Linux: `cp .env.example .env`
 2. Open `.env` in a text editor and set at minimum:
    ```
-   PROJECT_PATH=C:\projects\myapp          # path to the repo to analyze
+   # Windows path (from CMD/PowerShell):
+   PROJECT_PATH=C:\projects\myapp
+
+   # WSL2/Linux path:
+   PROJECT_PATH=/mnt/c/projects/myapp      # or /home/user/projects/myapp
+
    OPENAI_API_KEY=sk-your-actual-key       # your API key
    ```
 
@@ -207,12 +231,15 @@ Open **http://localhost** in your browser.
 
 | Problem | Solution |
 |---------|----------|
-| "Docker is not running" | Start Docker Desktop, wait for the system tray icon |
+| "Docker is not running" | **WSL2:** `sudo service docker start` — **Docker Desktop:** Start app, wait for system tray icon |
 | "API key not configured" | Open `.env` and set `OPENAI_API_KEY` |
 | "Repository path not configured" | Open `.env` and set `PROJECT_PATH` to your repo |
 | Browser shows nothing | Wait 30 seconds, reload http://localhost |
 | Port 80 already in use | Stop other web servers (IIS, XAMPP, Apache, Skype) |
 | `start.bat` closes instantly | Right-click → "Run as administrator" |
+| WSL2: permission denied on `start.sh` | `chmod +x start.sh clean.sh` then `./start.sh` |
+| WSL2: Docker daemon not running | `sudo service docker start` |
+| WSL2: 500 error / permission denied in logs | Data directories must be owned by UID 999 (container's `appuser`). Run `chown 999:999 knowledge logs inputs config` (or prefix with `sudo`). `start.sh` does this automatically. |
 | Image loading fails | Verify `.tar.gz` files are in the same folder |
 
 ---
@@ -293,4 +320,5 @@ Browser (http://localhost)
 - [ ] Run Pipeline → "Select Preset" dropdown shows options (confirms config/ is in ZIP)
 - [ ] Settings UI shows all field groups (LLM, Indexing, Output, Logging, etc.)
 - [ ] File uploads persist across container restarts (inputs/ volume)
+- [ ] WSL2/Linux: data dirs owned by UID 999 after first start (`ls -la` shows `999` owner)
 - [ ] `clean.bat` / `clean.sh` fully removes containers, images, and data

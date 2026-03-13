@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # =============================================================================
 # SDLC Pilot - Full Cleanup
-# Stops containers, removes volumes, and deletes Docker images.
-# Your .env and uploaded files are NOT deleted.
+# Stops containers, removes volumes, deletes Docker images,
+# and wipes ALL data directories (knowledge, logs, inputs, config, reports).
+# Only .env and .env.example are preserved.
 # =============================================================================
 set -e
 
@@ -19,20 +20,33 @@ if docker compose version &> /dev/null; then DC="docker compose"
 elif command -v docker-compose &> /dev/null; then DC="docker-compose"
 else echo "[ERROR] Docker not found."; exit 1; fi
 
-# 1. Stop containers and remove volumes
-echo "[1/3] Stopping containers..."
+# 1. Clean data directories (via container to handle UID 999 ownership)
+echo "[1/4] Cleaning data directories..."
+if docker ps -q -f name=sdlc-pilot-backend | grep -q .; then
+    docker exec sdlc-pilot-backend rm -rf /app/knowledge/* /app/logs/* /app/inputs/* /app/config/* 2>/dev/null || true
+    echo "[OK] Data cleaned via container."
+else
+    echo "[!] Container not running — cleaning locally..."
+fi
+
+# 2. Stop containers and remove volumes
+echo "[2/4] Stopping containers..."
 $DC down -v 2>/dev/null || true
 echo "[OK] Containers stopped."
 
-# 2. Remove Docker images
-echo "[2/3] Removing Docker images..."
+# 3. Remove Docker images
+echo "[3/4] Removing Docker images..."
 docker rmi sdlc-pilot/backend:latest 2>/dev/null || true
 docker rmi sdlc-pilot/frontend:latest 2>/dev/null || true
 echo "[OK] Images removed."
 
-# 3. Clean up data directories
-echo "[3/3] Cleaning data directories..."
-rm -rf knowledge logs inputs config
+# 4. Remove data directories from host
+echo "[4/4] Removing data directories..."
+rm -rf knowledge logs inputs config reports 2>/dev/null || true
+# Fallback for UID 999 owned files
+if [ -d knowledge ] || [ -d logs ] || [ -d inputs ] || [ -d config ] || [ -d reports ]; then
+    sudo rm -rf knowledge logs inputs config reports 2>/dev/null || true
+fi
 echo "[OK] Data directories removed."
 
 echo ""
