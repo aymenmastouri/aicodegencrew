@@ -201,9 +201,9 @@ class MapReduceAnalysisCrew:
         self.parallel = parallel
         self.max_workers = max_workers
 
-        # Create container analysis directory
+        # Resolved at init; created lazily in run() after the orchestrator
+        # has finished its reset (which deletes the output directory).
         self.container_dir = self.output_dir / "container_analysis"
-        self.container_dir.mkdir(parents=True, exist_ok=True)
 
     def should_use_mapreduce(self) -> bool:
         """Check if repository is large enough to benefit from map-reduce."""
@@ -225,6 +225,10 @@ class MapReduceAnalysisCrew:
 
     def run(self) -> dict[str, Any]:
         """Execute map-reduce analysis if beneficial, otherwise standard crew."""
+        # Create output dirs now (after orchestrator reset has cleared them)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.container_dir.mkdir(parents=True, exist_ok=True)
+
         if not self.should_use_mapreduce():
             # Fall back to standard crew for small repos
             logger.info("[MapReduce] Using standard ArchitectureAnalysisCrew")
