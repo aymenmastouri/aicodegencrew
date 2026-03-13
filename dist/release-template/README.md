@@ -257,7 +257,7 @@ Nach einem PC-Neustart muessen Sie Ubuntu und Docker erneut starten:
 | "API key not configured" | `.env` oeffnen (`nano .env`) und `OPENAI_API_KEY` setzen |
 | "Repository path not configured" | `.env` oeffnen (`nano .env`) und `PROJECT_PATH` setzen |
 | Browser zeigt nichts an | 30 Sekunden warten, dann http://localhost neu laden |
-| Port 80 belegt | Andere Programme stoppen die Port 80 nutzen (IIS, XAMPP, Skype) |
+| Port 80 belegt | In `.env` die Zeile `# PORT=80` aendern zu `PORT=8080`, dann http://localhost:8080 nutzen |
 | "permission denied" bei start.sh | `chmod +x start.sh clean.sh` eingeben |
 | "Cannot connect to Docker daemon" | `sudo service docker start` eingeben |
 | Passwort wird nicht angezeigt | Das ist normal bei Linux — einfach tippen und Enter druecken |
