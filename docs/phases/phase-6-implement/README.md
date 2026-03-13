@@ -227,8 +227,8 @@ hybrid/code_generation/
 
 ## 10. Risks & Open Points
 
-- **VPN vs Build**: LLM API needs VPN, but Gradle builds may fail with VPN (tests only). Solution: `CODEGEN_BUILD_VERIFY=false` or `-x test` in Gradle command.
-- **LLM connection stability**: VPN drops cause connection errors → >50% failure → safety gate rejects
+- **Build verification**: Gradle builds may fail if build tools are unavailable. Solution: `CODEGEN_BUILD_VERIFY=false` or `-x test` in Gradle command.
+- **LLM connection stability**: Network interruptions cause connection errors → >50% failure → safety gate rejects
 - **Self-healing**: Works (proven on Angular build), but depends on LLM understanding error messages
 - **CrewAI + on-prem LLM**: Don't use `output_pydantic` — parse raw text with `_repair_truncated_json` instead
 

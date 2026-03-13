@@ -36,7 +36,7 @@ Deep audit of all pipeline phases — 64 bugs fixed across Phases 2-5. Demo rewr
 *High (13 pipeline bugs):*
 - `system_collector`: pom.xml extracted parent version instead of project version
 - `container_collector`: substring test-directory matching (e.g. "contest" matched "test")
-- `component_collector` + `interface_collector`: `rglob` without SKIP_DIRS (10-20x slowdown on VPN)
+- `component_collector` + `interface_collector`: `rglob` without SKIP_DIRS (10-20x slowdown on network drives)
 - `component_collector`: `relative_to` crash on edge paths
 - `interface_collector`: only detected "Spring Boot", missed Java/Gradle and Java/Maven projects
 - `workflow_collector`: substring `_should_skip`, Python `def` pattern on Java codebase, `rglob` without SKIP_DIRS
