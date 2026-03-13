@@ -14,11 +14,14 @@ Usage:
 
 import logging
 import os
+import time
+from collections import defaultdict
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 logger = logging.getLogger(__name__)
@@ -67,6 +70,41 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
+
+# ---------------------------------------------------------------------------
+# In-memory rate limiter for expensive/destructive endpoints (H4)
+# ---------------------------------------------------------------------------
+_RATE_LIMIT_MAX = 5  # max requests per window
+_RATE_LIMIT_WINDOW = 60  # seconds
+
+# Paths subject to rate limiting
+_RATE_LIMITED_PATHS: set[str] = {
+    "/api/pipeline/run",
+    "/api/triage",
+    "/api/reset/all",
+}
+
+# key = (client_ip, path) -> list of timestamps
+_rate_limit_log: dict[tuple[str, str], list[float]] = defaultdict(list)
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    if request.method == "POST" and request.url.path in _RATE_LIMITED_PATHS:
+        client_ip = request.client.host if request.client else "unknown"
+        key = (client_ip, request.url.path)
+        now = time.monotonic()
+        # Prune entries outside the window
+        timestamps = _rate_limit_log[key]
+        _rate_limit_log[key] = [t for t in timestamps if now - t < _RATE_LIMIT_WINDOW]
+        if len(_rate_limit_log[key]) >= _RATE_LIMIT_MAX:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Try again later."},
+            )
+        _rate_limit_log[key].append(now)
+    return await call_next(request)
+
 
 # Register routers
 app.include_router(phases.router)

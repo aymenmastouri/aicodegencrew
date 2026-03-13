@@ -192,25 +192,25 @@ def read_knowledge_file(relative_path: str) -> dict | list | str:
     """Read a knowledge file by relative path."""
     file_path = settings.knowledge_dir / relative_path
 
-    # Security: prevent path traversal BEFORE any file access
-    # Also reject symlinks to prevent bypassing the directory check
+    # Security: prevent path traversal and symlink TOCTOU attacks.
+    # resolve(strict=True) follows symlinks and requires the path to exist,
+    # then we verify the resolved real path is within the allowed base.
+    base_resolved = settings.knowledge_dir.resolve()
     try:
-        resolved = file_path.resolve(strict=False)
-        resolved.relative_to(settings.knowledge_dir.resolve())
+        resolved = file_path.resolve(strict=True)
+    except OSError:
+        raise FileNotFoundError(f"File not found: {relative_path}")
+    try:
+        resolved.relative_to(base_resolved)
     except ValueError:
         raise ValueError("Path traversal not allowed")
-    if file_path.is_symlink():
-        raise ValueError("Symlinks are not allowed")
-
-    if not file_path.exists():
-        raise FileNotFoundError(f"File not found: {relative_path}")
 
     try:
-        if file_path.suffix == ".json":
-            with open(file_path, encoding="utf-8") as f:
+        if resolved.suffix == ".json":
+            with open(resolved, encoding="utf-8") as f:
                 return json.load(f)
 
-        with open(file_path, encoding="utf-8") as f:
+        with open(resolved, encoding="utf-8") as f:
             return f.read()
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON in {relative_path}: {e}") from e

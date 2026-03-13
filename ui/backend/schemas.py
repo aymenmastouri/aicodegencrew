@@ -136,16 +136,28 @@ class RunRequest(BaseModel):
     def _validate_env_overrides(cls, v: dict[str, str] | None) -> dict[str, str] | None:
         if v is None:
             return v
-        # Only allow safe environment variable keys (alphanumeric + underscore)
-        import re
-        _SAFE_KEY = re.compile(r"^[A-Z][A-Z0-9_]{0,63}$")
-        # Block sensitive keys that could compromise security
-        _BLOCKED_KEYS = {"PATH", "LD_PRELOAD", "LD_LIBRARY_PATH", "PYTHONPATH", "HOME", "USER"}
+        _ALLOWED_ENV_KEYS = {
+            "LOG_LEVEL",
+            "INDEX_MODE",
+            "OUTPUT_DIR",
+            "DOCS_OUTPUT_DIR",
+            "MAX_LLM_OUTPUT_TOKENS",
+            "LLM_CONTEXT_WINDOW",
+            "CREWAI_MEMORY_ENABLED",
+            "CREWAI_PLANNING_ENABLED",
+            "CREWAI_DELEGATION_ENABLED",
+            "TRIAGE_QUALITY_THRESHOLD",
+            "PLAN_TRIAGE_WAIT_TIMEOUT",
+            "CODEGEN_BUILD_VERIFY",
+            "TZ",
+        }
         for key in v:
-            if not _SAFE_KEY.match(key):
-                raise ValueError(f"Invalid env key: '{key}'. Must be uppercase alphanumeric with underscores.")
-            if key in _BLOCKED_KEYS:
-                raise ValueError(f"Cannot override system variable: '{key}'")
+            if key not in _ALLOWED_ENV_KEYS:
+                allowed = ", ".join(sorted(_ALLOWED_ENV_KEYS))
+                raise ValueError(
+                    f"env_overrides key '{key}' is not permitted. "
+                    f"Allowed keys: {allowed}"
+                )
         return v
 
 
