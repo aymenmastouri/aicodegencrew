@@ -259,7 +259,9 @@ class MapReduceAnalysisCrew:
         # REDUCE PHASE: Merge results
         merged_result = self._reduce_phase(container_results, facts)
 
-        # Save final output
+        # Save final output (re-ensure dir exists — Docker volume mounts on
+        # WSL2 can lose directories between the initial mkdir and this point)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         output_file = self.output_dir / "analyzed_architecture.json"
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(merged_result, f, indent=2, ensure_ascii=False)

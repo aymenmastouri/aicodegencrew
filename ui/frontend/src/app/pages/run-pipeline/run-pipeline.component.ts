@@ -1375,14 +1375,18 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         this.presets = p;
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[RunPipeline] Failed to load presets', err);
+      },
     });
     this.api.getPhases().subscribe({
       next: (p) => {
         this.phases = p;
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[RunPipeline] Failed to load phases', err);
+      },
     });
     this.pipeline.getStatus().subscribe({
       next: (s) => {
@@ -1392,16 +1396,20 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         }
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[RunPipeline] Failed to load status', err);
+      },
     });
 
     this.inputsService.getSummary().subscribe({
       next: (s) => {
         this.inputSummary = s;
-        this.inputCategoryEntries = Object.entries(s.categories).map(([key, value]) => ({ key, value }));
+        this.inputCategoryEntries = Object.entries(s?.categories || {}).map(([key, value]) => ({ key, value }));
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[RunPipeline] Failed to load summary', err);
+      },
     });
 
     this.pipeline.getInputTaskIds().subscribe({
@@ -1409,7 +1417,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         this.availableTaskIds = res.task_ids;
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[RunPipeline] Failed to load input task IDs', err);
+      },
     });
 
     this.pipeline.getEnv().subscribe({
@@ -1419,7 +1429,9 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
         vars.forEach((v) => (this.envValues[v.name] = v.value));
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[RunPipeline] Failed to load env', err);
+      },
     });
 
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
@@ -1673,7 +1685,7 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   }
 
   private refreshStatus(): void {
-    this.pipeline.getStatus().subscribe((s) => {
+    this.pipeline.getStatus().pipe(takeUntil(this.destroy$)).subscribe((s) => {
       this.status = s;
       this.cdr.markForCheck();
     });
