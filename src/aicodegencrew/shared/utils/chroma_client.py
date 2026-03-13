@@ -16,10 +16,12 @@ delegates to it) to get a cached, shared client instance per path.
 from __future__ import annotations
 
 import os
+import threading
 from pathlib import Path
 from typing import Any
 
-# Module-level cache: normalized_path -> client instance
+# Module-level lock and cache: normalized_path -> client instance
+_client_cache_lock = threading.Lock()
 _client_cache: dict[str, Any] = {}
 
 
@@ -65,19 +67,21 @@ def create_chroma_client(*, persistent_path: str | None = None, settings: Any | 
     if http_cfg is not None:
         host, port, ssl = http_cfg
         cache_key = f"http://{host}:{port}"
-        if cache_key not in _client_cache:
-            _client_cache[cache_key] = chromadb.HttpClient(
-                host=host, port=port, ssl=ssl, settings=settings,
-            )
-        return _client_cache[cache_key]
+        with _client_cache_lock:
+            if cache_key not in _client_cache:
+                _client_cache[cache_key] = chromadb.HttpClient(
+                    host=host, port=port, ssl=ssl, settings=settings,
+                )
+            return _client_cache[cache_key]
 
     if not persistent_path:
         raise ValueError("persistent_path is required when CHROMA_SERVER_HOST is not set")
 
     # Normalize path so "knowledge/discover" and "knowledge/discover/" hit same cache entry
     cache_key = str(Path(persistent_path).resolve())
-    if cache_key not in _client_cache:
-        _client_cache[cache_key] = chromadb.PersistentClient(
-            path=persistent_path, settings=settings,
-        )
-    return _client_cache[cache_key]
+    with _client_cache_lock:
+        if cache_key not in _client_cache:
+            _client_cache[cache_key] = chromadb.PersistentClient(
+                path=persistent_path, settings=settings,
+            )
+        return _client_cache[cache_key]

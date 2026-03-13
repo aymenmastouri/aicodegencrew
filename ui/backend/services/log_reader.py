@@ -8,18 +8,19 @@ def read_log(filename: str = "current.log", tail: int = 200) -> LogResponse:
     """Read the last N lines of a log file."""
     log_path = settings.logs_dir / filename
 
-    # Security: prevent path traversal BEFORE any file access
+    # Security: prevent path traversal — resolve strict=True to reject
+    # symlinks and TOCTOU races (the path must exist and be real).
+    base_resolved = settings.logs_dir.resolve()
     try:
-        log_path.resolve(strict=False).relative_to(settings.logs_dir.resolve())
+        resolved = log_path.resolve(strict=True)
+    except OSError:
+        return LogResponse(lines=[], total_lines=0, file_path=str(log_path))
+    try:
+        resolved.relative_to(base_resolved)
     except ValueError:
         raise ValueError("Path traversal not allowed")
-    if log_path.is_symlink():
-        raise ValueError("Symlinks are not allowed")
 
-    if not log_path.exists():
-        return LogResponse(lines=[], total_lines=0, file_path=str(log_path))
-
-    with open(log_path, encoding="utf-8", errors="replace") as f:
+    with open(resolved, encoding="utf-8", errors="replace") as f:
         all_lines = f.readlines()
 
     total = len(all_lines)

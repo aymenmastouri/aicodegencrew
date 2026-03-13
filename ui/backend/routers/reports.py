@@ -55,7 +55,7 @@ def remove_branch(
 @router.get("/{report_type}/{task_id}")
 def get_report(
     report_type: str = PathParam(..., pattern="^(plan|report)$"),
-    task_id: str = PathParam(...),
+    task_id: str = PathParam(..., pattern=r"^[A-Za-z0-9_-]+$"),
 ):
     """Read a specific plan or codegen report."""
     try:

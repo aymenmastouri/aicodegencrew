@@ -15,7 +15,7 @@ import concurrent.futures as _cf
 import json as _json
 import os
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -200,7 +200,7 @@ class SDLCOrchestrator:
         Returns:
             PipelineResult with status and phase details
         """
-        self._start_time = datetime.now()
+        self._start_time = datetime.now(timezone.utc)
         self.results.clear()
         self._facts_cache.clear()
         self._token_usage.clear()
@@ -310,7 +310,7 @@ class SDLCOrchestrator:
 
     def _execute_phase(self, phase_id: str) -> PhaseResult:
         """Execute a single phase."""
-        start = datetime.now()
+        start = datetime.now(timezone.utc)
         self.phase_context.current_phase = phase_id
 
         # Check if registered
@@ -393,7 +393,7 @@ class SDLCOrchestrator:
                 elif phase_status == "success":
                     phase_message = str(raw_message or "Completed")
 
-            duration = (datetime.now() - start).total_seconds()
+            duration = (datetime.now(timezone.utc) - start).total_seconds()
             metric_status = phase_result_to_phase_state_status(phase_status)
             phase_state_status = metric_status
 
@@ -457,7 +457,7 @@ class SDLCOrchestrator:
             )
 
         except Exception as e:
-            duration = (datetime.now() - start).total_seconds()
+            duration = (datetime.now(timezone.utc) - start).total_seconds()
 
             # ── Graceful degradation: check for partial output on disk ──
             partial_output = self._check_partial_output(phase_id)
@@ -751,7 +751,7 @@ class SDLCOrchestrator:
         total_duration = ""
         total_seconds = 0.0
         if self._start_time:
-            delta = datetime.now() - self._start_time
+            delta = datetime.now(timezone.utc) - self._start_time
             total_duration = str(delta).split(".")[0]  # Remove microseconds
             total_seconds = delta.total_seconds()
 
