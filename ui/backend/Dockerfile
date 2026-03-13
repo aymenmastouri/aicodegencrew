@@ -1,87 +1,109 @@
 # =============================================================================
-# AICodeGenCrew Backend - SECURE Multi-Stage Build
-# Source code compiled to bytecode only. No .py files in final image.
+# SDLC Pilot Backend — Multi-Stage Docker Build
+# =============================================================================
+#
+# Features:
+#   - Python 3.12 + Node.js 22 LTS (MCP servers) + git (repo analysis)
+#   - All dependencies from pyproject.toml (single source of truth)
+#   - MCP packages pre-cached (no runtime downloads)
+#   - Source compiled to bytecode (.pyc) — no .py in final image
+#
+# Build context: ui/backend/ (with src_bundle/ copied in by deploy.sh)
+#
+#   deploy.sh copies:
+#     src/aicodegencrew/  →  ui/backend/src_bundle/
+#     pyproject.toml      →  ui/backend/src_bundle/pyproject.toml
+#
 # =============================================================================
 
 # ---------------------------------------------------------------------------
-# Stage 1: BUILD — install deps, compile .py → .pyc, strip source
+# Stage 1: BUILD
+# Install deps from pyproject.toml, compile .py → .pyc, strip source.
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim AS build
 
 WORKDIR /build
 
-# Install backend dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir --target=/build/deps -r requirements.txt
+# System deps: curl (for Node.js setup), ca-certificates (TLS)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy backend code
+# Node.js 22 LTS — needed to pre-cache MCP packages
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Pre-cache MCP package so npx doesn't download at runtime
+RUN npx -y @modelcontextprotocol/server-sequential-thinking --help 2>/dev/null; exit 0
+
+# Install ALL Python dependencies from pyproject.toml (single source of truth)
+# install_deps.py extracts deps from pyproject.toml + adds server deps (uvicorn, fastapi)
+COPY install_deps.py /tmp/install_deps.py
+COPY src_bundle/pyproject.toml /tmp/pyproject.toml
+RUN python3 /tmp/install_deps.py /tmp/pyproject.toml /tmp/deps.txt && \
+    pip install --no-cache-dir --target=/build/deps -r /tmp/deps.txt
+
+# Copy application code
 COPY . /build/ui/backend/
-
-# Copy core aicodegencrew package (passed via docker-compose build context)
-# This will be provided by the secure compose file
 COPY src_bundle/ /build/src/aicodegencrew/
 
-# Compile ALL Python to bytecode and remove source
-RUN python -c "
-import compileall, os, glob
-
-# Compile everything
-for d in ['/build/ui', '/build/src']:
-    compileall.compile_dir(d, force=True, quiet=1, optimize=2)
-
-# Remove all .py source files (keep only .pyc)
-for py in glob.glob('/build/**/*.py', recursive=True):
-    pyc_dir = os.path.join(os.path.dirname(py), '__pycache__')
-    if os.path.isdir(pyc_dir):
-        os.remove(py)
-
-# Flatten __pycache__: move .pyc files up and remove __pycache__ dirs
-for root, dirs, files in os.walk('/build', topdown=False):
-    if os.path.basename(root) == '__pycache__':
-        parent = os.path.dirname(root)
-        for f in files:
-            # Rename: module.cpython-312.opt-2.pyc → module.pyc
-            new_name = f.split('.')[0] + '.pyc'
-            os.rename(os.path.join(root, f), os.path.join(parent, new_name))
-        os.rmdir(root)
-"
+# Compile Python to bytecode, remove .py source, flatten __pycache__
+COPY compile_bytecode.py /tmp/compile_bytecode.py
+RUN python /tmp/compile_bytecode.py /build/ui /build/src
 
 # ---------------------------------------------------------------------------
-# Stage 2: FINAL — minimal runtime, no source, no shell
+# Stage 2: RUNTIME
+# Minimal image: Python + Node.js + git. No build tools. Non-root user.
 # ---------------------------------------------------------------------------
-FROM python:3.12-slim AS final
+FROM python:3.12-slim AS runtime
 
-# Remove shell and package manager for security
-RUN rm -f /bin/sh /bin/bash /bin/dash /usr/bin/apt* /usr/bin/dpkg* \
-    && rm -rf /var/lib/apt /var/cache/apt
+# Node.js 22 LTS (MCP servers), git (repo analysis), curl (Node.js setup)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates git && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    apt-get purge -y curl && apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Corporate CA certificate (optional, for TLS proxy environments)
+COPY certs/CapgeminiPKIRootCA.cr[t] /usr/local/share/ca-certificates/
+RUN update-ca-certificates 2>/dev/null || true
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
+# Non-root user (best practice: never run as root in production)
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
 
 WORKDIR /app
 
-# Copy only compiled bytecode and dependencies
+# Compiled bytecode + all Python dependencies
 COPY --from=build /build/deps /usr/local/lib/python3.12/site-packages/
 COPY --from=build /build/ui/backend/ /app/ui/backend/
 COPY --from=build /build/src/aicodegencrew/ /app/src/aicodegencrew/
 
-# Ensure __init__.pyc files exist for package resolution
-RUN python3 -c "
-import pathlib
-for d in pathlib.Path('/app').rglob('*'):
-    if d.is_dir() and any(d.glob('*.pyc')):
-        init = d / '__init__.pyc'
-        if not init.exists():
-            # Create empty __init__.pyc
-            import py_compile, tempfile, os
-            tmp = tempfile.NamedTemporaryFile(suffix='.py', delete=False, mode='w')
-            tmp.write('')
-            tmp.close()
-            py_compile.compile(tmp.name, init, doraise=True)
-            os.unlink(tmp.name)
-"
+# Pre-cached MCP packages (no npx download at runtime)
+COPY --from=build /root/.npm /home/appuser/.npm
+RUN chown -R appuser:appuser /home/appuser/.npm
+
+# Ensure __init__.pyc exists for all bytecode-only packages
+COPY ensure_init.py /tmp/ensure_init.py
+RUN python3 /tmp/ensure_init.py /app && rm /tmp/ensure_init.py
+
+# Writable directories for runtime data
+RUN mkdir -p /app/knowledge /app/logs /app/inputs /app/reports /app/config && \
+    chown -R appuser:appuser /app
 
 ENV PYTHONPATH=/app/src:/app
 ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8001
 
-# Use python directly (no shell needed)
+# Built-in healthcheck (defense-in-depth, works even without docker-compose)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/health')" || exit 1
+
+# Run as non-root user
+USER appuser
+
 ENTRYPOINT ["python3", "-m", "uvicorn", "ui.backend.main:app", "--host", "0.0.0.0", "--port", "8001"]

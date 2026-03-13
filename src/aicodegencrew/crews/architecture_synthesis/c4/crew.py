@@ -192,7 +192,7 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
     # PUBLIC API
     # -------------------------------------------------------------------------
 
-    def run(self) -> str:
+    def run(self) -> dict:
         """
         Execute all 5 Mini-Crews sequentially with resume support.
 
@@ -276,13 +276,19 @@ By type: {", ".join(f"{t}:{c}" for t, c in sorted(rel_by_type.items()))}"""
                 logger.error(f"[C4] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")
 
+        summary = "\n".join(results)
         if not self.has_degraded_outputs():
             self._clear_checkpoint()
+            logger.info(f"[C4] All Mini-Crews completed:\n{summary}")
+            return {"status": "success", "result": summary}
         else:
             logger.warning(
                 f"[C4] Keeping checkpoint for resume — "
                 f"{len(self.get_degradation_reasons())} degraded crew(s)"
             )
-        summary = "\n".join(results)
-        logger.info(f"[C4] All Mini-Crews completed:\n{summary}")
-        return summary
+            logger.info(f"[C4] All Mini-Crews completed (partial):\n{summary}")
+            return {
+                "status": "partial",
+                "result": summary,
+                "degradation_reasons": self.get_degradation_reasons(),
+            }

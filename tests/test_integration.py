@@ -518,7 +518,8 @@ class TestPhase2ToPhase3:
         assert "required_keys" in spec
         assert "macro_architecture" in spec["required_keys"]
         assert "micro_architecture" in spec["required_keys"]
-        assert "container_analyses" in spec["required_keys"]
+        assert "quality" in spec["required_keys"]
+        assert "executive_summary" in spec["required_keys"]
 
     def test_synthesis_crew_detects_missing_prerequisites(self, tmp_path):
         """ArchitectureSynthesisCrew raises FileNotFoundError on missing inputs."""

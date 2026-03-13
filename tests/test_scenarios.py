@@ -520,7 +520,8 @@ class TestScenario4PhaseOutputValidation:
         assert "required_keys" in spec
         assert "macro_architecture" in spec["required_keys"]
         assert "micro_architecture" in spec["required_keys"]
-        assert "container_analyses" in spec["required_keys"]
+        assert "quality" in spec["required_keys"]
+        assert "executive_summary" in spec["required_keys"]
 
     def test_phase3_output_spec_exists(self):
         """Phase 3 has an output specification with min file size."""

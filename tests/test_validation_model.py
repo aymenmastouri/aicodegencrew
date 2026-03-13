@@ -107,9 +107,10 @@ def _valid_analysis_json():
         "micro_architecture": {
             "layers": {},
         },
-        "container_analyses": [
-            {"container": "backend", "style": "MVC"},
-        ],
+        "quality": {
+            "overall_grade": "B",
+        },
+        "executive_summary": "Test summary",
     }
 
 
@@ -414,9 +415,10 @@ class TestPhase2Validation:
         analysis_path.write_text(json.dumps(partial), encoding="utf-8")
 
         errors = validator.validate_phase("analyze")
-        assert len(errors) == 2  # micro_architecture + container_analyses missing
+        assert len(errors) == 3  # micro_architecture + quality + executive_summary missing
         assert any("micro_architecture" in e for e in errors)
-        assert any("container_analyses" in e for e in errors)
+        assert any("quality" in e for e in errors)
+        assert any("executive_summary" in e for e in errors)
 
 
 # =============================================================================

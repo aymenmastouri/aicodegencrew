@@ -218,7 +218,7 @@ Valid JSON object with these exact keys:
 
 
 ANALYZE_STATE_MACHINES_DESC = """\
-Detect STATE MACHINES in the codebase.
+Detect STATE MACHINES in the codebase (framework-agnostic).
 
 STEPS:
 1. Call: rag_query("state machine StateMachine enum Status")
@@ -226,46 +226,49 @@ STEPS:
 3. Call: list_components_by_stereotype(stereotype="entity", limit=50)
 4. Look for entities with status/state fields in names
 
-INDICATORS:
-- Spring State Machine annotations
+INDICATORS (examples across languages):
 - Enum types with state values (PENDING, APPROVED, REJECTED, ACTIVE, INACTIVE)
-- Classes with "State" or "Status" in name
-- Transition methods (approve(), reject(), activate())
+- Classes/modules with "State" or "Status" in name
+- Transition methods (approve(), reject(), activate(), transition_to())
+- State machine libraries (e.g., Spring State Machine in Java,
+  python-statemachine/transitions in Python, Stateless in C#,
+  looplab/fsm in Go, xstate in TypeScript)
 
 IMPORTANT: If no state machines found, report detected=false. Do not invent them."""
 
 ANALYZE_STATE_MACHINES_OUTPUT = """\
 Valid JSON object with these exact keys:
 {"detected": true|false,
- "implementation_type": "Spring State Machine|Enum-based|Custom|None",
+ "implementation_type": "Library-based|Enum-based|Custom|None",
  "stateful_entities": ["EntityName"],
  "state_transitions": [{"entity": "...", "states": ["STATE1", "STATE2"]}],
  "reasoning": "Evidence-based explanation"}"""
 
 
 ANALYZE_WORKFLOW_ENGINES_DESC = """\
-Detect WORKFLOW ENGINES (BPMN, Camunda, Flowable).
+Detect WORKFLOW / PROCESS ENGINES (framework-agnostic).
 
 STEPS:
-1. Call: rag_query("Camunda BPMN workflow ProcessEngine")
-2. Call: rag_query("Flowable Activiti process definition")
+1. Call: rag_query("workflow engine process BPMN pipeline")
+2. Call: rag_query("Camunda Flowable Activiti Temporal Celery Airflow")
 3. Call: list_components_by_stereotype(stereotype="design_pattern")
 4. Check for workflow-related components or configurations
 
-INDICATORS:
-- Camunda/Flowable library dependencies
-- .bpmn or .bpmn20.xml files
-- ProcessEngine or RuntimeService beans
-- @ProcessVariable annotations
+INDICATORS (examples across languages):
+- Java/Spring: Camunda, Flowable, Activiti dependencies; .bpmn files; ProcessEngine beans
+- Python: Celery task chains, Airflow DAGs, Prefect flows
+- .NET: Workflow Foundation, Elsa Workflows
+- Go/Node: Temporal workers, Bull queues
+- General: State machine libraries, pipeline/step patterns
 
 IMPORTANT: If no workflow engine found, report engine="None". Do not invent."""
 
 ANALYZE_WORKFLOW_ENGINES_OUTPUT = """\
 Valid JSON object with these exact keys:
-{"engine": "Camunda|Flowable|Activiti|None",
+{"engine": "<detected engine name or None>",
  "version": "...|Unknown",
  "bpmn_processes": ["process_name"],
- "integration_style": "embedded|standalone|None",
+ "integration_style": "embedded|standalone|library|None",
  "workflow_services": ["ServiceName"],
  "reasoning": "Evidence-based explanation"}"""
 
@@ -407,17 +410,19 @@ Valid JSON object with these exact keys:
 
 
 ANALYZE_SECURITY_DESC = """\
-Assess SECURITY POSTURE.
+Assess SECURITY POSTURE (framework-agnostic).
 
 STEPS:
-1. Call: rag_query("Spring Security WebSecurityConfigurer SecurityConfig")
-2. Call: rag_query("JWT OAuth2 token authentication")
-3. Call: rag_query("@PreAuthorize @Secured @RolesAllowed")
+1. Call: rag_query("security config authentication middleware filter")
+2. Call: rag_query("JWT OAuth2 token authentication session cookie")
+3. Call: rag_query("authorization permission role access control")
 4. Call: rag_query("CSRF XSS input validation sanitize")
 5. Assess each security dimension:
-   - Authentication: mechanism used (JWT, OAuth2, Basic, Session)
-   - Authorization: framework used (Spring Security, custom)
-   - Input validation: annotation-based or manual
+   - Authentication: mechanism used (JWT, OAuth2, Basic, Session, API keys)
+   - Authorization: Look for authorization annotations/decorators (e.g.,
+     @PreAuthorize in Java/Spring, @login_required in Python/Django,
+     [Authorize] in C#/.NET, auth middleware in Go/Express)
+   - Input validation: annotation-based, decorator-based, or manual
    - Audit logging: present or absent
 
 IMPORTANT: Only report security patterns found by RAG search. Do not assume."""
@@ -425,10 +430,10 @@ IMPORTANT: Only report security patterns found by RAG search. Do not assume."""
 ANALYZE_SECURITY_OUTPUT = """\
 Valid JSON object with these exact keys:
 {"authentication": {"mechanism": "JWT|OAuth2|Basic|Session|Unknown", "configured": true|false},
- "authorization": {"framework": "Spring Security|Custom|None", "method_level": true|false},
- "input_validation": "annotation-based|manual|none|unknown",
+ "authorization": {"framework": "<detected framework or None>", "method_level": true|false},
+ "input_validation": "annotation-based|decorator-based|middleware|manual|none|unknown",
  "audit_logging": true|false,
- "security_framework": "Spring Security|None|Unknown",
+ "security_framework": "<detected framework or None|Unknown>",
  "overall_posture": "strong|moderate|weak|unknown",
  "concerns": ["..."],
  "recommendations": ["..."],
@@ -436,26 +441,29 @@ Valid JSON object with these exact keys:
 
 
 ANALYZE_OPERATIONAL_READINESS_DESC = """\
-Assess OPERATIONAL READINESS.
+Assess OPERATIONAL READINESS (framework-agnostic).
 
 STEPS:
-1. Call: rag_query("actuator health endpoint HealthIndicator")
-2. Call: rag_query("slf4j logback logging structured log")
-3. Call: rag_query("@ConfigurationProperties environment profile")
-4. Call: rag_query("micrometer prometheus metrics counter timer")
+1. Call: rag_query("health check endpoint liveness readiness probe")
+2. Call: rag_query("logging structured log level logger")
+3. Call: rag_query("configuration environment profile settings")
+4. Call: rag_query("metrics prometheus monitoring observability")
 5. Assess each operational dimension:
-   - Health checks: Spring Actuator / health endpoints
-   - Monitoring: metrics endpoints, Prometheus, Grafana integration
-   - Logging: structured logging, log levels, frameworks
-   - Configuration: externalized config, profiles, environment variables
+   - Health checks: e.g., Spring Actuator in Java, /health endpoints in any
+     framework, Kubernetes liveness/readiness probes, ASP.NET health checks
+   - Monitoring: metrics endpoints (e.g., Micrometer/Prometheus in Java,
+     prometheus_client in Python, OpenTelemetry in any language)
+   - Logging: structured logging (e.g., SLF4J/Logback in Java, structlog in
+     Python, Serilog in C#, zap/zerolog in Go)
+   - Configuration: externalized config, environment variables, profiles
 
 IMPORTANT: Only report what RAG search confirms. Do not assume."""
 
 ANALYZE_OPERATIONAL_READINESS_OUTPUT = """\
 Valid JSON object with these exact keys:
-{"health_checks": {"present": true|false, "framework": "Spring Actuator|Custom|None"},
- "monitoring": {"metrics": true|false, "framework": "Micrometer|Prometheus|None"},
- "logging": {"framework": "Logback|Log4j|SLF4J|Unknown", "structured": true|false},
+{"health_checks": {"present": true|false, "framework": "<detected framework or None>"},
+ "monitoring": {"metrics": true|false, "framework": "<detected framework or None>"},
+ "logging": {"framework": "<detected framework or Unknown>", "structured": true|false},
  "configuration": {"externalized": true|false, "profiles": true|false},
  "deployment_readiness": "production-ready|needs-work|minimal",
  "recommendations": ["..."],

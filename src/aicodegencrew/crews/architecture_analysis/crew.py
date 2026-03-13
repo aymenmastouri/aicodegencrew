@@ -320,7 +320,7 @@ class ArchitectureAnalysisCrew:
                         repair_err,
                     )
 
-    _MAX_RETRIES = 2  # transient error retries
+    _MAX_RETRIES = 3  # transient error retries (increased for rate-limit resilience)
 
     def _run_mini_crew(self, name: str, tasks: list[Task]) -> str:
         """Run a mini-crew with fresh context, retry on transient errors."""
@@ -405,6 +405,33 @@ class ArchitectureAnalysisCrew:
                 raise
 
             except Exception as e:
+                # Check if this is a rate-limit (HTTP 429) error from litellm/openai.
+                # litellm raises litellm.RateLimitError (subclass of openai.RateLimitError)
+                # which may bubble up wrapped in other exceptions. We check both the
+                # exception type name and the string representation for "429".
+                is_rate_limit = (
+                    "RateLimitError" in type(e).__name__
+                    or "429" in str(e)
+                    or (hasattr(e, "status_code") and getattr(e, "status_code") == 429)
+                )
+                if is_rate_limit and attempt < self._MAX_RETRIES:
+                    # Exponential backoff: 30s, 60s, 120s — rate limits need longer waits
+                    delay = 30 * (2 ** (attempt - 1))
+                    logger.warning(
+                        f"[Phase2] {name}: Rate limit (429) hit "
+                        f"(attempt {attempt}/{self._MAX_RETRIES}), "
+                        f"retrying in {delay}s: {e}"
+                    )
+                    time.sleep(delay)
+                    # Fresh agent for retry
+                    new_agent = self._create_agent(
+                        self._agent_key_for_crew(name),
+                        self._create_analysis_tools(),
+                    )
+                    for t in tasks:
+                        t.agent = new_agent
+                    continue
+
                 self._log_crew_failure(name, tasks, e, start_time)
                 raise
 
@@ -645,6 +672,118 @@ class ArchitectureAnalysisCrew:
             logger.warning("[Phase2] Could not inject schema version: %s", e)
 
     # =========================================================================
+    # POST-SYNTHESIS VALIDATION
+    # =========================================================================
+
+    # Top-level keys that MUST be present in analyzed_architecture.json.
+    # Derived from the AnalyzedArchitecture Pydantic model and downstream
+    # consumers (Phase 3 C4/Arc42 crews, Phase 4 Triage risk_assessor).
+    _REQUIRED_TOP_LEVEL_KEYS = {
+        "system",
+        "macro_architecture",
+        "micro_architecture",
+        "architecture_quality",
+        "domain",
+        "workflows",
+        "api",
+        "quality",
+        "overall_grade",
+        "executive_summary",
+    }
+
+    # Sections that MUST be dicts/lists with actual content (not empty stubs).
+    # A section is "empty" if it's {}, [], or a scalar placeholder.
+    _NON_EMPTY_SECTIONS = {
+        "macro_architecture",
+        "micro_architecture",
+        "quality",
+    }
+
+    def _validate_synthesis_output(self) -> str:
+        """Validate the synthesized analyzed_architecture.json structure.
+
+        Performs a lightweight structural check (no Pydantic — see _build_tasks
+        comment on why output_pydantic is omitted for on-prem LLMs).
+
+        Returns:
+            "completed" if all checks pass, "partial" if validation finds issues.
+        """
+        output_file = self.output_dir / "analyzed_architecture.json"
+
+        if not output_file.exists():
+            logger.warning(
+                "[Phase2] POST-VALIDATION FAILED: analyzed_architecture.json not found"
+            )
+            return "partial"
+
+        # 1. Load and parse JSON
+        try:
+            data = json.loads(output_file.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            logger.warning(
+                "[Phase2] POST-VALIDATION FAILED: analyzed_architecture.json is not valid JSON: %s", e
+            )
+            return "partial"
+
+        if not isinstance(data, dict):
+            logger.warning(
+                "[Phase2] POST-VALIDATION FAILED: analyzed_architecture.json root is %s, expected dict",
+                type(data).__name__,
+            )
+            return "partial"
+
+        # 2. Check for parse_error fallback (from _repair_task_output_files)
+        if data.get("parse_error"):
+            logger.warning(
+                "[Phase2] POST-VALIDATION FAILED: analyzed_architecture.json contains "
+                "parse_error fallback — synthesis output was not valid JSON"
+            )
+            return "partial"
+
+        # 3. Check required top-level keys
+        present_keys = set(data.keys())
+        missing_keys = self._REQUIRED_TOP_LEVEL_KEYS - present_keys
+        if missing_keys:
+            logger.warning(
+                "[Phase2] POST-VALIDATION: missing %d required top-level key(s): %s",
+                len(missing_keys),
+                sorted(missing_keys),
+            )
+
+        # 4. Check critical sections are not empty stubs
+        empty_sections = []
+        for section in self._NON_EMPTY_SECTIONS:
+            value = data.get(section)
+            if value is None:
+                continue  # Already counted in missing_keys
+            if isinstance(value, dict) and len(value) == 0:
+                empty_sections.append(section)
+            elif isinstance(value, list) and len(value) == 0:
+                empty_sections.append(section)
+            elif isinstance(value, str) and value.strip() in ("", "NOT_ANALYZED"):
+                empty_sections.append(section)
+
+        if empty_sections:
+            logger.warning(
+                "[Phase2] POST-VALIDATION: %d critical section(s) are empty stubs: %s",
+                len(empty_sections),
+                sorted(empty_sections),
+            )
+
+        # 5. Determine status
+        issues = list(missing_keys) + empty_sections
+        if issues:
+            logger.warning(
+                "[Phase2] POST-VALIDATION: synthesis output has %d issue(s) — "
+                "status set to 'partial'. Downstream phases may degrade gracefully.",
+                len(issues),
+            )
+            return "partial"
+
+        logger.info("[Phase2] POST-VALIDATION: analyzed_architecture.json structure OK")
+        return "completed"
+
+    # =========================================================================
     # MAIN EXECUTION
     # =========================================================================
 
@@ -723,6 +862,9 @@ class ArchitectureAnalysisCrew:
         self._format_json_outputs()
         self._inject_schema_version()
 
+        # Validate synthesis output structure (lightweight, no Pydantic)
+        validation_status = self._validate_synthesis_output()
+
         output_path = str(self.output_dir / "analyzed_architecture.json")
 
         logger.info("")
@@ -732,7 +874,7 @@ class ArchitectureAnalysisCrew:
         logger.info(f"Output: {output_path}")
 
         return {
-            "status": "completed",
+            "status": validation_status,
             "phase": "analyze",
             "result": output_path,
         }

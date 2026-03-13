@@ -15,11 +15,19 @@ Usage:
     agent = Agent(mcps=mcps, ...)
 """
 
+import logging
 import os
+import shutil
 from pathlib import Path
 from typing import Literal
 
 from crewai.mcp import MCPServerStdio
+
+logger = logging.getLogger(__name__)
+
+def _npx_available() -> bool:
+    """Check if npx is available on the system PATH."""
+    return shutil.which("npx") is not None
 
 # MCP server types
 MCPServerType = Literal["sequential_thinking", "memory", "brave_search", "filesystem", "playwright", "github"]
@@ -167,13 +175,17 @@ class MCPManager:
             server_types: List of MCP server types to get
 
         Returns:
-            List of configured MCPServerStdio instances
+            List of configured MCPServerStdio instances (empty if npx unavailable)
 
         Example:
             >>> manager = MCPManager()
             >>> mcps = manager.get_mcp_servers(["sequential_thinking", "memory"])
             >>> agent = Agent(mcps=mcps, ...)
         """
+        if not _npx_available():
+            logger.info("[MCP] npx not found — skipping MCP servers (running in Docker?)")
+            return []
+
         servers = []
 
         for server_type in server_types:
@@ -194,9 +206,6 @@ class MCPManager:
                     raise ValueError(f"Unknown MCP server type: {server_type}")
             except ValueError as e:
                 # Skip if API key missing, log warning
-                import logging
-
-                logger = logging.getLogger(__name__)
                 logger.warning(f"Skipping {server_type} MCP: {e}")
 
         return servers

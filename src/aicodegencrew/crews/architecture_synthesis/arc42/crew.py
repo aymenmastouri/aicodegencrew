@@ -288,7 +288,7 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
     # PUBLIC API
     # -------------------------------------------------------------------------
 
-    def run(self) -> str:
+    def run(self) -> dict:
         """
         Execute all 13 Mini-Crews sequentially with resume support.
 
@@ -483,15 +483,21 @@ IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_compone
                 logger.error(f"[Arc42] Quality gate failed, continuing: {e}")
         results.append("Quality Gate: Done")
 
+        summary = "\n".join(results)
         # Only clear checkpoint if ALL mini-crews succeeded (no degradation).
         # On partial completion, keep the checkpoint so only failed crews re-run.
         if not self.has_degraded_outputs():
             self._clear_checkpoint()
+            logger.info(f"[Arc42] All Mini-Crews completed:\n{summary}")
+            return {"status": "success", "result": summary}
         else:
             logger.warning(
                 f"[Arc42] Keeping checkpoint for resume — "
                 f"{len(self.get_degradation_reasons())} degraded crew(s)"
             )
-        summary = "\n".join(results)
-        logger.info(f"[Arc42] All Mini-Crews completed:\n{summary}")
-        return summary
+            logger.info(f"[Arc42] All Mini-Crews completed (partial):\n{summary}")
+            return {
+                "status": "partial",
+                "result": summary,
+                "degradation_reasons": self.get_degradation_reasons(),
+            }
