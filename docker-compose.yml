@@ -36,6 +36,7 @@ services:
       - ${PROJECT_PATH:-.}:/repo:ro
     environment:
       # Inside container, paths are remapped
+      - TZ=Europe/Berlin
       - PROJECT_PATH=/repo
       - PROJECT_PATH_HOST=${PROJECT_PATH:-.}
       - TASK_INPUT_DIR=/app/inputs/tasks

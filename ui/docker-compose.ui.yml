@@ -13,6 +13,7 @@ services:
       - ../.env:/app/.env
       - ../.env.example:/app/.env.example:ro
     environment:
+      TZ: Europe/Berlin
       AICODEGENCREW_ROOT: /app
       DASHBOARD_CORS_ORIGINS: "http://localhost:4200,http://localhost,http://localhost:80"
       PYTHONPATH: /app/src

@@ -15,6 +15,7 @@ services:
       - ./.env.example:/app/.env.example:ro
       - ${PROJECT_PATH}:/project:ro
     environment:
+      TZ: Europe/Berlin
       AICODEGENCREW_ROOT: /app
       PROJECT_PATH: /project
       PROJECT_PATH_HOST: ${PROJECT_PATH}
