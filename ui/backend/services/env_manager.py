@@ -11,11 +11,11 @@ from ..schemas import EnvVariable
 # Group definitions: (group_name, key_prefixes_or_keys)
 _ENV_GROUPS = [
     ("Repository", ["PROJECT_PATH"]),
-    ("LLM", ["LLM_", "MODEL", "API_BASE", "OPENAI_API_KEY", "MAX_LLM_"]),
+    ("LLM", ["LLM_", "MODEL", "FAST_MODEL", "CODEGEN_MODEL", "VISION_MODEL", "API_BASE", "OPENAI_API_KEY", "MAX_LLM_"]),
     ("Embeddings", ["OLLAMA_", "EMBED_", "NO_PROXY"]),
     ("Indexing", ["INDEX_", "CHROMA_", "CHUNK_", "MAX_FILE_", "MAX_RAG_"]),
     ("Phase Control", ["SKIP_", "TASK_INPUT_DIR", "REQUIREMENTS_DIR", "LOGS_DIR", "REFERENCE_DIR"]),
-    ("Output", ["DOCS_OUTPUT_DIR", "ARC42_LANGUAGE"]),
+    ("Output", ["OUTPUT_DIR", "DOCS_OUTPUT_DIR", "ARC42_LANGUAGE"]),
     ("Logging", ["LOG_LEVEL", "CREWAI_TRACING"]),
 ]
 

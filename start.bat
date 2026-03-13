@@ -8,6 +8,9 @@ REM   start.bat stop               stop Dashboard
 REM   start.bat logs               show logs
 REM =============================================================================
 
+REM Ins Verzeichnis der start.bat wechseln (wichtig bei Doppelklick)
+cd /d "%~dp0"
+
 set COMPOSE_FILE=ui/docker-compose.ui.yml
 
 if "%1"=="stop" (

@@ -31,6 +31,7 @@ const GROUP_TO_TAB: Record<string, string> = {
   Output: 'general',
   LLM: 'llm',
   Embeddings: 'llm',
+  Indexing: 'advanced',
   'Phase Control': 'advanced',
   Logging: 'advanced',
   General: 'general',

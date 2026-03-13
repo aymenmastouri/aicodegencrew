@@ -89,6 +89,8 @@ def _resolve_category_dir(category: str) -> Path:
 
     if env_path:
         p = Path(env_path)
+        if not p.is_absolute():
+            p = settings.project_root / p
         if p.is_dir():
             return p
 

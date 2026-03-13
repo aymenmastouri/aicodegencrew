@@ -1,31 +1,75 @@
 # =============================================================================
-# AICodeGenCrew Backend — lightweight dev/demo image
+# AICodeGenCrew Backend — Multi-Stage Production Image
 # Build context: project root (so certs/, src/, pyproject.toml are accessible)
+#
+# Stage 1 (build):  Install deps, compile Python source to .pyc bytecode
+# Stage 2 (final):  Only bytecode + installed packages — no source code
 # =============================================================================
-FROM python:3.12-slim
+
+# ---------------------------------------------------------------------------
+# Stage 1: BUILD — install dependencies, compile to bytecode
+# ---------------------------------------------------------------------------
+FROM python:3.12-slim AS build
 
 WORKDIR /app
-
-# Install Capgemini corporate CA so HTTPS to Sovereign AI Platform works
-COPY certs/CapgeminiPKIRootCA.crt /usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt
-RUN update-ca-certificates
 
 # Install backend-specific dependencies
 COPY ui/backend/requirements.txt /tmp/backend-requirements.txt
 RUN pip install --no-cache-dir -r /tmp/backend-requirements.txt
 
-# Install core package with all its dependencies (requests, crewai, etc.)
+# Install core package with all its dependencies
 COPY pyproject.toml README.md ./
 COPY src/ /app/src/
-RUN pip install --no-cache-dir -e . && \
+RUN pip install --no-cache-dir . && \
     pip install --no-cache-dir truststore>=0.9.0
 
 # Copy backend code
 COPY ui/backend/ /app/ui/backend/
 
+# Compile all Python to bytecode (.pyc)
+RUN python -m compileall -b /app/src/ /app/ui/backend/ 2>/dev/null && \
+    find /app/src /app/ui/backend -name "*.py" -delete && \
+    find /app/src /app/ui/backend -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+
+# Remove build artifacts that are not needed at runtime
+RUN rm -rf /app/pyproject.toml /app/README.md /app/src/*.egg-info
+
+# ---------------------------------------------------------------------------
+# Stage 2: FINAL — minimal runtime image, bytecode only
+# ---------------------------------------------------------------------------
+FROM python:3.12-slim AS final
+
+WORKDIR /app
+
+# Install only curl (healthcheck) — no build tools, no compilers
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Capgemini corporate CA for HTTPS to Sovereign AI Platform
+COPY certs/CapgeminiPKIRootCA.crt /usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt
+RUN update-ca-certificates
+
+# Copy installed Python packages from build stage
+COPY --from=build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=build /usr/local/bin /usr/local/bin
+
+# Copy compiled bytecode only (no .py source files)
+COPY --from=build /app/src/ /app/src/
+COPY --from=build /app/ui/backend/ /app/ui/backend/
+
 ENV PYTHONPATH=/app/src:/app
 ENV PYTHONDONTWRITEBYTECODE=1
 
+# Run as non-root user
+RUN useradd -r -m -s /bin/false appuser && \
+    mkdir -p /app/knowledge /app/logs /app/inputs /app/config && \
+    chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8001
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8001/api/health || exit 1
 
 CMD ["python", "-m", "uvicorn", "ui.backend.main:app", "--host", "0.0.0.0", "--port", "8001"]
