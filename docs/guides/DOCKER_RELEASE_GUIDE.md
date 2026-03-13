@@ -65,6 +65,7 @@ VERSION=0.7.3
 RELEASE_DIR=dist/sdlc-pilot-v${VERSION}/sdlc-pilot-v${VERSION}
 mkdir -p ${RELEASE_DIR}
 cp -r dist/release-template/* ${RELEASE_DIR}/
+cp dist/release-template/.env.example ${RELEASE_DIR}/
 cp -r config ${RELEASE_DIR}/
 cp LICENSE ${RELEASE_DIR}/
 cp start.bat start.sh ${RELEASE_DIR}/
@@ -135,6 +136,7 @@ docker tag ui-backend:latest sdlc-pilot/backend:latest && \
 docker tag ui-frontend:latest sdlc-pilot/frontend:latest && \
 mkdir -p ${RELEASE_DIR} && \
 cp -r dist/release-template/* ${RELEASE_DIR}/ && \
+cp dist/release-template/.env.example ${RELEASE_DIR}/ && \
 cp -r config ${RELEASE_DIR}/ && \
 cp LICENSE start.bat start.sh ${RELEASE_DIR}/ && \
 docker save sdlc-pilot/backend:latest | gzip > ${RELEASE_DIR}/sdlc-pilot-backend.tar.gz && \
