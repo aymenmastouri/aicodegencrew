@@ -1,3 +1,9 @@
+volumes:
+  knowledge:
+  logs:
+  inputs:
+  reports:
+
 services:
   backend:
     image: sdlc-pilot/backend:latest
@@ -7,9 +13,10 @@ services:
     env_file:
       - .env
     volumes:
-      - ./knowledge:/app/knowledge
-      - ./logs:/app/logs
-      - ./inputs:/app/inputs
+      - knowledge:/app/knowledge
+      - logs:/app/logs
+      - inputs:/app/inputs
+      - reports:/app/reports
       - ./config:/app/config
       - ./.env:/app/.env
       - ./.env.example:/app/.env.example:ro

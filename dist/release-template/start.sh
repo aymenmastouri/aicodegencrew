@@ -12,6 +12,8 @@
 
 set -e
 
+cd "$(dirname "$0")"
+
 # ── Detect docker compose command (v2 preferred, v1 fallback) ────────────────
 if docker compose version &> /dev/null; then
     DC="docker compose"
@@ -60,7 +62,6 @@ if ! docker info &> /dev/null 2>&1; then
     error "Please start Docker Desktop (or 'sudo systemctl start docker' on Linux)."
     exit 1
 fi
-
 info "Docker is running."
 
 # Check .env
@@ -86,7 +87,6 @@ if grep -q "sk-your-api-key-here" .env; then
     error "Then run ./start.sh again."
     exit 1
 fi
-
 info ".env configured."
 
 # Check if PROJECT_PATH is still placeholder
@@ -101,25 +101,16 @@ if grep -q "path/to/your/repo\|path\\to\\your\\repo" .env; then
 fi
 info "Repository path configured."
 
-# Create data directories and fix ownership for container user (appuser UID 999)
-# Use docker alpine to create dirs as UID 999 (avoids permission issues on re-deploy)
-docker run --rm -v "$(pwd):/work" -w /work alpine sh -c \
-  "mkdir -p knowledge logs reports config inputs/tasks inputs/requirements inputs/logs inputs/reference && chown -R 999:999 knowledge logs reports config inputs && chown 999:999 .env .env.example 2>/dev/null; true" 2>/dev/null \
-  || { mkdir -p knowledge logs reports config inputs/tasks inputs/requirements inputs/logs inputs/reference; \
-       chown -R 999:999 knowledge logs reports config inputs .env .env.example 2>/dev/null || sudo chown -R 999:999 knowledge logs reports config inputs .env .env.example 2>/dev/null || true; }
-
-# ── Start ────────────────────────────────────────────────────────────────────
-echo ""
-echo "Building and starting Dashboard..."
-# Load Docker images on first run
+# ── Load Docker images on first run ──────────────────────────────────────────
 if ! docker image inspect sdlc-pilot/backend:latest &> /dev/null; then
     echo ""
-    echo "Loading Docker images -- this only happens once..."
+    echo "Loading Docker images — this only happens once..."
     docker load -i sdlc-pilot-backend.tar.gz
     docker load -i sdlc-pilot-frontend.tar.gz
     info "Images loaded."
 fi
 
+# ── Start ────────────────────────────────────────────────────────────────────
 echo ""
 echo "Starting Dashboard..."
 echo ""
