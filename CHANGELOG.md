@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.7.4] - 2026-03-13
+
+### Security
+
+- Remove real API keys from `.env.run` (file deleted from distribution)
+- Add XXE protection to XML parser (file size limit + defusedxml support)
+- Add DOMPurify HTML sanitization in Knowledge and Reports components (XSS fix)
+- Add symlink rejection to all path traversal checks (backend)
+- Sanitize backend error messages — no longer leak internal details to clients
+- Validate `env_overrides` in pipeline RunRequest (block system variable injection)
+- URL-encode Git credentials to prevent special character leaks
+- Harden nginx CSP: add `object-src 'none'; base-uri 'self'; form-action 'self'`
+
+### Fixed
+
+- **Pipeline LLM failure**: Add `litellm` as required dependency (`crewai[tools,litellm]>=1.10.1`) — fixes "Unable to initialize LLM with model 'openai/...'" error
+- Upgrade `crewai` 1.9.3 → 1.10.1, `openai` 1.83.0 → 1.109.1
+- `LOG_LEVEL` validation crash: invalid values now fall back to INFO instead of AttributeError
+- `start.bat`: Add Docker Compose v1/v2 detection (matching `start.sh` behavior)
+- `docker-compose.yml`: Add default for `TASK_INPUT_DIR` to prevent startup failure
+- `build_release.py`: Add file existence checks before copy, fix `install.sh` missing chmod
+- Fix 3 pre-existing test failures caused by environment variable pollution
+
+### Changed
+
+- Make corporate CA certificate optional in Dockerfiles (build no longer fails without cert)
+- Make timezone configurable via `TZ` env var in all docker-compose files
+- Replace hardcoded Capgemini LLM URLs in `.env.example` with generic examples
+- Fix misleading "Production" comment in `Dockerfile.dev`
+- Remove internal domain reference from `docker-compose.yml` comment
+
 ## [0.7.2] - 2026-03-06
 
 ### Changed

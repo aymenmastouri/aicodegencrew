@@ -275,10 +275,13 @@ class TestTokenBudgetDefaults:
 
         assert MAX_LLM_INPUT_TOKENS == 100_000
 
-    def test_default_output_tokens(self):
-        from aicodegencrew.shared.utils.token_budget import MAX_LLM_OUTPUT_TOKENS
-
-        assert MAX_LLM_OUTPUT_TOKENS == 16_000
+    def test_default_output_tokens(self, monkeypatch):
+        monkeypatch.delenv("MAX_LLM_OUTPUT_TOKENS", raising=False)
+        # Re-import to pick up the clean default
+        import importlib
+        import aicodegencrew.shared.utils.token_budget as tb
+        importlib.reload(tb)
+        assert tb.MAX_LLM_OUTPUT_TOKENS == 16_000
 
     def test_tool_max_chars_calculation(self):
         from aicodegencrew.shared.utils.token_budget import (

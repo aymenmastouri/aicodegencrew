@@ -1,6 +1,6 @@
 [project]
 name = "aicodegencrew"
-version = "0.7.3"
+version = "0.7.4"
 description = "AI-powered SDLC automation platform — from architecture analysis to code generation"
 authors = [{ name = "Aymen Mastouri", email = "aymen.a.mastouri@capgemini.com" }]
 requires-python = ">=3.10,<3.13"
@@ -20,7 +20,7 @@ classifiers = [
 
 dependencies = [
     # Core AI/ML
-    "crewai[tools]>=1.9.0",
+    "crewai[tools,litellm]>=1.10.1",
     "ollama>=0.4.5",
     # Vector DB & Embeddings
     "chromadb>=1.1.0",

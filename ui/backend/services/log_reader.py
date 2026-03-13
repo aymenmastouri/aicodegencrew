@@ -10,9 +10,11 @@ def read_log(filename: str = "current.log", tail: int = 200) -> LogResponse:
 
     # Security: prevent path traversal BEFORE any file access
     try:
-        log_path.resolve().relative_to(settings.logs_dir.resolve())
+        log_path.resolve(strict=False).relative_to(settings.logs_dir.resolve())
     except ValueError:
         raise ValueError("Path traversal not allowed")
+    if log_path.is_symlink():
+        raise ValueError("Symlinks are not allowed")
 
     if not log_path.exists():
         return LogResponse(lines=[], total_lines=0, file_path=str(log_path))

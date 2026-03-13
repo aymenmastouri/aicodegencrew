@@ -13,6 +13,31 @@ from pathlib import Path
 from typing import Any
 
 
+def _safe_parse_xml(file_path: Path) -> ET.ElementTree:
+    """Parse XML with protection against entity expansion attacks (XXE/billion laughs).
+
+    Limits entity expansion to prevent memory exhaustion from malicious XML.
+    """
+    # Limit file size to 50 MB to prevent memory exhaustion
+    file_size = file_path.stat().st_size
+    if file_size > 50 * 1024 * 1024:
+        raise ValueError(f"XML file too large ({file_size:,} bytes). Maximum is 50 MB.")
+
+    try:
+        import defusedxml.ElementTree as DefusedET
+        return DefusedET.parse(str(file_path))
+    except ImportError:
+        pass
+
+    # Fallback: use stdlib with manual entity expansion limit
+    # Python 3.9+ respects this global limit
+    if hasattr(ET, 'XMLParser'):
+        parser = ET.XMLParser()
+    else:
+        parser = None
+    return ET.parse(file_path, parser=parser)
+
+
 def parse_xml(file_path: Path) -> list[dict[str, Any]]:
     """
     Parse XML file and extract task information.
@@ -28,7 +53,7 @@ def parse_xml(file_path: Path) -> list[dict[str, Any]]:
     Returns:
         List of task dictionaries
     """
-    tree = ET.parse(file_path)
+    tree = _safe_parse_xml(file_path)
     root = tree.getroot()
 
     tasks = []

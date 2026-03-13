@@ -20,6 +20,9 @@ def test_setup_status_reports_missing_project_and_llm(tmp_path, monkeypatch):
 
     from ui.backend import config as backend_config
 
+    # Clear PROJECT_PATH from os.environ so setup-status reads from .env only
+    monkeypatch.delenv("PROJECT_PATH", raising=False)
+
     # Point settings at tmp directories
     monkeypatch.setattr(backend_config.settings, "project_root", tmp_path)
     monkeypatch.setattr(backend_config.settings, "env_file", env_path)

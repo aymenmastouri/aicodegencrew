@@ -1,6 +1,7 @@
 """Triage API routes — issue classification, blast radius, dual-audience reports."""
 
 import json
+import logging
 import re
 from pathlib import Path
 
@@ -8,6 +9,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from ..config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/triage", tags=["triage"])
 
@@ -54,7 +57,8 @@ def run_full_triage(body: TriageFullRequest):
         )
         return crew.run(request)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Full triage failed for issue_id=%s", body.issue_id)
+        raise HTTPException(status_code=500, detail="Triage processing failed. Check server logs for details.")
 
 
 @router.post("/quick")
@@ -66,7 +70,8 @@ def run_quick_triage(body: TriageQuickRequest):
         crew = TriageCrew(knowledge_dir=str(settings.knowledge_dir))
         return crew.triage_quick(title=body.title, description=body.description)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Quick triage failed")
+        raise HTTPException(status_code=500, detail="Quick triage failed. Check server logs for details.")
 
 
 @router.get("/results")

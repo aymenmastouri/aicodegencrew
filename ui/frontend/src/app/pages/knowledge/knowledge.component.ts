@@ -16,6 +16,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, of, catchError } from 'rxjs';
 
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { ApiService, KnowledgeFile } from '../../services/api.service';
 import { formatBytes as formatBytesUtil } from '../../shared/phase-utils';
 
@@ -1334,21 +1335,36 @@ export class KnowledgeComponent implements OnInit, OnDestroy {
 
   // ─── Rendering ──────────────────────────────────────────────────
 
+  /** Sanitize HTML to prevent XSS before trusting it for rendering. */
+  private sanitizeHtml(html: string): SafeHtml {
+    const clean = DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: [
+        'h1','h2','h3','h4','h5','h6','p','br','hr','ul','ol','li',
+        'strong','em','b','i','u','s','code','pre','blockquote',
+        'table','thead','tbody','tr','th','td','a','img','span','div',
+        'dl','dt','dd','sub','sup','mark','details','summary',
+      ],
+      ALLOWED_ATTR: ['href','src','alt','title','class','style','id','target','rel','width','height'],
+      ALLOW_DATA_ATTR: false,
+    });
+    return this.sanitizer.bypassSecurityTrustHtml(clean);
+  }
+
   private renderContent(file: KnowledgeFile, text: string): void {
     if (file.type === 'md') {
       const html = marked.parse(text) as string;
-      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(html);
+      this.renderedHtml = this.sanitizeHtml(html);
     } else if (file.type === 'html') {
-      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(text);
+      this.renderedHtml = this.sanitizeHtml(text);
     } else if (file.type === 'json') {
       const highlighted = this.highlightJson(text);
-      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(`<pre class="json-viewer">${highlighted}</pre>`);
+      this.renderedHtml = this.sanitizeHtml(`<pre class="json-viewer">${highlighted}</pre>`);
     } else if (file.type === 'adoc') {
-      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(this.renderAsciidoc(text));
+      this.renderedHtml = this.sanitizeHtml(this.renderAsciidoc(text));
     } else if (file.type === 'drawio') {
-      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(this.renderDrawioInfo(text, file.name));
+      this.renderedHtml = this.sanitizeHtml(this.renderDrawioInfo(text, file.name));
     } else if (file.type === 'confluence') {
-      this.renderedHtml = this.sanitizer.bypassSecurityTrustHtml(this.renderConfluence(text));
+      this.renderedHtml = this.sanitizeHtml(this.renderConfluence(text));
     }
   }
 

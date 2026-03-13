@@ -193,10 +193,14 @@ def read_knowledge_file(relative_path: str) -> dict | list | str:
     file_path = settings.knowledge_dir / relative_path
 
     # Security: prevent path traversal BEFORE any file access
+    # Also reject symlinks to prevent bypassing the directory check
     try:
-        file_path.resolve().relative_to(settings.knowledge_dir.resolve())
+        resolved = file_path.resolve(strict=False)
+        resolved.relative_to(settings.knowledge_dir.resolve())
     except ValueError:
         raise ValueError("Path traversal not allowed")
+    if file_path.is_symlink():
+        raise ValueError("Symlinks are not allowed")
 
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {relative_path}")

@@ -105,7 +105,12 @@ def setup_logging() -> None:
     """Configure logging for CrewAI and dependencies."""
     log_level = os.getenv("LOG_LEVEL", "INFO").upper()
 
-    logging.getLogger().setLevel(getattr(logging, log_level))
+    numeric_level = getattr(logging, log_level, None)
+    if not isinstance(numeric_level, int):
+        logger.warning(f"[WARN] Invalid LOG_LEVEL '{log_level}', defaulting to INFO")
+        log_level = "INFO"
+        numeric_level = logging.INFO
+    logging.getLogger().setLevel(numeric_level)
 
     # Quiet noisy loggers
     for noisy in ("httpx", "httpcore", "chromadb", "openai"):
@@ -115,7 +120,7 @@ def setup_logging() -> None:
 
     # Keep our logs visible
     logging.getLogger("crewai").setLevel(logging.INFO)
-    logging.getLogger("aicodegencrew").setLevel(getattr(logging, log_level))
+    logging.getLogger("aicodegencrew").setLevel(numeric_level)
 
     logger.info(f"[CONFIG] LOG_LEVEL = {log_level}")
 
