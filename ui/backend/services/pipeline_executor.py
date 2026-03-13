@@ -155,6 +155,7 @@ class PipelineExecutor:
             try:
                 self._process = subprocess.Popen(
                     cmd,
+                    stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     text=True,
@@ -287,6 +288,7 @@ class PipelineExecutor:
             try:
                 proc = subprocess.Popen(
                     cmd,
+                    stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     text=True,
@@ -930,8 +932,25 @@ class PipelineExecutor:
             # Append to JSONL run history (outside lock to avoid I/O under lock)
             self._append_history_entry(snapshot)
 
+            # Clean up temporary .env.run file
+            try:
+                env_run_path = settings.project_root / ".env.run"
+                if env_run_path.exists():
+                    env_run_path.unlink()
+            except Exception:
+                pass
+
         except Exception as exc:
             logger.error("Monitor thread error: %s", exc)
+            # Kill subprocess if still running
+            if self._process and self._process.poll() is None:
+                try:
+                    self._kill_process_tree(self._process.pid)
+                except Exception:
+                    try:
+                        self._process.kill()
+                    except Exception:
+                        pass
             with self._state_lock:
                 if self.state == "running":
                     self.state = "failed"

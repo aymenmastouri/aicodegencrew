@@ -535,7 +535,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        console.error('[Settings] Failed to load env schema', err);
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -546,7 +547,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.defaults = d;
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[Settings] Failed to load env defaults', err);
+      },
     });
 
     this.api.getPhases().subscribe({
@@ -562,7 +565,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         }
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[Settings] Failed to load phases', err);
+      },
     });
 
     this.api.getPresets().subscribe({
@@ -570,7 +575,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.presets = p;
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => {
+        console.error('[Settings] Failed to load presets', err);
+      },
     });
   }
 

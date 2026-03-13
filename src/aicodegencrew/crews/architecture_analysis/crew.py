@@ -654,6 +654,10 @@ class ArchitectureAnalysisCrew:
 
         Mini-Crew 5 (synthesis) runs AFTER all 4 complete, reading their output files.
         """
+        # Ensure output directory exists (may have been deleted by orchestrator reset;
+        # Docker volume mounts on WSL2 can also lose directories unexpectedly)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
         completed = self._load_checkpoint()
         is_resume = len(completed) > 0
 
