@@ -43,8 +43,14 @@ echo "[OK] Images removed."
 # 4. Remove data directories from host
 echo "[4/4] Removing data directories..."
 rm -rf knowledge logs inputs config reports 2>/dev/null || true
-# Fallback for UID 999 owned files
+# Fallback for UID 999 owned files — use a temp container (no sudo needed)
 if [ -d knowledge ] || [ -d logs ] || [ -d inputs ] || [ -d config ] || [ -d reports ]; then
+    echo "      Some dirs owned by UID 999 — using Docker to remove..."
+    docker run --rm -v "$(pwd):/work" alpine sh -c "rm -rf /work/knowledge /work/logs /work/inputs /work/config /work/reports" 2>/dev/null || true
+fi
+# Final fallback: ask for sudo only if dirs still exist
+if [ -d knowledge ] || [ -d logs ] || [ -d inputs ] || [ -d config ] || [ -d reports ]; then
+    echo "      Requesting sudo to remove remaining dirs..."
     sudo rm -rf knowledge logs inputs config reports 2>/dev/null || true
 fi
 echo "[OK] Data directories removed."
