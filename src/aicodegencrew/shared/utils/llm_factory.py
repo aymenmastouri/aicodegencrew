@@ -6,6 +6,33 @@ All crews import `create_llm()` from here instead of duplicating the logic.
 import logging
 import os
 
+# ---------------------------------------------------------------------------
+# Langfuse LLM Observability (optional)
+# ---------------------------------------------------------------------------
+# If LANGFUSE_PUBLIC_KEY is set, register Langfuse callbacks on litellm so
+# every LLM call is automatically traced. No-op when env vars are absent.
+
+
+def _configure_langfuse() -> None:
+    """Wire Langfuse callbacks into litellm if credentials are present."""
+    public_key = os.getenv("LANGFUSE_PUBLIC_KEY", "").strip()
+    if not public_key:
+        return
+
+    try:
+        import litellm
+
+        if "langfuse" not in (litellm.success_callback or []):
+            litellm.success_callback = [*(litellm.success_callback or []), "langfuse"]
+        if "langfuse" not in (litellm.failure_callback or []):
+            litellm.failure_callback = [*(litellm.failure_callback or []), "langfuse"]
+        logging.getLogger(__name__).info("[Langfuse] Callbacks registered (host=%s)", os.getenv("LANGFUSE_HOST", ""))
+    except Exception as exc:
+        logging.getLogger(__name__).warning("[Langfuse] Failed to configure: %s", exc)
+
+
+_configure_langfuse()
+
 # Inject the OS/Windows certificate store BEFORE any HTTP library is imported
 # so that corporate self-signed CAs are trusted by Python's SSL stack.
 # (certifi bundle does not include corporate / on-prem CA certificates)

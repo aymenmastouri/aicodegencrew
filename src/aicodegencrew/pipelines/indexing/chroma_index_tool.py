@@ -1,4 +1,7 @@
-"""ChromaDB indexing tool for persistent vector storage.
+"""Vector store indexing tool for persistent vector storage.
+
+Supports ChromaDB (default) and Qdrant via VECTOR_DB env var.
+Uses the unified VectorStoreProtocol for all operations.
 
 Best Practices:
 - Lazy client initialization for better performance
@@ -7,25 +10,24 @@ Best Practices:
 - Metadata tracking for observability
 """
 
+import os
 from pathlib import Path
 from typing import Any
 
-import chromadb
-from chromadb.config import Settings
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from ...shared.paths import CHROMA_DIR, get_chroma_dir
-from ...shared.utils.chroma_client import create_chroma_client, get_chroma_http_config
+from ...shared.paths import get_chroma_dir
 from ...shared.utils.logger import setup_logger
+from ...shared.utils.vector_store import get_vector_store
 
 logger = setup_logger(__name__)
 
 
 def _normalize_where(where: dict[str, Any] | None) -> dict[str, Any]:
-    """Normalize a metadata filter to Chroma's expected shape.
+    """Normalize a metadata filter.
 
-    Some Chroma versions require the top-level `where` dict to contain exactly one
+    Some backends require the top-level `where` dict to contain exactly one
     operator (e.g. `$and`, `$or`). Our incremental indexing naturally builds
     multi-field equality filters like `{repo_path: ..., file_path: ..., file_hash: ...}`.
     This helper converts those into `{"$and": [{"repo_path": ...}, ...]}`.
@@ -41,20 +43,9 @@ def _normalize_where(where: dict[str, Any] | None) -> dict[str, Any]:
     if len(where) <= 1:
         return where
 
-    # Multiple keys: wrap into a single operator.
+    # Multiple keys: wrap into a single operator (ChromaDB format).
+    # Qdrant client handles this internally, but wrapping is safe for both.
     return {"$and": [{k: v} for k, v in where.items()]}
-
-
-def _normalize_include(include: list[str] | None) -> list[str]:
-    """Normalize `include` for Chroma `collection.get()`.
-
-    Chroma expects include items like: documents, embeddings, metadatas, uris, data.
-    `ids` are always returned and should NOT be listed in `include`.
-    """
-    if not include:
-        return []
-    allowed = {"documents", "embeddings", "metadatas", "distances", "uris", "data"}
-    return [item for item in include if item in allowed]
 
 
 class ChromaIndexInput(BaseModel):
@@ -70,14 +61,14 @@ class ChromaIndexInput(BaseModel):
     collection_metadata: dict[str, Any] = Field(default_factory=dict, description="Collection metadata")
     where: dict[str, Any] = Field(default_factory=dict, description="Metadata filter for get/delete")
     limit: int = Field(default=0, description="Max number of items to return for get (0 = no limit)")
-    include: list[str] = Field(default_factory=list, description="Fields to include for get (e.g. ['ids','metadatas'])")
+    include: list[str] = Field(default_factory=list, description="Fields to include for get")
 
 
 class ChromaIndexTool(BaseTool):
     name: str = "chroma_index"
     description: str = (
-        "Manages ChromaDB persistent vector store with upsert, query, and count operations. "
-        "Optimized for large-scale document retrieval with batch processing support."
+        "Manages persistent vector store with upsert, query, and count operations. "
+        "Backend selected via VECTOR_DB env var (chroma or qdrant)."
     )
     args_schema: type[BaseModel] = ChromaIndexInput
 
@@ -88,19 +79,22 @@ class ChromaIndexTool(BaseTool):
     max_retries: int = 3
     retry_delay: float = 1.0
 
-    def _get_client(self):
-        """Lazy initialization of ChromaDB client.
+    def _get_vector_store(self):
+        """Lazy initialization of the unified vector store backend.
 
-        Best Practice: Lazy initialization reduces startup time and memory usage.
-        Client is created only when first needed.
+        Uses VECTOR_DB env var to select between ChromaDB and Qdrant.
+        Falls back to ChromaDB when VECTOR_DB is not set.
         """
-        if not hasattr(self, "_client"):
-            chroma_dir = self.chroma_dir or get_chroma_dir()
-            Path(chroma_dir).mkdir(parents=True, exist_ok=True)
-            logger.info(f"Initializing ChromaDB client at: {chroma_dir}")
-            self._client = create_chroma_client(persistent_path=chroma_dir)
-            logger.info("ChromaDB client initialized")
-        return self._client
+        if not hasattr(self, "_vector_store"):
+            if os.getenv("VECTOR_DB", "chroma").strip().lower() == "qdrant":
+                self._vector_store = get_vector_store()
+                logger.info("Using Qdrant vector store backend")
+            else:
+                chroma_dir = self.chroma_dir or get_chroma_dir()
+                Path(chroma_dir).mkdir(parents=True, exist_ok=True)
+                self._vector_store = get_vector_store(persistent_path=chroma_dir)
+                logger.info(f"Using ChromaDB vector store backend at: {chroma_dir}")
+        return self._vector_store
 
     def _run(
         self,
@@ -116,21 +110,7 @@ class ChromaIndexTool(BaseTool):
         limit: int = 0,
         include: list[str] = None,
     ) -> dict[str, Any]:
-        """Execute ChromaDB operation.
-
-        Args:
-            operation: 'upsert', 'query', or 'count'
-            chunks: Chunks to upsert
-            embeddings: Embeddings for chunks
-            query_text: Query text
-            query_embedding: Query embedding
-            top_k: Number of results
-            collection_name: Collection name
-            collection_metadata: Metadata to store with collection
-
-        Returns:
-            Operation result dictionary
-        """
+        """Execute vector store operation."""
         if operation == "upsert":
             return self._upsert(chunks, embeddings, collection_name, collection_metadata)
         elif operation == "query":
@@ -142,10 +122,7 @@ class ChromaIndexTool(BaseTool):
         elif operation == "count":
             return self._count(collection_name)
         else:
-            return {
-                "success": False,
-                "error": f"Unknown operation: {operation}",
-            }
+            return {"success": False, "error": f"Unknown operation: {operation}"}
 
     def _upsert(
         self,
@@ -154,25 +131,10 @@ class ChromaIndexTool(BaseTool):
         collection_name: str,
         collection_metadata: dict[str, Any] = None,
     ) -> dict[str, Any]:
-        """Upsert chunks into collection.
-
-        Args:
-            chunks: List of chunk dictionaries
-            embeddings: List of embedding vectors
-            collection_name: Collection name
-            collection_metadata: Metadata to store with collection
-
-        Returns:
-            Result dictionary
-        """
+        """Upsert chunks into collection."""
         if not chunks or not embeddings:
-            return {
-                "success": False,
-                "error": "No chunks or embeddings provided",
-            }
+            return {"success": False, "error": "No chunks or embeddings provided"}
 
-        # Embeddings tool can return a list containing None entries for failed embeddings.
-        # We tolerate that, but we expect one-to-one alignment by index.
         if len(chunks) != len(embeddings):
             return {
                 "success": False,
@@ -180,19 +142,7 @@ class ChromaIndexTool(BaseTool):
             }
 
         try:
-            # Prepare collection metadata
-            metadata = {"description": "Repository documentation chunks"}
-            if collection_metadata:
-                metadata.update(collection_metadata)
-
-            collection = self._get_client().get_or_create_collection(name=collection_name, metadata=metadata)
-
-            # Best-effort: ensure metadata updates even if collection already existed.
-            try:
-                if hasattr(collection, "modify"):
-                    collection.modify(metadata=metadata)
-            except Exception as e:
-                logger.debug(f"Could not update collection metadata via modify(): {e}")
+            store = self._get_vector_store()
 
             # Prepare data for upsert
             ids = []
@@ -201,7 +151,6 @@ class ChromaIndexTool(BaseTool):
             valid_embeddings = []
 
             for chunk, embedding in zip(chunks, embeddings, strict=False):
-                # Skip if embedding failed (None)
                 if embedding is None:
                     continue
 
@@ -227,18 +176,9 @@ class ChromaIndexTool(BaseTool):
                 valid_embeddings.append(embedding)
 
             if not ids:
-                return {
-                    "success": False,
-                    "error": "No valid chunks to upsert",
-                }
+                return {"success": False, "error": "No valid chunks to upsert"}
 
-            # Upsert to ChromaDB
-            collection.upsert(
-                ids=ids,
-                documents=texts,
-                embeddings=valid_embeddings,
-                metadatas=metadatas,
-            )
+            store.upsert(collection_name, ids, texts, valid_embeddings, metadatas)
 
             logger.info(f"Upserted {len(ids)} chunks to collection '{collection_name}'")
 
@@ -249,11 +189,8 @@ class ChromaIndexTool(BaseTool):
             }
 
         except Exception as e:
-            logger.error(f"Error upserting to ChromaDB: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-            }
+            logger.error(f"Error upserting: {e}")
+            return {"success": False, "error": str(e)}
 
     def _query(
         self,
@@ -262,64 +199,36 @@ class ChromaIndexTool(BaseTool):
         top_k: int,
         collection_name: str,
     ) -> dict[str, Any]:
-        """Query collection for similar chunks.
-
-        Args:
-            query_text: Query text
-            query_embedding: Query embedding vector
-            top_k: Number of results
-            collection_name: Collection name
-
-        Returns:
-            Query results dictionary
-        """
+        """Query collection for similar chunks."""
         if not query_embedding:
-            return {
-                "success": False,
-                "error": "No query embedding provided",
-            }
+            return {"success": False, "error": "No query embedding provided"}
 
         try:
-            client = self._get_client()
-            collections = client.list_collections()
-            if collection_name not in [c.name for c in collections]:
-                return {"success": True, "results": [], "count": 0}
-
-            collection = client.get_collection(name=collection_name)
-
-            results = collection.query(
-                query_embeddings=[query_embedding],
-                n_results=top_k,
-            )
+            store = self._get_vector_store()
+            results = store.query(collection_name, query_embeddings=[query_embedding], n_results=top_k)
 
             # Format results
             formatted_results = []
+            ids_list = results.get("ids", [[]])[0]
+            docs_list = results.get("documents", [[]])[0]
+            meta_list = results.get("metadatas", [[]])[0]
+            dist_list = results.get("distances", [[]])[0]
 
-            if results["ids"] and len(results["ids"]) > 0:
-                for i in range(len(results["ids"][0])):
-                    formatted_results.append(
-                        {
-                            "chunk_id": results["ids"][0][i],
-                            "text": results["documents"][0][i] if results["documents"] else "",
-                            "metadata": results["metadatas"][0][i] if results["metadatas"] else {},
-                            "distance": results["distances"][0][i] if results.get("distances") else 0.0,
-                        }
-                    )
+            for i in range(len(ids_list)):
+                formatted_results.append({
+                    "chunk_id": ids_list[i],
+                    "text": docs_list[i] if i < len(docs_list) else "",
+                    "metadata": meta_list[i] if i < len(meta_list) else {},
+                    "distance": dist_list[i] if i < len(dist_list) else 0.0,
+                })
 
             logger.info(f"Retrieved {len(formatted_results)} results for query")
 
-            return {
-                "success": True,
-                "results": formatted_results,
-                "count": len(formatted_results),
-            }
+            return {"success": True, "results": formatted_results, "count": len(formatted_results)}
 
         except Exception as e:
-            logger.error(f"Error querying ChromaDB: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-            }
+            logger.error(f"Error querying: {e}")
+            return {"success": False, "error": str(e)}
 
     def _get(
         self,
@@ -328,32 +237,15 @@ class ChromaIndexTool(BaseTool):
         limit: int = 0,
         include: list[str] = None,
     ) -> dict[str, Any]:
-        """Get documents by metadata filter.
-
-        This is used for incremental indexing checks (e.g., file_path+file_hash).
-        """
-        include = _normalize_include(include)
+        """Get documents by metadata filter."""
         try:
-            client = self._get_client()
-            collections = client.list_collections()
-            if collection_name not in [c.name for c in collections]:
-                return {"success": True, "count": 0, "exists": False, "items": {}}
+            store = self._get_vector_store()
+            results = store.get(collection_name, where=_normalize_where(where), limit=limit, include=include)
 
-            collection = client.get_collection(name=collection_name)
-
-            get_kwargs: dict[str, Any] = {"where": _normalize_where(where)}
-            if include:
-                get_kwargs["include"] = include
-            if limit and limit > 0:
-                get_kwargs["limit"] = limit
-
-            results = collection.get(**get_kwargs)
-
-            # Count heuristic: ids is present in chroma get response
             ids = results.get("ids", []) or []
             return {
                 "success": True,
-                "exists": True,
+                "exists": len(ids) > 0,
                 "count": len(ids),
                 "items": results,
             }
@@ -367,89 +259,42 @@ class ChromaIndexTool(BaseTool):
         collection_name: str,
         where: dict[str, Any],
     ) -> dict[str, Any]:
-        """Delete documents by metadata filter (best-effort)."""
+        """Delete documents by metadata filter."""
         try:
-            client = self._get_client()
-            collections = client.list_collections()
-            if collection_name not in [c.name for c in collections]:
-                return {"success": True, "deleted": 0, "exists": False}
-
-            collection = client.get_collection(name=collection_name)
-
-            # Chroma delete doesn't return deleted count reliably across versions
-            collection.delete(where=_normalize_where(where))
-            return {"success": True, "deleted": 0, "exists": True}
+            store = self._get_vector_store()
+            result = store.delete(collection_name, where=_normalize_where(where))
+            return {"success": True, "deleted": result.get("deleted", 0), "exists": True}
 
         except Exception as e:
             logger.error(f"Delete failed: {e}")
             return {"success": False, "error": str(e), "deleted": 0, "exists": False}
 
-    def _count(
-        self,
-        collection_name: str,
-    ) -> dict[str, Any]:
-        """Get document count in collection.
-
-        Args:
-            collection_name: Collection name
-
-        Returns:
-            Result dictionary with count
-        """
+    def _count(self, collection_name: str) -> dict[str, Any]:
+        """Get document count in collection."""
         try:
-            client = self._get_client()
-
-            # Check if collection exists
-            collections = client.list_collections()
-            collection_names = [c.name for c in collections]
-
-            if collection_name not in collection_names:
-                logger.info(f"Collection '{collection_name}' does not exist")
-                return {
-                    "success": True,
-                    "count": 0,
-                    "exists": False,
-                }
-
-            collection = client.get_collection(name=collection_name)
-            count = collection.count()
+            store = self._get_vector_store()
+            count = store.count(collection_name)
 
             logger.info(f"Collection '{collection_name}' has {count} documents")
-            return {
-                "success": True,
-                "count": count,
-                "exists": True,
-            }
+            return {"success": True, "count": count, "exists": count > 0}
 
         except Exception as e:
             logger.error(f"Count failed: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "count": 0,
-                "exists": False,
-            }
+            return {"success": False, "error": str(e), "count": 0, "exists": False}
 
     def _get_collection_metadata(self, collection_name: str) -> dict[str, Any]:
         """Get metadata stored with collection.
 
-        Args:
-            collection_name: Collection name
-
-        Returns:
-            Metadata dictionary (empty if collection doesn't exist)
+        Note: Only supported with ChromaDB backend. Returns empty dict for Qdrant.
         """
+        if os.getenv("VECTOR_DB", "chroma").strip().lower() == "qdrant":
+            return {}
+
         try:
-            client = self._get_client()
-            collections = client.list_collections()
-            collection_names = [c.name for c in collections]
-
-            if collection_name not in collection_names:
-                return {}
-
-            collection = client.get_collection(name=collection_name)
-            return collection.metadata or {}
-
+            store = self._get_vector_store()
+            # ChromaVectorStore has _get_if_exists that returns a collection
+            col = store._get_if_exists(collection_name)
+            return (col.metadata or {}) if col else {}
         except Exception as e:
             logger.error(f"Failed to get collection metadata: {e}")
             return {}

@@ -488,6 +488,7 @@ def log_metric(event: str, **data) -> None:
     """Log a structured metric event to metrics.jsonl.
 
     Every event automatically includes ``run_id`` for cross-event correlation.
+    When PROMETHEUS_ENABLED=true, phase metrics are also pushed to Prometheus counters.
 
     Usage:
         log_metric("mini_crew_complete", crew="context", duration=12.3, tokens=1500)
@@ -504,6 +505,21 @@ def log_metric(event: str, **data) -> None:
     )
     record.metric_data = {"event": event, "run_id": RUN_ID, **data}
     logger.handle(record)
+
+    # Push phase metrics to Prometheus (no-op when disabled or package missing)
+    if event == "phase_complete" and os.getenv("PROMETHEUS_ENABLED", "").strip().lower() in ("true", "1", "yes"):
+        try:
+            from ui.backend.routers.prometheus import record_phase_metric
+
+            tokens = {k.replace("tokens_", ""): v for k, v in data.items() if k.startswith("tokens_")}
+            record_phase_metric(
+                phase_id=data.get("phase_id", "unknown"),
+                duration=data.get("duration_seconds", 0),
+                status=data.get("status", "unknown"),
+                tokens=tokens or None,
+            )
+        except Exception:
+            pass
 
 
 # =============================================================================

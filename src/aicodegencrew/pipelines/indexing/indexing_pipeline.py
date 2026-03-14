@@ -15,8 +15,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-from ...shared.paths import CHROMA_DIR, DISCOVER_EVIDENCE, DISCOVER_MANIFEST, DISCOVER_SYMBOLS
-from ...shared.project_context import derive_project_slug, migrate_legacy_to_subfolder, set_active_project
+from ...shared.paths import CHROMA_DIR
+from ...shared.project_context import (
+    derive_collection_name,
+    derive_project_slug,
+    migrate_legacy_to_subfolder,
+    set_active_project,
+)
 from ...shared.utils.file_filters import collect_files
 from ...shared.utils.logger import setup_logger
 from .budget_engine import BudgetEngine, is_budget_enabled
@@ -80,7 +85,7 @@ class IndexingConfig:
             repo_path=resolved_path,
             index_mode=index_mode or os.getenv("INDEX_MODE", "auto"),
             chroma_dir=chroma_dir,
-            collection_name=os.getenv("COLLECTION_NAME", "repo_docs"),
+            collection_name=os.getenv("COLLECTION_NAME") or derive_collection_name(resolved_path),
             include_submodules=True,
             batch_size=int(os.getenv("INDEX_BATCH_SIZE", "50")),
             max_total_files=int(os.getenv("INDEX_MAX_TOTAL_FILES", "8000")),
@@ -805,15 +810,21 @@ class IndexingPipeline:
         # This prevents a cancelled run from leaving a stale fingerprint that
         # causes the next run to falsely skip re-indexing.
         try:
-            coll = self.chroma_tool._get_client().get_collection(name=self.config.collection_name)
-            coll.modify(
-                metadata={
-                    "repo_fingerprint": fingerprint,
-                    "repo_fingerprint_type": fp_type,
-                    "repo_path": str(self.config.repo_path),
-                    "description": "Repository documentation chunks",
-                }
-            )
+            store = self.chroma_tool._get_vector_store()
+            # Collection fingerprint: ChromaDB stores it as collection metadata,
+            # Qdrant doesn't support collection-level metadata — use a sentinel point.
+            if hasattr(store, "_get_if_exists"):
+                # ChromaDB path: use native collection.modify()
+                col = store._get_if_exists(self.config.collection_name)
+                if col and hasattr(col, "modify"):
+                    col.modify(
+                        metadata={
+                            "repo_fingerprint": fingerprint,
+                            "repo_fingerprint_type": fp_type,
+                            "repo_path": str(self.config.repo_path),
+                            "description": "Repository documentation chunks",
+                        }
+                    )
             logger.info(f"[INDEX] Updated collection fingerprint to {fingerprint[:8]}")
         except Exception as e:
             logger.warning(f"Could not update collection fingerprint: {e}")
@@ -1275,15 +1286,13 @@ class IndexingPipeline:
 
     def _generate_indexed_files_report(self) -> None:
         try:
-            # Reuse the already-initialized client from chroma_tool to avoid
-            # "different settings" singleton conflict (chroma_tool uses allow_reset=True).
-            client = self.chroma_tool._get_client()
-            coll = client.get_collection(self.config.collection_name)
+            # Use the unified vector store to get all indexed file paths.
+            store = self.chroma_tool._get_vector_store()
+            results = store.get(self.config.collection_name, where={}, limit=0, include=["metadatas"])
 
-            results = coll.get(include=["metadatas"])
             files = set()
             repo_path = None
-            for meta in results["metadatas"]:
+            for meta in results.get("metadatas", []):
                 if meta and "file_path" in meta:
                     files.add(meta["file_path"])
                     if not repo_path and "repo_path" in meta:
@@ -1303,9 +1312,10 @@ class IndexingPipeline:
 
             report_path = Path("indexed_files.txt")
             with open(report_path, "w", encoding="utf-8") as f:
-                f.write("ChromaDB Index Report\n")
+                f.write("Vector Store Index Report\n")
                 f.write(f"Repository: {repo_path}\n")
-                f.write(f"Total indexed documents (chunks): {coll.count()}\n")
+                total_count = self.chroma_tool._get_vector_store().count(self.config.collection_name)
+                f.write(f"Total indexed documents (chunks): {total_count}\n")
                 f.write(f"Total unique files: {len(files)}\n")
                 f.write("=" * 60 + "\n\n")
                 f.write("ALL INDEXED FILES:\n")

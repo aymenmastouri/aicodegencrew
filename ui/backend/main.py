@@ -30,7 +30,23 @@ from aicodegencrew import __version__
 from aicodegencrew.shared.utils.phase_state import configure_state_dir
 
 from .config import settings
-from .routers import collectors, diagrams, env, inputs, knowledge, logs, mcps, metrics, phases, pipeline, reports, reset, tasks, triage
+from .routers import (
+    collectors,
+    diagrams,
+    env,
+    inputs,
+    knowledge,
+    logs,
+    mcps,
+    metrics,
+    phases,
+    pipeline,
+    reports,
+    reset,
+    tasks,
+    triage,
+)
+from .routers import prometheus as prometheus_router
 from .schemas import HealthResponse
 
 # Point phase_state at the project's logs/ dir so it resolves correctly
@@ -91,6 +107,11 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
 )
+
+# OIDC Authentication Middleware (conditional — only when OIDC_ENABLED=true)
+if os.getenv("OIDC_ENABLED", "false").strip().lower() in ("true", "1", "yes"):
+    from .middleware.auth import OIDCAuthMiddleware
+    app.add_middleware(OIDCAuthMiddleware)
 
 # ---------------------------------------------------------------------------
 # In-memory rate limiter for expensive/destructive endpoints (H4)
@@ -153,6 +174,19 @@ app.include_router(reset.router)
 app.include_router(mcps.router)  # MCP Registry
 app.include_router(triage.router)
 app.include_router(tasks.router)
+
+# Prometheus metrics (conditional — only when PROMETHEUS_ENABLED=true)
+if os.getenv("PROMETHEUS_ENABLED", "").strip().lower() in ("true", "1", "yes"):
+    app.include_router(prometheus_router.router)
+
+
+@app.get("/api/auth/userinfo")
+def auth_userinfo(request: Request):
+    """Return authenticated user info (set by OIDC middleware)."""
+    user = getattr(request.state, "user", None)
+    if user:
+        return user
+    return {"sub": "", "email": "", "name": "anonymous", "groups": []}
 
 
 @app.get("/api/health", response_model=HealthResponse)

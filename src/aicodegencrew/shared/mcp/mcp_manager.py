@@ -30,7 +30,7 @@ def _npx_available() -> bool:
     return shutil.which("npx") is not None
 
 # MCP server types
-MCPServerType = Literal["sequential_thinking", "memory", "brave_search", "filesystem", "playwright", "github"]
+MCPServerType = Literal["sequential_thinking", "memory", "brave_search", "filesystem", "playwright", "github", "sovai"]
 
 
 class MCPManager:
@@ -167,6 +167,26 @@ class MCPManager:
             cache_tools_list=True,
         )
 
+    def get_sovai_mcp(self) -> MCPServerStdio:
+        """
+        SovAI MCP for Sovereign AI platform tools.
+
+        Requires: SOVAI_MCP_URL environment variable
+        """
+        sovai_url = os.getenv("SOVAI_MCP_URL", "")
+
+        if not sovai_url:
+            raise ValueError(
+                "SOVAI_MCP_URL environment variable required for SovAI MCP."
+            )
+
+        return MCPServerStdio(
+            command="npx",
+            args=["-y", "@sovai/mcp-server"],
+            env={"SOVAI_MCP_URL": sovai_url},
+            cache_tools_list=True,
+        )
+
     def get_mcp_servers(self, server_types: list[MCPServerType]) -> list[MCPServerStdio]:
         """
         Get multiple MCP servers by type.
@@ -182,28 +202,39 @@ class MCPManager:
             >>> mcps = manager.get_mcp_servers(["sequential_thinking", "memory"])
             >>> agent = Agent(mcps=mcps, ...)
         """
+        # Check if HTTP transport is enabled via MCPO
+        from .mcp_http_adapter import is_http_transport, mcpo_available
+
+        if is_http_transport() and mcpo_available():
+            logger.info("[MCP] Using HTTP transport via MCPO")
+            # In HTTP mode, we still return empty — the HTTP adapter is used
+            # directly by tools/agents that need MCP functionality.
+            # CrewAI's MCPServerStdio is stdio-only; HTTP tools are registered
+            # as custom CrewAI tools by the phase crews that need them.
+            return []
+
         if not _npx_available():
             logger.info("[MCP] npx not found — skipping MCP servers (running in Docker?)")
             return []
 
         servers = []
 
+        dispatch = {
+            "sequential_thinking": self.get_sequential_thinking_mcp,
+            "memory": self.get_memory_mcp,
+            "brave_search": self.get_brave_search_mcp,
+            "filesystem": self.get_filesystem_mcp,
+            "playwright": self.get_playwright_mcp,
+            "github": self.get_github_mcp,
+            "sovai": self.get_sovai_mcp,
+        }
+
         for server_type in server_types:
             try:
-                if server_type == "sequential_thinking":
-                    servers.append(self.get_sequential_thinking_mcp())
-                elif server_type == "memory":
-                    servers.append(self.get_memory_mcp())
-                elif server_type == "brave_search":
-                    servers.append(self.get_brave_search_mcp())
-                elif server_type == "filesystem":
-                    servers.append(self.get_filesystem_mcp())
-                elif server_type == "playwright":
-                    servers.append(self.get_playwright_mcp())
-                elif server_type == "github":
-                    servers.append(self.get_github_mcp())
-                else:
+                factory = dispatch.get(server_type)
+                if factory is None:
                     raise ValueError(f"Unknown MCP server type: {server_type}")
+                servers.append(factory())
             except ValueError as e:
                 # Skip if API key missing, log warning
                 logger.warning(f"Skipping {server_type} MCP: {e}")

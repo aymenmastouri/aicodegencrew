@@ -20,6 +20,7 @@ from ..utils.chroma_client import create_chroma_client, get_chroma_http_config
 from ..utils.logger import setup_logger
 from ..utils.ollama_client import OllamaClient
 from ..utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, truncate_response
+from ..utils.vector_store import get_vector_store
 
 logger = setup_logger(__name__)
 
@@ -80,7 +81,7 @@ class RAGQueryTool(BaseTool):
 
     # Configuration - Default paths to check (in order)
     chroma_dir: str = ""  # Will be auto-detected
-    collection_name: str = "repo_docs"
+    collection_name: str = ""  # Auto-derived from repo+branch if empty
 
     _client: Any | None = None
     _collection: Any | None = None
@@ -95,11 +96,27 @@ class RAGQueryTool(BaseTool):
         ".chroma",  # Alternative
     ]
 
-    def __init__(self, chroma_dir: str = None, **kwargs):
-        """Initialize with optional chroma dir override."""
+    def __init__(self, chroma_dir: str = None, collection_name: str = None, **kwargs):
+        """Initialize with optional chroma dir and collection name override."""
         super().__init__(**kwargs)
         if chroma_dir:
             self.chroma_dir = chroma_dir
+        if collection_name:
+            self.collection_name = collection_name
+        # Auto-derive collection name from PROJECT_PATH + branch if not set
+        if not self.collection_name:
+            try:
+                import os
+
+                from ..project_context import derive_collection_name
+
+                project_path = os.getenv("PROJECT_PATH") or os.getenv("REPO_PATH", "")
+                if project_path:
+                    self.collection_name = derive_collection_name(project_path)
+                else:
+                    self.collection_name = "repo_docs"
+            except Exception:
+                self.collection_name = "repo_docs"
 
     def _find_chroma_path(self) -> str | None:
         """Find ChromaDB in standard locations.
@@ -134,8 +151,22 @@ class RAGQueryTool(BaseTool):
         return None
 
     def _get_collection(self):
-        """Get ChromaDB collection with lazy initialization."""
+        """Get vector store collection with lazy initialization.
+
+        When VECTOR_DB=qdrant, uses the unified vector store abstraction.
+        Otherwise falls back to direct ChromaDB collection access.
+        """
         if self._collection is not None:
+            return self._collection
+
+        import os
+
+        # Qdrant path: use unified vector store (no collection object needed)
+        if os.getenv("VECTOR_DB", "chroma").strip().lower() == "qdrant":
+            self._collection = "qdrant"  # sentinel — _run() uses _vector_store
+            self._vector_store = get_vector_store()
+            self._embedder = _OllamaEmbedder()
+            logger.info("Using Qdrant vector store for RAG queries")
             return self._collection
 
         try:
@@ -253,12 +284,22 @@ class RAGQueryTool(BaseTool):
             query_embedding = self._embedder.embed([query])
             if not query_embedding:
                 return json.dumps({"error": "Embedding failed — check API_BASE and OPENAI_API_KEY in .env", "results": []})
-            results = collection.query(
-                query_embeddings=query_embedding,
-                n_results=fetch_limit,
-                where=where_filter,
-                include=["documents", "metadatas", "distances"],
-            )
+
+            # Use unified vector store for Qdrant, direct collection for ChromaDB
+            if collection == "qdrant" and hasattr(self, "_vector_store"):
+                results = self._vector_store.query(
+                    self.collection_name,
+                    query_embeddings=query_embedding,
+                    n_results=fetch_limit,
+                    where=where_filter,
+                )
+            else:
+                results = collection.query(
+                    query_embeddings=query_embedding,
+                    n_results=fetch_limit,
+                    where=where_filter,
+                    include=["documents", "metadatas", "distances"],
+                )
 
             # Post-query filter by file_path substring (ChromaDB lacks $contains)
             if file_filter and results and results.get("documents"):

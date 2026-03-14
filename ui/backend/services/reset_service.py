@@ -250,6 +250,19 @@ def execute_reset(
 
     for pid in phases_to_reset:
         paths = _resolve_paths(pid)
+        if not paths:
+            # Explicit reset of non-resettable phases (e.g. discover):
+            # cleanup_targets returns the dir but _resolve_paths only returns
+            # existing paths. The dir may exist with hidden files (.active_project,
+            # .index.lock) that weren't cleaned. Use primary_output as fallback.
+            from aicodegencrew.phase_registry import PHASES
+
+            desc = PHASES.get(pid)
+            if desc:
+                fallback = settings.project_root / desc.primary_output
+                if fallback.exists():
+                    paths = [fallback]
+
         for p in paths:
             if not p.exists():
                 continue

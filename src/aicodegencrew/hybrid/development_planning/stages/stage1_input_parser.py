@@ -165,6 +165,15 @@ class InputParserStage:
         # Auto-detect format by extension
         extension = file_path.suffix.lower()
 
+        # Docling-supported formats: use Docling REST API when available
+        if extension in (".pdf", ".pptx") or (extension == ".docx" and self._docling_available()):
+            task = self._parse_with_docling(file_path, extension)
+            if task is not None:
+                task = self._detect_task_type(task)
+                logger.info(f"[Stage1] Parsed task via Docling: {task.task_id} - {task.summary} (type={task.task_type})")
+                return task
+            # Fall through to native parsers if Docling fails
+
         if extension == ".xml":
             task = self._parse_xml(file_path)
         elif extension == ".docx":
@@ -173,8 +182,13 @@ class InputParserStage:
             task = self._parse_excel(file_path)
         elif extension in [".txt", ".log"]:
             task = self._parse_text(file_path)
+        elif extension in (".pdf", ".pptx"):
+            raise ValueError(
+                f"Unsupported file format: {extension} without Docling. "
+                f"Set DOCLING_URL in .env to enable {extension} parsing."
+            )
         else:
-            raise ValueError(f"Unsupported file format: {extension}. Supported: .xml, .docx, .xlsx, .xls, .txt, .log")
+            raise ValueError(f"Unsupported file format: {extension}. Supported: .xml, .docx, .xlsx, .xls, .txt, .log, .pdf, .pptx")
 
         task = self._detect_task_type(task)
         logger.info(f"[Stage1] Parsed task: {task.task_id} - {task.summary} (type={task.task_type})")
@@ -237,6 +251,43 @@ class InputParserStage:
         # 4. Default fallback
         task.task_type = "feature"
         return task
+
+    @staticmethod
+    def _docling_available() -> bool:
+        """Check if Docling REST API is configured."""
+        import os
+
+        return bool(os.getenv("DOCLING_URL", "").strip())
+
+    def _parse_with_docling(self, file_path: Path, extension: str) -> TaskInput | None:
+        """Parse a document via Docling REST API. Returns None on failure."""
+        if not self._docling_available():
+            return None
+
+        try:
+            from ..parsers.docling_parser import parse_with_docling
+
+            result = parse_with_docling(file_path)
+            title = result.get("title", file_path.stem)
+            sections = result.get("sections", [])
+            description = "\n\n".join(
+                f"## {s['title']}\n" + "\n".join(s["content"])
+                for s in sections[:5]
+            )
+            return TaskInput(
+                task_id=file_path.stem,
+                source_file=str(file_path),
+                source_format=extension.lstrip("."),
+                summary=title,
+                description=description,
+                acceptance_criteria=[],
+                technical_notes="",
+                labels=[],
+                priority="Medium",
+            )
+        except Exception as e:
+            logger.warning(f"[Stage1] Docling parsing failed for {file_path.name}: {e}")
+            return None
 
     def _parse_xml(self, file_path: Path) -> TaskInput:
         """Parse XML file (any format)."""
