@@ -97,7 +97,10 @@ class FactsQueryTool(BaseTool):
     description: str = (
         "Query architecture facts from Phase 1 dimension files. "
         "Filter by category (components/relations/interfaces/containers/data_model) and stereotype. "
-        "Use this to discover architecture elements - don't assume or hardcode!"
+        "Use this to discover architecture elements - don't assume or hardcode! "
+        "IMPORTANT: Call this tool ONCE per query with a SINGLE set of parameters. "
+        "Do NOT batch multiple queries into an array. "
+        "To query multiple categories, call this tool multiple times separately."
     )
     args_schema: type[BaseModel] = FactsQueryInput
 

@@ -73,7 +73,8 @@ class RAGQueryTool(BaseTool):
     description: str = (
         "Semantic search in the indexed codebase via ChromaDB. "
         "Use natural language queries to find relevant code snippets. "
-        "Examples: 'security annotations', 'TODO FIXME', 'error handling'"
+        "Examples: 'security annotations', 'TODO FIXME', 'error handling'. "
+        "IMPORTANT: Call once per query with a SINGLE set of parameters, not an array."
     )
     args_schema: type[BaseModel] = RAGQueryInput
 

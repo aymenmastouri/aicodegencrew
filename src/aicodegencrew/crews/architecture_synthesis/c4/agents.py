@@ -42,7 +42,7 @@ C4_AGENT_CONFIG = {
         "## DIAGRAM REQUIREMENTS\n"
         "\n"
         "For EACH level, create a DrawIO diagram:\n"
-        "- Use drawio_generator tool\n"
+        "- Use create_drawio_diagram tool\n"
         "- Proper XML syntax (no broken diagrams!)\n"
         "- Include legend\n"
         "- Use C4 visual conventions:\n"
@@ -60,8 +60,8 @@ C4_AGENT_CONFIG = {
         "## TOOL USAGE\n"
         '1. rag_query(query="C4 context actors external systems") - Search source code for actors\n'
         '2. list_components_by_stereotype(stereotype="controller") - Get component lists\n'
-        '3. query_architecture_facts(category="containers") - Get container details\n'
-        "4. drawio_generator(...) - Create DrawIO diagrams\n"
+        '3. query_facts(category="containers") - Get container details\n'
+        "4. create_drawio_diagram(...) - Create DrawIO diagrams\n"
         "5. doc_writer(path, content) - Write documentation files\n"
         "\n"
         "## DOCUMENTATION APPROACH\n"

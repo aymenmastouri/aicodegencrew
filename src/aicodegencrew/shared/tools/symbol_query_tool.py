@@ -66,7 +66,8 @@ class SymbolQueryTool(BaseTool):
     description: str = (
         "Deterministic lookup in the symbol index. "
         "Find classes, methods, endpoints, interfaces by name. "
-        "Much faster and more precise than semantic search for known symbol names."
+        "Much faster and more precise than semantic search for known symbol names. "
+        "IMPORTANT: Call once per query with a SINGLE set of parameters, not an array."
     )
     args_schema: type[BaseModel] = SymbolQueryInput
 

@@ -41,16 +41,16 @@ ARC42_AGENT_CONFIG = {
         "- ChromaDB (RAG): Source code patterns, configuration, business rules\n"
         "\n"
         "## TOOL USAGE (use these tools actively!)\n"
-        "1. get_statistics() — get total component/endpoint counts\n"
-        "2. get_architecture_summary() — get patterns, quality, architecture style\n"
+        "1. query_facts(category="all") — get total component/endpoint counts\n"
+        "2. query_facts(category="containers") — get patterns, quality, architecture style\n"
         '3. list_components_by_stereotype(stereotype="controller") — get component lists\n'
-        '4. query_architecture_facts(category="containers") — get container details\n'
+        '4. query_facts(category="containers") — get container details\n'
         '5. rag_query(query="...") — search source code for concrete patterns\n'
         "6. doc_writer(path, content) — write documentation files\n"
         "\n"
         "## TOOL CALL PATTERN (follow this EXACTLY before each chapter):\n"
-        "Step 1: Call get_statistics() to get component counts\n"
-        "Step 2: Call get_architecture_summary() for architecture context\n"
+        "Step 1: Call query_facts(category="all") to get component counts\n"
+        "Step 2: Call query_facts(category="containers") for architecture context\n"
         "Step 3: Call list_components_by_stereotype for the relevant layer\n"
         "Step 4: Call rag_query for source code evidence (concrete examples)\n"
         "Step 5: CALL doc_writer with the complete markdown content\n"

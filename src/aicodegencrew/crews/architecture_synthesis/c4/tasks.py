@@ -18,19 +18,19 @@ CONTEXT_DOC_DESCRIPTION = (
     + """
 Create the COMPLETE C4 Level 1: System Context document.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system metrics
-2. get_architecture_summary() -> get architecture style and patterns
-3. get_endpoints() -> get REST API endpoints
-4. doc_writer(file_path="c4/c4-context.md", content="# C4 Level 1: System Context\\n\\n## 1.1 Overview\\n...")
-5. Respond: "File c4/c4-context.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="containers") -> container overview
+Step 2: query_facts(category="interfaces") -> REST API endpoints
+Step 3: query_facts(category="relations") -> system interactions
+Step 4: doc_writer(file_path="c4/c4-context.md", content="# C4 Level 1: System Context\n...")
+Step 5: Respond ONLY: "Chapter completed."
 
 ## YOUR DATA SOURCES
-Use these MCP tools to gather REAL data:
-1. get_statistics() - System metrics overview
-2. get_architecture_summary() - Architecture style and patterns
-3. get_endpoints() - REST API endpoints
-4. query_architecture_facts(category="containers") - Container details
+Use these tools to gather REAL data (call each tool ONCE with a SINGLE set of parameters):
+1. query_facts(category="containers") - Container/system overview
+2. query_facts(category="interfaces") - REST API endpoints
+3. query_facts(category="relations") - System interactions
+4. list_components_by_stereotype(stereotype="controller") - Controllers
 
 Also use the provided summary data:
 {system_summary}
@@ -85,8 +85,8 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 CONTEXT_DIAGRAM_DESCRIPTION = """
 Create a C4 Context DrawIO DIAGRAM.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system data for diagram nodes
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+1. query_facts(category="containers") -> get system data for diagram nodes
 2. create_drawio_diagram(file_path="c4/c4-context.drawio", nodes=[...], edges=[...])
 3. Respond: "Diagram c4/c4-context.drawio created successfully."
 
@@ -105,7 +105,7 @@ LAYOUT:
 CONNECTIONS:
 - Arrows with labels like "Uses [HTTPS]", "Reads/Writes [JDBC]"
 
-Use get_statistics() and get_architecture_summary() MCP tools to get real system data.
+Use query_facts(category="containers") to get real system data.
 Create nodes and edges based on REAL facts, not generic placeholders.
 """
 
@@ -118,18 +118,17 @@ CONTAINER_DOC_DESCRIPTION = (
     + """
 Create the COMPLETE C4 Level 2: Container Diagram document.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system metrics
-2. query_architecture_facts(category="containers") -> get container details
-3. get_architecture_summary() -> get architecture style
-4. doc_writer(file_path="c4/c4-container.md", content="# C4 Level 2: Container Diagram\\n\\n## 2.1 Overview\\n...")
-5. Respond: "File c4/c4-container.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+1. query_facts(category="containers") -> get container details
+2. query_facts(category="relations") -> get container interactions
+3. doc_writer(file_path="c4/c4-container.md", content="# C4 Level 2: Container Diagram\\n\\n## 2.1 Overview\\n...")
+4. Respond: "File c4/c4-container.md written successfully."
 
 ## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System metrics
-2. get_architecture_summary() - Architecture style
-3. query_architecture_facts(category="containers") - Container details
+Use these tools (call each ONCE with a SINGLE set of parameters):
+1. query_facts(category="containers") - Container details
+2. query_facts(category="relations") - Container interactions
+3. query_facts(category="interfaces") - API endpoints
 
 Summary data:
 {system_summary}
@@ -180,8 +179,8 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 CONTAINER_DIAGRAM_DESCRIPTION = """
 Create a C4 Container DrawIO DIAGRAM.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. query_architecture_facts(category="containers") -> get container data for nodes
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+1. query_facts(category="containers") -> get container data for nodes
 2. create_drawio_diagram(file_path="c4/c4-container.drawio", nodes=[...], edges=[...])
 3. Respond: "Diagram c4/c4-container.drawio created successfully."
 
@@ -203,7 +202,7 @@ CONNECTIONS:
 - Frontend -> Backend: "Makes API calls [HTTPS/JSON]"
 - Backend -> Database: "Reads/Writes [JDBC]"
 
-Use query_architecture_facts(category="containers") to get REAL container data.
+Use query_facts(category="containers") to get REAL container data.
 """
 
 # =============================================================================
@@ -215,24 +214,20 @@ COMPONENT_DOC_DESCRIPTION = (
     + """
 Create the COMPLETE C4 Level 3: Component Diagram document.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get component counts per layer
-2. list_components_by_stereotype(stereotype="controller") -> get all controllers
-3. list_components_by_stereotype(stereotype="service") -> get all services
-4. list_components_by_stereotype(stereotype="repository") -> get all repositories
-5. doc_writer(file_path="c4/c4-component.md", content="# C4 Level 3: Component Diagram\\n\\n## 3.1 Overview\\n...")
-6. Respond: "File c4/c4-component.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+1. list_components_by_stereotype(stereotype="controller") -> get all controllers
+2. list_components_by_stereotype(stereotype="service") -> get all services
+3. list_components_by_stereotype(stereotype="repository") -> get all repositories
+4. doc_writer(file_path="c4/c4-component.md", content="# C4 Level 3: Component Diagram\\n\\n## 3.1 Overview\\n...")
+5. Respond: "File c4/c4-component.md written successfully."
 
 ## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - Component counts
-2. get_architecture_summary() - Layer structure
-3. search_components(query="controller") - Find controllers
-4. search_components(query="service") - Find services
-5. list_components_by_stereotype(stereotype="controller") - List by stereotype
-6. list_components_by_stereotype(stereotype="service") - List by stereotype
-7. list_components_by_stereotype(stereotype="repository") - List by stereotype
-8. list_components_by_stereotype(stereotype="entity") - List by stereotype
+Use these tools (call each ONCE with a SINGLE set of parameters):
+1. list_components_by_stereotype(stereotype="controller") - List controllers
+2. list_components_by_stereotype(stereotype="service") - List services
+3. list_components_by_stereotype(stereotype="repository") - List repositories
+4. list_components_by_stereotype(stereotype="entity") - List entities
+5. query_facts(category="relations") - Component dependencies
 
 Summary data:
 {system_summary}
@@ -297,8 +292,8 @@ Write 6-8 pages with REAL data from tools. No placeholders.
 COMPONENT_DIAGRAM_DESCRIPTION = """
 Create a C4 Component DrawIO DIAGRAM.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get component counts per layer
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+1. query_facts(category="components", stereotype="controller") -> get component counts
 2. create_drawio_diagram(file_path="c4/c4-component.drawio", nodes=[...], edges=[...])
 3. Respond: "Diagram c4/c4-component.drawio created successfully."
 
@@ -320,7 +315,7 @@ CONNECTIONS:
 - Arrows between layers showing dependency direction
 - Each layer box shows component count
 
-Use get_statistics() to get REAL component counts for each layer.
+Use query_facts and list_components_by_stereotype to get REAL component counts.
 """
 
 # =============================================================================
@@ -332,18 +327,16 @@ DEPLOYMENT_DOC_DESCRIPTION = (
     + """
 Create the COMPLETE C4 Level 4: Deployment Diagram document.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system overview
-2. query_architecture_facts(category="containers") -> get container details
-3. get_architecture_summary() -> get infrastructure hints
-4. doc_writer(file_path="c4/c4-deployment.md", content="# C4 Level 4: Deployment Diagram\\n\\n## 4.1 Overview\\n...")
-5. Respond: "File c4/c4-deployment.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+1. query_facts(category="containers") -> get container details
+2. query_facts(category="relations") -> get deployment dependencies
+3. doc_writer(file_path="c4/c4-deployment.md", content="# C4 Level 4: Deployment Diagram\\n\\n## 4.1 Overview\\n...")
+4. Respond: "File c4/c4-deployment.md written successfully."
 
 ## YOUR DATA SOURCES
-Use these MCP tools:
-1. get_statistics() - System overview
-2. get_architecture_summary() - Infrastructure hints
-3. query_architecture_facts(category="containers") - Container details
+Use these tools (call each ONCE with a SINGLE set of parameters):
+1. query_facts(category="containers") - Container details
+2. query_facts(category="relations") - Deployment dependencies
 
 Summary data:
 {system_summary}
@@ -398,8 +391,8 @@ Write 4-6 pages with REAL data from tools. No placeholders.
 DEPLOYMENT_DIAGRAM_DESCRIPTION = """
 Create a C4 Deployment DrawIO DIAGRAM.
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. query_architecture_facts(category="containers") -> get container data for nodes
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+1. query_facts(category="containers") -> get container data for nodes
 2. create_drawio_diagram(file_path="c4/c4-deployment.drawio", nodes=[...], edges=[...])
 3. Respond: "Diagram c4/c4-deployment.drawio created successfully."
 
@@ -419,7 +412,7 @@ STRUCTURE:
 CONNECTIONS:
 - Arrows between zones showing network connections with ports/protocols
 
-Use query_architecture_facts(category="containers") to get REAL container names.
+Use query_facts(category="containers") to get REAL container names.
 """
 
 # =============================================================================
