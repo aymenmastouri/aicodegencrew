@@ -711,21 +711,24 @@ class SDLCOrchestrator:
         running until the process exits (acceptable; Gradle/LLM timeouts are a
         separate concern handled by their own subprocess kill logic).
         """
-        with _cf.ThreadPoolExecutor(max_workers=1) as pool:
-            future = pool.submit(executable.kickoff, inputs)
-            try:
-                return future.result(timeout=_PHASE_TIMEOUT_S)
-            except _cf.TimeoutError:
-                phase_id = inputs.get("config", {}).get("phase_id", "unknown")
-                logger.error(
-                    "[Orchestrator] Phase '%s' timed out after %ds. Set PHASE_TIMEOUT_SECONDS env var to increase.",
-                    phase_id,
-                    _PHASE_TIMEOUT_S,
-                )
-                raise TimeoutError(
-                    f"Phase '{phase_id}' timed out after {_PHASE_TIMEOUT_S}s. "
-                    f"Set PHASE_TIMEOUT_SECONDS env var to increase."
-                )
+        pool = _cf.ThreadPoolExecutor(max_workers=1)
+        future = pool.submit(executable.kickoff, inputs)
+        try:
+            return future.result(timeout=_PHASE_TIMEOUT_S)
+        except _cf.TimeoutError:
+            pool.shutdown(wait=False, cancel_futures=True)
+            phase_id = inputs.get("config", {}).get("phase_id", "unknown")
+            logger.error(
+                "[Orchestrator] Phase '%s' timed out after %ds. Set PHASE_TIMEOUT_SECONDS env var to increase.",
+                phase_id,
+                _PHASE_TIMEOUT_S,
+            )
+            raise TimeoutError(
+                f"Phase '{phase_id}' timed out after {_PHASE_TIMEOUT_S}s. "
+                f"Set PHASE_TIMEOUT_SECONDS env var to increase."
+            )
+        finally:
+            pool.shutdown(wait=False)
 
     def _check_dependencies(self, phase_id: str) -> bool:
         """Check if phase dependencies are satisfied (existence + validation).

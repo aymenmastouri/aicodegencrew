@@ -213,37 +213,63 @@ export class PipelineService {
     });
   }
 
-  // SSE stream
+  // SSE stream with auto-reconnect (B5 fix: survives sleep/wake network drops)
   connectSSE(startIdx = 0): Observable<SSEEvent> {
     return new Observable<SSEEvent>((observer) => {
-      const url = startIdx > 0 ? `${this.base}/pipeline/stream?start_idx=${startIdx}` : `${this.base}/pipeline/stream`;
-      const eventSource = new EventSource(url);
+      let eventSource: EventSource | null = null;
+      let reconnectAttempts = 0;
+      const maxReconnectAttempts = 10;
+      let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+      let intentionallyClosed = false;
 
-      eventSource.onmessage = (event) => {
-        this.zone.run(() => {
-          try {
-            const parsed = JSON.parse(event.data) as SSEEvent;
-            observer.next(parsed);
+      const connect = (idx: number) => {
+        const url = idx > 0 ? `${this.base}/pipeline/stream?start_idx=${idx}` : `${this.base}/pipeline/stream`;
+        eventSource = new EventSource(url);
 
-            if (parsed.type === 'pipeline_complete') {
-              eventSource.close();
+        eventSource.onmessage = (event) => {
+          this.zone.run(() => {
+            reconnectAttempts = 0; // reset on successful message
+            try {
+              const parsed = JSON.parse(event.data) as SSEEvent;
+              observer.next(parsed);
+
+              if (parsed.type === 'pipeline_complete') {
+                intentionallyClosed = true;
+                eventSource?.close();
+                observer.complete();
+              }
+            } catch (e) {
+              console.warn('[SSE] Failed to parse event data:', e, event.data?.slice(0, 120));
+            }
+          });
+        };
+
+        eventSource.onerror = () => {
+          this.zone.run(() => {
+            eventSource?.close();
+            eventSource = null;
+
+            if (intentionallyClosed) return;
+
+            if (reconnectAttempts < maxReconnectAttempts) {
+              reconnectAttempts++;
+              const delay = Math.min(1000 * Math.pow(2, reconnectAttempts - 1), 30000);
+              console.warn(`[SSE] Connection lost, reconnecting in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})...`);
+              reconnectTimer = setTimeout(() => connect(idx), delay);
+            } else {
+              console.error('[SSE] Max reconnect attempts reached. Giving up.');
               observer.complete();
             }
-          } catch (e) {
-            console.warn('[SSE] Failed to parse event data:', e, event.data?.slice(0, 120));
-          }
-        });
+          });
+        };
       };
 
-      eventSource.onerror = () => {
-        this.zone.run(() => {
-          eventSource.close();
-          observer.complete();
-        });
-      };
+      connect(startIdx);
 
       return () => {
-        eventSource.close();
+        intentionallyClosed = true;
+        if (reconnectTimer) clearTimeout(reconnectTimer);
+        eventSource?.close();
       };
     });
   }

@@ -366,11 +366,19 @@ class TestingCrew:
                 "and persist them using the write_test tool."
             ),
             backstory=(
-                "You are a senior test engineer who specialises in JUnit 5 / Mockito "
-                "(Java), Angular TestBed / Jasmine (TypeScript), pytest (Python), "
-                "xUnit / Moq (C#), and Go testing package. "
-                "You always call write_test to save the generated test file — "
-                "never just describe the tests."
+                "You are a senior test engineer.\n"
+                "\n"
+                "## TEST METHODOLOGY\n"
+                "1. ALWAYS read the full source file first (read_file with include_siblings=True).\n"
+                "2. Identify ALL public methods / exported functions / injectable classes.\n"
+                "3. For EACH public method write:\n"
+                "   - Happy-path test with realistic inputs and expected outputs\n"
+                "   - Edge-case test (null/empty, boundary values, large inputs)\n"
+                "   - Error-handling test (exceptions, invalid state, missing dependencies)\n"
+                "4. Use framework-idiomatic patterns (see FRAMEWORK hint in task).\n"
+                "5. If the file has no public API (e.g. config, constants), write a\n"
+                "   smoke test that imports/loads the module successfully.\n"
+                "6. ALWAYS call write_test to persist the result — never just describe tests."
             ),
             tools=[reader, writer],
             llm=create_codegen_llm(),
@@ -403,9 +411,10 @@ class TestingCrew:
             embedder=get_crew_embedder(),
         )
 
+        from ...shared.utils.crew_timeout import kickoff_with_timeout
         staged_before = set(writer.staging.keys())
         try:
-            crew.kickoff()
+            kickoff_with_timeout(crew)
         except Exception as e:
             logger.error("[TestingCrew] Crew failed for %s: %s", source_path, e)
             return False

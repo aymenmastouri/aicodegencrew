@@ -41,6 +41,27 @@ configure_state_dir(settings.logs_dir)
 async def lifespan(application: FastAPI):
     """Startup and graceful shutdown."""
     logger.info("SDLC Pilot Backend v%s starting...", __version__)
+
+    # B3: Auto-cleanup zombie runs from previous server lifecycle.
+    # phase_state.json may contain "running" phases from a process that died.
+    # read_all_phases() already performs PID-liveness crash recovery.
+    try:
+        from .services.pipeline_executor import PipelineExecutor
+        executor = PipelineExecutor()
+        if executor.state == "running":
+            # Server restarted while pipeline was "running" — mark as failed
+            logger.warning("Zombie pipeline detected at startup (state=running). Resetting to idle.")
+            executor.state = "idle"
+            executor.current_run = None
+        # Also trigger phase_state.json crash recovery
+        from aicodegencrew.shared.utils.phase_state import read_all_phases
+        recovered = read_all_phases()
+        if any(p.get("status") == "failed" and p.get("error", "").startswith("Process terminated")
+               for p in recovered.get("phases", {}).values()):
+            logger.info("Recovered stale 'running' phases from phase_state.json at startup.")
+    except Exception as exc:
+        logger.warning("Startup zombie cleanup failed (non-fatal): %s", exc)
+
     yield
     # Shutdown: stop any running pipeline gracefully
     logger.info("Shutting down — stopping running pipelines...")
