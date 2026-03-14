@@ -101,14 +101,20 @@ if grep -q "path/to/your/repo\|path\\to\\your\\repo" .env; then
 fi
 info "Repository path configured."
 
-# ── Load Docker images on first run ──────────────────────────────────────────
-if ! docker image inspect sdlc-pilot/backend:latest &> /dev/null; then
+# ── Clean up old installation before loading new images ─────────────────────
+if docker image inspect sdlc-pilot/backend:latest &> /dev/null; then
     echo ""
-    echo "Loading Docker images — this only happens once..."
-    docker load -i sdlc-pilot-backend.tar.gz
-    docker load -i sdlc-pilot-frontend.tar.gz
-    info "Images loaded."
+    echo "Existing installation found — cleaning up first..."
+    bash ./clean.sh
+    info "Old installation removed."
 fi
+
+# ── Load Docker images ─────────────────────────────────────────────────────
+echo ""
+echo "Loading Docker images..."
+docker load -i sdlc-pilot-backend.tar.gz
+docker load -i sdlc-pilot-frontend.tar.gz
+info "Images loaded."
 
 # ── Start ────────────────────────────────────────────────────────────────────
 echo ""
