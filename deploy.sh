@@ -112,7 +112,8 @@ fi
 # =========================================================================
 step "4/6" "Creating release package..."
 
-rm -rf "${RELEASE_DIR}"
+# Remove old release dir (tolerate "device busy" — just reuse the dir)
+rm -rf "${RELEASE_DIR}" 2>/dev/null || true
 mkdir -p "${RELEASE_DIR}"
 
 # Copy template files

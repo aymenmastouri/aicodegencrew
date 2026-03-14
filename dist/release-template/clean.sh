@@ -19,13 +19,18 @@ if docker compose version &> /dev/null; then DC="docker compose"
 elif command -v docker-compose &> /dev/null; then DC="docker-compose"
 else echo "[ERROR] Docker not found."; exit 1; fi
 
-# 1. Stop containers and remove named volumes
-echo "[1/2] Stopping containers and removing volumes..."
+# 1. Stop containers, remove volumes and networks
+echo "[1/3] Stopping containers and removing volumes..."
 $DC down -v --remove-orphans 2>/dev/null || true
 echo "[OK] Containers and volumes removed."
 
-# 2. Remove Docker images
-echo "[2/2] Removing Docker images..."
+# 2. Remove orphaned networks (compose sometimes leaves these behind)
+echo "[2/3] Removing networks..."
+docker network ls --filter name=sdlc-pilot --format '{{.Name}}' | xargs -r docker network rm 2>/dev/null || true
+echo "[OK] Networks removed."
+
+# 3. Remove Docker images
+echo "[3/3] Removing Docker images..."
 docker rmi sdlc-pilot/backend:latest 2>/dev/null || true
 docker rmi sdlc-pilot/frontend:latest 2>/dev/null || true
 echo "[OK] Images removed."
