@@ -117,7 +117,7 @@ rm -rf "${RELEASE_DIR}" 2>/dev/null || true
 mkdir -p "${RELEASE_DIR}"
 
 # Copy template files
-for f in docker-compose.yml .env.example start.sh clean.sh README.md; do
+for f in docker-compose.yml .env.example start.sh stop.sh clean.sh README.md; do
     [ -f "${TEMPLATE_DIR}/${f}" ] && cp "${TEMPLATE_DIR}/${f}" "${RELEASE_DIR}/"
 done
 
@@ -211,7 +211,7 @@ if $WSL; then
     echo "  Starting Dashboard..."
     wsl -d "${WSL_DISTRO}" -- bash -c "
         cd '${WSL_DEPLOY_DIR}'
-        chmod +x start.sh clean.sh
+        chmod +x start.sh stop.sh clean.sh
         ./start.sh
     "
 
