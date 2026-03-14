@@ -25,5 +25,12 @@ class Settings:
         origins_str = os.getenv("DASHBOARD_CORS_ORIGINS", "http://localhost:4200")
         self.cors_origins = [o.strip() for o in origins_str.split(",") if o.strip()]
 
+        # OIDC Authentication (Authentik)
+        self.oidc_enabled = os.getenv("OIDC_ENABLED", "false").strip().lower() in ("true", "1", "yes")
+        self.oidc_authority = os.getenv("OIDC_AUTHORITY", "").strip()
+        self.oidc_client_id = os.getenv("OIDC_CLIENT_ID", "").strip()
+        self.oidc_client_secret = os.getenv("OIDC_CLIENT_SECRET", "").strip()
+        self.oidc_scopes = os.getenv("OIDC_SCOPES", "openid profile email").strip()
+
 
 settings = Settings()

@@ -31,6 +31,7 @@ from .pipeline_contract import (
     phase_result_to_phase_state_status,
 )
 from .shared.utils.logger import RUN_ID, log_metric, logger, set_run_id
+from .shared.utils.mlflow_tracker import MLflowTracker
 from .shared.utils.phase_state import init_run, set_phase_completed, set_phase_failed, set_phase_running
 
 # =============================================================================
@@ -159,6 +160,8 @@ class SDLCOrchestrator:
         self._facts_cache: dict = {}
         # Token usage tracking per phase (populated after each crew/pipeline finishes)
         self._token_usage: dict[str, dict[str, int]] = {}
+        # MLflow experiment tracker (no-op when MLFLOW_TRACKING_URI is not set)
+        self._mlflow = MLflowTracker()
 
         logger.info("[Orchestrator] Initialized")
 
@@ -210,6 +213,9 @@ class SDLCOrchestrator:
         # share the same run_id (avoids mismatch in executor progress tracking).
         run_id = RUN_ID
 
+        # Start MLflow run for this pipeline execution
+        self._mlflow.start_run(run_id=run_id)
+
         # In parallel (per-task) mode the parent process (PipelineExecutor)
         # has already initialised phase_state.json.  Calling init_run() here
         # would wipe state written by sibling subprocesses.
@@ -239,6 +245,15 @@ class SDLCOrchestrator:
         for phase_id in phases_to_run:
             result = self._execute_phase(phase_id)
             self.results[phase_id] = result
+
+            # Log phase metrics to MLflow
+            phase_tokens = self._token_usage.get(phase_id, {})
+            self._mlflow.log_phase_metrics(
+                phase_id,
+                duration=result.duration_seconds,
+                tokens=phase_tokens.get("total_tokens", 0),
+                status=result.status,
+            )
 
             if not result.is_success() and stop_on_error:
                 return self._build_result("failed", f"Phase {phase_id} failed: {result.message}")
@@ -444,6 +459,18 @@ class SDLCOrchestrator:
                     except Exception as cache_err:
                         logger.warning("[Orchestrator] Could not cache facts.json: %s", cache_err)
                         self._facts_cache = {}
+
+                # Export architecture facts to Neo4J knowledge graph (if configured)
+                if self._facts_cache:
+                    try:
+                        from .shared.utils.neo4j_client import Neo4jClient
+
+                        neo4j = Neo4jClient()
+                        if neo4j.enabled:
+                            neo4j.export_architecture_facts(self._facts_cache)
+                            neo4j.close()
+                    except Exception as neo4j_err:
+                        logger.warning("[Orchestrator] Neo4J export failed (non-fatal): %s", neo4j_err)
 
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
@@ -762,6 +789,10 @@ class SDLCOrchestrator:
 
         # Log token usage summary before final status
         self._log_token_summary()
+
+        # End MLflow run and log key artifacts
+        self._mlflow.log_artifact("knowledge/extract/architecture_facts.json")
+        self._mlflow.end_run(outcome=run_outcome)
 
         logger.info("=" * 60)
         logger.info(f"[Orchestrator] Pipeline {status.upper()}: {message}")

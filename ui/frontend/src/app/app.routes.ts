@@ -1,14 +1,17 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+    canActivate: [AuthGuard],
   },
   {
     path: 'run',
     loadComponent: () => import('./pages/run-pipeline/run-pipeline.component').then((m) => m.RunPipelineComponent),
+    canActivate: [AuthGuard],
   },
   {
     path: 'inputs',

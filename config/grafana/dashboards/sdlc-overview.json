@@ -1,0 +1,77 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Phase Duration (p95)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(sdlc_phase_duration_seconds_bucket[5m])) by (phase_id, le))",
+          "legendFormat": "{{ phase_id }}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "title": "Phase Status Count",
+      "type": "bargauge",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(sdlc_phase_status_total) by (phase_id, status)",
+          "legendFormat": "{{ phase_id }} - {{ status }}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "title": "Total Tokens Consumed",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(sdlc_tokens_total)",
+          "legendFormat": "Total Tokens"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 8 }
+    },
+    {
+      "title": "Tokens by Phase",
+      "type": "piechart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(sdlc_tokens_total) by (phase_id)",
+          "legendFormat": "{{ phase_id }}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 8 }
+    },
+    {
+      "title": "Phase Duration Heatmap",
+      "type": "heatmap",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(sdlc_phase_duration_seconds_bucket[5m])) by (le)",
+          "legendFormat": "{{ le }}"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["aicodegencrew", "sdlc"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "title": "SDLC Pipeline Overview",
+  "uid": "aicodegencrew-sdlc-overview",
+  "version": 1
+}

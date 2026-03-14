@@ -17,7 +17,6 @@ import json
 import re
 import shutil
 from pathlib import Path
-from typing import Any
 
 from .utils.logger import setup_logger
 
@@ -70,6 +69,57 @@ def derive_project_slug(repo_path: str | Path) -> str:
     # lowercase, keep alphanumeric + hyphen + underscore
     slug = re.sub(r"[^a-z0-9_-]", "", name.lower())
     return slug or "default"
+
+
+def derive_branch_slug(repo_path: str | Path) -> str:
+    """Detect the current git branch and return a slug-safe version.
+
+    Returns "unknown" if not a git repo or git is unavailable.
+
+    >>> derive_branch_slug("C:\\\\uvz")  # on master
+    'master'
+    >>> derive_branch_slug("C:\\\\uvz")  # on feature/auth-service
+    'feature-auth-service'
+    """
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo_path), "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            branch = result.stdout.strip()
+            # Slugify: replace / with -, lowercase, keep safe chars
+            slug = re.sub(r"[^a-z0-9_-]", "-", branch.lower()).strip("-")
+            return slug or "unknown"
+    except Exception:
+        pass
+    return "unknown"
+
+
+def derive_collection_name(repo_path: str | Path) -> str:
+    """Derive a Qdrant/ChromaDB collection name scoped to repo (+ branch if git).
+
+    Format:
+    - Git repo:     repo_docs_{repo_slug}_{branch_slug}
+    - Non-git dir:  repo_docs_{repo_slug}
+
+    This ensures multi-user/multi-branch isolation:
+    - User A on uvz@master    → repo_docs_uvz_master
+    - User B on uvz@feature-x → repo_docs_uvz_feature-x
+    - User C on other-app@main → repo_docs_other-app_main
+    - Plain folder /data/docs  → repo_docs_docs
+
+    Qdrant collection names: max 255 chars, alphanumeric + _ + -.
+    """
+    repo_slug = derive_project_slug(repo_path)
+    branch_slug = derive_branch_slug(repo_path)
+    if branch_slug == "unknown":
+        return f"repo_docs_{repo_slug}"
+    return f"repo_docs_{repo_slug}_{branch_slug}"
 
 
 # ── Active project ───────────────────────────────────────────────────────────
