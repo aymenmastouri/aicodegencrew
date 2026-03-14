@@ -1,39 +1,31 @@
 """
-Architecture Synthesis Crew - Phase 3
-=====================================
-Orchestrates two sub-crews for reverse engineering documentation:
+Architecture Synthesis — Phase 3
+=================================
+Generates C4 diagrams and arc42 documentation from architecture facts.
 
-REVERSE ENGINEERING APPROACH:
-- Input: architecture_facts.json (Phase 1) + analyzed_architecture.json (Phase 2)
-- C4 Crew: Creates 4 C4 diagrams with DrawIO files
-- Arc42 Crew: Creates 12 arc42 chapters (90% coverage)
+V2 Architecture: Pipeline + LLM Hybrid
+- Deterministic data collection (no agents, no tool loops)
+- Single LLM call per chapter (no iterations)
+- Validation before write (structure, grounding, banned phrases)
+- Retry with feedback (not blind retry)
 
-The agents are REVERSE ENGINEERING EXPERTS who analyze extracted facts
-and generate comprehensive architecture documentation.
+Input:  architecture_facts.json (Phase 1) + analyzed_architecture.json (Phase 2)
+Output: C4 diagrams (c4/*.md) + arc42 chapters (arc42/*.md) + quality report
 """
 
 from pathlib import Path
 
 from ...shared.utils.logger import setup_logger
-from .arc42.crew import Arc42Crew
-from .c4.crew import C4Crew
+from .pipeline import DocumentPipeline
 
 logger = setup_logger(__name__)
 
 
 class ArchitectureSynthesisCrew:
-    """
-    Architecture Synthesis Crew - Phase 3 Orchestrator.
+    """Phase 3 Orchestrator — delegates to DocumentPipeline.
 
-    Reverse Engineering Documentation:
-    1. C4 Crew - Creates 4 C4 diagrams with DrawIO files
-    2. Arc42 Crew - Creates 12 arc42 chapters
-
-    Data Sources:
-    - architecture_facts.json: Components, relations, interfaces, containers (Phase 1)
-    - analyzed_architecture.json: Architecture styles, patterns, quality (Phase 2)
-    - evidence_map.json: Code snippets and file references
-    - ChromaDB Index: Semantic search (optional)
+    Maintains backward-compatible interface for the orchestrator
+    (kickoff, run methods) while using the new pipeline internally.
     """
 
     def __init__(
@@ -43,206 +35,46 @@ class ArchitectureSynthesisCrew:
         output_dir: str | None = None,
         chroma_dir: str | None = None,
     ):
-        """Initialize orchestrator with architecture facts path."""
         self.facts_path = Path(facts_path)
-        self.evidence_path = self.facts_path.parent / "evidence_map.json"
-        # Derive analyzed_path from facts_path parent if not given
         if analyzed_path:
             self.analyzed_path = Path(analyzed_path)
         else:
-            knowledge_base = self.facts_path.parent.parent  # knowledge/
+            knowledge_base = self.facts_path.parent.parent
             self.analyzed_path = knowledge_base / "analyze" / "analyzed_architecture.json"
         self.output_dir = Path(output_dir) if output_dir else self.facts_path.parent.parent / "document"
         self.chroma_dir = chroma_dir
-        self.c4_crew = None
-        self.arc42_crew = None
-        # Note: Validation happens at kickoff(), not here (allows Phase 1+2 to run first)
-
-    def _validate_prerequisites(self):
-        """Validate that Phase 1 and Phase 2 output files exist before running Phase 3."""
-        logger.info("")
-        logger.info("[Phase3] Checking prerequisites...")
-
-        missing_files = []
-
-        # Required: Phase 1 outputs
-        if not self.facts_path.exists():
-            missing_files.append(str(self.facts_path))
-        else:
-            logger.info(f"   [OK] Found: {self.facts_path}")
-
-        if not self.evidence_path.exists():
-            missing_files.append(str(self.evidence_path))
-        else:
-            logger.info(f"   [OK] Found: {self.evidence_path}")
-
-        # Required: Phase 2 output
-        if not self.analyzed_path.exists():
-            missing_files.append(str(self.analyzed_path))
-        else:
-            logger.info(f"   [OK] Found: {self.analyzed_path}")
-
-        if missing_files:
-            logger.error("")
-            logger.error("=" * 60)
-            logger.error("[ERROR] PHASE 3 CANNOT START")
-            logger.error("=" * 60)
-            logger.error("")
-            logger.error("Missing prerequisite files:")
-            for f in missing_files:
-                logger.error(f"   [MISSING] {f}")
-            logger.error("")
-            logger.error("[HINT] Solution: Run Phase 1 and Phase 2 first:")
-            logger.error("   python -m aicodegencrew run --phases extract,analyze")
-            logger.error("")
-            logger.error("=" * 60)
-            raise FileNotFoundError(
-                f"Missing prerequisite files: {', '.join(missing_files)}. Run Phase 1 and Phase 2 first."
-            )
-
-        logger.info("   [OK] All prerequisites satisfied!")
-        logger.info("")
-
-    def _clean_old_outputs(self) -> None:
-        """Delete old Phase 3 outputs before new run."""
-        import shutil
-
-        output_dir = self.output_dir
-
-        output_dirs = ["c4", "arc42", "quality"]
-        deleted = 0
-        for dirname in output_dirs:
-            d = output_dir / dirname
-            if d.exists() and any(d.iterdir()):
-                shutil.rmtree(d)
-                d.mkdir(exist_ok=True)
-                deleted += 1
-
-        if deleted:
-            logger.info(f"   [OK] {deleted} directories cleaned")
-        else:
-            logger.info("   [OK] No old outputs to clean (first run)")
 
     def run(self, quality_context: dict | None = None) -> dict:
-        """
-        Execute both crews sequentially.
-
-        Sequence:
-        1. C4: Facts + Analysis -> 4 C4 diagrams + DrawIO
-        2. Arc42: Facts + Analysis -> 12 deep chapters
+        """Execute document generation pipeline.
 
         Args:
-            quality_context: Optional quality metrics forwarded from analyze phase.
+            quality_context: Optional quality metrics from analyze phase (unused in V2,
+                            kept for backward compatibility).
 
-        Returns dict with status and result summary.
+        Returns:
+            Dict with status and result summary.
         """
-        self._quality_context = quality_context or {}
-        # Validate prerequisites before running
-        self._validate_prerequisites()
-
-        # Only archive on fresh run. When resuming (checkpoint exists),
-        # keep existing files — skipped crews depend on them still being there.
-        synthesis_dir = self.output_dir
-        c4_checkpoint = synthesis_dir / ".checkpoint_c4.json"
-        arc42_checkpoint = synthesis_dir / ".checkpoint_arc42.json"
-        is_resume = c4_checkpoint.exists() or arc42_checkpoint.exists()
-
-        if is_resume:
-            logger.info("[Phase3] Resuming from checkpoint — keeping existing outputs")
-        else:
-            logger.info("[Phase3] Fresh run — cleaning old outputs...")
-            self._clean_old_outputs()
-
-        results = []
-
-        # Phase 3a: C4 Diagrams
-        logger.info("=" * 60)
-        logger.info("PHASE 3a: C4 CREW - Creating C4 Diagrams + DrawIO")
-        logger.info("=" * 60)
-
-        self.c4_crew = C4Crew(
-            facts_path=str(self.facts_path),
-            analyzed_path=str(self.analyzed_path),
+        pipeline = DocumentPipeline(
+            facts_path=self.facts_path,
+            analyzed_path=self.analyzed_path,
+            output_dir=self.output_dir,
             chroma_dir=self.chroma_dir,
-            output_dir=str(self.output_dir),
         )
-        c4_result = self.c4_crew.run()
-        c4_result_text = c4_result.get("result", "") if isinstance(c4_result, dict) else str(c4_result)
-        results.append(f"C4 Crew Result:\n{c4_result_text}")
 
-        logger.info("C4 Crew completed")
-
-        # Phase 3b: Arc42 Documentation
-        logger.info("=" * 60)
-        logger.info("PHASE 3b: ARC42 CREW - Creating Deep arc42 Documentation")
-        logger.info("=" * 60)
-
-        self.arc42_crew = Arc42Crew(
-            facts_path=str(self.facts_path),
-            analyzed_path=str(self.analyzed_path),
-            chroma_dir=self.chroma_dir,
-            output_dir=str(self.output_dir),
-        )
-        arc42_result = self.arc42_crew.run()
-        arc42_result_text = arc42_result.get("result", "") if isinstance(arc42_result, dict) else str(arc42_result)
-        results.append(f"Arc42 Crew Result:\n{arc42_result_text}")
-
-        logger.info("Arc42 Crew completed")
-
-        degraded_reasons: list[str] = []
-        if self.c4_crew and self.c4_crew.has_degraded_outputs():
-            degraded_reasons.extend(self.c4_crew.get_degradation_reasons())
-        if self.arc42_crew and self.arc42_crew.has_degraded_outputs():
-            degraded_reasons.extend(self.arc42_crew.get_degradation_reasons())
-
-        phase_status = "partial" if degraded_reasons else "completed"
-        if degraded_reasons:
-            logger.warning("[Phase3] Completed with degraded outputs: %d issue(s)", len(degraded_reasons))
-
-        # Combined summary
-        summary = "\n\n".join(results)
-        logger.info("=" * 60)
-        logger.info("PHASE 3 COMPLETE: Reverse Engineering Documentation created")
-        logger.info("=" * 60)
+        result = pipeline.run()
 
         return {
-            "status": phase_status,
+            "status": result.status,
             "phase": "document",
-            "result": summary,
-            "degradation_reasons": degraded_reasons,
+            "result": result.to_dict(),
+            "degradation_reasons": result.degradation_reasons,
         }
 
-    def run_c4_only(self) -> dict:
-        """Run only the C4 Crew."""
-        self._validate_prerequisites()
-        logger.info("Running C4 Crew only...")
-        self.c4_crew = C4Crew(
-            facts_path=str(self.facts_path),
-            analyzed_path=str(self.analyzed_path),
-            chroma_dir=self.chroma_dir,
-            output_dir=str(self.output_dir),
-        )
-        return self.c4_crew.run()
-
-    def run_arc42_only(self) -> dict:
-        """Run only the Arc42 Crew."""
-        self._validate_prerequisites()
-        logger.info("Running Arc42 Crew only...")
-        self.arc42_crew = Arc42Crew(
-            facts_path=str(self.facts_path),
-            analyzed_path=str(self.analyzed_path),
-            chroma_dir=self.chroma_dir,
-            output_dir=str(self.output_dir),
-        )
-        return self.arc42_crew.run()
-
     def kickoff(self, inputs: dict | None = None) -> dict:
-        """
-        Execute crews - compatible with orchestrator interface.
+        """Execute — compatible with orchestrator PhaseExecutable interface.
 
         Args:
-            inputs: Optional inputs dict from orchestrator. Reads
-                    previous_results["analyze"] to forward quality_context.
+            inputs: Optional inputs dict from orchestrator.
 
         Returns:
             Dict with status and result.
@@ -251,11 +83,4 @@ class ArchitectureSynthesisCrew:
         previous = inputs.get("previous_results", {})
         analyze_out = previous.get("analyze", {})
         quality_context = analyze_out.get("quality_metrics", {}) if isinstance(analyze_out, dict) else {}
-        if quality_context:
-            logger.info(
-                "[Phase3] Received quality_context from analyze phase: %d keys",
-                len(quality_context),
-            )
-        else:
-            logger.debug("[Phase3] No quality_context from previous results")
         return self.run(quality_context=quality_context)

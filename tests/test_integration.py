@@ -522,14 +522,15 @@ class TestPhase2ToPhase3:
         assert "executive_summary" in spec["required_keys"]
 
     def test_synthesis_crew_detects_missing_prerequisites(self, tmp_path):
-        """ArchitectureSynthesisCrew raises FileNotFoundError on missing inputs."""
-        from aicodegencrew.crews.architecture_synthesis.crew import (
-            ArchitectureSynthesisCrew,
-        )
+        """DocumentPipeline raises FileNotFoundError on missing inputs."""
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "nonexistent" / "facts.json"))
-        with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
-            crew._validate_prerequisites()
+        pipeline = DocumentPipeline(
+            facts_path=tmp_path / "nonexistent" / "facts.json",
+            analyzed_path=tmp_path / "nonexistent" / "analyzed.json",
+        )
+        with pytest.raises(FileNotFoundError, match="Phase 1 output not found"):
+            pipeline._validate_prerequisites()
 
 
 # =============================================================================
