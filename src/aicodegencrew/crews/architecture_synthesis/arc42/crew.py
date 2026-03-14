@@ -137,19 +137,19 @@ TECHNOLOGIES:
 COMPONENT COUNTS BY STEREOTYPE:
 {chr(10).join([f"- {k}: {v}" for k, v in sorted(by_stereotype.items())]) if by_stereotype else "- Use tools to discover"}
 
-IMPORTANT: Use MCP tools (get_statistics, get_architecture_summary, list_components_by_stereotype) to get REAL data!"""
+IMPORTANT: Use tools (query_facts, list_components_by_stereotype, rag_query) to get REAL data! Call each tool ONCE with a SINGLE set of parameters."""
 
         container_lines = [f"- {c.get('name', '?')}: {c.get('technology', '?')}" for c in containers]
 
         containers_summary = f"""CONTAINERS:
-{chr(10).join(container_lines) if container_lines else "- Use query_architecture_facts to discover"}"""
+{chr(10).join(container_lines) if container_lines else "- Use query_facts to discover"}"""
 
         components_summary = "Use list_components_by_stereotype tool to query components by type."
         interfaces_summary = (
-            f"Total interfaces: {len(interfaces)}. Use query_architecture_facts with category='interfaces' for details."
+            f"Total interfaces: {len(interfaces)}. Use query_facts with category='interfaces' for details."
         )
         relations_summary = (
-            f"Total relations: {len(relations)}. Use query_architecture_facts with category='relations' for details."
+            f"Total relations: {len(relations)}. Use query_facts with category='relations' for details."
         )
         building_blocks_data = (
             "Use list_components_by_stereotype for each layer (controller, service, repository, entity)."

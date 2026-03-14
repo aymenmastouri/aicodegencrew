@@ -77,7 +77,7 @@ Do NOT write example responses like "Your response: File written successfully".
 Do NOT write the markdown content in your response text.
 
 CORRECT execution pattern:
-1. Call 5-10 information-gathering tools (get_statistics, list_components_by_stereotype, etc.)
+1. Call 3-6 information-gathering tools (query_facts, list_components_by_stereotype, rag_query — each ONCE with a SINGLE set of parameters)
 2. Build your complete markdown document in memory
 3. ACTUALLY CALL: doc_writer(file_path="<path>", content="<FULL_MARKDOWN_HERE>")
 4. After the tool returns success, respond with ONLY: "Chapter completed."
@@ -141,7 +141,7 @@ class MiniCrewBase(ABC):
         self._checkpoints: list[dict[str, Any]] = []
 
         # Token budget tracking
-        self._token_budget = int(os.getenv("LLM_CONTEXT_WINDOW", "120000"))
+        self._token_budget = int(os.getenv("LLM_CONTEXT_WINDOW", "262144"))
         self._token_usage: list[dict[str, Any]] = []
         # Track quality degradations (fallback writes, stubs, mini-crew failures).
         self._degradation_reasons: list[str] = []

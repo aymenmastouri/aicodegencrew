@@ -37,16 +37,14 @@ Document generation date: {current_date}
 - Stakeholder table with at least 8 roles
 - For EACH: Role, Concern, Expectations, Key Interactions
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get component counts
-2. get_architecture_summary() -> get architecture style, patterns
-3. list_components_by_stereotype(stereotype="controller") -> get ALL controllers
-4. list_components_by_stereotype(stereotype="service") -> get ALL services
-5. list_components_by_stereotype(stereotype="repository") -> get ALL repositories
-6. list_components_by_stereotype(stereotype="entity") -> get ALL entities
-7. get_endpoints() -> get REST API endpoints
-8. doc_writer(file_path="arc42/01-introduction.md", content="# 01 - Introduction and Goals\\n\\n## 1.1 Requirements Overview\\n...")
-9. Respond: "File arc42/01-introduction.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="all") -> component counts + system metrics
+Step 2: query_facts(category="containers") -> architecture style, patterns, layers
+Step 3: list_components_by_stereotype(stereotype="controller") -> controllers
+Step 4: list_components_by_stereotype(stereotype="service") -> services
+Step 5: query_facts(category="interfaces") -> REST API endpoints
+Step 6: doc_writer(file_path="arc42/01-introduction.md", content="# 01 - Introduction and Goals\n...")
+Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -77,15 +75,13 @@ Create the COMPLETE arc42 Chapter 2: Architecture Constraints.
 - Code style and formatting rules
 - API design conventions (REST, versioning)
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system overview
-2. get_architecture_summary() -> get architecture decisions and patterns
-3. query_architecture_facts(category="containers") -> get container technologies
-4. rag_query(query="naming convention package structure") -> naming patterns
-5. rag_query(query="configuration properties spring") -> framework constraints
-6. rag_query(query="Oracle datasource database connection jdbc") -> database technology
-7. doc_writer(file_path="arc42/02-constraints.md", content="# 02 - Architecture Constraints\\n...")
-8. Respond: "File arc42/02-constraints.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="all") -> system overview
+Step 2: query_facts(category="containers") -> architecture decisions, patterns, technologies
+Step 3: rag_query(query="naming convention package structure configuration") -> conventions
+Step 4: rag_query(query="Oracle datasource database connection jdbc") -> database technology
+Step 5: doc_writer(file_path="arc42/02-constraints.md", content="# 02 - Architecture Constraints\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -119,15 +115,13 @@ Create the COMPLETE arc42 Chapter 3: System Scope and Context.
 - Build dependencies table
 - Infrastructure dependencies
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system overview
-2. get_architecture_summary() -> get architecture style
-3. get_endpoints() -> get ALL REST API endpoints
-4. query_architecture_facts(category="containers") -> get container details
-5. query_architecture_facts(category="interfaces") -> get API interfaces
-6. rag_query(query="external system integration database") -> external deps
-7. doc_writer(file_path="arc42/03-context.md", content="# 03 - System Scope and Context\\n...")
-8. Respond: "File arc42/03-context.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="containers") -> containers + architecture
+Step 2: query_facts(category="interfaces") -> REST API endpoints
+Step 3: query_facts(category="relations") -> external dependencies
+Step 4: rag_query(query="external system integration database") -> evidence
+Step 5: doc_writer(file_path="arc42/03-context.md", content="# 03 - System Scope and Context\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -159,15 +153,13 @@ Create the COMPLETE arc42 Chapter 4: Solution Strategy.
 - Table: | Quality Goal | Solution Approach | Implemented By |
 - Map quality goals to concrete architectural decisions
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_architecture_summary() -> get architecture style, patterns, layers
-2. get_statistics() -> get system metrics
-3. query_architecture_facts(category="containers") -> get container technologies
-4. list_components_by_stereotype(stereotype="configuration") -> get config components
-5. rag_query(query="architecture pattern repository service") -> pattern details
-6. rag_query(query="framework spring boot version") -> framework info
-7. doc_writer(file_path="arc42/04-solution-strategy.md", content="# 04 - Solution Strategy\\n...")
-8. Respond: "File arc42/04-solution-strategy.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="all") -> system metrics
+Step 2: query_facts(category="containers") -> architecture style, patterns, technologies
+Step 3: list_components_by_stereotype(stereotype="configuration") -> config components
+Step 4: rag_query(query="architecture pattern repository service framework") -> patterns
+Step 5: doc_writer(file_path="arc42/04-solution-strategy.md", content="# 04 - Solution Strategy\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -197,16 +189,14 @@ Create arc42 Chapter 5 PART 1: Overview and System Whitebox.
 - Layer dependency rules diagram
 - Component distribution across containers
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get component counts per layer
-2. get_architecture_summary() -> get layer structure and patterns
-3. query_architecture_facts(category="containers") -> get container details
-4. list_components_by_stereotype(stereotype="controller") -> count controllers
-5. list_components_by_stereotype(stereotype="service") -> count services
-6. list_components_by_stereotype(stereotype="repository") -> count repos
-7. list_components_by_stereotype(stereotype="entity") -> count entities
-8. doc_writer(file_path="arc42/05-part1-overview.md", content="# 05 - Building Block View\\n...")
-9. Respond: "File arc42/05-part1-overview.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="all") -> component counts per layer
+Step 2: query_facts(category="containers") -> layer structure, patterns, container details
+Step 3: list_components_by_stereotype(stereotype="controller") -> controllers
+Step 4: list_components_by_stereotype(stereotype="service") -> services
+Step 5: list_components_by_stereotype(stereotype="repository") -> repos
+Step 6: doc_writer(file_path="arc42/05-part1-overview.md", content="# 05 - Building Block View\n...")
+Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -234,13 +224,13 @@ Create arc42 Chapter 5 Part 2A: Controller Layer Overview and Top 5 Deep Dive.
 
 ## EXECUTION — EXACTLY 5 TOOL CALLS (no more!):
 1. list_components_by_stereotype(stereotype="controller") — ONE call, no offset/pagination
-2. get_endpoints() — REST API endpoints
+2. query_facts(category="interfaces") — REST API endpoints
 3. rag_query(query="REST controller patterns RequestMapping validation security") — patterns
 4. doc_writer(file_path="arc42/05-part2a-controllers-overview.md", content="...")
 5. Respond: "Chapter completed."
 
 STRICT LIMIT: 5 tool calls total. Do NOT call list_components_by_stereotype for other stereotypes.
-Do NOT paginate. Do NOT call get_architecture_summary. The summary data below has everything you need.
+Do NOT paginate. Do NOT call extra tools. The summary data below has everything you need.
 
 Summary data:
 {system_summary}
@@ -266,12 +256,12 @@ Create arc42 Chapter 5 Part 2B: Controller Inventory Table.
 
 ## EXECUTION — EXACTLY 4 TOOL CALLS (no more!):
 1. list_components_by_stereotype(stereotype="controller") — ONE call, first page only
-2. get_statistics() — total counts
-3. get_endpoints() — count by HTTP method
+2. query_facts(category="all") — total counts
+3. query_facts(category="interfaces") — count by HTTP method
 4. doc_writer(file_path="arc42/05-part2b-controllers-inventory.md", content="...")
 
 STRICT LIMIT: 4 tool calls total. Do NOT call list_components_by_stereotype for other stereotypes.
-Do NOT paginate. Do NOT call get_architecture_summary. The summary data below has everything you need.
+Do NOT paginate. Do NOT call extra tools. The summary data below has everything you need.
 
 Summary data:
 {system_summary}
@@ -299,14 +289,13 @@ Create arc42 Chapter 5 PART 3: Business Layer / Services.
 ### 5.4.5 Service Interactions
 - Key service-to-service dependencies with direction
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="service") -> get first page (do NOT paginate)
-2. get_architecture_summary() -> get architecture patterns
-3. get_statistics() -> get component counts
-4. query_architecture_facts(category="relations") -> get service dependencies
-5. rag_query(query="service implementation transaction") -> service patterns
-6. doc_writer(file_path="arc42/05-part3-services.md", content="## 5.4 Business Layer\\n...")
-7. Respond: "File arc42/05-part3-services.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: list_components_by_stereotype(stereotype="service") -> first page (do NOT paginate)
+Step 2: query_facts(category="containers") -> architecture patterns
+Step 3: query_facts(category="relations") -> service dependencies
+Step 4: rag_query(query="service implementation transaction") -> service patterns
+Step 5: doc_writer(file_path="arc42/05-part3-services.md", content="## 5.4 Business Layer\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -340,14 +329,13 @@ Create arc42 Chapter 5 PART 4: Domain Layer, Persistence Layer, Dependencies.
 - Dependency matrix: | From/To | Controller | Service | Repository | Entity |
 - Dependency statistics and coupling analysis
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. list_components_by_stereotype(stereotype="entity") -> get first page (do NOT call again with offset)
-2. list_components_by_stereotype(stereotype="repository") -> get first page (do NOT paginate)
-3. query_architecture_facts(category="relations") -> get dependency data
-4. get_statistics() -> get component counts
-5. rag_query(query="Oracle datasource database connection spring") -> database technology
-6. doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer\\n...")
-7. Respond: "File arc42/05-part4-domain.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: list_components_by_stereotype(stereotype="entity") -> first page (do NOT paginate)
+Step 2: list_components_by_stereotype(stereotype="repository") -> first page (do NOT paginate)
+Step 3: query_facts(category="relations") -> dependency data
+Step 4: rag_query(query="Oracle datasource database connection spring") -> database technology
+Step 5: doc_writer(file_path="arc42/05-part4-domain.md", content="## 5.5 Domain Layer\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 IMPORTANT NOTES:
 - Entity inventory: ONLY classes annotated with @Entity (JPA). Skip migration files.
@@ -390,16 +378,14 @@ Create arc42 Chapter 6 Part 1: API Runtime Flows.
 - HTTP status code strategy
 - Content negotiation
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_endpoints() -> get ALL REST API endpoints
-2. get_architecture_summary() -> get architecture patterns
-3. list_components_by_stereotype(stereotype="controller") -> get controllers
-4. list_components_by_stereotype(stereotype="service") -> get services
-5. list_components_by_stereotype(stereotype="repository") -> get repositories
-6. query_architecture_facts(category="relations") -> get component dependencies
-7. rag_query(query="request flow authentication") -> get auth flow details
-8. doc_writer(file_path="arc42/06-part1-api-flows.md", content="# 06 - Runtime View\\n\\n## 6.1 Overview\\n...")
-9. Respond: "File arc42/06-part1-api-flows.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="interfaces") -> REST API endpoints
+Step 2: query_facts(category="containers") -> architecture patterns
+Step 3: list_components_by_stereotype(stereotype="controller") -> controllers
+Step 4: query_facts(category="relations") -> component dependencies
+Step 5: rag_query(query="request flow authentication security") -> auth flow details
+Step 6: doc_writer(file_path="arc42/06-part1-api-flows.md", content="# 06 - Runtime View\n...")
+Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -433,16 +419,14 @@ Create arc42 Chapter 6 Part 2: Business Process Flows.
 - Event-driven interactions (if any)
 - Background processing
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system overview
-2. get_architecture_summary() -> get architecture patterns
-3. list_components_by_stereotype(stereotype="service") -> get ALL services
-4. query_architecture_facts(category="relations") -> get dependencies
-5. rag_query(query="workflow state transition") -> get workflow details
-6. rag_query(query="scheduled task batch") -> get async patterns
-7. rag_query(query="exception error handling") -> get error handling
-8. doc_writer(file_path="arc42/06-part2-business-flows.md", content="## 6.5 Core Business Workflows\\n...")
-9. Respond: "File arc42/06-part2-business-flows.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="containers") -> architecture patterns
+Step 2: list_components_by_stereotype(stereotype="service") -> services
+Step 3: query_facts(category="relations") -> dependencies
+Step 4: rag_query(query="workflow state transition scheduled task batch") -> workflows
+Step 5: rag_query(query="exception error handling recovery") -> error handling
+Step 6: doc_writer(file_path="arc42/06-part2-business-flows.md", content="## 6.5 Core Business Workflows\n...")
+Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -482,14 +466,13 @@ Create the COMPLETE arc42 Chapter 7: Deployment View.
 ### 7.6 Scaling Strategy
 - Scaling table: | Container | Scaling Type | Trigger | Min | Max |
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system overview
-2. query_architecture_facts(category="containers") -> get container details
-3. get_architecture_summary() -> get infrastructure hints
-4. rag_query(query="docker dockerfile kubernetes deployment") -> deployment config
-5. rag_query(query="application properties profile environment") -> env config
-6. doc_writer(file_path="arc42/07-deployment.md", content="# 07 - Deployment View\\n...")
-7. Respond: "File arc42/07-deployment.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="all") -> system overview
+Step 2: query_facts(category="containers") -> container details + infrastructure
+Step 3: rag_query(query="docker dockerfile kubernetes deployment") -> deployment config
+Step 4: rag_query(query="application properties profile environment") -> env config
+Step 5: doc_writer(file_path="arc42/07-deployment.md", content="# 07 - Deployment View\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -513,13 +496,12 @@ REQUIRED SECTIONS:
 8.1 Domain Model: entity relationship diagram, entity inventory table (Entity|Attributes|Relationships), aggregate boundaries.
 8.2 Security Concept: authentication mechanism, authorization model (roles/permissions), security annotations, CSRF/XSS prevention.
 
-EXECUTION EXAMPLE:
-1. list_components_by_stereotype(stereotype="entity") -> entities
-2. search_components(query="security") -> security components
-3. rag_query(query="security authentication authorization JWT") -> auth details
-4. rag_query(query="@Entity JPA domain model") -> domain details
-5. doc_writer(file_path="arc42/08-part1a-domain-security.md", content="# 08 - Part 1A\\n...")
-6. Respond: "File arc42/08-part1a-domain-security.md written successfully."
+EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: list_components_by_stereotype(stereotype="entity") -> entities
+Step 2: rag_query(query="security authentication authorization JWT") -> auth details
+Step 3: rag_query(query="@Entity JPA domain model") -> domain details
+Step 4: doc_writer(file_path="arc42/08-part1a-domain-security.md", content="# 08 - Part 1A\n...")
+Step 5: Respond ONLY: "Chapter completed."
 
 {system_summary}
 
@@ -537,13 +519,13 @@ REQUIRED SECTIONS:
 8.4 Error Handling: exception hierarchy, @ControllerAdvice, error response, HTTP codes.
 8.5 Logging: framework config, log levels, structured format, health endpoints.
 
-EXECUTION EXAMPLE:
-1. list_components_by_stereotype(stereotype="repository") -> repos
-2. rag_query(query="Transactional JPA") -> persistence details
-3. rag_query(query="ControllerAdvice exception") -> error handling
-4. rag_query(query="slf4j logback logging") -> logging
-5. doc_writer(file_path="arc42/08-part1b-persistence-ops.md", content="## 8.3\\n...")
-6. Respond: "File arc42/08-part1b-persistence-ops.md written successfully."
+EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: list_components_by_stereotype(stereotype="repository") -> repos
+Step 2: rag_query(query="Transactional JPA persistence") -> persistence details
+Step 3: rag_query(query="ControllerAdvice exception error handling") -> error handling
+Step 4: rag_query(query="slf4j logback logging") -> logging
+Step 5: doc_writer(file_path="arc42/08-part1b-persistence-ops.md", content="## 8.3\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 {system_summary}
 
@@ -584,17 +566,14 @@ Create arc42 Chapter 8 Part 2: Architecture Patterns and Conventions.
 - i18n support (if detected)
 - Message bundles, locale handling
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system overview
-2. get_architecture_summary() -> get patterns
-3. search_components(query="config") -> find configuration components
-4. search_components(query="cache") -> find caching components
-5. rag_query(query="configuration properties profile") -> config details
-6. rag_query(query="validation Bean JSR") -> validation patterns
-7. rag_query(query="test junit mockito SpringBootTest") -> testing patterns
-8. rag_query(query="dependency injection constructor autowired") -> DI patterns
-9. doc_writer(file_path="arc42/08-part2-patterns.md", content="## 8.6 Dependency Injection Patterns\\n...")
-10. Respond: "File arc42/08-part2-patterns.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="all") -> system overview
+Step 2: query_facts(category="containers") -> patterns + technologies
+Step 3: rag_query(query="configuration properties profile cache") -> config + caching
+Step 4: rag_query(query="validation Bean JSR dependency injection") -> validation + DI
+Step 5: rag_query(query="test junit mockito SpringBootTest") -> testing patterns
+Step 6: doc_writer(file_path="arc42/08-part2-patterns.md", content="## 8.6 Dependency Injection Patterns\n...")
+Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -621,15 +600,13 @@ Create the COMPLETE arc42 Chapter 9: Architecture Decisions.
 - Cover: Architecture Style, Backend Framework, Database, Frontend, API Design, Authentication,
   Deployment Strategy, Caching, Logging Framework, Testing Strategy
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_architecture_summary() -> get architecture style, patterns
-2. query_architecture_facts(category="containers") -> get technology choices
-3. get_statistics() -> get system metrics
-4. get_endpoints() -> get API design decisions
-5. rag_query(query="architecture decision spring framework") -> framework decisions
-6. rag_query(query="database configuration persistence") -> DB decisions
-7. doc_writer(file_path="arc42/09-decisions.md", content="# 09 - Architecture Decisions\\n...")
-8. Respond: "File arc42/09-decisions.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="containers") -> architecture style, patterns, technologies
+Step 2: query_facts(category="all") -> system metrics
+Step 3: query_facts(category="interfaces") -> API design decisions
+Step 4: rag_query(query="architecture decision spring framework database") -> decisions
+Step 5: doc_writer(file_path="arc42/09-decisions.md", content="# 09 - Architecture Decisions\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -660,14 +637,13 @@ Create the COMPLETE arc42 Chapter 10: Quality Requirements.
 - Metrics table: | Metric | Target | Measurement Method | Current |
 - Code quality metrics, performance targets, security requirements
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_architecture_summary() -> get quality attributes, patterns
-2. get_statistics() -> get system metrics (component counts, relations)
-3. list_components_by_stereotype(stereotype="controller") -> count for metrics
-4. query_architecture_facts(category="relations") -> coupling metrics
-5. rag_query(query="quality performance test") -> quality indicators
-6. doc_writer(file_path="arc42/10-quality.md", content="# 10 - Quality Requirements\\n...")
-7. Respond: "File arc42/10-quality.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="containers") -> quality attributes, patterns
+Step 2: query_facts(category="all") -> system metrics (component counts)
+Step 3: query_facts(category="relations") -> coupling metrics
+Step 4: rag_query(query="quality performance test") -> quality indicators
+Step 5: doc_writer(file_path="arc42/10-quality.md", content="# 10 - Quality Requirements\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -699,15 +675,13 @@ Create the COMPLETE arc42 Chapter 11: Risks and Technical Debt.
 - Prioritized action plan: | Phase | Action | Priority | Timeline | Effort |
 - Quick wins vs. strategic improvements
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_architecture_summary() -> get architecture assessment and quality
-2. get_statistics() -> get system complexity metrics
-3. query_architecture_facts(category="relations") -> get dependency risks
-4. list_components_by_stereotype(stereotype="component") -> generic components (potential debt)
-5. rag_query(query="deprecated legacy TODO FIXME") -> technical debt indicators
-6. rag_query(query="coupling dependency circular") -> coupling risks
-7. doc_writer(file_path="arc42/11-risks.md", content="# 11 - Risks and Technical Debt\\n...")
-8. Respond: "File arc42/11-risks.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="containers") -> architecture assessment, quality
+Step 2: query_facts(category="all") -> system complexity metrics
+Step 3: query_facts(category="relations") -> dependency risks
+Step 4: rag_query(query="deprecated legacy TODO FIXME coupling circular") -> debt indicators
+Step 5: doc_writer(file_path="arc42/11-risks.md", content="# 11 - Risks and Technical Debt\n...")
+Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
@@ -740,15 +714,14 @@ Create the COMPLETE arc42 Chapter 12: Glossary.
 - All detected architecture and design patterns
 - Table: | Pattern | Definition | Where Used | Benefit |
 
-## EXECUTION EXAMPLE (follow this pattern):
-1. get_statistics() -> get system terminology
-2. list_components_by_stereotype(stereotype="entity") -> get domain terms
-3. list_components_by_stereotype(stereotype="service") -> get business terms
-4. get_architecture_summary() -> get architecture terms
-5. get_endpoints() -> get API terms
-6. rag_query(query="domain model business terminology") -> domain knowledge
-7. doc_writer(file_path="arc42/12-glossary.md", content="# 12 - Glossary\\n...")
-8. Respond: "File arc42/12-glossary.md written successfully."
+## EXECUTION STEPS (call each tool exactly ONCE, never as array):
+Step 1: query_facts(category="all") -> system terminology
+Step 2: list_components_by_stereotype(stereotype="entity") -> domain terms
+Step 3: list_components_by_stereotype(stereotype="service") -> business terms
+Step 4: query_facts(category="containers") -> architecture terms
+Step 5: rag_query(query="domain model business terminology") -> domain knowledge
+Step 6: doc_writer(file_path="arc42/12-glossary.md", content="# 12 - Glossary\n...")
+Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
