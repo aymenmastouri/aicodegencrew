@@ -52,7 +52,7 @@ STEPS:
    - Mix = Hybrid
 5. Identify deployment model and communication patterns
 
-IMPORTANT: Base your analysis ONLY on tool query results. Do not invent containers or components."""
+Base your analysis on tool query results."""
 
 ANALYZE_MACRO_ARCHITECTURE_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -79,7 +79,7 @@ STEPS:
    - Clean Architecture: use cases, entities, interfaces directories
    - CQRS: separate command/query handlers
 
-IMPORTANT: Count actual components from tool results. Do not estimate."""
+Use actual component counts from tool results."""
 
 ANALYZE_BACKEND_PATTERN_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -105,7 +105,7 @@ STEPS:
    - Server-Rendered: minimal JavaScript, server-side templates
    - No Frontend: backend-only system
 
-IMPORTANT: If no frontend container exists, report "No Frontend" - do not invent one."""
+If no frontend container exists, report "No Frontend"."""
 
 ANALYZE_FRONTEND_PATTERN_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -132,7 +132,7 @@ STEPS:
    - ratio 1.0-3.0 = moderate coupling
    - ratio > 3.0 = tight coupling
 
-IMPORTANT: Use actual numbers from statistics. Do not estimate."""
+Use actual numbers from statistics."""
 
 ANALYZE_ARCHITECTURE_QUALITY_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -160,7 +160,7 @@ STEPS:
 5. Identify core domains (most entities) vs supporting domains (few entities)
 6. Assess naming consistency
 
-IMPORTANT: List ALL entity names from tool results. Group by actual naming patterns."""
+List ALL entity names from tool results. Group by actual naming patterns."""
 
 ANALYZE_DOMAIN_MODEL_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -234,7 +234,7 @@ INDICATORS (examples across languages):
   python-statemachine/transitions in Python, Stateless in C#,
   looplab/fsm in Go, xstate in TypeScript)
 
-IMPORTANT: If no state machines found, report detected=false. Do not invent them."""
+If not found, report detected=false."""
 
 ANALYZE_STATE_MACHINES_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -261,7 +261,7 @@ INDICATORS (examples across languages):
 - Go/Node: Temporal workers, Bull queues
 - General: State machine libraries, pipeline/step patterns
 
-IMPORTANT: If no workflow engine found, report engine="None". Do not invent."""
+If not found, report engine="None"."""
 
 ANALYZE_WORKFLOW_ENGINES_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -288,7 +288,7 @@ INDICATORS:
 - Outbox tables or event sourcing
 - @SagaEventHandler annotations
 
-IMPORTANT: If no saga patterns found, report detected=false. Do not invent."""
+If not found, report detected=false."""
 
 ANALYZE_SAGA_PATTERNS_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -371,7 +371,7 @@ STEPS:
    - 500-5000: Medium complexity
    - 5000+: High/Enterprise complexity
 
-IMPORTANT: Use actual numbers from get_facts_statistics(). Do not estimate."""
+Use actual numbers from get_facts_statistics()."""
 
 ANALYZE_COMPLEXITY_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -397,7 +397,7 @@ STEPS:
    - Design debt: deprecated patterns still in use
    - Test debt: missing test coverage indicators
 
-IMPORTANT: Only report what RAG search actually finds. Do not speculate."""
+Report only what RAG search finds."""
 
 ANALYZE_TECHNICAL_DEBT_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -425,7 +425,7 @@ STEPS:
    - Input validation: annotation-based, decorator-based, or manual
    - Audit logging: present or absent
 
-IMPORTANT: Only report security patterns found by RAG search. Do not assume."""
+Report only security patterns found by RAG search."""
 
 ANALYZE_SECURITY_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -457,7 +457,7 @@ STEPS:
      Python, Serilog in C#, zap/zerolog in Go)
    - Configuration: externalized config, environment variables, profiles
 
-IMPORTANT: Only report what RAG search confirms. Do not assume."""
+Report only what RAG search confirms."""
 
 ANALYZE_OPERATIONAL_READINESS_OUTPUT = """\
 Valid JSON object with these exact keys:
@@ -501,7 +501,7 @@ STRUCTURE of output:
 - api: from task 2.8
 - quality: complexity (3.1) + debt (3.2) + security (3.3) + ops (3.4)
 
-IMPORTANT: Never invent data. If a section is missing, use "NOT_ANALYZED"."""
+If a section has no analysis, mark it "NOT_ANALYZED"."""
 
 SYNTHESIZE_ARCHITECTURE_OUTPUT = """\
 Complete valid JSON matching the AnalyzedArchitecture schema. Must include:

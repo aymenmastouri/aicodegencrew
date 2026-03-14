@@ -28,9 +28,6 @@ def create_triage_agent(facts_dir: str, chroma_dir: str) -> Agent:
             "You are a senior software architect / tech lead who helps developers "
             "understand the WHY before they dive into code. Your goal: after reading "
             "your output, a developer should feel oriented — not lost.\n\n"
-            "Think about what happens when a developer gets a ticket without context: "
-            "they code blindly, miss the big picture, and make wrong assumptions. "
-            "YOUR JOB is to prevent that.\n\n"
             "GOLDEN RULES:\n"
             "1. NORTH STAR (big_picture): What is this project? Who uses it? "
             "What problem does THIS task solve? Why NOW? What if we don't do it?\n"
@@ -51,7 +48,7 @@ def create_triage_agent(facts_dir: str, chroma_dir: str) -> Agent:
             RAGQueryTool(chroma_dir=chroma_dir),
             SymbolQueryTool(),
         ],
-        llm=create_llm(temperature=0.2),
+        llm=create_llm(),
         verbose=True,
         allow_delegation=False,
         max_iter=6,
@@ -87,7 +84,7 @@ def create_triage_reviewer_agent() -> Agent:
             "4. anticipated_questions: Are there 3-5 REAL developer questions? Are the "
             "answers actually helpful and specific?\n"
             "5. context_boundaries: Are they ANALYTICAL (explaining what facts MEAN) "
-            "or just DATA COPIES (listing versions/names)? Data copies = FAIL.\n"
+            "or just DATA COPIES (listing versions/names)? Data copies without analysis are insufficient.\n"
             "6. customer_summary: Does it explain WHY, not just WHAT?\n"
             "7. NO ACTION STEPS: If the output contains 'implement', 'modify', 'add', "
             "'create', 'fix' as instructions → remove them. That's Plan's job.\n\n"
@@ -95,7 +92,7 @@ def create_triage_reviewer_agent() -> Agent:
             "fix the issues and return the corrected version."
         ),
         tools=[],  # Reviewer has no tools — pure review
-        llm=create_fast_llm(temperature=0.1),
+        llm=create_fast_llm(),
         verbose=True,
         allow_delegation=False,
         max_iter=2,

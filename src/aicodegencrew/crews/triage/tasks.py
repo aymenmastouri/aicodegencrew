@@ -58,18 +58,9 @@ STEPS:
 The following are RAW FACTS from the codebase. Your job is to ANALYZE what they MEAN
 for this specific issue, NOT to copy them into your output.
 
-ANTI-PATTERN EXAMPLES:
-  WRONG: "Technologies: FrameworkX 18.2, LanguageY 4.9, LibZ 3.3"
-         (just listing versions = useless data copy)
-  RIGHT: "FrameworkX 18 uses TestRunner for testing. TestRunner is deprecated in FrameworkX 19+.
-          Test infrastructure must be verified or migrated before upgrading."
-         (explains what the version MEANS for this issue)
-
-  WRONG: "Components: ServiceA, ServiceB"
-         (just listing names = useless)
-  RIGHT: "ServiceB delegates to ServiceA via internal API.
-          Changes here must verify the cross-boundary contract."
-         (explains the RELATIONSHIP and RISK)
+ANALYSIS RULE: For each fact, explain what it MEANS for this issue.
+Example: "ServiceB delegates to ServiceA via internal API — changes here must
+verify the cross-boundary contract."
 
 {analysis_inputs or "(none available)"}
 --- END ANALYSIS INPUTS ---
@@ -132,22 +123,10 @@ OUTPUT FORMAT (strict JSON):
   }}
 }}
 
-CRITICAL RULES:
-- customer_summary.summary: Must include WHY this is needed, not just what. "X needs to be upgraded" is WRONG. "X needs to be upgraded because Y stops receiving security patches after Z, leaving the system vulnerable" is RIGHT.
-- big_picture: This is the NORTH STAR. A developer reads this FIRST. Answer: What? Who? Why? Why now?
-- architecture_notes: This is an ARCHITECTURAL WALKTHROUGH. Show the developer WHERE their work fits. Container → Layer → Component → Neighbors. Like explaining with a whiteboard drawing.
-- anticipated_questions: Think like a developer seeing this ticket for the FIRST time. What 3-5 questions would they ask? Examples:
-  "Do I need to migrate tests too?" / "Does library X work with version Y?" / "Is the security guard affected?" / "What about backward compatibility?"
-  Answer each one based on the analysis inputs and your understanding.
-- context_boundaries: Minimum 2, Maximum 6 boundaries. Each MUST:
-  a) Explain what a fact MEANS for this issue (analysis, not data copy)
-  b) Include source_facts citing extract FILE NAMES (e.g. "tech_versions.json: LibX 18.2.13")
-  c) Use the correct severity: info=FYI, caution=verify, blocking=must address
-- scope_boundary: Explicitly state IN and OUT. Be specific.
-- classification_assessment: For bugs, structured argument: evidence FOR vs AGAINST. For CR/Task set to empty string.
-- classification_confidence: For bugs, rate 0.0-1.0. For CR/Task set to -1
-- If analysis inputs are pre-loaded, use them — do NOT waste tool calls on query_facts for data already provided
-- NEVER propose solutions or action steps — that is the Plan phase's job
+RULES:
+- context_boundaries: 2-6 boundaries, each must explain what a fact MEANS (not data copy), include source_facts citing extract file names, and use correct severity (info/caution/blocking)
+- If analysis inputs are pre-loaded, use them — do not repeat query_facts calls for data already provided
+- Triage is for UNDERSTANDING only — do not propose solutions or action steps
 """,
         expected_output=(
             "A JSON object with customer_summary and developer_context sections "

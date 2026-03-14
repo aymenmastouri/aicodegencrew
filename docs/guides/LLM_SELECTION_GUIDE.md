@@ -24,11 +24,15 @@
 
 | Env-Variable | Alias | Modell | Verwendet von |
 |---|---|---|---|
-| `MODEL` | `openai/complex_tasks` | Kimi-K2.5 | Alle Standard-Crews (Analyse, Triage, Docs, Deliver) |
-| `FAST_MODEL` | `openai/chat` | GPT-OSS-120B | Schnelle / einfache Tasks (Klassifizierung, Formatting) |
+| `MODEL` | `openai/code` | Qwen3-Coder-Next | Alle Standard-Crews (Analyse, Triage, Docs, Deliver) |
+| `FAST_MODEL` | `openai/code` | Qwen3-Coder-Next | Schnelle / einfache Tasks (Klassifizierung, Formatting) |
 | `CODEGEN_MODEL` | `openai/code` | Qwen3-Coder-Next | Code-Generierung + Test-Generierung |
 | `VISION_MODEL` | `openai/vision` | Mistral-Small-3.1-24B | OCR, Diagramm-Analyse, Screenshot-Verarbeitung |
 | `EMBED_MODEL` | `embed` | Platform Embed | Vektorsuche (ChromaDB, RAG) |
+
+> **Vereinfachung:** MODEL, FAST_MODEL und CODEGEN_MODEL verwenden alle dasselbe Modell
+> (Qwen3-Coder-Next). Die Trennung bleibt als Env-Variablen erhalten, damit bei Bedarf
+> einzelne Phasen auf andere Modelle umgestellt werden können.
 
 ---
 
@@ -51,10 +55,10 @@
 ---
 
 ### Phase 2 — Analyze (Architektur-Analyse)
-- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`)
+- **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm()`
-- **Kontext:** 196 608 Tokens
-- **Warum Kimi-K2.5:** 5 parallele Mini-Crews, tiefes Reasoning über Architekturmuster, Domain-Modelle, Qualitätsanalyse — braucht starkes analytisches Denken
+- **Kontext:** 262 144 Tokens
+- **Warum Qwen3-Coder-Next:** 5 parallele Mini-Crews, tiefes Reasoning über Architekturmuster, Domain-Modelle, Qualitätsanalyse; langer Kontext für große Codebasen
 - **Agents:** `tech_architect`, `func_analyst`, `quality_analyst`, `synthesis_lead`
 - **Mini-Crews (parallel):**
   1. `tech_analysis` — Architekturstil, Design Patterns, Tech-Stack
@@ -67,10 +71,10 @@
 ---
 
 ### Phase 3 — Document (C4 + Arc42)
-- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`)
+- **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm()` (mit `FAST_MODEL`-Unterstützung für einfache Agents via `use_fast_model=True`)
-- **Kontext:** 196 608 Tokens
-- **Warum Kimi-K2.5:** Arc42-Kapitel = 6–12 Seiten langer strukturierter Output; C4-Diagramme brauchen exaktes Schema-Following; 256K-Kontext für große Codebasen hilfreich
+- **Kontext:** 262 144 Tokens
+- **Warum Qwen3-Coder-Next:** Arc42-Kapitel = 6–12 Seiten langer strukturierter Output; C4-Diagramme brauchen exaktes Schema-Following; 262K-Kontext für große Codebasen
 - **Sub-Crews (sequenziell):**
   1. **C4 Crew** — L1 System Context, L2 Container, L3 Component Diagramme (DrawIO)
   2. **Arc42 Crew** — 12 Arc42-Kapitel (~50 Seiten)
@@ -79,7 +83,7 @@
 ---
 
 ### Phase 4 — Triage (Issue-Klassifizierung)
-- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`)
+- **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm(temperature=0.2)`
 - **Typ:** Hybrid (deterministisch + LLM-Synthese)
 - **Deterministische Phase (kein LLM, <5 s):**
@@ -92,11 +96,10 @@
 ---
 
 ### Phase 5 — Plan (Implementierungsplanung)
-- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`) für Planner, `FAST_MODEL` → **GPT-OSS-120B** für Reviewer
+- **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`) für Planner, `FAST_MODEL` → **Qwen3-Coder-Next** für Reviewer
 - **Funktion:** `create_llm()` (Planner) + `create_fast_llm()` (Reviewer)
 - **Typ:** Hybrid (5-Stufen-Pipeline, nur Stufe 4 = LLM)
-- **Warum Kimi-K2.5 für Planner:** JSON-Schema-Compliance kritisch (Pydantic-Validierung); komplexes Reasoning über Abhängigkeitsgraphen; langer strukturierter Output
-- **Warum GPT-OSS-120B für Reviewer:** Reine Qualitätsprüfung, keine Code-Generierung — schneller & günstiger
+- **Warum Qwen3-Coder-Next:** JSON-Schema-Compliance kritisch (Pydantic-Validierung); komplexes Reasoning über Abhängigkeitsgraphen; langer strukturierter Output
 - **Pipeline:**
   1. Input Parser (deterministisch, <1 s) — JIRA XML, DOCX, Excel
   2. Component Discovery (RAG + Scoring, 2–5 s)
@@ -131,7 +134,7 @@
 ---
 
 ### Phase 8 — Deliver (Review & Konsistenzprüfung)
-- **LLM:** `MODEL` → **Kimi-K2.5** (`openai/complex_tasks`)
+- **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm(temperature=0.2)`
 - **Typ:** Hybrid (deterministisch + LLM-Synthese)
 - **Deterministische Phase (kein LLM):**
@@ -148,30 +151,32 @@
 |-------|------|-------------|--------|---------|
 | 0 | Discover | — | keines | — |
 | 1 | Extract | — | keines | — |
-| 2 | Analyze | `create_llm()` | Kimi-K2.5 | 196 608 |
-| 3 | Document | `create_llm()` | Kimi-K2.5 | 196 608 |
-| 4 | Triage | `create_llm()` | Kimi-K2.5 | 196 608 |
-| 5 | Plan | `create_llm()` + `create_fast_llm()` | Kimi-K2.5 + GPT-OSS-120B | 196 608 |
+| 2 | Analyze | `create_llm()` | Qwen3-Coder-Next | 262 144 |
+| 3 | Document | `create_llm()` | Qwen3-Coder-Next | 262 144 |
+| 4 | Triage | `create_llm()` | Qwen3-Coder-Next | 262 144 |
+| 5 | Plan | `create_llm()` + `create_fast_llm()` | Qwen3-Coder-Next | 262 144 |
 | 6 | Implement | `create_codegen_llm()` | Qwen3-Coder-Next | 262 144 |
 | 7 | Verify | `create_codegen_llm()` | Qwen3-Coder-Next | 262 144 |
-| 8 | Deliver | `create_llm()` | Kimi-K2.5 | 196 608 |
+| 8 | Deliver | `create_llm()` | Qwen3-Coder-Next | 262 144 |
 
-> **FAST_MODEL** (`GPT-OSS-120B`) wird automatisch in `architecture_synthesis` (Phase 3)
+> **Aktuell** verwenden alle Phasen dasselbe Modell (Qwen3-Coder-Next via `openai/code`).
+> Die Env-Variablen `MODEL`, `FAST_MODEL`, `CODEGEN_MODEL` bleiben getrennt,
+> damit bei Bedarf einzelne Phasen auf andere Modelle umgestellt werden können.
+> `FAST_MODEL` wird automatisch in `architecture_synthesis` (Phase 3)
 > für einfache/formulaische Agents verwendet (`use_fast_model=True` in `base_crew.py`).
-> Kein manueller Eingriff nötig — greift über `FAST_MODEL` env var.
 
 ---
 
 ## 5. Anforderungsprofil der Pipeline
 
-| Anforderung | Phasen | Bestes Modell dafür |
+| Anforderung | Phasen | Modell |
 |---|---|---|
-| Tiefes Reasoning, lange Analyse | 2, 3, 5 | Kimi-K2.5 (`complex_tasks`) |
-| JSON-Schema-Compliance | 5 (Plan) | Kimi-K2.5 |
-| Langer strukturierter Output | 3 (Arc42) | Kimi-K2.5 |
+| Tiefes Reasoning, lange Analyse | 2, 3, 5 | Qwen3-Coder-Next (`code`) |
+| JSON-Schema-Compliance | 5 (Plan) | Qwen3-Coder-Next (`code`) |
+| Langer strukturierter Output | 3 (Arc42) | Qwen3-Coder-Next (`code`) |
 | Code schreiben + Build-Error-Recovery | 6, 7 | Qwen3-Coder-Next (`code`) |
-| Tool-Use + agentic Loops | 6 | Qwen3-Coder-Next |
-| Schnelle Klassifizierung | 3, 5 (Reviewer) | GPT-OSS-120B (`chat`) |
+| Tool-Use + agentic Loops | 6 | Qwen3-Coder-Next (`code`) |
+| Schnelle Klassifizierung | 3, 5 (Reviewer) | Qwen3-Coder-Next (`code`) |
 | OCR / Diagramme / Bilder | zukünftig | Mistral-Small-3.1-24B (`vision`) |
 | Vektorsuche (RAG) | alle | Platform `embed` |
 
@@ -184,13 +189,13 @@
 API_BASE=https://litellm.bnotk.sovai-de.apps.ce.capgemini.com/v1
 OPENAI_API_KEY=sk-your-api-key-here
 
-# Kimi-K2.5 (1T MoE, 32B active, 384 experts, 196K ctx)
-MODEL=openai/complex_tasks
+# Qwen3-Coder-Next (80B MoE, 3B active, 262K ctx) — all crews
+MODEL=openai/code
 
-# GPT-OSS-120B (MoE, 5.1B active, 131K ctx) — fast tasks
-FAST_MODEL=openai/chat
+# Same model (can be overridden for lighter tasks)
+FAST_MODEL=openai/code
 
-# Qwen3-Coder-Next (80B MoE, 3B active, 256K ctx) — code generation
+# Qwen3-Coder-Next (80B MoE, 3B active, 262K ctx) — code generation
 CODEGEN_MODEL=openai/code
 
 # Mistral-Small-3.1-24B-Instruct (24B, 131K ctx, EU) — vision
@@ -199,7 +204,7 @@ VISION_MODEL=openai/vision
 # Embeddings
 EMBED_MODEL=embed
 
-# Kontext-Limit (Kimi-K2.5 nativ)
-LLM_CONTEXT_WINDOW=196608
-MAX_LLM_OUTPUT_TOKENS=8000
+# Kontext-Limit (Qwen3-Coder-Next nativ)
+LLM_CONTEXT_WINDOW=262144
+MAX_LLM_OUTPUT_TOKENS=65536
 ```

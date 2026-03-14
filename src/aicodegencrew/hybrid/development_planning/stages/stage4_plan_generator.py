@@ -22,6 +22,7 @@ from crewai import Agent, Crew, Process, Task
 
 from ....shared.mcp import get_phase4_mcps
 from ....shared.utils.crew_callbacks import step_callback, task_callback
+from ....shared.utils.crew_timeout import kickoff_with_timeout
 from ....shared.utils.embedder_config import get_crew_embedder
 from ....shared.utils.llm_factory import create_fast_llm, create_llm
 from ....shared.utils.logger import setup_logger
@@ -55,7 +56,7 @@ class PlanGeneratorStage:
         self.analyzed_architecture = analyzed_architecture or {}
         self.supplementary_context = supplementary_context or {}
         self.extract_facts = extract_facts or {}
-        self._model = os.getenv("MODEL", "gpt-4o-mini")
+        self._model = os.getenv("MODEL", "openai/code")
         self.agent = self._create_agent()
         self.reviewer = self._create_reviewer_agent()
 
@@ -111,6 +112,10 @@ class PlanGeneratorStage:
                 "   error_handling from provided patterns — don't leave them empty.\n"
                 "7. TOOLS: Use Brave Search or Playwright only for external docs "
                 "   (migration guides, changelogs). Prefer the facts already provided."
+                "\n"
+                "8. EMPTY DATA: If discovered_components, patterns, or facts are empty or "
+                "   missing, state that explicitly in the plan and skip sections that depend "
+                "   on them. Never fabricate components or file paths to fill gaps."
             ),
             llm=llm,
             allow_delegation=False,
@@ -172,7 +177,7 @@ class PlanGeneratorStage:
                 "Do NOT add explanatory text outside the JSON."
             ),
             tools=[],  # Reviewer has no tools — pure review
-            llm=create_fast_llm(temperature=0.1),
+            llm=create_fast_llm(),
             allow_delegation=False,
             verbose=True,
             max_iter=2,
@@ -303,7 +308,7 @@ class PlanGeneratorStage:
 
         try:
             crew = Crew(agents=[self.agent, self.reviewer], **crew_kwargs)
-            return crew.kickoff()
+            return kickoff_with_timeout(crew)
 
         except RuntimeError as e:
             if "MCP" not in str(e) and "tools_list" not in str(e):
@@ -328,7 +333,7 @@ class PlanGeneratorStage:
             # Re-assign the planning task to the new agent
             planning_task.agent = fallback_agent
             crew = Crew(agents=[fallback_agent, self.reviewer], **crew_kwargs)
-            return crew.kickoff()
+            return kickoff_with_timeout(crew)
 
         except (ConnectionError, TimeoutError, OSError) as e:
             logger.error("[Stage4] Transient error (network/timeout): %s", e)

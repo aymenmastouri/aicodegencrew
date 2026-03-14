@@ -144,7 +144,7 @@ class TestMiniCrewBaseLLMFactory:
     @patch.dict(os.environ, {"MAX_LLM_OUTPUT_TOKENS": "0"}, clear=False)
     @patch("aicodegencrew.shared.utils.llm_factory.LLM")
     def test_create_llm_zero_tokens_fallback(self, MockLLM):
-        """max_tokens < 1 falls back to 8000."""
+        """max_tokens < 1 falls back to 65536."""
         mock_instance = MagicMock()
         MockLLM.return_value = mock_instance
 
@@ -172,7 +172,7 @@ class TestMiniCrewBaseLLMFactory:
             crew._create_llm()
 
             call_kwargs = MockLLM.call_args[1]
-            assert call_kwargs["max_tokens"] == 8000
+            assert call_kwargs["max_tokens"] == 65536
 
 
 class TestToolInstruction:

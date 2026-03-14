@@ -344,7 +344,7 @@ curl -X POST http://localhost:8001/api/reset
 | `PROJECT_PATH` | Zu analysierendes Repository | `C:\repos\my-project` |
 | `TASK_INPUT_DIR` | JIRA/DOCX/Excel Aufgaben | `C:\projects\inputs\tasks` |
 | `LLM_PROVIDER` | `local` (Ollama) oder `onprem` (API) | `onprem` |
-| `MODEL` | LLM-Modell | `openai/complex_tasks` |
+| `MODEL` | LLM-Modell | `openai/code` |
 | `API_BASE` | LLM-API-Endpunkt | `https://litellm.bnotk.sovai-de...` |
 | `OPENAI_API_KEY` | API-Key | `sk-...` |
 | `EMBED_MODEL` | Embedding-Modell | `embed` |
@@ -353,8 +353,8 @@ curl -X POST http://localhost:8001/api/reset
 
 | Variable | Modell | Verwendet für |
 |----------|--------|---------------|
-| `MODEL` | Kimi-K2.5 | Analyse, Triage, Docs, Planung, Reviews |
-| `FAST_MODEL` | GPT-OSS-120B | Schnelle Tasks (Klassifizierung, Reviews) |
+| `MODEL` | Qwen3-Coder-Next | Analyse, Triage, Docs, Planung, Reviews |
+| `FAST_MODEL` | Qwen3-Coder-Next | Schnelle Tasks (Klassifizierung, Reviews) |
 | `CODEGEN_MODEL` | Qwen3-Coder-Next | Code-Generierung, Tests |
 | `VISION_MODEL` | Mistral-Small-3.1-24B | OCR, Diagramme, Screenshots |
 
