@@ -5,13 +5,12 @@
 # Installs EVERYTHING from scratch: git, Python 3.12, Node.js 22, clones the
 # repo, configures .env, installs all dependencies, and starts the dashboard.
 #
-# Usage (copy-paste into WSL2 Ubuntu terminal):
-#   curl -sO https://raw.githubusercontent.com/.../setup-local.sh && bash setup-local.sh
-#   # or simply:
+# Der Manager bekommt NUR diese Datei (per Teams, E-Mail, USB, etc.)
+# und führt sie aus — alles andere passiert automatisch:
+#
 #   bash setup-local.sh
 #
-# If running from inside the cloned repo:
-#   bash scripts/setup-local.sh
+# Das Script klont das Repo, installiert alles, startet das Dashboard.
 #
 # Options:
 #   --setup-only       Setup without starting the dashboard
@@ -129,22 +128,25 @@ ok "npm $(npm --version)"
 # ============================================================================
 log "${BOLD}Step 2/7: Repository${NC}"
 
-if [[ -d "$INSTALL_DIR/.git" ]]; then
+# Detect if we're already running inside the cloned repo
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/../pyproject.toml" ]]; then
+    INSTALL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+    ok "Running from inside repo: $INSTALL_DIR"
+elif [[ -d "$INSTALL_DIR/.git" ]]; then
     ok "Repository exists at $INSTALL_DIR"
     cd "$INSTALL_DIR"
     git pull --quiet || warn "git pull failed — using existing code"
 elif [[ -d "$INSTALL_DIR/src/aicodegencrew" ]]; then
-    # Already exists (maybe extracted from ZIP)
     ok "Project found at $INSTALL_DIR (no .git)"
-    cd "$INSTALL_DIR"
 else
     log "Cloning repository..."
     git clone "$GIT_REPO_URL" "$INSTALL_DIR"
     ok "Cloned to $INSTALL_DIR"
-    cd "$INSTALL_DIR"
 fi
 
 ROOT="$INSTALL_DIR"
+cd "$ROOT"
 
 # ============================================================================
 # STEP 3: Python virtual environment
