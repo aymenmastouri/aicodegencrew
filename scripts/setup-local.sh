@@ -38,7 +38,7 @@ fail() { echo -e "${RED}  ✗ $*${NC}"; exit 1; }
 GIT_REPO_URL="https://bnotkca.pl.s2-eu.capgemini.com/gitlab/ai-group/aicodegencrew.git"
 INSTALL_DIR="$HOME/aicodegencrew"
 
-ENV_API_KEY="sk-gX7FLpLxfFUyORK8rv1Rog"
+ENV_API_KEY="sk-FILL-IN-BEFORE-DISTRIBUTING"
 ENV_API_BASE="https://litellm.bnotk.sovai-de.apps.ce.capgemini.com/v1"
 ENV_MODEL="openai/code"
 ENV_FAST_MODEL="openai/code"
