@@ -48,9 +48,6 @@ Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/01-introduction.md using doc_writer tool.
-Write 8-12 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -86,9 +83,6 @@ Step 6: Respond ONLY: "Chapter completed."
 Summary data:
 {system_summary}
 {containers_summary}
-
-Write to file: arc42/02-constraints.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -125,9 +119,6 @@ Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/03-context.md using doc_writer tool.
-Write 8-12 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -163,9 +154,6 @@ Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/04-solution-strategy.md using doc_writer tool.
-Write 8-12 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -201,9 +189,6 @@ Step 7: Respond ONLY: "Chapter completed."
 Summary data:
 {system_summary}
 {containers_summary}
-
-Write to file: arc42/05-part1-overview.md using doc_writer tool.
-Write 6-8 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -234,9 +219,6 @@ Do NOT paginate. Do NOT call extra tools. The summary data below has everything 
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/05-part2a-controllers-overview.md using doc_writer tool.
-Write 4-5 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -265,9 +247,6 @@ Do NOT paginate. Do NOT call extra tools. The summary data below has everything 
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/05-part2b-controllers-inventory.md using doc_writer tool.
-Write 3-4 pages — focused on the inventory table only. No placeholders.
 """
 )
 
@@ -299,9 +278,6 @@ Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/05-part3-services.md using doc_writer tool.
-Write 6-8 pages with REAL data. No placeholders. Do NOT paginate tool results.
 """
 )
 
@@ -346,9 +322,6 @@ IMPORTANT NOTES:
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/05-part4-domain.md using doc_writer tool.
-Write 6-8 pages with REAL data. No placeholders.
 """
 )
 
@@ -389,10 +362,6 @@ Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/06-part1-api-flows.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
-Include text-based sequence diagrams for EACH flow showing exact component names.
 """
 )
 
@@ -430,10 +399,6 @@ Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/06-part2-business-flows.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
-Include text-based sequence diagrams showing exact component names from facts.
 """
 )
 
@@ -477,9 +442,6 @@ Step 6: Respond ONLY: "Chapter completed."
 Summary data:
 {system_summary}
 {containers_summary}
-
-Write to file: arc42/07-deployment.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -504,8 +466,6 @@ Step 4: doc_writer(file_path="arc42/08-part1a-domain-security.md", content="# 08
 Step 5: Respond ONLY: "Chapter completed."
 
 {system_summary}
-
-Write to: arc42/08-part1a-domain-security.md. 6-8 pages. REAL data. No placeholders.
 """
 )
 
@@ -528,8 +488,6 @@ Step 5: doc_writer(file_path="arc42/08-part1b-persistence-ops.md", content="## 8
 Step 6: Respond ONLY: "Chapter completed."
 
 {system_summary}
-
-Write to: arc42/08-part1b-persistence-ops.md. 6-8 pages. REAL data. No placeholders.
 """
 )
 
@@ -577,9 +535,6 @@ Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/08-part2-patterns.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -610,9 +565,6 @@ Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/09-decisions.md using doc_writer tool.
-Write 8-12 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -647,9 +599,6 @@ Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/10-quality.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -685,9 +634,6 @@ Step 6: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/11-risks.md using doc_writer tool.
-Write 8-10 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -725,9 +671,6 @@ Step 7: Respond ONLY: "Chapter completed."
 
 Summary data:
 {system_summary}
-
-Write to file: arc42/12-glossary.md using doc_writer tool.
-Write 6-8 pages. Include ALL domain-specific terms from the system. No placeholders.
 """
 )
 
@@ -755,7 +698,6 @@ READ all chapter files using safe_file_read tool and validate:
 
 Validate:
 - All 12 chapters complete
-- Each chapter has expected page count
 - Content based on REAL facts
 - No placeholder text
 

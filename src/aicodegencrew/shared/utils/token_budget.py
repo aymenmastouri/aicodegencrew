@@ -9,14 +9,14 @@ Budget allocation for tools:
 - Tool responses should use ~25% of input budget
 - Rest is reserved for system prompt, conversation history, etc.
 
-Default model config: 100K input, 16K output (aligned with .env.example)
+Default model config: 100K input, 65K output (aligned with .env.example)
 """
 
 import os
 
 # Read from environment
 MAX_LLM_INPUT_TOKENS = int(os.getenv("MAX_LLM_INPUT_TOKENS", "100000"))
-MAX_LLM_OUTPUT_TOKENS = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "16000"))
+MAX_LLM_OUTPUT_TOKENS = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "65536"))
 
 # Chars per token (conservative estimate)
 CHARS_PER_TOKEN = 4

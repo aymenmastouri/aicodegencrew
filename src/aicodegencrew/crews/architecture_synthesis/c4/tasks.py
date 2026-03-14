@@ -36,7 +36,6 @@ Also use the provided summary data:
 {system_summary}
 
 ## DOCUMENT STRUCTURE
-Write to file: c4/c4-context.md using doc_writer tool.
 
 # C4 Level 1: System Context
 
@@ -46,10 +45,10 @@ The System Context diagram shows the system as a black box with all external act
 ## 1.2 The System
 | Attribute | Value |
 |-----------|-------|
-| Name | [from facts] |
-| Type | [from facts] |
-| Purpose | [describe] |
-| Domain | [from facts] |
+| Name | (from query_facts) |
+| Type | (from query_facts) |
+| Purpose | (derive from components) |
+| Domain | (from query_facts) |
 
 ## 1.3 Actors and Users
 
@@ -77,8 +76,6 @@ The System Context diagram shows the system as a black box with all external act
 
 ## Context Diagram
 See: c4-context.drawio
-
-Write 6-8 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -135,7 +132,6 @@ Summary data:
 {containers_summary}
 
 ## DOCUMENT STRUCTURE
-Write to file: c4/c4-container.md using doc_writer tool.
 
 # C4 Level 2: Container Diagram
 
@@ -171,8 +167,6 @@ For EACH container, create a detail section with technology, purpose, ports, int
 
 ## Container Diagram
 See: c4-container.drawio
-
-Write 6-8 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -234,7 +228,6 @@ Summary data:
 {components_summary}
 
 ## DOCUMENT STRUCTURE
-Write to file: c4/c4-component.md using doc_writer tool.
 
 # C4 Level 3: Component Diagram
 
@@ -284,8 +277,6 @@ HTTP Request -> Controller -> Service -> Repository -> Database
 
 ## Component Diagram
 See: c4-component.drawio
-
-Write 6-8 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -343,7 +334,6 @@ Summary data:
 {containers_summary}
 
 ## DOCUMENT STRUCTURE
-Write to file: c4/c4-deployment.md using doc_writer tool.
 
 # C4 Level 4: Deployment Diagram
 
@@ -383,8 +373,6 @@ The deployment view shows where containers run in production.
 
 ## Deployment Diagram
 See: c4-deployment.drawio
-
-Write 4-6 pages with REAL data from tools. No placeholders.
 """
 )
 
@@ -438,11 +426,10 @@ Write quality report to: quality/c4-report.md using doc_writer tool.
 
 # C4 Quality Report
 
-| Level | Target Pages | Actual | Diagram | Status |
-|-------|-------------|--------|---------|--------|
-| Context | 6-8 | - | c4-context.drawio | ? |
-| Container | 6-8 | - | c4-container.drawio | ? |
-| Component | 6-8 | - | c4-component.drawio | ? |
-| Deployment | 4-6 | - | c4-deployment.drawio | ? |
-| **TOTAL** | **~30** | - | - | - |
+| Level | Diagram | Status |
+|-------|---------|--------|
+| Context | c4-context.drawio | ? |
+| Container | c4-container.drawio | ? |
+| Component | c4-component.drawio | ? |
+| Deployment | c4-deployment.drawio | ? |
 """

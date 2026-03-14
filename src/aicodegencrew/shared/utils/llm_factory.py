@@ -27,10 +27,16 @@ _DEFAULT_MODEL = "gpt-4o-mini"
 # litellm uses tenacity under the hood to retry on HTTP 429 responses.
 _DEFAULT_NUM_RETRIES = 3
 
+# Qwen3-Coder-Next best-practice sampling parameters.
+# See: https://huggingface.co/Qwen/Qwen3-Coder-Next#best-practices
+_DEFAULT_TEMPERATURE = 1.0
+_DEFAULT_TOP_P = 0.95
+_DEFAULT_MAX_OUTPUT_TOKENS = 65536
+
 
 def create_llm(
     *,
-    temperature: float = 0.1,
+    temperature: float = _DEFAULT_TEMPERATURE,
     timeout: int = 300,
     model_override: str | None = None,
 ) -> LLM:
@@ -39,21 +45,21 @@ def create_llm(
     Reads: MODEL, API_BASE, MAX_LLM_OUTPUT_TOKENS, LLM_CONTEXT_WINDOW.
 
     Args:
-        temperature: LLM temperature (default 0.1 for deterministic output).
+        temperature: LLM temperature (default 1.0, Qwen3-Coder-Next best practice).
         timeout: Request timeout in seconds.
         model_override: If provided, use this model instead of MODEL env var.
     """
     model = model_override or os.getenv("MODEL", _DEFAULT_MODEL)
     api_base = os.getenv("API_BASE", "")
     api_key = os.getenv("OPENAI_API_KEY", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "16000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", str(_DEFAULT_MAX_OUTPUT_TOKENS)))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "262144"))
 
     if not api_key:
         logger.warning("[LLM] OPENAI_API_KEY is empty — LLM calls will fail")
 
     if max_tokens < 1:
-        max_tokens = 16000
+        max_tokens = _DEFAULT_MAX_OUTPUT_TOKENS
 
     model = _ensure_provider_prefix(model)
 
@@ -62,6 +68,7 @@ def create_llm(
         base_url=api_base,
         api_key=api_key,
         temperature=temperature,
+        top_p=_DEFAULT_TOP_P,
         max_tokens=max_tokens,
         timeout=timeout,
         num_retries=_DEFAULT_NUM_RETRIES,
@@ -120,7 +127,7 @@ def check_llm_connectivity(*, timeout: int = 10) -> tuple[bool, str]:
 
 def create_fast_llm(
     *,
-    temperature: float = 0.1,
+    temperature: float = _DEFAULT_TEMPERATURE,
     timeout: int = 120,
 ) -> LLM:
     """Create a CrewAI LLM instance for simple, fast tasks.
@@ -130,11 +137,11 @@ def create_fast_llm(
     """
     model = os.getenv("FAST_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
     api_base = os.getenv("API_BASE", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "16000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", str(_DEFAULT_MAX_OUTPUT_TOKENS)))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "262144"))
 
     if max_tokens < 1:
-        max_tokens = 16000
+        max_tokens = _DEFAULT_MAX_OUTPUT_TOKENS
 
     model = _ensure_provider_prefix(model)
 
@@ -143,6 +150,7 @@ def create_fast_llm(
         base_url=api_base,
         api_key=os.getenv("OPENAI_API_KEY", ""),
         temperature=temperature,
+        top_p=_DEFAULT_TOP_P,
         max_tokens=max_tokens,
         timeout=timeout,
         num_retries=_DEFAULT_NUM_RETRIES,
@@ -161,14 +169,17 @@ def create_vision_llm(
 
     Reads VISION_MODEL (falls back to MODEL) — intended for tasks that process
     images, diagrams, screenshots, or OCR-heavy documents.
+
+    Note: Vision model (Mistral-Small-3.1-24B) has different optimal parameters
+    than Qwen3-Coder-Next, so temperature defaults to 0.1 here.
     """
     model = os.getenv("VISION_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
     api_base = os.getenv("API_BASE", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "16000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", str(_DEFAULT_MAX_OUTPUT_TOKENS)))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "262144"))
 
     if max_tokens < 1:
-        max_tokens = 16000
+        max_tokens = _DEFAULT_MAX_OUTPUT_TOKENS
 
     model = _ensure_provider_prefix(model)
 
@@ -188,7 +199,7 @@ def create_vision_llm(
 
 def create_codegen_llm(
     *,
-    temperature: float = 0.1,
+    temperature: float = _DEFAULT_TEMPERATURE,
     timeout: int = 300,
 ) -> LLM:
     """Create a CrewAI LLM instance for code-writing agents.
@@ -206,11 +217,11 @@ def create_codegen_llm(
     model = os.getenv("CODEGEN_MODEL") or os.getenv("MODEL") or _DEFAULT_MODEL
     api_base = os.getenv("CODEGEN_API_BASE") or os.getenv("API_BASE", "")
     api_key = os.getenv("CODEGEN_API_KEY") or os.getenv("OPENAI_API_KEY", "")
-    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "16000"))
+    max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", str(_DEFAULT_MAX_OUTPUT_TOKENS)))
     context_window = int(os.getenv("LLM_CONTEXT_WINDOW", "262144"))
 
     if max_tokens < 1:
-        max_tokens = 16000
+        max_tokens = _DEFAULT_MAX_OUTPUT_TOKENS
 
     model = _ensure_provider_prefix(model)
 
@@ -219,6 +230,7 @@ def create_codegen_llm(
         base_url=api_base,
         api_key=api_key,
         temperature=temperature,
+        top_p=_DEFAULT_TOP_P,
         max_tokens=max_tokens,
         timeout=timeout,
         num_retries=_DEFAULT_NUM_RETRIES,

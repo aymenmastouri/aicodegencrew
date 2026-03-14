@@ -6,7 +6,7 @@ Orchestrates two sub-crews for reverse engineering documentation:
 REVERSE ENGINEERING APPROACH:
 - Input: architecture_facts.json (Phase 1) + analyzed_architecture.json (Phase 2)
 - C4 Crew: Creates 4 C4 diagrams with DrawIO files
-- Arc42 Crew: Creates 12 arc42 chapters (50+ pages, 90% coverage)
+- Arc42 Crew: Creates 12 arc42 chapters (90% coverage)
 
 The agents are REVERSE ENGINEERING EXPERTS who analyze extracted facts
 and generate comprehensive architecture documentation.
