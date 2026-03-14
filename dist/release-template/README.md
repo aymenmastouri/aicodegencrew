@@ -281,8 +281,8 @@ sofort — nur aendern wenn Ihr Team andere Modell-Aliase verwendet:
 
 | Variable | Standard | Zweck |
 |----------|----------|-------|
-| `MODEL` | `openai/complex_tasks` | Architektur-Analyse, Planung |
-| `FAST_MODEL` | `openai/chat` | Schnelle Aufgaben (Triage, Reviews) |
-| `CODEGEN_MODEL` | `openai/code` | Code-Generierung |
+| `MODEL` | `openai/code` | Architektur-Analyse, Planung, Reviews |
+| `FAST_MODEL` | `openai/code` | Schnelle Aufgaben (Triage, Klassifizierung) |
+| `CODEGEN_MODEL` | `openai/code` | Code-Generierung, Tests |
 | `VISION_MODEL` | `openai/vision` | OCR, Dokumenten-Analyse |
 | `EMBED_MODEL` | `embed` | Semantische Suche |
