@@ -309,6 +309,13 @@ class PipelineExecutor:
                 self._task_states[task_id]["current_phase"] = None
                 self._task_states[task_id]["completed_phases"] = []
 
+            # Open persistent log file for parallel task output
+            task_log_path = settings.logs_dir / f"pipeline_{task_id}.log"
+            try:
+                task_log_file = open(task_log_path, "w", encoding="utf-8")
+            except OSError:
+                task_log_file = None
+
             try:
                 # Read stdout line by line
                 if proc.stdout:
@@ -325,6 +332,13 @@ class PipelineExecutor:
                                 self._task_states[task_id]["log_lines"] = task_logs[-500:]
                             # Detect phase transitions from log output
                             self._detect_phase_from_log(task_id, line)
+                        # Persist to disk
+                        if task_log_file:
+                            try:
+                                task_log_file.write(line + "\n")
+                                task_log_file.flush()
+                            except OSError:
+                                pass
 
                 try:
                     exit_code = proc.wait(timeout=3600)  # 1h max per task
@@ -345,6 +359,12 @@ class PipelineExecutor:
                 except Exception:
                     proc.kill()
                 exit_code = -1
+            finally:
+                if task_log_file:
+                    try:
+                        task_log_file.close()
+                    except OSError:
+                        pass
 
             with self._task_states_lock:
                 self._task_states[task_id]["exit_code"] = exit_code
@@ -904,10 +924,21 @@ class PipelineExecutor:
         }
 
     def _monitor_process(self) -> None:
-        """Background thread: read stdout and wait for process completion."""
+        """Background thread: read stdout and wait for process completion.
+
+        Writes subprocess output to both in-memory buffer (for SSE streaming)
+        and to logs/pipeline.log (for persistent debugging).
+        """
         proc = self._process
         if proc is None or proc.stdout is None:
             return
+
+        # Open persistent log file for subprocess output
+        pipeline_log_path = settings.logs_dir / "pipeline.log"
+        try:
+            pipeline_log_file = open(pipeline_log_path, "w", encoding="utf-8")
+        except OSError:
+            pipeline_log_file = None
 
         try:
             for line in proc.stdout:
@@ -925,6 +956,13 @@ class PipelineExecutor:
                     self._log_lines.append(line)
                     if len(self._log_lines) > _MAX_LOG_LINES:
                         self._log_lines = self._log_lines[-_MAX_LOG_LINES:]
+                # Persist to disk (unbuffered for real-time tailing)
+                if pipeline_log_file:
+                    try:
+                        pipeline_log_file.write(line + "\n")
+                        pipeline_log_file.flush()
+                    except OSError:
+                        pass
 
             exit_code = proc.wait()
 
@@ -952,8 +990,20 @@ class PipelineExecutor:
             except Exception:
                 pass
 
+            # Close persistent log file
+            if pipeline_log_file:
+                try:
+                    pipeline_log_file.close()
+                except OSError:
+                    pass
+
         except Exception as exc:
             logger.error("Monitor thread error: %s", exc)
+            if pipeline_log_file:
+                try:
+                    pipeline_log_file.close()
+                except OSError:
+                    pass
             # Kill subprocess if still running
             if self._process and self._process.poll() is None:
                 try:
