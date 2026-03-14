@@ -733,8 +733,9 @@ class TriageCrew:
             embedder=get_crew_embedder(),
         )
 
+        from ...shared.utils.crew_timeout import kickoff_with_timeout
         logger.info("[TriageCrew] Starting 2-agent mini-crew: analyst + reviewer")
-        result = crew.kickoff()
+        result = kickoff_with_timeout(crew)
         raw = result.raw if hasattr(result, "raw") else str(result)
 
         # Try to parse JSON from the LLM output (reviewer's corrected version)

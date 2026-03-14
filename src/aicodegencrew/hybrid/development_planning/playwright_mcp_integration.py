@@ -89,7 +89,8 @@ def fetch_upgrade_guide(framework: str, from_version: str, to_version: str) -> d
         embedder=get_crew_embedder(),
     )
 
-    result = crew.kickoff()
+    from ...shared.utils.crew_timeout import kickoff_with_timeout
+    result = kickoff_with_timeout(crew)
 
     import json
 

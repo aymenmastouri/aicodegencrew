@@ -47,54 +47,22 @@ _MAX_RETRIES = 2
 _RETRY_DELAY_BASE = 5  # seconds, doubled each retry
 
 
-# Shared tool instruction for all doc-writing tasks (with few-shot example)
+# Shared tool instruction for all doc-writing tasks
 TOOL_INSTRUCTION = """
-CRITICAL INSTRUCTION: You MUST use the doc_writer tool to write the output file.
-Do NOT include the full document in your response text.
+EXECUTION PATTERN — follow these steps for every chapter:
+1. GATHER: Call information-gathering tools (query_facts, list_components_by_stereotype, rag_query) to collect real data. Query only stereotypes relevant to THIS chapter.
+2. BUILD: Assemble the complete markdown document in memory using gathered data.
+3. WRITE: Call doc_writer(file_path="<path>", content="<FULL_MARKDOWN>") exactly once.
+   - If content exceeds 15000 characters, use chunked_writer instead:
+     chunked_writer(mode="create", file_path="<path>", content="first part...")
+     chunked_writer(mode="append", file_path="<path>", content="next part...")
+     chunked_writer(mode="finalize", file_path="<path>", content="")
+4. CONFIRM: Respond with only "Chapter completed."
 
-MANDATORY RULES:
-1. If you are about to write more than 200 characters, STOP and call doc_writer.
-2. Your final message MUST be a one-liner confirmation.
-3. Do NOT call the same MCP tool more than 3 times with identical arguments.
-4. Maximum 25 tool calls per task, then you MUST call doc_writer.
-
-## CORRECT EXECUTION PATTERN (follow this exactly):
-
-Step 1: Call MCP tools to gather REAL data (3-6 tool calls). Query ONLY the
-        stereotypes relevant to THIS chapter. Do NOT query all 14 stereotypes.
-Step 2: Call doc_writer(file_path="<path>", content="# Full markdown document...") ONCE.
-Step 3: Respond ONLY with a short confirmation message.
-
-If your content exceeds 15000 characters, use chunked_writer instead of doc_writer:
-1. chunked_writer(mode="create", file_path="<path>", content="first part...")
-2. chunked_writer(mode="append", file_path="<path>", content="next part...")
-3. chunked_writer(mode="finalize", file_path="<path>", content="")
-
-## CRITICAL REQUIREMENT - READ THIS CAREFULLY:
-
-You MUST actually CALL the doc_writer tool. Do NOT just write text that says "calling doc_writer".
-Do NOT write example responses like "Your response: File written successfully".
-Do NOT write the markdown content in your response text.
-
-CORRECT execution pattern:
-1. Call 3-6 information-gathering tools (query_facts, list_components_by_stereotype, rag_query — each ONCE with a SINGLE set of parameters)
-2. Build your complete markdown document in memory
-3. ACTUALLY CALL: doc_writer(file_path="<path>", content="<FULL_MARKDOWN_HERE>")
-4. After the tool returns success, respond with ONLY: "Chapter completed."
-
-WRONG examples (do NOT do this):
-- Writing: "I will now call doc_writer(file_path=..., content=...)"
-- Writing: "Call 4: doc_writer(...)"
-- Writing: "Your response: File written successfully"
-- Putting markdown content in your response instead of the tool parameter
-- Saying "File written" without actually calling the tool
-
-RIGHT example (DO this):
-- Gather data with 10 tool calls
-- Call doc_writer with 8000+ character markdown as content parameter
-- Respond with: "Chapter completed."
-
-The doc_writer tool MUST appear in your tool_calls, not in your text response!
+CONSTRAINTS:
+- Maximum 25 tool calls per task.
+- Never call the same tool with identical arguments more than once.
+- All content goes into the doc_writer content parameter — never in your response text.
 """
 
 
@@ -351,8 +319,9 @@ class MiniCrewBase(ABC):
                     output_log_file=str(log_dir / f"{name}.json"),
                     embedder=get_crew_embedder(),
                 )
+                from ...shared.utils.crew_timeout import kickoff_with_timeout
                 tracker = install_guardrails()
-                result = crew.kickoff(inputs=self.summaries)
+                result = kickoff_with_timeout(crew, inputs=self.summaries)
 
                 # === SUCCESS ===
                 duration = time.time() - start_time

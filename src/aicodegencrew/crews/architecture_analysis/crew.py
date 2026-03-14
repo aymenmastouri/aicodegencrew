@@ -346,8 +346,9 @@ class ArchitectureAnalysisCrew:
                     output_log_file=str(log_dir / f"{name}.json"),
                     embedder=get_crew_embedder(),
                 )
+                from ...shared.utils.crew_timeout import kickoff_with_timeout
                 tracker = install_guardrails()
-                result = crew.kickoff()
+                result = kickoff_with_timeout(crew)
                 duration = time.time() - start_time
                 logger.info(f"[Phase2] Completed Mini-Crew: {name} ({duration:.1f}s)")
 

@@ -30,13 +30,13 @@ Your job is to synthesise them into a professional architecture quality report.
 {findings_summary}
 --- END FINDINGS ---
 
+The findings above are your PRIMARY source — they contain all deterministic checks
+already computed. Use tools only for optional spot-check enrichment.
+
 STEPS:
-1. Use query_facts(category="containers") to verify the container names from
-   source facts and enrich the coverage analysis.
-2. Use query_facts(category="components", limit=20) to spot-check component
-   coverage in the generated documentation.
-3. (Optional) Use rag_query to find specific code evidence for critical gaps.
-4. Write a complete Markdown report with the following sections:
+1. (Optional) Use query_facts(category="containers") to spot-check container names.
+2. (Optional) Use rag_query to find code evidence for critical gaps.
+3. Write a complete Markdown report with the following sections:
 
    ## Executive Summary
    - Overall quality score (given in findings above)

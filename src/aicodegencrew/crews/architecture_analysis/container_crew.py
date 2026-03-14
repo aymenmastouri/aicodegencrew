@@ -278,8 +278,9 @@ Create final container analysis JSON:
 
         tracker = None
         try:
+            from ...shared.utils.crew_timeout import kickoff_with_timeout
             tracker = install_guardrails()
-            crew.kickoff()
+            kickoff_with_timeout(crew)
 
             # Parse synthesis result
             synthesis_output = self._parse_json_output(synthesis_task.output.raw if synthesis_task.output else "{}")

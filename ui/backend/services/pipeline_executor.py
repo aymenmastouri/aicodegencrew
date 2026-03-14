@@ -452,6 +452,7 @@ class PipelineExecutor:
                             if tid in self._task_states:
                                 self._task_states[tid]["state"] = "cancelled"
                     self.state = "cancelled"
+                    self._parallel_outcome = None  # B2: clear stale outcome on cancel
                     self._finished_at = time.monotonic()
                     logger.info("Parallel pipeline cancelled: run_id=%s", self.current_run.run_id)
                     return True
@@ -729,9 +730,12 @@ class PipelineExecutor:
 
             run_outcome = None
             if state in ("completed", "failed", "cancelled"):
-                run_outcome = self._parallel_outcome or (
-                    "success" if state == "completed" else "failed"
-                )
+                if state == "cancelled":
+                    run_outcome = "failed"
+                elif self._parallel_outcome:
+                    run_outcome = self._parallel_outcome
+                else:
+                    run_outcome = "success" if state == "completed" else "failed"
 
             return {
                 "state": state,
@@ -1025,9 +1029,12 @@ class PipelineExecutor:
             if state in ("completed", "failed", "cancelled"):
                 # Parallel mode: use _parallel_outcome (not phase_state.json which may be stale)
                 if snapshot.get("parallel_mode"):
-                    run_outcome = snapshot.get("parallel_outcome") or (
-                        "success" if state == "completed" else "failed"
-                    )
+                    if state == "cancelled":
+                        run_outcome = "failed"
+                    elif snapshot.get("parallel_outcome"):
+                        run_outcome = snapshot["parallel_outcome"]
+                    else:
+                        run_outcome = "success" if state == "completed" else "failed"
                 elif phase_progress:
                     run_outcome = self._compute_run_outcome(phase_progress)
                 else:
@@ -1066,7 +1073,7 @@ class PipelineExecutor:
                 entry["task_results"] = snapshot.get("task_results", {})
             append_run_to_history(entry)
         except Exception as exc:
-            logger.warning("Failed to write history entry: %s", exc)
+            logger.error("Failed to write history entry: %s", exc, exc_info=True)
 
     # Mapping from crew_type in metrics to parent phase_id
     _CREW_PHASE_MAP: dict[str, str] = {

@@ -393,8 +393,9 @@ class ReviewCrew:
             output_log_file=str(log_dir / "synthesis.json"),
             embedder=get_crew_embedder(),
         )
+        from ...shared.utils.crew_timeout import kickoff_with_timeout
         try:
-            result = crew.kickoff()
+            result = kickoff_with_timeout(crew)
             raw = result.raw if hasattr(result, "raw") else str(result)
             Path(output_path).write_text(raw, encoding="utf-8")
             logger.info("[ReviewCrew] Synthesis report written: %s", output_path)
