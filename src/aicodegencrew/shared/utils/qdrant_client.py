@@ -136,9 +136,11 @@ class QdrantVectorClient:
         # Convert where filter to Qdrant filter
         query_filter = self._build_filter(where) if where else None
 
-        results = self._client.search(
+        from qdrant_client.models import models
+
+        results = self._client.query_points(
             collection_name=collection_name,
-            query_vector=query_vector,
+            query=query_vector,
             limit=n_results,
             query_filter=query_filter,
             with_payload=True,
@@ -150,8 +152,8 @@ class QdrantVectorClient:
         metadatas = []
         distances = []
 
-        for hit in results:
-            payload = hit.payload or {}
+        for hit in results.points:
+            payload = dict(hit.payload or {})
             ids.append(payload.get("original_id", str(hit.id)))
             documents.append(payload.pop("document", ""))
             payload.pop("original_id", None)
