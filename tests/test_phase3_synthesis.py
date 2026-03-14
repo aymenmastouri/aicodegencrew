@@ -288,7 +288,7 @@ class TestArc42CrewConfig:
 
 
 class TestSynthesisCrewPrerequisites:
-    """Test prerequisite validation in the Phase 3 orchestrator."""
+    """Test prerequisite validation in the Phase 3 pipeline."""
 
     def test_validate_prerequisites_all_present(self, tmp_path, monkeypatch):
         """No error when all prerequisite files exist."""
@@ -299,86 +299,84 @@ class TestSynthesisCrewPrerequisites:
         _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
         _write_json(analyze_dir / "analyzed_architecture.json", MINIMAL_ANALYSIS)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+
+        pipeline = DocumentPipeline(
+            facts_path=extract_dir / "architecture_facts.json",
+            analyzed_path=analyze_dir / "analyzed_architecture.json",
+        )
         # Should not raise
-        crew._validate_prerequisites()
+        pipeline._validate_prerequisites()
 
     def test_validate_prerequisites_missing_facts(self, tmp_path):
         """Error when architecture_facts.json is missing."""
         extract_dir = tmp_path / "knowledge" / "extract"
         extract_dir.mkdir(parents=True, exist_ok=True)
+        analyze_dir = tmp_path / "knowledge" / "analyze"
+        analyze_dir.mkdir(parents=True, exist_ok=True)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
-        with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
-            crew._validate_prerequisites()
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+
+        pipeline = DocumentPipeline(
+            facts_path=extract_dir / "architecture_facts.json",
+            analyzed_path=analyze_dir / "analyzed_architecture.json",
+        )
+        with pytest.raises(FileNotFoundError, match="Phase 1 output not found"):
+            pipeline._validate_prerequisites()
 
     def test_validate_prerequisites_missing_analysis(self, tmp_path, monkeypatch):
         """Error when analyzed_architecture.json is missing."""
         monkeypatch.chdir(tmp_path)
         extract_dir = tmp_path / "knowledge" / "extract"
+        analyze_dir = tmp_path / "knowledge" / "analyze"
         _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
         _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
-        with pytest.raises(FileNotFoundError, match="Missing prerequisite"):
-            crew._validate_prerequisites()
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+
+        pipeline = DocumentPipeline(
+            facts_path=extract_dir / "architecture_facts.json",
+            analyzed_path=analyze_dir / "analyzed_architecture.json",
+        )
+        with pytest.raises(FileNotFoundError, match="Phase 2 output not found"):
+            pipeline._validate_prerequisites()
 
 
 class TestSynthesisCrewCleanup:
-    """Test cleanup logic."""
+    """Test checkpoint and resume logic."""
 
-    def test_clean_no_existing_outputs(self, tmp_path, monkeypatch):
-        """No error when there's nothing to clean."""
+    def test_checkpoint_resume(self, tmp_path, monkeypatch):
+        """When checkpoint exists, completed chapters are skipped."""
         monkeypatch.chdir(tmp_path)
-        extract_dir = tmp_path / "knowledge" / "extract"
-        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
-        # Should not raise
-        crew._clean_old_outputs()
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
 
-    def test_clean_existing_c4_dir(self, tmp_path, monkeypatch):
-        """Cleans existing c4 directory."""
-        monkeypatch.chdir(tmp_path)
-        extract_dir = tmp_path / "knowledge" / "extract"
-        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
         output_dir = tmp_path / "knowledge" / "document"
-        c4_dir = output_dir / "c4"
-        c4_dir.mkdir(parents=True)
-        (c4_dir / "test.md").write_text("test content", encoding="utf-8")
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
-        crew._clean_old_outputs()
+        # Create a checkpoint marking some chapters as done
+        checkpoint = output_dir / ".checkpoint_pipeline.json"
+        _write_json(checkpoint, {"completed": ["c4-context", "arc42-ch01"]})
 
-        # c4 dir should be recreated empty
-        assert c4_dir.exists()
-        assert not (c4_dir / "test.md").exists()
+        pipeline = DocumentPipeline(output_dir=output_dir)
+        completed = pipeline._load_checkpoint()
 
-    def test_resume_skips_clean(self, tmp_path, monkeypatch):
-        """When checkpoint exists, clean is skipped."""
-        monkeypatch.chdir(tmp_path)
-        extract_dir = tmp_path / "knowledge" / "extract"
-        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
-        _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
+        assert "c4-context" in completed
+        assert "arc42-ch01" in completed
 
-        # Create a checkpoint file in the synthesis output dir
-        synthesis_dir = tmp_path / "knowledge" / "document"
-        synthesis_dir.mkdir(parents=True, exist_ok=True)
-        _write_json(synthesis_dir / ".checkpoint_c4.json", {"status": "partial"})
+    def test_checkpoint_cleared_on_success(self, tmp_path):
+        """Checkpoint is removed when all chapters succeed."""
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
 
-        # Create existing output
-        c4_dir = synthesis_dir / "c4"
-        c4_dir.mkdir()
-        (c4_dir / "test.md").write_text("keep me", encoding="utf-8")
+        output_dir = tmp_path / "knowledge" / "document"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        checkpoint = output_dir / ".checkpoint_pipeline.json"
+        _write_json(checkpoint, {"completed": ["test"]})
 
-        ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
+        pipeline = DocumentPipeline(output_dir=output_dir)
+        pipeline._clear_checkpoint()
 
-        # Verify is_resume logic
-        c4_checkpoint = synthesis_dir / ".checkpoint_c4.json"
-        assert c4_checkpoint.exists()
-
-        # Output should still be there (clean was skipped)
-        assert (c4_dir / "test.md").exists()
+        assert not checkpoint.exists()
 
 
 class TestSynthesisCrewKickoff:
@@ -400,59 +398,35 @@ class TestSynthesisCrewKickoff:
 
 
 class TestSynthesisCrewStatus:
-    """Test phase status reporting (completed vs partial)."""
+    """Test phase status reporting via pipeline."""
 
-    def test_run_returns_partial_when_subcrews_degrade(self, tmp_path):
-        extract_dir = tmp_path / "knowledge" / "extract"
-        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
+    def test_run_returns_status_and_phase(self, tmp_path):
+        """kickoff() returns dict with status and phase keys."""
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline, PipelineResult
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "facts.json"))
 
-        c4_mock = MagicMock()
-        c4_mock.run.return_value = "C4 done"
-        c4_mock.has_degraded_outputs.return_value = True
-        c4_mock.get_degradation_reasons.return_value = ["c4 degraded"]
+        mock_result = PipelineResult(status="success", chapters=[], degradation_reasons=[])
+        with patch.object(DocumentPipeline, "run", return_value=mock_result):
+            result = crew.run()
 
-        arc42_mock = MagicMock()
-        arc42_mock.run.return_value = "Arc42 done"
-        arc42_mock.has_degraded_outputs.return_value = False
-        arc42_mock.get_degradation_reasons.return_value = []
+        assert result["status"] == "success"
+        assert result["phase"] == "document"
+        assert result["degradation_reasons"] == []
 
-        with (
-            patch.object(crew, "_validate_prerequisites", return_value=None),
-            patch.object(crew, "_clean_old_outputs", return_value=None),
-            patch("aicodegencrew.crews.architecture_synthesis.crew.C4Crew", return_value=c4_mock),
-            patch("aicodegencrew.crews.architecture_synthesis.crew.Arc42Crew", return_value=arc42_mock),
-        ):
+    def test_run_returns_partial_with_degradations(self, tmp_path):
+        """When pipeline has degradation reasons, status is partial."""
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline, PipelineResult
+
+        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "facts.json"))
+
+        mock_result = PipelineResult(
+            status="partial",
+            chapters=[],
+            degradation_reasons=["ch05: missing sections"],
+        )
+        with patch.object(DocumentPipeline, "run", return_value=mock_result):
             result = crew.run()
 
         assert result["status"] == "partial"
-        assert result["phase"] == "document"
-        assert result["degradation_reasons"] == ["c4 degraded"]
-
-    def test_run_returns_completed_when_no_degradation(self, tmp_path):
-        extract_dir = tmp_path / "knowledge" / "extract"
-        _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
-
-        crew = ArchitectureSynthesisCrew(facts_path=str(extract_dir / "architecture_facts.json"))
-
-        c4_mock = MagicMock()
-        c4_mock.run.return_value = "C4 done"
-        c4_mock.has_degraded_outputs.return_value = False
-        c4_mock.get_degradation_reasons.return_value = []
-
-        arc42_mock = MagicMock()
-        arc42_mock.run.return_value = "Arc42 done"
-        arc42_mock.has_degraded_outputs.return_value = False
-        arc42_mock.get_degradation_reasons.return_value = []
-
-        with (
-            patch.object(crew, "_validate_prerequisites", return_value=None),
-            patch.object(crew, "_clean_old_outputs", return_value=None),
-            patch("aicodegencrew.crews.architecture_synthesis.crew.C4Crew", return_value=c4_mock),
-            patch("aicodegencrew.crews.architecture_synthesis.crew.Arc42Crew", return_value=arc42_mock),
-        ):
-            result = crew.run()
-
-        assert result["status"] == "completed"
-        assert result["degradation_reasons"] == []
+        assert result["degradation_reasons"] == ["ch05: missing sections"]

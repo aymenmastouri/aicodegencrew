@@ -365,19 +365,19 @@ class TestScenario3ErrorRecovery:
     """Missing prerequisite files, invalid JSON, graceful degradation."""
 
     def test_missing_prerequisite_gives_hint(self, tmp_path):
-        """ArchitectureSynthesisCrew provides helpful error message."""
-        from aicodegencrew.crews.architecture_synthesis.crew import (
-            ArchitectureSynthesisCrew,
+        """DocumentPipeline provides helpful error when prerequisites missing."""
+        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+
+        pipeline = DocumentPipeline(
+            facts_path=tmp_path / "missing" / "architecture_facts.json",
+            analyzed_path=tmp_path / "missing" / "analyzed_architecture.json",
         )
 
-        crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "missing" / "architecture_facts.json"))
-
         with pytest.raises(FileNotFoundError) as exc_info:
-            crew._validate_prerequisites()
+            pipeline._validate_prerequisites()
 
         error_msg = str(exc_info.value)
-        assert "Run Phase 1 and Phase 2 first" in error_msg
-        assert "Missing prerequisite" in error_msg
+        assert "extract" in error_msg.lower() or "phase 1" in error_msg.lower()
 
     def test_invalid_json_in_facts(self, tmp_path):
         """Validator catches invalid JSON in architecture_facts.json."""
