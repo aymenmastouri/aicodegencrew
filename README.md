@@ -26,15 +26,16 @@ Keine Daten verlassen das Netzwerk.
 
 1. [Quick Start — Docker (empfohlen)](#1-quick-start--docker-empfohlen)
 2. [Quick Start — Entwickler (Python + Node)](#2-quick-start--entwickler-python--node)
-3. [SDLC Dashboard (Web UI)](#3-sdlc-dashboard-web-ui)
-4. [Core Pipeline (CLI)](#4-core-pipeline-cli)
-5. [Konfiguration (.env)](#5-konfiguration-env)
-6. [Architektur & Phasen](#6-architektur--phasen)
-7. [Troubleshooting](#7-troubleshooting)
-8. [Scripts](#8-scripts)
-9. [Deployment](#9-deployment)
-10. [Testing](#10-testing)
-11. [Dokumentation](#11-dokumentation)
+3. [Quick Start — WSL2 Lokal (ohne Docker)](#3-quick-start--wsl2-lokal-ohne-docker)
+4. [SDLC Dashboard (Web UI)](#4-sdlc-dashboard-web-ui)
+5. [Core Pipeline (CLI)](#5-core-pipeline-cli)
+6. [Konfiguration (.env)](#6-konfiguration-env)
+7. [Architektur & Phasen](#7-architektur--phasen)
+8. [Troubleshooting](#8-troubleshooting)
+9. [Scripts](#9-scripts)
+10. [Deployment](#10-deployment)
+11. [Testing](#11-testing)
+12. [Dokumentation](#12-dokumentation)
 
 ---
 
@@ -237,7 +238,44 @@ Nach `npm run dev`:
 
 ---
 
-## 3. SDLC Dashboard (Web UI)
+## 3. Quick Start — WSL2 Lokal (ohne Docker)
+
+> Für Manager oder Tester die **nur WSL2 Ubuntu** haben — kein Docker, kein Python, kein Node vorinstalliert.
+> Ein einziges Script installiert alles automatisch.
+
+### Voraussetzungen
+
+| Was | Hinweis |
+|-----|---------|
+| **WSL2 + Ubuntu 22.04** | `wsl --install` in PowerShell (Admin), dann Ubuntu aus dem Microsoft Store |
+
+### Setup (ein Befehl)
+
+```bash
+# Im Ubuntu-Terminal:
+bash scripts/setup-local.sh
+```
+
+Das Script macht automatisch:
+1. Installiert Git, Python 3.12, Node.js 22
+2. Klont das Repository (oder erkennt vorhandenes)
+3. Erstellt Python-venv, installiert alle Dependencies
+4. Konfiguriert `.env` mit API-Key + allen Modell-Settings
+5. Startet das Dashboard → http://localhost:4200
+
+### Optionen
+
+```bash
+bash scripts/setup-local.sh --setup-only              # Nur Setup, kein Dashboard-Start
+bash scripts/setup-local.sh --run-e2e ~/mein-projekt   # Setup + E2E-Pipeline ausführen
+```
+
+> **Hinweis:** API-Key und API-URL sind bereits im Script eingetragen.
+> Der Manager muss nichts konfigurieren — nur ausführen.
+
+---
+
+## 4. SDLC Dashboard (Web UI)
 
 Das Dashboard besteht aus **FastAPI Backend** (Port 8001) + **Angular Frontend** (Port 4200 dev / Port 80 Docker).
 
@@ -266,7 +304,7 @@ docker compose -f ui/docker-compose.ui.yml up --build    # http://localhost
 
 ---
 
-## 4. Core Pipeline (CLI)
+## 5. Core Pipeline (CLI)
 
 Die Pipeline kann **ohne Dashboard** direkt über die Kommandozeile laufen.
 
@@ -333,7 +371,7 @@ curl -X POST http://localhost:8001/api/reset
 
 ---
 
-## 5. Konfiguration (.env)
+## 6. Konfiguration (.env)
 
 `.env.example` → `.env` kopieren und anpassen:
 
@@ -376,7 +414,7 @@ curl -X POST http://localhost:8001/api/reset
 
 ---
 
-## 6. Architektur & Phasen
+## 7. Architektur & Phasen
 
 ```
 KNOWLEDGE (kein LLM)        REASONING (hybrid)           EXECUTION (hybrid)
@@ -412,7 +450,7 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + Symbole)
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 ### Docker-Probleme
 
@@ -437,11 +475,12 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + Symbole)
 
 ---
 
-## 8. Scripts
+## 9. Scripts
 
 | Script | Beschreibung |
 |--------|-------------|
 | `start.bat` / `start.sh` | Dashboard starten/stoppen (Docker) |
+| `scripts/setup-local.sh` | Komplettes WSL2-Setup (Git, Python, Node, venv, Dashboard) |
 | `scripts/dev.sh` | Dashboard Dev-Server starten/stoppen |
 | `scripts/stop-dev.js` | Dev-Server stoppen + Orphan-Prozesse killen |
 | `scripts/push-docker-images.sh` | Docker Images bauen + in Registry pushen |
@@ -466,12 +505,13 @@ python scripts/build_release.py --bump minor --tag      # 0.7.2 -> 0.8.0 + Git T
 
 ---
 
-## 9. Deployment
+## 10. Deployment
 
 | Modus | Befehl | Source-Code sichtbar |
 |-------|--------|:--------------------:|
 | **Docker** (empfohlen) | `start.bat` / `./start.sh` | Nein |
 | **Docker Release ZIP** | ZIP verteilen, `start.bat` | Nein |
+| **WSL2 Lokal** | `bash scripts/setup-local.sh` | Ja |
 | **Wheel** | `pip install aicodegencrew-X.Y.Z.whl` | Nein |
 | **Dev** | `pip install -e .` | Ja (intern) |
 
@@ -479,7 +519,7 @@ python scripts/build_release.py --bump minor --tag      # 0.7.2 -> 0.8.0 + Git T
 
 ---
 
-## 10. Testing
+## 11. Testing
 
 745+ Tests, kein LLM oder Netzwerk nötig (außer `tests/e2e/`).
 
@@ -501,7 +541,7 @@ ruff check src/ tests/ ui/backend
 
 ---
 
-## 11. Dokumentation
+## 12. Dokumentation
 
 | Dokument | Beschreibung |
 |----------|-------------|
