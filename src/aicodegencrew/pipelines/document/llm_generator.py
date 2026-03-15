@@ -47,6 +47,7 @@ class LLMGenerator:
             max_tokens=max_tokens,
             temperature=0.7,  # Balanced: creative enough for interpretation, stable enough for facts
             top_p=0.95,
+            timeout=180,  # 3 min max per call — prevents indefinite hangs
             num_retries=3,
         )
 
