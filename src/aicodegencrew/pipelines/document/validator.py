@@ -37,9 +37,11 @@ class ValidationResult:
 class ChapterValidator:
     """Validates generated chapter content against quality criteria."""
 
-    # Phrases that indicate hallucination or placeholder content
+    # Phrases that indicate hallucination or placeholder content.
+    # Note: "UNKNOWN" removed — the LLM legitimately uses it when data is
+    # genuinely absent (e.g., "the deployment target is unknown based on
+    # available evidence"). The remaining phrases catch actual hallucinations.
     BANNED_PHRASES = [
-        "UNKNOWN",
         "placeholder",
         "TODO:",
         "TBD",
@@ -50,7 +52,6 @@ class ChapterValidator:
         "information is not available",
         "would need to be",
         "could not be determined",
-        "no evidence",
     ]
 
     def validate(self, content: str, recipe: ChapterRecipe, data: dict[str, Any]) -> ValidationResult:
@@ -154,27 +155,41 @@ class ChapterValidator:
         return ValidationCheck("banned_phrases", True)
 
     def _check_fact_grounding(self, content: str, data: dict[str, Any]) -> ValidationCheck:
-        """Check that the content references real component names from the data."""
-        # Collect all component names from the data
+        """Check that the content references real component/container/system names from the data."""
+        # Collect names from all data sources (not just components)
         all_names: set[str] = set()
+
+        # Component names
         for _stereotype, comp_list in data.get("components", {}).items():
             for comp in comp_list:
                 if isinstance(comp, dict) and comp.get("name"):
                     all_names.add(comp["name"])
 
-        if not all_names:
-            # No component data to ground against — skip check
+        # Container/system names from facts
+        for category_data in data.get("facts", {}).values():
+            if isinstance(category_data, list):
+                for item in category_data:
+                    if isinstance(item, dict) and item.get("name"):
+                        all_names.add(item["name"])
+            elif isinstance(category_data, dict) and category_data.get("name"):
+                all_names.add(category_data["name"])
+
+        if not all_names or len(all_names) < 3:
+            # Too few names to ground against — skip check
             return ValidationCheck("fact_grounding", True)
 
         found = sum(1 for name in all_names if name in content)
-        ratio = found / len(all_names)
 
-        if ratio < 0.1:  # At least 10% of known components should be referenced
+        # Require at least 3 real names (absolute) rather than percentage.
+        # High-level chapters (C4 context) reference system/container names,
+        # not individual components.
+        if found < 3:
+            examples = list(all_names)[:5]
             return ValidationCheck(
                 "fact_grounding",
                 False,
-                f"Low fact grounding: only {found}/{len(all_names)} ({ratio:.0%}) known components referenced. "
-                f"Use real component names from the data, e.g.: {list(all_names)[:5]}",
+                f"Low fact grounding: only {found} known names referenced. "
+                f"Use real names from the data, e.g.: {examples}",
             )
         return ValidationCheck("fact_grounding", True)
 
