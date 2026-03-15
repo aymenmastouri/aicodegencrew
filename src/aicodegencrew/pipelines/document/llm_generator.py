@@ -35,7 +35,7 @@ class LLMGenerator:
         model = self._resolve_model()
         api_base = os.getenv("API_BASE", "")
         api_key = os.getenv("OPENAI_API_KEY", "")
-        max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "48000"))
+        max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "65536"))
 
         logger.info("[LLMGenerator] Calling %s (max_tokens=%d)", model, max_tokens)
 
