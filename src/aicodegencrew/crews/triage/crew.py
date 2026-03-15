@@ -11,7 +11,7 @@ Architecture: deterministic scan → LLM synthesis (follows ReviewCrew pattern).
        - Assess risk (security, error handling, quality)
 
   2. LLM synthesis phase:
-       - Single agent with FactsQueryTool + RAGQueryTool + SymbolQueryTool
+       - Direct litellm.completion() call (no agent overhead)
        - Produces dual output: customer summary + developer brief
 
 Input:  issue title/description OR task file
@@ -34,15 +34,12 @@ import time
 from pathlib import Path
 from typing import Any
 
-from crewai import Crew, Process
+import litellm
 
 from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.schema_version import add_schema_version
-from ...shared.utils.crew_callbacks import step_callback, task_callback
-from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.env_flags import get_bool_env
 from ...shared.utils.logger import setup_logger
-from .agents import create_triage_agent, create_triage_reviewer_agent
 from .blast_radius import calculate_blast_radius
 from .classifier import classify_issue
 from .context_builder import KnowledgeLoader
@@ -50,7 +47,6 @@ from .duplicate_detector import find_duplicates
 from .entry_point_finder import find_entry_points
 from .risk_assessor import assess_risk
 from .schemas import TriageRequest
-from .tasks import create_review_task, create_triage_task
 from .test_coverage import check_test_coverage
 
 logger = setup_logger(__name__)
@@ -687,10 +683,11 @@ class TriageCrew:
         is_bug: bool = False,
         analysis_inputs: str = "",
     ) -> dict | None:
-        """Run 2-agent mini-crew for triage synthesis.
+        """Run direct litellm call for triage synthesis.
 
-        Agent 1 (Issue Context Analyst): produces initial synthesis.
-        Agent 2 (Triage Quality Reviewer): validates and fixes quality issues.
+        Replaces the 2-agent mini-crew with a single LLM completion call.
+        System prompt uses the analyst agent backstory; user prompt uses the
+        triage task description (with all deterministic findings injected).
         """
         task_context = f"Title: {title}\nDescription: {description}"
         if task_info.get("priority"):
@@ -703,42 +700,167 @@ class TriageCrew:
         findings_json = json.dumps(findings, indent=2, ensure_ascii=False, default=str)
         supplementary_text = "\n\n".join(f"[{k}]\n{v}" for k, v in supplementary.items())
 
-        # Agent 1: Issue Context Analyst (has tools for querying knowledge)
-        analyst = create_triage_agent(
-            facts_dir=self.facts_dir,
-            chroma_dir=self.chroma_dir,
-        )
-        analyst_task = create_triage_task(
-            analyst, task_context, findings_json, supplementary_text,
-            is_bug=is_bug, analysis_inputs=analysis_inputs,
-        )
-
-        # Agent 2: Quality Reviewer (no tools — pure review)
-        reviewer = create_triage_reviewer_agent()
-        review_task = create_review_task(reviewer)
-
-        log_dir = self.output_dir / "logs"
-        log_dir.mkdir(parents=True, exist_ok=True)
-
-        _memory_enabled = get_bool_env("CREWAI_MEMORY_ENABLED", default=True)
-        crew = Crew(
-            agents=[analyst, reviewer],
-            tasks=[analyst_task, review_task],
-            process=Process.sequential,
-            verbose=True,
-            memory=_memory_enabled,
-            step_callback=step_callback,
-            task_callback=task_callback,
-            output_log_file=str(log_dir / "synthesis.json"),
-            embedder=get_crew_embedder(),
+        # System message: analyst agent backstory (GOLDEN RULES + orientation)
+        system_message = (
+            "You are a senior software architect / tech lead who helps developers "
+            "understand the WHY before they dive into code. Your goal: after reading "
+            "your output, a developer should feel oriented — not lost.\n\n"
+            "GOLDEN RULES:\n"
+            "1. NORTH STAR (big_picture): What is this project? Who uses it? "
+            "What problem does THIS task solve? Why NOW? What if we don't do it?\n"
+            "2. ARCHITECTURE WALKTHROUGH (architecture_notes): Show WHERE the work fits. "
+            "Container → Layer → Component → Neighbors. Like drawing on a whiteboard.\n"
+            "3. WHY, NOT JUST WHAT: Customer summary explains WHY this is needed, "
+            "not just what needs to happen.\n"
+            "4. ANTICIPATED QUESTIONS: Think like a developer seeing this for the "
+            "first time. Answer their obvious questions BEFORE they ask.\n"
+            "5. Context Boundaries are ANALYSIS, not data. For every fact you cite, "
+            "explain what it MEANS for this specific issue.\n"
+            "6. For bugs: critically assess if the classification is correct.\n"
+            "7. NEVER propose solutions or action steps — that is the Plan phase's job.\n"
+            "8. Use the pre-loaded analysis inputs to verify architectural context."
         )
 
-        from ...shared.utils.crew_timeout import kickoff_with_timeout
-        logger.info("[TriageCrew] Starting 2-agent mini-crew: analyst + reviewer")
-        result = kickoff_with_timeout(crew)
-        raw = result.raw if hasattr(result, "raw") else str(result)
+        # Build bug-vs-feature specific steps text
+        if is_bug:
+            steps = """\
+STEPS:
+1. Review the classification, deterministic findings, AND the SUPPLEMENTARY CONTEXT (requirements, references, logs) carefully.
+2. VALIDATE: Is this really a bug? Build a structured argument:
+   a) List evidence FOR it being a bug (error logs, stack traces, spec violations, reference documents).
+   b) List evidence AGAINST (user error, missing feature, config issue, working as designed).
+   c) Check supplementary references (PDFs, requirements docs) — do they confirm or contradict the bug claim?
+   d) Rate your confidence and explain your reasoning.
+3. Review the ANALYSIS INPUTS below — they contain raw facts from the codebase.
+4. For EACH relevant fact: What does it MEAN for this issue? What constraint, risk, or boundary does it create?
+5. Provide the BIG PICTURE (North Star): What is this project? Who is the customer? What problem does this solve? Why is this task needed NOW?
+6. ARCHITECTURE WALKTHROUGH: Where does this piece fit? Which container, which layer, what neighbors?
+7. Define the SCOPE: What parts of the system are involved (IN)? What is NOT involved (OUT)?
+8. ANTICIPATED QUESTIONS: What would a developer ask before starting? Answer 3-5 obvious questions.
+9. Produce JSON output."""
+        else:
+            steps = """\
+STEPS:
+1. Review the issue context, deterministic findings, AND the SUPPLEMENTARY CONTEXT (requirements, references, logs).
+2. Review the ANALYSIS INPUTS below — they contain raw facts from the codebase.
+3. For EACH relevant fact: What does it MEAN for this issue? What constraint, risk, or boundary does it create?
+4. Provide the BIG PICTURE (North Star): What is this project? Who is the customer? What problem does this solve? Why is this task needed NOW? What happens if we DON'T do it?
+5. ARCHITECTURE WALKTHROUGH: Where does this piece fit in the architecture? Which container, which layer? What are the neighbors? The developer should know WHERE their work fits.
+6. Define the SCOPE: What parts of the system need attention (IN)? What is out of scope (OUT)?
+7. ANTICIPATED QUESTIONS: What would a developer ask before starting work? Think like a junior dev seeing this ticket for the first time. Answer 3-5 obvious questions.
+8. Produce JSON output."""
 
-        # Try to parse JSON from the LLM output (reviewer's corrected version)
+        analysis_block = f"""
+--- ANALYSIS INPUTS (DO NOT REPEAT — ANALYZE!) ---
+The following are RAW FACTS from the codebase. Your job is to ANALYZE what they MEAN
+for this specific issue, NOT to copy them into your output.
+
+ANALYSIS RULE: For each fact, explain what it MEANS for this issue.
+Example: "ServiceB delegates to ServiceA via internal API — changes here must
+verify the cross-boundary contract."
+
+{analysis_inputs or "(none available)"}
+--- END ANALYSIS INPUTS ---
+""" if analysis_inputs else ""
+
+        # User message: triage task description with all injected context
+        user_message = f"""TASK: Analyse Issue Context and Produce Dual Output
+
+You must analyse the issue and findings below, then produce a JSON response
+with two sections: `customer_summary` and `developer_context`.
+
+Your output serves ONE PURPOSE: after reading it, a developer should UNDERSTAND
+the task deeply before writing a single line of code. No guessing, no ambiguity.
+
+--- ISSUE CONTEXT ---
+{task_context}
+--- END ISSUE CONTEXT ---
+
+--- SUPPLEMENTARY CONTEXT (requirements, logs) ---
+{supplementary_text or "(none)"}
+--- END SUPPLEMENTARY ---
+
+--- DETERMINISTIC FINDINGS ---
+{findings_json}
+--- END FINDINGS ---
+{analysis_block}
+{steps}
+
+OUTPUT FORMAT (strict JSON):
+{{
+  "customer_summary": {{
+    "summary": "Plain-language explanation INCLUDING why this is needed. Not just WHAT, but WHY and what happens if we don't do it.",
+    "impact_level": "low|medium|high|critical",
+    "is_bug": true/false,
+    "workaround": "Suggested workaround if any, or empty string",
+    "eta_category": "quick-fix|short|medium|long|unknown"
+  }},
+  "developer_context": {{
+    "big_picture": "NORTH STAR — answer these: (1) What is this project/system about? (2) Who uses it? (3) What problem does THIS task solve? (4) Why is it needed NOW? (5) What happens if we don't do it?",
+    "scope_boundary": "What's IN scope vs OUT of scope for this issue",
+    "classification_assessment": "For bugs: structured argument with evidence FOR and AGAINST. For CR/Task: empty string",
+    "classification_confidence": 0.0-1.0 or -1,
+    "affected_components": ["ComponentName1 (layer)", "ComponentName2 (layer)"],
+    "context_boundaries": [
+      {{
+        "category": "integration_boundary|technology_constraint|dependency_risk|pattern_constraint|data_boundary|security_boundary|testing_constraint|workflow_constraint|infrastructure_constraint",
+        "boundary": "What does this fact MEAN for this issue? What constraint or risk arises?",
+        "severity": "info|caution|blocking",
+        "source_facts": ["tech_versions.json: LibX 6.4.3", "relations.json: ServiceA -> ServiceB"]
+      }}
+    ],
+    "architecture_notes": "WALKTHROUGH: Where does this piece fit in the architecture? Which container(s), which layer(s)? What are the neighboring components? How do they connect? A developer reading this should know EXACTLY where their work fits — like a map with 'YOU ARE HERE'.",
+    "anticipated_questions": [
+      {{
+        "question": "An obvious question a developer would ask before starting",
+        "answer": "The answer based on what you know from the codebase analysis"
+      }}
+    ],
+    "linked_tasks": ["Related task IDs or descriptions if identifiable from context"]
+  }}
+}}
+
+RULES:
+- context_boundaries: 2-6 boundaries, each must explain what a fact MEANS (not data copy), include source_facts citing extract file names, and use correct severity (info/caution/blocking)
+- If analysis inputs are pre-loaded, use them — do not repeat calls for data already provided
+- Triage is for UNDERSTANDING only — do not propose solutions or action steps
+"""
+
+        model = os.getenv("MODEL", "openai/code")
+        api_base = os.getenv("API_BASE", "")
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "65536"))
+        chunk_timeout = int(os.getenv("LLM_CHUNK_TIMEOUT", "60"))
+
+        logger.info("[TriageLLM] Calling model %s (max_tokens=%d)", model, max_tokens)
+
+        stream = litellm.completion(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_message},
+            ],
+            api_base=api_base,
+            api_key=api_key,
+            max_tokens=max_tokens,
+            temperature=float(os.getenv("LLM_TEMPERATURE", "1.0")),
+            top_p=float(os.getenv("LLM_TOP_P", "0.95")),
+            extra_body={"top_k": int(os.getenv("LLM_TOP_K", "40"))},
+            timeout=chunk_timeout,
+            num_retries=1,
+            stream=True,
+        )
+
+        chunks: list[str] = []
+        for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                chunks.append(delta)
+        raw = "".join(chunks)
+
+        logger.info("[TriageLLM] Received %d chars", len(raw))
+
+        # Try to parse JSON from the LLM output
         return self._extract_json(raw)
 
     @staticmethod
