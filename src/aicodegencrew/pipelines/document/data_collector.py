@@ -9,7 +9,12 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 from .data_recipes import ChapterRecipe
+
+# Ensure .env is loaded even when called outside CLI subprocess
+load_dotenv(override=True)
 
 logger = logging.getLogger(__name__)
 

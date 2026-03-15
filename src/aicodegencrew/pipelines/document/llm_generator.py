@@ -7,6 +7,11 @@ Supports retry with feedback when validation fails.
 import logging
 import os
 
+from dotenv import load_dotenv
+
+# Ensure .env is loaded even when called outside CLI subprocess
+load_dotenv(override=True)
+
 logger = logging.getLogger(__name__)
 
 
