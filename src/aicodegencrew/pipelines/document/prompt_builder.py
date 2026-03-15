@@ -85,6 +85,24 @@ def _format_components(components: dict[str, list]) -> str:
     return _truncate("\n\n".join(parts), _MAX_COMPONENTS_CHARS)
 
 
+def _format_analyzed(analyzed: dict[str, Any]) -> str:
+    """Format Phase 2 analysis results (architecture style, patterns, quality metrics)."""
+    if not analyzed:
+        return "No architecture analysis available."
+
+    parts = []
+    for key, value in analyzed.items():
+        if not value:
+            continue
+        if isinstance(value, (dict, list)):
+            json_str = json.dumps(value, indent=2, ensure_ascii=False, default=str)
+            parts.append(f"### {key}\n```json\n{json_str}\n```")
+        else:
+            parts.append(f"### {key}\n{value}")
+
+    return _truncate("\n\n".join(parts), _MAX_FACTS_CHARS) if parts else "No architecture analysis available."
+
+
 class PromptBuilder:
     """Builds structured prompts for architecture documentation generation."""
 
@@ -118,6 +136,7 @@ class PromptBuilder:
         facts_text = _format_facts(data.get("facts", {}))
         rag_text = _format_rag_results(data.get("rag_results", []))
         components_text = _format_components(data.get("components", {}))
+        analyzed_text = _format_analyzed(data.get("analyzed", {}))
 
         # Build expected sections list
         sections_list = "\n".join(f"- {s}" for s in recipe.sections)
@@ -157,6 +176,10 @@ System summary: {system_summary}
 <architecture_facts>
 {facts_text}
 </architecture_facts>
+
+<architecture_analysis>
+{analyzed_text}
+</architecture_analysis>
 
 <code_evidence>
 {rag_text}
