@@ -1,22 +1,14 @@
 """
 Architecture Synthesis — Phase 3
 =================================
-Generates C4 diagrams and arc42 documentation from architecture facts.
-
-V2 Architecture: Pipeline + LLM Hybrid
-- Deterministic data collection (no agents, no tool loops)
-- Single LLM call per chapter (no iterations)
-- Validation before write (structure, grounding, banned phrases)
-- Retry with feedback (not blind retry)
-
-Input:  architecture_facts.json (Phase 1) + analyzed_architecture.json (Phase 2)
-Output: C4 diagrams (c4/*.md) + arc42 chapters (arc42/*.md) + quality report
+Thin wrapper around DocumentPipeline for backward compatibility.
+The actual implementation lives in pipelines/document/.
 """
 
 from pathlib import Path
 
+from ...pipelines.document import DocumentPipeline
 from ...shared.utils.logger import setup_logger
-from .pipeline import DocumentPipeline
 
 logger = setup_logger(__name__)
 
@@ -25,7 +17,7 @@ class ArchitectureSynthesisCrew:
     """Phase 3 Orchestrator — delegates to DocumentPipeline.
 
     Maintains backward-compatible interface for the orchestrator
-    (kickoff, run methods) while using the new pipeline internally.
+    (kickoff, run methods) while using the pipeline internally.
     """
 
     def __init__(
@@ -45,24 +37,14 @@ class ArchitectureSynthesisCrew:
         self.chroma_dir = chroma_dir
 
     def run(self, quality_context: dict | None = None) -> dict:
-        """Execute document generation pipeline.
-
-        Args:
-            quality_context: Optional quality metrics from analyze phase (unused in V2,
-                            kept for backward compatibility).
-
-        Returns:
-            Dict with status and result summary.
-        """
+        """Execute document generation pipeline."""
         pipeline = DocumentPipeline(
             facts_path=self.facts_path,
             analyzed_path=self.analyzed_path,
             output_dir=self.output_dir,
             chroma_dir=self.chroma_dir,
         )
-
         result = pipeline.run()
-
         return {
             "status": result.status,
             "phase": "document",
@@ -71,14 +53,7 @@ class ArchitectureSynthesisCrew:
         }
 
     def kickoff(self, inputs: dict | None = None) -> dict:
-        """Execute — compatible with orchestrator PhaseExecutable interface.
-
-        Args:
-            inputs: Optional inputs dict from orchestrator.
-
-        Returns:
-            Dict with status and result.
-        """
+        """Execute — compatible with orchestrator PhaseExecutable interface."""
         inputs = inputs or {}
         previous = inputs.get("previous_results", {})
         analyze_out = previous.get("analyze", {})

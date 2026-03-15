@@ -366,7 +366,7 @@ class TestScenario3ErrorRecovery:
 
     def test_missing_prerequisite_gives_hint(self, tmp_path):
         """DocumentPipeline provides helpful error when prerequisites missing."""
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
         pipeline = DocumentPipeline(
             facts_path=tmp_path / "missing" / "architecture_facts.json",
