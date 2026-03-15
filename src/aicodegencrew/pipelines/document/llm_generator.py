@@ -112,14 +112,16 @@ Output the complete corrected chapter.
         return self.generate(messages)
 
     def _resolve_model(self) -> str:
-        """Resolve model name with provider prefix."""
-        from ...shared.utils.llm_factory import _ensure_provider_prefix
+        """Resolve model name from env vars.
 
+        Uses MODEL/FAST_MODEL directly as configured in .env.
+        No provider prefix added — litellm with api_base handles routing.
+        """
         if self._use_fast_model:
-            model = os.getenv("FAST_MODEL") or os.getenv("MODEL") or "gpt-4o-mini"
+            model = os.getenv("FAST_MODEL") or os.getenv("MODEL", "openai/code")
         else:
-            model = os.getenv("MODEL") or "gpt-4o-mini"
-        return _ensure_provider_prefix(model)
+            model = os.getenv("MODEL", "openai/code")
+        return model
 
     @staticmethod
     def _strip_fences(content: str) -> str:
