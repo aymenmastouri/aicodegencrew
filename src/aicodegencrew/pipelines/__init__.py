@@ -1,12 +1,15 @@
 """
-Pipelines - Pure deterministic processing (no LLM).
+Pipelines — deterministic data-collect + LLM phases.
 
-Phase 0: Indexing - Repository indexing to ChromaDB
-Phase 1: Architecture Facts - Code analysis to facts.json
+Phase 0: indexing   — repository indexing to ChromaDB
+Phase 1: extract    — architecture facts to facts.json
+Phase 2: analyze    — parallel LLM section analysis + synthesis
+Phase 3: triage     — issue classification + context
+Phase 4: plan       — hybrid planning (5 stages, 1 LLM call)
+Phase 6: document   — document generation
+Phase 7: review     — code review synthesis
 
-Hybrid phases (pipeline + LLM) have moved to hybrid/ package:
-- Phase 4: Development Planning -> hybrid.development_planning
-- Phase 5: Code Generation -> hybrid.code_generation
+Phase 5 (implement) uses CrewAI agents — see crews/implement/.
 """
 
 from .architecture_facts import ArchitectureFactsPipeline

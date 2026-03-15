@@ -1,12 +1,12 @@
 <mxfile host="app.diagrams.net" modified="2026-02-16T00:00:00.000Z" agent="aicodegencrew" version="22.1.0">
-  <diagram id="implement-crew-detail" name="Phase 5: Hierarchical Crew — Agent Detail View">
+  <diagram id="implement-crew-detail" name="Phase 6: Hierarchical Crew — Agent Detail View">
     <mxGraphModel dx="1800" dy="1300" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1400" math="0" shadow="1">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
         <!-- ============ TITLE ============ -->
-        <mxCell id="title" value="Phase 5: Implement Crew — Hierarchical Agent Architecture (Detail)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#0d47a1;" vertex="1" parent="1">
+        <mxCell id="title" value="Phase 6: Implement Crew — Hierarchical Agent Architecture (Detail)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#0d47a1;" vertex="1" parent="1">
           <mxGeometry x="350" y="15" width="900" height="35" as="geometry" />
         </mxCell>
         <mxCell id="subtitle" value="Process.hierarchical | Manager delegates to 3 workers | Dual-Model Routing (120B + Coder-14B)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
@@ -102,7 +102,7 @@
         <mxCell id="dev-badge" value="DEVELOPER" style="text;html=1;strokeColor=none;fillColor=#1976d2;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="70" y="348" width="120" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="dev-model-badge" value="CODEGEN_MODEL: Qwen2.5-Coder-14B" style="text;html=1;strokeColor=none;fillColor=#bbdefb;align=center;rounded=1;fontSize=10;fontStyle=1;fontColor=#1565c0;" vertex="1" parent="1">
+        <mxCell id="dev-model-badge" value="Qwen3-Coder-Next: Qwen3-Coder-Next" style="text;html=1;strokeColor=none;fillColor=#bbdefb;align=center;rounded=1;fontSize=10;fontStyle=1;fontColor=#1565c0;" vertex="1" parent="1">
           <mxGeometry x="200" y="349" width="230" height="24" as="geometry" />
         </mxCell>
         <mxCell id="dev-no-del" value="allow_delegation = False" style="text;html=1;strokeColor=none;fillColor=#90caf9;align=center;rounded=1;fontSize=10;fontStyle=2;fontColor=#1565c0;" vertex="1" parent="1">
@@ -252,7 +252,7 @@
         <mxCell id="tst-badge" value="TESTER" style="text;html=1;strokeColor=none;fillColor=#7b1fa2;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="1040" y="348" width="90" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="tst-model-badge" value="CODEGEN_MODEL: Qwen2.5-Coder-14B" style="text;html=1;strokeColor=none;fillColor=#e1bee7;align=center;rounded=1;fontSize=10;fontStyle=1;fontColor=#7b1fa2;" vertex="1" parent="1">
+        <mxCell id="tst-model-badge" value="Qwen3-Coder-Next: Qwen3-Coder-Next" style="text;html=1;strokeColor=none;fillColor=#e1bee7;align=center;rounded=1;fontSize=10;fontStyle=1;fontColor=#7b1fa2;" vertex="1" parent="1">
           <mxGeometry x="1140" y="349" width="230" height="24" as="geometry" />
         </mxCell>
 
@@ -327,7 +327,7 @@
         <mxCell id="model-codegen" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;strokeWidth=2;" vertex="1" parent="1">
           <mxGeometry x="720" y="758" width="660" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="model-codegen-text" value="&lt;b&gt;create_codegen_llm()&lt;/b&gt; &amp;rarr; CODEGEN_MODEL (Qwen2.5-Coder-14B) &amp;rarr; &lt;b&gt;Developer&lt;/b&gt; + &lt;b&gt;Tester&lt;/b&gt;&lt;br&gt;&lt;i&gt;Code schreiben, Tests generieren — spezialisiert auf Syntax und Patterns&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontColor=#1976d2;" vertex="1" parent="1">
+        <mxCell id="model-codegen-text" value="&lt;b&gt;create_codegen_llm()&lt;/b&gt; &amp;rarr; Qwen3-Coder-Next (Qwen3-Coder-Next) &amp;rarr; &lt;b&gt;Developer&lt;/b&gt; + &lt;b&gt;Tester&lt;/b&gt;&lt;br&gt;&lt;i&gt;Code schreiben, Tests generieren — spezialisiert auf Syntax und Patterns&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontColor=#1976d2;" vertex="1" parent="1">
           <mxGeometry x="730" y="762" width="640" height="32" as="geometry" />
         </mxCell>
 
@@ -338,7 +338,7 @@
         <mxCell id="env-title" value="ENV VARS" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontStyle=1;fontColor=#333;" vertex="1" parent="1">
           <mxGeometry x="75" y="838" width="80" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="env-vars" value="&lt;code&gt;MODEL&lt;/code&gt; + &lt;code&gt;API_BASE&lt;/code&gt; + &lt;code&gt;OPENAI_API_KEY&lt;/code&gt; &amp;rarr; Analysis LLM (120B)&lt;br&gt;&lt;code&gt;CODEGEN_MODEL&lt;/code&gt; + &lt;code&gt;CODEGEN_API_BASE&lt;/code&gt; + &lt;code&gt;CODEGEN_API_KEY&lt;/code&gt; &amp;rarr; Code LLM (14B)&lt;br&gt;&lt;code&gt;CODEGEN_BUILD_VERIFY&lt;/code&gt; = true/false | &lt;code&gt;CODEGEN_BUILD_TIMEOUT&lt;/code&gt; = 600" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#333;" vertex="1" parent="1">
+        <mxCell id="env-vars" value="&lt;code&gt;MODEL&lt;/code&gt; + &lt;code&gt;API_BASE&lt;/code&gt; + &lt;code&gt;OPENAI_API_KEY&lt;/code&gt; &amp;rarr; Analysis LLM (120B)&lt;br&gt;&lt;code&gt;Qwen3-Coder-Next&lt;/code&gt; + &lt;code&gt;CODEGEN_API_BASE&lt;/code&gt; + &lt;code&gt;CODEGEN_API_KEY&lt;/code&gt; &amp;rarr; Code LLM (14B)&lt;br&gt;&lt;code&gt;CODEGEN_BUILD_VERIFY&lt;/code&gt; = true/false | &lt;code&gt;CODEGEN_BUILD_TIMEOUT&lt;/code&gt; = 600" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#333;" vertex="1" parent="1">
           <mxGeometry x="75" y="860" width="600" height="42" as="geometry" />
         </mxCell>
 

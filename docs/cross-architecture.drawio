@@ -38,7 +38,7 @@
         </mxCell>
 
         <!-- Phase 2: Analyze -->
-        <mxCell id="p2" value="&lt;b&gt;Phase 2: Analyze&lt;/b&gt;&lt;br&gt;Architecture Analysis&lt;br&gt;&lt;i&gt;Crew (5 mini-crews)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="p2" value="&lt;b&gt;Phase 2: Analyze&lt;/b&gt;&lt;br&gt;Architecture Analysis&lt;br&gt;&lt;i&gt;Pipeline (16 parallel LLM calls)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="200" y="280" width="180" height="70" as="geometry" />
         </mxCell>
         <mxCell id="p2_out" value="analyzed_architecture.json" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
@@ -53,30 +53,38 @@
           <mxGeometry x="480" y="355" width="180" height="25" as="geometry" />
         </mxCell>
 
-        <!-- Phase 4: Plan -->
-        <mxCell id="p4" value="&lt;b&gt;Phase 4: Plan&lt;/b&gt;&lt;br&gt;Development Planning&lt;br&gt;&lt;i&gt;Hybrid (4 det + 1 LLM)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
+        <!-- Phase 4: Triage -->
+        <mxCell id="p4" value="&lt;b&gt;Phase 4: Triage&lt;/b&gt;&lt;br&gt;Issue Triage&lt;br&gt;&lt;i&gt;Pipeline (det. scan + LLM synthesis)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="760" y="280" width="180" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="p4_out" value="{task_id}_plan.json" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
-          <mxGeometry x="760" y="355" width="180" height="25" as="geometry" />
+        <mxCell id="p4_out" value="{issue_id}_triage.json&lt;br&gt;customer.md + developer.md" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="760" y="355" width="180" height="35" as="geometry" />
         </mxCell>
 
-        <!-- Phase 5: Implement -->
-        <mxCell id="p5" value="&lt;b&gt;Phase 5: Implement&lt;/b&gt;&lt;br&gt;Code Generation&lt;br&gt;&lt;i&gt;Hierarchical Crew (4 agents)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;" vertex="1" parent="1">
+        <!-- Phase 5: Plan -->
+        <mxCell id="p5" value="&lt;b&gt;Phase 5: Plan&lt;/b&gt;&lt;br&gt;Development Planning&lt;br&gt;&lt;i&gt;Pipeline (4 det + 1 LLM)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="200" y="520" width="180" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="p5_out" value="Git branch + report JSON" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+        <mxCell id="p5_out" value="{task_id}_plan.json" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
           <mxGeometry x="200" y="595" width="180" height="25" as="geometry" />
         </mxCell>
 
-        <!-- Phase 6: Verify -->
-        <mxCell id="p6" value="&lt;b&gt;Phase 6: Verify&lt;/b&gt;&lt;br&gt;Test Generation&lt;br&gt;&lt;i&gt;Crew (planned)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;strokeDashPattern=8 4;" vertex="1" parent="1">
+        <!-- Phase 6: Implement -->
+        <mxCell id="p6" value="&lt;b&gt;Phase 6: Implement&lt;/b&gt;&lt;br&gt;Code Generation&lt;br&gt;&lt;i&gt;CrewAI Crew (multi-agent)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="480" y="520" width="180" height="70" as="geometry" />
         </mxCell>
+        <mxCell id="p6_out" value="Git branch + report JSON" style="text;html=1;align=left;fontSize=9;fontColor=#666666;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="595" width="180" height="25" as="geometry" />
+        </mxCell>
 
-        <!-- Phase 7: Deliver -->
-        <mxCell id="p7" value="&lt;b&gt;Phase 7: Deliver&lt;/b&gt;&lt;br&gt;Review &amp; Deploy&lt;br&gt;&lt;i&gt;Pipeline (planned)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;strokeDashPattern=8 4;" vertex="1" parent="1">
+        <!-- Phase 7: Verify -->
+        <mxCell id="p7" value="&lt;b&gt;Phase 7: Verify&lt;/b&gt;&lt;br&gt;Test Generation&lt;br&gt;&lt;i&gt;Crew (planned)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;strokeDashPattern=8 4;" vertex="1" parent="1">
           <mxGeometry x="760" y="520" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 8: Deliver -->
+        <mxCell id="p8" value="&lt;b&gt;Phase 8: Deliver&lt;/b&gt;&lt;br&gt;Review &amp; Deploy&lt;br&gt;&lt;i&gt;Pipeline (planned)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;strokeDashPattern=8 4;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="520" width="180" height="70" as="geometry" />
         </mxCell>
 
         <!-- Arrows -->
@@ -113,10 +121,13 @@
         <mxCell id="a15" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="p1" target="p5" parent="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="a56" style="edgeStyle=orthogonalEdgeStyle;strokeDashPattern=8 4;" edge="1" source="p5" target="p6" parent="1">
+        <mxCell id="a56" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="p5" target="p6" parent="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="a67" style="edgeStyle=orthogonalEdgeStyle;strokeDashPattern=8 4;" edge="1" source="p6" target="p7" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="a78" style="edgeStyle=orthogonalEdgeStyle;strokeDashPattern=8 4;" edge="1" source="p7" target="p8" parent="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 

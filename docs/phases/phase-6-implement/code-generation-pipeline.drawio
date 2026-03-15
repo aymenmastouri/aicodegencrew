@@ -135,7 +135,7 @@
         <mxCell id="dev-title" value="DEVELOPER AGENT" style="text;html=1;strokeColor=none;fillColor=#1976d2;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="500" y="318" width="150" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="dev-model" value="CODEGEN_MODEL&lt;br&gt;(Coder 14B)" style="text;html=1;strokeColor=none;fillColor=#bbdefb;align=center;rounded=1;fontSize=9;fontStyle=1;fontColor=#1565c0;" vertex="1" parent="1">
+        <mxCell id="dev-model" value="Qwen3-Coder-Next&lt;br&gt;(Coder 14B)" style="text;html=1;strokeColor=none;fillColor=#bbdefb;align=center;rounded=1;fontSize=9;fontStyle=1;fontColor=#1565c0;" vertex="1" parent="1">
           <mxGeometry x="660" y="318" width="80" height="20" as="geometry" />
         </mxCell>
 
@@ -208,7 +208,7 @@
         <mxCell id="tester-title" value="TESTER AGENT" style="text;html=1;strokeColor=none;fillColor=#7b1fa2;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
           <mxGeometry x="1000" y="318" width="110" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="tester-model" value="CODEGEN_MODEL&lt;br&gt;(Coder 14B)" style="text;html=1;strokeColor=none;fillColor=#e1bee7;align=center;rounded=1;fontSize=9;fontStyle=1;fontColor=#7b1fa2;" vertex="1" parent="1">
+        <mxCell id="tester-model" value="Qwen3-Coder-Next&lt;br&gt;(Coder 14B)" style="text;html=1;strokeColor=none;fillColor=#e1bee7;align=center;rounded=1;fontSize=9;fontStyle=1;fontColor=#7b1fa2;" vertex="1" parent="1">
           <mxGeometry x="1115" y="318" width="55" height="20" as="geometry" />
         </mxCell>
 
@@ -357,7 +357,7 @@
         <mxCell id="model-120b" value="&lt;b&gt;MODEL&lt;/b&gt; (gpt-oss-120B)&lt;br&gt;Manager Agent + Builder Agent&lt;br&gt;&lt;i&gt;Verstehen, Planen, Koordinieren, Analysieren&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#4527a0;" vertex="1" parent="1">
           <mxGeometry x="45" y="685" width="390" height="36" as="geometry" />
         </mxCell>
-        <mxCell id="model-14b" value="&lt;b&gt;CODEGEN_MODEL&lt;/b&gt; (Qwen2.5-Coder-14B)&lt;br&gt;Developer Agent + Tester Agent&lt;br&gt;&lt;i&gt;Code schreiben, Tests generieren (spezialisiert)&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#1976d2;" vertex="1" parent="1">
+        <mxCell id="model-14b" value="&lt;b&gt;Qwen3-Coder-Next&lt;/b&gt; (Qwen3-Coder-Next)&lt;br&gt;Developer Agent + Tester Agent&lt;br&gt;&lt;i&gt;Code schreiben, Tests generieren (spezialisiert)&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#1976d2;" vertex="1" parent="1">
           <mxGeometry x="45" y="724" width="390" height="36" as="geometry" />
         </mxCell>
 

@@ -10,9 +10,9 @@
 |-----------|-------|
 | Phase ID | `document` |
 | Display Name | Architecture Synthesis |
-| Type | Crew (AI Agents) — Mini-Crews Pattern |
-| Entry Point | `crews/architecture_synthesis/crew.py` → `ArchitectureSynthesisCrew` |
-| Base Class | `base_crew.py` → `MiniCrewBase` (ABC) |
+| Type | Pipeline (LLM generation + quality validation) |
+| Entry Point | `pipelines/document/pipeline.py` → `DocumentPipeline` |
+| Base Class | `shared/base_pipeline.py` → `BasePipeline` (ABC) |
 | LLM Requirement | Yes |
 | Output | `knowledge/document/` (c4/, arc42/, quality/) |
 | Dependency | Extract + Analyze |
@@ -20,7 +20,7 @@
 
 > **Diagram:** [phase-3-document-architecture.drawio](phase-3-document-architecture.drawio)
 
-The Document phase generates C4 architectural diagrams and Arc42 documentation from architecture facts and analysis. It uses the **Mini-Crews Pattern** — each sub-task gets a fresh agent with fresh LLM context.
+The Document phase generates C4 architectural diagrams and Arc42 documentation from architecture facts and analysis. `DocumentPipeline(BasePipeline)` uses `LLMGenerator.generate_text()` for the main generation pass and `retry_with_feedback_text()` when the quality gate detects missing sections.
 
 ## 2. Goals
 

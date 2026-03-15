@@ -1,29 +1,8 @@
+"""Crews — CrewAI agents for phases that require true iterative tool use.
+
+Only phases where the next action depends on the previous result use agents:
+  - implement: CodegenCrew  (code generation with tool feedback loops)
+  - verify:    TestingCrew  (test generation and validation)
+
+All other phases use Pipeline + LLM (see pipelines/).
 """
-Crews - CrewAI multi-agent workflows.
-
-Phase 2: Architecture Analysis (NEW)
-- Multi-agent analysis: Technical, Functional, Quality, Synthesis Lead
-- MapReduceAnalysisCrew: Scalable version for large repos (500+ components)
-- Output: analyzed_architecture.json
-
-Phase 3: Architecture Synthesis (LLM, evidence-first)
-- Synthesizes C4 diagrams and arc42 documentation from architecture facts
-- REFACTORED: All logic now in crew.py (no separate tasks.py/agents.py exports)
-"""
-
-# Phase 2: Architecture Analysis Crew
-from .architecture_analysis.crew import ArchitectureAnalysisCrew
-from .architecture_analysis.mapreduce_crew import MapReduceAnalysisCrew
-
-# Phase 3: Architecture Synthesis Crew
-from .architecture_synthesis.crew import ArchitectureSynthesisCrew
-
-# Legacy alias for backwards compatibility (deprecated)
-ArchitectureCrew = ArchitectureSynthesisCrew
-
-__all__ = [
-    "ArchitectureAnalysisCrew",  # Phase 2 (standard)
-    "ArchitectureCrew",  # Deprecated alias
-    "ArchitectureSynthesisCrew",  # Phase 3
-    "MapReduceAnalysisCrew",  # Phase 2 (scalable for large repos)
-]

@@ -110,14 +110,18 @@ Each crew task specifies an `expected_output` with a Pydantic schema. After the 
 
 ## 2 Crew Phases
 
-### Analyze (Architecture Analysis)
+### Implement (Code Generation)
 
-**Full docs:** [Phase 2 — Analyze](../phases/phase-2-analyze/README.md)
+**Full docs:** [Phase 6 — Implement](../phases/phase-6-implement/README.md)
 
-5 mini-crews, 4 agent types, 17 tasks. MapReduce for large repos (≥300 components).
+**Entry point:** `crews/implement/crew.py` → `ImplementCrew`
 
-### Document (Architecture Synthesis)
+Hierarchical CrewAI (4 agents: Manager 120B, Developer 14B, Builder 120B, Tester 14B) with preflight, task-type strategy hooks, self-healing build-fix loop (max 3 retries), and post-crew verification.
 
-**Full docs:** [Phase 3 — Document](../phases/phase-3-document/README.md)
+### Verify (Test Generation)
 
-C4Crew (5 mini-crews) + Arc42Crew (18 mini-crews). Both inherit from `MiniCrewBase`.
+**Full docs:** [Phase 7 — Verify](../phases/phase-7-verify/README.md)
+
+**Entry point:** `crews/testing/crew.py` → `TestingCrew`
+
+Sequential per-file test generation. Reuses `CodeReaderTool` and `TestWriterTool` from `crews/implement/tools/`.

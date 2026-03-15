@@ -1,6 +1,6 @@
 # Phase 4 — Triage (Issue Triage)
 
-> **Status**: IMPLEMENTED | **Type**: Crew | **Layer**: Reasoning
+> **Status**: IMPLEMENTED | **Type**: Pipeline | **Layer**: Reasoning
 
 ---
 
@@ -11,9 +11,9 @@
 | Phase ID | `triage` |
 | Phase Number | 4 |
 | Display Name | Issue Triage |
-| Type | Crew (deterministic + LLM synthesis) |
-| LLM Requirement | One agent for synthesis (optional — deterministic mode available) |
-| Entry Point | `crews/triage/crew.py` → `TriageCrew` |
+| Type | Pipeline (deterministic scan + LLM synthesis + validate→retry) |
+| LLM Requirement | Yes — single LLM call for synthesis (optional: deterministic mode available) |
+| Entry Point | `pipelines/triage/pipeline.py` → `TriagePipeline` |
 | Output | `knowledge/triage/` |
 | Status | **IMPLEMENTED** |
 
@@ -76,10 +76,13 @@ Phase 2 (LLM, ~30s):
 
 ### LLM Synthesis
 
-A single CrewAI agent with 3 tools:
-- `FactsQueryTool` — query architecture facts by dimension
-- `RAGQueryTool` — semantic code search in ChromaDB
-- `SymbolQueryTool` — deterministic symbol lookup
+`LLMGenerator.generate()` called once with the structured findings as context.
+
+**Validate→retry quality loop** (same pattern as Plan):
+1. Parse LLM output → score quality via `_score_triage_quality()`
+2. If `score < TRIAGE_QUALITY_THRESHOLD` (default: 50) and warnings exist → `retry_with_feedback()` with the warnings
+3. Accept retry only if `quality2.score >= quality.score` (never regress)
+4. Env var `TRIAGE_QUALITY_THRESHOLD` controls the threshold
 
 Produces dual output:
 - **Customer summary**: Impact level, ETA category, plain-language summary, workaround
@@ -92,8 +95,8 @@ Produces dual output:
 ## 5. File Structure
 
 ```
-crews/triage/
-├── crew.py               # TriageCrew — orchestrates both phases
+pipelines/triage/
+├── pipeline.py           # TriagePipeline(BasePipeline) — orchestrates both phases
 ├── schemas.py            # TriageRequest input model
 ├── classifier.py         # Issue type classification
 ├── entry_point_finder.py # Multi-signal component matching
@@ -101,9 +104,7 @@ crews/triage/
 ├── duplicate_detector.py # ChromaDB similarity search
 ├── test_coverage.py      # Test pattern checker
 ├── risk_assessor.py      # Risk scoring
-├── context_builder.py    # KnowledgeLoader for all phase outputs
-├── agents.py             # CrewAI agent definition
-└── tasks.py              # CrewAI task definition
+└── context_builder.py    # KnowledgeLoader for all phase outputs
 ```
 
 ## 6. Dependencies
@@ -116,7 +117,8 @@ crews/triage/
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MODEL` | (from .env) | LLM for synthesis agent |
+| `MODEL` | (from .env) | LLM for synthesis (via shared `LLMGenerator`) |
+| `TRIAGE_QUALITY_THRESHOLD` | `50` | Minimum quality score before retry (0–100) |
 | `CHROMA_DIR` | Auto-resolved | ChromaDB path (multi-project aware) |
 
 ## 8. Execution Modes

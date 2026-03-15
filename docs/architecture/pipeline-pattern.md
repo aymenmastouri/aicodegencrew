@@ -41,31 +41,59 @@ Green = deterministic, Orange = LLM-assisted.
 
 Stages pass data forward via a shared `context` dict. Each stage reads what it needs and writes its output key.
 
-## 4 Pipelines
+## Pipelines by Phase
 
-### 1. Indexing Pipeline (Discover)
+### Phase 0 — Indexing (Discover)
 
 **Full docs:** [Phase 0 — Discover](../phases/phase-0-discover/README.md)
 
 Indexes repository files into ChromaDB + symbol index + evidence store + repo manifest. 10 steps, 0 LLM calls. Modes: off/auto/smart/force.
 
-### 2. Architecture Facts Pipeline (Extract)
+### Phase 1 — Architecture Facts (Extract)
 
 **Full docs:** [Phase 1 — Extract](../phases/phase-1-extract/README.md)
 
 Deterministic extraction of 16 architecture dimensions via modular collector pattern. No LLM.
 
-### 3. Development Planning Pipeline (Plan)
+### Phase 2 — Architecture Analysis (Analyze)
+
+**Full docs:** [Phase 2 — Analyze](../phases/phase-2-analyze/README.md)
+
+**Entry point:** `pipelines/analysis/pipeline.py` → `AnalysisPipeline(BasePipeline)`
+
+16 parallel LLM calls (one per section) via `ThreadPoolExecutor(max_workers=8)` + 1 synthesis call. Checkpoint/resume support. Uses `SectionPromptBuilder` and `SynthesisPromptBuilder` (both implement `BasePromptBuilder.build(data: dict)`).
+
+### Phase 3 — Architecture Synthesis (Document)
+
+**Full docs:** [Phase 3 — Document](../phases/phase-3-document/README.md)
+
+**Entry point:** `pipelines/document/pipeline.py` → `DocumentPipeline(BasePipeline)`
+
+Single LLM call to generate C4 + Arc42 documentation from analyzed architecture. Uses `LLMGenerator.generate_text()` and `retry_with_feedback_text()` for quality gate.
+
+### Phase 4 — Issue Triage (Triage)
+
+**Full docs:** [Phase 4 — Triage](../phases/phase-4-triage/README.md)
+
+**Entry point:** `pipelines/triage/pipeline.py` → `TriagePipeline(BasePipeline)`
+
+Deterministic scan (<5s) + single LLM synthesis (~30s). Validate→retry quality loop: if quality score < `TRIAGE_QUALITY_THRESHOLD` (default 50), retries with feedback and accepts the retry only if it scores ≥ original (same pattern as Plan).
+
+### Phase 5 — Development Planning (Plan)
 
 **Full docs:** [Phase 5 — Plan](../phases/phase-5-plan/README.md)
 
+**Entry point:** `pipelines/plan/pipeline.py` → `PlanPipeline(BasePipeline)`
+
 Hybrid pipeline: 4 deterministic stages + 1 LLM call. 18–40 seconds vs 5–7 min with CrewAI.
 
-### 4. Code Generation Pipeline (Implement)
+### Phase 8 — Review (Deliver)
 
-**Full docs:** [Phase 6 — Implement](../phases/phase-6-implement/README.md)
+**Full docs:** [Phase 8 — Deliver](../phases/phase-8-deliver/README.md)
 
-Hierarchical CrewAI crew (4 agents) with preflight, task-type strategy hooks, and post-crew verification.
+**Entry point:** `pipelines/review/pipeline.py` → `ReviewPipeline(BasePipeline)`
+
+Consistency guard + synthesis report. Single LLM call over generated code artifacts.
 
 ## Stage 4b: Self-Healing Build Verification
 

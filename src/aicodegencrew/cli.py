@@ -398,7 +398,6 @@ def _export_architecture_docs(knowledge_dir: Path | None = None):
 
 def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None = None) -> int:
     """Run SDLC pipeline."""
-    from .crews import ArchitectureSynthesisCrew
     from .orchestrator import SDLCOrchestrator
     from .pipelines import ArchitectureFactsPipeline, IndexingPipeline
     from .shared.paths import KNOWLEDGE_DIR, get_chroma_dir
@@ -457,32 +456,34 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # --- Analyze: Architecture Analysis ---
     if "analyze" in planned_phases:
-        from .crews.architecture_analysis import MapReduceAnalysisCrew
+        from .pipelines.analysis import AnalysisPipeline
 
-        analysis_crew = MapReduceAnalysisCrew(
-            facts_path=str(phase1_dir / "architecture_facts.json"),
-            chroma_dir=chroma_dir,
+        analysis_pipeline = AnalysisPipeline(
+            facts_dir=str(phase1_dir),
             output_dir=str(phase2_dir),
+            chroma_dir=chroma_dir,
         )
-        orchestrator.register_phase("analyze", analysis_crew)
+        orchestrator.register_phase("analyze", analysis_pipeline)
 
     # --- Document: Architecture Synthesis ---
     if os.getenv("SKIP_SYNTHESIS", "").lower() in ("true", "1", "yes"):
         logger.info("[CONFIG] SKIP_SYNTHESIS=true -> Skipping Document phase")
         orchestrator.config["phases"]["document"]["enabled"] = False
     elif "document" in planned_phases:
-        synthesis_crew = ArchitectureSynthesisCrew(
+        from .pipelines.document import DocumentPipeline
+
+        document_pipeline = DocumentPipeline(
             facts_path=str(phase1_dir / "architecture_facts.json"),
             analyzed_path=str(phase2_dir / "analyzed_architecture.json"),
             output_dir=str(knowledge_dir / "document"),
             chroma_dir=chroma_dir,
         )
-        orchestrator.register_phase("document", synthesis_crew)
+        orchestrator.register_phase("document", document_pipeline)
 
     # --- Triage: Issue Triage (deterministic + LLM synthesis) ---
     if "triage" in planned_phases:
-        from .crews.triage import TriageCrew
-        from .crews.triage.schemas import TriageRequest
+        from .pipelines.triage import TriagePipeline as TriageCrew
+        from .pipelines.triage.schemas import TriageRequest
 
         triage_input_dir = Path(os.getenv("TASK_INPUT_DIR", str(knowledge_dir.parent / "inputs" / "tasks")))
         triage_files = sorted(triage_input_dir.glob("*")) if triage_input_dir.exists() else []
@@ -578,7 +579,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # --- Plan: Development Planning (Hybrid Pipeline) ---
     if "plan" in planned_phases:
-        from .hybrid.development_planning import DevelopmentPlanningPipeline
+        from .pipelines.plan import PlanPipeline
 
         if not config.no_clean and not config.task_id:
             clean_knowledge("plan")
@@ -631,7 +632,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
         if input_files:
             logger.info(f"[Phase4] Found {len(input_files)} task file(s) in {input_dir}")
-            planning_pipeline = DevelopmentPlanningPipeline(
+            planning_pipeline = PlanPipeline(
                 input_files=[str(f) for f in input_files],
                 facts_path=facts_path,
                 analyzed_path=analyzed_path,
@@ -655,7 +656,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # --- Implement: Code Generation (Hierarchical CrewAI Team) ---
     if "implement" in planned_phases:
-        from .hybrid.code_generation import ImplementCrew
+        from .crews.implement import ImplementCrew
 
         codegen_dry_run = getattr(config, "dry_run", False)
 
@@ -684,9 +685,9 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # --- Deliver: Review & Consistency Guard (Phase 7) ---
     if "deliver" in planned_phases:
-        from .crews.review import ReviewCrew
+        from .pipelines.review import ReviewPipeline
 
-        review_crew = ReviewCrew(
+        review_crew = ReviewPipeline(
             knowledge_dir=str(knowledge_dir),
         )
         orchestrator.register_phase("deliver", review_crew)

@@ -86,7 +86,7 @@
         <mxCell id="phase2-box" value="&lt;b&gt;Phase 2&lt;/b&gt;&lt;br&gt;Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
           <mxGeometry x="740" y="180" width="140" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="phase2-detail" value="MapReduce&lt;br&gt;Multi-Agent Analysis" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#1565C0;" parent="1" vertex="1">
+        <mxCell id="phase2-detail" value="16 parallel LLM calls&lt;br&gt;+ 1 synthesis call" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#1565C0;" parent="1" vertex="1">
           <mxGeometry x="740" y="255" width="140" height="35" as="geometry"/>
         </mxCell>
         <mxCell id="phase2-status" value="IMPLEMENTED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" parent="1" vertex="1">
@@ -133,15 +133,15 @@
         <mxCell id="layer3-title" value="LAYER 3: EXECUTION" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#E65100;" parent="1" vertex="1">
           <mxGeometry x="60" y="350" width="250" height="30" as="geometry"/>
         </mxCell>
-        <mxCell id="layer3-desc" value="Development Planning, Code Generation and Validation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#F57C00;" parent="1" vertex="1">
+        <mxCell id="layer3-desc" value="Triage, Planning, Code Generation and Validation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontColor=#F57C00;" parent="1" vertex="1">
           <mxGeometry x="60" y="375" width="280" height="20" as="geometry"/>
         </mxCell>
         
         <!-- Phase 4 -->
-        <mxCell id="phase4-box" value="&lt;b&gt;Phase 4&lt;/b&gt;&lt;br&gt;Dev Planning" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
+        <mxCell id="phase4-box" value="&lt;b&gt;Phase 4&lt;/b&gt;&lt;br&gt;Triage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
           <mxGeometry x="60" y="410" width="140" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="phase4-detail" value="Hybrid Pipeline&lt;br&gt;5 Stages, 1 LLM Call" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
+        <mxCell id="phase4-detail" value="Det. scan + LLM synthesis&lt;br&gt;~30s, quality retry" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
           <mxGeometry x="60" y="485" width="140" height="35" as="geometry"/>
         </mxCell>
         <mxCell id="phase4-status" value="IMPLEMENTED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" parent="1" vertex="1">
@@ -157,10 +157,10 @@
         </mxCell>
         
         <!-- Phase 5 -->
-        <mxCell id="phase5-box" value="&lt;b&gt;Phase 5&lt;/b&gt;&lt;br&gt;Code Generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
+        <mxCell id="phase5-box" value="&lt;b&gt;Phase 5&lt;/b&gt;&lt;br&gt;Plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
           <mxGeometry x="260" y="410" width="140" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="phase5-detail" value="Hierarchical CrewAI&lt;br&gt;4 Agents, Dual-Model" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
+        <mxCell id="phase5-detail" value="Pipeline (BasePipeline)&lt;br&gt;5 stages, 1 LLM call" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
           <mxGeometry x="260" y="485" width="140" height="35" as="geometry"/>
         </mxCell>
         <mxCell id="phase5-status" value="IMPLEMENTED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=#1B5E20;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" parent="1" vertex="1">
@@ -176,10 +176,10 @@
         </mxCell>
         
         <!-- Phase 6 -->
-        <mxCell id="phase6-box" value="&lt;b&gt;Phase 6&lt;/b&gt;&lt;br&gt;Test Generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
+        <mxCell id="phase6-box" value="&lt;b&gt;Phase 6&lt;/b&gt;&lt;br&gt;Implement" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#E65100;strokeWidth=2;fontSize=13;" parent="1" vertex="1">
           <mxGeometry x="460" y="410" width="140" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="phase6-detail" value="Unit Tests&lt;br&gt;Integration Tests" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
+        <mxCell id="phase6-detail" value="CrewAI Crew&lt;br&gt;Multi-agent codegen" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=10;fontColor=#E65100;" parent="1" vertex="1">
           <mxGeometry x="460" y="485" width="140" height="35" as="geometry"/>
         </mxCell>
         <mxCell id="phase6-status" value="SKELETON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFA000;strokeColor=#E65100;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" parent="1" vertex="1">

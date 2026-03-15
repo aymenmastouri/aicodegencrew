@@ -44,10 +44,9 @@ class TriageQuickRequest(BaseModel):
 def run_full_triage(body: TriageFullRequest):
     """Run full triage: deterministic analysis + LLM synthesis."""
     try:
-        from aicodegencrew.crews.triage import TriageCrew
-        from aicodegencrew.crews.triage.schemas import TriageRequest
+        from aicodegencrew.pipelines.triage import TriagePipeline, TriageRequest
 
-        crew = TriageCrew(knowledge_dir=str(settings.knowledge_dir))
+        crew = TriagePipeline(knowledge_dir=str(settings.knowledge_dir))
         request = TriageRequest(
             issue_id=body.issue_id,
             title=body.title,
@@ -65,9 +64,9 @@ def run_full_triage(body: TriageFullRequest):
 def run_quick_triage(body: TriageQuickRequest):
     """Run quick triage: deterministic only (<2s, no LLM)."""
     try:
-        from aicodegencrew.crews.triage import TriageCrew
+        from aicodegencrew.pipelines.triage import TriagePipeline
 
-        crew = TriageCrew(knowledge_dir=str(settings.knowledge_dir))
+        crew = TriagePipeline(knowledge_dir=str(settings.knowledge_dir))
         return crew.triage_quick(title=body.title, description=body.description)
     except Exception as e:
         logger.exception("Quick triage failed")

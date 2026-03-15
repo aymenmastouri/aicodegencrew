@@ -90,7 +90,7 @@
         <mxCell id="phase2-title" value="&lt;b&gt;ANALYSIS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=13;fontColor=#0D47A1;" vertex="1" parent="1">
           <mxGeometry x="480" y="168" width="180" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase2-tasks" value="MapReduce Multi-Agent&lt;br&gt;4 Specialized Analysts&lt;br&gt;Per-Container Analysis&lt;br&gt;Quality Grading" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
+        <mxCell id="phase2-tasks" value="16 parallel LLM calls&lt;br&gt;ThreadPoolExecutor (8 workers)&lt;br&gt;+ 1 synthesis call&lt;br&gt;Checkpoint/resume" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=10;fontColor=#1565C0;" vertex="1" parent="1">
           <mxGeometry x="480" y="190" width="180" height="55" as="geometry" />
         </mxCell>
         <mxCell id="phase2-llm" value="LLM Required" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCDD2;strokeColor=#C62828;fontSize=9;fontStyle=1;fontColor=#C62828;" vertex="1" parent="1">
@@ -143,10 +143,10 @@
         <mxCell id="phase4-impl" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=8;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="1000" y="150" width="45" height="14" as="geometry" />
         </mxCell>
-        <mxCell id="phase4-title" value="&lt;b&gt;DEV PLANNING&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+        <mxCell id="phase4-title" value="&lt;b&gt;TRIAGE&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
           <mxGeometry x="920" y="168" width="130" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase4-tasks" value="Hybrid Pipeline&lt;br&gt;5 stages, 1 LLM call&lt;br&gt;18-40s" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
+        <mxCell id="phase4-tasks" value="Pipeline (BasePipeline)&lt;br&gt;Det. scan + LLM synthesis&lt;br&gt;~30s, quality retry" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
           <mxGeometry x="920" y="190" width="130" height="45" as="geometry" />
         </mxCell>
 
@@ -160,10 +160,10 @@
         <mxCell id="phase5-impl" value="IMPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2E7D32;strokeColor=none;fontColor=#ffffff;fontSize=8;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="1130" y="150" width="45" height="14" as="geometry" />
         </mxCell>
-        <mxCell id="phase5-title" value="&lt;b&gt;CODE GEN&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+        <mxCell id="phase5-title" value="&lt;b&gt;PLAN&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
           <mxGeometry x="1060" y="168" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase5-tasks" value="Hybrid Pipeline&lt;br&gt;5 stages, 1 LLM/file&lt;br&gt;4 strategies" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
+        <mxCell id="phase5-tasks" value="Pipeline (BasePipeline)&lt;br&gt;5 stages, 1 LLM call&lt;br&gt;18-40s" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
           <mxGeometry x="1060" y="190" width="120" height="45" as="geometry" />
         </mxCell>
 
@@ -174,10 +174,10 @@
         <mxCell id="phase6-badge" value="PHASE 6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E65100;strokeColor=none;fontColor=#ffffff;fontSize=10;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="1195" y="150" width="55" height="16" as="geometry" />
         </mxCell>
-        <mxCell id="phase6-title" value="&lt;b&gt;TEST GEN&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
+        <mxCell id="phase6-title" value="&lt;b&gt;IMPLEMENT&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#E65100;" vertex="1" parent="1">
           <mxGeometry x="1190" y="168" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="phase6-tasks" value="Unit + Integration&lt;br&gt;CI/CD Ready" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
+        <mxCell id="phase6-tasks" value="CrewAI Crew&lt;br&gt;Multi-agent codegen&lt;br&gt;4 strategies" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;fontSize=9;fontColor=#F57C00;" vertex="1" parent="1">
           <mxGeometry x="1190" y="190" width="120" height="35" as="geometry" />
         </mxCell>
 

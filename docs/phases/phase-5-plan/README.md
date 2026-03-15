@@ -1,6 +1,6 @@
 # Phase 5 — Plan (Development Planning)
 
-> **Status**: IMPLEMENTED | **Type**: Hybrid Pipeline | **Layer**: Reasoning
+> **Status**: IMPLEMENTED | **Type**: Pipeline | **Layer**: Reasoning
 
 ---
 
@@ -10,8 +10,8 @@
 |-----------|-------|
 | Phase ID | `plan` |
 | Display Name | Development Planning |
-| Type | Pipeline (Hybrid: 4 deterministic stages + 1 LLM call) |
-| Entry Point | `pipelines/development_planning/pipeline.py` → `DevelopmentPlanningPipeline` |
+| Type | Pipeline (5 stages: 4 deterministic + 1 LLM call) |
+| Entry Point | `pipelines/plan/pipeline.py` → `PlanPipeline` |
 | LLM Requirement | Yes (Stage 4 only — 1 call per task) |
 | Output | `knowledge/plan/{task_id}_plan.json` |
 | Dependency | Discover + Extract + Analyze |
