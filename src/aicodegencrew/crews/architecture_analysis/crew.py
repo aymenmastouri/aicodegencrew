@@ -881,5 +881,33 @@ class ArchitectureAnalysisCrew:
         }
 
     def kickoff(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
-        """Execute crew - compatible with orchestrator interface."""
+        """Try new AnalysisPipeline; fall back to legacy CrewAI crew on error.
+
+        The pipeline-first approach is deterministic and avoids the CrewAI agent
+        loop.  If it raises for any reason the original run() implementation is
+        used as a fallback so behaviour is never regressed.
+        """
+        from aicodegencrew.pipelines.analysis import AnalysisPipeline
+
+        facts_dir = str(self.facts_path.parent)
+        output_dir = str(self.output_dir)
+        chroma_dir = self.chroma_dir if hasattr(self, "chroma_dir") else None
+
+        try:
+            pipeline = AnalysisPipeline(
+                facts_dir=facts_dir,
+                output_dir=output_dir,
+                chroma_dir=chroma_dir,
+            )
+            result = pipeline.run()
+            logger.info("[AnalysisCrew] Pipeline completed: %s", result.get("status"))
+            return result
+        except Exception as exc:
+            logger.error(
+                "[AnalysisCrew] Pipeline failed, falling back to legacy CrewAI: %s", exc
+            )
+            return self._run_legacy(inputs)
+
+    def _run_legacy(self, inputs: dict[str, Any] = None) -> dict[str, Any]:
+        """Original CrewAI-based kickoff (legacy fallback)."""
         return self.run()

@@ -1,16 +1,11 @@
 """
-Stage 4: Plan Generator — 2-agent mini-crew (planner + reviewer)
+Stage 4: Plan Generator — direct litellm call (deterministic Pipeline + LLM pattern)
 
-Uses CrewAI Agent with MCPs to synthesize all previous stage outputs into a complete implementation plan.
-A reviewer agent validates the plan for quality, completeness, and consistency with triage context.
+Synthesizes all previous stage outputs into a complete implementation plan using a
+single litellm.completion() call. The reviewer agent's checklist is applied as a
+post-call validation via the existing validate_plan_json guardrail.
 
-MCPs Available (planner only):
-- Sequential Thinking: Complex multi-step reasoning
-- Memory: Learn from past mistakes
-- Brave Search: Fetch current documentation
-- Playwright: Web scraping for migration guides
-
-Duration: 30-60 seconds (2-agent mini-crew)
+Duration: 20-60 seconds (single LLM call)
 """
 
 import json
@@ -18,13 +13,8 @@ import os
 import re
 from typing import Any
 
-from crewai import Agent, Crew, Process, Task
+import litellm
 
-from ....shared.mcp import get_phase4_mcps
-from ....shared.utils.crew_callbacks import step_callback, task_callback
-from ....shared.utils.crew_timeout import kickoff_with_timeout
-from ....shared.utils.embedder_config import get_crew_embedder
-from ....shared.utils.llm_factory import create_fast_llm, create_llm
 from ....shared.utils.logger import setup_logger
 from ....shared.utils.task_guardrails import validate_plan_json
 from ..schemas import ImplementationPlan, TaskInput
@@ -34,8 +24,50 @@ logger = setup_logger(__name__)
 
 class PlanGeneratorStage:
     """
-    Generate implementation plan using CrewAI Agent with MCPs.
+    Generate implementation plan via direct litellm.completion() call.
+
+    Replaces the 2-agent mini-crew (planner + reviewer) with a single LLM call.
+    The reviewer's quality checklist is applied post-call via validate_plan_json.
     """
+
+    # Planner system prompt (was the planner agent backstory)
+    _SYSTEM_MESSAGE = (
+        "You are a pragmatic software architect with 15+ years of experience. "
+        "You plan upgrades, bugfixes, features, and refactorings for large enterprise "
+        "codebases.\n\n"
+        "YOUR PROCESS — follow this exact order:\n"
+        "A. READ the Task Description + Technical Notes (JIRA comments). "
+        "   Understand: What is being asked? What has already been done? What remains?\n"
+        "B. READ the TRIAGE ANALYSIS completely. It contains:\n"
+        "   - Big Picture (North Star: why does this task exist?)\n"
+        "   - Scope Boundary (what is IN and OUT)\n"
+        "   - Architecture Walkthrough (where does this piece fit?)\n"
+        "   - Context Boundaries (risks, constraints, blockers)\n"
+        "   - Anticipated Questions (developer concerns, already answered)\n"
+        "   Your plan MUST be CONSISTENT with the triage analysis.\n"
+        "C. THEN look at discovered components, patterns, and facts.\n"
+        "D. THEN create the plan for REMAINING work only.\n\n"
+        "GOLDEN RULES:\n"
+        "1. TRIAGE IS YOUR FOUNDATION: The triage analysis defines the scope, "
+        "   constraints, and risks. Your plan must respect them. If triage says "
+        "   something is OUT of scope, don't plan it. If triage flags a BLOCKING "
+        "   boundary, your plan must address it.\n"
+        "2. THINK, DON'T COPY: Migration rules, component lists, and patterns are "
+        "   REFERENCE material, not a copy-paste template. Critically evaluate "
+        "   what is actually relevant to the remaining work.\n"
+        "3. CURRENT STATE MATTERS: JIRA comments describe real progress. "
+        "   The plan must reflect REMAINING work only, not repeat completed work.\n"
+        "4. CONCRETE VERSIONS: When the task involves version changes, state the "
+        "   exact current and target versions. Do NOT use vague ranges.\n"
+        "5. COMPONENTS: Use ONLY components from DISCOVERED COMPONENTS. "
+        "   Never invent component names or file paths. "
+        "   Every implementation_step must name the component AND its file_path.\n"
+        "6. PATTERNS: Populate test_strategy, security_considerations, and "
+        "   error_handling from provided patterns — don't leave them empty.\n"
+        "7. EMPTY DATA: If discovered_components, patterns, or facts are empty or "
+        "   missing, state that explicitly in the plan and skip sections that depend "
+        "   on them. Never fabricate components or file paths to fill gaps."
+    )
 
     def __init__(
         self,
@@ -57,132 +89,6 @@ class PlanGeneratorStage:
         self.supplementary_context = supplementary_context or {}
         self.extract_facts = extract_facts or {}
         self._model = os.getenv("MODEL", "openai/code")
-        self.agent = self._create_agent()
-        self.reviewer = self._create_reviewer_agent()
-
-    def _create_agent(self) -> Agent:
-        """Create planning agent with MCPs.
-
-        MCPs provide tools automatically - no need to list them in prompts.
-        CrewAI handles tool discovery and makes them available to the agent.
-        Falls back to no MCPs if network/connection issues prevent MCP startup.
-        """
-        mcps = get_phase4_mcps()
-        llm = create_llm()
-
-        agent_kwargs = dict(
-            role="Senior Software Architect & Development Planner",
-            goal=(
-                "Create evidence-based implementation plans by reading and understanding "
-                "the task, analyzing what has already been done, and planning only "
-                "the remaining work. Use your available tools when you need external information."
-            ),
-            backstory=(
-                "You are a pragmatic software architect with 15+ years of experience. "
-                "You plan upgrades, bugfixes, features, and refactorings for large enterprise "
-                "codebases.\n\n"
-                "YOUR PROCESS — follow this exact order:\n"
-                "A. READ the Task Description + Technical Notes (JIRA comments). "
-                "   Understand: What is being asked? What has already been done? What remains?\n"
-                "B. READ the TRIAGE ANALYSIS completely. It contains:\n"
-                "   - Big Picture (North Star: why does this task exist?)\n"
-                "   - Scope Boundary (what is IN and OUT)\n"
-                "   - Architecture Walkthrough (where does this piece fit?)\n"
-                "   - Context Boundaries (risks, constraints, blockers)\n"
-                "   - Anticipated Questions (developer concerns, already answered)\n"
-                "   Your plan MUST be CONSISTENT with the triage analysis.\n"
-                "C. THEN look at discovered components, patterns, and facts.\n"
-                "D. THEN create the plan for REMAINING work only.\n\n"
-                "GOLDEN RULES:\n"
-                "1. TRIAGE IS YOUR FOUNDATION: The triage analysis defines the scope, "
-                "   constraints, and risks. Your plan must respect them. If triage says "
-                "   something is OUT of scope, don't plan it. If triage flags a BLOCKING "
-                "   boundary, your plan must address it.\n"
-                "2. THINK, DON'T COPY: Migration rules, component lists, and patterns are "
-                "   REFERENCE material, not a copy-paste template. Critically evaluate "
-                "   what is actually relevant to the remaining work.\n"
-                "3. CURRENT STATE MATTERS: JIRA comments describe real progress. "
-                "   The plan must reflect REMAINING work only, not repeat completed work.\n"
-                "4. CONCRETE VERSIONS: When the task involves version changes, state the "
-                "   exact current and target versions. Do NOT use vague ranges.\n"
-                "5. COMPONENTS: Use ONLY components from DISCOVERED COMPONENTS. "
-                "   Never invent component names or file paths. "
-                "   Every implementation_step must name the component AND its file_path.\n"
-                "6. PATTERNS: Populate test_strategy, security_considerations, and "
-                "   error_handling from provided patterns — don't leave them empty.\n"
-                "7. TOOLS: Use Brave Search or Playwright only for external docs "
-                "   (migration guides, changelogs). Prefer the facts already provided."
-                "\n"
-                "8. EMPTY DATA: If discovered_components, patterns, or facts are empty or "
-                "   missing, state that explicitly in the plan and skip sections that depend "
-                "   on them. Never fabricate components or file paths to fill gaps."
-            ),
-            llm=llm,
-            allow_delegation=False,
-            verbose=True,
-            max_iter=15,
-            max_retry_limit=2,
-            respect_context_window=True,
-            inject_date=True,
-        )
-
-        # Try to create agent with MCPs; fall back to no MCPs on connection failure
-        if mcps:
-            try:
-                agent = Agent(**agent_kwargs, mcps=mcps)
-                logger.info(f"[Stage4] Created planning agent with {len(mcps)} MCPs")
-                return agent
-            except Exception as e:
-                logger.warning(
-                    f"[Stage4] MCP startup failed ({e}); retrying without MCPs"
-                )
-
-        agent = Agent(**agent_kwargs)
-        logger.info("[Stage4] Created planning agent without MCPs (fallback)")
-        return agent
-
-    def _create_reviewer_agent(self) -> Agent:
-        """Create the plan quality reviewer agent.
-
-        Validates the planner's output for completeness, consistency with
-        triage context, and adherence to quality standards.
-        """
-        return Agent(
-            role="Plan Quality Reviewer",
-            goal=(
-                "Review and validate the implementation plan. Ensure it is consistent "
-                "with the triage analysis, uses only discovered components, has concrete "
-                "implementation steps with file paths, and doesn't contain empty or "
-                "placeholder sections."
-            ),
-            backstory=(
-                "You are a tech lead who reviews implementation plans before they reach "
-                "developers. A bad plan leads to wasted sprints.\n\n"
-                "YOUR REVIEW CHECKLIST:\n"
-                "1. TRIAGE CONSISTENCY: Does the plan respect the triage scope boundary? "
-                "   Does it address BLOCKING context boundaries from triage?\n"
-                "2. UNDERSTANDING: Does it accurately capture WHAT is being asked and WHY?\n"
-                "3. IMPLEMENTATION STEPS: Are they ordered correctly? Does each step have "
-                "   an action verb + component name + file_path? Are there at least 3 steps?\n"
-                "4. COMPONENTS: Are all components from DISCOVERED COMPONENTS? "
-                "   No invented names or file paths?\n"
-                "5. TEST STRATEGY: Is it concrete (not just 'write unit tests')?\n"
-                "6. SECURITY: Are security_considerations populated if relevant?\n"
-                "7. ERROR HANDLING: Is error_handling section populated?\n"
-                "8. VERSIONS: If this is an upgrade, are exact versions specified?\n"
-                "9. COMPLETENESS: No empty arrays/strings where content is expected.\n"
-                "10. RISKS: Are risks realistic and specific to THIS task?\n\n"
-                "If the plan is acceptable, return it UNCHANGED as valid JSON.\n"
-                "If issues found, FIX them and return the corrected JSON.\n"
-                "Do NOT add explanatory text outside the JSON."
-            ),
-            tools=[],  # Reviewer has no tools — pure review
-            llm=create_fast_llm(),
-            allow_delegation=False,
-            verbose=True,
-            max_iter=2,
-            max_retry_limit=1,
-        )
 
     def run(
         self,
@@ -192,7 +98,7 @@ class PlanGeneratorStage:
         triage_context: dict[str, Any] | None = None,
     ) -> ImplementationPlan:
         """
-        Generate implementation plan using CrewAI agent with MCPs.
+        Generate implementation plan using a direct litellm call.
 
         Args:
             task: Task input (from Stage 1)
@@ -203,144 +109,106 @@ class PlanGeneratorStage:
         Returns:
             ImplementationPlan
         """
-        logger.info(f"[Stage4] Generating plan with agent+MCPs for task: {task.task_id}")
+        logger.info("[Stage4] Generating plan with litellm for task: %s", task.task_id)
 
-        # Build task description
+        # Build task description (user message content)
         description = self._build_task_description(task, discovery_result, pattern_result, triage_context)
-        expected = (
-            f"ImplementationPlan JSON object with task_id={task.task_id}, understanding, and development_plan sections"
+
+        model = os.getenv("MODEL", "openai/code")
+        api_base = os.getenv("API_BASE", "")
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "65536"))
+        chunk_timeout = int(os.getenv("LLM_CHUNK_TIMEOUT", "60"))
+
+        logger.info("[PlanLLM] Calling model %s (max_tokens=%d)", model, max_tokens)
+
+        stream = litellm.completion(
+            model=model,
+            messages=[
+                {"role": "system", "content": self._SYSTEM_MESSAGE},
+                {"role": "user", "content": description},
+            ],
+            api_base=api_base,
+            api_key=api_key,
+            max_tokens=max_tokens,
+            temperature=float(os.getenv("LLM_TEMPERATURE", "1.0")),
+            top_p=float(os.getenv("LLM_TOP_P", "0.95")),
+            extra_body={"top_k": int(os.getenv("LLM_TOP_K", "40"))},
+            timeout=chunk_timeout,
+            num_retries=1,
+            stream=True,
         )
 
-        # Create CrewAI task (no output_pydantic — on-prem LLMs can truncate output,
-        # causing CrewAI to raise ValidationError before our repair code runs).
-        # Paths 2 and 3 below handle JSON parsing from json_dict / raw string.
-        planning_task = Task(
-            name=f"Plan: {task.summary[:50]}",  # Task name from input
-            description=description,
-            expected_output=expected,
-            agent=self.agent,
-            guardrail=validate_plan_json,
-            guardrail_max_retries=1,
-        )
+        chunks: list[str] = []
+        for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                chunks.append(delta)
+        raw = "".join(chunks)
 
-        # Review task: validates the planner's output
-        review_task = Task(
-            name=f"Review: {task.summary[:50]}",
-            description=(
-                "TASK: Review and Validate the Implementation Plan\n\n"
-                "You receive the plan from the Senior Software Architect (Task 1). "
-                "Validate it against quality standards:\n\n"
-                "1. Does the plan have concrete implementation_steps (each with action, component, file_path)?\n"
-                "2. Are test_strategy, security_considerations, and error_handling populated?\n"
-                "3. Does understanding.summary accurately capture the task?\n"
-                "4. Are affected_components from the discovered components (not invented)?\n"
-                "5. Are risks specific to THIS task (not generic)?\n"
-                "6. If upgrade: are exact versions specified?\n"
-                "7. Is the plan consistent with triage scope boundaries and context boundaries?\n"
-                "8. No empty arrays or placeholder strings where content is expected?\n\n"
-                "If acceptable, return the plan JSON UNCHANGED.\n"
-                "If issues found, FIX them and return corrected JSON.\n"
-                "Output ONLY valid JSON — no explanatory text."
-            ),
-            expected_output=expected,
-            agent=self.reviewer,
-        )
+        logger.info("[PlanLLM] Received %d chars", len(raw))
 
-        # Run crew
-        from pathlib import Path as _Path
+        if not raw.strip():
+            raise ValueError(
+                "LLM returned empty result — check LLM connectivity and ensure the model is responding."
+            )
 
-        log_dir = _Path("knowledge/plan/logs")
-        log_dir.mkdir(parents=True, exist_ok=True)
+        plan_json = self._extract_json(raw)
 
-        logger.info("[Stage4] Starting 2-agent mini-crew: planner + reviewer")
-        result = self._kickoff_with_mcp_fallback(planning_task, review_task, task, log_dir)
+        # Post-call validation: apply the reviewer's quality checklist via guardrail.
+        # validate_plan_json expects an object with .raw or str() — pass the raw string.
+        class _RawWrapper:
+            def __init__(self, text: str):
+                self.raw = text
 
-        # CrewAI kickoff() returns CrewOutput with .pydantic, .json_dict, .raw
-        plan = None
-
-        # Path 1: Pydantic attribute present on result (rare — some CrewAI versions populate it)
-        if hasattr(result, "pydantic") and isinstance(getattr(result, "pydantic", None), ImplementationPlan):
-            plan = result.pydantic
-            logger.info("[Stage4] Got plan from CrewOutput.pydantic")
-
-        # Path 2: JSON dict available on CrewOutput
-        elif hasattr(result, "json_dict") and result.json_dict:
-            plan_json = result.json_dict
-            plan = self._plan_from_dict(plan_json, task)
-            logger.info("[Stage4] Got plan from CrewOutput.json_dict")
-
-        # Path 3: Parse from raw string output
+        validation_result = validate_plan_json(_RawWrapper(raw))
+        if isinstance(validation_result, tuple):
+            ok, feedback = validation_result
         else:
-            raw = str(result).strip()
-            if not raw:
-                raise ValueError(
-                    "Agent returned empty result — check LLM connectivity and ensure the model is responding."
-                )
-            plan_json = self._extract_json(raw)
-            plan = self._plan_from_dict(plan_json, task)
-            logger.info("[Stage4] Got plan from CrewOutput.raw (parsed JSON)")
+            ok = bool(validation_result)
+            feedback = "" if ok else str(validation_result)
 
+        if not ok and feedback:
+            logger.warning("[Stage4] Plan failed guardrail validation: %s — retrying", feedback)
+            # Single retry: prepend feedback as additional user context
+            retry_message = (
+                f"Your previous plan had these issues:\n{feedback}\n\n"
+                "Please fix ONLY the listed problems and return the complete corrected JSON plan."
+            )
+            stream2 = litellm.completion(
+                model=model,
+                messages=[
+                    {"role": "system", "content": self._SYSTEM_MESSAGE},
+                    {"role": "user", "content": description},
+                    {"role": "assistant", "content": raw[:15000]},
+                    {"role": "user", "content": retry_message},
+                ],
+                api_base=api_base,
+                api_key=api_key,
+                max_tokens=max_tokens,
+                temperature=float(os.getenv("LLM_TEMPERATURE", "1.0")),
+                top_p=float(os.getenv("LLM_TOP_P", "0.95")),
+                extra_body={"top_k": int(os.getenv("LLM_TOP_K", "40"))},
+                timeout=chunk_timeout,
+                num_retries=1,
+                stream=True,
+            )
+            chunks2: list[str] = []
+            for chunk in stream2:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    chunks2.append(delta)
+            raw = "".join(chunks2)
+            logger.info("[PlanLLM] Retry received %d chars", len(raw))
+            if raw.strip():
+                try:
+                    plan_json = self._extract_json(raw)
+                except Exception as e:
+                    logger.warning("[Stage4] Retry JSON parse failed: %s — using original", e)
+
+        plan = self._plan_from_dict(plan_json, task)
         logger.info("[Stage4] Generated plan successfully")
-
         return plan
-
-    def _kickoff_with_mcp_fallback(
-        self,
-        planning_task: Task,
-        review_task: Task,
-        task: "TaskInput",
-        log_dir: "Path",
-    ) -> Any:
-        """Run 2-agent crew with MCP fallback.
-
-        Agent 1 (planner) produces the plan, Agent 2 (reviewer) validates it.
-        If MCP tools fail at kickoff, retry without MCPs (CrewAI 1.9.x bug).
-        """
-        crew_kwargs = dict(
-            tasks=[planning_task, review_task],
-            process=Process.sequential,
-            verbose=False,
-            step_callback=step_callback,
-            task_callback=task_callback,
-            output_log_file=str(log_dir / f"{task.task_id}_plan.json"),
-            embedder=get_crew_embedder(),
-        )
-
-        try:
-            crew = Crew(agents=[self.agent, self.reviewer], **crew_kwargs)
-            return kickoff_with_timeout(crew)
-
-        except RuntimeError as e:
-            if "MCP" not in str(e) and "tools_list" not in str(e):
-                raise
-            logger.warning(
-                "[Stage4] MCP tools failed at kickoff (%s); retrying without MCPs", e
-            )
-            # Recreate planner agent without MCPs and retry
-            fallback_agent = Agent(
-                role=self.agent.role,
-                goal=self.agent.goal,
-                backstory=self.agent.backstory,
-                llm=create_llm(),
-                allow_delegation=False,
-                verbose=True,
-                max_iter=15,
-                max_retry_limit=2,
-                respect_context_window=True,
-                inject_date=True,
-            )
-            self.agent = fallback_agent
-            # Re-assign the planning task to the new agent
-            planning_task.agent = fallback_agent
-            crew = Crew(agents=[fallback_agent, self.reviewer], **crew_kwargs)
-            return kickoff_with_timeout(crew)
-
-        except (ConnectionError, TimeoutError, OSError) as e:
-            logger.error("[Stage4] Transient error (network/timeout): %s", e)
-            raise
-        except Exception as e:
-            logger.error("[Stage4] Agent plan generation failed: %s", e)
-            raise
 
     def _build_task_description(
         self,

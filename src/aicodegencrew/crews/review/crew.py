@@ -12,7 +12,7 @@ Architecture: deterministic scan → LLM synthesis
        - Compute quality score 0-100
 
   2. LLM synthesis phase:
-       - Single agent with FactsQueryTool + RAGQueryTool
+       - Direct litellm.completion() call (no agent overhead)
        - Synthesises findings into a Markdown report
 
 Input:  knowledge/extract/   (dimension files — containers.json, …)
@@ -26,20 +26,17 @@ Output: knowledge/deliver/consistency.json
 """
 
 import json
+import os
 import re
 import time
 from pathlib import Path
 from typing import Any
 
-from crewai import Crew, Process
+import litellm
 
 from ...shared.paths import CHROMA_DIR, get_chroma_dir
 from ...shared.schema_version import add_schema_version
-from ...shared.utils.crew_callbacks import step_callback, task_callback
-from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.logger import setup_logger
-from .agents import create_quality_reviewer
-from .tasks import create_synthesis_task
 
 logger = setup_logger(__name__)
 
@@ -365,7 +362,11 @@ class ReviewCrew:
         quality: dict,
         output_path: str,
     ) -> bool:
-        """Run a single-agent CrewAI crew to synthesise a Markdown quality report.
+        """Run a direct litellm call to synthesise a Markdown quality report.
+
+        Replaces the single-agent CrewAI crew with a direct completion call.
+        System prompt uses the reviewer agent backstory; user prompt uses the
+        synthesis task description with pre-computed findings injected.
 
         Returns:
             True if the report was written successfully, False otherwise.
@@ -375,33 +376,105 @@ class ReviewCrew:
             indent=2,
             ensure_ascii=False,
         )
-        agent = create_quality_reviewer(
-            facts_dir=self.facts_dir,
-            chroma_dir=self.chroma_dir,
-        )
-        task = create_synthesis_task(agent, findings_summary, output_path)
 
-        log_dir = self.output_dir / "logs"
-        log_dir.mkdir(parents=True, exist_ok=True)
-        crew = Crew(
-            agents=[agent],
-            tasks=[task],
-            process=Process.sequential,
-            verbose=True,
-            step_callback=step_callback,
-            task_callback=task_callback,
-            output_log_file=str(log_dir / "synthesis.json"),
-            embedder=get_crew_embedder(),
+        # System message: quality reviewer agent backstory
+        system_message = (
+            "You are a senior architecture quality engineer specialising in C4 and arc42.\n"
+            "\n"
+            "## REVIEW METHODOLOGY\n"
+            "1. COVERAGE CHECK — verify every container and key component from facts appears\n"
+            "   in the documentation. Flag missing or extra items.\n"
+            "2. PLACEHOLDER DETECTION — scan for TODO, TBD, FIXME, '[to be determined]',\n"
+            "   generic phrases like 'Handles application logic'. Count and locate each.\n"
+            "3. DEPTH CHECK — each arc42 chapter must have >10 substantive lines per section.\n"
+            "   Flag thin sections that lack real content.\n"
+            "4. CONSISTENCY — cross-reference C4 diagrams against arc42 chapters. Container\n"
+            "   names, component counts, and technology choices must match across documents.\n"
+            "5. ACTIONABILITY — every finding gets a severity (high/medium/low) and a\n"
+            "   concrete recommendation. No vague observations.\n"
+            "\n"
+            "Use the pre-computed findings as your PRIMARY source. They contain all "
+            "deterministic checks already computed."
         )
-        from ...shared.utils.crew_timeout import kickoff_with_timeout
+
+        # User message: synthesis task description with findings injected
+        user_message = f"""TASK: Generate Architecture Quality Report
+
+You have been provided with pre-computed consistency and quality findings below.
+Your job is to synthesise them into a professional architecture quality report.
+
+--- DETERMINISTIC FINDINGS ---
+{findings_summary}
+--- END FINDINGS ---
+
+The findings above are your PRIMARY source — they contain all deterministic checks
+already computed.
+
+STEPS:
+1. Write a complete Markdown report with the following sections:
+
+   ## Executive Summary
+   - Overall quality score (given in findings above)
+   - Top 3 findings by severity (high / medium / low)
+
+   ## Consistency Analysis
+   - Container coverage: missing vs. extra containers
+   - Component coverage: spot-check result
+   - Arc42 chapter completeness
+
+   ## Quality Findings
+   - Placeholder / TODO count and locations
+   - Documentation gaps
+
+   ## Recommendations
+   - **High severity** — Immediate fixes required
+   - **Medium severity** — Short-term improvements
+   - **Low severity** — Long-term enhancements
+
+IMPORTANT: Produce the full Markdown report as your final answer.
+The report will be saved to: {output_path}
+"""
+
+        model = os.getenv("MODEL", "openai/code")
+        api_base = os.getenv("API_BASE", "")
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "65536"))
+        chunk_timeout = int(os.getenv("LLM_CHUNK_TIMEOUT", "60"))
+
+        logger.info("[ReviewLLM] Calling model %s (max_tokens=%d)", model, max_tokens)
+
         try:
-            result = kickoff_with_timeout(crew)
-            raw = result.raw if hasattr(result, "raw") else str(result)
+            stream = litellm.completion(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_message},
+                ],
+                api_base=api_base,
+                api_key=api_key,
+                max_tokens=max_tokens,
+                temperature=float(os.getenv("LLM_TEMPERATURE", "1.0")),
+                top_p=float(os.getenv("LLM_TOP_P", "0.95")),
+                extra_body={"top_k": int(os.getenv("LLM_TOP_K", "40"))},
+                timeout=chunk_timeout,
+                num_retries=1,
+                stream=True,
+            )
+
+            chunks: list[str] = []
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    chunks.append(delta)
+            raw = "".join(chunks)
+
+            logger.info("[ReviewLLM] Received %d chars", len(raw))
+
             Path(output_path).write_text(raw, encoding="utf-8")
             logger.info("[ReviewCrew] Synthesis report written: %s", output_path)
             return True
         except Exception as e:
-            logger.error("[ReviewCrew] Synthesis crew failed: %s", e)
+            logger.error("[ReviewCrew] LLM synthesis failed: %s", e)
             return False
 
     # ── File I/O ──────────────────────────────────────────────────────────
