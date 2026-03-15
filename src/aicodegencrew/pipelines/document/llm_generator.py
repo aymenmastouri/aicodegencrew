@@ -39,7 +39,10 @@ class LLMGenerator:
 
         logger.info("[LLMGenerator] Calling %s (max_tokens=%d)", model, max_tokens)
 
-        response = litellm.completion(
+        # Stream the response — chunks arrive as the model generates, preventing
+        # apparent hangs when generation takes longer than the read timeout.
+        chunk_timeout = int(os.getenv("LLM_CHUNK_TIMEOUT", "60"))  # seconds between chunks
+        stream = litellm.completion(
             model=model,
             messages=messages,
             api_base=api_base,
@@ -49,24 +52,22 @@ class LLMGenerator:
             temperature=float(os.getenv("LLM_TEMPERATURE", "1.0")),
             top_p=float(os.getenv("LLM_TOP_P", "0.95")),
             extra_body={"top_k": int(os.getenv("LLM_TOP_K", "40"))},
-            timeout=180,
-            num_retries=3,
+            timeout=chunk_timeout,
+            num_retries=1,
+            stream=True,
         )
 
-        content = response.choices[0].message.content or ""
+        chunks: list[str] = []
+        for chunk in stream:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                chunks.append(delta)
+        content = "".join(chunks)
 
         # Strip markdown code fences if LLM wrapped the output
         content = self._strip_fences(content)
 
-        # Log token usage
-        usage = response.usage
-        if usage:
-            logger.info(
-                "[LLMGenerator] Tokens: %d total (%d prompt, %d completion)",
-                usage.total_tokens,
-                usage.prompt_tokens,
-                usage.completion_tokens,
-            )
+        logger.info("[LLMGenerator] Received %d chars", len(content))
 
         return content
 

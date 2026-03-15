@@ -161,8 +161,12 @@ class DependencyCollector(DimensionCollector):
                 if not line or line.startswith("#") or line.startswith("-"):
                     continue
 
+                # Strip environment markers (e.g. "; python_version >= '3.8'")
+                line = line.split(";")[0].strip()
+                if not line:
+                    continue
+
                 # Parse: package[extras]>=version, package>=version, package
-                # Strip extras brackets and environment markers first
                 match = re.match(r"^([a-zA-Z0-9_.-]+)(?:\[.*?\])?\s*([<>=!~]+)?(.+)?$", line)
                 if match:
                     name = match.group(1)

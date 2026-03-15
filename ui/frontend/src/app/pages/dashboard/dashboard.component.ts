@@ -1726,8 +1726,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Tick elapsed every second (local interpolation between polls)
     this.timerSub = timer(1000, 1000).subscribe(() => {
       if (this.executionState === 'running') {
-        this.executionElapsed++;
         const running = this.phaseProgress.find((p) => p.status === 'running');
+        // Only advance the overall elapsed and phase timer while a phase is
+        // actively running. When all phases are done (subprocess cleanup),
+        // the display stays frozen until the backend reports "completed".
+        if (running || this.phaseProgress.length === 0) {
+          this.executionElapsed++;
+        }
         if (running) {
           running.duration_seconds = (running.duration_seconds || 0) + 1;
         }
@@ -1784,7 +1789,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     if (s.elapsed_seconds != null) {
-      this.executionElapsed = Math.round(s.elapsed_seconds);
+      // Only sync elapsed from backend while a phase is actively running (or
+      // no phase data yet). Once all phases are done, freeze the displayed
+      // value so it doesn't keep growing during subprocess cleanup.
+      const hasRunning = (s.phase_progress || []).some((p: any) => p.status === 'running');
+      const noPhaseData = (s.phase_progress || []).length === 0;
+      if (hasRunning || noPhaseData || s.state !== 'running') {
+        this.executionElapsed = Math.round(s.elapsed_seconds);
+      }
     }
 
     // Auto-dismiss stepper after terminal states — only on state *transition*

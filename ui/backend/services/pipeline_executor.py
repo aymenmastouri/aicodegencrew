@@ -630,9 +630,9 @@ class PipelineExecutor:
         elapsed = None
         if started_at and state == "running":
             elapsed = round(time.monotonic() - started_at, 1)
-        elif started_at and state in ("completed", "failed", "cancelled"):
-            # Show elapsed since run started (not growing endlessly)
-            elapsed = round((finished_at or time.monotonic()) - started_at, 1)
+        elif started_at and finished_at and state in ("completed", "failed", "cancelled"):
+            # Show frozen elapsed — finished_at is set atomically with state transition
+            elapsed = round(finished_at - started_at, 1)
 
         # ------------------------------------------------------------------
         # Parallel mode: synthesise phase_progress from task states
