@@ -45,9 +45,10 @@ class LLMGenerator:
             api_base=api_base,
             api_key=api_key,
             max_tokens=max_tokens,
-            # Qwen3-Coder-Next best practice: temperature=1.0, top_p=0.95
+            # Qwen3-Coder-Next best practice: temperature=1.0, top_p=0.95, top_k=40
             temperature=float(os.getenv("LLM_TEMPERATURE", "1.0")),
             top_p=float(os.getenv("LLM_TOP_P", "0.95")),
+            extra_body={"top_k": int(os.getenv("LLM_TOP_K", "40"))},
             timeout=180,
             num_retries=3,
         )
