@@ -1,265 +1,210 @@
-<mxfile host="app.diagrams.net" modified="2026-02-03T16:00:00.000Z" agent="aicodegencrew-expert" version="22.1.0" type="device">
-  <diagram id="analysis-crew" name="Phase 2: Architecture Analysis Crew">
+<mxfile host="app.diagrams.net" modified="2026-03-15T00:00:00.000Z" agent="AICodeGenCrew" version="22.1.0" type="device">
+  <diagram id="analysis-pipeline" name="Phase 2: Architecture Analysis Pipeline">
     <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="1">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        
+
         <!-- Title -->
-        <mxCell id="title" value="Phase 2: Architecture Analysis Crew" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=28;fontStyle=1;fontColor=#0d47a1;" vertex="1" parent="1">
-          <mxGeometry x="450" y="20" width="500" height="40" as="geometry" />
+        <mxCell id="title" value="Phase 2: Architecture Analysis — Pipeline Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=26;fontStyle=1;fontColor=#0d47a1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="900" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="subtitle" value="5 Mini-Crews Pattern: 4 Analysis + 1 Synthesis = Analyzed Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
-          <mxGeometry x="450" y="55" width="500" height="25" as="geometry" />
+        <mxCell id="subtitle" value="16 parallel LLM section calls (ThreadPoolExecutor max_workers=8) + 1 synthesis call → analyzed_architecture.json" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="300" y="58" width="900" height="24" as="geometry" />
         </mxCell>
-        
-        <!-- Main Container -->
-        <mxCell id="main-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#1565c0;strokeWidth=3;shadow=1;" vertex="1" parent="1">
-          <mxGeometry x="80" y="100" width="1240" height="800" as="geometry" />
+
+        <!-- Entry Point Badge -->
+        <mxCell id="ep-badge" value="pipelines/analysis/pipeline.py → AnalysisPipeline(BasePipeline)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565c0;strokeColor=none;fontColor=#ffffff;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="90" width="450" height="24" as="geometry" />
         </mxCell>
-        
-        <!-- Header Badge -->
-        <mxCell id="header-badge" value="crews/architecture_analysis/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565c0;strokeColor=none;fontColor=#ffffff;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="90" y="110" width="200" height="25" as="geometry" />
-        </mxCell>
-        
+
         <!-- ============ INPUT SECTION ============ -->
         <mxCell id="input-section" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="100" y="160" width="280" height="280" as="geometry" />
+          <mxGeometry x="40" y="140" width="260" height="260" as="geometry" />
         </mxCell>
         <mxCell id="input-title" value="INPUT (Phase 0 + Phase 1)" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="110" y="170" width="260" height="25" as="geometry" />
+          <mxGeometry x="50" y="150" width="240" height="25" as="geometry" />
         </mxCell>
-        
-        <!-- Facts Input -->
+
         <mxCell id="facts-input" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2e7d32;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="120" y="210" width="240" height="100" as="geometry" />
-        </mxCell>
-        <mxCell id="facts-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=24;" vertex="1" parent="1">
-          <mxGeometry x="125" y="215" width="35" height="30" as="geometry" />
+          <mxGeometry x="60" y="190" width="220" height="80" as="geometry" />
         </mxCell>
         <mxCell id="facts-title" value="&lt;b&gt;architecture_facts.json&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#1b5e20;" vertex="1" parent="1">
-          <mxGeometry x="160" y="215" width="180" height="25" as="geometry" />
+          <mxGeometry x="70" y="195" width="200" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="facts-desc" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;- Components extracted&lt;br&gt;- Relations mapped&lt;br&gt;- Interfaces resolved&lt;br&gt;- Containers identified&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
-          <mxGeometry x="130" y="245" width="220" height="60" as="geometry" />
+        <mxCell id="facts-desc" value="- Components, Relations, Interfaces&#xa;- 17 fact keys, all containers&#xa;- evidence_map.json" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontColor=#2e7d32;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="65" y="220" width="210" height="45" as="geometry" />
         </mxCell>
-        
-        <!-- ChromaDB Input -->
+
         <mxCell id="chroma-input" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7b1fa2;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="120" y="320" width="240" height="100" as="geometry" />
+          <mxGeometry x="60" y="285" width="220" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="chroma-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=24;" vertex="1" parent="1">
-          <mxGeometry x="125" y="325" width="35" height="30" as="geometry" />
+        <mxCell id="chroma-title" value="&lt;b&gt;ChromaDB (RAG)&lt;/b&gt; — optional" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#7b1fa2;" vertex="1" parent="1">
+          <mxGeometry x="70" y="290" width="200" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="chroma-title" value="&lt;b&gt;ChromaDB (RAG)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#7b1fa2;" vertex="1" parent="1">
-          <mxGeometry x="160" y="325" width="180" height="25" as="geometry" />
+        <mxCell id="chroma-desc" value="- Semantic code search&#xa;- Javadoc &amp; comments&#xa;- Implementation patterns" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontColor=#7b1fa2;spacingLeft=5;" vertex="1" parent="1">
+          <mxGeometry x="65" y="315" width="210" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="chroma-desc" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;• Semantic code search&lt;br&gt;• Javadoc &amp; comments&lt;br&gt;• Implementation patterns&lt;br&gt;• Business logic context&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
-          <mxGeometry x="130" y="355" width="220" height="60" as="geometry" />
+
+        <!-- ============ DATA COLLECTOR ============ -->
+        <mxCell id="data-collector" value="&lt;b&gt;DataCollector&lt;/b&gt;&#xa;Loads facts.json + ChromaDB once&#xa;Serves per-section data via&#xa;collect_section_data(section_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="430" width="260" height="80" as="geometry" />
         </mxCell>
-        
-        <!-- ============ TOOLS SECTION ============ -->
-        <mxCell id="tools-section" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="100" y="460" width="280" height="160" as="geometry" />
+
+        <!-- ============ 16 PARALLEL SECTION CALLS ============ -->
+        <mxCell id="parallel-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="340" y="140" width="880" height="460" as="geometry" />
         </mxCell>
-        <mxCell id="tools-title" value="AGENT TOOLS" style="text;html=1;strokeColor=none;fillColor=#9673a6;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="110" y="470" width="260" height="25" as="geometry" />
+        <mxCell id="parallel-title" value="16 PARALLEL LLM SECTION CALLS — ThreadPoolExecutor(max_workers=8)" style="text;html=1;strokeColor=none;fillColor=#1565c0;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=13;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="350" y="150" width="860" height="28" as="geometry" />
         </mxCell>
-        
-        <mxCell id="tool1" value="&lt;b&gt;FactsQueryTool&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px; color: #666;&quot;&gt;Query by stereotype, container, category&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=10;" vertex="1" parent="1">
-          <mxGeometry x="120" y="505" width="240" height="45" as="geometry" />
+        <mxCell id="parallel-note" value="SectionPromptBuilder.build({&quot;section_id&quot;: id}) → LLMGenerator.generate(messages) → JSON repair" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontColor=#1565c0;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="350" y="180" width="860" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="tool2" value="&lt;b&gt;RAGQueryTool&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 9px; color: #666;&quot;&gt;Semantic search on code base (ChromaDB)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;spacingLeft=10;" vertex="1" parent="1">
-          <mxGeometry x="120" y="555" width="240" height="45" as="geometry" />
+
+        <!-- Section boxes: 4 rows × 4 cols -->
+        <!-- Row 1 -->
+        <mxCell id="s01" value="&lt;b&gt;01&lt;/b&gt; Macro Architecture" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="355" y="215" width="190" height="40" as="geometry" />
         </mxCell>
-        
-        <!-- ============ AGENTS SECTION ============ -->
-        <mxCell id="agents-section" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="420" y="160" width="680" height="350" as="geometry" />
+        <mxCell id="s02" value="&lt;b&gt;02&lt;/b&gt; Backend Pattern" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="555" y="215" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agents-title" value="SPECIALIZED AGENTS (Python dicts, NO YAML)" style="text;html=1;strokeColor=none;fillColor=#1565c0;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="430" y="170" width="300" height="25" as="geometry" />
+        <mxCell id="s03" value="&lt;b&gt;03&lt;/b&gt; Frontend Pattern" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="755" y="215" width="190" height="40" as="geometry" />
         </mxCell>
-        
-        <!-- Agent 1: Technical Architect -->
-        <mxCell id="agent1-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;strokeWidth=2;shadow=1;" vertex="1" parent="1">
-          <mxGeometry x="440" y="210" width="200" height="140" as="geometry" />
+        <mxCell id="s04" value="&lt;b&gt;04&lt;/b&gt; Architecture Quality" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="955" y="215" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent1-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=28;" vertex="1" parent="1">
-          <mxGeometry x="445" y="215" width="40" height="35" as="geometry" />
+
+        <!-- Row 2 -->
+        <mxCell id="s05" value="&lt;b&gt;05&lt;/b&gt; Domain Model" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="355" y="270" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent1-name" value="&lt;b&gt;Technical Architect&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#0d47a1;" vertex="1" parent="1">
-          <mxGeometry x="485" y="220" width="150" height="25" as="geometry" />
+        <mxCell id="s06" value="&lt;b&gt;06&lt;/b&gt; Business Capabilities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="555" y="270" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent1-role" value="tech_architect" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1565c0;strokeColor=none;fontColor=#ffffff;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-          <mxGeometry x="520" y="245" width="90" height="16" as="geometry" />
+        <mxCell id="s07" value="&lt;b&gt;07&lt;/b&gt; Bounded Contexts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="755" y="270" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent1-tasks" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;- Architecture Style Detection&lt;br&gt;- Design Pattern Analysis&lt;br&gt;- Technology Stack Mapping&lt;br&gt;- Layer Structure Analysis&lt;br&gt;- Dependency Graph&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
-          <mxGeometry x="450" y="265" width="185" height="80" as="geometry" />
+        <mxCell id="s08" value="&lt;b&gt;08&lt;/b&gt; State Machines" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="955" y="270" width="190" height="40" as="geometry" />
         </mxCell>
-        
-        <!-- Agent 2: Functional Analyst -->
-        <mxCell id="agent2-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;strokeWidth=2;shadow=1;" vertex="1" parent="1">
-          <mxGeometry x="660" y="210" width="200" height="140" as="geometry" />
+
+        <!-- Row 3 -->
+        <mxCell id="s09" value="&lt;b&gt;09&lt;/b&gt; Workflow Engines" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="355" y="325" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent2-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=28;" vertex="1" parent="1">
-          <mxGeometry x="665" y="215" width="40" height="35" as="geometry" />
+        <mxCell id="s10" value="&lt;b&gt;10&lt;/b&gt; Saga Patterns" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="555" y="325" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent2-name" value="&lt;b&gt;Functional Analyst&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#1b5e20;" vertex="1" parent="1">
-          <mxGeometry x="705" y="220" width="150" height="25" as="geometry" />
+        <mxCell id="s11" value="&lt;b&gt;11&lt;/b&gt; Runtime Scenarios" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="755" y="325" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent2-role" value="func_analyst" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2e7d32;strokeColor=none;fontColor=#ffffff;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-          <mxGeometry x="740" y="245" width="80" height="16" as="geometry" />
+        <mxCell id="s12" value="&lt;b&gt;12&lt;/b&gt; API Design" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="955" y="325" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent2-tasks" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;- Domain Model Extraction&lt;br&gt;- Business Capability Map&lt;br&gt;- Use Case Discovery&lt;br&gt;- Entity Responsibility&lt;br&gt;- Service Boundaries&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
-          <mxGeometry x="670" y="265" width="185" height="80" as="geometry" />
+
+        <!-- Row 4 -->
+        <mxCell id="s13" value="&lt;b&gt;13&lt;/b&gt; Complexity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="355" y="380" width="190" height="40" as="geometry" />
         </mxCell>
-        
-        <!-- Agent 3: Quality Analyst -->
-        <mxCell id="agent3-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;strokeWidth=2;shadow=1;" vertex="1" parent="1">
-          <mxGeometry x="880" y="210" width="200" height="140" as="geometry" />
+        <mxCell id="s14" value="&lt;b&gt;14&lt;/b&gt; Technical Debt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="555" y="380" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent3-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=28;" vertex="1" parent="1">
-          <mxGeometry x="885" y="215" width="40" height="35" as="geometry" />
+        <mxCell id="s15" value="&lt;b&gt;15&lt;/b&gt; Security" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="755" y="380" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent3-name" value="&lt;b&gt;Quality Analyst&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=12;fontColor=#e65100;" vertex="1" parent="1">
-          <mxGeometry x="925" y="220" width="150" height="25" as="geometry" />
+        <mxCell id="s16" value="&lt;b&gt;16&lt;/b&gt; Operational Readiness" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="955" y="380" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent3-role" value="quality_analyst" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e65100;strokeColor=none;fontColor=#ffffff;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-          <mxGeometry x="960" y="245" width="90" height="16" as="geometry" />
+
+        <!-- Section output label -->
+        <mxCell id="section-out-label" value="Each section → 01_*.json … 16_*.json (saved to knowledge/analyze/)&#xa;JSON repair: strip fences → json.loads() → reconstruct unclosed structures" style="text;html=1;strokeColor=none;fillColor=#dce8f8;align=center;verticalAlign=middle;fontSize=11;fontColor=#1565c0;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="355" y="435" width="790" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="agent3-tasks" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;- Technical Debt Detection&lt;br&gt;- Architecture Risks&lt;br&gt;- Quality Attribute Rating&lt;br&gt;- Code Smell Patterns&lt;br&gt;- Security Concerns&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
-          <mxGeometry x="890" y="265" width="185" height="80" as="geometry" />
+
+        <!-- Checkpoint -->
+        <mxCell id="checkpoint" value="Checkpoint/resume: .checkpoint_analysis.json — completed sections skipped on retry" style="text;html=1;strokeColor=none;fillColor=#e8f5e9;align=center;verticalAlign=middle;fontSize=10;fontColor=#2e7d32;rounded=1;strokeColor=#2e7d32;" vertex="1" parent="1">
+          <mxGeometry x="355" y="490" width="790" height="28" as="geometry" />
         </mxCell>
-        
-        <!-- Agent 4: Synthesis Lead -->
-        <mxCell id="agent4-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;strokeWidth=3;shadow=1;" vertex="1" parent="1">
-          <mxGeometry x="550" y="370" width="320" height="120" as="geometry" />
+
+        <!-- Checkpoint badge -->
+        <mxCell id="checkpoint-note" value="LLM config via shared/llm_generator.py → LLMGenerator (temperature, top_p, top_k, max_tokens, timeout)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="355" y="530" width="790" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="agent4-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=32;" vertex="1" parent="1">
-          <mxGeometry x="560" y="378" width="45" height="40" as="geometry" />
+
+        <!-- ============ SYNTHESIS CALL ============ -->
+        <mxCell id="synthesis-box" value="&lt;b&gt;SYNTHESIS CALL (×1)&lt;/b&gt;&#xa;SynthesisPromptBuilder.build({&quot;sections&quot;: {filename: content}})&#xa;→ LLMGenerator.generate(messages) → analyzed_architecture.json" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="630" width="880" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="agent4-name" value="&lt;b&gt;Synthesis Lead&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontColor=#7b1fa2;" vertex="1" parent="1">
-          <mxGeometry x="610" y="380" width="150" height="30" as="geometry" />
+        <mxCell id="synthesis-note" value="Input: all 16 section JSON files merged into single prompt | Output: unified analyzed_architecture.json" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#b85450;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="340" y="702" width="880" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="agent4-role" value="synthesis_lead" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7b1fa2;strokeColor=none;fontColor=#ffffff;fontSize=9;fontStyle=2;" vertex="1" parent="1">
-          <mxGeometry x="760" y="387" width="90" height="16" as="geometry" />
-        </mxCell>
-        <mxCell id="agent4-tasks" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;• Merges all agent outputs into unified architecture model&lt;br&gt;• Resolves conflicts between different agent perspectives&lt;br&gt;• Validates consistency and completeness of analysis&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=5;" vertex="1" parent="1">
-          <mxGeometry x="560" y="415" width="300" height="65" as="geometry" />
-        </mxCell>
-        
-        <!-- Arrows from agents to synthesis -->
-        <mxCell id="arrow-a1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#1565c0;endArrow=classic;endFill=1;" edge="1" parent="1" source="agent1-box" target="agent4-box">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow-a2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2e7d32;endArrow=classic;endFill=1;" edge="1" parent="1" source="agent2-box" target="agent4-box">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="arrow-a3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#e65100;endArrow=classic;endFill=1;" edge="1" parent="1" source="agent3-box" target="agent4-box">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        
-        <!-- ============ OUTPUT SECTION ============ -->
+
+        <!-- ============ OUTPUT ============ -->
         <mxCell id="output-section" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;strokeWidth=2;" vertex="1" parent="1">
-          <mxGeometry x="420" y="530" width="680" height="250" as="geometry" />
+          <mxGeometry x="340" y="740" width="880" height="200" as="geometry" />
         </mxCell>
-        <mxCell id="output-title" value="OUTPUT: analyzed_architecture.json" style="text;html=1;strokeColor=none;fillColor=#c2185b;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="430" y="540" width="280" height="25" as="geometry" />
+        <mxCell id="output-title" value="OUTPUT: knowledge/analyze/analyzed_architecture.json" style="text;html=1;strokeColor=none;fillColor=#c2185b;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="350" y="750" width="450" height="25" as="geometry" />
         </mxCell>
-        
-        <!-- Output Schema -->
-        <mxCell id="schema-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c2185b;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="440" y="580" width="640" height="180" as="geometry" />
+        <mxCell id="output-schema" value='{"system": {"name": "...", "domain": "...", "description": "..."},&#xa; "architecture": {"primary_style": "layered_architecture", "secondary_styles": [...], "layers": [...]},&#xa; "patterns": [{"name": "repository_pattern", "instances": 48}],&#xa; "capabilities": [{"name": "Order Management", "components": [...]}],&#xa; "quality_attributes": {"maintainability": "high", "scalability": "medium", "security": "medium"},&#xa; "technical_debt": [...],  "security_posture": {...},  "operational_readiness": {...},&#xa; "risks": [{"name": "Large monolith", "severity": "medium", "mitigation": "..."}]}' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#c2185b;fontSize=10;fontFamily=Courier New;align=left;spacingLeft=10;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="355" y="785" width="860" height="145" as="geometry" />
         </mxCell>
-        <mxCell id="schema-content" value="&lt;font style=&quot;font-family: monospace; font-size: 10px;&quot;&gt;{&lt;br&gt;  &quot;system&quot;: { &quot;name&quot;: &quot;my-app&quot;, &quot;domain&quot;: &quot;Business Platform&quot;, &quot;description&quot;: &quot;...&quot; },&lt;br&gt;  &quot;architecture&quot;: {&lt;br&gt;    &quot;primary_style&quot;: &quot;layered_architecture&quot;,&lt;br&gt;    &quot;secondary_styles&quot;: [&quot;modular_monolith&quot;],&lt;br&gt;    &quot;layers&quot;: [&quot;presentation&quot;, &quot;business&quot;, &quot;persistence&quot;, &quot;infrastructure&quot;]&lt;br&gt;  },&lt;br&gt;  &quot;patterns&quot;: [&lt;br&gt;    { &quot;name&quot;: &quot;repository_pattern&quot;, &quot;instances&quot;: 48, &quot;quality&quot;: &quot;consistent&quot; },&lt;br&gt;    { &quot;name&quot;: &quot;factory_pattern&quot;, &quot;instances&quot;: 12, &quot;quality&quot;: &quot;good&quot; }  &lt;br&gt;  ],&lt;br&gt;  &quot;capabilities&quot;: [&lt;br&gt;    { &quot;name&quot;: &quot;Order Management&quot;, &quot;components&quot;: [&quot;OrderService&quot;, &quot;InventoryService&quot;] },&lt;br&gt;    { &quot;name&quot;: &quot;Workflow Processing&quot;, &quot;components&quot;: [&quot;WorkflowService&quot;, &quot;ActionService&quot;] }&lt;br&gt;  ],&lt;br&gt;  &quot;quality_attributes&quot;: { &quot;maintainability&quot;: &quot;high&quot;, &quot;scalability&quot;: &quot;medium&quot;, &quot;security&quot;: &quot;medium&quot; },&lt;br&gt;  &quot;risks&quot;: [{ &quot;name&quot;: &quot;Large monolith&quot;, &quot;severity&quot;: &quot;medium&quot;, &quot;mitigation&quot;: &quot;Consider modularization&quot; }]&lt;br&gt;}&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;" vertex="1" parent="1">
-          <mxGeometry x="450" y="585" width="620" height="170" as="geometry" />
-        </mxCell>
-        
-        <!-- Arrow to Next Phase -->
-        <mxCell id="next-phase-arrow" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#c62828;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="output-section" target="next-phase">
+
+        <!-- ============ ARROWS ============ -->
+        <!-- Input → DataCollector -->
+        <mxCell id="arr-in-dc" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#2e7d32;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="input-section" target="data-collector">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        
-        <!-- Next Phase Box -->
-        <mxCell id="next-phase" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffebee;strokeColor=#c62828;strokeWidth=2;dashed=1;" vertex="1" parent="1">
-          <mxGeometry x="420" y="810" width="680" height="70" as="geometry" />
-        </mxCell>
-        <mxCell id="next-phase-icon" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=24;" vertex="1" parent="1">
-          <mxGeometry x="430" y="825" width="40" height="35" as="geometry" />
-        </mxCell>
-        <mxCell id="next-phase-title" value="&lt;b&gt;→ Phase 3: Architecture Synthesis&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontColor=#c62828;" vertex="1" parent="1">
-          <mxGeometry x="475" y="820" width="300" height="25" as="geometry" />
-        </mxCell>
-        <mxCell id="next-phase-desc" value="C4 Diagrams (5 mini-crews) + Arc42 Documentation (18 mini-crews) using analyzed architecture" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=11;fontColor=#666;" vertex="1" parent="1">
-          <mxGeometry x="475" y="845" width="600" height="20" as="geometry" />
-        </mxCell>
-        
-        <!-- Arrows from Input to Agents -->
-        <mxCell id="arrow-in1" value="Facts" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#2e7d32;endArrow=classic;endFill=1;" edge="1" parent="1" source="facts-input" target="agents-section">
+
+        <!-- DataCollector → parallel section calls -->
+        <mxCell id="arr-dc-par" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1565c0;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="data-collector" target="parallel-container">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="arrow-in2" value="RAG" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#7b1fa2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="chroma-input" target="agents-section">
+
+        <!-- Parallel → Synthesis -->
+        <mxCell id="arr-par-syn" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;strokeWidth=3;endArrow=block;endFill=1;" edge="1" parent="1" source="parallel-container" target="synthesis-box">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="arrow-tools" value="Tools" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#9673a6;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="tools-section" target="agents-section">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="400" y="540" />
-              <mxPoint x="400" y="400" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        
-        <!-- Arrow from Synthesis to Output -->
-        <mxCell id="arrow-out" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;strokeColor=#c2185b;endArrow=classic;endFill=1;" edge="1" parent="1" source="agent4-box" target="output-section">
+
+        <!-- Synthesis → Output -->
+        <mxCell id="arr-syn-out" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c2185b;strokeWidth=3;endArrow=block;endFill=1;" edge="1" parent="1" source="synthesis-box" target="output-section">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        
-        <!-- Benefits Box -->
-        <mxCell id="benefits-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;shadow=1;" vertex="1" parent="1">
-          <mxGeometry x="100" y="650" width="280" height="230" as="geometry" />
+
+        <!-- ============ BENEFITS BOX ============ -->
+        <mxCell id="benefits-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="260" height="280" as="geometry" />
         </mxCell>
-        <mxCell id="benefits-title" value="BENEFITS" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
-          <mxGeometry x="110" y="660" width="260" height="25" as="geometry" />
+        <mxCell id="benefits-title" value="KEY DESIGN DECISIONS" style="text;html=1;strokeColor=none;fillColor=#2e7d32;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontStyle=1;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="50" y="550" width="240" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="benefits-content" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;&lt;b&gt;Specialization&lt;/b&gt;&lt;br&gt;Each agent focuses on their expertise&lt;br&gt;&lt;br&gt;&lt;b&gt;Less Hallucination&lt;/b&gt;&lt;br&gt;Specific tasks = better accuracy&lt;br&gt;&lt;br&gt;&lt;b&gt;Reusable Output&lt;/b&gt;&lt;br&gt;JSON used by all downstream crews&lt;br&gt;&lt;br&gt;&lt;b&gt;Traceable&lt;/b&gt;&lt;br&gt;Separate analyses can be reviewed&lt;br&gt;&lt;br&gt;&lt;b&gt;RAG Integration&lt;/b&gt;&lt;br&gt;Semantic search adds code context&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;" vertex="1" parent="1">
-          <mxGeometry x="110" y="695" width="260" height="175" as="geometry" />
+        <mxCell id="benefits-content" value="&lt;b&gt;16 Parallel Calls&lt;/b&gt;&#xa;Each section independent → full parallelism&#xa;&#xa;&lt;b&gt;Checkpoint / Resume&lt;/b&gt;&#xa;Failed sections re-run only&#xa;&#xa;&lt;b&gt;BasePromptBuilder ABC&lt;/b&gt;&#xa;Uniform build(data) contract&#xa;&#xa;&lt;b&gt;JSON Repair&lt;/b&gt;&#xa;Stack-based bracket closer recovers&#xa;truncated LLM output&#xa;&#xa;&lt;b&gt;Single LLMGenerator&lt;/b&gt;&#xa;All LLM config centralized" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=10;fontColor=#1b5e20;spacingLeft=8;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="50" y="582" width="240" height="225" as="geometry" />
         </mxCell>
-        
-        <!-- Legend -->
+
+        <!-- ============ LEGEND ============ -->
         <mxCell id="legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#e0e0e0;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="1130" y="160" width="170" height="150" as="geometry" />
+          <mxGeometry x="40" y="840" width="260" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="legend-title" value="&lt;b&gt;LEGEND&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="1130" y="165" width="170" height="20" as="geometry" />
+        <mxCell id="legend-title" value="&lt;b&gt;LEGEND&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="848" width="100" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="leg1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#2e7d32;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="1145" y="195" width="20" height="15" as="geometry" />
+        <mxCell id="leg1" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1565c0;" vertex="1" parent="1">
+          <mxGeometry x="55" y="878" width="20" height="15" as="geometry" />
         </mxCell>
-        <mxCell id="leg1-text" value="Input Data" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1175" y="193" width="120" height="18" as="geometry" />
+        <mxCell id="leg1t" value="LLM Section Call (×16)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="82" y="876" width="140" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="leg2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="1145" y="220" width="20" height="15" as="geometry" />
+        <mxCell id="leg2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="55" y="903" width="20" height="15" as="geometry" />
         </mxCell>
-        <mxCell id="leg2-text" value="Agent Tools" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1175" y="218" width="120" height="18" as="geometry" />
+        <mxCell id="leg2t" value="Synthesis Call (×1)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="82" y="901" width="140" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="leg3" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1565c0;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="1145" y="245" width="20" height="15" as="geometry" />
-        </mxCell>
-        <mxCell id="leg3-text" value="AI Agents" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1175" y="243" width="120" height="18" as="geometry" />
-        </mxCell>
-        <mxCell id="leg4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#c2185b;strokeWidth=1;" vertex="1" parent="1">
-          <mxGeometry x="1145" y="270" width="20" height="15" as="geometry" />
-        </mxCell>
-        <mxCell id="leg4-text" value="Output" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1175" y="268" width="120" height="18" as="geometry" />
-        </mxCell>
-        
+
       </root>
     </mxGraphModel>
   </diagram>

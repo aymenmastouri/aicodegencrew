@@ -19,9 +19,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from ...shared import BasePipeline, LLMGenerator
 from .data_collector import DataCollector
 from .data_recipes import ARC42_RECIPES, C4_RECIPES, MERGE_GROUPS, ChapterRecipe
-from .llm_generator import LLMGenerator
 from .prompt_builder import PromptBuilder
 from .validator import ChapterValidator
 
@@ -64,7 +64,7 @@ class PipelineResult:
         }
 
 
-class DocumentPipeline:
+class DocumentPipeline(BasePipeline):
     """Orchestrates document generation for all chapters.
 
     Flow per chapter:
@@ -92,11 +92,11 @@ class DocumentPipeline:
         self.validator = ChapterValidator()
         self._checkpoint_path = self.output_dir / ".checkpoint_pipeline.json"
 
-    def run(self) -> PipelineResult:
+    def run(self) -> dict:
         """Run the full document generation pipeline.
 
         Returns:
-            PipelineResult with status and per-chapter details.
+            Dict with status, chapter counts, duration.
         """
         start = time.time()
         logger.info("=" * 60)
@@ -200,7 +200,7 @@ class DocumentPipeline:
             chapters=all_results,
             total_duration_seconds=total_duration,
             degradation_reasons=degradation_reasons,
-        )
+        ).to_dict()
 
     def _generate_chapter(self, recipe: ChapterRecipe) -> ChapterResult:
         """Generate a single chapter: collect → prompt → LLM → validate → write."""
@@ -212,11 +212,11 @@ class DocumentPipeline:
             data = self.collector.collect(recipe)
 
             # Step 2: Build prompt
-            messages = self.prompt_builder.build(recipe, data)
+            messages = self.prompt_builder.build({**data, "recipe": recipe})
 
-            # Step 3: Generate with LLM
-            generator = LLMGenerator(use_fast_model=recipe.use_fast_model)
-            content = generator.generate(messages)
+            # Step 3: Generate with LLM (fences stripped via generate_text)
+            generator = LLMGenerator()
+            content = generator.generate_text(messages)
 
             # Step 4: Validate
             validation = self.validator.validate(content, recipe, data)
@@ -226,7 +226,7 @@ class DocumentPipeline:
             while not validation.passed and attempts < _MAX_RETRIES:
                 attempts += 1
                 logger.info("[Chapter] %s — retry %d with feedback: %s", recipe.id, attempts, validation.issues)
-                content = generator.retry_with_feedback(messages, content, validation.issues)
+                content = generator.retry_with_feedback_text(messages, content, validation.issues)
                 validation = self.validator.validate(content, recipe, data)
 
             # Step 5: Write to disk

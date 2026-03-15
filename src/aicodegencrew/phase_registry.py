@@ -19,7 +19,7 @@ class PhaseDescriptor:
 
     phase_id: str
     display_name: str
-    phase_type: Literal["pipeline", "crew", "hybrid"]
+    phase_type: Literal["pipeline", "crew"]
     order: int
     dependencies: tuple[str, ...]
     required: bool
@@ -75,7 +75,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "triage": PhaseDescriptor(
         "triage",
         "Issue Triage",
-        "hybrid",
+        "pipeline",
         4,
         ("extract",),
         False,
@@ -85,7 +85,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "plan": PhaseDescriptor(
         "plan",
         "Development Planning",
-        "hybrid",
+        "pipeline",
         5,
         ("analyze",),
         False,
@@ -95,7 +95,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "implement": PhaseDescriptor(
         "implement",
         "Code Generation",
-        "hybrid",
+        "crew",
         6,
         ("plan",),
         False,
@@ -115,7 +115,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "deliver": PhaseDescriptor(
         "deliver",
         "Review & Consistency Guard",
-        "hybrid",
+        "pipeline",
         8,
         ("implement",),
         False,

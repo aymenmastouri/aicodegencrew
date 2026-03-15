@@ -1,4 +1,4 @@
-"""AnalysisDataCollector — deterministic fact loading for analysis sections.
+"""DataCollector — deterministic fact loading for analysis sections.
 
 Reads architecture facts files directly from disk (no CrewAI agents, no tool loops).
 Optionally queries ChromaDB for RAG-based code evidence.
@@ -19,7 +19,7 @@ load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
 
-class AnalysisDataCollector:
+class DataCollector:
     """Loads architecture facts and provides section-scoped data slices.
 
     Facts are loaded once via ``load()`` and then served to ``collect_section_data()``
@@ -63,9 +63,9 @@ class AnalysisDataCollector:
         facts_path = self._facts_dir / "architecture_facts.json"
         if facts_path.exists():
             self._facts = json.loads(facts_path.read_text(encoding="utf-8"))
-            logger.info("[AnalysisDataCollector] Loaded facts: %d top-level keys", len(self._facts))
+            logger.info("[DataCollector] Loaded facts: %d top-level keys", len(self._facts))
         else:
-            logger.warning("[AnalysisDataCollector] architecture_facts.json not found at %s", facts_path)
+            logger.warning("[DataCollector] architecture_facts.json not found at %s", facts_path)
 
         # Load dimension files — prefer dedicated files, fall back to facts keys
         self._components = self._load_dimension("components")
@@ -74,7 +74,7 @@ class AnalysisDataCollector:
         self._containers = self._load_dimension("containers")
 
         logger.info(
-            "[AnalysisDataCollector] Loaded — components:%d relations:%d interfaces:%d containers:%d",
+            "[DataCollector] Loaded — components:%d relations:%d interfaces:%d containers:%d",
             len(self._components),
             len(self._relations),
             len(self._interfaces),
@@ -96,7 +96,7 @@ class AnalysisDataCollector:
                 # Single-level dict — treat as list of one
                 return [raw]
             except Exception as exc:
-                logger.warning("[AnalysisDataCollector] Could not load %s: %s", dim_path, exc)
+                logger.warning("[DataCollector] Could not load %s: %s", dim_path, exc)
 
         # Try direct file in facts_dir (legacy flat layout)
         flat_path = self._facts_dir / f"{name}.json"
@@ -108,7 +108,7 @@ class AnalysisDataCollector:
                 if isinstance(raw, dict) and name in raw:
                     return raw[name]
             except Exception as exc:
-                logger.warning("[AnalysisDataCollector] Could not load %s: %s", flat_path, exc)
+                logger.warning("[DataCollector] Could not load %s: %s", flat_path, exc)
 
         # Fall back to the top-level facts key
         fallback = self._facts.get(name, [])
@@ -185,7 +185,7 @@ class AnalysisDataCollector:
             result = json.loads(result_json)
             return result.get("results", [])
         except Exception as exc:
-            logger.debug("[AnalysisDataCollector] RAG query failed for '%s': %s", query, exc)
+            logger.debug("[DataCollector] RAG query failed for '%s': %s", query, exc)
             return []
 
     # ── Section data map ─────────────────────────────────────────────────────
@@ -226,12 +226,12 @@ class AnalysisDataCollector:
 
         fn = section_map.get(section_id)
         if fn is None:
-            logger.warning("[AnalysisDataCollector] Unknown section_id: %s", section_id)
+            logger.warning("[DataCollector] Unknown section_id: %s", section_id)
             return {"statistics": stats}
 
         data = fn(stats)
         logger.debug(
-            "[AnalysisDataCollector] Section %s data keys: %s",
+            "[DataCollector] Section %s data keys: %s",
             section_id,
             list(data.keys()),
         )

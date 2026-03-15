@@ -1,6 +1,6 @@
 # SDLC Pilot — Architecture Overview
 
-> **Status**: v0.7.2 | **Author**: Aymen Mastouri | **Updated**: 2026-03-06
+> **Status**: v0.7.3 | **Author**: Aymen Mastouri | **Updated**: 2026-03-15
 
 ---
 
@@ -27,13 +27,13 @@
 |-------|------|-------|------|--------|------|
 | 0 | Discover | Knowledge | Pipeline | IMPLEMENTED | [Phase 0](phases/phase-0-discover/README.md) |
 | 1 | Extract | Knowledge | Pipeline | IMPLEMENTED | [Phase 1](phases/phase-1-extract/README.md) |
-| 2 | Analyze | Reasoning | Crew | IMPLEMENTED | [Phase 2](phases/phase-2-analyze/README.md) |
-| 3 | Document | Reasoning | Crew | IMPLEMENTED | [Phase 3](phases/phase-3-document/README.md) |
-| 4 | Triage | Reasoning | Crew | IMPLEMENTED | [Phase 4](phases/phase-4-triage/README.md) |
-| 5 | Plan | Reasoning | Hybrid | IMPLEMENTED | [Phase 5](phases/phase-5-plan/README.md) |
-| 6 | Implement | Execution | Hybrid | IMPLEMENTED | [Phase 6](phases/phase-6-implement/README.md) |
+| 2 | Analyze | Reasoning | Pipeline | IMPLEMENTED | [Phase 2](phases/phase-2-analyze/README.md) |
+| 3 | Document | Reasoning | Pipeline | IMPLEMENTED | [Phase 3](phases/phase-3-document/README.md) |
+| 4 | Triage | Reasoning | Pipeline | IMPLEMENTED | [Phase 4](phases/phase-4-triage/README.md) |
+| 5 | Plan | Reasoning | Pipeline | IMPLEMENTED | [Phase 5](phases/phase-5-plan/README.md) |
+| 6 | Implement | Execution | Crew | IMPLEMENTED | [Phase 6](phases/phase-6-implement/README.md) |
 | 7 | Verify | Execution | Crew | IMPLEMENTED | [Phase 7](phases/phase-7-verify/README.md) |
-| 8 | Deliver | Execution | Crew | IMPLEMENTED | [Phase 8](phases/phase-8-deliver/README.md) |
+| 8 | Deliver | Execution | Pipeline | IMPLEMENTED | [Phase 8](phases/phase-8-deliver/README.md) |
 
 ## 4. Core Principles
 
@@ -55,10 +55,10 @@
 | DependencyChecker | `shared/dependency_checker.py` | Phase dependency resolution (tier 1: session, tier 2: disk) |
 | PhaseGitHandler | `shared/phase_git_handler.py` | Post-phase git auto-commit of `knowledge/` |
 | SchemaVersion | `shared/schema_version.py` | `_schema_version` injection + reader-side mismatch warnings |
-| Pipelines | `pipelines/` | Deterministic processes (Discover, Extract) |
-| Crews | `crews/` | AI agent workflows (Analyze, Document, Verify) |
-| Hybrid | `hybrid/` | Pipeline + CrewAI (Plan, Implement) |
-| Shared | `shared/` | Common utilities, models, tools |
+| LLMGenerator | `shared/llm_generator.py` | Single source of truth for all LLM config + `generate()` / `retry_with_feedback()` |
+| Pipelines | `pipelines/` | All pipeline phases (Discover, Extract, Analyze, Triage, Plan, Document, Review) |
+| Crews | `crews/` | AI agent workflows (Implement, Verify) |
+| Shared | `shared/` | Common utilities, models, tools, `BasePipeline`, `BasePromptBuilder` |
 
 ## 6. Cross-Cutting Architecture
 
@@ -138,7 +138,7 @@ Presets are defined in `config/phases_config.yaml` and validated by the CLI.
 | `EMBED_MODEL` | Embedding model | `all-minilm:latest` |
 | `INDEX_MODE` | Indexing behavior: off/auto/smart/force | `auto` |
 | `LLM_PROVIDER` | LLM provider: local/onprem | `local` |
-| `CODEGEN_MODEL` | Code generation LLM | Falls back to `MODEL` |
+| `CODEGEN_MODEL` | Code generation LLM (Developer + Tester agents) | `MODEL` (same as main LLM if unset) |
 
 ### Git Repository Support
 

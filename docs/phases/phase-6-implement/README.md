@@ -11,8 +11,8 @@
 | Phase ID | `implement` |
 | Display Name | Code Generation |
 | Type | Hierarchical CrewAI (4 Agents, Dual-Model Routing) |
-| Entry Point | `hybrid/code_generation/crew.py` → `ImplementCrew` |
-| LLM Requirement | Yes (Developer + Tester: Coder-14B, Manager + Builder: 120B) |
+| Entry Point | `crews/implement/crew.py` → `ImplementCrew` |
+| LLM Requirement | Yes — all agents: Qwen3-Coder-Next via `openai/code` (`MODEL` / `CODEGEN_MODEL`) |
 | Output | Git branch + `knowledge/implement/{task_id}_report.json` |
 | Dependency | Plan |
 | Status | **IMPLEMENTED** |
@@ -81,20 +81,21 @@ OUTPUT WRITER (Git + File I/O)
 | Agent | LLM | Role | Tools | Delegation |
 |-------|-----|------|-------|------------|
 | **Manager** | MODEL (120B) | Technical Project Lead | PlanReader, CodeReader, ImportIndex, DependencyLookup, FactsQuery, RAGQuery, MCP | `True` |
-| **Developer** | CODEGEN_MODEL (Coder-14B) | Senior Full-Stack Dev | CodeReader, CodeWriter, ImportIndex, DependencyLookup, FactsQuery, RAGQuery, MCP | `False` |
-| **Builder** | MODEL (120B) | DevOps & Build Engineer | BuildRunner, BuildErrorParser, FactsQuery | `False` |
-| **Tester** | CODEGEN_MODEL (Coder-14B) | Senior Test Engineer | TestPattern, TestWriter, CodeReader, RAGQuery, MCP | `False` |
+| **Developer** | `CODEGEN_MODEL` (Qwen3-Coder-Next) | Senior Full-Stack Dev | CodeReader, CodeWriter, ImportIndex, DependencyLookup, FactsQuery, RAGQuery, MCP | `False` |
+| **Builder** | `MODEL` (Qwen3-Coder-Next) | DevOps & Build Engineer | BuildRunner, BuildErrorParser, FactsQuery | `False` |
+| **Tester** | `CODEGEN_MODEL` (Qwen3-Coder-Next) | Senior Test Engineer | TestPattern, TestWriter, CodeReader, RAGQuery, MCP | `False` |
 
 ### Dual-Model Routing
 
 ```
-create_llm()         → MODEL (gpt-oss-120B)       → Manager, Builder
-create_codegen_llm() → CODEGEN_MODEL (Coder-14B)  → Developer, Tester
+create_llm()         → MODEL (openai/code → Qwen3-Coder-Next)          → Manager, Builder
+create_codegen_llm() → CODEGEN_MODEL (openai/code → Qwen3-Coder-Next)  → Developer, Tester
 
-Fallback: If CODEGEN_MODEL unavailable → falls back to MODEL
+Both use the same Qwen3-Coder-Next model (80B MoE, 3B active params, 256K context).
+Differentiated via env vars to allow future swap of CODEGEN_MODEL to a specialized coder.
 ```
 
-**Why dual-model?** Coder-14B writes better code at fewer tokens. 120B better at understanding complex tasks and analyzing build output.
+**Why dual-model?** A specialized code generation model writes better code at fewer tokens. The analysis model is better at understanding complex tasks and analyzing build output. Both use the same API base — differentiated at the endpoint/routing level.
 
 ### Preflight Modules
 
@@ -206,7 +207,7 @@ Strategies auto-register via `@register_strategy("upgrade")` decorator. Unknown 
 ## 9. File Structure
 
 ```
-hybrid/code_generation/
+crews/implement/
 ├── crew.py              # ImplementCrew (hierarchical crew orchestrator)
 ├── agents.py            # 4 agents with dual-model routing
 ├── tasks.py             # 3 CrewAI tasks (implement, build, test)

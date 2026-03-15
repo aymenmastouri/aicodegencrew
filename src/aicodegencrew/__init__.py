@@ -11,17 +11,18 @@ AI Code Generation Crew — SDLC Automation Platform
 
 8-phase pipeline from repository indexing to code generation:
 
-    pipelines/          Pure deterministic (no LLM)
+    pipelines/          Pipeline + LLM phases
         indexing/           Phase 0: Repository indexing (ChromaDB)
         architecture_facts/ Phase 1: Architecture facts extraction
+        analysis/           Phase 2: Architecture analysis
+        triage/             Phase 3: Issue triage
+        plan/               Phase 4: Development planning
+        document/           Phase 6: Architecture documentation
+        review/             Phase 8: Review & consistency guard
 
-    crews/              LLM agent workflows (CrewAI)
-        architecture_analysis/  Phase 2: Architecture analysis
-        architecture_synthesis/ Phase 3: Architecture synthesis (C4, arc42)
-
-    hybrid/             Pipeline stages + LLM agents combined
-        development_planning/   Phase 4: Development planning
-        code_generation/        Phase 5: Code generation + build verification
+    crews/              CrewAI agent phases
+        implement/          Phase 5: Code generation + build verification
+        testing/            Phase 7: Test generation
 
     shared/             Common utilities, models, and shared tools
 

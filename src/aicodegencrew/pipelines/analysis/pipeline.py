@@ -17,7 +17,6 @@ Usage::
 
 import json
 import logging
-import os
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -29,8 +28,9 @@ from dotenv import load_dotenv
 # Ensure .env is loaded even when called outside CLI subprocess
 load_dotenv(override=True)
 
-from .data_collector import AnalysisDataCollector
-from .prompt_builder import AnalysisPromptBuilder, SECTION_META
+from ...shared import BasePipeline, LLMGenerator
+from .data_collector import DataCollector
+from .prompt_builder import SectionPromptBuilder, SynthesisPromptBuilder, SECTION_META
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ class SectionResult:
 # =============================================================================
 
 
-class AnalysisPipeline:
+class AnalysisPipeline(BasePipeline):
     """Orchestrates the 16-section analysis pipeline.
 
     Flow:
@@ -98,11 +98,13 @@ class AnalysisPipeline:
         self._analysis_dir = self.output_dir / "analysis"
         self._checkpoint_path = self.output_dir / ".checkpoint_analysis.json"
 
-        self._collector = AnalysisDataCollector(
+        self._collector = DataCollector(
             facts_dir=facts_dir,
             chroma_dir=chroma_dir,
         )
-        self._prompt_builder = AnalysisPromptBuilder()
+        self._section_prompt_builder = SectionPromptBuilder()
+        self._synthesis_prompt_builder = SynthesisPromptBuilder()
+        self._generator = LLMGenerator()
 
     # =========================================================================
     # PUBLIC ENTRY POINT
@@ -216,8 +218,6 @@ class AnalysisPipeline:
         Returns:
             SectionResult with status and timing.
         """
-        import litellm
-
         start = time.time()
         meta = SECTION_META[section_id]
         output_rel = self.SECTION_OUTPUT_FILES[section_id]
@@ -230,7 +230,7 @@ class AnalysisPipeline:
             data = self._collector.collect_section_data(section_id)
 
             # Step 2: Build prompt
-            messages = self._prompt_builder.build_section(section_id, data)
+            messages = self._section_prompt_builder.build({**data, "section_id": section_id})
 
             # Step 3: LLM call
             content = self._llm_call(messages)
@@ -293,7 +293,7 @@ class AnalysisPipeline:
                 raise RuntimeError("No section output files found — cannot synthesise")
 
             # Build synthesis prompt
-            messages = self._prompt_builder.build_synthesis(sections)
+            messages = self._synthesis_prompt_builder.build({"sections": sections})
 
             # LLM call
             content = self._llm_call(messages)
@@ -338,44 +338,12 @@ class AnalysisPipeline:
     # =========================================================================
 
     def _llm_call(self, messages: list[dict]) -> str:
-        """Execute a single streaming LLM call and return the full response string.
+        """Delegate to the shared LLMGenerator.
 
-        Uses the same parameters as document/llm_generator.py:
-        MODEL, API_BASE, OPENAI_API_KEY, MAX_LLM_OUTPUT_TOKENS,
-        LLM_TEMPERATURE, LLM_TOP_P, LLM_TOP_K, LLM_CHUNK_TIMEOUT.
+        All LLM configuration (model, temperature, top_p, top_k, …) is
+        centralized in ``shared/llm_generator.py``.
         """
-        import litellm
-
-        model = os.getenv("MODEL", "openai/code")
-        api_base = os.getenv("API_BASE", "")
-        api_key = os.getenv("OPENAI_API_KEY", "")
-        max_tokens = int(os.getenv("MAX_LLM_OUTPUT_TOKENS", "65536"))
-        temperature = float(os.getenv("LLM_TEMPERATURE", "1.0"))
-        top_p = float(os.getenv("LLM_TOP_P", "0.95"))
-        top_k = int(os.getenv("LLM_TOP_K", "40"))
-        chunk_timeout = int(os.getenv("LLM_CHUNK_TIMEOUT", "60"))
-
-        stream = litellm.completion(
-            model=model,
-            messages=messages,
-            api_base=api_base,
-            api_key=api_key,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            extra_body={"top_k": top_k},
-            timeout=chunk_timeout,
-            num_retries=1,
-            stream=True,
-        )
-
-        chunks: list[str] = []
-        for chunk in stream:
-            delta = chunk.choices[0].delta.content
-            if delta:
-                chunks.append(delta)
-        content = "".join(chunks)
-        return content
+        return self._generator.generate(messages)
 
     # =========================================================================
     # JSON REPAIR

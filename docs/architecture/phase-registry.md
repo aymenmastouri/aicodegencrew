@@ -18,7 +18,7 @@ Single source of truth for static SDLC phase metadata.
 |-------|------|-------------|
 | `phase_id` | `str` | Unique identifier (e.g. `"extract"`) |
 | `display_name` | `str` | Human-readable name |
-| `phase_type` | `"pipeline" | "crew" | "hybrid"` | Execution engine |
+| `phase_type` | `"pipeline" \| "crew"` | Execution engine: `pipeline` = deterministic + LLM pipeline; `crew` = CrewAI agent loop |
 | `order` | `int` | Execution order (0-7) |
 | `dependencies` | `tuple[str, ...]` | Phases that must complete first |
 | `required` | `bool` | Must-complete phase? |
@@ -31,24 +31,26 @@ Single source of truth for static SDLC phase metadata.
 ```mermaid
 graph LR
     discover["0: Discover<br/>Pipeline"] --> extract["1: Extract<br/>Pipeline"]
-    extract --> analyze["2: Analyze<br/>Crew"]
-    analyze --> document["3: Document<br/>Crew"]
-    analyze --> plan["4: Plan<br/>Pipeline"]
-    plan --> implement["5: Implement<br/>Pipeline"]
-    implement --> verify["6: Verify<br/>Crew"]
-    verify --> deliver["7: Deliver<br/>Pipeline"]
+    extract --> analyze["2: Analyze<br/>Pipeline"]
+    analyze --> document["3: Document<br/>Pipeline"]
+    analyze --> triage["4: Triage<br/>Pipeline"]
+    analyze --> plan["5: Plan<br/>Pipeline"]
+    plan --> implement["6: Implement<br/>Crew"]
+    implement --> verify["7: Verify<br/>Crew"]
+    verify --> deliver["8: Deliver<br/>Pipeline"]
 ```
 
 | Phase | Display Name | Type | Dependencies | Required | Resettable |
 |-------|--------------|------|--------------|----------|------------|
 | `discover` | Repository Indexing | pipeline | - | yes | no |
 | `extract` | Architecture Facts Extraction | pipeline | discover | yes | yes |
-| `analyze` | Architecture Analysis | crew | extract | yes | yes |
-| `document` | Architecture Synthesis | crew | analyze | no | yes |
-| `plan` | Development Planning | hybrid | analyze | no | yes |
-| `implement` | Code Generation | hybrid | plan | no | yes |
+| `analyze` | Architecture Analysis | pipeline | extract | yes | yes |
+| `document` | Architecture Synthesis | pipeline | analyze | no | yes |
+| `triage` | Issue Triage | pipeline | extract | no | yes |
+| `plan` | Development Planning | pipeline | analyze | no | yes |
+| `implement` | Code Generation | crew | plan | no | yes |
 | `verify` | Test Generation | crew | implement | no | yes |
-| `deliver` | Review and Deploy | pipeline | verify | no | yes |
+| `deliver` | Review and Deploy | pipeline | implement | no | yes |
 
 ## Registry vs phases_config.yaml vs PipelineContract
 

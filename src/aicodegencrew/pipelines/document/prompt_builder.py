@@ -8,6 +8,8 @@ import json
 import logging
 from typing import Any
 
+from ...shared import BasePromptBuilder
+
 from .data_recipes import ChapterRecipe
 
 logger = logging.getLogger(__name__)
@@ -103,15 +105,20 @@ def _format_analyzed(analyzed: dict[str, Any]) -> str:
     return _truncate("\n\n".join(parts), _MAX_FACTS_CHARS) if parts else "No architecture analysis available."
 
 
-class PromptBuilder:
+class PromptBuilder(BasePromptBuilder):
     """Builds structured prompts for architecture documentation generation."""
 
-    def build(self, recipe: ChapterRecipe, data: dict[str, Any]) -> list[dict[str, str]]:
+    def build(self, data: dict[str, Any]) -> list[dict[str, str]]:
         """Build a chat-format prompt (system + user messages).
 
+        Args:
+            data: Must contain ``"recipe"`` (ChapterRecipe) plus the
+                  pre-collected chapter facts.
+
         Returns:
-            List of message dicts: [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
+            List of message dicts: [{"role": "system", ...}, {"role": "user", ...}]
         """
+        recipe: ChapterRecipe = data["recipe"]
         system_msg = self._build_system_message()
         user_msg = self._build_user_message(recipe, data)
         return [

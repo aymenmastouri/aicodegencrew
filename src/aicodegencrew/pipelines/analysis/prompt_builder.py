@@ -1,4 +1,4 @@
-"""AnalysisPromptBuilder — constructs LLM prompts for analysis sections and synthesis.
+"""PromptBuilder — constructs LLM prompts for analysis sections and synthesis.
 
 Uses task descriptions from tasks.py as the basis for each section prompt.
 Output schema comes from the Pydantic models in task_output_schemas.py.
@@ -7,6 +7,8 @@ Output schema comes from the Pydantic models in task_output_schemas.py.
 import json
 import logging
 from typing import Any
+
+from ...shared import BasePromptBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -504,24 +506,29 @@ _SYNTHESIS_SYSTEM = (
 )
 
 
-class AnalysisPromptBuilder:
-    """Builds chat-format messages for analysis sections and synthesis."""
+class SectionPromptBuilder(BasePromptBuilder):
+    """Builds prompts for individual analysis sections (01–16).
 
-    def build_section(self, section_id: str, data: dict) -> list[dict]:
+    Expected data keys:
+        ``section_id`` (str): two-digit section number, e.g. ``"01"``.
+        All other keys: facts collected by DataCollector.collect_section_data().
+    """
+
+    def build(self, data: dict) -> list[dict]:
         """Build [system, user] messages for one analysis section.
 
         Args:
-            section_id: Two-digit section number e.g. "01".
-            data: Collected data dict from AnalysisDataCollector.collect_section_data().
+            data: Must contain ``"section_id"`` plus the pre-collected facts.
 
         Returns:
-            List of two message dicts: [{"role": "system", ...}, {"role": "user", ...}]
+            List of two message dicts.
         """
+        section_id: str = data["section_id"]
         meta = SECTION_META.get(section_id)
         if meta is None:
             raise ValueError(f"Unknown section_id: {section_id!r}")
 
-        data_text = _fmt_section_data(data)
+        data_text = _fmt_section_data({k: v for k, v in data.items() if k != "section_id"})
 
         user_content = (
             f"## Task: {meta['title']}\n\n"
@@ -536,17 +543,27 @@ class AnalysisPromptBuilder:
             {"role": "user", "content": user_content},
         ]
 
-    def build_synthesis(self, sections: dict[str, str]) -> list[dict]:
-        """Build [system, user] messages for the final synthesis call.
+
+class SynthesisPromptBuilder(BasePromptBuilder):
+    """Builds the prompt for the final synthesis call.
+
+    Expected data keys:
+        ``sections`` (dict[str, str]): mapping from output filename to JSON content,
+        e.g. ``{"01_macro_architecture.json": "{...}", ...}``.
+    """
+
+    def build(self, data: dict) -> list[dict]:
+        """Build [system, user] messages for the synthesis call.
 
         Args:
-            sections: Mapping from output filename to JSON content string,
-                      e.g. {"01_macro_architecture.json": "{...}", ...}.
+            data: Must contain ``"sections"`` mapping filename → JSON string.
 
         Returns:
             List of two message dicts.
         """
         from ...shared.models.task_output_schemas import AnalyzedArchitecture
+
+        sections: dict[str, str] = data["sections"]
 
         schema = json.dumps(
             AnalyzedArchitecture.model_json_schema(),
@@ -554,7 +571,6 @@ class AnalysisPromptBuilder:
             ensure_ascii=False,
         )
 
-        # Format partial results — each section on its own block
         partial_parts: list[str] = []
         for filename, content in sorted(sections.items()):
             partial_parts.append(f"### {filename}\n```json\n{_truncate(content, 4000)}\n```")

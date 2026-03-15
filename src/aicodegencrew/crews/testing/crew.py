@@ -22,8 +22,8 @@ from typing import Any
 
 from crewai import Agent, Crew, Process, Task
 
-from ...hybrid.code_generation.tools.code_reader_tool import EXT_TO_LANG, CodeReaderTool
-from ...hybrid.code_generation.tools.test_writer_tool import TestWriterTool
+from ..implement.tools.code_reader_tool import EXT_TO_LANG, CodeReaderTool
+from ..implement.tools.test_writer_tool import TestWriterTool
 from ...shared.utils.crew_callbacks import step_callback, task_callback
 from ...shared.utils.embedder_config import get_crew_embedder
 from ...shared.utils.llm_factory import create_codegen_llm

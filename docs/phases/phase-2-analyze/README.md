@@ -10,17 +10,17 @@
 |-----------|-------|
 | Phase ID | `analyze` |
 | Display Name | Architecture Analysis |
-| Type | Crew (AI Agents) — Mini-Crews Pattern |
-| Entry Point | `crews/architecture_analysis/crew.py` → `ArchitectureAnalysisCrew` |
-| LLM Requirement | Yes |
+| Type | Pipeline (16 parallel LLM calls + synthesis) |
+| Entry Point | `pipelines/analysis/pipeline.py` → `AnalysisPipeline` |
+| LLM Requirement | Yes (17 calls: 16 sections parallel + 1 synthesis) |
 | Output | `knowledge/analyze/analyzed_architecture.json` |
-| Checkpoint | `.checkpoint_analysis.json` |
+| Checkpoint | `knowledge/analyze/.checkpoint_analysis.json` |
 | Dependency | Discover + Extract |
 | Status | **IMPLEMENTED** |
 
 > **Diagrams:** [phase-2-analyze-architecture.drawio](phase-2-analyze-architecture.drawio) · [analysis-crew-schema.drawio](analysis-crew-schema.drawio)
 
-The Analyze phase uses **5 mini-crews** with **4 specialized agent types** to produce a unified architecture analysis. Each mini-crew gets a fresh agent with a fresh LLM context window — preventing context overflow.
+The Analyze phase uses `AnalysisPipeline(BasePipeline)` to run **16 parallel LLM calls** (one per analysis section) via `ThreadPoolExecutor(max_workers=8)`, followed by a **synthesis call** that merges all 16 section files into `analyzed_architecture.json`. Checkpoint/resume: completed sections are persisted in `.checkpoint_analysis.json`.
 
 ## 2. Goals
 
@@ -40,62 +40,54 @@ The Analyze phase uses **5 mini-crews** with **4 specialized agent types** to pr
 
 ## 4. Architecture
 
-### Mini-Crew Architecture
+### Pipeline Architecture
 
-| Mini-Crew | Agent | Tasks | Output Files |
-|-----------|-------|-------|-------------|
-| `tech_analysis` | Technical Architect | 4: macro, backend, frontend, quality | `01-04_*.json` |
-| `domain_analysis` | Functional Analyst | 4: domain, capabilities, contexts, states | `05-08_*.json` |
-| `workflow_analysis` | Functional Analyst | 4: workflows, sagas, runtime, api | `09-12_*.json` |
-| `quality_analysis` | Quality Analyst | 4: complexity, debt, security, ops | `13-16_*.json` |
-| `synthesis` | Synthesis Lead | 1: merge all 16 results | `analyzed_architecture.json` |
+| Phase | Mechanism | Output |
+|-------|-----------|--------|
+| Section calls (×16) | `ThreadPoolExecutor(max_workers=8)` — `SectionPromptBuilder.build({"section_id": id})` | `analysis/01_*.json` … `16_*.json` |
+| Synthesis call (×1) | `SynthesisPromptBuilder.build({"sections": {filename: content}})` | `analyzed_architecture.json` |
 
-### Agent Specialization
+**Section IDs and topics:**
 
-| Agent | Focus | Uses Facts For | Uses RAG For |
-|-------|-------|---------------|--------------|
-| **Technical Architect** | Technical structure | `architecture_style`, `design_pattern` | Implementation patterns |
-| **Functional Analyst** | Business domain | `entity`, `service` | Business logic, Javadoc |
-| **Quality Analyst** | Quality attributes | All stereotypes | Error handling, logging, tests |
-| **Synthesis Lead** | Integration | All outputs | Conflict resolution |
+| ID | Topic | ID | Topic |
+|----|-------|----|-------|
+| 01 | Macro architecture | 09 | Workflow engines |
+| 02 | Backend pattern | 10 | Saga patterns |
+| 03 | Frontend pattern | 11 | Runtime scenarios |
+| 04 | Architecture quality | 12 | API design |
+| 05 | Domain model | 13 | Complexity |
+| 06 | Business capabilities | 14 | Technical debt |
+| 07 | Bounded contexts | 15 | Security |
+| 08 | State machines | 16 | Operational readiness |
 
-### Deep Analysis Mode
+Both `SectionPromptBuilder` and `SynthesisPromptBuilder` implement `BasePromptBuilder.build(data: dict) -> list[dict]` (real `@abstractmethod` — no workarounds).
 
-| Aspect | Standard | Deep Analysis (Current) |
-|--------|----------|------------------------|
-| Tool calls per agent | 5–15 | 15–25 |
-| Runtime | 2–5 min | 30–40 min |
-| Input token limit | 32K | 100K |
-| Output token limit | 4K | 16K |
-| Context window | 32K | 120K |
+### LLM Generator
 
-**Token management strategies**: chunked queries (500 items per batch), truncation (80–100 chars), temp output files, natural forgetting of old tool results.
+All LLM calls go through `shared/llm_generator.py` → `LLMGenerator`:
+- `generate(messages)` — raw LLM response
+- Temperature, `top_p`, `top_k`, `max_tokens`, timeout all configured in one place via env vars
 
-### Scaling: MapReduce Pattern
+### Data Collector
 
-For large repositories (≥300 components across ≥2 containers), analysis automatically switches to MapReduce:
+`DataCollector` (in `pipelines/analysis/data_collector.py`) loads `architecture_facts.json` and optional ChromaDB once, then serves per-section data via `collect_section_data(section_id)`.
 
-```
-Map Phase (parallel):
-  Container A Analyst → container_a_analysis.json
-  Container B Analyst → container_b_analysis.json
-  Container C Analyst → container_c_analysis.json
+### JSON Repair
 
-Reduce Phase:
-  Synthesis Agent → merge + deduplicate → analyzed_architecture.json
-```
-
-Benefits: smaller context per agent (~200–400 components), parallel execution (3x+ speedup), failure isolation.
+All 16 section outputs are parsed with `_extract_and_repair_json()` which:
+1. Strips markdown fences
+2. Tries direct `json.loads()`
+3. Reconstructs unclosed structures (handles truncated LLM output)
 
 ## 5. Patterns & Decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| Mini-Crews | Fresh context per crew prevents overflow (120K limit) |
-| 4 agent types | Specialization improves accuracy vs single generalist |
-| MapReduce for large repos | Scales to 100K+ components |
-| Checkpoint/resume | Completed mini-crews saved; on retry, only failed crews re-run |
-| Python constants (no YAML) | Agent configs as code for easier debugging |
+| 16 parallel LLM calls | Each section independent → full parallelism via ThreadPoolExecutor |
+| Checkpoint/resume | Completed section IDs in `.checkpoint_analysis.json`; only failed sections re-run |
+| `BasePromptBuilder` ABC | Uniform `build(data: dict)` contract — no workarounds |
+| JSON repair | LLMs truncate; stack-based bracket closer recovers partial JSON |
+| Single `LLMGenerator` | All LLM config centralized in `shared/llm_generator.py` |
 
 ## 6. Dependencies
 
