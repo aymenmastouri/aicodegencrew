@@ -49,7 +49,6 @@ ARC42_RECIPES: list[ChapterRecipe] = [
         ],
         sections=["## 1.1 Requirements Overview", "## 1.2 Quality Goals", "## 1.3 Stakeholders"],
         min_length=8000,
-        use_fast_model=True,
         context_hint=(
             "Write a comprehensive introduction that explains:\n"
             "- What is the business purpose of this system? Who uses it and why?\n"
@@ -73,7 +72,6 @@ ARC42_RECIPES: list[ChapterRecipe] = [
         ],
         sections=["## 2.1 Technical Constraints", "## 2.2 Organizational Constraints", "## 2.3 Convention Constraints"],
         min_length=6000,
-        use_fast_model=True,
         context_hint=(
             "Derive constraints from evidence in the code:\n"
             "- Technical: programming language version, framework versions, database technology, build tool\n"
@@ -474,7 +472,6 @@ ARC42_RECIPES: list[ChapterRecipe] = [
         ],
         sections=["## 12.1 Business Terms", "## 12.2 Technical Terms"],
         min_length=4000,
-        use_fast_model=True,
         context_hint=(
             "Extract ALL domain-specific terms from the codebase:\n"
             "Business Terms: table with Term | Definition | Used In (component/module)\n"
