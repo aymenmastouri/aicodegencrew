@@ -107,7 +107,7 @@ Output the complete corrected chapter.
 
     def _resolve_model(self) -> str:
         """Resolve model name with provider prefix."""
-        from ....shared.utils.llm_factory import _ensure_provider_prefix
+        from ...shared.utils.llm_factory import _ensure_provider_prefix
 
         if self._use_fast_model:
             model = os.getenv("FAST_MODEL") or os.getenv("MODEL") or "gpt-4o-mini"

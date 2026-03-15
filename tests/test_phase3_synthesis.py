@@ -299,7 +299,7 @@ class TestSynthesisCrewPrerequisites:
         _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
         _write_json(analyze_dir / "analyzed_architecture.json", MINIMAL_ANALYSIS)
 
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
         pipeline = DocumentPipeline(
             facts_path=extract_dir / "architecture_facts.json",
@@ -315,7 +315,7 @@ class TestSynthesisCrewPrerequisites:
         analyze_dir = tmp_path / "knowledge" / "analyze"
         analyze_dir.mkdir(parents=True, exist_ok=True)
 
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
         pipeline = DocumentPipeline(
             facts_path=extract_dir / "architecture_facts.json",
@@ -332,7 +332,7 @@ class TestSynthesisCrewPrerequisites:
         _write_json(extract_dir / "architecture_facts.json", MINIMAL_FACTS)
         _write_json(extract_dir / "evidence_map.json", MINIMAL_EVIDENCE)
 
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
         pipeline = DocumentPipeline(
             facts_path=extract_dir / "architecture_facts.json",
@@ -349,7 +349,7 @@ class TestSynthesisCrewCleanup:
         """When checkpoint exists, completed chapters are skipped."""
         monkeypatch.chdir(tmp_path)
 
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
         output_dir = tmp_path / "knowledge" / "document"
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -366,7 +366,7 @@ class TestSynthesisCrewCleanup:
 
     def test_checkpoint_cleared_on_success(self, tmp_path):
         """Checkpoint is removed when all chapters succeed."""
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
         output_dir = tmp_path / "knowledge" / "document"
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -402,7 +402,7 @@ class TestSynthesisCrewStatus:
 
     def test_run_returns_status_and_phase(self, tmp_path):
         """kickoff() returns dict with status and phase keys."""
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline, PipelineResult
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline, PipelineResult
 
         crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "facts.json"))
 
@@ -416,7 +416,7 @@ class TestSynthesisCrewStatus:
 
     def test_run_returns_partial_with_degradations(self, tmp_path):
         """When pipeline has degradation reasons, status is partial."""
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline, PipelineResult
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline, PipelineResult
 
         crew = ArchitectureSynthesisCrew(facts_path=str(tmp_path / "facts.json"))
 

@@ -523,7 +523,7 @@ class TestPhase2ToPhase3:
 
     def test_synthesis_crew_detects_missing_prerequisites(self, tmp_path):
         """DocumentPipeline raises FileNotFoundError on missing inputs."""
-        from aicodegencrew.crews.architecture_synthesis.pipeline import DocumentPipeline
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
         pipeline = DocumentPipeline(
             facts_path=tmp_path / "nonexistent" / "facts.json",
