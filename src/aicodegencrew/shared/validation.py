@@ -52,7 +52,7 @@ PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
         "required_keys": [
             "macro_architecture",
             "micro_architecture",
-            "quality",
+            "architecture_quality",
             "executive_summary",
         ],
         "description": "AI-analyzed architecture JSON",
