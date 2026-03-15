@@ -6,6 +6,67 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.8.0] - 2026-03-15
+
+Major architectural restructure — all phases now live in canonical `pipelines/` or `crews/` packages.
+Legacy `hybrid/` and obsolete crew packages removed. Phase numbers aligned across all code, docs, and diagrams.
+
+### Breaking Changes
+
+- **Module restructure** — `hybrid/` package removed; all phases now live under `pipelines/` or `crews/`:
+  - `hybrid/code_generation/` → `crews/implement/`
+  - `hybrid/development_planning/` → `pipelines/plan/`
+  - `crews/triage/` → `pipelines/triage/`
+  - `crews/review/` → `pipelines/review/`
+- **Phase renumbering** — canonical phase numbers aligned across all code, config, and docs:
+  - Phase 4 = Triage
+  - Phase 5 = Plan (was "Dev Planning" / hybrid)
+  - Phase 6 = Implement (was "Code Gen" / hybrid)
+  - Phase 7 = Verify
+  - Phase 8 = Deliver
+- **Legacy crews removed** — `crews/architecture_analysis/`, `crews/architecture_synthesis/` deleted
+  (superseded by `pipelines/analysis/` and `pipelines/document/`)
+
+### Added
+
+- `shared/base_pipeline.py` — `BasePipeline` abstract base class for all pipeline phases
+- `shared/base_prompt_builder.py` — `BasePromptBuilder` shared contract (`build(data) → list[dict]`)
+- `shared/llm_generator.py` — single source of truth for all LLM calls (`generate()` / `retry_with_feedback()`)
+- `pipelines/plan/` — Plan pipeline (Phase 5): 5 stages, 4 deterministic + 1 LLM call, 18–40s
+- `pipelines/triage/` — Triage pipeline (Phase 4): deterministic scan + LLM synthesis, ~30s
+- `pipelines/review/` — Review pipeline (Phase 8) migrated from crew to pipeline
+- `crews/implement/` — Implement crew (Phase 6): hierarchical CrewAI, Qwen3-Coder-Next, 4 agents, dual-model routing
+
+### Changed
+
+- **Phase 2 (Analyze)** — replaced 5-agent MapReduce CrewAI crew with a pure pipeline:
+  16 parallel LLM section calls via `ThreadPoolExecutor(max_workers=8)` + 1 synthesis call; checkpoint/resume per section
+- **Phase 3 (Document)** — entry point moved from `crews/architecture_synthesis/` to `pipelines/document/`;
+  `pipelines/document/llm_generator.py` merged into shared `LLMGenerator`
+- **Model names** — all references updated to Qwen3-Coder-Next (80B MoE, 3B active, 256K ctx, `openai/code`)
+- `CODEGEN_MODEL` default documented as `MODEL` (same model if unset)
+- `phase_registry.py`, `cli.py`, `pipelines/__init__.py`, `crews/__init__.py` updated for new module layout
+- `ui/backend/routers/triage.py` updated for new triage pipeline location
+
+### Fixed
+
+- `validation.py` expected `quality` key but analyze outputs `architecture_quality`
+- LiteLLM routing: `base_url` reverted to `api_base`; provider prefix not added in `llm_generator`
+- Document pipeline always uses `MODEL` (code model), never `FAST_MODEL`
+- Qwen3-Coder-Next best practice sampling: `temperature=1.0`, `top_p=0.95`, `top_k=40`
+- 180s timeout on all LLM calls to prevent hanging pipelines
+- Intelligent fact grounding — case-insensitive extraction across all data sources
+- `.env` loading in document pipeline modules (called outside CLI subprocess)
+- Phase 2 analysis data now included in document generation prompts
+
+### Documentation & Diagrams
+
+- 10 draw.io diagrams updated for phase renumbering, Phase 2 architecture rewrite, model name corrections
+- `docs/SDLC_ARCHITECTURE.md` — `CODEGEN_MODEL` description corrected
+- `docs/phases/phase-6-implement/README.md` — correct paths, model names, dual-model routing
+
+---
+
 ## [0.7.4] - 2026-03-13
 
 ### Security
