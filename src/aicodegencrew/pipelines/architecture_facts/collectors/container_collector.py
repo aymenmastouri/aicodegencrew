@@ -377,11 +377,14 @@ class ContainerCollector(DimensionCollector):
 
             for db_key, (technology, category) in db_patterns.items():
                 if db_key in content.lower():
-                    # Find service name
-                    service_match = re.search(
-                        rf'^\s+(\w+):\s*\n[^:]*image:\s*["\']?[^"\']*{db_key}', content, re.MULTILINE | re.IGNORECASE
-                    )
-                    service_name = service_match.group(1) if service_match else db_key
+                    # Find service name: last service-level entry (2-space indent) before this db occurrence
+                    db_pos = content.lower().find(db_key)
+                    if db_pos >= 0:
+                        before = content[:db_pos]
+                        svc_matches = list(re.finditer(r"^  ([\w][\w-]*):\s*(?:#.*)?$", before, re.MULTILINE))
+                        service_name = svc_matches[-1].group(1) if svc_matches else db_key
+                    else:
+                        service_name = db_key
 
                     if service_name in detected:
                         continue

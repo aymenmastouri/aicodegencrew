@@ -168,23 +168,29 @@ class DocumentPipeline:
 
         # Cleanup checkpoint on full success
         total_duration = time.time() - start
-        success_count = sum(1 for r in all_results if r.status in ("success", "skipped"))
-        total_count = len(all_results)
+        failed_count = sum(1 for r in all_results if r.status == "failed")
+        written_count = sum(1 for r in all_results if r.status in ("success", "partial", "skipped"))
 
-        if success_count == total_count:
+        # A "partial" chapter = content generated + written, only validator had warnings.
+        # That is NOT a failure — the document exists and is useful. Only truly "failed"
+        # chapters (exception, no content) should degrade the pipeline status.
+        if failed_count == 0:
             status = "success"
             self._clear_checkpoint()
-        elif success_count > 0:
+        elif written_count > 0:
             status = "partial"
         else:
             status = "failed"
 
+        total_count = len(all_results)
+        partial_count = sum(1 for r in all_results if r.status == "partial")
         logger.info("=" * 60)
         logger.info(
-            "[DocumentPipeline] %s: %d/%d chapters (%s)",
+            "[DocumentPipeline] %s: %d/%d chapters written (%d with quality warnings, %s)",
             status.upper(),
-            success_count,
+            written_count,
             total_count,
+            partial_count,
             f"{total_duration:.1f}s",
         )
         logger.info("=" * 60)

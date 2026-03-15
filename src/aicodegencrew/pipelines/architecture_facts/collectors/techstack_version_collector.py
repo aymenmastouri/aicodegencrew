@@ -3,9 +3,10 @@ TechStackVersionCollector - Extracts technology versions for upgrade planning.
 
 Detects versions from:
 - build.gradle / build.gradle.kts (Spring Boot, Java, Gradle plugins)
-- pom.xml (Maven, Spring Boot, Java)
+- libs.versions.toml (Gradle version catalog — Spring Boot, Kotlin, etc.)
+- pom.xml (Maven, Spring Boot via parent or dependencyManagement BOM, Java)
 - package.json (Node.js, Angular, React, TypeScript)
-- angular.json (Angular CLI version)
+- angular.json + sibling package.json (Angular version)
 - .java-version, .node-version, .nvmrc
 - gradle.properties, gradle-wrapper.properties
 - Dockerfile (base images)
@@ -120,6 +121,10 @@ class TechStackVersionCollector(DimensionCollector):
         for props_file in self._find_files("gradle.properties"):
             self._parse_gradle_properties(props_file)
 
+        # Gradle version catalog (modern projects)
+        for catalog_file in self._find_files("libs.versions.toml"):
+            self._parse_version_catalog(catalog_file)
+
     def _parse_gradle_file(self, file_path: Path):
         """Parse build.gradle for versions."""
         try:
@@ -198,6 +203,51 @@ class TechStackVersionCollector(DimensionCollector):
         except Exception as e:
             logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
 
+    def _parse_version_catalog(self, file_path: Path):
+        """Parse Gradle version catalog (libs.versions.toml) for tech versions."""
+        try:
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
+            rel_path = self._relative_path(file_path)
+
+            # Only parse the [versions] section
+            versions_match = re.search(r"\[versions\](.*?)(?:^\[|\Z)", content, re.DOTALL | re.MULTILINE)
+            if not versions_match:
+                return
+
+            versions_section = versions_match.group(1)
+
+            # Known tech keys → (tech_name, category)
+            catalog_tech_map = {
+                "spring-boot": ("Spring Boot", "framework"),
+                "springboot": ("Spring Boot", "framework"),
+                "spring_boot": ("Spring Boot", "framework"),
+                "kotlin": ("Kotlin", "language"),
+                "java": ("Java", "language"),
+                "angular": ("Angular", "framework"),
+                "node": ("Node.js", "runtime"),
+                "typescript": ("TypeScript", "language"),
+            }
+
+            for line in versions_section.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" not in line:
+                    continue
+                key, _, raw_value = line.partition("=")
+                key = key.strip().lower().replace("-", "").replace("_", "")
+                # Version can be quoted string or { require = "X.Y.Z" } rich form
+                version_match = re.search(r'(\d+\.\d+(?:\.\d+)*)', raw_value)
+                if not version_match:
+                    continue
+                version = version_match.group(1)
+                if key in catalog_tech_map:
+                    tech_name, category = catalog_tech_map[key]
+                    self._add_version(tech_name, version, rel_path, category)
+
+        except Exception as e:
+            logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
+
     # =========================================================================
     # Maven
     # =========================================================================
@@ -228,6 +278,19 @@ class TechStackVersionCollector(DimensionCollector):
                         if "spring-boot" in (artifact.text or "").lower():
                             self._add_version("Spring Boot", version.text, rel_path, "framework")
 
+                # Spring Boot BOM via dependencyManagement (alternative to parent)
+                dep_mgmt = root.find(".//m:dependencyManagement", ns) or root.find(".//dependencyManagement")
+                if dep_mgmt is not None:
+                    for dep in dep_mgmt.findall(".//m:dependency", ns) or dep_mgmt.findall(".//dependency"):
+                        artifact = dep.find("m:artifactId", ns) or dep.find("artifactId")
+                        version = dep.find("m:version", ns) or dep.find("version")
+                        if artifact is not None and version is not None:
+                            artifact_text = artifact.text or ""
+                            v = version.text or ""
+                            if "spring-boot" in artifact_text.lower() and v and not v.startswith("${"):
+                                self._add_version("Spring Boot", v, rel_path, "framework")
+                                break
+
                 # Java version from properties
                 props = root.find(".//m:properties", ns) or root.find(".//properties")
                 if props is not None:
@@ -242,10 +305,16 @@ class TechStackVersionCollector(DimensionCollector):
             except ET.ParseError:
                 pass
 
-            # Fallback: regex parsing
-            spring_match = re.search(r"<spring-boot\.version>([0-9.]+)</spring-boot\.version>", content)
-            if spring_match:
-                self._add_version("Spring Boot", spring_match.group(1), rel_path, "framework")
+            # Fallback: regex — covers spring-boot.version, spring.boot.version, springBootVersion
+            for spring_prop_pattern in [
+                r"<spring-boot\.version>([0-9.]+)</spring-boot\.version>",
+                r"<spring\.boot\.version>([0-9.]+)</spring\.boot\.version>",
+                r"<springBootVersion>([0-9.]+)</springBootVersion>",
+            ]:
+                spring_match = re.search(spring_prop_pattern, content)
+                if spring_match:
+                    self._add_version("Spring Boot", spring_match.group(1), rel_path, "framework")
+                    break
 
             java_match = re.search(r"<java\.version>([0-9.]+)</java\.version>", content)
             if java_match:
@@ -310,8 +379,9 @@ class TechStackVersionCollector(DimensionCollector):
             for dep_name, (tech_name, category) in version_map.items():
                 if dep_name in all_deps:
                     version = all_deps[dep_name]
-                    # Clean version (remove ^, ~, v prefix) but keep full version
-                    clean_version = re.sub(r"^[\^~>=<v]+", "", str(version)).strip()
+                    # Extract first concrete version number (handles ^X.Y.Z, ~X.Y, >=X <Y, X.x, etc.)
+                    version_match = re.search(r"(\d+\.\d+(?:\.\d+)*)", str(version))
+                    clean_version = version_match.group(1) if version_match else ""
                     if clean_version:
                         self._add_version(tech_name, clean_version, rel_path, category)
 
@@ -325,18 +395,28 @@ class TechStackVersionCollector(DimensionCollector):
             logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
 
     def _collect_angular_versions(self):
-        """Collect Angular CLI version from angular.json."""
+        """Collect Angular version from angular.json and its sibling package.json.
+
+        Modern angular.json uses a local-path $schema (no version number), so the
+        authoritative source is the package.json in the same directory.
+        """
         for angular_file in self._find_files("angular.json"):
             try:
                 content = angular_file.read_text(encoding="utf-8")
                 pkg = json.loads(content)
                 rel_path = self._relative_path(angular_file)
 
-                # CLI version from $schema or version field
+                # Old-style: versioned $schema URL contains the CLI version
+                # e.g. "https://raw.githubusercontent.com/angular/angular-cli/17.1.0/..."
                 schema = pkg.get("$schema", "")
-                version_match = re.search(r"@angular/cli/([0-9.]+)", schema)
-                if version_match:
-                    self._add_version("Angular CLI", version_match.group(1), rel_path, "build_tool")
+                schema_match = re.search(r"@angular/cli/(\d+\.\d+\.\d+)", schema)
+                if schema_match:
+                    self._add_version("Angular CLI", schema_match.group(1), rel_path, "build_tool")
+
+                # Modern: sibling package.json is the canonical version source
+                sibling_pkg = angular_file.parent / "package.json"
+                if sibling_pkg.exists():
+                    self._parse_package_json(sibling_pkg)
 
             except Exception as e:
                 logger.debug(f"[TechStackVersionCollector] Failed to parse {angular_file}: {e}")

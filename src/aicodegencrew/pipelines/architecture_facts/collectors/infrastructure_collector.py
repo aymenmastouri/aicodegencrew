@@ -106,7 +106,7 @@ class InfrastructureCollector(DimensionCollector):
             rel_path = self._relative_path(compose_file)
 
             # Extract services
-            services = re.findall(r"^  (\w+):\s*$", content, re.MULTILINE)
+            services = re.findall(r"^  ([\w][\w-]*):\s*(?:#.*)?$", content, re.MULTILINE)
 
             # Extract images
             images = re.findall(r"image:\s*([^\s]+)", content)
@@ -239,7 +239,11 @@ class InfrastructureCollector(DimensionCollector):
             jobs = re.findall(r"^\s{2}(\w+):\s*$", content, re.MULTILINE)
             fact.metadata["jobs"] = jobs[:10]
         elif ci_type == "gitlab_ci":
-            stages = re.findall(r"^\s*-\s*(\w+)\s*$", content, re.MULTILINE)
+            stages_block_match = re.search(r'^stages:\s*\n((?:[ \t]+-[^\n]+\n?)*)', content, re.MULTILINE)
+            if stages_block_match:
+                stages = re.findall(r'-\s*([\w][\w-]*)', stages_block_match.group(1))
+            else:
+                stages = []
             fact.metadata["stages"] = stages[:10]
 
         fact.add_evidence(

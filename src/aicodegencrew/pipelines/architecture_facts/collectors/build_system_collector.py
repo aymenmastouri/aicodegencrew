@@ -154,13 +154,24 @@ class BuildSystemCollector(DimensionCollector):
         """Parse settings.gradle for include directives."""
         content = self._read_file_content(settings_file)
         modules = []
-        # Match include 'module1', 'module2' or include(":module1")
-        for match in re.finditer(r"""include\s*\(?([^)\n]+)\)?""", content):
+
+        # Parenthesised form (Kotlin DSL, single or multi-line):
+        # include(":mod1", ":mod2") or include(\n    ":mod1",\n    ":mod2"\n)
+        for match in re.finditer(r"""include\s*\(([^)]+)\)""", content, re.DOTALL):
             raw = match.group(1)
-            # Extract quoted module names
             for quoted in re.findall(r"""['"]([^'"]+)['"]""", raw):
                 mod = quoted.lstrip(":")
-                modules.append(mod)
+                if mod not in modules:
+                    modules.append(mod)
+
+        # Groovy shorthand (no parens): include ':mod1', ':mod2'
+        for match in re.finditer(r"""^include\s+([^(\n][^\n]*)""", content, re.MULTILINE):
+            raw = match.group(1)
+            for quoted in re.findall(r"""['"]([^'"]+)['"]""", raw):
+                mod = quoted.lstrip(":")
+                if mod not in modules:
+                    modules.append(mod)
+
         return modules
 
     def _extract_gradle_module(

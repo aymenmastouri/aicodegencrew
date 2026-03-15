@@ -38,7 +38,14 @@ class AngularRoutingCollector(DimensionCollector):
         r'[^}]*loadChildren\s*:\s*\(\)\s*=>\s*import\s*\(\s*[\'"]([^\'"]+)[\'"]'
     )
 
-    GUARD_PATTERN = re.compile(r"(canActivate|canDeactivate|canLoad|canActivateChild)\s*:\s*\[([^\]]+)\]")
+    LOAD_COMPONENT_PATTERN = re.compile(
+        r'path\s*:\s*[\'"]([^\'"]*)[\'"]'
+        r'[^}]*loadComponent\s*:\s*\(\)\s*=>\s*import\s*\(\s*[\'"]([^\'"]+)[\'"]'
+        r'(?:[^)]*\)\.then\([^)]*\.([\w]+)\))?',
+        re.DOTALL,
+    )
+
+    GUARD_PATTERN = re.compile(r"(canActivate|canDeactivate|canLoad|canActivateChild|canMatch)\s*:\s*\[([^\]]+)\]")
 
     ROUTER_MODULE_PATTERN = re.compile(r"RouterModule\.forRoot|RouterModule\.forChild")
 
@@ -76,18 +83,20 @@ class AngularRoutingCollector(DimensionCollector):
         return self.output
 
     def _find_angular_root(self) -> Path | None:
-        """Find Angular source root."""
-        if (self.repo_path / "angular.json").exists():
-            if (self.repo_path / "src" / "app").exists():
-                return self.repo_path / "src" / "app"
+        """Find Angular source root by locating angular.json first."""
+        # Prefer angular.json-relative src/app (handles subdirectory projects)
+        for angular_json in self._find_files("angular.json"):
+            src_app = angular_json.parent / "src" / "app"
+            if src_app.exists():
+                return src_app
 
-        candidates = [
+        # Fallback candidates
+        for candidate in [
             self.repo_path / "src" / "app",
             self.repo_path / "frontend" / "src" / "app",
-        ]
-        for c in candidates:
-            if c.exists():
-                return c
+        ]:
+            if candidate.exists():
+                return candidate
 
         return None
 
@@ -154,6 +163,33 @@ class AngularRoutingCollector(DimensionCollector):
 
             route.add_evidence(
                 path=rel_path, line_start=line_num, line_end=line_num + 3, reason=f"Lazy loaded route: /{path}"
+            )
+
+            self.output.add_fact(route)
+
+        # Extract standalone component routes (Angular 14+)
+        for match in self.LOAD_COMPONENT_PATTERN.finditer(content):
+            path = match.group(1)
+            module_path = match.group(2)
+            component = match.group(3)  # May be None
+
+            line_num = content[: match.start()].count("\n") + 1
+
+            route = RawInterface(
+                name=f"/{path}" if path else "/",
+                type="route",
+                path=f"/{path}" if path else "/",
+                method=None,
+                implemented_by_hint=component or "",
+                container_hint=self.container_id,
+            )
+
+            route.metadata["lazy"] = True
+            route.metadata["module_path"] = module_path
+            route.tags.append("standalone")
+
+            route.add_evidence(
+                path=rel_path, line_start=line_num, line_end=line_num + 3, reason=f"Standalone route: /{path}"
             )
 
             self.output.add_fact(route)
