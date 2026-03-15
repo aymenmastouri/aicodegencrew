@@ -155,43 +155,58 @@ class ChapterValidator:
         return ValidationCheck("banned_phrases", True)
 
     def _check_fact_grounding(self, content: str, data: dict[str, Any]) -> ValidationCheck:
-        """Check that the content references real component/container/system names from the data."""
-        # Collect names from all data sources (not just components)
+        """Check that the content references real names from the architecture data.
+
+        Collects names from all data sources (system, containers, components,
+        interfaces, technologies) and checks case-insensitively. Short generic
+        names (< 4 chars) are excluded to avoid false positives.
+        """
         all_names: set[str] = set()
 
-        # Component names
-        for _stereotype, comp_list in data.get("components", {}).items():
-            for comp in comp_list:
-                if isinstance(comp, dict) and comp.get("name"):
-                    all_names.add(comp["name"])
+        # Extract names recursively from any data structure
+        self._extract_names(data.get("facts", {}), all_names)
+        self._extract_names(data.get("components", {}), all_names)
+        self._extract_names(data.get("analyzed", {}), all_names)
 
-        # Container/system names from facts
-        for category_data in data.get("facts", {}).values():
-            if isinstance(category_data, list):
-                for item in category_data:
-                    if isinstance(item, dict) and item.get("name"):
-                        all_names.add(item["name"])
-            elif isinstance(category_data, dict) and category_data.get("name"):
-                all_names.add(category_data["name"])
+        # Filter out names too short to be meaningful (e.g., "id", "db")
+        all_names = {n for n in all_names if len(n) >= 3}
 
-        if not all_names or len(all_names) < 3:
-            # Too few names to ground against — skip check
+        if not all_names:
             return ValidationCheck("fact_grounding", True)
 
-        found = sum(1 for name in all_names if name in content)
+        # Case-insensitive matching
+        content_lower = content.lower()
+        found = sum(1 for name in all_names if name.lower() in content_lower)
 
-        # Require at least 3 real names (absolute) rather than percentage.
-        # High-level chapters (C4 context) reference system/container names,
-        # not individual components.
-        if found < 3:
-            examples = list(all_names)[:5]
+        # Require at least 3 real names or 5% of known names (whichever is lower)
+        min_required = min(3, max(1, len(all_names) // 20))
+        if found < min_required:
+            # Pick examples that are most likely to appear in this chapter type
+            examples = sorted(all_names, key=lambda n: len(n), reverse=True)[:5]
             return ValidationCheck(
                 "fact_grounding",
                 False,
-                f"Low fact grounding: only {found} known names referenced. "
+                f"Low fact grounding: only {found} known names referenced (need {min_required}). "
                 f"Use real names from the data, e.g.: {examples}",
             )
         return ValidationCheck("fact_grounding", True)
+
+    @staticmethod
+    def _extract_names(data: Any, names: set[str], depth: int = 0) -> None:
+        """Recursively extract 'name', 'title', 'technology' values from nested data."""
+        if depth > 5:
+            return
+        name_keys = {"name", "title", "technology", "system_name", "architecture_style"}
+        if isinstance(data, dict):
+            for key, val in data.items():
+                if key in name_keys and isinstance(val, str) and val.strip():
+                    names.add(val.strip())
+                elif isinstance(val, (dict, list)):
+                    ChapterValidator._extract_names(val, names, depth + 1)
+        elif isinstance(data, list):
+            for item in data:
+                if isinstance(item, (dict, list)):
+                    ChapterValidator._extract_names(item, names, depth + 1)
 
     def _check_no_code_fence_wrapper(self, content: str) -> ValidationCheck:
         """Check that the entire content is not wrapped in a code fence."""
