@@ -117,10 +117,7 @@ Output the complete corrected chapter.
         Uses MODEL/FAST_MODEL directly as configured in .env.
         No provider prefix added — litellm with api_base handles routing.
         """
-        if self._use_fast_model:
-            model = os.getenv("FAST_MODEL") or os.getenv("MODEL", "openai/code")
-        else:
-            model = os.getenv("MODEL", "openai/code")
+        model = os.getenv("MODEL", "openai/code")
         return model
 
     @staticmethod
