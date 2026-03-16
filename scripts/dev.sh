@@ -107,13 +107,9 @@ do_stop() {
     kill_port $BACKEND_PORT
     kill_port $FRONTEND_PORT
 
-    # Kill orphan uvicorn workers
-    local orphans
-    orphans=$(wmic process where "name='python.exe'" get processid,commandline /format:csv 2>/dev/null | grep -i "uvicorn\|multiprocessing.spawn" | grep -oP ',\K\d+$' || true)
-    for pid in $orphans; do
-        taskkill //F //PID "$pid" >/dev/null 2>&1 || true
-        echo -e "  ${YELLOW}Killed orphan uvicorn PID $pid${NC}"
-    done
+    # Kill ALL uvicorn/python processes using our ports (brute force)
+    taskkill //F //IM python.exe >/dev/null 2>&1 || true
+    taskkill //F //IM python3.exe >/dev/null 2>&1 || true
 
     wait_port_free $BACKEND_PORT
     wait_port_free $FRONTEND_PORT
