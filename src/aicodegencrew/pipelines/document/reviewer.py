@@ -60,16 +60,14 @@ class ReviewResult:
 
 
 _REVIEW_SYSTEM = (
-    "You are a senior architecture reviewer checking a generated documentation chapter "
-    "for CONTENT QUALITY. You have access to the original source data.\n\n"
-    "Your job is to find:\n"
-    "1. MISSING TOPICS — important data in the source that the chapter doesn't cover\n"
-    "2. UNSUPPORTED CLAIMS — statements in the chapter not backed by the source data\n"
-    "3. CONTRADICTIONS — statements that conflict with the source data or within the chapter\n"
-    "4. WEAK SECTIONS — paragraphs that use vague language instead of citing real "
-    "component names, actual counts, or concrete evidence from the data\n\n"
-    "Be specific. Cite the exact data that is missing or the exact claim that is wrong.\n"
-    "Output ONLY valid JSON matching the exact schema. No markdown fences."
+    "You are a JSON API. You receive a documentation chapter and source data, "
+    "and return a quality review as a single JSON object. No explanation, no markdown, "
+    "no text before or after the JSON. Your response must start with { and end with }.\n\n"
+    "Review criteria:\n"
+    "1. MISSING TOPICS — important source data the chapter ignores\n"
+    "2. UNSUPPORTED CLAIMS — statements not backed by source data\n"
+    "3. CONTRADICTIONS — conflicts with architecture facts\n"
+    "4. WEAK SECTIONS — vague language instead of concrete evidence"
 )
 
 _REVIEW_SCHEMA = """{

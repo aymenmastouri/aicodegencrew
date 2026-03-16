@@ -37,16 +37,14 @@ class ReviewResult:
 
 
 _REVIEW_SYSTEM = (
-    "You are a principal architect performing a quality review of 16 architecture "
-    "analysis sections BEFORE they are merged into a final synthesis.\n\n"
-    "Your job is to find:\n"
-    "1. GAPS — topics present in the source data but missing from the analysis\n"
-    "2. CONTRADICTIONS — conflicting statements between sections (e.g., section 01 says "
-    "'Monolith' but section 04 implies microservices coupling patterns)\n"
-    "3. WEAK SECTIONS — sections with vague reasoning, missing evidence, or invented data\n"
-    "4. NUMBER INCONSISTENCIES — component counts, relation counts, or endpoint counts "
-    "that differ between sections when they should be the same\n\n"
-    "Output ONLY valid JSON matching the exact schema. No markdown fences. No extra text."
+    "You are a JSON API. You receive architecture analysis sections and return "
+    "a quality review as a single JSON object. No explanation, no markdown, no "
+    "text before or after the JSON. Your response must start with { and end with }.\n\n"
+    "Review criteria:\n"
+    "1. GAPS — topics in source data but missing from analysis\n"
+    "2. CONTRADICTIONS — conflicting statements between sections\n"
+    "3. WEAK SECTIONS — vague reasoning or invented data\n"
+    "4. NUMBER INCONSISTENCIES — different counts for the same metric"
 )
 
 _REVIEW_SCHEMA = """{
