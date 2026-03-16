@@ -192,6 +192,7 @@ if (Test-Path $pyprojectPath) {
     Ok "Running from inside repo: $INSTALL_DIR"
 } elseif (Test-Path (Join-Path $INSTALL_DIR '.git')) {
     Ok "Repository exists at $INSTALL_DIR"
+    git -C $INSTALL_DIR fetch --all --quiet 2>$null
     git -C $INSTALL_DIR checkout master-without-angular-upgrade 2>$null
     git -C $INSTALL_DIR pull --quiet 2>$null
     if ($LASTEXITCODE -ne 0) { Warn 'git pull failed -- using existing code' }
