@@ -276,42 +276,47 @@ bash scripts/setup-local.sh --run-e2e ~/mein-projekt   # Setup + E2E-Pipeline au
 
 ---
 
-## 4. Quick Start — Windows Lokal (ohne Docker)
+## 4. Quick Start — Windows Local (no Docker)
 
-> Für Manager oder Tester mit **Windows 10/11** — kein Docker, kein WSL nötig.
-> Ein einziges Script installiert Git, Python, Node.js und alles andere automatisch.
+> For managers or testers with **Windows 10/11** — no Docker, no WSL needed.
+> A single script installs Git, Python, Node.js and everything else automatically.
 
-### Voraussetzungen
+### Prerequisites
 
-| Was | Hinweis |
-|-----|---------|
-| **Windows 10 (1809+) oder 11** | `winget` muss verfügbar sein (ist ab Win 10 eingebaut) |
-| **Admin-Rechte** | Rechtsklick → "Als Administrator ausführen" |
+| What | Note |
+|------|------|
+| **Windows 10 (1809+) or 11** | `winget` must be available (built into Win 10+) |
+| **Admin rights** | Right-click → "Run as administrator" |
 
-### Setup (ein Doppelklick)
+### Setup (one-time, ~10 min)
 
-1. `setup-windows.bat` per Rechtsklick → **"Als Administrator ausführen"**
-2. Warten (5–10 Minuten beim ersten Mal)
-3. Dashboard öffnet sich automatisch → http://localhost:4200
+1. Save both files to your Desktop:
+   - `setup-windows.bat`
+   - `setup-windows.ps1`
+2. `setup-windows.bat` → Right-click → **"Run as administrator"**
+3. When Git asks: enter your **GitLab username + password**
+4. Wait until **"Setup complete!"** appears
 
-Das Script macht automatisch:
-1. Installiert **Git**, **Python 3.12**, **Node.js 22** via `winget`
-2. Klont das Repository (bei Bedarf GitLab-Zugangsdaten eingeben)
-3. Erstellt Python-venv, installiert alle Dependencies
-4. Konfiguriert `.env` mit API-Key + allen Modell-Settings
+The script automatically installs Git, Python 3.12, Node.js 22, clones the repository, creates the Python environment, installs all dependencies and configures `.env`.
 
-### Nach dem Setup
+### Start Dashboard (every time)
 
-In **Git Bash** (wird mit Git installiert):
+1. Open **Git Bash** (Start menu → "Git Bash")
+2. Enter:
+   ```bash
+   cd ~/aicodegencrew && ./scripts/dev.sh
+   ```
+3. Open browser: **http://localhost:4200**
 
-| Aktion | Befehl |
-|--------|--------|
-| Dashboard starten | `cd ~/aicodegencrew && ./scripts/dev.sh` |
-| Dashboard stoppen | `./scripts/dev.sh stop` |
-| Status prüfen | `./scripts/dev.sh status` |
+### Stop Dashboard
 
-> **Hinweis:** API-Key und API-URL sind bereits im Script eingetragen.
-> Der Manager muss nichts konfigurieren — nur ausführen.
+In the same Git Bash window:
+```bash
+./scripts/dev.sh stop
+```
+
+> **Note:** API key and API URL are pre-configured in the script.
+> The user does not need to configure anything — just run it.
 
 ---
 
