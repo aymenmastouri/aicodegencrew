@@ -22,8 +22,8 @@ dependencies = [
     # Core AI/ML
     "crewai[tools,litellm]>=1.10.1",
     "ollama>=0.4.5",
-    # Vector DB & Embeddings
-    "chromadb>=1.1.0",
+    # Vector DB
+    "qdrant-client>=1.7.0",
     # MCP Server
     "mcp[cli]>=1.2.0",
     # Configuration & Utilities
