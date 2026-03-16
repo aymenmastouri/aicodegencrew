@@ -51,8 +51,19 @@ def _semantic_search_subprocess(
             result_queue.put({})
             return
 
+        # Derive branch-scoped collection name
+        import os
+        collection_name = "repo_docs"
+        try:
+            from aicodegencrew.shared.project_context import derive_collection_name
+            project_path = os.getenv("PROJECT_PATH") or os.getenv("REPO_PATH", "")
+            if project_path:
+                collection_name = derive_collection_name(project_path)
+        except Exception:
+            pass
+
         client = create_chroma_client(persistent_path=str(chroma_path))
-        collection = client.get_collection(name="repo_docs")
+        collection = client.get_collection(name=collection_name)
 
         # Embed query via Ollama (short timeout — fail fast)
         from aicodegencrew.shared.utils.ollama_client import OllamaClient
@@ -647,7 +658,17 @@ class ComponentDiscoveryStage:
 
             # No embedding function - embeddings were stored externally by indexing pipeline.
             # We embed queries manually via _embed_query() and use query_embeddings.
-            self.collection = client.get_collection(name="repo_docs")
+            # Derive branch-scoped collection name
+            import os as _os
+            _coll_name = "repo_docs"
+            try:
+                from aicodegencrew.shared.project_context import derive_collection_name
+                _pp = _os.getenv("PROJECT_PATH") or _os.getenv("REPO_PATH", "")
+                if _pp:
+                    _coll_name = derive_collection_name(_pp)
+            except Exception:
+                pass
+            self.collection = client.get_collection(name=_coll_name)
 
             if http_cfg is not None:
                 host, port, ssl = http_cfg

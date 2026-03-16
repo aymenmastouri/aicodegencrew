@@ -956,6 +956,7 @@ class PlanPipeline:
         from ...shared.schema_version import add_schema_version
 
         try:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
             plan_dict = add_schema_version(plan.model_dump(), "plan")
 
             with open(output_file, "w", encoding="utf-8") as f:
