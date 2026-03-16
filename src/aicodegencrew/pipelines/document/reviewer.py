@@ -211,18 +211,42 @@ class DocumentReviewer:
 
         return "\n\n".join(parts) if parts else "No source data available."
 
-    def _parse_review(self, raw: str, chapter_id: str) -> ReviewResult:
-        """Parse the LLM review output into a ReviewResult."""
+    @staticmethod
+    def _extract_json(raw: str) -> dict | None:
+        """Try to extract valid JSON from LLM output."""
         text = raw.strip()
+        # Strip code fences
         for prefix in ("```json", "```"):
             if text.startswith(prefix):
                 text = text[len(prefix):].strip()
         if text.endswith("```"):
             text = text[:-3].strip()
-
+        # Try direct parse
         try:
-            data = json.loads(text)
+            return json.loads(text)
         except json.JSONDecodeError:
+            pass
+        # Try trimming trailing text after last }
+        last_brace = text.rfind("}")
+        if last_brace > 0:
+            try:
+                return json.loads(text[: last_brace + 1])
+            except json.JSONDecodeError:
+                pass
+        # Try extracting first JSON object with regex
+        import re
+        match = re.search(r"\{[\s\S]*\}", text)
+        if match:
+            try:
+                return json.loads(match.group())
+            except json.JSONDecodeError:
+                pass
+        return None
+
+    def _parse_review(self, raw: str, chapter_id: str) -> ReviewResult:
+        """Parse the LLM review output into a ReviewResult."""
+        data = self._extract_json(raw)
+        if data is None:
             logger.warning("[DocumentReviewer] Could not parse review JSON for %s", chapter_id)
             return ReviewResult(
                 quality_score=-1,

@@ -170,19 +170,39 @@ class AnalysisReviewer:
 
         return "\n".join(parts) if parts else "No source data summary available."
 
-    def _parse_review(self, raw: str) -> ReviewResult:
-        """Parse the LLM review output into a ReviewResult."""
-        # Strip fences
+    @staticmethod
+    def _extract_json(raw: str) -> dict | None:
+        """Try to extract valid JSON from LLM output."""
+        import re
+
         text = raw.strip()
         for prefix in ("```json", "```"):
             if text.startswith(prefix):
                 text = text[len(prefix):].strip()
         if text.endswith("```"):
             text = text[:-3].strip()
-
         try:
-            data = json.loads(text)
+            return json.loads(text)
         except json.JSONDecodeError:
+            pass
+        last_brace = text.rfind("}")
+        if last_brace > 0:
+            try:
+                return json.loads(text[: last_brace + 1])
+            except json.JSONDecodeError:
+                pass
+        match = re.search(r"\{[\s\S]*\}", text)
+        if match:
+            try:
+                return json.loads(match.group())
+            except json.JSONDecodeError:
+                pass
+        return None
+
+    def _parse_review(self, raw: str) -> ReviewResult:
+        """Parse the LLM review output into a ReviewResult."""
+        data = self._extract_json(raw)
+        if data is None:
             logger.warning("[AnalysisReviewer] Could not parse review JSON, using raw output")
             return ReviewResult(
                 quality_score=-1,
