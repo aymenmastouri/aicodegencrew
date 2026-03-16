@@ -936,15 +936,21 @@ RULES:
         score = 100
         warnings: list[str] = []
         dev = result.get("developer_context", {})
+        if not isinstance(dev, dict):
+            return {"score": 0, "warnings": ["developer_context is not a dict"]}
 
         # big_picture length check
         bp = dev.get("big_picture", "")
+        if not isinstance(bp, str):
+            bp = json.dumps(bp, ensure_ascii=False)
         if len(bp) < 50:
             score -= 20
             warnings.append("big_picture too short (<50 chars)")
 
         # scope_boundary must mention IN or OUT
         sb = dev.get("scope_boundary", "")
+        if not isinstance(sb, str):
+            sb = json.dumps(sb, ensure_ascii=False)
         sb_lower = sb.lower()
         if "in scope" not in sb_lower and "out of scope" not in sb_lower and "in " not in sb_lower:
             score -= 15
@@ -1015,6 +1021,8 @@ RULES:
 
         # architecture_notes should show placement (Point 2: Walkthrough)
         arch = dev.get("architecture_notes", "")
+        if not isinstance(arch, str):
+            arch = json.dumps(arch, ensure_ascii=False)
         if len(arch) < 30:
             score -= 10
             warnings.append("architecture_notes too short for walkthrough (<30 chars)")
