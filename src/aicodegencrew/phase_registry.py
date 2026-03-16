@@ -55,7 +55,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "analyze": PhaseDescriptor(
         "analyze",
         "Architecture Analysis",
-        "crew",
+        "pipeline",
         2,
         ("extract",),
         True,
@@ -65,7 +65,7 @@ PHASES: dict[str, PhaseDescriptor] = {
     "document": PhaseDescriptor(
         "document",
         "Architecture Synthesis",
-        "crew",
+        "pipeline",
         3,
         ("analyze",),
         False,

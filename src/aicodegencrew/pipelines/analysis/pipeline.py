@@ -477,6 +477,24 @@ class AnalysisPipeline(BasePipeline):
                     if attempt >= self._SYNTHESIS_MAX_RETRIES:
                         raise
 
+            # Validate required keys — retry if missing
+            missing = self._get_missing_keys(content)
+            if missing and attempt < self._SYNTHESIS_MAX_RETRIES:
+                logger.warning(
+                    "[AnalysisPipeline] Synthesis missing keys %s — retrying",
+                    sorted(missing),
+                )
+                raw = self._generator.retry_with_feedback(
+                    messages, content, [
+                        "Your output is missing these REQUIRED top-level keys: " + ", ".join(sorted(missing)),
+                        "Add them with real data from the partial results. Do NOT omit any key.",
+                    ],
+                )
+                try:
+                    content = self._extract_and_repair_json(raw)
+                except ValueError:
+                    pass  # Keep the previous content
+
             # Inject schema version
             try:
                 data = json.loads(content)
@@ -492,17 +510,19 @@ class AnalysisPipeline(BasePipeline):
             output_path.write_text(content, encoding="utf-8")
 
             duration = time.time() - start
-            logger.info(
-                "[AnalysisPipeline] Synthesis complete (%d chars, %.1fs)",
-                len(content),
-                duration,
-            )
-
-            # Validate structure
-            if self._validate_output(content):
+            missing = self._get_missing_keys(content)
+            if not missing:
+                logger.info(
+                    "[AnalysisPipeline] Synthesis complete (%d chars, %.1fs)",
+                    len(content), duration,
+                )
                 return "success"
-            logger.warning("[AnalysisPipeline] Synthesis output missing required keys")
-            return "success"  # File was written; downstream phase handles partial data
+            else:
+                logger.warning(
+                    "[AnalysisPipeline] Synthesis partial — missing keys %s (%d chars, %.1fs)",
+                    sorted(missing), len(content), duration,
+                )
+                return "success"  # File was written; downstream handles partial data
 
         except Exception as exc:
             duration = time.time() - start
@@ -645,26 +665,15 @@ class AnalysisPipeline(BasePipeline):
         "executive_summary",
     }
 
-    def _validate_output(self, content: str) -> bool:
-        """Check required top-level keys are present in synthesized output.
-
-        Args:
-            content: JSON string of analyzed_architecture.json.
-
-        Returns:
-            True if all required keys present, False otherwise.
-        """
+    def _get_missing_keys(self, content: str) -> set[str]:
+        """Return required top-level keys missing from synthesized output."""
         try:
             data = json.loads(content)
         except json.JSONDecodeError:
-            return False
+            return self._REQUIRED_KEYS
         if not isinstance(data, dict):
-            return False
-        missing = self._REQUIRED_KEYS - set(data.keys())
-        if missing:
-            logger.warning("[AnalysisPipeline] Synthesis missing keys: %s", sorted(missing))
-            return False
-        return True
+            return self._REQUIRED_KEYS
+        return self._REQUIRED_KEYS - set(data.keys())
 
     # =========================================================================
     # PREREQUISITE CHECK
