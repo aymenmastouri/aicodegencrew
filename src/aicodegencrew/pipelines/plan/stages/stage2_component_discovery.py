@@ -42,16 +42,12 @@ def _semantic_search_subprocess(
     components: list[dict],
     result_queue: multiprocessing.Queue,
 ) -> None:
-    """Run ChromaDB semantic search in an isolated subprocess."""
+    """Run Qdrant semantic search in an isolated subprocess."""
     try:
-        from aicodegencrew.shared.utils.chroma_client import create_chroma_client
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
 
-        chroma_path = Path(chroma_dir)
-        if not chroma_path.exists() and not get_chroma_http_config():
-            result_queue.put({})
-            return
-
-        # Derive branch-scoped collection name
+        # Derive collection name
         import os
         collection_name = "repo_docs"
         try:
@@ -62,35 +58,35 @@ def _semantic_search_subprocess(
         except Exception:
             pass
 
-        client = create_chroma_client(persistent_path=str(chroma_path))
-        collection = client.get_collection(name=collection_name)
+        # Connect to Qdrant
+        from aicodegencrew.shared.utils.qdrant_client import QdrantVectorStore
+        store = QdrantVectorStore()
+        if not store.enabled:
+            result_queue.put({})
+            return
 
         # Embed query via Ollama (short timeout — fail fast)
         from aicodegencrew.shared.utils.ollama_client import OllamaClient
-
         embedding = OllamaClient(timeout=10, max_retries=1).embed_text(query)
         if not embedding:
             result_queue.put({})
             return
 
-        results = collection.query(
-            query_embeddings=[embedding],
-            n_results=n,
-            include=["metadatas", "distances"],
+        results = store.query(
+            collection_name=collection_name,
+            query_vector=embedding,
+            limit=n,
         )
 
         scores: dict[str, float] = {}
-        if results and results.get("metadatas"):
-            metadatas = results["metadatas"][0]
-            distances = results["distances"][0]
-            for i, meta in enumerate(metadatas):
-                file_path = meta.get("file_path", "")
-                for comp in components:
-                    comp_file = comp.get("file_path", "")
-                    if comp_file and comp_file in file_path:
-                        similarity = 1 - min(distances[i], 1.0)
-                        scores[comp["id"]] = similarity
-                        break
+        for point in results:
+            payload = point.payload or {}
+            file_path = payload.get("file_path", payload.get("source", ""))
+            for comp in components:
+                comp_file = comp.get("file_path", "")
+                if comp_file and comp_file in file_path:
+                    scores[comp["id"]] = round(point.score, 4)
+                    break
 
         result_queue.put(scores)
     except Exception as e:
@@ -303,43 +299,40 @@ class ComponentDiscoveryStage:
         }
 
     def _semantic_search(self, query: str, n: int) -> dict[str, float]:
-        """Semantic search using ChromaDB."""
-        scores = {}
+        """Semantic search using Qdrant vector store."""
+        scores: dict[str, float] = {}
 
         try:
-            collection = self._get_collection()
-            if not collection:
-                logger.warning("[Stage2] ChromaDB not available, skipping semantic search")
+            # Try Qdrant
+            qdrant = self._get_qdrant_store()
+            if not qdrant:
+                logger.warning("[Stage2] Qdrant not available, skipping semantic search")
                 return scores
 
-            # Embed query using same Ollama client as indexing pipeline
+            # Embed query
             query_embedding = self._embed_query(query)
             if not query_embedding:
                 logger.warning("[Stage2] Query embedding failed, skipping semantic search")
                 return scores
-            logger.debug("[Stage2] Query embedding ready (dims=%s)", len(query_embedding))
 
-            logger.debug("[Stage2] Running ChromaDB query (n_results=%s)", n)
-            results = collection.query(
-                query_embeddings=[query_embedding], n_results=n, include=["metadatas", "distances"]
+            coll_name = self._derive_collection_name()
+            logger.debug("[Stage2] Qdrant query (collection=%s, limit=%s)", coll_name, n)
+
+            results = qdrant.query(
+                collection_name=coll_name,
+                query_vector=query_embedding,
+                limit=n,
             )
-            logger.debug("[Stage2] ChromaDB query returned")
 
-            if results and results.get("metadatas"):
-                metadatas = results["metadatas"][0]
-                distances = results["distances"][0]
-
-                for i, metadata in enumerate(metadatas):
-                    file_path = metadata.get("file_path", "")
-                    comp_id = self._find_component_by_path(file_path)
-
-                    if comp_id:
-                        # Convert distance to similarity (0-1)
-                        similarity = 1 - min(distances[i], 1.0)
-                        scores[comp_id] = similarity
+            for point in results:
+                payload = point.payload or {}
+                file_path = payload.get("file_path", payload.get("source", ""))
+                comp_id = self._find_component_by_path(file_path)
+                if comp_id:
+                    scores[comp_id] = round(point.score, 4)
 
         except Exception as e:
-            logger.error(f"[Stage2] ChromaDB error: {e}")
+            logger.error("[Stage2] Semantic search error: %s", e)
 
         return scores
 
@@ -631,8 +624,33 @@ class ComponentDiscoveryStage:
 
         return scores
 
+    def _get_qdrant_store(self):
+        """Get Qdrant vector store (preferred over ChromaDB)."""
+        try:
+            from ....shared.utils.qdrant_client import QdrantVectorStore
+
+            store = QdrantVectorStore()
+            if store.enabled:
+                logger.info("[Stage2] Using Qdrant vector store")
+                return store
+        except Exception as e:
+            logger.debug("[Stage2] Qdrant not available: %s", e)
+        return None
+
+    def _derive_collection_name(self) -> str:
+        """Derive branch-scoped collection name from PROJECT_PATH."""
+        try:
+            from ....shared.project_context import derive_collection_name
+
+            project_path = os.getenv("PROJECT_PATH") or os.getenv("REPO_PATH", "")
+            if project_path:
+                return derive_collection_name(project_path)
+        except Exception:
+            pass
+        return "repo_docs"
+
     def _get_collection(self):
-        """Get ChromaDB collection (lazy init)."""
+        """Get ChromaDB collection (fallback if Qdrant unavailable)."""
         if self.collection is not None:
             return self.collection
 
@@ -643,12 +661,11 @@ class ComponentDiscoveryStage:
 
             http_cfg = get_chroma_http_config()
             if http_cfg is None and not chroma_path.exists():
-                logger.warning(f"[Stage2] ChromaDB not found at {chroma_path}")
+                logger.warning("[Stage2] ChromaDB not found at %s", chroma_path)
                 return None
 
             client = create_chroma_client(
                 persistent_path=str(chroma_path),
-                # Semantic search is a best-effort signal; keep Chroma calls bounded.
                 settings=Settings(
                     anonymized_telemetry=False,
                     chroma_query_request_timeout_seconds=10,
@@ -656,29 +673,18 @@ class ComponentDiscoveryStage:
                 ),
             )
 
-            # No embedding function - embeddings were stored externally by indexing pipeline.
-            # We embed queries manually via _embed_query() and use query_embeddings.
-            # Derive branch-scoped collection name
-            import os as _os
-            _coll_name = "repo_docs"
-            try:
-                from aicodegencrew.shared.project_context import derive_collection_name
-                _pp = _os.getenv("PROJECT_PATH") or _os.getenv("REPO_PATH", "")
-                if _pp:
-                    _coll_name = derive_collection_name(_pp)
-            except Exception:
-                pass
-            self.collection = client.get_collection(name=_coll_name)
+            coll_name = self._derive_collection_name()
+            self.collection = client.get_collection(name=coll_name)
 
             if http_cfg is not None:
                 host, port, ssl = http_cfg
-                logger.info(f"[Stage2] Connected to ChromaDB server at {host}:{port} (ssl={ssl})")
+                logger.info("[Stage2] Connected to ChromaDB server at %s:%s (ssl=%s)", host, port, ssl)
             else:
-                logger.info(f"[Stage2] Connected to ChromaDB at {chroma_path}")
+                logger.info("[Stage2] Connected to ChromaDB at %s", chroma_path)
             return self.collection
 
         except Exception as e:
-            logger.error(f"[Stage2] ChromaDB initialization error: {e}")
+            logger.error("[Stage2] ChromaDB initialization error: %s", e)
             return None
 
     def _embed_query(self, text: str) -> list[float] | None:
