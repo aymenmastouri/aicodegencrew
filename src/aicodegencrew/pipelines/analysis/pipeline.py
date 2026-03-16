@@ -577,7 +577,7 @@ class AnalysisPipeline(BasePipeline):
 
         # Try direct parse
         try:
-            data = json.loads(text)
+            data = json.loads(text, strict=False)
             return json.dumps(data, indent=2, ensure_ascii=False)
         except json.JSONDecodeError:
             pass
@@ -588,7 +588,7 @@ class AnalysisPipeline(BasePipeline):
         if last_brace > 0 and last_brace < len(text) - 1:
             trimmed = text[: last_brace + 1]
             try:
-                data = json.loads(trimmed)
+                data = json.loads(trimmed, strict=False)
                 logger.info("[AnalysisPipeline] Trimmed trailing text (%d → %d chars)", len(text), len(trimmed))
                 return json.dumps(data, indent=2, ensure_ascii=False)
             except json.JSONDecodeError:
@@ -604,7 +604,7 @@ class AnalysisPipeline(BasePipeline):
         fixed = re.sub(r'(true|false|null|\d+)\s*\n(\s*)"', r'\1,\n\2"', fixed)
         if fixed != text:
             try:
-                data = json.loads(fixed)
+                data = json.loads(fixed, strict=False)
                 logger.info("[AnalysisPipeline] Fixed missing commas (%d replacements)", text.count('\n') - fixed.count('\n') + (len(fixed) - len(text)))
                 return json.dumps(data, indent=2, ensure_ascii=False)
             except json.JSONDecodeError:
@@ -642,7 +642,7 @@ class AnalysisPipeline(BasePipeline):
             repaired += "]" if opener == "[" else "}"
 
         try:
-            data = json.loads(repaired)
+            data = json.loads(repaired, strict=False)
             logger.info("[AnalysisPipeline] Repaired truncated JSON (%d → %d chars)", len(text), len(repaired))
             return json.dumps(data, indent=2, ensure_ascii=False)
         except json.JSONDecodeError as exc:

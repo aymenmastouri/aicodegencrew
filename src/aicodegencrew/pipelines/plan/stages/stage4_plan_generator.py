@@ -876,14 +876,26 @@ Generate the plan now:"""
         if not content:
             raise ValueError("Response contained only markdown fencing, no JSON content")
 
+        # Use strict=False to accept control characters (raw newlines/tabs)
+        # inside JSON string values — common with on-prem LLMs.
         try:
-            return json.loads(content)
+            return json.loads(content, strict=False)
         except json.JSONDecodeError:
-            # LLM may truncate output at token limit — attempt repair before giving up
+            pass
+
+        # Strip trailing text after last }
+        last_brace = content.rfind("}")
+        if last_brace > 0 and last_brace < len(content) - 1:
             try:
-                repaired = PlanGeneratorStage._repair_truncated_json(content)
-                return json.loads(repaired)
-            except Exception as e:
-                logger.error(f"[Stage4] Failed to parse JSON (repair also failed): {e}")
-                logger.error(f"[Stage4] Content (first 500 chars): {content[:500]}")
-                raise
+                return json.loads(content[: last_brace + 1], strict=False)
+            except json.JSONDecodeError:
+                pass
+
+        # LLM may truncate output at token limit — attempt repair before giving up
+        try:
+            repaired = PlanGeneratorStage._repair_truncated_json(content)
+            return json.loads(repaired, strict=False)
+        except Exception as e:
+            logger.error("[Stage4] Failed to parse JSON (repair also failed): %s", e)
+            logger.error("[Stage4] Content (first 500 chars): %s", content[:500])
+            raise
