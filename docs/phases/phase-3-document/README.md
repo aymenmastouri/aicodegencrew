@@ -1,6 +1,6 @@
 # Phase 3 — Document (Architecture Synthesis)
 
-> **Status**: IMPLEMENTED | **Type**: Crew | **Layer**: Reasoning
+> **Status**: IMPLEMENTED | **Type**: Pipeline | **Layer**: Reasoning
 
 ---
 
@@ -10,23 +10,29 @@
 |-----------|-------|
 | Phase ID | `document` |
 | Display Name | Architecture Synthesis |
-| Type | Pipeline (LLM generation + quality validation) |
+| Type | Pipeline (deterministic data collection + LLM generation + content review) |
 | Entry Point | `pipelines/document/pipeline.py` → `DocumentPipeline` |
 | Base Class | `shared/base_pipeline.py` → `BasePipeline` (ABC) |
-| LLM Requirement | Yes |
+| LLM Requirement | Yes (2 calls per chapter: generate + content review) |
 | Output | `knowledge/document/` (c4/, arc42/, quality/) |
+| Checkpoint | `knowledge/document/.checkpoint_pipeline.json` |
 | Dependency | Extract + Analyze |
 | Status | **IMPLEMENTED** |
 
 > **Diagram:** [phase-3-document-architecture.drawio](phase-3-document-architecture.drawio)
 
-The Document phase generates C4 architectural diagrams and Arc42 documentation from architecture facts and analysis. `DocumentPipeline(BasePipeline)` uses `LLMGenerator.generate_text()` for the main generation pass and `retry_with_feedback_text()` when the quality gate detects missing sections.
+The Document phase generates C4 diagrams and Arc42 documentation from architecture facts and analysis results. No agents, no tool loops — each chapter follows a deterministic pipeline:
+
+```
+DataCollector → PromptBuilder → LLMGenerator → ChapterValidator → DocumentReviewer → Write
+```
 
 ## 2. Goals
 
-- Generate 4-level C4 diagrams (Context, Container, Component, Deployment) as editable DrawIO files
-- Generate complete 12-chapter Arc42 documentation
-- Produce quality gate reports for both C4 and Arc42
+- Generate 4 C4 diagram documents (Context, Container, Component, Deployment)
+- Generate 12-chapter Arc42 documentation (with large chapters split and merged)
+- Validate every chapter structurally (length, sections, banned phrases, fact grounding)
+- Review every chapter for content quality (missing topics, unsupported claims, contradictions)
 - All output evidence-based — no hallucinated containers, components, or relationships
 
 ## 3. Inputs & Outputs
@@ -36,127 +42,160 @@ The Document phase generates C4 architectural diagrams and Arc42 documentation f
 | **Input** | Architecture facts | JSON | `knowledge/extract/architecture_facts.json` |
 | **Input** | Analyzed architecture | JSON | `knowledge/analyze/analyzed_architecture.json` |
 | **Input** | ChromaDB index (optional) | Vector DB | `knowledge/discover/` |
-| **Output** | C4 diagrams | Markdown + DrawIO | `knowledge/document/c4/` |
-| **Output** | Arc42 docs | Markdown | `knowledge/document/arc42/` |
-| **Output** | Quality reports | Markdown | `knowledge/document/quality/` |
+| **Output** | C4 documents | Markdown | `knowledge/document/c4/` |
+| **Output** | Arc42 documents | Markdown | `knowledge/document/arc42/` |
+| **Output** | Quality report | Markdown | `knowledge/document/quality/pipeline-report.md` |
 
 ## 4. Architecture
 
-### Why Mini-Crews?
+### Pipeline Flow (per chapter)
 
-CrewAI accumulates conversation history across sequential tasks. With 26+ tasks, the prompt exceeds the context window (~120K tokens) after ~10–15 tasks. Mini-Crews solve this: each gets a fresh agent with fresh context, passing data via template variables.
+| Step | Component | Description |
+|------|-----------|-------------|
+| 1. Collect | `DataCollector.collect(recipe)` | Gather facts, RAG results, components per recipe |
+| 2. Build | `PromptBuilder.build(data + recipe)` | Structured prompt with XML tags, Chain-of-Thought |
+| 3. Generate | `LLMGenerator.generate_text(messages)` | Single streaming LLM call (fences stripped) |
+| 4a. Validate | `ChapterValidator.validate()` | 7 structural checks (see Quality Gates) |
+| 4b. Retry | `retry_with_feedback_text()` | Max 2 retries if validation fails |
+| 4c. Review | `DocumentReviewer.review()` | Content review LLM call against source data |
+| 4d. Rewrite | `retry_with_feedback_text()` | Rewrite if review score < 65 |
+| 5. Write | `output_path.write_text()` | Write to disk + checkpoint |
 
-### Orchestration
+### Content Review (New)
 
+After structural validation passes, the `DocumentReviewer` runs a second LLM call that receives the generated chapter + the original source data. It checks:
+
+- **Missing topics** — important data in the source that the chapter doesn't cover
+- **Unsupported claims** — statements not backed by the source data
+- **Contradictions** — statements that conflict with the architecture facts
+- **Weak sections** — paragraphs with vague language instead of concrete evidence
+
+The reviewer produces a `ReviewResult` with `quality_score` (0–100) and `rewrite_needed` flag. If `rewrite_needed=true` (score < 65), the chapter is rewritten with the reviewer's specific feedback. The review is **non-fatal** — if the review LLM call fails, the chapter proceeds normally.
+
+### Chapter Recipes
+
+Each chapter has a `ChapterRecipe` that defines exactly what data to collect and what to expect:
+
+```python
+ChapterRecipe(
+    id="arc42-ch05-p1",
+    title="Building Block Overview",
+    output_file="arc42/05-part1-overview.md",
+    facts=[("components", {}), ("containers", {})],
+    rag_queries=["building block structure", "module organization"],
+    components=["controller", "service", "repository"],
+    sections=["## 5.1 Overview", "## 5.2 Level 1"],
+    min_length=6000,
+    max_length=30000,
+    context_hint="Focus on layer decomposition...",
+)
 ```
-ArchitectureSynthesisCrew.run():
-  C4Crew.run()     → 5 mini-crews (9 tasks)
-  Arc42Crew.run()  → 18 mini-crews (18 tasks, 1 per crew)
-```
 
-Both inherit from `MiniCrewBase` which provides shared infrastructure.
+### C4 Documents (4 recipes)
 
-### C4Crew: 5 Mini-Crews
+| Recipe | Output |
+|--------|--------|
+| `c4-context` | `c4/c4-context.md` |
+| `c4-container` | `c4/c4-container.md` |
+| `c4-component` | `c4/c4-component.md` |
+| `c4-deployment` | `c4/c4-deployment.md` |
 
-| Mini-Crew | Tasks | Output |
-|-----------|-------|--------|
-| `context` | doc + diagram | `c4/c4-context.md` + `.drawio` |
-| `container` | doc + diagram | `c4/c4-container.md` + `.drawio` |
-| `component` | doc + diagram | `c4/c4-component.md` + `.drawio` |
-| `deployment` | doc + diagram | `c4/c4-deployment.md` + `.drawio` |
-| `quality` | validation | `quality/c4-report.md` |
+### Arc42 Documents (18 recipes, 12 chapters)
 
-### Arc42Crew: 18 Mini-Crews
+Large chapters are split into parts and merged post-generation:
 
-Chapters 1–12, with large chapters (5, 6, 8) split into sub-crews then merged:
-
-| Chapter | Mini-Crews | Output |
-|---------|-----------|--------|
+| Chapter | Parts | Output |
+|---------|-------|--------|
 | 1 — Introduction | 1 | `01-introduction.md` |
 | 2 — Constraints | 1 | `02-constraints.md` |
 | 3 — Context | 1 | `03-context.md` |
 | 4 — Solution Strategy | 1 | `04-solution-strategy.md` |
-| 5 — Building Blocks | 4 (split) | `05-building-blocks.md` (merged) |
+| 5 — Building Blocks | 5 (split) | `05-building-blocks.md` (merged) |
 | 6 — Runtime View | 2 (split) | `06-runtime-view.md` (merged) |
 | 7 — Deployment | 1 | `07-deployment.md` |
-| 8 — Crosscutting | 2 (split) | `08-crosscutting.md` (merged) |
+| 8 — Crosscutting | 3 (split) | `08-crosscutting.md` (merged) |
 | 9 — Decisions | 1 | `09-decisions.md` |
 | 10 — Quality | 1 | `10-quality.md` |
 | 11 — Risks | 1 | `11-risks.md` |
 | 12 — Glossary | 1 | `12-glossary.md` |
 
-### MiniCrewBase Infrastructure
+### Modules
 
-| Feature | Description |
-|---------|-------------|
-| `_create_llm()` | LLM factory from env vars |
-| `_create_agent()` | Agent with MCP + tools |
-| `_run_mini_crew()` | Execute crew with fresh context |
-| `_save_checkpoint()` | Persist progress for resume |
-| `_extract_token_usage()` | Track token consumption |
-| Retry with backoff | On `ConnectionError`/`TimeoutError`/`OSError` |
-| Output recovery | Generates stub docs from facts on crew failure |
-
-### Tools
-
-| Tool | Purpose |
-|------|---------|
-| `DocWriterTool` | Write markdown (with path-stripping) |
-| `DrawioDiagramTool` | Create DrawIO diagrams (XML) |
-| `FactsQueryTool` | Query architecture facts by category |
-| `StereotypeListTool` | List components by stereotype |
-| `ChunkedWriterTool` | Write large documents in sections |
-| `RAGQueryTool` | ChromaDB semantic search |
-| MCP Tools | `get_statistics()`, `get_architecture_summary()`, etc. |
+| Module | File | Responsibility |
+|--------|------|----------------|
+| **DocumentPipeline** | `pipeline.py` | Orchestrates all chapters, checkpoint/resume, merge, quality report |
+| **DataCollector** | `data_collector.py` | Gathers facts, RAG results, components per recipe |
+| **DataRecipes** | `data_recipes.py` | 22 chapter recipes (4 C4 + 18 Arc42) with per-chapter data requirements |
+| **PromptBuilder** | `prompt_builder.py` | XML-tagged structured prompts with Chain-of-Thought instructions |
+| **ChapterValidator** | `validator.py` | 7 structural validation checks |
+| **DocumentReviewer** | `reviewer.py` | Content review LLM call against source data |
+| **LLMGenerator** | `shared/llm_generator.py` | Single streaming LLM call + retry with feedback |
 
 ## 5. Patterns & Decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| Mini-Crews | Prevents context overflow (120K limit) |
-| `TOOL_INSTRUCTION` prefix | Forces agents to use tools instead of writing in response text |
-| Few-shot examples | Per-task tool-use sequences (WRONG/RIGHT patterns) |
-| Output token limit = 16K | Enables 12–20 page chapters vs 6–8 |
-| Checkpoint/resume | Skip completed mini-crews on retry |
-
-### Rules (MUST FOLLOW)
-
-| DO | DO NOT |
-|-------|-----------|
-| Use ONLY data from facts.json | Invent containers or components |
-| Query MCP tools for real data | Add business context not in facts |
-| Use `doc_writer` tool for output | Write content in response text |
-| Use DrawIO for diagrams (XML) | Use Mermaid, PlantUML, or ASCII |
+| No agents or tool loops | Deterministic data collection + single LLM call = 0% agent loops, 2× faster |
+| Per-chapter data recipes | Each chapter gets exactly the data it needs — no over-fetching, no context overflow |
+| Two-phase quality: validate then review | Structural validation catches format issues cheaply; content review catches semantic issues |
+| Non-fatal review | Review failure doesn't block chapter generation — partial output is better than none |
+| Split + merge for large chapters | Chapters 5, 6, 8 split into 2–5 parts to stay within output limits |
+| Checkpoint/resume | Skip completed chapters on retry — saves tokens on partial failures |
+| XML-tagged prompts | `<architecture_facts>`, `<code_evidence>`, `<component_inventory>` for clear data separation |
 
 ## 6. Dependencies
 
 - **Upstream**: Phase 1 (Extract) — `architecture_facts.json`; Phase 2 (Analyze) — `analyzed_architecture.json`
-- **Downstream**: Phase 4 (Plan) — documentation context (optional)
+- **Downstream**: Phase 4 (Review) — validates consistency; Phase 5 (Plan) — documentation context (optional)
 
 ## 7. Quality Gates & Validation
 
-- `PhaseOutputValidator` checks required outputs between phases
-- Output-gate: `RuntimeError` if expected files missing
-- Tool guardrails: max 25 tool calls per task, max 3 identical calls
-- Quality mini-crew validates C4 and Arc42 output
+### Structural Validation (ChapterValidator — 7 checks)
+
+| Check | What it validates |
+|-------|-------------------|
+| `not_empty` | Content exists |
+| `length` | Within `min_length` / `max_length` bounds per recipe |
+| `heading` | Starts with `#` heading |
+| `sections` | All required section numbers present |
+| `banned_phrases` | No "placeholder", "TODO:", "TBD", "as an AI", etc. |
+| `fact_grounding` | References ≥3 real names from architecture data (case-insensitive) |
+| `code_fence` | Not wrapped in ``` fences |
+
+### Content Review (DocumentReviewer)
+
+| Check | What it identifies |
+|-------|-------------------|
+| Missing topics | Source data present but chapter ignores |
+| Unsupported claims | Chapter statements not backed by source data |
+| Contradictions | Statements conflicting with architecture facts |
+| Weak sections | Vague language instead of concrete evidence |
+
+### Flow
+
+```
+Generate → Structural Validate → Retry (max 2×) → Content Review → Rewrite (if score < 65) → Write
+```
 
 ## 8. Configuration
 
-LLM settings via environment variables. Tool-call budgets and LLM optimization as Python constants:
+LLM settings via environment variables, all centralized in `shared/llm_generator.py`:
 
-| Setting | Value | Purpose |
-|---------|-------|---------|
-| Input token limit | 100K | Process more facts |
-| Output token limit | 16K | Longer chapters |
-| Context window | 120K | Full conversation |
-| Tool-call budget | 25 | More data gathering |
-| Identical-call limit | 3 | Allow necessary re-queries |
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `MODEL` | `openai/code` | LLM model identifier |
+| `API_BASE` | — | LiteLLM API base URL |
+| `MAX_LLM_OUTPUT_TOKENS` | `65536` | Max output tokens per call |
+| `LLM_TEMPERATURE` | `1.0` | Sampling temperature (Qwen3-Coder-Next best practice) |
+| `LLM_TOP_P` | `0.95` | Nucleus sampling |
+| `LLM_TOP_K` | `40` | Top-k sampling |
+| `LLM_CHUNK_TIMEOUT` | `60` | Seconds between stream chunks |
 
 ## 9. Risks & Open Points
 
-- Agent compliance: agents may write in response text instead of using tools (~85% compliance after few-shot)
-- Large repositories need chapter splitting (ch05, ch06, ch08) to stay within output limits
-- MCP server must be running for token-efficient fact access
+- Content review adds ~30-50% more LLM tokens per chapter — acceptable for quality improvement
+- Very large repositories may hit context limits in the review prompt (source data truncated to 8K chars)
+- RAG query quality depends on Discover phase embedding model consistency
 
 ---
 

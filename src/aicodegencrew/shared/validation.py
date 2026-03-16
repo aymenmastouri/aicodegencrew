@@ -32,7 +32,7 @@ logger = setup_logger(__name__)
 PHASE_OUTPUT_SPECS: dict[str, dict[str, Any]] = {
     "discover": {
         "required_paths": ["knowledge/discover"],
-        "description": "ChromaDB vector index",
+        "description": "Repository index (vector store + symbols + evidence)",
     },
     "extract": {
         "required_paths": [

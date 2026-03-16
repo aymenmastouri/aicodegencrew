@@ -28,36 +28,34 @@ phases:
   # =========================================================================
   # PIPELINE: Discover - Repository Indexing
   # =========================================================================
-  # Type:      Pipeline (no AI, only embeddings)
+  # PIPELINE: Discover — Repository Indexing
+  # =========================================================================
   # Location:  pipelines/indexing/indexing_pipeline.py
   # Control:   INDEX_MODE in .env (off/auto/force/smart)
-  # Output:    knowledge/discover (ChromaDB vector store)
+  # Output:    knowledge/discover/ (Qdrant vectors + symbols + evidence)
+  # LLM:       No (only embeddings)
   # =========================================================================
   discover:
     enabled: true
     name: "Discover"
-    description: "Index codebase into ChromaDB for RAG"
+    description: "Index repository into vector store (symbols, evidence, embeddings)"
     type: pipeline
     required: true
     order: 0
     config:
-      # Controlled via .env: INDEX_MODE, EMBED_MODEL, CHROMA_DIR
+      # Controlled via .env: INDEX_MODE, EMBED_MODEL
 
   # =========================================================================
-  # PIPELINE: Extract - Architecture Facts (DETERMINISTIC, NO LLM!)
+  # PIPELINE: Extract — Architecture Facts (deterministic, kein LLM)
   # =========================================================================
-  # Type:      Pipeline (deterministic extraction, no AI)
   # Location:  pipelines/architecture_facts/
-  # Output:    knowledge/extract/architecture_facts.json
-  #            knowledge/extract/evidence_map.json
-  #
-  # This is the SINGLE SOURCE OF TRUTH for architecture.
-  # Everything not in architecture_facts.json must NOT be written by Analyze.
+  # Output:    knowledge/extract/architecture_facts.json + evidence_map.json
+  # LLM:       No
   # =========================================================================
   extract:
     enabled: true
     name: "Extract"
-    description: "Deterministic extraction of architecture facts (no LLM)"
+    description: "Extract 16 architecture dimensions (no LLM)"
     type: pipeline
     required: true
     order: 1
@@ -66,122 +64,74 @@ phases:
       output_dir: "./knowledge/extract"
 
   # =========================================================================
-  # CREW: Analyze - Architecture Analysis
+  # PIPELINE: Analyze — Architecture Analysis
   # =========================================================================
-  # Type:      Crew (AI Agents - 4 specialized analysts)
-  # Location:  crews/architecture_analysis/
-  # Input:     architecture_facts.json + evidence_map.json + ChromaDB
+  # Location:  pipelines/analysis/pipeline.py → AnalysisPipeline
+  # Flow:      16 parallele LLM-Calls → Review → Selective Redo → Synthese
   # Output:    knowledge/analyze/analyzed_architecture.json
-  #
-  # AGENTS:
-  # 1. Technical Architect: Styles, patterns, tech stack, layers
-  # 2. Functional Analyst: Domain model, capabilities, use cases
-  # 3. Quality Analyst: Technical debt, risks, quality attributes
-  # 4. Synthesis Lead: Merge all analyses into unified JSON
+  # LLM:       Yes (16 sections + 1 review + N redo + 1 synthesis)
   # =========================================================================
   analyze:
     enabled: true
     name: "Analyze"
-    description: "Multi-agent analysis of architecture facts"
-    type: crew
+    description: "16 parallel analyses + cross-section review + synthesis"
+    type: pipeline
     required: true
     order: 2
     dependencies: [extract]
     config:
       output_dir: "./knowledge/analyze"
-      temperature: 0.2
-      max_iterations: 15
-      verbose: true
 
   # =========================================================================
-  # CREW: Document - Architecture Synthesis (LLM, evidence-first)
+  # PIPELINE: Document — Arc42 + C4 Documentation
   # =========================================================================
-  # Type:      Crew (AI Agents)
-  # Location:  crews/architecture_synthesis/
-  # Input:     architecture_facts.json + analyzed_architecture.json + ChromaDB
-  # Output:    knowledge/document/c4/
-  #            knowledge/document/arc42/
-  #            knowledge/document/runtime/
-  #            knowledge/document/evidence/
-  #
-  # RULES:
-  # - Only synthesize what is in architecture_facts.json
-  # - Every statement must reference evidence
-  # - If no evidence, mark as UNKNOWN
-  # - No invented containers/components
+  # Location:  pipelines/document/pipeline.py → DocumentPipeline
+  # Flow:      DataCollector → PromptBuilder → LLM → Validator → Reviewer → Write
+  # Output:    knowledge/document/ (c4/, arc42/, quality/)
+  # LLM:       Yes (2 calls per chapter: generate + content review)
   # =========================================================================
   document:
     enabled: true
     name: "Document"
-    description: "AI synthesizes C4 and arc42 from architecture facts"
-    type: crew
+    description: "Generate Arc42 + C4 docs with content review"
+    type: pipeline
     required: false
     order: 3
     dependencies: [analyze]
     config:
       output_dir: "./knowledge/document"
-      temperature: 0.2
-      max_iterations: 15
-      verbose: true
 
   # =========================================================================
-  # CREW: Triage - Issue Triage (deterministic + LLM)
+  # PIPELINE: Triage — Issue Classification
   # =========================================================================
-  # Type:      Crew (deterministic scan + LLM synthesis)
-  # Location:  crews/triage/crew.py → TriageCrew
-  # Purpose:   Classify issues, find entry points, calculate blast radius,
-  #            produce customer summary + developer brief
-  # Input:     knowledge/extract/ (required) + knowledge/analyze/ (optional)
-  # Output:    knowledge/triage/ (findings, customer.md, developer.md, triage.json)
+  # Location:  pipelines/triage/pipeline.py → TriagePipeline
+  # Flow:      Deterministic scan (<5s) + single LLM synthesis
+  # Output:    knowledge/triage/ (findings, customer.md, developer.md)
+  # LLM:       Yes (1 call + optional retry)
   # =========================================================================
   triage:
     enabled: true
     name: "Triage"
-    description: "Issue classification, blast radius, and dual-audience reports"
-    type: hybrid
+    description: "Issue classification, blast radius, customer/developer reports"
+    type: pipeline
     required: false
     order: 4
     dependencies: [extract]
     config:
       output_dir: "./knowledge/triage"
-      temperature: 0.2
 
   # =========================================================================
-  # PIPELINE: Plan - Development Planning (HYBRID ARCHITECTURE)
+  # PIPELINE: Plan — Development Planning
   # =========================================================================
-  # Type:      Pipeline (Hybrid: Deterministic + 1 LLM Call)
-  # Location:  pipelines/development_planning/
-  # Architecture:
-  #   Stage 1: Input Parser (deterministic, <1s)
-  #   Stage 2: Component Discovery (RAG + scoring, 2-5s)
-  #   Stage 3: Pattern Matcher (TF-IDF + rules, 1-3s)
-  #   Stage 4: Plan Generator (LLM call, 15-30s)
-  #   Stage 5: Validator (Pydantic, <1s)
-  #
-  # Total Duration: 18-40 seconds (vs 5-7 minutes with CrewAI)
-  # LLM Calls: 1 (vs 5 with CrewAI)
-  # Success Rate: 95%+ (deterministic stages)
-  #
-  # Input:
-  #   - inputs/tasks/ (JIRA XML, DOCX, Excel, logs, etc.)
-  #   - architecture_facts.json (Extract, all 17 keys)
-  #   - analyzed_architecture.json (Analyze)
-  #   - ChromaDB (Discover, semantic search)
-  #
-  # Output: knowledge/plan/{task_id}_plan.json
-  #   - affected_components (from ChromaDB RAG + scoring)
-  #   - implementation_steps
-  #   - test_strategy (from 925 test patterns, TF-IDF similarity)
-  #   - security_considerations (from 143 security details)
-  #   - validation_strategy (from 149 validation patterns)
-  #   - error_handling (from 23 error patterns)
-  #   - architecture_context (from analyzed_architecture.json)
-  #   - risks, complexity estimate
+  # Location:  pipelines/plan/pipeline.py → PlanPipeline
+  # Flow:      4 deterministic stages + 1 LLM call (18-40s total)
+  # Output:    knowledge/plan/{task_id}_plan.json
+  # LLM:       Yes (1 call + optional retry)
   # =========================================================================
   plan:
     enabled: true
     name: "Plan"
-    description: "Fast, evidence-based implementation plans using hybrid architecture"
+    description: "Generate implementation plans (hybrid: deterministic + 1 LLM call)"
     type: pipeline
     required: false
     order: 5
@@ -195,25 +145,17 @@ phases:
         reference: "./inputs/reference"
 
   # =========================================================================
-  # PIPELINE: Implement - Code Generation (HYBRID ARCHITECTURE)
+  # CREW: Implement — Code Generation (braucht Task-IDs)
   # =========================================================================
-  # Type:      Pipeline (Hybrid: Deterministic + 1 LLM Call per file)
-  # Location:  pipelines/code_generation/
-  # Architecture:
-  #   Stage 1: Plan Reader (deterministic, <1s)
-  #   Stage 2: Context Collector (file I/O, 2-5s)
-  #   Stage 3: Code Generator (LLM, 10-30s per file)
-  #   Stage 4: Code Validator (deterministic, 1-3s)
-  #   Stage 5: Output Writer (git + file I/O, 2-5s)
-  #
-  # Input:     knowledge/plan/{task_id}_plan.json (Plan phase)
-  # Output:    Git branch codegen/{task_id} in target repo
-  #            knowledge/implement/{task_id}_report.json
+  # Location:  crews/implement/crew.py → ImplementCrew
+  # Flow:      Plan lesen → Context sammeln → Code generieren → Build verify
+  # Output:    Git branch codegen/{task_id} + knowledge/implement/{task_id}_report.json
+  # LLM:       Yes (multi-turn agent with tools)
   # =========================================================================
   implement:
     enabled: true
     name: "Implement"
-    description: "Generate code from plans using hybrid architecture"
+    description: "Generate code from plans (requires task IDs)"
     type: crew
     required: false
     order: 6
@@ -222,19 +164,16 @@ phases:
       output_dir: "./knowledge/implement"
 
   # =========================================================================
-  # CREW: Verify - Test Generation (PLANNED)
+  # CREW: Verify — Test Generation (in Entwicklung)
   # =========================================================================
-  # Type:      Crew (AI Agents)
-  # Location:  crews/test_generation/ (planned)
-  # Purpose:   Generate tests matching existing test patterns
-  # Tasks:     Unit tests, integration tests following 925 existing patterns
-  # Input:     Generated code from Implement + test patterns
-  # Output:    JUnit/Jest test files
+  # Location:  crews/verify/ (planned)
+  # Output:    knowledge/verify/
+  # LLM:       Yes
   # =========================================================================
   verify:
     enabled: true
     name: "Verify"
-    description: "Generate tests matching existing patterns"
+    description: "Generate tests (work in progress)"
     type: crew
     required: false
     order: 7
@@ -243,20 +182,18 @@ phases:
       output_dir: "./knowledge/verify"
 
   # =========================================================================
-  # CREW: Deliver - Review & Consistency Guard (IMPLEMENTED v0.6.2)
+  # PIPELINE: Deliver — Review + Consistency Guard
   # =========================================================================
-  # Type:      Crew (deterministic scan + LLM synthesis)
-  # Location:  crews/review/crew.py → ReviewCrew
-  # Purpose:   Consistency check facts vs C4/arc42 docs + quality report
-  # Tasks:     Container coverage, arc42 chapters, placeholder scan, score
-  # Input:     knowledge/extract/ + knowledge/document/
+  # Location:  pipelines/review/pipeline.py → ReviewPipeline
+  # Flow:      Deterministic consistency checks + LLM synthesis report
   # Output:    knowledge/deliver/ (consistency.json, quality.json, synthesis-report.md)
+  # LLM:       Yes (1 call)
   # =========================================================================
   deliver:
     enabled: true
     name: "Deliver"
-    description: "Architecture consistency review and quality report"
-    type: hybrid
+    description: "Consistency check + quality report (work in progress)"
+    type: pipeline
     required: false
     order: 8
     dependencies: [implement]
@@ -277,14 +214,14 @@ execution:
 presets:
   index:
     display_name: "Discover"
-    description: "Index codebase into vector store (ChromaDB)"
+    description: "Index repository"
     icon: "cloud_sync"
     phases:
       - discover
 
   scan:
-    display_name: "Discover + Extract"
-    description: "Deterministic architecture facts extraction (no LLM)"
+    display_name: "Discover → Extract"
+    description: "Index → extract architecture facts (no LLM)"
     icon: "fact_check"
     phases:
       - discover
@@ -292,7 +229,7 @@ presets:
 
   analyze:
     display_name: "Discover → Analyze"
-    description: "AI-powered analysis of architecture patterns and quality"
+    description: "Index → extract → AI-powered architecture analysis"
     icon: "psychology"
     phases:
       - discover
@@ -301,7 +238,7 @@ presets:
 
   document:
     display_name: "Discover → Document"
-    description: "Generate full Arc42 & C4 architecture documentation"
+    description: "Index → extract → analyze → generate Arc42/C4 docs"
     icon: "menu_book"
     phases:
       - discover
@@ -311,7 +248,7 @@ presets:
 
   triage:
     display_name: "Discover → Triage"
-    description: "Issue classification, blast radius, and dual-audience reports"
+    description: "Index → extract → analyze → issue triage"
     icon: "troubleshoot"
     phases:
       - discover
@@ -320,8 +257,8 @@ presets:
       - triage
 
   triage-plan:
-    display_name: "Triage + Plan"
-    description: "Triage Jira tickets and generate development plans (parallel-ready)"
+    display_name: "Triage → Plan"
+    description: "Triage + plan only (requires prior analyze)"
     icon: "bolt"
     phases:
       - triage
@@ -329,7 +266,7 @@ presets:
 
   plan:
     display_name: "Discover → Plan"
-    description: "Generate implementation plans from task descriptions"
+    description: "Index → extract → analyze → triage → plan (no docs)"
     icon: "assignment"
     phases:
       - discover
@@ -340,7 +277,7 @@ presets:
 
   develop:
     display_name: "Discover → Implement"
-    description: "Generate code from plans (Planning & Code Gen)"
+    description: "Index → analyze → triage → plan → generate code"
     icon: "code"
     phases:
       - discover
@@ -351,8 +288,8 @@ presets:
       - implement
 
   architect:
-    display_name: "Discover → Plan (no code)"
-    description: "Full architecture docs & development planning"
+    display_name: "Discover → Document → Plan"
+    description: "Index → analyze → docs → triage → plan (no code)"
     icon: "architecture"
     phases:
       - discover
@@ -364,7 +301,7 @@ presets:
 
   full:
     display_name: "Full Pipeline"
-    description: "All phases: Discover → Extract → Analyze → Document → Triage → Plan → Implement → Verify → Deliver"
+    description: "All phases: discover → extract → analyze → document → triage → plan"
     icon: "rocket_launch"
     phases:
       - discover
@@ -373,6 +310,3 @@ presets:
       - document
       - triage
       - plan
-      - implement
-      - verify
-      - deliver

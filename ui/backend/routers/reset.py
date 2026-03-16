@@ -116,7 +116,7 @@ def reset_task(request: TaskResetRequest):
 
 @router.post("/all", response_model=ResetResult)
 def reset_all():
-    """Reset all phases except discover."""
+    """Reset all phases (including discover)."""
     if _is_pipeline_running():
         raise HTTPException(
             status_code=409,

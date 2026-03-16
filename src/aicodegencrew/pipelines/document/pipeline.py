@@ -23,6 +23,7 @@ from ...shared import BasePipeline, LLMGenerator
 from .data_collector import DataCollector
 from .data_recipes import ARC42_RECIPES, C4_RECIPES, MERGE_GROUPS, ChapterRecipe
 from .prompt_builder import PromptBuilder
+from .reviewer import DocumentReviewer
 from .validator import ChapterValidator
 
 logger = logging.getLogger(__name__)
@@ -90,6 +91,7 @@ class DocumentPipeline(BasePipeline):
         )
         self.prompt_builder = PromptBuilder()
         self.validator = ChapterValidator()
+        self.reviewer = DocumentReviewer()
         self._checkpoint_path = self.output_dir / ".checkpoint_pipeline.json"
 
     def run(self) -> dict:
@@ -228,6 +230,28 @@ class DocumentPipeline(BasePipeline):
                 logger.info("[Chapter] %s — retry %d with feedback: %s", recipe.id, attempts, validation.issues)
                 content = generator.retry_with_feedback_text(messages, content, validation.issues)
                 validation = self.validator.validate(content, recipe, data)
+
+            # Step 4c: Content review — deeper check against source data
+            if validation.passed:
+                review = self.reviewer.review(content, recipe, data)
+                if review.rewrite_needed and review.feedback:
+                    logger.info(
+                        "[Chapter] %s — content review: score=%d, rewriting (issues=%d)",
+                        recipe.id,
+                        review.quality_score,
+                        len(review.feedback),
+                    )
+                    content = generator.retry_with_feedback_text(
+                        messages, content, review.feedback
+                    )
+                    # Re-validate structure after rewrite
+                    validation = self.validator.validate(content, recipe, data)
+                else:
+                    logger.info(
+                        "[Chapter] %s — content review: score=%d, OK",
+                        recipe.id,
+                        review.quality_score,
+                    )
 
             # Step 5: Write to disk
             output_path = self.output_dir / recipe.output_file

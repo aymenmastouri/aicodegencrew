@@ -5,6 +5,8 @@ Deterministic stage-based execution for phases that don't need multi-agent colla
 > **Reference Diagrams:**
 > - [phase-0-discover-architecture.drawio](../phases/phase-0-discover/phase-0-discover-architecture.drawio) — Indexing pipeline
 > - [phase-1-extract-architecture.drawio](../phases/phase-1-extract/phase-1-extract-architecture.drawio) — Facts collector pattern
+> - [phase-2-analyze-architecture.drawio](../phases/phase-2-analyze/phase-2-analyze-architecture.drawio) — Analysis pipeline (16 sections + review + synthesis)
+> - [phase-3-document-architecture.drawio](../phases/phase-3-document/phase-3-document-architecture.drawio) — Document pipeline (generate + validate + review)
 > - [phase-5-plan-architecture.drawio](../phases/phase-5-plan/phase-5-plan-architecture.drawio) — Planning pipeline stages
 > - [phase-6-implement-architecture.drawio](../phases/phase-6-implement/phase-6-implement-architecture.drawio) — Code generation crew
 > - [code-generation-pipeline.drawio](../phases/phase-6-implement/code-generation-pipeline.drawio) — Code generation stages + strategy hooks
@@ -28,16 +30,20 @@ graph LR
     S1[Stage 1<br/>Parse Input] --> S2[Stage 2<br/>Collect Context]
     S2 --> S3[Stage 3<br/>Transform/Generate]
     S3 --> S4[Stage 4<br/>Validate]
-    S4 --> S5[Stage 5<br/>Write Output]
+    S4 --> S4b[Stage 4b<br/>Content Review]
+    S4b --> S5[Stage 5<br/>Write Output]
 
     style S1 fill:#e8f5e9
     style S2 fill:#e8f5e9
     style S3 fill:#fff3e0
     style S4 fill:#e8f5e9
+    style S4b fill:#fff3e0
     style S5 fill:#e8f5e9
 ```
 
 Green = deterministic, Orange = LLM-assisted.
+
+Stage 4b (Content Review) is used by Analyze and Document phases. It runs a second LLM call to check the generated output against source data for gaps, contradictions, and unsupported claims. Non-fatal — if the review fails, the pipeline continues.
 
 Stages pass data forward via a shared `context` dict. Each stage reads what it needs and writes its output key.
 
@@ -61,7 +67,7 @@ Deterministic extraction of 16 architecture dimensions via modular collector pat
 
 **Entry point:** `pipelines/analysis/pipeline.py` → `AnalysisPipeline(BasePipeline)`
 
-16 parallel LLM calls (one per section) via `ThreadPoolExecutor(max_workers=8)` + 1 synthesis call. Checkpoint/resume support. Uses `SectionPromptBuilder` and `SynthesisPromptBuilder` (both implement `BasePromptBuilder.build(data: dict)`).
+16 parallel LLM calls (one per section) via `ThreadPoolExecutor(max_workers=8)` → review LLM call (cross-checks all sections for gaps, contradictions, number inconsistencies) → selective redo of flagged sections → 1 synthesis call. Checkpoint/resume support. Uses `SectionPromptBuilder`, `SynthesisPromptBuilder`, and `AnalysisReviewer`.
 
 ### Phase 3 — Architecture Synthesis (Document)
 
@@ -69,7 +75,7 @@ Deterministic extraction of 16 architecture dimensions via modular collector pat
 
 **Entry point:** `pipelines/document/pipeline.py` → `DocumentPipeline(BasePipeline)`
 
-Single LLM call to generate C4 + Arc42 documentation from analyzed architecture. Uses `LLMGenerator.generate_text()` and `retry_with_feedback_text()` for quality gate.
+Per-chapter pipeline: `DataCollector → PromptBuilder → LLMGenerator → ChapterValidator → DocumentReviewer → Write`. Two-phase quality: structural validation (7 checks) + content review LLM call that checks for missing topics, unsupported claims, and contradictions against source data. Retry with specific feedback on validation or review failure.
 
 ### Phase 4 — Issue Triage (Triage)
 

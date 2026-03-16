@@ -40,7 +40,7 @@ PHASES: dict[str, PhaseDescriptor] = {
         True,
         "knowledge/discover",
         ("knowledge/discover",),
-        resettable=False,
+        resettable=True,
     ),
     "extract": PhaseDescriptor(
         "extract",

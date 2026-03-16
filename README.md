@@ -27,11 +27,12 @@ Keine Daten verlassen das Netzwerk.
 1. [Quick Start — Docker (empfohlen)](#1-quick-start--docker-empfohlen)
 2. [Quick Start — Entwickler (Python + Node)](#2-quick-start--entwickler-python--node)
 3. [Quick Start — WSL2 Lokal (ohne Docker)](#3-quick-start--wsl2-lokal-ohne-docker)
-4. [SDLC Dashboard (Web UI)](#4-sdlc-dashboard-web-ui)
-5. [Core Pipeline (CLI)](#5-core-pipeline-cli)
-6. [Konfiguration (.env)](#6-konfiguration-env)
-7. [Architektur & Phasen](#7-architektur--phasen)
-8. [Troubleshooting](#8-troubleshooting)
+4. [Quick Start — Windows Lokal (ohne Docker)](#4-quick-start--windows-lokal-ohne-docker)
+5. [SDLC Dashboard (Web UI)](#5-sdlc-dashboard-web-ui)
+6. [Core Pipeline (CLI)](#6-core-pipeline-cli)
+7. [Konfiguration (.env)](#7-konfiguration-env)
+8. [Architektur & Phasen](#8-architektur--phasen)
+9. [Troubleshooting](#9-troubleshooting)
 9. [Scripts](#9-scripts)
 10. [Deployment](#10-deployment)
 11. [Testing](#11-testing)
@@ -275,7 +276,46 @@ bash scripts/setup-local.sh --run-e2e ~/mein-projekt   # Setup + E2E-Pipeline au
 
 ---
 
-## 4. SDLC Dashboard (Web UI)
+## 4. Quick Start — Windows Lokal (ohne Docker)
+
+> Für Manager oder Tester mit **Windows 10/11** — kein Docker, kein WSL nötig.
+> Ein einziges Script installiert Git, Python, Node.js und alles andere automatisch.
+
+### Voraussetzungen
+
+| Was | Hinweis |
+|-----|---------|
+| **Windows 10 (1809+) oder 11** | `winget` muss verfügbar sein (ist ab Win 10 eingebaut) |
+| **Admin-Rechte** | Rechtsklick → "Als Administrator ausführen" |
+
+### Setup (ein Doppelklick)
+
+1. `setup-windows.bat` per Rechtsklick → **"Als Administrator ausführen"**
+2. Warten (5–10 Minuten beim ersten Mal)
+3. Dashboard öffnet sich automatisch → http://localhost:4200
+
+Das Script macht automatisch:
+1. Installiert **Git**, **Python 3.12**, **Node.js 22** via `winget`
+2. Klont das Repository (bei Bedarf GitLab-Zugangsdaten eingeben)
+3. Erstellt Python-venv, installiert alle Dependencies
+4. Konfiguriert `.env` mit API-Key + allen Modell-Settings
+
+### Nach dem Setup
+
+In **Git Bash** (wird mit Git installiert):
+
+| Aktion | Befehl |
+|--------|--------|
+| Dashboard starten | `cd ~/aicodegencrew && ./scripts/dev.sh` |
+| Dashboard stoppen | `./scripts/dev.sh stop` |
+| Status prüfen | `./scripts/dev.sh status` |
+
+> **Hinweis:** API-Key und API-URL sind bereits im Script eingetragen.
+> Der Manager muss nichts konfigurieren — nur ausführen.
+
+---
+
+## 5. SDLC Dashboard (Web UI)
 
 Das Dashboard besteht aus **FastAPI Backend** (Port 8001) + **Angular Frontend** (Port 4200 dev / Port 80 Docker).
 
@@ -304,7 +344,7 @@ docker compose -f ui/docker-compose.ui.yml up --build    # http://localhost
 
 ---
 
-## 5. Core Pipeline (CLI)
+## 6. Core Pipeline (CLI)
 
 Die Pipeline kann **ohne Dashboard** direkt über die Kommandozeile laufen.
 
@@ -371,7 +411,7 @@ curl -X POST http://localhost:8001/api/reset
 
 ---
 
-## 6. Konfiguration (.env)
+## 7. Konfiguration (.env)
 
 `.env.example` → `.env` kopieren und anpassen:
 
@@ -414,7 +454,7 @@ curl -X POST http://localhost:8001/api/reset
 
 ---
 
-## 7. Architektur & Phasen
+## 8. Architektur & Phasen
 
 ```
 KNOWLEDGE (kein LLM)        REASONING (hybrid)           EXECUTION (hybrid)
@@ -450,7 +490,7 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + Symbole)
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 ### Docker-Probleme
 
@@ -475,11 +515,12 @@ Repository --> Discover   --> knowledge/discover/    (ChromaDB + Symbole)
 
 ---
 
-## 9. Scripts
+## 10. Scripts
 
 | Script | Beschreibung |
 |--------|-------------|
 | `start.bat` / `start.sh` | Dashboard starten/stoppen (Docker) |
+| `scripts/setup-windows.bat` | Komplettes Windows-Setup (Git, Python, Node, venv, Dashboard) — Doppelklick |
 | `scripts/setup-local.sh` | Komplettes WSL2-Setup (Git, Python, Node, venv, Dashboard) |
 | `scripts/dev.sh` | Dashboard Dev-Server starten/stoppen |
 | `scripts/stop-dev.js` | Dev-Server stoppen + Orphan-Prozesse killen |
@@ -505,12 +546,13 @@ python scripts/build_release.py --bump minor --tag      # 0.7.2 -> 0.8.0 + Git T
 
 ---
 
-## 10. Deployment
+## 11. Deployment
 
 | Modus | Befehl | Source-Code sichtbar |
 |-------|--------|:--------------------:|
 | **Docker** (empfohlen) | `start.bat` / `./start.sh` | Nein |
 | **Docker Release ZIP** | ZIP verteilen, `start.bat` | Nein |
+| **Windows Lokal** | Doppelklick `setup-windows.bat` | Ja |
 | **WSL2 Lokal** | `bash scripts/setup-local.sh` | Ja |
 | **Wheel** | `pip install aicodegencrew-X.Y.Z.whl` | Nein |
 | **Dev** | `pip install -e .` | Ja (intern) |
@@ -519,7 +561,7 @@ python scripts/build_release.py --bump minor --tag      # 0.7.2 -> 0.8.0 + Git T
 
 ---
 
-## 11. Testing
+## 12. Testing
 
 745+ Tests, kein LLM oder Netzwerk nötig (außer `tests/e2e/`).
 
@@ -541,7 +583,7 @@ ruff check src/ tests/ ui/backend
 
 ---
 
-## 12. Dokumentation
+## 13. Dokumentation
 
 | Dokument | Beschreibung |
 |----------|-------------|

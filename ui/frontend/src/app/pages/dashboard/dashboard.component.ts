@@ -1397,7 +1397,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   hasCompletedPhases(): boolean {
-    return !!this.pipeline?.phases.some((p) => isTerminal(p.status) && p.status !== 'skipped' && p.id !== 'discover');
+    return !!this.pipeline?.phases.some((p) => isTerminal(p.status) && p.status !== 'skipped');
   }
 
   private phaseDisplayName(phaseId: string): string {
@@ -1435,34 +1435,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   resetPhase(phaseId: string): void {
     const phaseName = this.phaseDisplayName(phaseId);
-
-    // Discover: clear status only (preserve ChromaDB index)
-    if (phaseId === 'discover') {
-      const ref = this.dialog.open(ConfirmDialogComponent, {
-        width: '480px',
-        data: {
-          title: `Clear ${phaseName} Status`,
-          message: `This will clear the status for ${phaseName}.\nThe ChromaDB index will not be deleted.`,
-          details: [phaseName],
-          type: 'info',
-          icon: 'refresh',
-          confirmLabel: 'Clear Status',
-        } as ConfirmDialogData,
-      });
-      ref.afterClosed().subscribe((confirmed) => {
-        if (!confirmed) return;
-        this.pipelineSvc.clearPhaseState([phaseId]).subscribe({
-          next: () => {
-            this.snackBar.open(`${phaseName} status cleared`, 'OK', { duration: 4000 });
-            this.refreshAll();
-          },
-          error: (err) => {
-            this.snackBar.open(err?.error?.detail || 'Clear status failed', 'OK', { duration: 4000 });
-          },
-        });
-      });
-      return;
-    }
 
     const cascade = true;
     this.pipelineSvc.previewReset([phaseId], cascade).subscribe({
@@ -1502,7 +1474,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   resetAll(): void {
     this.pipelineSvc
       .previewReset(
-        this.pipeline?.phases.filter((p) => p.id !== 'discover').map((p) => p.id) || [],
+        this.pipeline?.phases.map((p) => p.id) || [],
       )
       .subscribe({
         next: (preview: ResetPreview) => {
@@ -1510,7 +1482,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           const ref = this.dialog.open(ConfirmDialogComponent, {
             width: '480px',
             data: {
-              title: 'Reset All Phases (excluding Discover)',
+              title: 'Reset All Phases',
               message: `The following ${names.length} phase(s) will be reset.\n${preview.files_to_delete.length} file(s) will be deleted.`,
               details: names,
               type: 'warn',

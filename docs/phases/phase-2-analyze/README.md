@@ -1,6 +1,6 @@
 # Phase 2 — Analyze (Architecture Analysis)
 
-> **Status**: IMPLEMENTED | **Type**: Crew | **Layer**: Reasoning
+> **Status**: IMPLEMENTED | **Type**: Pipeline | **Layer**: Reasoning
 
 ---
 
@@ -12,7 +12,7 @@
 | Display Name | Architecture Analysis |
 | Type | Pipeline (16 parallel LLM calls + synthesis) |
 | Entry Point | `pipelines/analysis/pipeline.py` → `AnalysisPipeline` |
-| LLM Requirement | Yes (17 calls: 16 sections parallel + 1 synthesis) |
+| LLM Requirement | Yes (19 calls max: 16 sections + 1 review + N redo + 1 synthesis) |
 | Output | `knowledge/analyze/analyzed_architecture.json` |
 | Checkpoint | `knowledge/analyze/.checkpoint_analysis.json` |
 | Dependency | Discover + Extract |
@@ -20,7 +20,7 @@
 
 > **Diagrams:** [phase-2-analyze-architecture.drawio](phase-2-analyze-architecture.drawio) · [analysis-crew-schema.drawio](analysis-crew-schema.drawio)
 
-The Analyze phase uses `AnalysisPipeline(BasePipeline)` to run **16 parallel LLM calls** (one per analysis section) via `ThreadPoolExecutor(max_workers=8)`, followed by a **synthesis call** that merges all 16 section files into `analyzed_architecture.json`. Checkpoint/resume: completed sections are persisted in `.checkpoint_analysis.json`.
+The Analyze phase uses `AnalysisPipeline(BasePipeline)` to run **16 parallel LLM calls** (one per analysis section) via `ThreadPoolExecutor(max_workers=8)`, followed by a **review LLM call** that cross-checks all sections for gaps, contradictions, and weak analysis. Sections flagged by the reviewer are **selectively re-generated** with specific feedback. Finally, a **synthesis call** merges all section files into `analyzed_architecture.json`. Checkpoint/resume: completed sections are persisted in `.checkpoint_analysis.json`.
 
 ## 2. Goals
 
@@ -36,16 +36,32 @@ The Analyze phase uses `AnalysisPipeline(BasePipeline)` to run **16 parallel LLM
 | **Input** | Architecture facts | JSON | `knowledge/extract/architecture_facts.json` |
 | **Input** | ChromaDB index | Vector DB | `knowledge/discover/` |
 | **Output** | Analyzed architecture | JSON | `knowledge/analyze/analyzed_architecture.json` |
+| **Output** | Review report | JSON | `knowledge/analyze/analysis/_review_report.json` |
 | **Output** | Checkpoint | JSON | `knowledge/analyze/.checkpoint_analysis.json` |
 
 ## 4. Architecture
 
 ### Pipeline Architecture
 
-| Phase | Mechanism | Output |
-|-------|-----------|--------|
+| Step | Mechanism | Output |
+|------|-----------|--------|
 | Section calls (×16) | `ThreadPoolExecutor(max_workers=8)` — `SectionPromptBuilder.build({"section_id": id})` | `analysis/01_*.json` … `16_*.json` |
+| Review call (×1) | `AnalysisReviewer.review(section_outputs)` — cross-checks all 16 sections | `analysis/_review_report.json` |
+| Selective redo (×0–N) | `retry_with_feedback()` for sections flagged by reviewer | Updated section `.json` files |
 | Synthesis call (×1) | `SynthesisPromptBuilder.build({"sections": {filename: content}})` | `analyzed_architecture.json` |
+
+### Review Call (New)
+
+After all 16 sections complete, the `AnalysisReviewer` runs a single LLM call that receives all section outputs plus a source data summary. It identifies:
+
+- **Gaps** — topics present in the source data but missing from the analysis
+- **Contradictions** — conflicting statements between sections (e.g., section 01 says "Monolith" but section 04 implies microservices coupling patterns)
+- **Weak sections** — vague reasoning without evidence from the facts
+- **Number inconsistencies** — component counts or relation counts that differ between sections
+
+The reviewer produces a `ReviewResult` with a `quality_score` (0–100) and a `sections_to_redo` mapping. Flagged sections are re-generated using `retry_with_feedback()` with the reviewer's specific issues injected into the prompt. This ensures the synthesis call receives consistent, well-grounded input.
+
+The review is **non-fatal** — if the review LLM call fails, the pipeline continues normally.
 
 **Section IDs and topics:**
 
@@ -84,6 +100,9 @@ All 16 section outputs are parsed with `_extract_and_repair_json()` which:
 | Decision | Rationale |
 |----------|-----------|
 | 16 parallel LLM calls | Each section independent → full parallelism via ThreadPoolExecutor |
+| Review call before synthesis | Cross-checks sections for gaps, contradictions, and number inconsistencies before merging |
+| Selective redo, not full re-run | Only re-generates sections flagged by reviewer — saves tokens and time |
+| Non-fatal review | Review failure doesn't block the pipeline — synthesis proceeds with original sections |
 | Checkpoint/resume | Completed section IDs in `.checkpoint_analysis.json`; only failed sections re-run |
 | `BasePromptBuilder` ABC | Uniform `build(data: dict)` contract — no workarounds |
 | JSON repair | LLMs truncate; stack-based bracket closer recovers partial JSON |
@@ -96,24 +115,17 @@ All 16 section outputs are parsed with `_extract_and_repair_json()` which:
 
 ## 7. Quality Gates & Validation
 
-- Pydantic output validation per crew task — invalid output triggers retry with error feedback
-- Output-gate validation: raises `RuntimeError` if files missing after crew completes
-- Evidence-first: every claim must be backed by tool query results
+| Gate | Mechanism | When |
+|------|-----------|------|
+| JSON parse + repair | `_extract_and_repair_json()` — stack-based bracket closer for truncated output | After each section call |
+| Cross-section review | `AnalysisReviewer` — LLM reviews all 16 sections for gaps, contradictions, inconsistencies | After all sections complete |
+| Selective redo | `retry_with_feedback()` — re-generates flagged sections with reviewer issues | After review |
+| Synthesis validation | Required top-level keys check (`system`, `macro_architecture`, `overall_grade`, etc.) | After synthesis |
+| Review report | `_review_report.json` — persisted for transparency and debugging | After review |
 
 ## 8. Configuration
 
-Configuration via Python constants in `crew.py`:
-
-```python
-AGENT_CONFIGS = {
-    "tech_architect": {"role": "Senior Technical Architect", ...},
-    "func_analyst":   {"role": "Senior Functional Analyst", ...},
-    "quality_analyst": {"role": "Senior Quality Architect", ...},
-    "synthesis_lead":  {"role": "Lead Architect - Synthesis", ...},
-}
-```
-
-LLM settings via environment variables (`MODEL`, `API_BASE`, `LLM_PROVIDER`).
+LLM settings via environment variables (`MODEL`, `API_BASE`, `MAX_LLM_OUTPUT_TOKENS`, `LLM_TEMPERATURE`, `LLM_TOP_P`, `LLM_TOP_K`). All centralized in `shared/llm_generator.py`.
 
 ## 9. Risks & Open Points
 

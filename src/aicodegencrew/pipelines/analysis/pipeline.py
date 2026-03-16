@@ -3,7 +3,9 @@
 Replaces the CrewAI agent-based approach with:
 1. Pre-collect all facts deterministically (pure Python, no agent loops)
 2. 16 parallel LLM calls (one per analysis section) → 16 JSON files
-3. 1 synthesis LLM call → analyzed_architecture.json
+3. Review LLM call — checks all sections for gaps, contradictions, weak analysis
+4. Selective redo of flagged sections with review feedback
+5. 1 synthesis LLM call → analyzed_architecture.json
 
 Usage::
 
@@ -31,6 +33,7 @@ load_dotenv(override=True)
 from ...shared import BasePipeline, LLMGenerator
 from .data_collector import DataCollector
 from .prompt_builder import SectionPromptBuilder, SynthesisPromptBuilder, SECTION_META
+from .reviewer import AnalysisReviewer
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +66,11 @@ class AnalysisPipeline(BasePipeline):
         1. DataCollector.load() — read all fact files once
         2. Load checkpoint (resume support)
         3. 16 parallel LLM calls via ThreadPoolExecutor(max_workers=8)
-        4. Synthesis LLM call
-        5. Write analyzed_architecture.json
-        6. Return {"status": ..., "phase": "analyze", "result": ...}
+        4. Review LLM call — cross-check sections for gaps & contradictions
+        5. Selective redo of flagged sections with review feedback
+        6. Synthesis LLM call
+        7. Write analyzed_architecture.json
+        8. Return {"status": ..., "phase": "analyze", "result": ...}
     """
 
     # Mapping section_id → output filename (relative to output_dir/analysis/)
@@ -105,6 +110,7 @@ class AnalysisPipeline(BasePipeline):
         self._section_prompt_builder = SectionPromptBuilder()
         self._synthesis_prompt_builder = SynthesisPromptBuilder()
         self._generator = LLMGenerator()
+        self._reviewer = AnalysisReviewer(collector=self._collector, generator=self._generator)
 
     # =========================================================================
     # PUBLIC ENTRY POINT
@@ -173,6 +179,9 @@ class AnalysisPipeline(BasePipeline):
         # Sort results by section_id for clean logging
         all_results.sort(key=lambda r: r.section_id)
 
+        # ── Phase 1b: Review + selective redo ─────────────────────────────────
+        self._review_and_redo_sections(all_results, completed)
+
         # ── Phase 2: Synthesis ────────────────────────────────────────────────
         synthesis_result = self._run_synthesis()
 
@@ -204,6 +213,150 @@ class AnalysisPipeline(BasePipeline):
             "phase": "analyze",
             "result": output_path,
         }
+
+    # =========================================================================
+    # REVIEW + SELECTIVE REDO
+    # =========================================================================
+
+    def _review_and_redo_sections(
+        self, all_results: list[SectionResult], completed: set[str]
+    ) -> None:
+        """Review all sections and redo those flagged by the reviewer.
+
+        Reads all section output files, sends them to the AnalysisReviewer,
+        and re-generates any sections the reviewer flags with specific feedback.
+        Each flagged section gets ONE redo attempt with the review feedback
+        injected into the prompt.
+        """
+        # Collect existing section outputs
+        section_outputs: dict[str, str] = {}
+        for sid, rel_path in self.SECTION_OUTPUT_FILES.items():
+            path = self.output_dir / rel_path
+            if path.exists():
+                section_outputs[sid] = path.read_text(encoding="utf-8")
+
+        if not section_outputs:
+            logger.info("[AnalysisPipeline] No sections to review (all failed)")
+            return
+
+        # Run review
+        review = self._reviewer.review(section_outputs)
+
+        # Log review results
+        if review.gaps:
+            logger.info("[AnalysisPipeline] Review gaps: %s", review.gaps)
+        if review.contradictions:
+            logger.warning("[AnalysisPipeline] Review contradictions: %s", review.contradictions)
+
+        # Write review report for transparency
+        review_report_path = self.output_dir / "analysis" / "_review_report.json"
+        try:
+            report = {
+                "quality_score": review.quality_score,
+                "sections_to_redo": review.sections_to_redo,
+                "gaps": review.gaps,
+                "contradictions": review.contradictions,
+            }
+            review_report_path.write_text(
+                json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+        except Exception:
+            pass  # Non-critical
+
+        if not review.sections_to_redo:
+            logger.info(
+                "[AnalysisPipeline] Review passed (score=%d) — no sections to redo",
+                review.quality_score,
+            )
+            return
+
+        # Redo flagged sections with review feedback
+        logger.info(
+            "[AnalysisPipeline] Review (score=%d) — redoing %d section(s): %s",
+            review.quality_score,
+            len(review.sections_to_redo),
+            sorted(review.sections_to_redo.keys()),
+        )
+
+        for sid, issues in review.sections_to_redo.items():
+            if sid not in self.SECTION_OUTPUT_FILES:
+                logger.warning("[AnalysisPipeline] Review flagged unknown section: %s", sid)
+                continue
+
+            result = self._redo_section_with_feedback(sid, issues)
+
+            # Update the result in all_results
+            for i, r in enumerate(all_results):
+                if r.section_id == sid:
+                    all_results[i] = result
+                    break
+            else:
+                all_results.append(result)
+
+            if result.status == "success":
+                self._save_checkpoint(sid, completed)
+
+    def _redo_section_with_feedback(
+        self, section_id: str, issues: list[str]
+    ) -> SectionResult:
+        """Re-generate a single section with review feedback injected.
+
+        Args:
+            section_id: Section to redo (e.g. "04").
+            issues: Specific issues from the reviewer.
+
+        Returns:
+            SectionResult from the redo attempt.
+        """
+        start = time.time()
+        meta = SECTION_META[section_id]
+        output_rel = self.SECTION_OUTPUT_FILES[section_id]
+        output_path = self.output_dir / output_rel
+
+        logger.info("[Section] %s — REDO with review feedback: %s", section_id, issues[:3])
+
+        try:
+            # Read previous output
+            previous_output = ""
+            if output_path.exists():
+                previous_output = output_path.read_text(encoding="utf-8")
+
+            # Collect data + build original prompt
+            data = self._collector.collect_section_data(section_id)
+            messages = self._section_prompt_builder.build({**data, "section_id": section_id})
+
+            # Use retry_with_feedback to inject review issues
+            content = self._generator.retry_with_feedback(messages, previous_output, issues)
+
+            # Parse and repair JSON
+            content = self._extract_and_repair_json(content)
+
+            # Write output
+            output_path.write_text(content, encoding="utf-8")
+
+            duration = time.time() - start
+            logger.info(
+                "[Section] %s — redo success (%d chars, %.1fs)",
+                section_id,
+                len(content),
+                duration,
+            )
+            return SectionResult(
+                section_id=section_id,
+                status="success",
+                output_file=output_rel,
+                duration_seconds=duration,
+            )
+
+        except Exception as exc:
+            duration = time.time() - start
+            logger.error("[Section] %s — redo FAILED: %s", section_id, exc, exc_info=True)
+            return SectionResult(
+                section_id=section_id,
+                status="failed",
+                duration_seconds=duration,
+                issues=[f"redo failed: {exc}"],
+            )
 
     # =========================================================================
     # SECTION EXECUTION
@@ -270,8 +423,12 @@ class AnalysisPipeline(BasePipeline):
     # SYNTHESIS
     # =========================================================================
 
+    _SYNTHESIS_MAX_RETRIES = 2
+
     def _run_synthesis(self) -> str:
         """Read all 16 section files → synthesis LLM call → write analyzed_architecture.json.
+
+        Retries up to _SYNTHESIS_MAX_RETRIES times if JSON parsing fails.
 
         Returns:
             "success" or "failed".
@@ -295,11 +452,30 @@ class AnalysisPipeline(BasePipeline):
             # Build synthesis prompt
             messages = self._synthesis_prompt_builder.build({"sections": sections})
 
-            # LLM call
-            content = self._llm_call(messages)
-
-            # Parse and repair JSON
-            content = self._extract_and_repair_json(content)
+            # LLM call with retry on JSON parse failure
+            content = None
+            last_error = None
+            for attempt in range(1 + self._SYNTHESIS_MAX_RETRIES):
+                try:
+                    if attempt == 0:
+                        raw = self._llm_call(messages)
+                    else:
+                        logger.info(
+                            "[AnalysisPipeline] Synthesis retry %d/%d (previous: %s)",
+                            attempt, self._SYNTHESIS_MAX_RETRIES, last_error,
+                        )
+                        raw = self._generator.retry_with_feedback(
+                            messages, raw, [
+                                f"Your previous output was not valid JSON: {last_error}",
+                                "Output ONLY valid JSON. No markdown fences. No trailing text.",
+                            ],
+                        )
+                    content = self._extract_and_repair_json(raw)
+                    break  # Success
+                except ValueError as exc:
+                    last_error = str(exc)
+                    if attempt >= self._SYNTHESIS_MAX_RETRIES:
+                        raise
 
             # Inject schema version
             try:
@@ -352,6 +528,13 @@ class AnalysisPipeline(BasePipeline):
     def _extract_and_repair_json(self, content: str) -> str:
         """Strip markdown fences, attempt direct parse, repair truncated JSON if needed.
 
+        Handles:
+        - Markdown code fences (```json ... ```)
+        - Trailing text after JSON (explanation after the closing brace)
+        - Missing commas between properties/elements
+        - Truncated JSON (unclosed brackets/braces)
+        - Trailing commas
+
         Args:
             content: Raw LLM output string.
 
@@ -378,6 +561,35 @@ class AnalysisPipeline(BasePipeline):
             return json.dumps(data, indent=2, ensure_ascii=False)
         except json.JSONDecodeError:
             pass
+
+        # Strip trailing text after the last closing brace/bracket
+        # (LLM sometimes adds explanation after the JSON)
+        last_brace = max(text.rfind("}"), text.rfind("]"))
+        if last_brace > 0 and last_brace < len(text) - 1:
+            trimmed = text[: last_brace + 1]
+            try:
+                data = json.loads(trimmed)
+                logger.info("[AnalysisPipeline] Trimmed trailing text (%d → %d chars)", len(text), len(trimmed))
+                return json.dumps(data, indent=2, ensure_ascii=False)
+            except json.JSONDecodeError:
+                pass
+
+        # Fix missing commas: }\n{ or ]\n[ or "\n" between properties
+        fixed = re.sub(r'"\s*\n(\s*)"', r'",\n\1"', text)
+        fixed = re.sub(r'}\s*\n(\s*)"', r'},\n\1"', fixed)
+        fixed = re.sub(r']\s*\n(\s*)"', r'],\n\1"', fixed)
+        fixed = re.sub(r'}\s*\n(\s*){', r'},\n\1{', fixed)
+        fixed = re.sub(r']\s*\n(\s*)\[', r'],\n\1[', fixed)
+        # Fix: true/false/null/number followed by newline + "key"
+        fixed = re.sub(r'(true|false|null|\d+)\s*\n(\s*)"', r'\1,\n\2"', fixed)
+        if fixed != text:
+            try:
+                data = json.loads(fixed)
+                logger.info("[AnalysisPipeline] Fixed missing commas (%d replacements)", text.count('\n') - fixed.count('\n') + (len(fixed) - len(text)))
+                return json.dumps(data, indent=2, ensure_ascii=False)
+            except json.JSONDecodeError:
+                pass
+            text = fixed  # Use the comma-fixed version for further repair
 
         # Attempt to repair truncated JSON by closing open structures
         repaired = text.rstrip()
