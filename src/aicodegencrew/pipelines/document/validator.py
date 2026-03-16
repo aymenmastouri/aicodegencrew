@@ -102,12 +102,8 @@ class ChapterValidator:
                 False,
                 f"Content too short: {length} chars (minimum: {recipe.min_length}). Add more detail and analysis.",
             )
-        if length > recipe.max_length:
-            return ValidationCheck(
-                "length",
-                False,
-                f"Content too long: {length} chars (maximum: {recipe.max_length}). Be more concise.",
-            )
+        # No max_length check — longer chapters are better than truncated ones.
+        # The LLM output is bounded by MAX_LLM_OUTPUT_TOKENS (65536).
         return ValidationCheck("length", True)
 
     def _check_starts_with_heading(self, content: str, recipe: ChapterRecipe) -> ValidationCheck:
