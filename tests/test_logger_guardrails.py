@@ -296,7 +296,7 @@ class TestTokenBudgetDefaults:
         import importlib
         import aicodegencrew.shared.utils.token_budget as tb
         importlib.reload(tb)
-        assert tb.MAX_LLM_OUTPUT_TOKENS == 8_000
+        assert tb.MAX_LLM_OUTPUT_TOKENS == 65_536
 
     def test_tool_max_chars_calculation(self):
         from aicodegencrew.shared.utils.token_budget import (

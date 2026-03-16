@@ -204,7 +204,7 @@ class TestDeliveryArtifacts:
 
     def test_dockerfile_exists(self):
         """Backend Dockerfile must exist."""
-        assert (PROJECT_ROOT / "ui" / "backend" / "Dockerfile.dev").exists(), "Backend Dockerfile not found"
+        assert (PROJECT_ROOT / "ui" / "backend" / "Dockerfile").exists(), "Backend Dockerfile not found"
 
     # --- config/phases_config.yaml ---
 

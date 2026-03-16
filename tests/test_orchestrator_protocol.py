@@ -109,23 +109,23 @@ class TestRealPhasesHaveKickoff:
 
         assert hasattr(ArchitectureFactsPipeline, "kickoff")
 
-    def test_analysis_crew_has_kickoff(self):
-        from aicodegencrew.crews.architecture_analysis.crew import ArchitectureAnalysisCrew
+    def test_analysis_pipeline_has_kickoff(self):
+        from aicodegencrew.pipelines.analysis.pipeline import AnalysisPipeline
 
-        assert hasattr(ArchitectureAnalysisCrew, "kickoff")
+        assert hasattr(AnalysisPipeline, "kickoff")
 
-    def test_synthesis_crew_has_kickoff(self):
-        from aicodegencrew.crews.architecture_synthesis.crew import ArchitectureSynthesisCrew
+    def test_document_pipeline_has_kickoff(self):
+        from aicodegencrew.pipelines.document.pipeline import DocumentPipeline
 
-        assert hasattr(ArchitectureSynthesisCrew, "kickoff")
+        assert hasattr(DocumentPipeline, "kickoff")
 
-    def test_planning_pipeline_has_kickoff(self):
-        from aicodegencrew.hybrid.development_planning.pipeline import DevelopmentPlanningPipeline
+    def test_plan_pipeline_has_kickoff(self):
+        from aicodegencrew.pipelines.plan.pipeline import PlanPipeline
 
-        assert hasattr(DevelopmentPlanningPipeline, "kickoff")
+        assert hasattr(PlanPipeline, "kickoff")
 
-    def test_codegen_pipeline_has_kickoff(self):
-        from aicodegencrew.hybrid.code_generation.crew import ImplementCrew
+    def test_implement_crew_has_kickoff(self):
+        from aicodegencrew.crews.implement.crew import ImplementCrew
 
         assert hasattr(ImplementCrew, "kickoff")
 
@@ -185,6 +185,9 @@ class TestInvokeExecutable:
 
             def submit(self, fn, *args, **kwargs):  # pragma: no cover - used by _invoke_executable
                 return _FakeFuture()
+
+            def shutdown(self, *args, **kwargs):  # pragma: no cover - cleanup
+                pass
 
         monkeypatch.setattr("aicodegencrew.orchestrator._cf.ThreadPoolExecutor", _FakeExecutor)
 

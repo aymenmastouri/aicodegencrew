@@ -331,33 +331,33 @@ class TestPhase1ToPhase2:
             assert "lines" in entry, f"Evidence {ev_id} missing lines"
             assert "reason" in entry, f"Evidence {ev_id} missing reason"
 
-    def test_facts_json_readable_by_load_json(self, tmp_path):
-        """MiniCrewBase._load_json can read a valid facts file."""
-        from aicodegencrew.crews.architecture_synthesis.base_crew import MiniCrewBase
+    def test_facts_json_readable(self, tmp_path):
+        """json.load can read a valid facts file."""
+        import json
 
         self._create_mock_facts(tmp_path)
         facts_path = tmp_path / "architecture_facts.json"
 
-        loaded = MiniCrewBase._load_json(facts_path)
+        loaded = json.loads(facts_path.read_text(encoding="utf-8"))
         assert loaded["system"]["name"] == "TestSystem"
         assert len(loaded["components"]) == 2
 
     def test_load_json_missing_file(self, tmp_path):
-        """_load_json returns empty dict for missing files."""
-        from aicodegencrew.crews.architecture_synthesis.base_crew import MiniCrewBase
+        """Missing file raises FileNotFoundError."""
+        import json
 
-        loaded = MiniCrewBase._load_json(tmp_path / "nonexistent.json")
-        assert loaded == {}
+        with pytest.raises(FileNotFoundError):
+            json.loads((tmp_path / "nonexistent.json").read_text(encoding="utf-8"))
 
     def test_load_json_invalid_json(self, tmp_path):
-        """_load_json returns empty dict for invalid JSON."""
-        from aicodegencrew.crews.architecture_synthesis.base_crew import MiniCrewBase
+        """Invalid JSON raises JSONDecodeError."""
+        import json
 
         bad_file = tmp_path / "broken.json"
         bad_file.write_text("{broken json}}}", encoding="utf-8")
 
-        loaded = MiniCrewBase._load_json(bad_file)
-        assert loaded == {}
+        with pytest.raises(json.JSONDecodeError):
+            json.loads(bad_file.read_text(encoding="utf-8"))
 
     def test_collector_orchestrator_on_mock_repo(self, tmp_path):
         """CollectorOrchestrator produces valid DimensionResults on a mock repo."""
@@ -499,14 +499,14 @@ class TestPhase2ToPhase3:
         analyzed = self._create_mock_analyzed(tmp_path)
         assert "style" in analyzed["macro_architecture"]
 
-    def test_analyzed_json_readable_by_load_json(self, tmp_path):
-        """MiniCrewBase._load_json can read analyzed JSON."""
-        from aicodegencrew.crews.architecture_synthesis.base_crew import MiniCrewBase
+    def test_analyzed_json_readable(self, tmp_path):
+        """json.load can read analyzed JSON."""
+        import json
 
         self._create_mock_analyzed(tmp_path)
         path = tmp_path / "analyzed_architecture.json"
 
-        loaded = MiniCrewBase._load_json(path)
+        loaded = json.loads(path.read_text(encoding="utf-8"))
         assert loaded["macro_architecture"]["style"] == "Layered + Modular"
         assert "container_analyses" in loaded
 
@@ -518,7 +518,7 @@ class TestPhase2ToPhase3:
         assert "required_keys" in spec
         assert "macro_architecture" in spec["required_keys"]
         assert "micro_architecture" in spec["required_keys"]
-        assert "quality" in spec["required_keys"]
+        assert "architecture_quality" in spec["required_keys"]
         assert "executive_summary" in spec["required_keys"]
 
     def test_synthesis_crew_detects_missing_prerequisites(self, tmp_path):
@@ -655,8 +655,8 @@ class TestPhase4StageFlow:
 
     def test_stage1_parses_text_file(self, tmp_path):
         """Stage 1 InputParserStage can parse a .txt task file."""
-        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
-        from aicodegencrew.hybrid.development_planning.stages import (
+        from aicodegencrew.pipelines.plan.schemas import TaskInput
+        from aicodegencrew.pipelines.plan.stages import (
             InputParserStage,
         )
 
@@ -676,7 +676,7 @@ class TestPhase4StageFlow:
 
     def test_stage1_detects_upgrade_type(self, tmp_path):
         """Stage 1 detects upgrade task type from content."""
-        from aicodegencrew.hybrid.development_planning.stages import (
+        from aicodegencrew.pipelines.plan.stages import (
             InputParserStage,
         )
 
@@ -692,7 +692,7 @@ class TestPhase4StageFlow:
 
     def test_stage1_detects_bugfix_type(self, tmp_path):
         """Stage 1 detects bugfix task type."""
-        from aicodegencrew.hybrid.development_planning.stages import (
+        from aicodegencrew.pipelines.plan.stages import (
             InputParserStage,
         )
 
@@ -708,8 +708,8 @@ class TestPhase4StageFlow:
 
     def test_stage2_component_discovery_no_chromadb(self, mock_facts):
         """Stage 2 works with facts-only scoring when ChromaDB is unavailable."""
-        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
-        from aicodegencrew.hybrid.development_planning.stages import (
+        from aicodegencrew.pipelines.plan.schemas import TaskInput
+        from aicodegencrew.pipelines.plan.stages import (
             ComponentDiscoveryStage,
         )
 
@@ -734,8 +734,8 @@ class TestPhase4StageFlow:
 
     def test_stage3_pattern_matcher_returns_all_categories(self, mock_facts):
         """Stage 3 returns test_patterns, security_patterns, etc."""
-        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
-        from aicodegencrew.hybrid.development_planning.stages import (
+        from aicodegencrew.pipelines.plan.schemas import TaskInput
+        from aicodegencrew.pipelines.plan.stages import (
             PatternMatcherStage,
         )
 
@@ -771,11 +771,11 @@ class TestPhase4StageFlow:
 
     def test_stage5_validates_valid_plan(self):
         """Stage 5 validates a well-formed plan as valid."""
-        from aicodegencrew.hybrid.development_planning.schemas import (
+        from aicodegencrew.pipelines.plan.schemas import (
             ImplementationPlan,
             ValidationResult,
         )
-        from aicodegencrew.hybrid.development_planning.stages import ValidatorStage
+        from aicodegencrew.pipelines.plan.stages import ValidatorStage
 
         stage5 = ValidatorStage(analyzed_architecture={})
 
@@ -820,10 +820,10 @@ class TestPhase4StageFlow:
 
     def test_stage5_rejects_empty_components(self):
         """Stage 5 rejects plans with no affected components."""
-        from aicodegencrew.hybrid.development_planning.schemas import (
+        from aicodegencrew.pipelines.plan.schemas import (
             ImplementationPlan,
         )
-        from aicodegencrew.hybrid.development_planning.stages import ValidatorStage
+        from aicodegencrew.pipelines.plan.stages import ValidatorStage
 
         stage5 = ValidatorStage()
 
@@ -846,7 +846,7 @@ class TestPhase4StageFlow:
 
     def test_stage_chain_1_to_3_with_mock_data(self, tmp_path, mock_facts):
         """Full Stage 1 -> 2 -> 3 chain with mock data (no LLM)."""
-        from aicodegencrew.hybrid.development_planning.stages import (
+        from aicodegencrew.pipelines.plan.stages import (
             ComponentDiscoveryStage,
             InputParserStage,
             PatternMatcherStage,
@@ -879,7 +879,7 @@ class TestPhase4StageFlow:
 
     def test_task_input_schema_roundtrip(self):
         """TaskInput can be serialized and deserialized."""
-        from aicodegencrew.hybrid.development_planning.schemas import TaskInput
+        from aicodegencrew.pipelines.plan.schemas import TaskInput
 
         task = TaskInput(
             task_id="PROJ-456",

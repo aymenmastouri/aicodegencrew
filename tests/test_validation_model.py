@@ -107,7 +107,7 @@ def _valid_analysis_json():
         "micro_architecture": {
             "layers": {},
         },
-        "quality": {
+        "architecture_quality": {
             "overall_grade": "B",
         },
         "executive_summary": "Test summary",
