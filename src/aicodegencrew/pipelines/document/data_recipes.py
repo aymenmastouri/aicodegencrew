@@ -500,7 +500,7 @@ C4_RECIPES: list[ChapterRecipe] = [
         ],
         sections=["## 1.1 Overview", "## 1.2 The System", "## 1.3 Actors", "## 1.4 External Systems"],
         min_length=6000,
-        max_length=20000,
+        max_length=30000,
         diagram_file="c4/c4-context.drawio",
         context_hint=(
             "C4 Level 1 — the highest abstraction level:\n"
@@ -520,7 +520,7 @@ C4_RECIPES: list[ChapterRecipe] = [
         rag_queries=["docker container deployment microservice monolith"],
         sections=["## 2.1 Overview", "## 2.2 Container Inventory", "## 2.3 Container Interactions"],
         min_length=6000,
-        max_length=20000,
+        max_length=30000,
         diagram_file="c4/c4-container.drawio",
         context_hint=(
             "C4 Level 2 — containers within the system:\n"
@@ -540,7 +540,7 @@ C4_RECIPES: list[ChapterRecipe] = [
         rag_queries=["layer architecture dependency injection component"],
         sections=["## 3.1 Overview", "## 3.2 Backend Components", "## 3.3 Component Dependencies"],
         min_length=6000,
-        max_length=20000,
+        max_length=30000,
         diagram_file="c4/c4-component.drawio",
         context_hint=(
             "C4 Level 3 — components within the main container:\n"
@@ -563,7 +563,7 @@ C4_RECIPES: list[ChapterRecipe] = [
         ],
         sections=["## 4.1 Overview", "## 4.2 Infrastructure Nodes", "## 4.3 Container Mapping"],
         min_length=5000,
-        max_length=20000,
+        max_length=30000,
         diagram_file="c4/c4-deployment.drawio",
         context_hint=(
             "C4 Level 4 — deployment topology:\n"
