@@ -87,33 +87,61 @@ $gitVer = git --version 2>$null
 Ok "Git $gitVer"
 
 # Python 3.12
+# Windows has fake python3.exe aliases that redirect to Microsoft Store.
+# Disable them before searching, and wrap every probe in try/catch.
 $pythonCmd = $null
-foreach ($candidate in @('python3.12', 'python3', 'python', 'py')) {
-    if (Test-Command $candidate) {
-        $ver = & $candidate --version 2>&1
-        if ("$ver" -match '3\.12') { $pythonCmd = $candidate; break }
+
+# Disable Windows Store aliases (requires admin)
+try {
+    $appAliasDir = "$env:LOCALAPPDATA\Microsoft\WindowsApps"
+    foreach ($alias in @('python.exe', 'python3.exe')) {
+        $aliasPath = Join-Path $appAliasDir $alias
+        if ((Test-Path $aliasPath) -and (Get-Item $aliasPath).Length -lt 10KB) {
+            # This is a Store stub (tiny file), not real Python
+            Warn "Skipping Windows Store alias: $alias"
+        }
+    }
+} catch {}
+
+# Try py launcher first (most reliable on Windows)
+if (Test-Command 'py') {
+    try {
+        $ver = py -3.12 --version 2>&1
+        if ("$ver" -match '3\.12') { $pythonCmd = 'py -3.12' }
+    } catch {}
+}
+
+# Try direct python commands
+if (-not $pythonCmd) {
+    foreach ($candidate in @('python', 'python3')) {
+        try {
+            $ver = & $candidate --version 2>&1 | Out-String
+            if ($ver -match '3\.12') { $pythonCmd = $candidate; break }
+        } catch {}
     }
 }
-if (-not $pythonCmd -and (Test-Command 'py')) {
-    $ver = py -3.12 --version 2>&1
-    if ("$ver" -match '3\.12') { $pythonCmd = 'py -3.12' }
-}
+
 if (-not $pythonCmd) {
     Install-WithWinget 'Python.Python.3.12' 'Python 3.12'
     Refresh-Path
-    foreach ($candidate in @('python3.12', 'python3', 'python', 'py')) {
-        if (Test-Command $candidate) {
-            $ver = & $candidate --version 2>&1
-            if ("$ver" -match '3\.12') { $pythonCmd = $candidate; break }
-        }
+    # After install, try py launcher first
+    if (Test-Command 'py') {
+        try {
+            $ver = py -3.12 --version 2>&1
+            if ("$ver" -match '3\.12') { $pythonCmd = 'py -3.12' }
+        } catch {}
     }
-    if (-not $pythonCmd -and (Test-Command 'py')) {
-        $ver = py -3.12 --version 2>&1
-        if ("$ver" -match '3\.12') { $pythonCmd = 'py -3.12' }
+    if (-not $pythonCmd) {
+        foreach ($candidate in @('python', 'python3')) {
+            try {
+                $ver = & $candidate --version 2>&1 | Out-String
+                if ($ver -match '3\.12') { $pythonCmd = $candidate; break }
+            } catch {}
+        }
     }
     if (-not $pythonCmd) { Fail 'Python 3.12 not found after install. Get it from https://www.python.org/downloads/' }
 }
-$pyVersion = & ($pythonCmd.Split(' ')[0]) @(($pythonCmd.Split(' ') | Select-Object -Skip 1) + '--version') 2>&1
+$pyVersion = try { & ($pythonCmd.Split(' ')[0]) @(($pythonCmd.Split(' ') | Select-Object -Skip 1) + '--version') 2>&1 } catch { $pythonCmd }
 Ok "Python: $pyVersion"
 
 # Node.js 22
