@@ -460,17 +460,28 @@ class SDLCOrchestrator:
                         logger.warning("[Orchestrator] Could not cache facts.json: %s", cache_err)
                         self._facts_cache = {}
 
-                # Export architecture facts to Neo4J knowledge graph (if configured)
+                # Export architecture facts to Neo4J knowledge graph (non-blocking)
                 if self._facts_cache:
-                    try:
-                        from .shared.utils.neo4j_client import Neo4jClient
+                    import threading
 
-                        neo4j = Neo4jClient()
-                        if neo4j.enabled:
-                            neo4j.export_architecture_facts(self._facts_cache)
-                            neo4j.close()
-                    except Exception as neo4j_err:
-                        logger.warning("[Orchestrator] Neo4J export failed (non-fatal): %s", neo4j_err)
+                    def _neo4j_export(facts: dict) -> None:
+                        try:
+                            from .shared.utils.neo4j_client import Neo4jClient
+
+                            neo4j = Neo4jClient()
+                            if neo4j.enabled:
+                                neo4j.export_architecture_facts(facts)
+                                neo4j.close()
+                                logger.info("[Orchestrator] Neo4J export completed")
+                        except Exception as neo4j_err:
+                            logger.warning("[Orchestrator] Neo4J export failed (non-fatal): %s", neo4j_err)
+
+                    threading.Thread(
+                        target=_neo4j_export,
+                        args=(self._facts_cache,),
+                        daemon=True,
+                        name="neo4j-export",
+                    ).start()
 
             # Auto-commit after successful phase
             self._git_commit_after_phase(phase_id)
