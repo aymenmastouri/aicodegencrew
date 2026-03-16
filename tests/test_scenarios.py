@@ -427,7 +427,7 @@ class TestScenario3ErrorRecovery:
 
         from aicodegencrew.phase_registry import outputs_exist
 
-        # phase1 depends on phase0 output (.cache/.chroma)
+        # phase1 depends on phase0 output (knowledge/discover)
         # Without it, dependency check should fail
         result = outputs_exist("extract", tmp_path)
         # Since we are in tmp_path, the output files don't exist

@@ -35,7 +35,8 @@ _DISCOVER_ARTIFACTS = (
     ".zero_chunk_hashes.json",
 )
 
-# ChromaDB internal files/dirs (sqlite + uuid-named dirs)
+# Legacy ChromaDB internal files/dirs (sqlite + uuid-named dirs)
+# Kept for migration of old installations.
 _CHROMA_INTERNALS = (
     "chroma.sqlite3",
 )
@@ -201,7 +202,7 @@ def migrate_legacy_to_subfolder(repo_path: str | Path) -> str:
     """Move flat discover artifacts into a project subfolder.
 
     Called once on first index after upgrade.  If the flat layout has any
-    discover artifacts (symbols.jsonl, chroma.sqlite3, etc.) they are moved
+    discover artifacts (symbols.jsonl, etc.) they are moved
     into ``knowledge/discover/{slug}/``.
 
     Returns the slug.
@@ -234,7 +235,7 @@ def migrate_legacy_to_subfolder(repo_path: str | Path) -> str:
             shutil.move(str(src), str(dst))
             logger.debug("[Migration] Moved %s -> %s", src, dst)
 
-    # Move ChromaDB sqlite + internal UUID dirs
+    # Move legacy ChromaDB sqlite + internal UUID dirs (if any remain)
     for item in _DISCOVER_BASE.iterdir():
         if item.name.startswith("."):
             continue
@@ -243,7 +244,7 @@ def migrate_legacy_to_subfolder(repo_path: str | Path) -> str:
         # Skip other project subfolders
         if item.is_dir() and (item / ".indexing_state.json").exists():
             continue
-        # ChromaDB files: chroma.sqlite3, uuid-named dirs
+        # Legacy ChromaDB files: chroma.sqlite3, uuid-named dirs
         if item.name in _CHROMA_INTERNALS or _is_chroma_internal_dir(item):
             dst = target / item.name
             shutil.move(str(item), str(dst))
@@ -255,7 +256,7 @@ def migrate_legacy_to_subfolder(repo_path: str | Path) -> str:
 
 
 def _is_chroma_internal_dir(path: Path) -> bool:
-    """Detect ChromaDB's internal UUID-named directories."""
+    """Detect legacy ChromaDB internal UUID-named directories."""
     if not path.is_dir():
         return False
     # ChromaDB creates dirs with UUID-like names (hex, 36 chars with dashes)

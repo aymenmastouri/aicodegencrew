@@ -1,8 +1,8 @@
 """
-RAG Query Tool - ChromaDB Semantic Search
+RAG Query Tool - Qdrant Semantic Search
 
-CrewAI Best Practice: Use semantic search to find relevant code context
-without loading the entire codebase into context.
+Semantic search to find relevant code context without loading the entire
+codebase into context.
 
 Usage:
 - rag_query(query="security annotations", limit=10)
@@ -16,7 +16,6 @@ from typing import Any, ClassVar
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from ..utils.chroma_client import create_chroma_client, get_chroma_http_config
 from ..utils.logger import setup_logger
 from ..utils.ollama_client import OllamaClient
 from ..utils.token_budget import MAX_SNIPPET_LENGTH, RAG_MAX_RESPONSE_CHARS, truncate_response
@@ -26,12 +25,7 @@ logger = setup_logger(__name__)
 
 
 class _OllamaEmbedder:
-    """Thin wrapper around OllamaClient for query-time embedding.
-
-    Instead of passing an embedding_function to ChromaDB (which conflicts
-    with collections created without one), we embed queries ourselves and
-    pass ``query_embeddings`` to ``collection.query()``.
-    """
+    """Thin wrapper around OllamaClient for query-time embedding."""
 
     def __init__(self):
         self._client = OllamaClient()
@@ -57,9 +51,8 @@ class RAGQueryInput(BaseModel):
 
 class RAGQueryTool(BaseTool):
     """
-    ChromaDB semantic search for code context.
+    Qdrant semantic search for code context.
 
-    CrewAI Best Practice:
     - Semantic search finds relevant code snippets
     - Much more efficient than reading entire files
     - Supports natural language queries
@@ -72,35 +65,26 @@ class RAGQueryTool(BaseTool):
 
     name: str = "rag_query"
     description: str = (
-        "Semantic search in the indexed codebase via ChromaDB. "
+        "Semantic search in the indexed codebase via Qdrant vector store. "
         "Use natural language queries to find relevant code snippets. "
         "Examples: 'security annotations', 'TODO FIXME', 'error handling'. "
         "IMPORTANT: Call once per query with a SINGLE set of parameters, not an array."
     )
     args_schema: type[BaseModel] = RAGQueryInput
 
-    # Configuration - Default paths to check (in order)
-    chroma_dir: str = ""  # Will be auto-detected
+    # Configuration
+    chroma_dir: str = ""  # Kept for API compat (ignored — Qdrant uses QDRANT_URL)
     collection_name: str = ""  # Auto-derived from repo+branch if empty
 
-    _client: Any | None = None
-    _collection: Any | None = None
+    _vector_store: Any | None = None
     _embedder: Any | None = None
     _evidence_index: dict[str, dict] | None = None
 
-    # Standard locations for ChromaDB (ClassVar = not a Pydantic field)
-    CHROMA_PATHS: ClassVar[list[str]] = [
-        "knowledge/discover",  # Primary location (Phase 0 output)
-        ".cache/.chroma",  # Legacy location
-        ".chroma_db",  # Legacy location
-        ".chroma",  # Alternative
-    ]
-
     def __init__(self, chroma_dir: str = None, collection_name: str = None, **kwargs):
-        """Initialize with optional chroma dir and collection name override."""
+        """Initialize with optional collection name override."""
         super().__init__(**kwargs)
         if chroma_dir:
-            self.chroma_dir = chroma_dir
+            self.chroma_dir = chroma_dir  # kept for API compat
         if collection_name:
             self.collection_name = collection_name
         # Auto-derive collection name from PROJECT_PATH + branch if not set
@@ -118,96 +102,15 @@ class RAGQueryTool(BaseTool):
             except Exception:
                 self.collection_name = "repo_docs"
 
-    def _find_chroma_path(self) -> str | None:
-        """Find ChromaDB in standard locations.
+    def _get_store(self):
+        """Get vector store with lazy initialization."""
+        if self._vector_store is not None:
+            return self._vector_store
 
-        Resolution order:
-        1. Explicit ``chroma_dir`` (constructor override)
-        2. Active project subfolder via ``get_chroma_dir()``
-        3. Legacy flat paths (backward compat)
-        """
-        # Check explicit config first
-        if self.chroma_dir and Path(self.chroma_dir).exists():
-            return self.chroma_dir
-
-        # Try active-project aware resolution
-        from ..paths import get_chroma_dir
-
-        active_dir = get_chroma_dir()
-        if active_dir and Path(active_dir).exists():
-            logger.info(f"Found ChromaDB at active project dir: {active_dir}")
-            return active_dir
-
-        # Resolve project root from __file__ (stable, independent of CWD)
-        # __file__ = src/aicodegencrew/shared/tools/rag_query_tool.py
-        base_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-
-        for rel_path in self.CHROMA_PATHS:
-            full_path = base_dir / rel_path
-            if full_path.exists():
-                logger.info(f"Found ChromaDB at: {full_path}")
-                return str(full_path)
-
-        return None
-
-    def _get_collection(self):
-        """Get vector store collection with lazy initialization.
-
-        When VECTOR_DB=qdrant, uses the unified vector store abstraction.
-        Otherwise falls back to direct ChromaDB collection access.
-        """
-        if self._collection is not None:
-            return self._collection
-
-        import os
-
-        # Qdrant path: use unified vector store (no collection object needed)
-        if os.getenv("VECTOR_DB", "chroma").strip().lower() == "qdrant":
-            self._collection = "qdrant"  # sentinel — _run() uses _vector_store
-            self._vector_store = get_vector_store()
-            self._embedder = _OllamaEmbedder()
-            logger.info("Using Qdrant vector store for RAG queries")
-            return self._collection
-
-        try:
-            http_cfg = get_chroma_http_config()
-            if http_cfg is not None:
-                host, port, _ssl = http_cfg
-                logger.info(f"Connecting to ChromaDB server at {host}:{port} (ssl={_ssl})")
-                self._client = create_chroma_client()
-            else:
-                chroma_path = self._find_chroma_path()
-
-                if not chroma_path or not Path(chroma_path).exists():
-                    logger.warning(f"ChromaDB not found. Searched paths: {self.CHROMA_PATHS}")
-                    return None
-
-                self._client = create_chroma_client(persistent_path=chroma_path)
-
-            # Open collection WITHOUT an embedding_function.
-            # The indexing pipeline (Phase 0) creates the collection without one
-            # and upserts pre-computed Ollama embeddings directly.  Passing an
-            # embedding_function here causes a ChromaDB conflict error.
-            # Instead, we embed queries ourselves via _OllamaEmbedder and pass
-            # query_embeddings to collection.query().
-            try:
-                self._collection = self._client.get_collection(
-                    name=self.collection_name,
-                )
-                self._embedder = _OllamaEmbedder()
-                logger.info(f"Connected to ChromaDB collection: {self.collection_name}")
-            except Exception as e:
-                logger.warning(f"Collection '{self.collection_name}' not found: {e}")
-                return None
-
-            return self._collection
-
-        except ImportError:
-            logger.error("chromadb not installed. Run: pip install chromadb")
-            return None
-        except Exception as e:
-            logger.error(f"ChromaDB error: {e}")
-            return None
+        self._vector_store = get_vector_store()
+        self._embedder = _OllamaEmbedder()
+        logger.info("Using Qdrant vector store for RAG queries")
+        return self._vector_store
 
     def _load_evidence_index(self) -> dict[str, dict]:
         """Lazy-load evidence.jsonl as dict[chunk_id -> record]."""
@@ -264,15 +167,15 @@ class RAGQueryTool(BaseTool):
             JSON string with matching code snippets
         """
         try:
-            collection = self._get_collection()
+            store = self._get_store()
 
-            if collection is None:
-                return json.dumps({"error": "ChromaDB not available. Run Phase 0 (indexing) first.", "results": []})
+            if store is None:
+                return json.dumps({"error": "Vector store not available. Run Phase 0 (indexing) first.", "results": []})
 
             # Hard cap limit - reduced to prevent context overflow
             limit = min(limit, 10)
 
-            # Build where filter (ChromaDB supports $eq, $ne, $in, $nin for strings)
+            # Build where filter
             where_filter = None
             if content_type and content_type in ("code", "doc", "config"):
                 where_filter = {"content_type": content_type}
@@ -280,28 +183,19 @@ class RAGQueryTool(BaseTool):
             # Fetch extra results when file_filter is set (post-query filtering)
             fetch_limit = limit * 3 if file_filter else limit
 
-            # Embed query ourselves (avoids ChromaDB embedding function conflict)
+            # Embed query
             query_embedding = self._embedder.embed([query])
             if not query_embedding:
-                return json.dumps({"error": "Embedding failed — check API_BASE and OPENAI_API_KEY in .env", "results": []})
+                return json.dumps({"error": "Embedding failed -- check API_BASE and OPENAI_API_KEY in .env", "results": []})
 
-            # Use unified vector store for Qdrant, direct collection for ChromaDB
-            if collection == "qdrant" and hasattr(self, "_vector_store"):
-                results = self._vector_store.query(
-                    self.collection_name,
-                    query_embeddings=query_embedding,
-                    n_results=fetch_limit,
-                    where=where_filter,
-                )
-            else:
-                results = collection.query(
-                    query_embeddings=query_embedding,
-                    n_results=fetch_limit,
-                    where=where_filter,
-                    include=["documents", "metadatas", "distances"],
-                )
+            results = store.query(
+                self.collection_name,
+                query_embeddings=query_embedding,
+                n_results=fetch_limit,
+                where=where_filter,
+            )
 
-            # Post-query filter by file_path substring (ChromaDB lacks $contains)
+            # Post-query filter by file_path substring
             if file_filter and results and results.get("documents"):
                 filtered = {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
                 for i, meta in enumerate(results["metadatas"][0]):

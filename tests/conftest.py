@@ -135,7 +135,7 @@ SAMPLE_PLAN_JSON = {
                 "file_path": "backend/src/main/java/com/example/user/UserServiceImpl.java",
                 "relevance_score": 0.95,
                 "change_type": "modify",
-                "source": "chromadb",
+                "source": "vector_search",
             },
             {
                 "id": "component.backend.service.email_service",

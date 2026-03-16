@@ -1,7 +1,7 @@
 """
 Pipelines — deterministic data-collect + LLM phases.
 
-Phase 0: indexing   — repository indexing to ChromaDB
+Phase 0: indexing   — repository indexing to Qdrant vector store
 Phase 1: extract    — architecture facts to facts.json
 Phase 2: analyze    — parallel LLM section analysis + synthesis
 Phase 3: triage     — issue classification + context

@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any
 
 from ...shared import BasePipeline, LLMGenerator
-from ...shared.paths import CHROMA_DIR, get_chroma_dir
+from ...shared.paths import DISCOVER_DIR, get_discover_dir
 from ...shared.schema_version import add_schema_version
 from ...shared.utils.logger import setup_logger
 
@@ -96,7 +96,7 @@ class ReviewPipeline(BasePipeline):
         self.c4_dir = self.knowledge_dir / "document" / "c4"
         self.arc42_dir = self.knowledge_dir / "document" / "arc42"
         self.output_dir = self.knowledge_dir / "deliver"
-        self.chroma_dir = chroma_dir or get_chroma_dir()
+        self.chroma_dir = chroma_dir or get_discover_dir()
         self._generator = LLMGenerator()
 
     # ── Orchestrator interface ────────────────────────────────────────────

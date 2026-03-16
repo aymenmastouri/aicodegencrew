@@ -1,7 +1,7 @@
 """
 Phase 0: Indexing Pipeline
 
-Repository indexing: discovery, chunking, embedding, ChromaDB storage.
+Repository indexing: discovery, chunking, embedding, Qdrant vector storage.
 Enhanced with symbol extraction, evidence store, repo manifest, and budget engine.
 """
 

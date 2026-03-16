@@ -113,7 +113,7 @@ def setup_logging() -> None:
     logging.getLogger().setLevel(numeric_level)
 
     # Quiet noisy loggers
-    for noisy in ("httpx", "httpcore", "chromadb", "openai"):
+    for noisy in ("httpx", "httpcore", "openai", "qdrant_client"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
     for very_noisy in ("litellm", "LiteLLM"):
         logging.getLogger(very_noisy).setLevel(logging.ERROR)
@@ -213,12 +213,12 @@ def cmd_list(config: Config) -> int:
 def cmd_index(config: Config) -> int:
     """Run indexing pipeline only."""
     from .pipelines.indexing import ensure_repo_indexed
-    from .shared.paths import get_chroma_dir
+    from .shared.paths import get_discover_dir
     from .shared.project_context import derive_project_slug, set_active_project
 
     repo_path = _resolve_repo_path(config)
     project_slug = derive_project_slug(repo_path)
-    chroma_dir = Path(get_chroma_dir(project_slug))
+    discover_dir = Path(get_discover_dir(project_slug))
 
     logger.info("=" * 60)
     logger.info("INDEXING PIPELINE")
@@ -226,7 +226,7 @@ def cmd_index(config: Config) -> int:
     logger.info(f"Repository : {repo_path}")
     logger.info(f"Project    : {project_slug}")
     logger.info(f"INDEX_MODE : {config.index_mode}")
-    logger.info(f"ChromaDB   : {chroma_dir}")
+    logger.info(f"Discover   : {discover_dir}")
     logger.info("")
 
     if config.index_mode == "off":
@@ -400,7 +400,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
     """Run SDLC pipeline."""
     from .orchestrator import SDLCOrchestrator
     from .pipelines import ArchitectureFactsPipeline, IndexingPipeline
-    from .shared.paths import KNOWLEDGE_DIR, get_chroma_dir
+    from .shared.paths import KNOWLEDGE_DIR, get_discover_dir
     from .shared.project_context import derive_project_slug, set_active_project
 
     # Resolve repo path (clone from Git URL if configured)
@@ -412,7 +412,7 @@ def cmd_run(config: Config, preset: str | None = None, phases: list[str] | None 
 
     # Knowledge paths: relative to project root (CWD), NOT target repo
     knowledge_dir = KNOWLEDGE_DIR
-    chroma_dir = get_chroma_dir(project_slug)
+    chroma_dir = get_discover_dir(project_slug)
     phase1_dir = knowledge_dir / "extract"
     phase2_dir = knowledge_dir / "analyze"
     phase4_dir = knowledge_dir / "plan"

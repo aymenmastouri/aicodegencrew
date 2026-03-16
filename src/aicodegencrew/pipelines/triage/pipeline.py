@@ -6,7 +6,7 @@ Architecture: deterministic scan → LLM synthesis (Pipeline + LLM pattern).
        - Classify issue (bug | feature | refactor | investigation)
        - Find entry-point components (multi-signal matching)
        - Calculate blast radius (BFS on relation graph)
-       - Find similar code/issues (ChromaDB)
+       - Find similar code/issues (Qdrant vector search)
        - Check test coverage for affected components
        - Assess risk (security, error handling, quality)
 
@@ -35,7 +35,7 @@ from pathlib import Path
 from typing import Any
 
 from ...shared import BasePipeline, LLMGenerator
-from ...shared.paths import CHROMA_DIR, get_chroma_dir
+from ...shared.paths import DISCOVER_DIR, get_discover_dir
 from ...shared.schema_version import add_schema_version
 from ...shared.utils.env_flags import get_bool_env
 from ...shared.utils.logger import setup_logger
@@ -77,7 +77,7 @@ class TriagePipeline(BasePipeline):
         self.knowledge_dir = Path(knowledge_dir)
         self.facts_dir = str(self.knowledge_dir / "extract")
         self.output_dir = self.knowledge_dir / "triage"
-        self.chroma_dir = chroma_dir or get_chroma_dir()
+        self.chroma_dir = chroma_dir or get_discover_dir()
         self._loader = KnowledgeLoader(knowledge_dir)
         self._generator = LLMGenerator()
 

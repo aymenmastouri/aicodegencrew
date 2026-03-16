@@ -29,8 +29,11 @@ PHASE1_FACTS = "knowledge/extract/architecture_facts.json"
 PHASE1_EVIDENCE = "knowledge/extract/evidence_map.json"
 PHASE2_ANALYSIS = "knowledge/analyze/analyzed_architecture.json"
 
-# ChromaDB lives inside discover phase
-CHROMA_DIR = "knowledge/discover"
+# Vector store artifacts live inside discover phase
+DISCOVER_DIR = "knowledge/discover"
+
+# Backward-compat alias (deprecated — use DISCOVER_DIR)
+CHROMA_DIR = DISCOVER_DIR
 
 # Discover phase artifacts (new in v0.6)
 DISCOVER_SYMBOLS = "knowledge/discover/symbols.jsonl"
@@ -43,10 +46,16 @@ DISCOVER_MANIFEST = "knowledge/discover/repo_manifest.json"
 # Import is lazy to avoid circular imports at module load time.
 
 
-def get_chroma_dir(project_slug: str | None = None) -> str:
-    """Return ChromaDB directory for *project_slug* (or the active project)."""
-    from .project_context import get_discover_dir
+def get_discover_dir(project_slug: str | None = None) -> str:
+    """Return discover directory for *project_slug* (or the active project)."""
+    from .project_context import get_discover_dir as _ctx_get_discover_dir
 
+    return _ctx_get_discover_dir(project_slug)
+
+
+# Backward-compat alias (deprecated — use get_discover_dir)
+def get_chroma_dir(project_slug: str | None = None) -> str:
+    """Deprecated: use get_discover_dir() instead."""
     return get_discover_dir(project_slug)
 
 

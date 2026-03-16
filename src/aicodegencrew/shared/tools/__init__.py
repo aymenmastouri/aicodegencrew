@@ -2,7 +2,7 @@
 
 Phase-agnostic tools that are reused by crews and hybrid pipelines:
 - FactsQueryTool: Query architecture facts with filtering and pagination
-- RAGQueryTool: ChromaDB semantic search for code context
+- RAGQueryTool: Qdrant semantic search for code context
 - SymbolQueryTool: Deterministic symbol index lookup
 - QualityGateTool: Quality gate checks
 """

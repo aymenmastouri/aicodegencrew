@@ -84,7 +84,7 @@ class PlanPipeline:
             facts_path: Path to architecture_facts.json (Phase 1)
             analyzed_path: Path to analyzed_architecture.json (Phase 2)
             output_dir: Output directory for plans
-            chroma_dir: ChromaDB directory (Phase 0)
+            chroma_dir: Discover directory (Phase 0, legacy param name)
             repo_path: Target repository path (for upgrade code scanning)
             supplementary_files: Additional context files by category
                 {"requirements": [...], "logs": [...], "reference": [...]}

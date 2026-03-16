@@ -338,7 +338,7 @@ Replace ALL placeholder values with REAL data from DISCOVERED COMPONENTS and pat
       "components": "architecture_facts.json",
       "test_patterns": "architecture_facts.json",
       "architecture": "analyzed_architecture.json",
-      "semantic_search": "ChromaDB"
+      "semantic_search": "Qdrant"
     }}
   }}
 }}

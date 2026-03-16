@@ -72,10 +72,10 @@ class TestPhase0ToPhase1:
         cfg = IndexingConfig.from_env(
             repo_path=str(repo),
             index_mode="force",
-            chroma_dir=str(tmp_path / "chroma"),
+            chroma_dir=str(tmp_path / "discover"),
         )
         assert cfg.index_mode == "force"
-        assert cfg.chroma_dir == str(tmp_path / "chroma")
+        assert cfg.chroma_dir == str(tmp_path / "discover")
 
     # ---- IndexingState serialization / deserialization ----
 
@@ -188,7 +188,7 @@ class TestPhase0ToPhase1:
         repo = tmp_path / "repo"
         repo.mkdir()
 
-        monkeypatch.setenv("CHROMA_DIR", str(tmp_path / "chroma"))
+        monkeypatch.setenv("DISCOVER_DIR", str(tmp_path / "discover"))
 
         pipeline = IndexingPipeline(repo_path=str(repo), index_mode="off")
         result = pipeline.kickoff()
@@ -706,8 +706,8 @@ class TestPhase4StageFlow:
         task = stage1.run(str(task_file))
         assert task.task_type == "bugfix"
 
-    def test_stage2_component_discovery_no_chromadb(self, mock_facts):
-        """Stage 2 works with facts-only scoring when ChromaDB is unavailable."""
+    def test_stage2_component_discovery_no_vector_store(self, mock_facts):
+        """Stage 2 works with facts-only scoring when Qdrant is unavailable."""
         from aicodegencrew.pipelines.plan.schemas import TaskInput
         from aicodegencrew.pipelines.plan.stages import (
             ComponentDiscoveryStage,
@@ -715,7 +715,7 @@ class TestPhase4StageFlow:
 
         stage2 = ComponentDiscoveryStage(
             facts=mock_facts,
-            chroma_dir="/nonexistent/chroma",
+            chroma_dir="/nonexistent/discover",
         )
 
         task = TaskInput(

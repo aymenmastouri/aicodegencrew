@@ -12,7 +12,7 @@ AI Code Generation Crew — SDLC Automation Platform
 8-phase pipeline from repository indexing to code generation:
 
     pipelines/          Pipeline + LLM phases
-        indexing/           Phase 0: Repository indexing (ChromaDB)
+        indexing/           Phase 0: Repository indexing (Qdrant)
         architecture_facts/ Phase 1: Architecture facts extraction
         analysis/           Phase 2: Architecture analysis
         triage/             Phase 3: Issue triage

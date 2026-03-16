@@ -121,14 +121,14 @@ class PatternMatcherStage:
         """Match test patterns using TF-IDF similarity.
 
         TODO: Replace TF-IDF with embedding-based similarity using the existing
-        ChromaDB/OllamaClient infrastructure (shared.utils.ollama_client).
+        Qdrant/OllamaClient infrastructure (shared.utils.ollama_client).
         The current TF-IDF approach uses bag-of-words which misses semantic
-        similarity.  ChromaDB already stores embeddings for architecture facts;
+        similarity.  Qdrant already stores embeddings for architecture facts;
         adding a "test_patterns" collection and querying with the task description
         would give better relevance ranking with minimal extra cost (~50ms per
         query vs ~10ms for TF-IDF).  Requires:
-        1. Index test patterns into a ChromaDB collection during Phase 0/1
-        2. Accept an optional chroma_dir in PatternMatcherStage.__init__
+        1. Index test patterns into a Qdrant collection during Phase 0/1
+        2. Accept an optional discover_dir in PatternMatcherStage.__init__
         3. Query the collection here instead of building a TF-IDF matrix
         """
         if not self.tests:

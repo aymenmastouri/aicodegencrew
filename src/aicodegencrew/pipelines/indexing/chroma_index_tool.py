@@ -1,7 +1,6 @@
 """Vector store indexing tool for persistent vector storage.
 
-Supports ChromaDB (default) and Qdrant via VECTOR_DB env var.
-Uses the unified VectorStoreProtocol for all operations.
+Uses Qdrant as the sole vector store backend via the unified VectorStoreProtocol.
 
 Best Practices:
 - Lazy client initialization for better performance
@@ -10,14 +9,12 @@ Best Practices:
 - Metadata tracking for observability
 """
 
-import os
 from pathlib import Path
 from typing import Any
 
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from ...shared.paths import get_chroma_dir
 from ...shared.utils.logger import setup_logger
 from ...shared.utils.vector_store import get_vector_store
 
@@ -43,8 +40,7 @@ def _normalize_where(where: dict[str, Any] | None) -> dict[str, Any]:
     if len(where) <= 1:
         return where
 
-    # Multiple keys: wrap into a single operator (ChromaDB format).
-    # Qdrant client handles this internally, but wrapping is safe for both.
+    # Multiple keys: wrap into a single operator.
     return {"$and": [{k: v} for k, v in where.items()]}
 
 
@@ -65,14 +61,13 @@ class ChromaIndexInput(BaseModel):
 
 
 class ChromaIndexTool(BaseTool):
-    name: str = "chroma_index"
+    name: str = "vector_index"
     description: str = (
-        "Manages persistent vector store with upsert, query, and count operations. "
-        "Backend selected via VECTOR_DB env var (chroma or qdrant)."
+        "Manages persistent vector store (Qdrant) with upsert, query, and count operations."
     )
     args_schema: type[BaseModel] = ChromaIndexInput
 
-    # Optional override used by tests and power users.
+    # Optional override used by tests and power users (kept for API compat).
     chroma_dir: str | None = None
 
     # Performance tuning
@@ -80,20 +75,10 @@ class ChromaIndexTool(BaseTool):
     retry_delay: float = 1.0
 
     def _get_vector_store(self):
-        """Lazy initialization of the unified vector store backend.
-
-        Uses VECTOR_DB env var to select between ChromaDB and Qdrant.
-        Falls back to ChromaDB when VECTOR_DB is not set.
-        """
+        """Lazy initialization of the Qdrant vector store backend."""
         if not hasattr(self, "_vector_store"):
-            if os.getenv("VECTOR_DB", "chroma").strip().lower() == "qdrant":
-                self._vector_store = get_vector_store()
-                logger.info("Using Qdrant vector store backend")
-            else:
-                chroma_dir = self.chroma_dir or get_chroma_dir()
-                Path(chroma_dir).mkdir(parents=True, exist_ok=True)
-                self._vector_store = get_vector_store(persistent_path=chroma_dir)
-                logger.info(f"Using ChromaDB vector store backend at: {chroma_dir}")
+            self._vector_store = get_vector_store()
+            logger.info("Using Qdrant vector store backend")
         return self._vector_store
 
     def _run(
@@ -285,16 +270,6 @@ class ChromaIndexTool(BaseTool):
     def _get_collection_metadata(self, collection_name: str) -> dict[str, Any]:
         """Get metadata stored with collection.
 
-        Note: Only supported with ChromaDB backend. Returns empty dict for Qdrant.
+        Note: Qdrant does not support collection-level metadata. Returns empty dict.
         """
-        if os.getenv("VECTOR_DB", "chroma").strip().lower() == "qdrant":
-            return {}
-
-        try:
-            store = self._get_vector_store()
-            # ChromaVectorStore has _get_if_exists that returns a collection
-            col = store._get_if_exists(collection_name)
-            return (col.metadata or {}) if col else {}
-        except Exception as e:
-            logger.error(f"Failed to get collection metadata: {e}")
-            return {}
+        return {}

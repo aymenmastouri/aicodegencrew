@@ -77,9 +77,9 @@ class KnowledgeLoader:
 
     def _load_discover(self) -> dict[str, Any]:
         # Try active-project subfolder first, then legacy flat layout
-        from ...shared.paths import get_chroma_dir
+        from ...shared.paths import get_discover_dir
 
-        active_dir = Path(get_chroma_dir())
+        active_dir = Path(get_discover_dir())
         d = active_dir if active_dir.exists() else self.root / "discover"
 
         return {

@@ -76,7 +76,7 @@ class TestPackageStructure:
         """pyproject.toml must list all core dependencies."""
         required_deps = [
             "crewai",
-            "chromadb",
+            "qdrant-client",
             "python-dotenv",
             "pydantic",
             "pyyaml",

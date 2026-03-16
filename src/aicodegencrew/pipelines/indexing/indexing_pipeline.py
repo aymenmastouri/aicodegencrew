@@ -1,4 +1,4 @@
-"""Indexing pipeline (Phase 0) - Repository indexing to ChromaDB.
+"""Indexing pipeline (Phase 0) - Repository indexing to Qdrant vector store.
 
 Single merged class handling all index modes (off/auto/smart/force),
 persistent state, stale lock recovery, and embedding failure monitoring.
@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-from ...shared.paths import CHROMA_DIR
+from ...shared.paths import DISCOVER_DIR
 from ...shared.project_context import (
     derive_collection_name,
     derive_project_slug,
@@ -64,7 +64,7 @@ class IndexingConfig:
     def from_env(cls, repo_path: str = None, index_mode: str = None, chroma_dir: str = None) -> "IndexingConfig":
         """Create config from environment variables with optional overrides.
 
-        When *chroma_dir* is not explicitly provided, derives a per-project
+        When *discover_dir* is not explicitly provided, derives a per-project
         subfolder under ``knowledge/discover/{slug}/`` from the repo path.
         """
         if repo_path is None:
@@ -79,7 +79,7 @@ class IndexingConfig:
         # Multi-project: derive subfolder from repo name
         if not chroma_dir:
             slug = derive_project_slug(resolved_path)
-            chroma_dir = str(Path(CHROMA_DIR) / slug)
+            chroma_dir = str(Path(DISCOVER_DIR) / slug)
 
         return cls(
             repo_path=resolved_path,
@@ -147,8 +147,8 @@ class IndexingMetrics:
 class IndexingState:
     """Persistent indexing state saved to `.cache/.indexing_state.json`.
 
-    Survives ChromaDB deletion so that ``auto`` mode can detect
-    "fingerprint unchanged but ChromaDB missing" and warn instead of
+    Survives vector store resets so that ``auto`` mode can detect
+    "fingerprint unchanged but vector store empty" and warn instead of
     silently re-indexing for 3 hours.
     """
 
@@ -211,7 +211,7 @@ class IndexingState:
 
 
 def _get_index_lock_path(chroma_dir: str | None = None) -> Path:
-    d = chroma_dir or CHROMA_DIR
+    d = chroma_dir or DISCOVER_DIR
     return Path(d).resolve() / ".index.lock"
 
 
@@ -409,12 +409,12 @@ class IndexingPipeline:
         # Derive project slug for artifact paths
         self._project_slug = derive_project_slug(self.repo_path)
 
-        # Resolve chroma dir relative to CWD (project root), NOT repo_path.
+        # Resolve discover dir relative to CWD (project root), NOT repo_path.
         # Knowledge outputs always go into the project directory.
-        chroma_base = self.config.chroma_dir or CHROMA_DIR
-        chroma_resolved = Path(chroma_base).resolve()
-        self._cache_dir = chroma_resolved
-        self._chroma_dir_resolved = str(chroma_resolved)
+        discover_base = self.config.chroma_dir or DISCOVER_DIR
+        discover_resolved = Path(discover_base).resolve()
+        self._cache_dir = discover_resolved
+        self._chroma_dir_resolved = str(discover_resolved)
 
         # Lazy tool singletons
         self._discovery_tool = None
@@ -510,7 +510,7 @@ class IndexingPipeline:
         """Execute the indexing pipeline, returning a status message."""
         logger.info(f"Starting indexing pipeline for: {self.repo_path}")
 
-        # Force mode: wipe ChromaDB first
+        # Force mode: wipe vector store first
         if self.index_mode == "force":
             self._clear_chroma()
 
@@ -590,7 +590,7 @@ class IndexingPipeline:
         if mode == "smart":
             return True, "", "", "Smart incremental update"
 
-        # auto: check state + fingerprint + ChromaDB
+        # auto: check state + fingerprint + vector store
         current_fp, fp_type = _calculate_repo_fingerprint(
             self.config.repo_path,
             self.config.include_submodules,
@@ -600,21 +600,21 @@ class IndexingPipeline:
         # Check persistent state first
         saved = IndexingState.load(self._cache_dir)
 
-        # Check ChromaDB collection
+        # Check vector store collection
         count_result = self.chroma_tool._run(
             operation="count",
             collection_name=self.config.collection_name,
         )
         doc_count = count_result.get("count", 0)
-        chroma_has_data = count_result.get("success") and doc_count > 0
+        store_has_data = count_result.get("success") and doc_count > 0
 
         if saved and saved.fingerprint == current_fp:
-            if chroma_has_data:
+            if store_has_data:
                 return False, current_fp, fp_type, f"Unchanged ({doc_count} chunks)"
             else:
-                # ChromaDB was deleted but fingerprint unchanged
+                # Vector store was cleared but fingerprint unchanged
                 logger.warning(
-                    "ChromaDB missing/empty but fingerprint unchanged. "
+                    "Vector store missing/empty but fingerprint unchanged. "
                     "Repo has NOT changed since last successful index. "
                     "Use --index-mode force to re-index."
                 )
@@ -622,13 +622,13 @@ class IndexingPipeline:
                     False,
                     current_fp,
                     fp_type,
-                    (f"Skipped: fingerprint unchanged (ChromaDB missing, last indexed {saved.chunk_count} chunks)"),
+                    (f"Skipped: fingerprint unchanged (vector store empty, last indexed {saved.chunk_count} chunks)"),
                 )
 
-        if not chroma_has_data:
+        if not store_has_data:
             return True, current_fp, fp_type, "Collection empty or missing"
 
-        # ChromaDB has data - check stored fingerprint in collection metadata
+        # Vector store has data - check stored fingerprint in collection metadata
         meta = self.chroma_tool._get_collection_metadata(self.config.collection_name)
         stored_fp = meta.get("repo_fingerprint") or meta.get("repo_hash") or ""
 
@@ -645,7 +645,7 @@ class IndexingPipeline:
             # Metadata confirms repo unchanged — skip
             return False, current_fp, fp_type, f"Unchanged ({doc_count} chunks)"
 
-        # No stored fingerprint in metadata (collection.modify() may have failed).
+        # No stored fingerprint in metadata.
         # Check state file as fallback evidence.
         if saved and saved.fingerprint != current_fp:
             # State file says repo changed — do smart incremental update
@@ -657,10 +657,10 @@ class IndexingPipeline:
             return True, current_fp, fp_type, f"Incremental update: {saved.fingerprint[:8]} -> {current_fp[:8]}"
 
         if not saved:
-            # No state file, no metadata fingerprint, but ChromaDB has data.
+            # No state file, no metadata fingerprint, but vector store has data.
             # Try to recover from manifest before falling back to smart mode.
             manifest_path = self._cache_dir / "repo_manifest.json"
-            if manifest_path.exists() and chroma_has_data:
+            if manifest_path.exists() and store_has_data:
                 try:
                     manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
                     manifest_commit = manifest_data.get("commit", "")
@@ -709,55 +709,29 @@ class IndexingPipeline:
     # -- Force-mode helpers -------------------------------------------------
 
     def _clear_chroma(self) -> None:
-        """Delete ChromaDB directory for force re-index."""
-        chroma_path = Path(self._chroma_dir_resolved)
-        if not chroma_path.exists():
-            return
+        """Clear discover directory and vector store collection for force re-index."""
+        discover_path = Path(self._chroma_dir_resolved)
 
-        from ...shared.utils.chroma_client import create_chroma_client, get_chroma_http_config
+        # Delete the Qdrant collection
+        try:
+            store = self.chroma_tool._get_vector_store()
+            if hasattr(store, '_client') and store._client:
+                store._client.delete_collection(self.config.collection_name)
+                logger.info(f"[FORCE] Deleted Qdrant collection '{self.config.collection_name}'")
+        except Exception as e:
+            logger.warning(f"[FORCE] Could not delete Qdrant collection: {e}")
 
-        http_cfg = get_chroma_http_config()
-        if http_cfg is not None:
-            host, port, ssl = http_cfg
-            logger.info(
-                f"[FORCE] Clearing ChromaDB collection '{self.config.collection_name}' via HTTP at {host}:{port} (ssl={ssl})"
-            )
-            try:
-                from chromadb.config import Settings
-
-                client = create_chroma_client(
-                    persistent_path=str(chroma_path),
-                    settings=Settings(anonymized_telemetry=False),
-                )
-                try:
-                    client.delete_collection(self.config.collection_name)
-                except Exception as e:
-                    logger.warning(f"[FORCE] Could not delete collection '{self.config.collection_name}': {e}")
-            except Exception as e:
-                raise RuntimeError(f"Could not connect to ChromaDB server for force reset: {e}") from e
-
-            # Best-effort: remove local Discover artifacts/state (DB files are owned by the server process).
-            for filename in (
-                ".indexing_state.json",
-                "symbols.jsonl",
-                "evidence.jsonl",
-                "repo_manifest.json",
-            ):
-                try:
-                    (chroma_path / filename).unlink(missing_ok=True)
-                except Exception:
-                    pass
-
+        if not discover_path.exists():
             self._chroma_tool = None
             return
 
-        logger.info(f"[FORCE] Clearing ChromaDB: {chroma_path}")
+        logger.info(f"[FORCE] Clearing discover directory: {discover_path}")
         try:
-            shutil.rmtree(chroma_path)
+            shutil.rmtree(discover_path)
             # Reset lazy tool so it re-creates the client
             self._chroma_tool = None
         except Exception as e:
-            logger.error(f"[FORCE] Failed to clear ChromaDB: {e}")
+            logger.error(f"[FORCE] Failed to clear discover directory: {e}")
 
     # -- Indexing process ---------------------------------------------------
 
@@ -809,25 +783,9 @@ class IndexingPipeline:
         # Update collection fingerprint AFTER all batches complete successfully.
         # This prevents a cancelled run from leaving a stale fingerprint that
         # causes the next run to falsely skip re-indexing.
-        try:
-            store = self.chroma_tool._get_vector_store()
-            # Collection fingerprint: ChromaDB stores it as collection metadata,
-            # Qdrant doesn't support collection-level metadata — use a sentinel point.
-            if hasattr(store, "_get_if_exists"):
-                # ChromaDB path: use native collection.modify()
-                col = store._get_if_exists(self.config.collection_name)
-                if col and hasattr(col, "modify"):
-                    col.modify(
-                        metadata={
-                            "repo_fingerprint": fingerprint,
-                            "repo_fingerprint_type": fp_type,
-                            "repo_path": str(self.config.repo_path),
-                            "description": "Repository documentation chunks",
-                        }
-                    )
-            logger.info(f"[INDEX] Updated collection fingerprint to {fingerprint[:8]}")
-        except Exception as e:
-            logger.warning(f"Could not update collection fingerprint: {e}")
+        # Note: Qdrant does not support collection-level metadata.
+        # The fingerprint is tracked in the persistent IndexingState file instead.
+        logger.info(f"[INDEX] Collection fingerprint: {fingerprint[:8]}")
 
         # Step 6: Write artifacts (symbols.jsonl, evidence.jsonl)
         logger.info("Step 6/6: Writing discover artifacts...")
@@ -982,7 +940,7 @@ class IndexingPipeline:
             chunk["file_hash"] = file_hash_by_path.get(fp, "")
             chunk["repo_path"] = repo_path_str
 
-            # Add content_type for ChromaDB metadata
+            # Add content_type for vector store metadata
             ext = Path(fp).suffix.lower()
             if ext in (".md", ".rst", ".txt", ".adoc"):
                 chunk["content_type"] = "doc"
@@ -1112,18 +1070,18 @@ class IndexingPipeline:
     # -- Smart-mode per-file filter -----------------------------------------
 
     def _pre_filter_changed_files(self, all_file_paths: list[str]) -> list[str]:
-        """Pre-filter files by comparing on-disk hashes against ChromaDB stored hashes.
+        """Pre-filter files by comparing on-disk hashes against vector store stored hashes.
 
         This runs BEFORE batch processing to avoid reading/chunking/embedding unchanged files.
         Much faster than the per-batch _filter_unchanged_files because:
-        1. Loads all file hashes from ChromaDB in one bulk query
+        1. Loads all file hashes from vector store in one bulk query
         2. Computes file hashes from disk without reading full content into memory
         3. Only changed/new files proceed to batch processing
         """
         repo_path_str = str(self.config.repo_path)
 
-        # Step 1: Build hash index from ChromaDB (one bulk query)
-        logger.info("[SMART] Loading existing file hashes from ChromaDB...")
+        # Step 1: Build hash index from vector store (one bulk query)
+        logger.info("[SMART] Loading existing file hashes from vector store...")
         stored_hashes: dict[str, str] = {}  # file_path -> file_hash
         try:
             coll_result = self.chroma_tool._run(
@@ -1153,7 +1111,7 @@ class IndexingPipeline:
             logger.info(f"[SMART] Loaded {len(zero_chunk_reg)} zero-chunk file hashes from registry")
 
         # Step 2: Compare on-disk hashes against stored hashes
-        # ChromaDB stores relative paths (e.g. "backend/build.gradle")
+        # Vector store stores relative paths (e.g. "backend/build.gradle")
         # but all_file_paths are absolute (e.g. "C:\uvz\backend\build.gradle")
         repo_root = Path(repo_path_str)
         max_file_bytes = self.config.max_file_bytes
@@ -1200,7 +1158,7 @@ class IndexingPipeline:
                 continue
             disk_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
 
-            # Convert absolute path to relative (matching ChromaDB format)
+            # Convert absolute path to relative (matching vector store format)
             try:
                 rel_path = str(Path(file_path).relative_to(repo_root)).replace("\\", "/")
             except ValueError:

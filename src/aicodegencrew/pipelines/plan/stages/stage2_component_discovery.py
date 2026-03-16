@@ -1,10 +1,10 @@
 """
 Stage 2: Component Discovery
 
-Uses ChromaDB semantic search + multi-signal scoring to find affected components.
+Uses Qdrant semantic search + multi-signal scoring to find affected components.
 
 Signals:
-1. Semantic similarity (ChromaDB vector distance)
+1. Semantic similarity (Qdrant vector distance)
 2. Name matching (fuzzy string match)
 3. Package/label matching
 4. Stereotype matching (controller, service, etc.)
@@ -20,8 +20,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from ....shared.paths import CHROMA_DIR, DISCOVER_SYMBOLS, get_chroma_dir, get_discover_symbols
-from ....shared.utils.chroma_client import create_chroma_client, get_chroma_http_config
+from ....shared.paths import DISCOVER_DIR, DISCOVER_SYMBOLS, get_discover_dir, get_discover_symbols
 from ....shared.utils.logger import setup_logger
 from ..schemas import ComponentMatch, DependencyRelation, InterfaceMatch, TaskInput
 
@@ -32,7 +31,7 @@ logger = setup_logger(__name__)
 # Subprocess worker for semantic search (crash-isolated)
 # ---------------------------------------------------------------------------
 # Module-level function so it's picklable by multiprocessing.Process on Windows.
-# A segfault in ChromaDB/SQLite/Ollama kills only the child, not the pipeline.
+# A segfault in Ollama or native code kills only the child, not the pipeline.
 
 
 def _semantic_search_subprocess(
@@ -59,13 +58,13 @@ def _semantic_search_subprocess(
             pass
 
         # Connect to Qdrant
-        from aicodegencrew.shared.utils.qdrant_client import QdrantVectorStore
-        store = QdrantVectorStore()
-        if not store.enabled:
+        from aicodegencrew.shared.utils.qdrant_client import QdrantVectorClient
+        store = QdrantVectorClient()
+        if not store._client:
             result_queue.put({})
             return
 
-        # Embed query via Ollama (short timeout — fail fast)
+        # Embed query via Ollama (short timeout -- fail fast)
         from aicodegencrew.shared.utils.ollama_client import OllamaClient
         embedding = OllamaClient(timeout=10, max_retries=1).embed_text(query)
         if not embedding:
@@ -74,18 +73,23 @@ def _semantic_search_subprocess(
 
         results = store.query(
             collection_name=collection_name,
-            query_vector=embedding,
-            limit=n,
+            query_embeddings=[embedding],
+            n_results=n,
         )
 
         scores: dict[str, float] = {}
-        for point in results:
-            payload = point.payload or {}
-            file_path = payload.get("file_path", payload.get("source", ""))
+        ids_list = results.get("ids", [[]])[0]
+        metas_list = results.get("metadatas", [[]])[0]
+        dists_list = results.get("distances", [[]])[0]
+
+        for i, _id in enumerate(ids_list):
+            meta = metas_list[i] if i < len(metas_list) else {}
+            dist = dists_list[i] if i < len(dists_list) else 1.0
+            file_path = meta.get("file_path", meta.get("source", ""))
             for comp in components:
                 comp_file = comp.get("file_path", "")
                 if comp_file and comp_file in file_path:
-                    scores[comp["id"]] = round(point.score, 4)
+                    scores[comp["id"]] = round(max(0, 1 - dist), 4)
                     break
 
         result_queue.put(scores)
@@ -109,10 +113,10 @@ class ComponentDiscoveryStage:
 
         Args:
             facts: architecture_facts.json (from Phase 1)
-            chroma_dir: ChromaDB directory path
+            chroma_dir: Discover directory path (legacy param name, kept for API compat)
         """
         self.facts = facts
-        self.chroma_dir = chroma_dir or get_chroma_dir()
+        self.chroma_dir = chroma_dir or get_discover_dir()
 
         self.components = facts.get("components", [])
         self.interfaces = facts.get("interfaces", [])
@@ -150,7 +154,7 @@ class ComponentDiscoveryStage:
         semantic_timeout_s = int(os.getenv("STAGE2_SEMANTIC_TIMEOUT_S", "12"))
 
         # Launch semantic search in an ISOLATED SUBPROCESS.
-        # ChromaDB/SQLite native code can segfault under memory pressure;
+        # Native code can segfault under memory pressure;
         # a subprocess crash kills only the child, not the pipeline.
         proc: multiprocessing.Process | None = None
         result_queue: multiprocessing.Queue | None = None
@@ -303,7 +307,6 @@ class ComponentDiscoveryStage:
         scores: dict[str, float] = {}
 
         try:
-            # Try Qdrant
             qdrant = self._get_qdrant_store()
             if not qdrant:
                 logger.warning("[Stage2] Qdrant not available, skipping semantic search")
@@ -320,16 +323,22 @@ class ComponentDiscoveryStage:
 
             results = qdrant.query(
                 collection_name=coll_name,
-                query_vector=query_embedding,
-                limit=n,
+                query_embeddings=[query_embedding],
+                n_results=n,
             )
 
-            for point in results:
-                payload = point.payload or {}
-                file_path = payload.get("file_path", payload.get("source", ""))
+            # Parse results in unified format
+            ids_list = results.get("ids", [[]])[0]
+            metas_list = results.get("metadatas", [[]])[0]
+            dists_list = results.get("distances", [[]])[0]
+
+            for i, _id in enumerate(ids_list):
+                meta = metas_list[i] if i < len(metas_list) else {}
+                dist = dists_list[i] if i < len(dists_list) else 1.0
+                file_path = meta.get("file_path", meta.get("source", ""))
                 comp_id = self._find_component_by_path(file_path)
                 if comp_id:
-                    scores[comp_id] = round(point.score, 4)
+                    scores[comp_id] = round(max(0, 1 - dist), 4)
 
         except Exception as e:
             logger.error("[Stage2] Semantic search error: %s", e)
@@ -552,7 +561,7 @@ class ComponentDiscoveryStage:
     ) -> str:
         """Determine which signal contributed most to this match."""
         scores = {
-            "chromadb": semantic.get(comp_id, 0),
+            "vector_search": semantic.get(comp_id, 0),
             "name_match": name.get(comp_id, 0),
             "package_match": package.get(comp_id, 0),
         }
@@ -625,12 +634,12 @@ class ComponentDiscoveryStage:
         return scores
 
     def _get_qdrant_store(self):
-        """Get Qdrant vector store (preferred over ChromaDB)."""
+        """Get Qdrant vector store."""
         try:
-            from ....shared.utils.qdrant_client import QdrantVectorStore
+            from ....shared.utils.qdrant_client import QdrantVectorClient
 
-            store = QdrantVectorStore()
-            if store.enabled:
+            store = QdrantVectorClient()
+            if store._client:
                 logger.info("[Stage2] Using Qdrant vector store")
                 return store
         except Exception as e:
@@ -648,44 +657,6 @@ class ComponentDiscoveryStage:
         except Exception:
             pass
         return "repo_docs"
-
-    def _get_collection(self):
-        """Get ChromaDB collection (fallback if Qdrant unavailable)."""
-        if self.collection is not None:
-            return self.collection
-
-        try:
-            from chromadb.config import Settings
-
-            chroma_path = Path(self.chroma_dir)
-
-            http_cfg = get_chroma_http_config()
-            if http_cfg is None and not chroma_path.exists():
-                logger.warning("[Stage2] ChromaDB not found at %s", chroma_path)
-                return None
-
-            client = create_chroma_client(
-                persistent_path=str(chroma_path),
-                settings=Settings(
-                    anonymized_telemetry=False,
-                    chroma_query_request_timeout_seconds=10,
-                    chroma_sysdb_request_timeout_seconds=5,
-                ),
-            )
-
-            coll_name = self._derive_collection_name()
-            self.collection = client.get_collection(name=coll_name)
-
-            if http_cfg is not None:
-                host, port, ssl = http_cfg
-                logger.info("[Stage2] Connected to ChromaDB server at %s:%s (ssl=%s)", host, port, ssl)
-            else:
-                logger.info("[Stage2] Connected to ChromaDB at %s", chroma_path)
-            return self.collection
-
-        except Exception as e:
-            logger.error("[Stage2] ChromaDB initialization error: %s", e)
-            return None
 
     def _embed_query(self, text: str) -> list[float] | None:
         """Embed query text using the same Ollama client as the indexing pipeline."""

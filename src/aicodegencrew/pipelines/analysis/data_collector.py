@@ -1,7 +1,7 @@
 """DataCollector — deterministic fact loading for analysis sections.
 
 Reads architecture facts files directly from disk (no CrewAI agents, no tool loops).
-Optionally queries ChromaDB for RAG-based code evidence.
+Optionally queries Qdrant for RAG-based code evidence.
 
 No LLM calls, no agents — pure Python data collection.
 """
@@ -23,8 +23,8 @@ class DataCollector:
     """Loads architecture facts and provides section-scoped data slices.
 
     Facts are loaded once via ``load()`` and then served to ``collect_section_data()``
-    without any further disk I/O.  ChromaDB RAG queries are attempted lazily and
-    fail gracefully (return []) when ChromaDB is unavailable.
+    without any further disk I/O.  Qdrant RAG queries are attempted lazily and
+    fail gracefully (return []) when Qdrant is unavailable.
     """
 
     def __init__(self, facts_dir: str | Path, chroma_dir: str | None = None):
@@ -33,7 +33,7 @@ class DataCollector:
         Args:
             facts_dir:  Directory containing architecture_facts.json and the
                         ``dimensions/`` sub-folder (e.g. ``knowledge/extract``).
-            chroma_dir: Optional path to a ChromaDB persistent directory.
+            chroma_dir: Optional path passed to RAG tool (legacy param name).
                         When None the RAG tool uses its own auto-discovery logic.
         """
         self._facts_dir = Path(facts_dir)
@@ -165,9 +165,9 @@ class DataCollector:
     # ── RAG ──────────────────────────────────────────────────────────────────
 
     def rag_query(self, query: str, limit: int = 8) -> list[dict]:
-        """Query ChromaDB for semantic code evidence.
+        """Query Qdrant for semantic code evidence.
 
-        Returns an empty list when ChromaDB is unavailable — callers must handle
+        Returns an empty list when Qdrant is unavailable — callers must handle
         the absence of RAG results gracefully.
 
         Args:

@@ -51,7 +51,7 @@ class ComponentMatch(BaseModel):
     file_path: str = Field(default="", description="Source file path")
     relevance_score: float = Field(..., ge=0, le=1, description="Relevance score (0-1)")
     change_type: Literal["modify", "create", "delete"] = Field(default="modify", description="Type of change")
-    source: str = Field(default="", description="Discovery source (chromadb, name_match, etc.)")
+    source: str = Field(default="", description="Discovery source (vector_search, name_match, etc.)")
 
 
 class InterfaceMatch(BaseModel):
