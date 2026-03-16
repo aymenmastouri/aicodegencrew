@@ -179,7 +179,7 @@ Quality criteria:
 - Include tables for inventories (components, interfaces, decisions)
 - Add interpretation and analysis — not just listing facts
 - Use Mermaid diagrams (```mermaid) for flows and relationships where helpful
-- Minimum {recipe.min_length} characters, maximum {recipe.max_length} characters
+- Minimum {recipe.min_length} characters — be comprehensive, not brief
 - Start with: # {recipe.title}
 
 Required sections:
