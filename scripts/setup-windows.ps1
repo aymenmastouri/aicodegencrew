@@ -145,10 +145,9 @@ if (Test-Path $pyprojectPath) {
     Ok "Running from inside repo: $INSTALL_DIR"
 } elseif (Test-Path (Join-Path $INSTALL_DIR '.git')) {
     Ok "Repository exists at $INSTALL_DIR"
-    Push-Location $INSTALL_DIR
-    git pull --quiet 2>$null
+    git -C $INSTALL_DIR checkout master-without-angular-upgrade 2>$null
+    git -C $INSTALL_DIR pull --quiet 2>$null
     if ($LASTEXITCODE -ne 0) { Warn 'git pull failed -- using existing code' }
-    Pop-Location
 } elseif (Test-Path (Join-Path $INSTALL_DIR 'src\aicodegencrew')) {
     Ok "Project found at $INSTALL_DIR (no .git)"
 } else {
@@ -161,7 +160,8 @@ if (Test-Path $pyprojectPath) {
     Write-Host ''
     git clone $GIT_REPO_URL $INSTALL_DIR
     if ($LASTEXITCODE -ne 0) { Fail 'git clone failed -- check username/password' }
-    Ok "Cloned to $INSTALL_DIR"
+    git -C $INSTALL_DIR checkout master-without-angular-upgrade
+    Ok "Cloned to $INSTALL_DIR (branch: master-without-angular-upgrade)"
 }
 
 $ROOT = $INSTALL_DIR
