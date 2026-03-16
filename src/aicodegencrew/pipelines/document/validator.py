@@ -140,8 +140,13 @@ class ChapterValidator:
         return ValidationCheck("sections", True)
 
     def _check_banned_phrases(self, content: str) -> ValidationCheck:
-        content_lower = content.lower()
-        found = [phrase for phrase in self.BANNED_PHRASES if phrase.lower() in content_lower]
+        # Strip code blocks before checking — TODO:/FIXME: in code citations are legitimate
+        import re
+        text_without_code = re.sub(r"```[\s\S]*?```", "", content)
+        text_without_inline = re.sub(r"`[^`]+`", "", text_without_code)
+        text_lower = text_without_inline.lower()
+
+        found = [phrase for phrase in self.BANNED_PHRASES if phrase.lower() in text_lower]
         if found:
             return ValidationCheck(
                 "banned_phrases",
