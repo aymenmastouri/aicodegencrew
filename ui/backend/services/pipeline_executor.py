@@ -941,7 +941,22 @@ class PipelineExecutor:
             pipeline_log_file = None
 
         try:
-            for line in proc.stdout:
+            # Read stdout in a non-blocking way: poll process status alongside
+            # reading output. On Windows, proc.stdout iteration can hang after
+            # the main process exits if daemon threads hold inherited handles.
+            import select as _select
+
+            while True:
+                line = proc.stdout.readline()
+                if not line:
+                    # EOF or process exited — check if process is done
+                    if proc.poll() is not None:
+                        break
+                    # No output but process still alive — brief wait
+                    import time as _time
+                    _time.sleep(0.1)
+                    continue
+
                 line = line.rstrip("\n\r")
                 if self._engine_run_id is None:
                     parsed_run_id = self._extract_engine_run_id_from_line(line)
@@ -964,7 +979,7 @@ class PipelineExecutor:
                     except OSError:
                         pass
 
-            exit_code = proc.wait()
+            exit_code = proc.wait(timeout=10)
 
             with self._state_lock:
                 self._exit_code = exit_code
