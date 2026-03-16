@@ -495,6 +495,14 @@ class AnalysisPipeline(BasePipeline):
                 except ValueError:
                     pass  # Keep the previous content
 
+            # Normalize key aliases (LLM often uses shorter names)
+            try:
+                data = json.loads(content)
+                data = self._normalize_keys(data)
+                content = json.dumps(data, indent=2, ensure_ascii=False)
+            except (json.JSONDecodeError, Exception):
+                pass
+
             # Inject schema version
             try:
                 data = json.loads(content)
@@ -665,6 +673,29 @@ class AnalysisPipeline(BasePipeline):
         "executive_summary",
     }
 
+    # Common LLM key aliases → canonical key names
+    _KEY_ALIASES: dict[str, str] = {
+        "quality": "architecture_quality",
+        "architecture": "macro_architecture",
+        "macro": "macro_architecture",
+        "micro": "micro_architecture",
+        "micro_architecture_patterns": "micro_architecture",
+        "summary": "executive_summary",
+        "grade": "overall_grade",
+        "api_design": "api",
+        "domain_model": "domain",
+        "workflow": "workflows",
+    }
+
+    @classmethod
+    def _normalize_keys(cls, data: dict) -> dict:
+        """Rename common LLM key aliases to canonical names."""
+        for alias, canonical in cls._KEY_ALIASES.items():
+            if alias in data and canonical not in data:
+                data[canonical] = data.pop(alias)
+                logger.info("[AnalysisPipeline] Normalized key: %s → %s", alias, canonical)
+        return data
+
     def _get_missing_keys(self, content: str) -> set[str]:
         """Return required top-level keys missing from synthesized output."""
         try:
@@ -673,7 +704,9 @@ class AnalysisPipeline(BasePipeline):
             return self._REQUIRED_KEYS
         if not isinstance(data, dict):
             return self._REQUIRED_KEYS
-        return self._REQUIRED_KEYS - set(data.keys())
+        # Check after normalization
+        normalized = self._normalize_keys(dict(data))
+        return self._REQUIRED_KEYS - set(normalized.keys())
 
     # =========================================================================
     # PREREQUISITE CHECK
