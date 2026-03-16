@@ -124,12 +124,31 @@ if (-not $pythonCmd) {
 if (-not $pythonCmd) {
     Install-WithWinget 'Python.Python.3.12' 'Python 3.12'
     Refresh-Path
-    # After install, try py launcher first
-    if (Test-Command 'py') {
-        try {
-            $ver = py -3.12 --version 2>&1
-            if ("$ver" -match '3\.12') { $pythonCmd = 'py -3.12' }
-        } catch {}
+
+    # After winget install, search common install locations directly
+    $searchPaths = @(
+        "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe"
+        "$env:ProgramFiles\Python312\python.exe"
+        "$env:ProgramFiles(x86)\Python312\python.exe"
+        "$env:LOCALAPPDATA\Microsoft\WindowsApps\python.exe"
+    )
+    foreach ($p in $searchPaths) {
+        if (Test-Path $p) {
+            try {
+                $ver = & $p --version 2>&1 | Out-String
+                if ($ver -match '3\.12') { $pythonCmd = $p; break }
+            } catch {}
+        }
+    }
+
+    # Fallback: try py launcher and generic python
+    if (-not $pythonCmd) {
+        if (Test-Command 'py') {
+            try {
+                $ver = py -3.12 --version 2>&1
+                if ("$ver" -match '3\.12') { $pythonCmd = 'py -3.12' }
+            } catch {}
+        }
     }
     if (-not $pythonCmd) {
         foreach ($candidate in @('python', 'python3')) {
@@ -204,11 +223,22 @@ $venvPython = Join-Path $venvPath 'Scripts\python.exe'
 $venvPip = Join-Path $venvPath 'Scripts\pip.exe'
 
 if (-not (Test-Path $venvPython)) {
-    Log 'Creating virtual environment...'
-    $pyExe = $pythonCmd.Split(' ')[0]
-    $pyArgs = @(($pythonCmd.Split(' ') | Select-Object -Skip 1) + '-m' + 'venv' + $venvPath)
+    Log "Creating virtual environment with: $pythonCmd"
+    $pyParts = $pythonCmd.Split(' ')
+    $pyExe = $pyParts[0]
+    $pyArgs = @()
+    if ($pyParts.Count -gt 1) { $pyArgs += $pyParts[1..($pyParts.Count-1)] }
+    $pyArgs += @('-m', 'venv', $venvPath)
     & $pyExe @pyArgs
-    if ($LASTEXITCODE -ne 0) { Fail 'venv creation failed' }
+    if ($LASTEXITCODE -ne 0) {
+        # Fallback: try full path search
+        $fallback = Get-ChildItem -Path "$env:LOCALAPPDATA\Programs\Python" -Filter 'python.exe' -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.DirectoryName -match '312' } | Select-Object -First 1
+        if ($fallback) {
+            Log "Retrying with: $($fallback.FullName)"
+            & $fallback.FullName -m venv $venvPath
+        }
+        if (-not (Test-Path $venvPython)) { Fail 'venv creation failed' }
+    }
     Ok 'Virtual environment created'
 } else {
     Ok 'Virtual environment exists'
