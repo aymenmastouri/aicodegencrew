@@ -1,0 +1,77 @@
+{
+  "_schema_version": "1.0",
+  "status": "success",
+  "phase": "triage",
+  "issue_id": "BNUVZ-12568",
+  "classification": "feature",
+  "risk_level": "low",
+  "entry_points_found": 0,
+  "blast_radius_count": 0,
+  "llm_synthesis": true,
+  "llm_status": "success",
+  "duration_seconds": 12.69,
+  "triage_context": {
+    "classification_type": "feature",
+    "classification_confidence": 0.5,
+    "llm_status": "success",
+    "big_picture": "This project is a mission-critical Angular-based frontend (UVZ) used in a German public health/insurance context — high availability, strict compliance, and enterprise-grade UX are required. The customer is internal developers and QA engineers relying on stable, deterministic builds. This task solves the looming compatibility breakage from Angular 19's enforced SASS compiler migration. It's needed NOW because Angular 19 removes support for legacy build behaviors (e.g., global `@import` resolution), and delaying this risks blocking the entire Angular 19 upgrade — which itself is likely tied to security, support, or feature-compatibility deadlines. If not done, builds may break or visual regressions could silently enter production.",
+    "scope_boundary": "IN: Adjusting `angular.json` build configuration to use `@angular-devkit/build-angular:application`, verifying SASS import compatibility (e.g., removal of deprecated global imports), updating any custom build scripts that reference old SASS behavior. OUT: Refactoring SASS code logic (e.g., variable/function changes), migrating non-SASS assets, upgrading Angular itself (that’s assumed to be pre-done), or modifying backend code.",
+    "classification_assessment": "",
+    "affected_components": [
+      "Angular Builder Configuration (build)",
+      "SASS Entry Points (styles/imports)",
+      "CI/CD Build Pipeline (infrastructure)"
+    ],
+    "context_boundaries": [
+      {
+        "category": "technology_constraint",
+        "boundary": "Angular 18-LTS currently in use (per `@angular/core v18-lts`) means the project is still on the old SASS compiler path — this migration is only triggered by upgrading to Angular 19. The build configuration must be updated *before* the Angular 19 migration is complete, as the new builder is incompatible with legacy SASS behavior (e.g., automatic `@import` injection from node_modules).",
+        "severity": "blocking",
+        "source_facts": [
+          "dependencies.json: @angular/core v18-lts",
+          "issue context: migration to @angular-devkit/build-angular:application"
+        ]
+      },
+      {
+        "category": "dependency_risk",
+        "boundary": "The project uses Webpack 5.80.0 and Angular CLI (implied via `@angular-devkit/build-angular`), which tightly couples the SASS compilation pipeline to Angular CLI internals. Changing the builder may alter how `sass` files are resolved, especially if custom Webpack overrides exist. Any custom loader or `sass` options (e.g., `prependData`) may need reconfiguration.",
+        "severity": "caution",
+        "source_facts": [
+          "tech_versions.json: Webpack 5.80.0"
+        ]
+      },
+      {
+        "category": "testing_constraint",
+        "boundary": "The issue explicitly notes that additional testing is needed to minimize regressions — this is not a silent refactor. Visual regression tests or E2E test suites (e.g., Playwright 1.44.1) should be run post-migration. Without this, visual bugs (e.g., misaligned components, missing themes) may go unnoticed in CI.",
+        "severity": "caution",
+        "source_facts": [
+          "tech_versions.json: Playwright 1.44.1",
+          "issue context: 'additional testing may be necessary'"
+        ]
+      },
+      {
+        "category": "infrastructure_constraint",
+        "boundary": "Gradle 8.2.1 is used as the build tool — but this is likely for the *backend*. The frontend build is Angular CLI-based, so Gradle does not directly control SASS compilation. However, if the CI pipeline chains Gradle → frontend build, any breakage in the SASS step may cause Gradle builds to fail. Thus, SASS changes must be verified end-to-end in CI.",
+        "severity": "info",
+        "source_facts": [
+          "tech_versions.json: Gradle 8.2.1"
+        ]
+      }
+    ],
+    "architecture_notes": "This task sits at the *build orchestration layer* — specifically, in `angular.json` and related CLI configuration files. The Angular application uses the CLI’s builder pattern (`architect.build.builder`) to compile TypeScript + SASS into static assets. The migration targets the `@angular-devkit/build-angular:application` builder (replacing older `application` or `browser` builders), which uses the modern `sass` compiler implementation and enforces stricter import resolution (no auto-injection of `styles.scss` from node_modules). This change affects the *asset generation stage* of the build pipeline, upstream of bundling and minification. Neighboring components: `webpack.config.js` (if present), CI job definitions, and the `src/styles.scss` / `src/theme/` folders that contain global SASS imports. The SASS files themselves are not changing — only the *rules* under which they’re processed.",
+    "anticipated_questions": [
+      {
+        "question": "Do I need to update `angular.json` manually — what exactly changes?",
+        "answer": "Yes. You must replace the `builder` value under `architect.build` (and possibly `architect.serve`) from the old value (likely `@angular-devkit/build-angular:browser` or similar) to `@angular-devkit/build-angular:application`. Also, verify `styles` and `stylePreprocessorOptions` sections — especially if you use `styleUrls` that rely on legacy `@import` resolution. If your project uses `angular.json`’s `buildOptions.styles` to inject global SASS (e.g., via `prependData`), that may no longer work and must be replaced with explicit `@import` in entry SASS files."
+      },
+      {
+        "question": "Why is the ADR (UVZ-09-ADR-003) relevant — should I read it?",
+        "answer": "Yes — it documents the decision to adopt the new builder due to deprecation of the old SASS import behavior. It likely includes migration steps, rationale for rejecting alternatives (e.g., staying on older Angular), and acceptance criteria (e.g., 'no visual regressions in smoke tests'). The ADR is the source of the policy requiring this change."
+      },
+      {
+        "question": "What kind of tests do we need — can I reuse existing Playwright/E2E tests?",
+        "answer": "Yes, but with caveats: Playwright E2E tests will catch major layout issues, but minor visual regressions (e.g., font-weight, spacing) require visual regression testing (e.g., percy-like tools). At minimum, run full E2E test suite and manually verify theme consistency (e.g., login screen, dashboard, forms). The issue explicitly asks for 'additional testing' — so don’t assume unit test coverage is sufficient."
+      }
+    ]
+  }
+}
