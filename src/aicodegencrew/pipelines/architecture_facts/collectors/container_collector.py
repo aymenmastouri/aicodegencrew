@@ -9,7 +9,7 @@ A Container in C4 terms is:
 Detection Strategy:
 1. RECURSIVE scan for build files (package.json, build.gradle, pom.xml)
 2. Use DIRECTORY NAME as container name (not settings.gradle)
-3. Determine type from build system + markers
+3. Determine type from build system + markers via ecosystem modules
 4. Skip: node_modules, dist, build, deployment, .git, etc.
 
 Container Types:
@@ -28,6 +28,7 @@ import json
 import re
 from pathlib import Path
 
+from ....shared.ecosystems import CollectorContext, EcosystemRegistry
 from ....shared.utils.logger import logger
 from .base import CollectorOutput, DimensionCollector, RawContainer
 
@@ -73,6 +74,10 @@ class ContainerCollector(DimensionCollector):
 
     # Maximum recursion depth for sub-project detection
     MAX_DEPTH = 5
+
+    def __init__(self, repo_path: Path):
+        super().__init__(repo_path)
+        self._ecosystem_registry = EcosystemRegistry()
 
     def collect(self) -> CollectorOutput:
         """Collect container facts by RECURSIVELY scanning build files."""
@@ -122,194 +127,43 @@ class ContainerCollector(DimensionCollector):
         except PermissionError:
             pass  # Skip directories we can't access
 
-    def _scan_top_level_dirs(self, detected: dict[str, RawContainer]):
-        """Scan top-level directories for containers (legacy, replaced by _scan_recursive)."""
-        for item in self.repo_path.iterdir():
-            if not item.is_dir():
-                continue
-
-            # Skip excluded directories
-            if item.name in self.SKIP_DIRS or item.name.startswith("."):
-                continue
-
-            # Check for build files
-            container = self._detect_container_in_dir(item)
-            if container and container.name not in detected:
-                detected[container.name] = container
-                logger.info(f"[ContainerCollector] Found {container.type}: {container.name} ({container.technology})")
+    def _build_context(self) -> CollectorContext:
+        """Create a CollectorContext for ecosystem container detection."""
+        ctx = CollectorContext(self.repo_path)
+        ctx.is_test_directory = self._is_test_directory
+        ctx.find_files = self._find_files
+        return ctx
 
     def _detect_container_in_dir(self, dir_path: Path) -> RawContainer | None:
-        """Detect container type from directory contents."""
+        """Detect container type from directory contents using ecosystem modules."""
         name = dir_path.name
+        ctx = self._build_context()
 
-        # Check for Spring Boot (Gradle)
-        build_gradle = dir_path / "build.gradle"
-        build_gradle_kts = dir_path / "build.gradle.kts"
-
-        if build_gradle.exists() or build_gradle_kts.exists():
-            gradle_file = build_gradle if build_gradle.exists() else build_gradle_kts
-            return self._detect_gradle_container(gradle_file, name)
-
-        # Check for Maven
-        pom_xml = dir_path / "pom.xml"
-        if pom_xml.exists():
-            return self._detect_maven_container(pom_xml, name)
-
-        # Check for Node.js (Angular, React, E2E tests)
-        package_json = dir_path / "package.json"
-        if package_json.exists():
-            return self._detect_node_container(package_json, name)
+        # Iterate ecosystems in priority order — first match wins
+        for ecosystem in self._ecosystem_registry.get_ecosystems_by_priority():
+            result = ecosystem.detect_container(dir_path, name, ctx)
+            if result is not None:
+                return self._dict_to_raw_container(result)
 
         return None
 
-    def _detect_gradle_container(self, gradle_path: Path, name: str) -> RawContainer | None:
-        """Detect container from Gradle build file."""
-        content = self._read_file_content(gradle_path)
-        lines = self._read_file(gradle_path)
-
-        # Determine technology and type
-        is_spring = "org.springframework.boot" in content or "spring-boot" in content.lower()
-
-        is_batch = "spring-boot-starter-batch" in content
-
-        # Check for main class to distinguish library vs application
-        has_main = self._find_spring_main_class(gradle_path.parent) is not None
-
-        if is_spring:
-            container_type = "batch" if is_batch else "backend"
-            technology = "Spring Batch" if is_batch else "Spring Boot"
-        else:
-            container_type = "library"
-            technology = "Java/Gradle"
-
-        # Override for test directories
-        if self._is_test_directory(name):
-            container_type = "test"
-
+    def _dict_to_raw_container(self, data: dict) -> RawContainer:
+        """Convert ecosystem dict result to RawContainer."""
         container = RawContainer(
-            name=name,
-            type=container_type,
-            technology=technology,
-            root_path=self._relative_path(gradle_path.parent),
-            category="application" if has_main else "library",
-            metadata={
-                "build_system": "gradle",
-                "has_main_class": has_main,
-            },
+            name=data["name"],
+            type=data["type"],
+            technology=data["technology"],
+            root_path=data["root_path"],
+            category=data.get("category", ""),
+            metadata=data.get("metadata", {}),
         )
-
-        # Add evidence
-        spring_line = self._find_line_number(lines, "spring") or 1
-        container.add_evidence(
-            path=self._relative_path(gradle_path),
-            line_start=spring_line,
-            line_end=spring_line + 10,
-            reason=f"{technology} project: {name}",
-        )
-
-        return container
-
-    def _detect_maven_container(self, pom_path: Path, name: str) -> RawContainer | None:
-        """Detect container from Maven pom.xml."""
-        content = self._read_file_content(pom_path)
-        lines = self._read_file(pom_path)
-
-        # Skip parent POMs
-        if "<modules>" in content and "<packaging>pom</packaging>" in content:
-            return None
-
-        is_spring = "spring-boot" in content.lower()
-        is_batch = "spring-boot-starter-batch" in content
-
-        has_main = self._find_spring_main_class(pom_path.parent) is not None
-
-        if is_spring:
-            container_type = "batch" if is_batch else "backend"
-            technology = "Spring Batch" if is_batch else "Spring Boot"
-        else:
-            container_type = "library"
-            technology = "Java/Maven"
-
-        if self._is_test_directory(name):
-            container_type = "test"
-
-        container = RawContainer(
-            name=name,
-            type=container_type,
-            technology=technology,
-            root_path=self._relative_path(pom_path.parent),
-            category="application" if has_main else "library",
-            metadata={
-                "build_system": "maven",
-                "has_main_class": has_main,
-            },
-        )
-
-        artifact_line = self._find_line_number(lines, "<artifactId>") or 1
-        container.add_evidence(
-            path=self._relative_path(pom_path),
-            line_start=artifact_line,
-            line_end=artifact_line + 10,
-            reason=f"{technology} project: {name}",
-        )
-
-        return container
-
-    def _detect_node_container(self, package_path: Path, name: str) -> RawContainer | None:
-        """Detect container from package.json."""
-        try:
-            content = package_path.read_text(encoding="utf-8")
-            pkg = json.loads(content)
-        except Exception:
-            return None
-
-        deps = pkg.get("dependencies", {})
-        dev_deps = pkg.get("devDependencies", {})
-        all_deps = {**deps, **dev_deps}
-
-        # Detect framework
-        technology = None
-        container_type = "frontend"
-
-        # Angular
-        if "@angular/core" in all_deps:
-            technology = "Angular"
-        # React
-        elif "react" in all_deps:
-            technology = "React"
-        # Vue
-        elif "vue" in all_deps:
-            technology = "Vue"
-        # E2E Test frameworks
-        elif "cypress" in all_deps or "playwright" in all_deps or "protractor" in all_deps:
-            technology = (
-                "Cypress" if "cypress" in all_deps else "Playwright" if "playwright" in all_deps else "Protractor"
+        for ev in data.get("evidence", []):
+            container.add_evidence(
+                path=ev["path"],
+                line_start=ev["line_start"],
+                line_end=ev["line_end"],
+                reason=ev["reason"],
             )
-            container_type = "test"
-        # Generic Node.js
-        else:
-            technology = "Node.js"
-
-        # Override type for test directories
-        if self._is_test_directory(name):
-            container_type = "test"
-
-        container = RawContainer(
-            name=name,
-            type=container_type,
-            technology=technology,
-            root_path=self._relative_path(package_path.parent),
-            category="application" if container_type != "test" else "test",
-            metadata={
-                "build_system": "npm",
-                "version": pkg.get("version"),
-            },
-        )
-
-        container.add_evidence(
-            path=self._relative_path(package_path), line_start=1, line_end=20, reason=f"{technology} project: {name}"
-        )
-
         return container
 
     def _is_test_directory(self, name: str) -> bool:
@@ -325,30 +179,6 @@ class ContainerCollector(DimensionCollector):
             if name_lower.startswith(pattern + "_") or name_lower.endswith("_" + pattern):
                 return True
         return False
-
-    def _find_spring_main_class(self, root: Path) -> dict | None:
-        """Find @SpringBootApplication class."""
-        # Search in src/main/java
-        java_root = root / "src" / "main" / "java"
-        if not java_root.exists():
-            java_root = root
-
-        java_files = self._find_files("*.java", java_root)[:100]  # Limit search
-
-        for java_file in java_files:
-            try:
-                content = java_file.read_text(encoding="utf-8", errors="ignore")
-                if "@SpringBootApplication" in content:
-                    lines = content.splitlines()
-                    for i, line in enumerate(lines):
-                        if "@SpringBootApplication" in line:
-                            return {
-                                "path": self._relative_path(java_file),
-                                "line": i + 1,
-                            }
-            except Exception:
-                continue
-        return None
 
     def _detect_from_docker_compose(self, detected: dict[str, RawContainer]):
         """Detect database and external containers from docker-compose."""

@@ -1,26 +1,17 @@
 """
 TechStackVersionCollector - Extracts technology versions for upgrade planning.
 
-Detects versions from:
-- build.gradle / build.gradle.kts (Spring Boot, Java, Gradle plugins)
-- libs.versions.toml (Gradle version catalog — Spring Boot, Kotlin, etc.)
-- pom.xml (Maven, Spring Boot via parent or dependencyManagement BOM, Java)
-- package.json (Node.js, Angular, React, TypeScript)
-- angular.json + sibling package.json (Angular version)
-- .java-version, .node-version, .nvmrc
-- gradle.properties, gradle-wrapper.properties
-- Dockerfile (base images)
+Detects versions from ecosystem-specific build files and config files,
+plus cross-cutting Docker/infrastructure versions.
 
 Output -> tech_versions in system.json
 """
 
-import json
-import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from xml.etree import ElementTree as ET
 
+from ....shared.ecosystems import CollectorContext, EcosystemRegistry
 from ....shared.utils.logger import logger
 from .base import CollectorOutput, DimensionCollector, RawFact
 
@@ -40,6 +31,7 @@ class TechStackVersionCollector(DimensionCollector):
     Collects technology versions from build files and config files.
 
     Essential for upgrade planning (e.g., Angular upgrade, Java upgrade).
+    Delegates ecosystem-specific collection to ecosystem modules.
     """
 
     DIMENSION = "tech_versions"
@@ -51,22 +43,21 @@ class TechStackVersionCollector(DimensionCollector):
         super().__init__(repo_path)
         self.container_id = container_id
         self.versions: dict[str, TechVersion] = {}
+        self._ecosystem_registry = EcosystemRegistry()
 
     def collect(self) -> CollectorOutput:
         """Collect all technology version facts."""
         self._log_start()
 
-        # Java/JVM ecosystem
-        self._collect_gradle_versions()
-        self._collect_maven_versions()
-        self._collect_java_version_files()
+        # Build context for ecosystem modules
+        ctx = self._build_context()
 
-        # JavaScript/TypeScript ecosystem
-        self._collect_npm_versions()
-        self._collect_angular_versions()
-        self._collect_node_version_files()
+        # Delegate to each active ecosystem
+        active_ecosystems = self._ecosystem_registry.detect(self.repo_path)
+        for ecosystem in active_ecosystems:
+            ecosystem.collect_versions(ctx)
 
-        # Docker/Container
+        # Cross-cutting: Docker/Container versions (not ecosystem-specific)
         self._collect_dockerfile_versions()
 
         # Add all to output
@@ -76,6 +67,14 @@ class TechStackVersionCollector(DimensionCollector):
         logger.info(f"[TechStackVersionCollector] Found {len(self.versions)} technology versions")
         self._log_end()
         return self.output
+
+    def _build_context(self) -> CollectorContext:
+        """Create a CollectorContext for ecosystem version collection."""
+        ctx = CollectorContext(self.repo_path)
+        ctx.add_version = self._add_version
+        ctx.find_files = self._find_files
+        ctx.find_files_glob = self._find_files_glob
+        return ctx
 
     def _add_version(self, technology: str, version: str, source_file: str, category: str):
         """Add a version fact if not already present or if version is more specific."""
@@ -107,335 +106,7 @@ class TechStackVersionCollector(DimensionCollector):
         logger.debug(f"[TechStackVersionCollector] {technology}: {version} ({source_file})")
 
     # =========================================================================
-    # Gradle
-    # =========================================================================
-
-    def _collect_gradle_versions(self):
-        """Collect versions from Gradle files."""
-        for gradle_file in self._find_files("build.gradle") + self._find_files("build.gradle.kts"):
-            self._parse_gradle_file(gradle_file)
-
-        for wrapper_file in self._find_files("gradle-wrapper.properties"):
-            self._parse_gradle_wrapper(wrapper_file)
-
-        for props_file in self._find_files("gradle.properties"):
-            self._parse_gradle_properties(props_file)
-
-        # Gradle version catalog (modern projects)
-        for catalog_file in self._find_files("libs.versions.toml"):
-            self._parse_version_catalog(catalog_file)
-
-    def _parse_gradle_file(self, file_path: Path):
-        """Parse build.gradle for versions."""
-        try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-            rel_path = self._relative_path(file_path)
-
-            # Spring Boot version
-            for pattern in [
-                r"org\.springframework\.boot['\"]?\s*version\s*['\"]?([0-9.]+)",
-                r"springBootVersion\s*=\s*['\"]([0-9.]+)['\"]",
-                r"id\s*\(?['\"]org\.springframework\.boot['\"]\)?\s*version\s*['\"]([0-9.]+)",
-                r"spring-boot-gradle-plugin:([0-9.]+)",
-            ]:
-                match = re.search(pattern, content)
-                if match:
-                    self._add_version("Spring Boot", match.group(1), rel_path, "framework")
-                    break
-
-            # Java/JDK version
-            for pattern in [
-                r"sourceCompatibility\s*=\s*['\"]?(\d+)['\"]?",
-                r"targetCompatibility\s*=\s*['\"]?(\d+)['\"]?",
-                r"JavaVersion\.VERSION_(\d+)",
-                r"java\.toolchain\s*\{[^}]*languageVersion\.set\(JavaLanguageVersion\.of\((\d+)\)",
-                r"jvmToolchain\((\d+)\)",
-            ]:
-                match = re.search(pattern, content)
-                if match:
-                    java_version = match.group(1)
-                    self._add_version("Java", java_version, rel_path, "language")
-                    break
-
-            # Kotlin version
-            kotlin_match = re.search(r"kotlin\(['\"]jvm['\"]\)\s*version\s*['\"]([0-9.]+)", content)
-            if not kotlin_match:
-                kotlin_match = re.search(r"kotlin-gradle-plugin:([0-9.]+)", content)
-            if kotlin_match:
-                self._add_version("Kotlin", kotlin_match.group(1), rel_path, "language")
-
-        except Exception as e:
-            logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
-
-    def _parse_gradle_wrapper(self, file_path: Path):
-        """Parse gradle-wrapper.properties for Gradle version."""
-        try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-            rel_path = self._relative_path(file_path)
-
-            # distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
-            match = re.search(r"gradle-([0-9.]+)-", content)
-            if match:
-                self._add_version("Gradle", match.group(1), rel_path, "build_tool")
-
-        except Exception as e:
-            logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
-
-    def _parse_gradle_properties(self, file_path: Path):
-        """Parse gradle.properties for versions."""
-        try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-            rel_path = self._relative_path(file_path)
-
-            # Common version properties
-            patterns = {
-                "Spring Boot": r"springBootVersion\s*=\s*([0-9.]+)",
-                "Kotlin": r"kotlinVersion\s*=\s*([0-9.]+)",
-                "Java": r"javaVersion\s*=\s*(\d+)",
-            }
-
-            for tech, pattern in patterns.items():
-                match = re.search(pattern, content)
-                if match:
-                    category = "framework" if tech == "Spring Boot" else "language"
-                    self._add_version(tech, match.group(1), rel_path, category)
-
-        except Exception as e:
-            logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
-
-    def _parse_version_catalog(self, file_path: Path):
-        """Parse Gradle version catalog (libs.versions.toml) for tech versions."""
-        try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-            rel_path = self._relative_path(file_path)
-
-            # Only parse the [versions] section
-            versions_match = re.search(r"\[versions\](.*?)(?:^\[|\Z)", content, re.DOTALL | re.MULTILINE)
-            if not versions_match:
-                return
-
-            versions_section = versions_match.group(1)
-
-            # Known tech keys → (tech_name, category)
-            catalog_tech_map = {
-                "spring-boot": ("Spring Boot", "framework"),
-                "springboot": ("Spring Boot", "framework"),
-                "spring_boot": ("Spring Boot", "framework"),
-                "kotlin": ("Kotlin", "language"),
-                "java": ("Java", "language"),
-                "angular": ("Angular", "framework"),
-                "node": ("Node.js", "runtime"),
-                "typescript": ("TypeScript", "language"),
-            }
-
-            for line in versions_section.splitlines():
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
-                if "=" not in line:
-                    continue
-                key, _, raw_value = line.partition("=")
-                key = key.strip().lower().replace("-", "").replace("_", "")
-                # Version can be quoted string or { require = "X.Y.Z" } rich form
-                version_match = re.search(r'(\d+\.\d+(?:\.\d+)*)', raw_value)
-                if not version_match:
-                    continue
-                version = version_match.group(1)
-                if key in catalog_tech_map:
-                    tech_name, category = catalog_tech_map[key]
-                    self._add_version(tech_name, version, rel_path, category)
-
-        except Exception as e:
-            logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
-
-    # =========================================================================
-    # Maven
-    # =========================================================================
-
-    def _collect_maven_versions(self):
-        """Collect versions from Maven pom.xml files."""
-        for pom_file in self._find_files("pom.xml"):
-            self._parse_pom_file(pom_file)
-
-    def _parse_pom_file(self, file_path: Path):
-        """Parse pom.xml for versions."""
-        try:
-            content = file_path.read_text(encoding="utf-8", errors="ignore")
-            rel_path = self._relative_path(file_path)
-
-            # Try XML parsing
-            try:
-                tree = ET.parse(file_path)
-                root = tree.getroot()
-                ns = {"m": "http://maven.apache.org/POM/4.0.0"}
-
-                # Spring Boot parent version
-                parent = root.find(".//m:parent", ns) or root.find(".//parent")
-                if parent is not None:
-                    artifact = parent.find("m:artifactId", ns) or parent.find("artifactId")
-                    version = parent.find("m:version", ns) or parent.find("version")
-                    if artifact is not None and version is not None:
-                        if "spring-boot" in (artifact.text or "").lower():
-                            self._add_version("Spring Boot", version.text, rel_path, "framework")
-
-                # Spring Boot BOM via dependencyManagement (alternative to parent)
-                dep_mgmt = root.find(".//m:dependencyManagement", ns) or root.find(".//dependencyManagement")
-                if dep_mgmt is not None:
-                    for dep in dep_mgmt.findall(".//m:dependency", ns) or dep_mgmt.findall(".//dependency"):
-                        artifact = dep.find("m:artifactId", ns) or dep.find("artifactId")
-                        version = dep.find("m:version", ns) or dep.find("version")
-                        if artifact is not None and version is not None:
-                            artifact_text = artifact.text or ""
-                            v = version.text or ""
-                            if "spring-boot" in artifact_text.lower() and v and not v.startswith("${"):
-                                self._add_version("Spring Boot", v, rel_path, "framework")
-                                break
-
-                # Java version from properties
-                props = root.find(".//m:properties", ns) or root.find(".//properties")
-                if props is not None:
-                    java_version = props.find("m:java.version", ns) or props.find("java.version")
-                    if java_version is not None and java_version.text:
-                        self._add_version("Java", java_version.text, rel_path, "language")
-
-                    maven_compiler = props.find("m:maven.compiler.source", ns) or props.find("maven.compiler.source")
-                    if maven_compiler is not None and maven_compiler.text:
-                        self._add_version("Java", maven_compiler.text, rel_path, "language")
-
-            except ET.ParseError:
-                pass
-
-            # Fallback: regex — covers spring-boot.version, spring.boot.version, springBootVersion
-            for spring_prop_pattern in [
-                r"<spring-boot\.version>([0-9.]+)</spring-boot\.version>",
-                r"<spring\.boot\.version>([0-9.]+)</spring\.boot\.version>",
-                r"<springBootVersion>([0-9.]+)</springBootVersion>",
-            ]:
-                spring_match = re.search(spring_prop_pattern, content)
-                if spring_match:
-                    self._add_version("Spring Boot", spring_match.group(1), rel_path, "framework")
-                    break
-
-            java_match = re.search(r"<java\.version>([0-9.]+)</java\.version>", content)
-            if java_match:
-                self._add_version("Java", java_match.group(1), rel_path, "language")
-
-            # Maven wrapper version
-            maven_match = re.search(r"<maven\.version>([0-9.]+)</maven\.version>", content)
-            if maven_match:
-                self._add_version("Maven", maven_match.group(1), rel_path, "build_tool")
-
-        except Exception as e:
-            logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
-
-    def _collect_java_version_files(self):
-        """Collect Java version from .java-version files."""
-        for version_file in self._find_files(".java-version"):
-            try:
-                version = version_file.read_text(encoding="utf-8").strip()
-                if version:
-                    self._add_version("Java", version, self._relative_path(version_file), "language")
-            except Exception:
-                pass
-
-    # =========================================================================
-    # NPM / Node.js
-    # =========================================================================
-
-    def _collect_npm_versions(self):
-        """Collect versions from package.json files."""
-        for package_file in self._find_files("package.json"):
-            self._parse_package_json(package_file)
-
-    def _parse_package_json(self, file_path: Path):
-        """Parse package.json for versions."""
-        try:
-            content = file_path.read_text(encoding="utf-8")
-            pkg = json.loads(content)
-            rel_path = self._relative_path(file_path)
-
-            deps = pkg.get("dependencies", {})
-            dev_deps = pkg.get("devDependencies", {})
-            all_deps = {**deps, **dev_deps}
-
-            # Key frameworks/libraries
-            version_map = {
-                "@angular/core": ("Angular", "framework"),
-                "@angular/cli": ("Angular CLI", "build_tool"),
-                "react": ("React", "framework"),
-                "react-dom": ("React DOM", "framework"),
-                "vue": ("Vue", "framework"),
-                "typescript": ("TypeScript", "language"),
-                "rxjs": ("RxJS", "library"),
-                "@ngrx/store": ("NgRx", "library"),
-                "webpack": ("Webpack", "build_tool"),
-                "vite": ("Vite", "build_tool"),
-                "jest": ("Jest", "library"),
-                "karma": ("Karma", "library"),
-                "playwright": ("Playwright", "library"),
-                "cypress": ("Cypress", "library"),
-            }
-
-            for dep_name, (tech_name, category) in version_map.items():
-                if dep_name in all_deps:
-                    version = all_deps[dep_name]
-                    # Extract first concrete version number (handles ^X.Y.Z, ~X.Y, >=X <Y, X.x, etc.)
-                    version_match = re.search(r"(\d+\.\d+(?:\.\d+)*)", str(version))
-                    clean_version = version_match.group(1) if version_match else ""
-                    if clean_version:
-                        self._add_version(tech_name, clean_version, rel_path, category)
-
-            # Node.js engine
-            engines = pkg.get("engines", {})
-            if "node" in engines:
-                node_version = re.sub(r"^[\^~>=<]+", "", str(engines["node"]))
-                self._add_version("Node.js", node_version, rel_path, "runtime")
-
-        except Exception as e:
-            logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
-
-    def _collect_angular_versions(self):
-        """Collect Angular version from angular.json and its sibling package.json.
-
-        Modern angular.json uses a local-path $schema (no version number), so the
-        authoritative source is the package.json in the same directory.
-        """
-        for angular_file in self._find_files("angular.json"):
-            try:
-                content = angular_file.read_text(encoding="utf-8")
-                pkg = json.loads(content)
-                rel_path = self._relative_path(angular_file)
-
-                # Old-style: versioned $schema URL contains the CLI version
-                # e.g. "https://raw.githubusercontent.com/angular/angular-cli/17.1.0/..."
-                schema = pkg.get("$schema", "")
-                schema_match = re.search(r"@angular/cli/(\d+\.\d+\.\d+)", schema)
-                if schema_match:
-                    self._add_version("Angular CLI", schema_match.group(1), rel_path, "build_tool")
-
-                # Modern: sibling package.json is the canonical version source
-                sibling_pkg = angular_file.parent / "package.json"
-                if sibling_pkg.exists():
-                    self._parse_package_json(sibling_pkg)
-
-            except Exception as e:
-                logger.debug(f"[TechStackVersionCollector] Failed to parse {angular_file}: {e}")
-
-    def _collect_node_version_files(self):
-        """Collect Node.js version from version files."""
-        for pattern in [".node-version", ".nvmrc"]:
-            for version_file in self._find_files(pattern):
-                try:
-                    version = version_file.read_text(encoding="utf-8").strip()
-                    if version:
-                        # Remove 'v' prefix if present
-                        version = version.lstrip("v")
-                        self._add_version("Node.js", version, self._relative_path(version_file), "runtime")
-                except Exception:
-                    pass
-
-    # =========================================================================
-    # Docker
+    # Docker (cross-cutting — not ecosystem-specific)
     # =========================================================================
 
     def _collect_dockerfile_versions(self):
@@ -449,12 +120,10 @@ class TechStackVersionCollector(DimensionCollector):
             content = file_path.read_text(encoding="utf-8", errors="ignore")
             rel_path = self._relative_path(file_path)
 
-            # FROM image:version
             for match in re.finditer(r"^FROM\s+([^:\s]+):([^\s]+)", content, re.MULTILINE):
                 image = match.group(1)
                 version = match.group(2)
 
-                # Map common images
                 if "openjdk" in image.lower() or "eclipse-temurin" in image.lower():
                     self._add_version("Java (Docker)", version, rel_path, "runtime")
                 elif "node" in image.lower():
@@ -465,7 +134,10 @@ class TechStackVersionCollector(DimensionCollector):
                     self._add_version("PostgreSQL (Docker)", version, rel_path, "database")
                 elif "oracle" in image.lower():
                     self._add_version("Oracle (Docker)", version, rel_path, "database")
-
+                elif "gcc" in image.lower():
+                    self._add_version("GCC (Docker)", version, rel_path, "runtime")
+                elif "clang" in image.lower() or "llvm" in image.lower():
+                    self._add_version("Clang/LLVM (Docker)", version, rel_path, "runtime")
         except Exception as e:
             logger.debug(f"[TechStackVersionCollector] Failed to parse {file_path}: {e}")
 
@@ -473,23 +145,26 @@ class TechStackVersionCollector(DimensionCollector):
     # Helpers
     # =========================================================================
 
-    def _find_files(self, filename: str) -> list[Path]:
-        """Walk repo, pruning SKIP_DIRS at directory level (faster than rglob on large trees).
+    def _find_files(self, filename: str, root: Path | None = None) -> list[Path]:
+        """Walk repo, pruning SKIP_DIRS at directory level.
 
         Using os.walk with in-place dir list modification avoids descending into
-        node_modules, dist, target etc. — critical on slow filesystems with large dependency trees.
+        node_modules, dist, target etc.
         """
+        import os
+
+        search_root = root or self.repo_path
         results = []
-        for dirpath, dirnames, filenames in os.walk(self.repo_path):
-            # Prune skip directories IN PLACE so os.walk doesn't descend into them
+        for dirpath, dirnames, filenames in os.walk(search_root):
             dirnames[:] = [d for d in dirnames if d.lower() not in self.SKIP_DIRS]
             if filename in filenames:
                 results.append(Path(dirpath) / filename)
         return results
 
     def _find_files_glob(self, pattern: str) -> list[Path]:
-        """Like _find_files but matches a glob pattern (e.g. 'Dockerfile*', '*.gradle')."""
+        """Like _find_files but matches a glob pattern (e.g. 'Dockerfile*')."""
         import fnmatch
+        import os
 
         results = []
         for dirpath, dirnames, filenames in os.walk(self.repo_path):
@@ -498,10 +173,6 @@ class TechStackVersionCollector(DimensionCollector):
                 if fnmatch.fnmatch(fname, pattern):
                     results.append(Path(dirpath) / fname)
         return results
-
-    def _should_skip(self, path: Path) -> bool:
-        """Check if path should be skipped (path-component matching, not substring)."""
-        return bool(set(p.lower() for p in path.parts) & self.SKIP_DIRS)
 
     def _relative_path(self, file_path: Path) -> str:
         """Get relative path from repo root."""

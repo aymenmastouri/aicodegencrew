@@ -10,9 +10,28 @@ import os
 import re
 from pathlib import Path, PurePosixPath
 
+# Merge ecosystem-specific exclude extensions into the blocklist
+def _get_ecosystem_exclude_extensions() -> set[str]:
+    """Collect exclude extensions from all registered ecosystems."""
+    try:
+        from ..ecosystems import EcosystemRegistry
+        return EcosystemRegistry().get_all_exclude_extensions()
+    except Exception:
+        return set()
+
+
+def _get_ecosystem_skip_directories() -> set[str]:
+    """Collect skip directories from all registered ecosystems."""
+    try:
+        from ..ecosystems import EcosystemRegistry
+        return EcosystemRegistry().get_all_skip_directories()
+    except Exception:
+        return set()
+
+
 # Binary/generated extensions to EXCLUDE (blocklist approach).
 # Everything else is treated as text and indexed.
-BINARY_EXTENSIONS = {
+_BASE_BINARY_EXTENSIONS = {
     # Compiled / bytecode
     ".class",
     ".jar",
@@ -83,6 +102,9 @@ BINARY_EXTENSIONS = {
     ".min.css",
 }
 
+# Merge in ecosystem-specific exclude extensions
+BINARY_EXTENSIONS = _BASE_BINARY_EXTENSIONS | _get_ecosystem_exclude_extensions()
+
 CONFIG_EXTENSIONS = {
     ".yml",
     ".yaml",
@@ -98,7 +120,7 @@ CONFIG_EXTENSIONS = {
 
 # Directories to skip (faster than pattern matching)
 # Only skip build outputs, dependencies, cache - NOT source code!
-SKIP_DIRS = {
+_BASE_SKIP_DIRS = {
     ".git",
     ".venv",
     "venv",
@@ -141,6 +163,9 @@ SKIP_DIRS = {
     "deployment",
     "html",
 }
+
+# Merge in ecosystem-specific skip directories
+SKIP_DIRS = _BASE_SKIP_DIRS | _get_ecosystem_skip_directories()
 
 # Special files to always include
 SPECIAL_FILES = {

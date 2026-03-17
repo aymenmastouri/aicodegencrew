@@ -113,12 +113,15 @@ export interface CollectorInfo {
   enabled: boolean;
   fact_count: number | null;
   last_modified: string | null;
+  ecosystems: string[];
+  specialist_count: number;
 }
 
 export interface CollectorListResponse {
   collectors: CollectorInfo[];
   total: number;
   enabled_count: number;
+  specialist_count: number;
 }
 
 export interface SetupStatus {
@@ -133,6 +136,30 @@ export interface CollectorOutput {
   data: unknown;
   fact_count: number;
   file_size_bytes: number;
+}
+
+export interface EcosystemInfo {
+  id: string;
+  name: string;
+  detected: boolean;
+  priority: number;
+  enabled: boolean;
+  source_extensions: string[];
+  exclude_extensions: string[];
+  skip_directories: string[];
+  marker_files: { filename: string; framework_label: string }[];
+  containers: Record<string, unknown>[];
+  versions: Record<string, unknown>[];
+  component_technologies: string[];
+  dimensions: string[];
+  specialist_count: number;
+}
+
+export interface EcosystemListResponse {
+  ecosystems: EcosystemInfo[];
+  active_ids: string[];
+  total: number;
+  active_count: number;
 }
 
 export interface TaskPhaseSummary {
@@ -259,6 +286,18 @@ export class ApiService {
 
   getCollectorOutput(id: string): Observable<CollectorOutput> {
     return this.http.get<CollectorOutput>(`${this.base}/collectors/${id}/output`);
+  }
+
+  getEcosystems(): Observable<EcosystemListResponse> {
+    return this.http.get<EcosystemListResponse>(`${this.base}/collectors/ecosystems`);
+  }
+
+  toggleEcosystem(id: string, enabled: boolean): Observable<EcosystemInfo> {
+    return this.http.put<EcosystemInfo>(`${this.base}/collectors/ecosystems/${id}/toggle`, { enabled });
+  }
+
+  updateEcosystemPriority(id: string, priority: number): Observable<EcosystemInfo> {
+    return this.http.put<EcosystemInfo>(`${this.base}/collectors/ecosystems/${id}/priority`, { priority });
   }
 
   // Triage

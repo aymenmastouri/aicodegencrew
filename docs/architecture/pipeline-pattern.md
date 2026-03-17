@@ -53,13 +53,13 @@ Stages pass data forward via a shared `context` dict. Each stage reads what it n
 
 **Full docs:** [Phase 0 — Discover](../phases/phase-0-discover/README.md)
 
-Indexes repository files into ChromaDB + symbol index + evidence store + repo manifest. 10 steps, 0 LLM calls. Modes: off/auto/smart/force.
+Indexes repository files into ChromaDB + symbol index + evidence store + repo manifest. 10 steps, 0 LLM calls. Modes: off/auto/smart/force. Uses **Ecosystem Strategy Pattern** for per-language symbol extraction and ecosystem detection (`repo_manifest.json` → `ecosystems` field).
 
 ### Phase 1 — Architecture Facts (Extract)
 
 **Full docs:** [Phase 1 — Extract](../phases/phase-1-extract/README.md)
 
-Deterministic extraction of 16 architecture dimensions via modular collector pattern. No LLM.
+Deterministic extraction of 16 architecture dimensions via 45 specialist collectors organized in 4 ecosystem sub-packages. No LLM. All 9 ecosystem-dependent dimension collectors are thin routers that delegate via `ecosystem.collect_dimension()`. Cross-cutting logic (BPMN, Cucumber, SQL, OpenAPI) stays in the router. See [collector-delegation.drawio](collector-delegation.drawio).
 
 ### Phase 2 — Architecture Analysis (Analyze)
 

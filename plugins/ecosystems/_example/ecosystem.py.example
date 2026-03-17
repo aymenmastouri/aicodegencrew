@@ -1,0 +1,58 @@
+"""Example ecosystem plugin — copy this directory and rename to create a new ecosystem.
+
+Steps:
+1. Copy _example/ to a new directory (e.g., plugins/ecosystems/rust/)
+2. Rename this file to __init__.py
+3. Implement all abstract properties and methods
+4. Restart the application — the ecosystem will be auto-discovered
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from src.aicodegencrew.shared.ecosystems.base import EcosystemDefinition, MarkerFile
+
+
+class ExampleEcosystem(EcosystemDefinition):
+    """Example ecosystem plugin template."""
+
+    @property
+    def id(self) -> str:
+        return "example"
+
+    @property
+    def name(self) -> str:
+        return "Example Language"
+
+    @property
+    def priority(self) -> int:
+        return 100
+
+    @property
+    def source_extensions(self) -> set[str]:
+        return {".example"}
+
+    @property
+    def exclude_extensions(self) -> set[str]:
+        return set()
+
+    @property
+    def skip_directories(self) -> set[str]:
+        return set()
+
+    @property
+    def marker_files(self) -> list[MarkerFile]:
+        return [
+            MarkerFile("example.config", "Example Framework"),
+        ]
+
+    @property
+    def ext_to_lang(self) -> dict[str, str]:
+        return {".example": "Example"}
+
+    def extract_symbols(
+        self, path: str, content: str, lines: list[str], lang: str, module: str
+    ) -> list[dict]:
+        # Implement symbol extraction for your language
+        return []

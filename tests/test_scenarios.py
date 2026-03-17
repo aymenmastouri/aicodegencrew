@@ -989,26 +989,22 @@ class TestCollectorBaseClasses:
         assert DimensionCollector._normalize_name("simple") == "simple"
 
     def test_component_collector_technology_dispatch(self, tmp_path):
-        """ComponentCollector dispatches to correct specialist by technology."""
-        from aicodegencrew.pipelines.architecture_facts.collectors.component_collector import (
-            ComponentCollector,
-        )
+        """ComponentCollector dispatches to correct specialist by technology via ecosystem registry."""
+        from aicodegencrew.shared.ecosystems import EcosystemRegistry
 
-        containers = [
-            {"name": "backend", "type": "backend", "technology": "Spring Boot", "root_path": "backend"},
-            {"name": "frontend", "type": "frontend", "technology": "Angular", "root_path": "frontend"},
-        ]
+        registry = EcosystemRegistry()
 
-        collector = ComponentCollector(repo_path=tmp_path, containers=containers)
+        # Spring Boot should route to Java/JVM ecosystem
+        java_eco = registry.get_ecosystem_for_technology("Spring Boot")
+        assert java_eco is not None
+        assert java_eco.id == "java_jvm"
+        assert "Java/Gradle" in java_eco.get_component_technologies()
+        assert "Java/Maven" in java_eco.get_component_technologies()
 
-        # Should correctly filter by technology
-        spring_containers = collector._get_containers_by_technologies({"Spring Boot", "Java/Gradle", "Java/Maven"})
-        assert len(spring_containers) == 1
-        assert spring_containers[0]["name"] == "backend"
-
-        angular_containers = collector._get_containers_by_technology("Angular")
-        assert len(angular_containers) == 1
-        assert angular_containers[0]["name"] == "frontend"
+        # Angular should route to JavaScript/TypeScript ecosystem
+        js_eco = registry.get_ecosystem_for_technology("Angular")
+        assert js_eco is not None
+        assert js_eco.id == "javascript_typescript"
 
 
 # =============================================================================

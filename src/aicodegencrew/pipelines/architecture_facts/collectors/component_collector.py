@@ -3,7 +3,7 @@ ComponentCollector - Aggregates component facts from specialists.
 
 This is an AGGREGATOR that:
 1. Receives container info from orchestrator
-2. Runs specialists based on container technology
+2. Routes to ecosystem-specific specialists based on container technology
 3. Merges all component facts
 
 Container-Aware:
@@ -16,19 +16,17 @@ Output -> components.json
 
 from pathlib import Path
 
+from ....shared.ecosystems import EcosystemRegistry
 from ....shared.utils.logger import logger
-from .angular import AngularComponentCollector, AngularModuleCollector, AngularServiceCollector
 from .base import CollectorOutput, DimensionCollector, RawComponent
-from .spring import SpringRepositoryCollector, SpringRestCollector, SpringServiceCollector
 
 
 class ComponentCollector(DimensionCollector):
     """
     Aggregates component facts from technology-specific specialists.
 
-    Uses container information to determine:
-    - Which specialists to run
-    - Where to search (container root paths)
+    Uses ecosystem registry to route containers to the appropriate
+    ecosystem's component collectors.
     """
 
     DIMENSION = "components"
@@ -43,43 +41,37 @@ class ComponentCollector(DimensionCollector):
         """
         super().__init__(repo_path)
         self.containers = containers or []
-
-    # Technologies handled by Spring specialists (Java-based)
-    _SPRING_TECHNOLOGIES = {"Spring Boot", "Java/Gradle", "Java/Maven"}
+        self._ecosystem_registry = EcosystemRegistry()
 
     def collect(self) -> CollectorOutput:
         """Collect components from all relevant specialists."""
         self._log_start()
 
-        # Collect from Java-based containers (Spring Boot, Java/Gradle, Java/Maven)
-        java_containers = self._get_containers_by_technologies(self._SPRING_TECHNOLOGIES)
-        for container in java_containers:
-            self._collect_spring_components(container)
+        collected_any = False
 
-        # Collect from Angular containers
-        angular_containers = self._get_containers_by_technology("Angular")
-        for container in angular_containers:
-            self._collect_angular_components(container)
-
-        # Collect from Node.js containers (basic TS/JS class detection)
-        node_containers = self._get_containers_by_technologies({"Node.js", "Node.js/TypeScript"})
-        for container in node_containers:
-            self._collect_node_components(container)
+        # For each container, find the ecosystem and run its component collectors
+        for container in self.containers:
+            technology = container.get("technology", "")
+            ecosystem = self._ecosystem_registry.get_ecosystem_for_technology(technology)
+            if ecosystem is not None:
+                logger.info(
+                    f"[ComponentCollector] Running {ecosystem.name} specialists for "
+                    f"'{container.get('name', '')}' ({technology})"
+                )
+                facts, relations = ecosystem.collect_components(container, self.repo_path)
+                for fact in facts:
+                    if isinstance(fact, RawComponent):
+                        self.output.add_fact(fact)
+                for relation in relations:
+                    self.output.add_relation(relation)
+                collected_any = True
 
         # Fallback: if no containers at all, detect and run anyway
-        if not java_containers and not angular_containers and not node_containers:
+        if not collected_any:
             self._fallback_detection()
 
         self._log_end()
         return self.output
-
-    def _get_containers_by_technology(self, technology: str) -> list[dict]:
-        """Get containers matching a technology."""
-        return [c for c in self.containers if c.get("technology") == technology]
-
-    def _get_containers_by_technologies(self, technologies: set) -> list[dict]:
-        """Get containers matching any of the given technologies."""
-        return [c for c in self.containers if c.get("technology") in technologies]
 
     def _get_container_root(self, container: dict) -> Path:
         """Get the root path for a container."""
@@ -88,102 +80,6 @@ class ComponentCollector(DimensionCollector):
             return self.repo_path / root_path
         return self.repo_path
 
-    def _collect_spring_components(self, container: dict):
-        """Run Spring specialists for a container."""
-        container_root = self._get_container_root(container)
-        container_name = container.get("name", "backend")
-
-        logger.info(f"[ComponentCollector] Running Spring specialists for '{container_name}' in {container_root}")
-
-        # Controllers
-        rest_collector = SpringRestCollector(container_root, container_id=container_name)
-        rest_output = rest_collector.collect()
-        self._merge_output(rest_output)
-
-        # Services
-        service_collector = SpringServiceCollector(container_root, container_id=container_name)
-        service_output = service_collector.collect()
-        self._merge_output(service_output)
-
-        # Repositories
-        repo_collector = SpringRepositoryCollector(container_root, container_id=container_name)
-        repo_output = repo_collector.collect()
-        self._merge_output(repo_output)
-
-    def _collect_angular_components(self, container: dict):
-        """Run Angular specialists for a container."""
-        container_root = self._get_container_root(container)
-        container_name = container.get("name", "frontend")
-
-        logger.info(f"[ComponentCollector] Running Angular specialists for '{container_name}' in {container_root}")
-
-        # Modules
-        module_collector = AngularModuleCollector(container_root, container_id=container_name)
-        module_output = module_collector.collect()
-        self._merge_output(module_output)
-
-        # Components
-        component_collector = AngularComponentCollector(container_root, container_id=container_name)
-        component_output = component_collector.collect()
-        self._merge_output(component_output)
-
-        # Services
-        service_collector = AngularServiceCollector(container_root, container_id=container_name)
-        service_output = service_collector.collect()
-        self._merge_output(service_output)
-
-    def _collect_node_components(self, container: dict):
-        """Detect exported classes/functions in a Node.js/TypeScript container."""
-        import re
-
-        container_root = self._get_container_root(container)
-        container_name = container.get("name", "node")
-
-        logger.info(f"[ComponentCollector] Scanning Node.js/TS exports for '{container_name}' in {container_root}")
-
-        ts_files = self._find_files("*.ts", container_root) + self._find_files("*.js", container_root)
-
-        count = 0
-        for fpath in ts_files:
-            try:
-                content = fpath.read_text(encoding="utf-8", errors="ignore")
-            except Exception:
-                continue
-
-            # Match: export class Foo / export function bar / export default class
-            for m in re.finditer(r"export\s+(?:default\s+)?(?:class|function|const)\s+(\w+)", content):
-                name = m.group(1)
-                # Determine stereotype from naming conventions
-                lower = name.lower()
-                if lower.endswith("service"):
-                    stereo = "service"
-                elif lower.endswith("controller") or lower.endswith("handler"):
-                    stereo = "controller"
-                elif lower.endswith("model") or lower.endswith("entity"):
-                    stereo = "entity"
-                elif lower.endswith("spec") or lower.endswith("test"):
-                    stereo = "test"
-                else:
-                    stereo = "component"
-
-                rel_path = self._relative_path(fpath)
-                self.output.add_fact(
-                    RawComponent(
-                        name=name,
-                        stereotype=stereo,
-                        container_hint=container_name,
-                        file_path=rel_path,
-                        metadata={
-                            "source": "node_export_scan",
-                            "technology": "TypeScript" if fpath.suffix == ".ts" else "JavaScript",
-                            "line_number": content[: m.start()].count("\n") + 1,
-                        },
-                    )
-                )
-                count += 1
-
-        logger.info(f"[ComponentCollector] Found {count} Node.js/TS exports in '{container_name}'")
-
     def _fallback_detection(self):
         """Fallback: detect technologies without container info."""
         logger.info("[ComponentCollector] No containers provided, running fallback detection...")
@@ -191,19 +87,65 @@ class ComponentCollector(DimensionCollector):
         # Detect Spring
         if self._detect_spring():
             logger.info("[ComponentCollector] Detected Spring Boot, running specialists...")
-            self._collect_spring_components({"name": "backend", "root_path": ""})
+            ecosystem = self._ecosystem_registry.get_ecosystem_for_technology("Spring Boot")
+            if ecosystem:
+                facts, relations = ecosystem.collect_components(
+                    {"name": "backend", "root_path": ""}, self.repo_path
+                )
+                for fact in facts:
+                    if isinstance(fact, RawComponent):
+                        self.output.add_fact(fact)
+                for relation in relations:
+                    self.output.add_relation(relation)
 
-        # Detect Angular - search in subdirectories too
+        # Detect Angular — search in subdirectories too
         angular_root = self._find_angular_root()
         if angular_root:
             logger.info(f"[ComponentCollector] Detected Angular in {angular_root}")
-            self._collect_angular_components(
-                {"name": "frontend", "root_path": str(angular_root.relative_to(self.repo_path))}
-            )
+            ecosystem = self._ecosystem_registry.get_ecosystem_for_technology("Angular")
+            if ecosystem:
+                facts, relations = ecosystem.collect_components(
+                    {"name": "frontend", "root_path": str(angular_root.relative_to(self.repo_path))},
+                    self.repo_path,
+                )
+                for fact in facts:
+                    if isinstance(fact, RawComponent):
+                        self.output.add_fact(fact)
+                for relation in relations:
+                    self.output.add_relation(relation)
+
+        # Detect Python (Django/Flask/FastAPI)
+        if self._detect_python():
+            logger.info("[ComponentCollector] Detected Python project, running specialists...")
+            ecosystem = self._ecosystem_registry.get_ecosystem_for_technology("Python")
+            if ecosystem:
+                facts, relations = ecosystem.collect_components(
+                    {"name": "backend", "root_path": ""}, self.repo_path
+                )
+                for fact in facts:
+                    if isinstance(fact, RawComponent):
+                        self.output.add_fact(fact)
+                for relation in relations:
+                    self.output.add_relation(relation)
+
+        # Detect C/C++ (CMake)
+        if self._detect_cpp():
+            logger.info("[ComponentCollector] Detected C/C++ project, running specialists...")
+            ecosystem = self._ecosystem_registry.get_ecosystem_for_technology("C/C++")
+            if not ecosystem:
+                ecosystem = self._ecosystem_registry.get_ecosystem_for_technology("C++/CMake")
+            if ecosystem:
+                facts, relations = ecosystem.collect_components(
+                    {"name": "backend", "root_path": ""}, self.repo_path
+                )
+                for fact in facts:
+                    if isinstance(fact, RawComponent):
+                        self.output.add_fact(fact)
+                for relation in relations:
+                    self.output.add_relation(relation)
 
     def _detect_spring(self) -> bool:
         """Detect if project has Spring Boot."""
-        # Check Maven
         for pom in self._find_files("pom.xml"):
             try:
                 content = pom.read_text(encoding="utf-8", errors="ignore")
@@ -212,7 +154,6 @@ class ComponentCollector(DimensionCollector):
             except Exception:
                 continue
 
-        # Check Gradle
         for gradle in self._find_files("build.gradle") + self._find_files("build.gradle.kts"):
             try:
                 content = gradle.read_text(encoding="utf-8", errors="ignore")
@@ -223,19 +164,33 @@ class ComponentCollector(DimensionCollector):
 
         return False
 
+    def _detect_python(self) -> bool:
+        """Detect if project has Python (Django/Flask/FastAPI)."""
+        for marker in ("pyproject.toml", "setup.py", "requirements.txt"):
+            if self._find_files(marker):
+                return True
+        return False
+
+    def _detect_cpp(self) -> bool:
+        """Detect if project has C/C++ (CMake/Makefile)."""
+        if (self.repo_path / "CMakeLists.txt").exists():
+            return True
+        if (self.repo_path / "Makefile").exists():
+            return True
+        if (self.repo_path / "meson.build").exists():
+            return True
+        return False
+
     def _find_angular_root(self) -> Path | None:
         """Find Angular root directory (looks in subdirectories)."""
-        # Check root
         if (self.repo_path / "angular.json").exists():
             return self.repo_path
 
-        # Check common subdirectories
         for subdir in ["frontend", "client", "web", "ui", "angular"]:
             angular_json = self.repo_path / subdir / "angular.json"
             if angular_json.exists():
                 return angular_json.parent
 
-        # Search deeper (using _find_files for proper pruning)
         for angular_json in self._find_files("angular.json"):
             return angular_json.parent
 
@@ -244,7 +199,6 @@ class ComponentCollector(DimensionCollector):
     def _merge_output(self, other: CollectorOutput):
         """Merge another collector's output into this one (only RawComponent facts)."""
         for fact in other.facts:
-            # Only add actual components, not interfaces
             if isinstance(fact, RawComponent):
                 self.output.add_fact(fact)
 

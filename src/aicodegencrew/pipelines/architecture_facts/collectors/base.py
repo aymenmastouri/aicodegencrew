@@ -436,6 +436,47 @@ class DimensionCollector(ABC):
         return ".".join(filtered) if filtered else ""
 
     # =========================================================================
+    # Shared Utilities (used by multiple specialist collectors)
+    # =========================================================================
+
+    @staticmethod
+    def _guess_component_from_path(file_path: str) -> str:
+        """Guess a component name from a test file path.
+
+        Used by test specialists to derive the tested_component_hint.
+        E.g. 'src/main/java/com/app/UserService.java' → 'UserService'.
+        """
+        parts = file_path.replace("\\", "/").split("/")
+        if parts:
+            filename = parts[-1]
+            # Strip common suffixes and extension
+            name = filename.rsplit(".", 1)[0]
+            for suffix in ("Test", "Tests", "Spec", "IT", "_test", "_spec"):
+                if name.endswith(suffix):
+                    name = name[: -len(suffix)]
+                    break
+            return name
+        return ""
+
+    @staticmethod
+    def _detect_source_dirs(module_root: Path) -> list[str]:
+        """Detect standard source directories within a module root.
+
+        Returns relative paths like 'src/main/java', 'src', 'lib'.
+        Used by build system specialists to locate source trees.
+        """
+        candidates = [
+            "src/main/java", "src/main/kotlin",
+            "src/main/resources", "src/test/java",
+            "src", "lib", "app", "pkg",
+        ]
+        found = []
+        for candidate in candidates:
+            if (module_root / candidate).is_dir():
+                found.append(candidate)
+        return found
+
+    # =========================================================================
     # Logging
     # =========================================================================
 

@@ -9,6 +9,10 @@ Used by:
 
 from __future__ import annotations
 
+# Ecosystem IDs for reference:
+# "java_jvm", "javascript_typescript", "c_cpp", "python"
+# Empty list = cross-cutting (runs always, independent of ecosystem)
+
 COLLECTOR_REGISTRY: list[dict] = [
     {
         "id": "system",
@@ -21,6 +25,7 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "system.json",
         "class_name": "SystemCollector",
         "can_disable": False,
+        "ecosystems": [],  # cross-cutting
     },
     {
         "id": "containers",
@@ -33,6 +38,7 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "containers.json",
         "class_name": "ContainerCollector",
         "can_disable": False,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "components",
@@ -45,11 +51,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "components.json",
         "class_name": "ComponentCollector",
         "can_disable": False,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "interfaces",
         "name": "Interface Extraction",
-        "description": "REST endpoints, Angular routes, message channels",
+        "description": "REST endpoints, Angular routes, message channels, gRPC services",
         "dimension": "interfaces",
         "category": "optional",
         "collector_type": "interface",
@@ -57,11 +64,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "interfaces.json",
         "class_name": "InterfaceCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "data_model",
         "name": "Data Model",
-        "description": "JPA entities, database tables, Flyway/Liquibase migrations",
+        "description": "JPA entities, SQLAlchemy/Django models, database tables, migrations",
         "dimension": "data_model",
         "category": "optional",
         "collector_type": "data",
@@ -69,11 +77,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "data_model.json",
         "class_name": "DataModelCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "python"],
     },
     {
         "id": "runtime",
         "name": "Runtime Facts",
-        "description": "Schedulers, async methods, event listeners",
+        "description": "Schedulers, async methods, event listeners, Celery tasks",
         "dimension": "runtime",
         "category": "optional",
         "collector_type": "runtime",
@@ -81,6 +90,7 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "runtime.json",
         "class_name": "RuntimeCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "python"],
     },
     {
         "id": "infrastructure",
@@ -93,6 +103,7 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "infrastructure.json",
         "class_name": "InfrastructureCollector",
         "can_disable": True,
+        "ecosystems": [],  # cross-cutting
     },
     {
         "id": "dependencies",
@@ -105,11 +116,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "dependencies.json",
         "class_name": "DependencyCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "workflows",
         "name": "Workflows",
-        "description": "State machines, BPMN processes, NgRx stores",
+        "description": "State machines, BPMN processes, NgRx stores, Celery chains, Airflow DAGs",
         "dimension": "workflows",
         "category": "optional",
         "collector_type": "runtime",
@@ -117,6 +129,7 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "workflows.json",
         "class_name": "WorkflowCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "tech_versions",
@@ -129,11 +142,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "tech_versions.json",
         "class_name": "TechStackVersionCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "security_details",
         "name": "Security Details",
-        "description": "Method-level security, CSRF, CORS, Spring Security config",
+        "description": "Method-level security, CSRF, CORS, Django/Flask/FastAPI auth",
         "dimension": "security_details",
         "category": "optional",
         "collector_type": "quality",
@@ -141,11 +155,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "security_details.json",
         "class_name": "SecurityDetailCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "python"],
     },
     {
         "id": "validation",
         "name": "Validation Rules",
-        "description": "Bean Validation annotations, custom validators, Angular form validation",
+        "description": "Bean Validation, Pydantic, Marshmallow, Django forms, Angular validators",
         "dimension": "validation",
         "category": "optional",
         "collector_type": "quality",
@@ -153,11 +168,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "validation.json",
         "class_name": "ValidationCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "python"],
     },
     {
         "id": "tests",
         "name": "Tests",
-        "description": "Unit, integration, e2e tests and Cucumber scenarios",
+        "description": "Unit, integration, e2e tests: JUnit, Cucumber, pytest, GoogleTest, Catch2",
         "dimension": "tests",
         "category": "optional",
         "collector_type": "quality",
@@ -165,11 +181,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "tests.json",
         "class_name": "TestCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "error_handling",
         "name": "Error Handling",
-        "description": "Exception handlers, @ControllerAdvice, custom exceptions",
+        "description": "Exception handlers, @ControllerAdvice, Flask errorhandler, custom exceptions",
         "dimension": "error_handling",
         "category": "optional",
         "collector_type": "quality",
@@ -177,11 +194,12 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "error_handling.json",
         "class_name": "ErrorHandlingCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "python"],
     },
     {
         "id": "build_system",
         "name": "Build System",
-        "description": "Build tools, modules, tasks/scripts, wrappers (Gradle, Maven, npm)",
+        "description": "Build tools, modules, tasks/scripts (Gradle, Maven, npm, CMake, Meson, pyproject.toml)",
         "dimension": "build_system",
         "category": "optional",
         "collector_type": "build",
@@ -189,6 +207,7 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "build_system.json",
         "class_name": "BuildSystemCollector",
         "can_disable": True,
+        "ecosystems": ["java_jvm", "javascript_typescript", "c_cpp", "python"],
     },
     {
         "id": "evidence",
@@ -201,6 +220,7 @@ COLLECTOR_REGISTRY: list[dict] = [
         "output_file": "evidence_map.json",
         "class_name": "EvidenceCollector",
         "can_disable": False,
+        "ecosystems": [],  # cross-cutting
     },
 ]
 

@@ -14,24 +14,22 @@ import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from ...shared.ecosystems import EcosystemRegistry
 from ...shared.utils.logger import setup_logger
 from .models import ModuleStats, RepoManifest
 
 logger = setup_logger(__name__)
 
-# Marker files → framework name
+# Build FRAMEWORK_MARKERS from ecosystem registry + cross-cutting infrastructure
+_registry = EcosystemRegistry()
 FRAMEWORK_MARKERS: dict[str, str] = {
-    "pom.xml": "Spring/Maven",
-    "build.gradle": "Spring/Gradle",
-    "build.gradle.kts": "Spring/Gradle-KTS",
-    "angular.json": "Angular",
-    "package.json": "Node.js",
-    "requirements.txt": "Python",
-    "pyproject.toml": "Python",
+    **_registry.get_framework_markers(),
+    # Other languages (not yet ecosystem modules)
     "Cargo.toml": "Rust",
     "go.mod": "Go",
     "Gemfile": "Ruby",
     "composer.json": "PHP",
+    # Infrastructure / CI/CD (cross-cutting, not ecosystem-specific)
     "Dockerfile": "Docker",
     "docker-compose.yml": "Docker Compose",
     "docker-compose.yaml": "Docker Compose",
@@ -80,17 +78,23 @@ class ManifestBuilder:
         noise_folders = self._detect_noise_folders()
         stats, modules = self._compute_stats(all_file_paths)
 
+        # Detect active ecosystems
+        active_ecosystems = _registry.detect(self.repo_path)
+        ecosystem_ids = [eco.id for eco in active_ecosystems]
+
         manifest = RepoManifest(
             repo_root=str(self.repo_path),
             commit=commit,
             stats=stats,
             modules=[m.__dict__ for m in modules],
             frameworks=frameworks,
+            ecosystems=ecosystem_ids,
             noise_folders=noise_folders,
         )
 
         logger.info(
-            f"[Manifest] {stats.get('total_files', 0)} files, {len(frameworks)} frameworks, {len(modules)} modules"
+            f"[Manifest] {stats.get('total_files', 0)} files, {len(frameworks)} frameworks, "
+            f"{len(ecosystem_ids)} ecosystems, {len(modules)} modules"
         )
         return manifest
 

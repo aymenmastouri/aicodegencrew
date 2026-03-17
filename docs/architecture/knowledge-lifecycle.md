@@ -54,7 +54,7 @@ knowledge/
 │   │   ├── chroma.sqlite3          # Vector embeddings (with content_type metadata)
 │   │   ├── symbols.jsonl           # Symbol index (class/method/endpoint per line)
 │   │   ├── evidence.jsonl          # Chunk evidence (line range, type, linked symbols)
-│   │   ├── repo_manifest.json      # Repo stats, frameworks, modules, noise folders
+│   │   ├── repo_manifest.json      # Repo stats, frameworks, ecosystems, modules, noise folders
 │   │   ├── .indexing_state.json    # Fingerprint, counts, timestamp
 │   │   └── ...                     # ChromaDB internal files
 │   └── myapp/                  # Artifacts for another project

@@ -353,12 +353,15 @@ class CollectorInfo(BaseModel):
     enabled: bool = True
     fact_count: int | None = None
     last_modified: str | None = None
+    ecosystems: list[str] = []  # ecosystem IDs this collector feeds from (empty = cross-cutting)
+    specialist_count: int = 0  # How many specialist collectors this dimension delegates to
 
 
 class CollectorListResponse(BaseModel):
     collectors: list[CollectorInfo]
     total: int
     enabled_count: int
+    specialist_count: int = 0  # Total specialist collectors across all ecosystems
 
 
 class CollectorToggleRequest(BaseModel):
@@ -370,3 +373,35 @@ class CollectorOutput(BaseModel):
     data: Any
     fact_count: int
     file_size_bytes: int
+
+
+class EcosystemInfo(BaseModel):
+    id: str
+    name: str
+    detected: bool
+    priority: int
+    enabled: bool = True
+    source_extensions: list[str]
+    exclude_extensions: list[str]
+    skip_directories: list[str]
+    marker_files: list[dict[str, str]]  # [{filename, framework_label}]
+    containers: list[dict[str, Any]] = []
+    versions: list[dict[str, Any]] = []
+    component_technologies: list[str] = []
+    dimensions: list[str] = []  # Dimension names this ecosystem's collect_dimension() supports
+    specialist_count: int = 0  # Number of specialist collector files in this ecosystem's sub-package
+
+
+class EcosystemListResponse(BaseModel):
+    ecosystems: list[EcosystemInfo]
+    active_ids: list[str]
+    total: int
+    active_count: int
+
+
+class EcosystemToggleRequest(BaseModel):
+    enabled: bool
+
+
+class EcosystemPriorityRequest(BaseModel):
+    priority: int = Field(ge=1, le=999)

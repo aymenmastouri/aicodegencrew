@@ -1,19 +1,23 @@
 """
 InterfaceCollector - Aggregates interface facts.
 
+Thin router that delegates ecosystem-specific collection to specialist
+collectors. Container-based routing uses EcosystemRegistry for technology
+matching. Cross-cutting: OpenAPI/Swagger specifications.
+
 Collects:
-- REST endpoints (from Spring @RestController, *RestService)
+- REST endpoints (Spring, Flask, FastAPI, Django)
 - Angular routes
+- C/C++ public APIs
 - OpenAPI/Swagger specifications
-- Schedulers (@Scheduled)
-- Message listeners (Kafka, RabbitMQ)
+- Schedulers and message listeners (via ecosystem delegation)
 
 Output -> interfaces.json
 """
 
-import re
 from pathlib import Path
 
+from ....shared.ecosystems.registry import EcosystemRegistry
 from ....shared.utils.logger import logger
 from .angular import AngularRoutingCollector, OpenAPICollector
 from .base import CollectorOutput, DimensionCollector, RawInterface
@@ -23,6 +27,9 @@ from .spring import SpringRestCollector
 class InterfaceCollector(DimensionCollector):
     """
     Aggregates interface facts from all sources.
+
+    Routes container-based collection to ecosystem specialist collectors.
+    Uses EcosystemRegistry for fallback detection and scheduler/listener delegation.
     """
 
     DIMENSION = "interfaces"
@@ -30,34 +37,45 @@ class InterfaceCollector(DimensionCollector):
     def __init__(self, repo_path: Path, containers: list[dict] = None):
         super().__init__(repo_path)
         self.containers = containers or []
+        self._registry = EcosystemRegistry()
 
     def collect(self) -> CollectorOutput:
         """Collect all interface facts."""
         self._log_start()
 
-        # Collect REST endpoints from Spring/Java containers
-        _SPRING_TECHNOLOGIES = {"Spring Boot", "Java/Gradle", "Java/Maven"}
-        spring_containers = [c for c in self.containers if c.get("technology") in _SPRING_TECHNOLOGIES]
-        for container in spring_containers:
-            self._collect_rest_endpoints(container)
+        if self.containers:
+            # Container-based routing via ecosystem registry
+            for container in self.containers:
+                technology = container.get("technology", "")
+                eco = self._registry.get_ecosystem_for_technology(technology)
+                if eco is None:
+                    continue
 
-        # Collect routes from Angular containers
-        angular_containers = [c for c in self.containers if c.get("technology") == "Angular"]
-        for container in angular_containers:
-            self._collect_angular_routes(container)
+                container_root = self._get_container_root(container)
+                container_name = container.get("name", "backend")
 
-        # Fallback detection
-        if not spring_containers and not angular_containers:
+                if eco.id == "java_jvm":
+                    self._collect_rest_endpoints(container_root, container_name)
+                elif eco.id == "javascript_typescript" and technology == "Angular":
+                    self._collect_angular_routes(container_root, container_name)
+                elif eco.id == "python":
+                    self._collect_python_interfaces(container_root, container_name)
+                elif eco.id == "c_cpp":
+                    self._collect_cpp_interfaces(container_root, container_name)
+        else:
+            # Fallback: use ecosystem detection
             self._fallback_detection()
 
-        # Collect OpenAPI/Swagger specifications (always run)
+        # Cross-cutting: OpenAPI/Swagger specifications (always run)
         self._collect_openapi_specs()
 
-        # Collect schedulers (always run for any Java project)
-        self._collect_schedulers()
-
-        # Collect message listeners
-        self._collect_listeners()
+        # Ecosystem delegation for schedulers and listeners
+        for eco in self._registry.detect(self.repo_path):
+            facts, rels = eco.collect_dimension(self.DIMENSION, self.repo_path)
+            for f in facts:
+                self.output.add_fact(f)
+            for r in rels:
+                self.output.add_relation(r)
 
         self._log_end()
         return self.output
@@ -69,26 +87,19 @@ class InterfaceCollector(DimensionCollector):
             return self.repo_path / root
         return self.repo_path
 
-    def _collect_rest_endpoints(self, container: dict):
+    def _collect_rest_endpoints(self, container_root: Path, container_name: str):
         """Collect REST endpoints from a Spring container."""
-        container_root = self._get_container_root(container)
-        container_name = container.get("name", "backend")
-
         logger.info(f"[InterfaceCollector] Collecting REST endpoints from '{container_name}'")
 
         rest_collector = SpringRestCollector(container_root, container_id=container_name)
         rest_output = rest_collector.collect()
 
-        # Only take interfaces
         for fact in rest_output.facts:
             if isinstance(fact, RawInterface):
                 self.output.add_fact(fact)
 
-    def _collect_angular_routes(self, container: dict):
+    def _collect_angular_routes(self, container_root: Path, container_name: str):
         """Collect Angular routes from a frontend container."""
-        container_root = self._get_container_root(container)
-        container_name = container.get("name", "frontend")
-
         logger.info(f"[InterfaceCollector] Collecting Angular routes from '{container_name}'")
 
         routing_collector = AngularRoutingCollector(container_root, container_id=container_name)
@@ -101,17 +112,49 @@ class InterfaceCollector(DimensionCollector):
         for relation in routing_output.relations:
             self.output.add_relation(relation)
 
-    def _fallback_detection(self):
-        """Fallback detection without container info."""
-        # Detect Spring
-        if self._detect_spring():
-            self._collect_rest_endpoints({"name": "backend", "root_path": ""})
+    def _collect_python_interfaces(self, container_root: Path, container_name: str):
+        """Collect Python REST endpoints."""
+        from .python_eco import PythonInterfaceCollector
 
-        # Detect Angular
-        angular_root = self._find_angular_root()
-        if angular_root:
-            rel_path = str(angular_root.relative_to(self.repo_path)) if angular_root != self.repo_path else ""
-            self._collect_angular_routes({"name": "frontend", "root_path": rel_path})
+        logger.info(f"[InterfaceCollector] Collecting Python interfaces from '{container_name}'")
+
+        collector = PythonInterfaceCollector(container_root, container_id=container_name)
+        output = collector.collect()
+
+        for fact in output.facts:
+            if isinstance(fact, RawInterface):
+                self.output.add_fact(fact)
+
+    def _collect_cpp_interfaces(self, container_root: Path, container_name: str):
+        """Collect C/C++ interfaces."""
+        from .cpp import CppInterfaceCollector
+
+        logger.info(f"[InterfaceCollector] Collecting C/C++ interfaces from '{container_name}'")
+
+        collector = CppInterfaceCollector(container_root, container_id=container_name)
+        output = collector.collect()
+
+        for fact in output.facts:
+            if isinstance(fact, RawInterface):
+                self.output.add_fact(fact)
+
+    def _fallback_detection(self):
+        """Fallback detection using EcosystemRegistry."""
+        active_ecosystems = self._registry.detect(self.repo_path)
+
+        for eco in active_ecosystems:
+            if eco.id == "java_jvm":
+                self._collect_rest_endpoints(self.repo_path, "backend")
+            elif eco.id == "javascript_typescript":
+                angular_root = self._find_angular_root()
+                if angular_root:
+                    rel_path = str(angular_root.relative_to(self.repo_path)) if angular_root != self.repo_path else ""
+                    container_root = self.repo_path / rel_path if rel_path else self.repo_path
+                    self._collect_angular_routes(container_root, "frontend")
+            elif eco.id == "python":
+                self._collect_python_interfaces(self.repo_path, "backend")
+            elif eco.id == "c_cpp":
+                self._collect_cpp_interfaces(self.repo_path, "backend")
 
     def _collect_openapi_specs(self):
         """Collect OpenAPI/Swagger specifications from the project."""
@@ -120,144 +163,21 @@ class InterfaceCollector(DimensionCollector):
         openapi_collector = OpenAPICollector(self.repo_path)
         openapi_output = openapi_collector.collect()
 
-        # Add all interfaces (endpoints from specs)
         for fact in openapi_output.facts:
             if isinstance(fact, RawInterface):
                 self.output.add_fact(fact)
 
-        # Add relations
         for relation in openapi_output.relations:
             self.output.add_relation(relation)
 
-    def _detect_spring(self) -> bool:
-        """Detect if project has Spring Boot."""
-        # Check Maven
-        for pom in self._find_files("pom.xml"):
-            try:
-                content = pom.read_text(encoding="utf-8", errors="ignore")
-                if "spring-boot" in content.lower():
-                    return True
-            except Exception:
-                continue
-
-        # Check Gradle
-        for gradle in self._find_files("build.gradle") + self._find_files("build.gradle.kts"):
-            try:
-                content = gradle.read_text(encoding="utf-8", errors="ignore")
-                if "org.springframework.boot" in content or "spring-boot" in content.lower():
-                    return True
-            except Exception:
-                continue
-        return False
-
     def _find_angular_root(self) -> Path | None:
         """Find Angular root directory."""
-        # Check root and common subdirectories
         for subdir in ["", "frontend", "client", "web", "ui", "angular"]:
             check_path = self.repo_path / subdir if subdir else self.repo_path
             if (check_path / "angular.json").exists():
                 return check_path
 
-        # Deeper search fallback
         for angular_json in self._find_files("angular.json"):
             return angular_json.parent
 
         return None
-
-    def _collect_schedulers(self):
-        """Collect @Scheduled methods."""
-        SCHEDULED_PATTERN = re.compile(r"@Scheduled\s*\(([^)]+)\)")
-        METHOD_PATTERN = re.compile(r"(?:public|private|protected)?\s*(?:void|[\w<>]+)\s+(\w+)\s*\(")
-
-        # Search in all Java files (using _find_files for SKIP_DIRS pruning)
-        java_files = self._find_files("*.java")
-
-        for java_file in java_files:
-            try:
-                content = java_file.read_text(encoding="utf-8", errors="ignore")
-            except Exception:
-                continue
-
-            for match in SCHEDULED_PATTERN.finditer(content):
-                config = match.group(1)
-                line_num = content[: match.start()].count("\n") + 1
-
-                # Find method name
-                method_search = METHOD_PATTERN.search(content[match.end() : match.end() + 200])
-                method_name = method_search.group(1) if method_search else "unknown"
-
-                # Parse cron/rate
-                cron_match = re.search(r'cron\s*=\s*["\']([^"\']+)["\']', config)
-                rate_match = re.search(r"fixedRate\s*=\s*(\d+)", config)
-
-                scheduler = RawInterface(
-                    name=method_name,
-                    type="scheduler",
-                    path=None,
-                    method=None,
-                    implemented_by_hint=java_file.stem,
-                    container_hint="backend",
-                )
-
-                if cron_match:
-                    scheduler.metadata["cron"] = cron_match.group(1)
-                if rate_match:
-                    scheduler.metadata["fixed_rate_ms"] = int(rate_match.group(1))
-
-                rel_path = str(java_file.relative_to(self.repo_path))
-                scheduler.add_evidence(
-                    path=rel_path, line_start=line_num, line_end=line_num + 3, reason=f"@Scheduled: {method_name}"
-                )
-
-                self.output.add_fact(scheduler)
-
-    def _collect_listeners(self):
-        """Collect message listeners (Kafka, RabbitMQ)."""
-        KAFKA_LISTENER = re.compile(r"@KafkaListener\s*\(([^)]+)\)")
-        RABBIT_LISTENER = re.compile(r"@RabbitListener\s*\(([^)]+)\)")
-
-        # Search in all Java files (using _find_files for SKIP_DIRS pruning)
-        java_files = self._find_files("*.java")
-
-        for java_file in java_files:
-            try:
-                content = java_file.read_text(encoding="utf-8", errors="ignore")
-            except Exception:
-                continue
-
-            # Kafka listeners
-            for match in KAFKA_LISTENER.finditer(content):
-                self._extract_listener(match, content, java_file, "kafka_listener")
-
-            # RabbitMQ listeners
-            for match in RABBIT_LISTENER.finditer(content):
-                self._extract_listener(match, content, java_file, "rabbit_listener")
-
-    def _extract_listener(self, match, content: str, file_path: Path, listener_type: str):
-        """Extract a message listener."""
-        config = match.group(1)
-        line_num = content[: match.start()].count("\n") + 1
-
-        METHOD_PATTERN = re.compile(r"(?:public|private|protected)?\s*(?:void|[\w<>]+)\s+(\w+)\s*\(")
-        method_search = METHOD_PATTERN.search(content[match.end() : match.end() + 200])
-        method_name = method_search.group(1) if method_search else "unknown"
-
-        # Extract topic/queue
-        topic_match = re.search(r'topics?\s*=\s*["\']([^"\']+)["\']', config)
-        queue_match = re.search(r'queues?\s*=\s*["\']([^"\']+)["\']', config)
-
-        listener = RawInterface(
-            name=method_name,
-            type=listener_type,
-            path=topic_match.group(1) if topic_match else (queue_match.group(1) if queue_match else None),
-            method=None,
-            implemented_by_hint=file_path.stem,
-            container_hint="backend",
-        )
-
-        rel_path = str(file_path.relative_to(self.repo_path))
-        listener.add_evidence(
-            path=rel_path, line_start=line_num, line_end=line_num + 5, reason=f"Message listener: {method_name}"
-        )
-
-        self.output.add_fact(listener)

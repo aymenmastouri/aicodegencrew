@@ -62,6 +62,7 @@ class RepoManifest:
     stats: dict[str, int] = field(default_factory=dict)
     modules: list[dict] = field(default_factory=list)
     frameworks: list[str] = field(default_factory=list)
+    ecosystems: list[str] = field(default_factory=list)
     noise_folders: list[str] = field(default_factory=list)
     generated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 

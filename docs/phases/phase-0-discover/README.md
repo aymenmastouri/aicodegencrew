@@ -36,7 +36,7 @@ The Discover phase is the foundation that every subsequent phase builds on. It t
 | **Output** | Vector embeddings | ChromaDB | `knowledge/discover/{slug}/chroma.sqlite3` |
 | **Output** | Symbol index | JSONL | `knowledge/discover/{slug}/symbols.jsonl` |
 | **Output** | Evidence store | JSONL | `knowledge/discover/{slug}/evidence.jsonl` |
-| **Output** | Repository manifest | JSON | `knowledge/discover/{slug}/repo_manifest.json` |
+| **Output** | Repository manifest | JSON | `knowledge/discover/{slug}/repo_manifest.json` (includes `ecosystems` field) |
 | **Output** | Indexing state | JSON | `knowledge/discover/{slug}/.indexing_state.json` |
 | **Output** | Active project marker | JSON | `knowledge/discover/.active_project` |
 
@@ -93,15 +93,33 @@ Smart mode: 2934 files → ~90 min (force), 12 changed → ~30 sec (smart).
 
 ## 5. Patterns & Decisions
 
+### Ecosystem Strategy Pattern
+
+Language/framework detection and symbol extraction are driven by **ecosystem modules** (`shared/ecosystems/`). Each ecosystem defines its own file extensions, marker files, regex patterns, and skip directories.
+
+```
+shared/ecosystems/
+    base.py                      # EcosystemDefinition abstract base class
+    registry.py                  # EcosystemRegistry — detection + aggregation
+    _utils.py                    # Shared helpers (find_block_end, etc.)
+    java_jvm.py                  # Java/JVM (Spring, Maven, Gradle, Kotlin)
+    javascript_typescript.py     # JavaScript/TypeScript (Angular, React, Vue, Node)
+    python_ecosystem.py          # Python (pip, poetry, setuptools)
+    c_cpp.py                     # C/C++ (CMake, Make, Autotools, Meson, Conan, vcpkg)
+```
+
+The `ManifestBuilder` runs `EcosystemRegistry.detect(repo_path)` during Step 1b and stores the active ecosystem IDs in `repo_manifest.json` (field: `ecosystems`). Downstream phases can use this list to skip irrelevant processing.
+
 ### Symbol Extractor
 
-Regex-based, per-language extraction — deterministic, no LLM.
+`SymbolExtractor` dispatches to the active ecosystem's `extract_symbols()` method. Regex-based, per-language extraction — deterministic, no LLM.
 
-| Language | Detected Symbols |
-|----------|-----------------|
-| **Java** | Classes, methods, annotations (`@RestController`, `@Service`), Spring endpoints |
-| **TypeScript** | Classes, interfaces, functions, Angular decorators (`@Component`, `@Injectable`) |
-| **Python** | Classes, functions/methods, decorators |
+| Ecosystem | Languages | Detected Symbols |
+|-----------|-----------|-----------------|
+| **Java/JVM** | Java | Classes, methods, annotations (`@RestController`, `@Service`), Spring endpoints |
+| **JavaScript/TypeScript** | TypeScript, JavaScript | Classes, interfaces, functions, Angular decorators (`@Component`, `@Injectable`) |
+| **Python** | Python | Classes, functions/methods, decorators |
+| **C/C++** | C, C++ | Structs, unions, enums, functions, macros, typedefs, namespaces, classes (C++) |
 
 ### Evidence Store
 
