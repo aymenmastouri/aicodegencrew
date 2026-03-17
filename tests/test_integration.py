@@ -48,7 +48,7 @@ class TestPhase0ToPhase1:
         cfg = IndexingConfig(repo_path=repo)
         assert cfg.index_mode == "auto"
         assert cfg.batch_size == 50
-        assert cfg.max_total_files == 8000
+        assert cfg.max_total_files == 25000
         assert cfg.chunk_chars == 1800
         assert cfg.chunk_overlap == 200
 

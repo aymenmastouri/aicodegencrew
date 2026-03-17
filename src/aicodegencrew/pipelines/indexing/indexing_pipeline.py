@@ -52,13 +52,13 @@ class IndexingConfig:
     collection_name: str = "repo_docs"
     include_submodules: bool = True
     batch_size: int = 50
-    max_total_files: int = 8000
-    max_total_chunks: int = 50000
+    max_total_files: int = 25000
+    max_total_chunks: int = 500000
     chunk_chars: int = 1800
     chunk_overlap: int = 200
-    max_file_bytes: int = 2000000
-    lock_timeout_s: int = 300
-    fingerprint_max_files: int = 2000
+    max_file_bytes: int = 5000000
+    lock_timeout_s: int = 600
+    fingerprint_max_files: int = 5000
 
     @classmethod
     def from_env(cls, repo_path: str = None, index_mode: str = None, chroma_dir: str = None) -> "IndexingConfig":
@@ -88,13 +88,13 @@ class IndexingConfig:
             collection_name=os.getenv("COLLECTION_NAME") or derive_collection_name(resolved_path),
             include_submodules=True,
             batch_size=int(os.getenv("INDEX_BATCH_SIZE", "50")),
-            max_total_files=int(os.getenv("INDEX_MAX_TOTAL_FILES", "8000")),
-            max_total_chunks=int(os.getenv("INDEX_MAX_TOTAL_CHUNKS", "50000")),
+            max_total_files=int(os.getenv("INDEX_MAX_TOTAL_FILES", "25000")),
+            max_total_chunks=int(os.getenv("INDEX_MAX_TOTAL_CHUNKS", "500000")),
             chunk_chars=int(os.getenv("CHUNK_CHARS", "1800")),
             chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "200")),
-            max_file_bytes=int(os.getenv("MAX_FILE_BYTES", "2000000")),
-            lock_timeout_s=int(os.getenv("INDEX_LOCK_TIMEOUT_S", "300")),
-            fingerprint_max_files=int(os.getenv("FINGERPRINT_MAX_FILES", "2000")),
+            max_file_bytes=int(os.getenv("MAX_FILE_BYTES", "5000000")),
+            lock_timeout_s=int(os.getenv("INDEX_LOCK_TIMEOUT_S", "600")),
+            fingerprint_max_files=int(os.getenv("FINGERPRINT_MAX_FILES", "5000")),
         )
 
 
@@ -1084,24 +1084,36 @@ class IndexingPipeline:
         logger.info("[SMART] Loading existing file hashes from vector store...")
         stored_hashes: dict[str, str] = {}  # file_path -> file_hash
         try:
-            coll_result = self.chroma_tool._run(
-                "get",
-                collection_name=self.config.collection_name,
-                where={"repo_path": repo_path_str},
-                limit=100000,
-                include=["metadatas"],
-            )
-            if coll_result and coll_result.get("success"):
+            # Use scroll-based loading to handle collections of ANY size.
+            # The old hardcoded limit=100000 broke for large projects.
+            offset = 0
+            page_size = 10000
+            while True:
+                coll_result = self.chroma_tool._run(
+                    "get",
+                    collection_name=self.config.collection_name,
+                    where={"repo_path": repo_path_str},
+                    limit=page_size,
+                    offset=offset,
+                    include=["metadatas"],
+                )
+                if not coll_result or not coll_result.get("success"):
+                    break
                 items = coll_result.get("items", {})
                 metadatas = items.get("metadatas", []) if isinstance(items, dict) else []
+                if not metadatas:
+                    break
                 for meta in metadatas:
                     if meta:
                         fp = meta.get("file_path", "")
                         fh = meta.get("file_hash", "")
                         if fp and fh:
                             stored_hashes[fp] = fh
+                if len(metadatas) < page_size:
+                    break  # Last page
+                offset += page_size
         except Exception as e:
-            logger.warning(f"[SMART] Could not load stored hashes: {e}")
+            logger.warning("[SMART] Could not load stored hashes: %s", e)
 
         logger.info(f"[SMART] Loaded {len(stored_hashes)} file hashes from index")
 
