@@ -87,7 +87,7 @@ class LLMGenerator:
             top_p=top_p,
             extra_body={"top_k": top_k},
             timeout=chunk_timeout,
-            num_retries=1,
+            num_retries=3,
             stream=True,
         )
 

@@ -876,6 +876,8 @@ Generate the plan now:"""
         if not content:
             raise ValueError("Response contained only markdown fencing, no JSON content")
 
+        import re as _re
+
         # Use strict=False to accept control characters (raw newlines/tabs)
         # inside JSON string values — common with on-prem LLMs.
         try:
@@ -890,6 +892,17 @@ Generate the plan now:"""
                 return json.loads(content[: last_brace + 1], strict=False)
             except json.JSONDecodeError:
                 pass
+
+        # Fix missing commas between properties (LLM omits them)
+        fixed = _re.sub(r'"\s*\n(\s*)"', r'",\n\1"', content)
+        fixed = _re.sub(r'}\s*\n(\s*)"', r'},\n\1"', fixed)
+        fixed = _re.sub(r']\s*\n(\s*)"', r'],\n\1"', fixed)
+        fixed = _re.sub(r'(true|false|null|\d+)\s*\n(\s*)"', r'\1,\n\2"', fixed)
+        if fixed != content:
+            try:
+                return json.loads(fixed, strict=False)
+            except json.JSONDecodeError:
+                content = fixed  # Use for further repair
 
         # LLM may truncate output at token limit — attempt repair before giving up
         try:

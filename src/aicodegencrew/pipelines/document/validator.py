@@ -42,7 +42,10 @@ class ChapterValidator:
     # genuinely absent (e.g., "the deployment target is unknown based on
     # available evidence"). The remaining phrases catch actual hallucinations.
     BANNED_PHRASES = [
-        "placeholder",
+        "placeholder text",
+        "placeholder content",
+        "insert here",
+        "fill in later",
         "TODO:",
         "TBD",
         "as an AI",
