@@ -211,34 +211,75 @@ class DocumentReviewer:
 
     @staticmethod
     def _extract_json(raw: str) -> dict | None:
-        """Try to extract valid JSON from LLM output."""
+        """Try to extract valid JSON from LLM output.
+
+        Multiple strategies in order of reliability:
+        1. Direct parse (LLM returned pure JSON)
+        2. Strip code fences then parse
+        3. Trim text before first { and after last }
+        4. Brace-balanced extraction (handles nested JSON correctly)
+        """
         text = raw.strip()
-        # Strip code fences
-        for prefix in ("```json", "```"):
-            if text.startswith(prefix):
-                text = text[len(prefix):].strip()
-        if text.endswith("```"):
-            text = text[:-3].strip()
-        # Try direct parse
+
+        # Strategy 1: Direct parse
         try:
             return json.loads(text)
         except json.JSONDecodeError:
             pass
-        # Try trimming trailing text after last }
-        last_brace = text.rfind("}")
-        if last_brace > 0:
+
+        # Strategy 2: Strip code fences
+        cleaned = text
+        for prefix in ("```json\n", "```json", "```\n", "```"):
+            if cleaned.startswith(prefix):
+                cleaned = cleaned[len(prefix):]
+                break
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        cleaned = cleaned.strip()
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            pass
+
+        # Strategy 3: Find first { and last }, try parsing that substring
+        first_brace = cleaned.find("{")
+        last_brace = cleaned.rfind("}")
+        if first_brace >= 0 and last_brace > first_brace:
+            candidate = cleaned[first_brace:last_brace + 1]
             try:
-                return json.loads(text[: last_brace + 1])
+                return json.loads(candidate)
             except json.JSONDecodeError:
                 pass
-        # Try extracting first JSON object with regex
-        import re
-        match = re.search(r"\{[\s\S]*\}", text)
-        if match:
-            try:
-                return json.loads(match.group())
-            except json.JSONDecodeError:
-                pass
+
+        # Strategy 4: Brace-balanced extraction — find the outermost complete JSON object
+        if first_brace >= 0:
+            depth = 0
+            in_string = False
+            escape_next = False
+            for i in range(first_brace, len(cleaned)):
+                ch = cleaned[i]
+                if escape_next:
+                    escape_next = False
+                    continue
+                if ch == "\\":
+                    escape_next = True
+                    continue
+                if ch == '"' and not escape_next:
+                    in_string = not in_string
+                    continue
+                if in_string:
+                    continue
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                    if depth == 0:
+                        candidate = cleaned[first_brace:i + 1]
+                        try:
+                            return json.loads(candidate)
+                        except json.JSONDecodeError:
+                            break
+
         return None
 
     def _parse_review(self, raw: str, chapter_id: str) -> ReviewResult:
