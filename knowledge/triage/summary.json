@@ -1,0 +1,36 @@
+{
+  "_schema_version": "1.0",
+  "status": "failed",
+  "phase": "triage",
+  "issue_id": "BNUVZ-12568",
+  "classification": "feature",
+  "risk_level": "low",
+  "entry_points_found": 0,
+  "blast_radius_count": 0,
+  "llm_synthesis": false,
+  "llm_status": "failed",
+  "duration_seconds": 35.86,
+  "triage_context": {
+    "classification_type": "feature",
+    "classification_confidence": 0.5,
+    "llm_status": "failed",
+    "llm_error": "LLM returned no parseable JSON output",
+    "big_picture": "[Deterministic fallback — LLM unavailable] Feature issue affecting 0 component(s). Risk level: low.",
+    "scope_boundary": "Blast radius: 0 components, depth 0.",
+    "classification_assessment": "",
+    "affected_components": [],
+    "context_boundaries": [
+      {
+        "category": "technology_constraint",
+        "boundary": "Risk flags: quality:low_score(0).",
+        "severity": "info",
+        "source_facts": [
+          "deterministic_risk_assessment"
+        ]
+      }
+    ],
+    "architecture_notes": "",
+    "anticipated_questions": []
+  },
+  "llm_error": "LLM returned no parseable JSON output"
+}
