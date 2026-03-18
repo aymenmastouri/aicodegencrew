@@ -130,7 +130,10 @@ class OllamaClient:
                     sleep_time = min(10.0, 2.0 * (2**attempt))
                     time.sleep(sleep_time)
                 else:
-                    raise RuntimeError(f"Failed to generate embedding after {self.max_retries} attempts: {e}")
+                    raise RuntimeError(
+                        f"Embedding API at {self.base_url} failed after {self.max_retries} attempts. "
+                        f"Check server status and network connectivity. Last error: {e}"
+                    )
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings for multiple texts in ONE request (Production Best Practice).
@@ -231,7 +234,10 @@ class OllamaClient:
                     sleep_time = min(10.0, 2.0 * (2**attempt))
                     time.sleep(sleep_time)
                 else:
-                    raise RuntimeError(f"Failed to generate batch embeddings after {self.max_retries} attempts: {e}")
+                    raise RuntimeError(
+                        f"Embedding API at {self.base_url} batch request failed after {self.max_retries} attempts. "
+                        f"Check server status and network connectivity. Last error: {e}"
+                    )
 
     def _embed_openai(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings via OpenAI-compatible API (LiteLLM / SAI Platform)."""
@@ -267,7 +273,10 @@ class OllamaClient:
                 if attempt < self.max_retries - 1:
                     time.sleep(min(10.0, 2.0 * (2 ** attempt)))
                 else:
-                    raise RuntimeError(f"Embedding failed: {e}")
+                    raise RuntimeError(
+                        f"Embedding API at {self.base_url} is unreachable after {self.max_retries} attempts. "
+                        f"Check server status and network connectivity. Last error: {e}"
+                    )
 
     def health_check(self) -> bool:
         """Check if embedding API is accessible."""

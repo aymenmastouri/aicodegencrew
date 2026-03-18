@@ -241,6 +241,15 @@ class SDLCOrchestrator:
         logger.info(f"[Orchestrator] Starting pipeline: {phases_to_run}")
         logger.info("=" * 60)
 
+        # Pre-flight connectivity check: verify APIs are reachable BEFORE starting work
+        needs_llm = any(p in phases_to_run for p in ("analyze", "document", "triage", "plan"))
+        needs_embedding = "discover" in phases_to_run
+        preflight_errors = self._preflight_api_check(needs_llm=needs_llm, needs_embedding=needs_embedding)
+        if preflight_errors:
+            error_msg = "Pre-flight API check failed:\n" + "\n".join(f"  - {e}" for e in preflight_errors)
+            logger.error(f"[Orchestrator] {error_msg}")
+            return self._build_result("failed", error_msg)
+
         # Execute phases sequentially
         for phase_id in phases_to_run:
             result = self._execute_phase(phase_id)
@@ -297,6 +306,37 @@ class SDLCOrchestrator:
     # -------------------------------------------------------------------------
     # PRIVATE METHODS
     # -------------------------------------------------------------------------
+
+    def _preflight_api_check(self, *, needs_llm: bool, needs_embedding: bool) -> list[str]:
+        """Check API connectivity before starting pipeline work.
+
+        Returns list of error messages (empty = all OK).
+        """
+        errors: list[str] = []
+
+        if needs_llm:
+            from .shared.utils.llm_factory import check_llm_connectivity
+            reachable, msg = check_llm_connectivity(timeout=8)
+            if reachable:
+                logger.info(f"[Pre-flight] LLM API: OK — {msg}")
+            else:
+                errors.append(f"LLM API unreachable: {msg}")
+                logger.error(f"[Pre-flight] LLM API: FAILED — {msg}")
+
+        if needs_embedding:
+            try:
+                from .shared.utils.ollama_client import OllamaClient
+                client = OllamaClient()
+                if client.health_check():
+                    logger.info(f"[Pre-flight] Embedding API: OK — {client.base_url}")
+                else:
+                    errors.append(f"Embedding API unreachable at {client.base_url}")
+                    logger.error(f"[Pre-flight] Embedding API: FAILED — {client.base_url}")
+            except Exception as e:
+                errors.append(f"Embedding API check error: {e}")
+                logger.error(f"[Pre-flight] Embedding API: ERROR — {e}")
+
+        return errors
 
     def _resolve_phases(self, preset: str | None, explicit_phases: list[str] | None) -> list[str]:
         """Resolve which phases to run."""
