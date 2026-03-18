@@ -856,7 +856,11 @@ export class CollectorsComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
-    this.loading = true;
+    // Only show full loading spinner on initial load — subsequent refreshes
+    // update data in-place so the active tab selection is preserved.
+    const isInitial = !this.data;
+    if (isInitial) this.loading = true;
+
     this.api.getCollectors().subscribe({
       next: (res) => {
         this.data = res;
@@ -874,7 +878,14 @@ export class CollectorsComponent implements OnInit, OnDestroy {
     this.api.getEcosystems().subscribe({
       next: (res) => {
         this.ecoData = res;
-        this.ecosystems = res.ecosystems;
+        // Update existing ecosystem objects in-place to preserve @for identity
+        if (this.ecosystems.length === res.ecosystems.length) {
+          for (let i = 0; i < res.ecosystems.length; i++) {
+            Object.assign(this.ecosystems[i], res.ecosystems[i]);
+          }
+        } else {
+          this.ecosystems = res.ecosystems;
+        }
         this.ecoDimensionCache.clear();
         this.cdr.markForCheck();
       },
