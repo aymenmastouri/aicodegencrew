@@ -162,6 +162,32 @@ export interface EcosystemListResponse {
   active_count: number;
 }
 
+// Knowledge Versioning (MLflow/MinIO)
+export interface VersionedRun {
+  mlflow_run_id: string;
+  pipeline_run_id: string | null;
+  started_at: string | null;
+  status: string;   // FINISHED | FAILED | RUNNING
+  outcome: string | null;  // success | partial | failed
+  has_documents: boolean;
+}
+
+export interface VersionedRunList {
+  available: boolean;
+  runs: VersionedRun[];
+}
+
+export interface VersionStatus {
+  available: boolean;
+  total_runs: number;
+}
+
+export interface VersionArtifact {
+  path: string;
+  file_size: number;
+  is_dir: boolean;
+}
+
 export interface TaskPhaseSummary {
   status: 'not_started' | 'completed' | 'running' | 'failed';
   data: Record<string, unknown> | null;
@@ -358,5 +384,39 @@ export class ApiService {
 
   getTaskLifecycle(taskId: string): Observable<TaskLifecycle> {
     return this.http.get<TaskLifecycle>(`${this.base}/tasks/${taskId}`);
+  }
+
+  // Knowledge Versioning (MLflow/MinIO)
+  getVersionStatus(): Observable<VersionStatus> {
+    return this.http.get<VersionStatus>(`${this.base}/knowledge/versions/status`);
+  }
+
+  getVersionedRuns(limit = 50): Observable<VersionedRunList> {
+    const params = new HttpParams().set('limit', limit.toString());
+    return this.http.get<VersionedRunList>(`${this.base}/knowledge/versions`, { params });
+  }
+
+  getVersionFiles(runId: string): Observable<{ run_id: string; files: VersionArtifact[] }> {
+    return this.http.get<{ run_id: string; files: VersionArtifact[] }>(
+      `${this.base}/knowledge/versions/${runId}/files`,
+    );
+  }
+
+  getVersionFile(runId: string, path: string): Observable<unknown> {
+    return this.http.get(`${this.base}/knowledge/versions/${runId}/file`, {
+      params: new HttpParams().set('path', path),
+    });
+  }
+
+  getArtifactCounts(runIds: string[]): Observable<Record<string, number>> {
+    const params = new HttpParams().set('run_ids', runIds.join(','));
+    return this.http.get<Record<string, number>>(
+      `${this.base}/knowledge/versions/artifact-counts`,
+      { params },
+    );
+  }
+
+  getDownloadAllUrl(runId: string): string {
+    return `${this.base}/knowledge/versions/${runId}/download-all`;
   }
 }

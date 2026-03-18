@@ -82,6 +82,11 @@ def _resolve_status(
                 # (None) or zero duration (0.0 from old NoopPlan) was never
                 # actually executed.  No output + no real duration = skipped.
                 return PHASE_PROGRESS_SKIPPED, duration, None
+            if st == PHASE_PROGRESS_COMPLETED and duration:
+                # Phase ran with a real duration but no local output.
+                # This happens when output is stored remotely (e.g.
+                # discover → Qdrant).  Trust phase_state.json.
+                return PHASE_PROGRESS_COMPLETED, duration, None
             if st == PHASE_PROGRESS_PARTIAL:
                 # A partial run may leave no detectable output (e.g. safety
                 # gate rejected all commits, or only checkpoint files exist).
@@ -89,7 +94,7 @@ def _resolve_status(
                 # that the phase ran and produced partial results.
                 return PHASE_PROGRESS_PARTIAL, duration, None
             if enabled:
-                # completed + no output = phase was reset after completion
+                # completed + no output + no duration = phase was reset
                 return PIPELINE_PHASE_READY, None, None
 
         if st in (PIPELINE_PHASE_READY, PIPELINE_PHASE_PLANNED):
@@ -204,6 +209,10 @@ def get_pipeline_status() -> PipelineStatus:
     state_data = _read_phase_state()
     state_phases = state_data.get("phases", {})
 
+    # If a state file with a run_id exists, phases NOT in it were not
+    # part of the run → they should stay "planned", not "ready".
+    has_run_context = bool(state_data.get("run_id"))
+
     # First pass: resolve raw status for every phase
     raw: dict[str, str] = {}
     phase_data: list[tuple] = []
@@ -211,6 +220,11 @@ def get_pipeline_status() -> PipelineStatus:
         output_exists = check_phase_output_exists(phase_id, settings.project_root)
         state_entry = state_phases.get(phase_id)
         status, duration, _error = _resolve_status(state_entry, output_exists, definition.enabled)
+
+        # Phase was never part of any run → keep as "planned" (not "ready")
+        if has_run_context and state_entry is None and status == PIPELINE_PHASE_READY and not output_exists:
+            status = PIPELINE_PHASE_PLANNED
+
         raw[phase_id] = status
         phase_data.append((phase_id, definition, status, duration, state_entry, output_exists))
 

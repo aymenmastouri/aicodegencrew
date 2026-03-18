@@ -278,6 +278,21 @@ import { statusIcon } from '../../shared/status';
             </mat-expansion-panel>
           </mat-card-content>
 
+          <!-- Pinned Docs Info -->
+          @if (pinnedDocsInfo) {
+            <div class="execution-preview" style="border-left-color: var(--cg-blue)">
+              <mat-icon class="preview-icon" style="color: var(--cg-blue)">push_pin</mat-icon>
+              <div class="preview-content">
+                <span class="preview-label">Dokumente gepinnt von Run {{ pinnedDocsInfo.pipelineRunId || pinnedDocsInfo.runId.substring(0, 8) }}</span>
+                <span class="preview-phases">
+                  <span class="preview-chip" style="cursor:pointer" (click)="toggleDocumentPhaseSkip()">
+                    {{ documentPhaseSkipped ? 'Document Phase wird uebersprungen' : 'Klick um Document Phase zu ueberspringen' }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          }
+
           <!-- Execution Preview -->
           @if (phasesToRun().length > 0) {
             <div class="execution-preview">
@@ -1353,6 +1368,10 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   logSearch = '';
   autoScroll = true;
 
+  // Pinned Docs
+  pinnedDocsInfo: { runId: string; pipelineRunId: string | null } | null = null;
+  documentPhaseSkipped = false;
+
   // Celebration
   showCelebration = false;
   celebrationType: 'success' | 'partial' | 'all_skipped' | 'failure' | null = null;
@@ -1370,6 +1389,17 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Load pinned docs from Knowledge Explorer
+    try {
+      const raw = localStorage.getItem('knowledge_pinned_docs');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.runId) {
+          this.pinnedDocsInfo = parsed;
+        }
+      }
+    } catch { /* ignore */ }
+
     this.api.getPresets().subscribe({
       next: (p) => {
         this.presets = p;
@@ -1746,11 +1776,20 @@ export class RunPipelineComponent implements OnInit, OnDestroy {
     } else {
       phases = this.selectedPhases;
     }
+    // Skip document phase if pinned docs are active
+    if (this.documentPhaseSkipped) {
+      phases = phases.filter((p) => p !== 'document');
+    }
     // In parallel mode, only task-bearing phases are sent to the backend
     if (this.parallelEnabled && this.selectedTaskIds.length > 0) {
       return phases.filter((p) => this._taskBearingPhases.has(p));
     }
     return phases;
+  }
+
+  toggleDocumentPhaseSkip(): void {
+    this.documentPhaseSkipped = !this.documentPhaseSkipped;
+    this.cdr.detectChanges();
   }
 
   onParallelToggle(): void {
