@@ -49,7 +49,8 @@ class SpringLoggingCollector(DimensionCollector):
 
                 # Micrometer in config
                 if "micrometer" in content.lower() or "metrics" in content.lower():
-                    micrometer_lines = [i for i, l in enumerate(lines, 1) if "micrometer" in l.lower() or "metrics.export" in l]
+                    config_lines = content.splitlines()
+                    micrometer_lines = [i for i, l in enumerate(config_lines, 1) if "micrometer" in l.lower() or "metrics.export" in l]
                     if micrometer_lines:
                         rel = self._relative_path(path)
                         fact = RawLoggingFact(
