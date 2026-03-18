@@ -1113,39 +1113,53 @@ RULES:
     @staticmethod
     def _format_customer_md(customer: dict, issue_id: str) -> str:
         """Format customer summary as Markdown."""
+        _s = TriagePipeline._safe_str
+        impact = _s(customer.get("impact_level"), "unknown").upper()
         lines = [
             f"# Issue Summary: {issue_id}",
             "",
-            f"**Impact Level:** {customer.get('impact_level', 'unknown').upper()}",
+            f"**Impact Level:** {impact}",
             f"**Type:** {'Bug' if customer.get('is_bug') else 'Enhancement/Task'}",
-            f"**Estimated Timeline:** {customer.get('eta_category', 'unknown')}",
+            f"**Estimated Timeline:** {_s(customer.get('eta_category'), 'unknown')}",
             "",
             "## Summary",
             "",
-            customer.get("summary", "No summary available."),
+            _s(customer.get("summary"), "No summary available."),
             "",
         ]
-        workaround = customer.get("workaround", "")
+        workaround = _s(customer.get("workaround"))
         if workaround:
             lines.extend(["## Workaround", "", workaround, ""])
         return "\n".join(lines)
 
     @staticmethod
+    def _safe_str(value: object, default: str = "") -> str:
+        """Convert any value to string safely (handles dict/list from LLM)."""
+        if isinstance(value, str):
+            return value
+        if isinstance(value, dict):
+            return json.dumps(value, indent=2, ensure_ascii=False)
+        if isinstance(value, list):
+            return "\n".join(str(item) for item in value)
+        return str(value) if value else default
+
+    @staticmethod
     def _format_developer_md(developer: dict, issue_id: str) -> str:
         """Format developer context as Markdown."""
+        _s = TriagePipeline._safe_str
         lines = [
             f"# Developer Context: {issue_id}",
             "",
             "## Big Picture",
             "",
-            developer.get("big_picture", "Needs investigation."),
+            _s(developer.get("big_picture"), "Needs investigation."),
             "",
             "## Scope Boundary",
             "",
-            developer.get("scope_boundary", "Needs investigation."),
+            _s(developer.get("scope_boundary"), "Needs investigation."),
             "",
         ]
-        assessment = developer.get("classification_assessment", "")
+        assessment = _s(developer.get("classification_assessment"))
         confidence = developer.get("classification_confidence", -1)
         if assessment:
             confidence_str = ""
@@ -1161,21 +1175,24 @@ RULES:
             lines.extend(["## Classification Assessment", "", f"{assessment}{confidence_str}", ""])
         lines.extend(["## Affected Components", ""])
         for c in developer.get("affected_components", []):
-            lines.append(f"- {c}")
+            lines.append(f"- {_s(c)}")
         boundaries = developer.get("context_boundaries", [])
         if boundaries:
             lines.extend(["", "## Context Boundaries", ""])
             for b in boundaries:
-                severity = b.get("severity", "info").upper()
-                category = b.get("category", "").replace("_", " ").title()
-                boundary_text = b.get("boundary", "")
+                if not isinstance(b, dict):
+                    lines.append(f"- {_s(b)}")
+                    continue
+                severity = str(b.get("severity", "info")).upper()
+                category = str(b.get("category", "")).replace("_", " ").title()
+                boundary_text = _s(b.get("boundary"))
                 sources = [str(s) for s in b.get("source_facts", [])]
                 lines.append(f"**[{severity}] {category}**")
                 lines.append(boundary_text)
                 if sources:
                     lines.append(f"_Sources: {', '.join(sources)}_")
                 lines.append("")
-        arch = developer.get("architecture_notes", "")
+        arch = _s(developer.get("architecture_notes"))
         if arch:
             lines.extend(["", "## Architecture Walkthrough", "", arch])
         questions = developer.get("anticipated_questions", [])
@@ -1183,14 +1200,16 @@ RULES:
             lines.extend(["", "## Anticipated Questions", ""])
             for q in questions:
                 if isinstance(q, dict):
-                    lines.append(f"**Q: {q.get('question', '')}**")
-                    lines.append(f"A: {q.get('answer', '')}")
+                    lines.append(f"**Q: {_s(q.get('question'))}**")
+                    lines.append(f"A: {_s(q.get('answer'))}")
                     lines.append("")
+                else:
+                    lines.append(f"- {_s(q)}")
         linked = developer.get("linked_tasks", [])
         if linked:
             lines.extend(["", "## Linked Tasks", ""])
             for t in linked:
-                lines.append(f"- {t}")
+                lines.append(f"- {_s(t)}")
         return "\n".join(lines)
 
     # ── File I/O ────────────────────────────────────────────────────────
