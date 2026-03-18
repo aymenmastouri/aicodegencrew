@@ -1,180 +1,174 @@
-<mxfile host="app.diagrams.net" modified="2026-03-17T00:00:00.000Z" agent="AICodeGenCrew" version="22.1.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-03-18T00:00:00.000Z" agent="AICodeGenCrew" version="22.1.0" type="device">
   <diagram id="delegation" name="Collector Delegation Pattern">
-    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
         <!-- Title -->
-        <mxCell id="title" value="Collector Delegation Pattern — Ecosystem Strategy for All Dimensions" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1" vertex="1" parent="1">
-          <mxGeometry x="300" y="20" width="600" height="40" as="geometry" />
+        <mxCell id="title" value="Collector Delegation Pattern — 21 Dimensions, 57+ Specialists" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="350" y="20" width="700" height="40" as="geometry" />
         </mxCell>
 
         <mxCell id="subtitle" value="Dimension Collectors are thin routers (~40-80 lines). Ecosystem-specific logic lives in specialist files." style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=2;fontColor=#666666" vertex="1" parent="1">
-          <mxGeometry x="300" y="55" width="600" height="30" as="geometry" />
+          <mxGeometry x="350" y="55" width="700" height="30" as="geometry" />
         </mxCell>
 
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- LEFT: Orchestrator + Dimension Collectors          -->
-        <!-- ═══════════════════════════════════════════════════ -->
-
+        <!-- LEFT: Orchestrator + Dimension Collectors -->
         <mxCell id="orch" value="Orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13" vertex="1" parent="1">
           <mxGeometry x="40" y="120" width="140" height="50" as="geometry" />
         </mxCell>
 
         <!-- Dimension Collectors (thin routers) -->
-        <mxCell id="routers-group" value="Dimension Collectors (thin routers)" style="swimlane;horizontal=1;startSize=30;fillColor=#e8eaf6;strokeColor=#3949ab;rounded=1;fontStyle=1;fontSize=12" vertex="1" parent="1">
-          <mxGeometry x="40" y="200" width="220" height="470" as="geometry" />
+        <mxCell id="routers-group" value="21 Dimension Collectors" style="swimlane;horizontal=1;startSize=30;fillColor=#e8eaf6;strokeColor=#3949ab;rounded=1;fontStyle=1;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="240" height="680" as="geometry" />
         </mxCell>
 
-        <mxCell id="r1" value="RuntimeCollector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="40" width="190" height="30" as="geometry" />
+        <mxCell id="r-sep0" value="━━━ core (always-on) ━━━" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#3949ab" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="35" width="230" height="16" as="geometry" />
         </mxCell>
-        <mxCell id="r2" value="DependencyCollector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="75" width="190" height="30" as="geometry" />
+        <mxCell id="r1" value="1. SystemCollector (cross-cutting)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="53" width="230" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="r3" value="TestCollector  ⊕ Cucumber" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="110" width="190" height="30" as="geometry" />
+        <mxCell id="r2" value="2. ContainerCollector → eco.detect_container()" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="73" width="230" height="18" as="geometry" />
         </mxCell>
-        <mxCell id="r4" value="DataModelCollector  ⊕ SQL/Migration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="145" width="190" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="r5" value="WorkflowCollector  ⊕ BPMN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="180" width="190" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="r6" value="BuildSystemCollector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="215" width="190" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="r7" value="SecurityDetailCollector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="250" width="190" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="r8" value="ValidationCollector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="285" width="190" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="r9" value="ErrorHandlingCollector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="320" width="190" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="r10" value="InterfaceCollector  ⊕ OpenAPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="355" width="190" height="30" as="geometry" />
+        <mxCell id="r3" value="3. ComponentCollector → eco.collect_components()" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="93" width="230" height="18" as="geometry" />
         </mxCell>
 
-        <mxCell id="crosscut-note" value="⊕ = cross-cutting logic&#xa;    stays in router" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontStyle=2;fontColor=#666666" vertex="1" parent="routers-group">
-          <mxGeometry x="15" y="400" width="190" height="30" as="geometry" />
+        <mxCell id="r-sep1" value="━━━ collect_dimension() routers ━━━" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#3949ab" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="118" width="230" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="4. InterfaceCollector ⊕ OpenAPI" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="138" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="5. DataModelCollector ⊕ SQL/Migration" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="158" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" value="6. RuntimeCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="178" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r8" value="7. DependencyCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="198" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r9" value="8. WorkflowCollector ⊕ BPMN" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="218" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r10" value="9. TechStackVersionCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="238" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r11" value="10. SecurityDetailCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="258" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r12" value="11. ValidationCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="278" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r13" value="12. TestCollector ⊕ Cucumber" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="298" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r14" value="13. ErrorHandlingCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="318" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r15" value="14. BuildSystemCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="338" width="230" height="18" as="geometry" />
         </mxCell>
 
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- CENTER: EcosystemRegistry                          -->
-        <!-- ═══════════════════════════════════════════════════ -->
-
-        <mxCell id="registry" value="EcosystemRegistry&#xa;━━━━━━━━━━━━━━━━━━━━━&#xa;detect(repo_path)&#xa;→ active ecosystems&#xa;&#xa;for eco in active:&#xa;  eco.collect_dimension(&#xa;    dimension,&#xa;    repo_path,&#xa;    container_id&#xa;  )" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10" vertex="1" parent="1">
-          <mxGeometry x="350" y="340" width="230" height="180" as="geometry" />
+        <mxCell id="r-sep2" value="━━━ NEW: audit-based collectors ━━━" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#2e7d32" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="363" width="230" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="r16" value="15. ConfigurationCollector ⊕ .env/Docker" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5;fontColor=#2e7d32" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="383" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r17" value="16. LoggingObservabilityCollector ⊕ Prometheus" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5;fontColor=#2e7d32" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="403" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r18" value="17. TechnicalDebtCollector (cross-cutting)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5;fontColor=#2e7d32" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="423" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r19" value="18. ApiContractsCollector (cross-cutting)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5;fontColor=#2e7d32" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="443" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r20" value="19. CommunicationPatternsCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5;fontColor=#2e7d32" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="463" width="230" height="18" as="geometry" />
         </mxCell>
 
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- RIGHT: Ecosystem Dispatch + Specialists            -->
-        <!-- ═══════════════════════════════════════════════════ -->
+        <mxCell id="r-sep3" value="━━━ cross-cutting (no delegation) ━━━" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontStyle=2;fontColor=#666666" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="488" width="230" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="r21" value="20. InfrastructureCollector (cross-cutting)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="508" width="230" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="r22" value="21. EvidenceCollector (cross-cutting)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=9;spacingLeft=5" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="528" width="230" height="18" as="geometry" />
+        </mxCell>
+
+        <mxCell id="crosscut-note" value="⊕ = cross-cutting logic stays in router" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontStyle=2;fontColor=#666666" vertex="1" parent="routers-group">
+          <mxGeometry x="5" y="555" width="230" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- CENTER: EcosystemRegistry -->
+        <mxCell id="registry" value="EcosystemRegistry&#10;━━━━━━━━━━━━━━━━━━━━━&#10;detect(repo_path)&#10;→ filters disabled ecosystems&#10;→ applies priority overrides&#10;&#10;for eco in active:&#10;  eco.collect_dimension(&#10;    dimension,&#10;    repo_path,&#10;    container_id&#10;  )&#10;&#10;Plugin discovery:&#10;  plugins/ecosystems/" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=10" vertex="1" parent="1">
+          <mxGeometry x="370" y="380" width="240" height="220" as="geometry" />
+        </mxCell>
+
+        <!-- RIGHT: Ecosystem Dispatch + Specialists -->
 
         <!-- Java/JVM -->
-        <mxCell id="java-eco" value="JavaJvmEcosystem (10 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
-          <mxGeometry x="670" y="100" width="460" height="150" as="geometry" />
+        <mxCell id="java-eco" value="JavaJvmEcosystem (13 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="700" y="100" width="500" height="130" as="geometry" />
         </mxCell>
-
-        <mxCell id="java-dispatch" value="collect_dimension() dispatch dict:&#xa;runtime → SpringRuntimeCollector&#xa;dependencies → SpringDependencyCollector&#xa;tests → SpringTestCollector&#xa;data_model → SpringDataModelCollector&#xa;workflows → SpringWorkflowCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="java-eco">
-          <mxGeometry x="10" y="30" width="220" height="110" as="geometry" />
+        <mxCell id="java-d1" value="runtime, dependencies, tests, data_model,&#10;workflows, build_system, security_details,&#10;validation, error_handling, interfaces,&#10;configuration, logging_observability,&#10;communication_patterns" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New;spacingLeft=5" vertex="1" parent="java-eco">
+          <mxGeometry x="10" y="30" width="240" height="90" as="geometry" />
         </mxCell>
-
-        <mxCell id="java-dispatch2" value="build_system → SpringBuildSystemCollector&#xa;security_details → SpringSecurityDetailCollector&#xa;validation → SpringValidationCollector&#xa;error_handling → SpringErrorCollector&#xa;interfaces → SpringInterfaceDetailCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="java-eco">
-          <mxGeometry x="235" y="30" width="220" height="110" as="geometry" />
+        <mxCell id="java-sp" value="spring/&#10;━━━━━━━━━━━━━━━&#10;18 specialist files" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="java-eco">
+          <mxGeometry x="280" y="30" width="200" height="50" as="geometry" />
         </mxCell>
 
         <!-- JavaScript/TypeScript -->
-        <mxCell id="js-eco" value="JavaScriptTypeScriptEcosystem (7 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
-          <mxGeometry x="670" y="270" width="460" height="110" as="geometry" />
+        <mxCell id="js-eco" value="JavaScriptTypeScriptEcosystem (10 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="700" y="250" width="500" height="130" as="geometry" />
         </mxCell>
-
-        <mxCell id="js-dispatch" value="dependencies → AngularDependencyCollector&#xa;tests → AngularTestCollector&#xa;workflows → AngularWorkflowDetailCollector&#xa;build_system → AngularBuildSystemCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="js-eco">
-          <mxGeometry x="10" y="30" width="220" height="70" as="geometry" />
+        <mxCell id="js-d1" value="dependencies, tests, workflows, build_system,&#10;security_details, validation, error_handling,&#10;configuration, logging_observability,&#10;communication_patterns" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New;spacingLeft=5" vertex="1" parent="js-eco">
+          <mxGeometry x="10" y="30" width="240" height="90" as="geometry" />
         </mxCell>
-
-        <mxCell id="js-dispatch2" value="security_details → AngularSecurityDetailCollector&#xa;validation → AngularValidationDetailCollector&#xa;error_handling → AngularErrorDetailCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="js-eco">
-          <mxGeometry x="235" y="30" width="220" height="70" as="geometry" />
+        <mxCell id="js-sp" value="angular/&#10;━━━━━━━━━━━━━━━&#10;16 specialist files" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="js-eco">
+          <mxGeometry x="280" y="30" width="200" height="50" as="geometry" />
         </mxCell>
 
         <!-- Python -->
-        <mxCell id="py-eco" value="PythonEcosystem (9 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
-          <mxGeometry x="670" y="400" width="460" height="150" as="geometry" />
+        <mxCell id="py-eco" value="PythonEcosystem (12 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="700" y="400" width="500" height="130" as="geometry" />
         </mxCell>
-
-        <mxCell id="py-dispatch" value="runtime → PythonRuntimeCollector&#xa;dependencies → PythonDependencyCollector&#xa;tests → PythonTestCollector&#xa;data_model → PythonDataModelCollector&#xa;workflows → PythonWorkflowCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="py-eco">
-          <mxGeometry x="10" y="30" width="220" height="110" as="geometry" />
+        <mxCell id="py-d1" value="runtime, dependencies, tests, data_model,&#10;workflows, build_system, security_details,&#10;validation, error_handling,&#10;configuration, logging_observability,&#10;communication_patterns" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New;spacingLeft=5" vertex="1" parent="py-eco">
+          <mxGeometry x="10" y="30" width="240" height="90" as="geometry" />
         </mxCell>
-
-        <mxCell id="py-dispatch2" value="build_system → PythonBuildSystemCollector&#xa;security_details → PythonSecurityCollector&#xa;validation → PythonValidationCollector&#xa;error_handling → PythonErrorCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="py-eco">
-          <mxGeometry x="235" y="30" width="220" height="110" as="geometry" />
+        <mxCell id="py-sp" value="python_eco/&#10;━━━━━━━━━━━━━━━&#10;14 specialist files" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="py-eco">
+          <mxGeometry x="280" y="30" width="200" height="50" as="geometry" />
         </mxCell>
 
         <!-- C/C++ -->
-        <mxCell id="cpp-eco" value="CCppEcosystem (4 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
-          <mxGeometry x="670" y="570" width="460" height="80" as="geometry" />
+        <mxCell id="cpp-eco" value="CCppEcosystem (7 dimensions)" style="swimlane;horizontal=1;startSize=25;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="700" y="550" width="500" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="cpp-d1" value="dependencies, tests, workflows, build_system,&#10;configuration, logging_observability,&#10;communication_patterns" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New;spacingLeft=5" vertex="1" parent="cpp-eco">
+          <mxGeometry x="10" y="30" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cpp-sp" value="cpp/&#10;━━━━━━━━━━━━━━━&#10;9 specialist files" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="cpp-eco">
+          <mxGeometry x="280" y="30" width="200" height="50" as="geometry" />
         </mxCell>
 
-        <mxCell id="cpp-dispatch" value="dependencies → CppDependencyCollector&#xa;tests → CppTestCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="cpp-eco">
-          <mxGeometry x="10" y="30" width="220" height="40" as="geometry" />
-        </mxCell>
-
-        <mxCell id="cpp-dispatch2" value="workflows → CppWorkflowCollector&#xa;build_system → CppBuildSystemCollector" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=9;fontFamily=Courier New" vertex="1" parent="cpp-eco">
-          <mxGeometry x="235" y="30" width="220" height="40" as="geometry" />
-        </mxCell>
-
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- RIGHT: Specialist Sub-Packages                     -->
-        <!-- ═══════════════════════════════════════════════════ -->
-
-        <mxCell id="specialists" value="Specialist Sub-Packages" style="swimlane;horizontal=1;startSize=25;fillColor=#ffe6cc;strokeColor=#d79b00;rounded=1;fontSize=12;fontStyle=1" vertex="1" parent="1">
-          <mxGeometry x="1190" y="100" width="180" height="550" as="geometry" />
-        </mxCell>
-
-        <mxCell id="sp-spring" value="collectors/spring/&#xa;━━━━━━━━━━━━━━━━━━━━&#xa;15 specialist files&#xa;(5 existing + 10 new)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="specialists">
-          <mxGeometry x="15" y="35" width="150" height="70" as="geometry" />
-        </mxCell>
-
-        <mxCell id="sp-angular" value="collectors/angular/&#xa;━━━━━━━━━━━━━━━━━━━━&#xa;13 specialist files&#xa;(6 existing + 7 new)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="specialists">
-          <mxGeometry x="15" y="120" width="150" height="70" as="geometry" />
-        </mxCell>
-
-        <mxCell id="sp-python" value="collectors/python_eco/&#xa;━━━━━━━━━━━━━━━━━━━━&#xa;11 specialist files&#xa;(2 existing + 9 new)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="specialists">
-          <mxGeometry x="15" y="205" width="150" height="70" as="geometry" />
-        </mxCell>
-
-        <mxCell id="sp-cpp" value="collectors/cpp/&#xa;━━━━━━━━━━━━━━━━━━━━&#xa;6 specialist files&#xa;(2 existing + 4 new)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;spacingLeft=5" vertex="1" parent="specialists">
-          <mxGeometry x="15" y="290" width="150" height="70" as="geometry" />
-        </mxCell>
-
-        <mxCell id="sp-total" value="TOTAL: 45 specialists&#xa;(15 existing + 30 new)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=1" vertex="1" parent="specialists">
-          <mxGeometry x="15" y="380" width="150" height="40" as="geometry" />
-        </mxCell>
-
-        <mxCell id="sp-benefit" value="New ecosystem =&#xa;new files only.&#xa;Zero changes to&#xa;existing code." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;align=left" vertex="1" parent="specialists">
-          <mxGeometry x="15" y="430" width="150" height="80" as="geometry" />
-        </mxCell>
-
-        <!-- ═══════════════════════════════════════════════════ -->
-        <!-- ARROWS                                             -->
-        <!-- ═══════════════════════════════════════════════════ -->
-
-        <!-- Orchestrator → Routers -->
+        <!-- ARROWS -->
         <mxCell id="a-orch" value="calls" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366" edge="1" parent="1" source="orch" target="routers-group">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- Routers → Registry -->
-        <mxCell id="a-registry" value="registry.detect()&#xa;→ eco.collect_dimension()" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" edge="1" parent="1" source="routers-group" target="registry">
+        <mxCell id="a-registry" value="registry.detect()&#10;→ eco.collect_dimension()" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10" edge="1" parent="1" source="routers-group" target="registry">
           <mxGeometry x="0.2" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
 
-        <!-- Registry → Ecosystems -->
         <mxCell id="a-java" value="" style="endArrow=classic;html=1;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656" edge="1" parent="1" source="registry" target="java-eco">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
@@ -188,28 +182,14 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- Ecosystems → Specialists -->
-        <mxCell id="a-sp-java" value="lazy import" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;strokeColor=#d6b656;fontSize=9" edge="1" parent="1" source="java-eco" target="sp-spring">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="a-sp-js" value="lazy import" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;strokeColor=#6c8ebf;fontSize=9" edge="1" parent="1" source="js-eco" target="sp-angular">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="a-sp-py" value="lazy import" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;strokeColor=#82b366;fontSize=9" edge="1" parent="1" source="py-eco" target="sp-python">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="a-sp-cpp" value="lazy import" style="endArrow=classic;html=1;strokeWidth=1;dashed=1;strokeColor=#b85450;fontSize=9" edge="1" parent="1" source="cpp-eco" target="sp-cpp">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-
-        <!-- Before/After Metrics -->
-        <mxCell id="metrics" value="Before → After Metrics&#xa;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━&#xa;Router Lines of Code (ecosystem-specific):&#xa;  Before: ~4,300 lines in 9 monoliths&#xa;  After:  ~400 lines (routers only)&#xa;&#xa;Ecosystem-specific code in specialists:&#xa;  45 specialist files, self-contained&#xa;&#xa;To add new ecosystem (e.g. Rust):&#xa;  New files only, zero existing changes" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10;align=left" vertex="1" parent="1">
-          <mxGeometry x="40" y="700" width="300" height="160" as="geometry" />
+        <!-- Metrics -->
+        <mxCell id="metrics" value="Totals&#10;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━&#10;21 Dimension Collectors (routers)&#10;57 Specialist Collectors&#10;4 Built-in Ecosystems&#10;Plugin system for custom ecosystems&#10;&#10;Based on: C4, arc42, ISO 25010, TOGAF&#10;&#10;New ecosystem = new files only.&#10;Zero changes to existing code." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#e8eaf6;strokeColor=#3949ab;fontSize=10;align=left" vertex="1" parent="1">
+          <mxGeometry x="40" y="920" width="300" height="170" as="geometry" />
         </mxCell>
 
         <!-- Legend -->
-        <mxCell id="legend" value="Legend&#xa;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━&#xa;◼ Indigo: Dimension Collector Routers&#xa;◼ Yellow: Java/JVM Ecosystem&#xa;◼ Blue: JavaScript/TypeScript Ecosystem&#xa;◼ Green: Python Ecosystem&#xa;◼ Red: C/C++ Ecosystem&#xa;◼ Orange: Specialist Sub-Packages&#xa;⊕ Cross-cutting logic stays in router" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=left" vertex="1" parent="1">
-          <mxGeometry x="400" y="700" width="280" height="160" as="geometry" />
+        <mxCell id="legend" value="Legend&#10;━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━&#10;◼ Indigo: Dimension Collector Routers&#10;◼ Yellow: Java/JVM Ecosystem&#10;◼ Blue: JavaScript/TypeScript Ecosystem&#10;◼ Green: Python Ecosystem&#10;◼ Red: C/C++ Ecosystem&#10;⊕ Cross-cutting logic stays in router&#10;Green text: New collectors from audit" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=left" vertex="1" parent="1">
+          <mxGeometry x="400" y="920" width="280" height="170" as="geometry" />
         </mxCell>
 
       </root>

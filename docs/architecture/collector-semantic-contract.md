@@ -8,7 +8,7 @@ Rules that every dimension collector must follow to produce ecosystem-independen
 
 ## Why This Matters
 
-The architecture model consumes facts from 16 dimension collectors. Phase 2 (Analyze) and Phase 3 (Document) compare facts across ecosystems:
+The architecture model consumes facts from 21 dimension collectors. Phase 2 (Analyze) and Phase 3 (Document) compare facts across ecosystems:
 
 - "How many REST endpoints does each container expose?"
 - "Which containers have authentication?"
@@ -167,6 +167,53 @@ Framework details go in `metadata["framework"]` and `metadata["mechanism"]`.
 
 Framework goes in `metadata["framework"]`: `"spring"`, `"celery"`, `"apscheduler"`.
 
+### ConfigurationCollector → `RawConfigFact`
+
+| Field | Allowed Values | Notes |
+|-------|---------------|-------|
+| `config_type` | `"config_file"`, `"env_variable"`, `"profile"`, `"feature_flag"`, `"secret_ref"` | Abstract config category. |
+| `format` | `"yaml"`, `"properties"`, `"json"`, `"toml"`, `"env"`, `"typescript"`, `"python"`, `"cmake"`, `"annotation"`, `"ini"`, `"text"`, `"dockerfile"` | File format. |
+| `key_count` | Integer | Number of config entries detected. |
+
+Framework goes in `metadata["framework"]` or `metadata["profile"]`.
+
+### LoggingObservabilityCollector → `RawLoggingFact`
+
+| Field | Allowed Values | Notes |
+|-------|---------------|-------|
+| `observability_type` | `"logging_config"`, `"tracing"`, `"metrics_endpoint"`, `"health_check"`, `"log_usage"` | Abstract observability category. |
+| `framework` | `"logback"`, `"log4j2"`, `"slf4j"`, `"python_logging"`, `"structlog"`, `"spdlog"`, `"glog"`, `"boost_log"`, `"spring_actuator"`, `"micrometer"`, `"prometheus_client"`, `"opentelemetry"`, `"angular"`, `"console"` | Logging framework. |
+
+### TechnicalDebtCollector → `RawTechDebtFact`
+
+| Field | Allowed Values | Notes |
+|-------|---------------|-------|
+| `debt_type` | `"todo"`, `"fixme"`, `"hack"`, `"deprecated_usage"`, `"suppressed_warning"` | Debt indicator type. |
+| `severity` | `"low"`, `"medium"`, `"high"` | `high` for FIXME/BUG, `medium` for HACK/XXX, `low` for TODO. |
+| `message` | Comment text (truncated to 200 chars) | The actual debt message. |
+| `line_number` | Integer | Exact line location. |
+
+Cross-cutting — no ecosystem delegation needed.
+
+### ApiContractsCollector → `RawApiContractFact`
+
+| Field | Allowed Values | Notes |
+|-------|---------------|-------|
+| `contract_type` | `"openapi"`, `"grpc_proto"`, `"graphql_schema"`, `"asyncapi"`, `"wsdl"` | Contract specification type. |
+| `format` | `"json"`, `"yaml"`, `"proto"`, `"graphql"`, `"xml"` | File format. |
+| `endpoint_count` | Integer | Number of operations/endpoints defined. |
+| `version` | API version string or `""` | From spec metadata. |
+
+Cross-cutting — no ecosystem delegation needed.
+
+### CommunicationPatternsCollector → `RawCommunicationFact`
+
+| Field | Allowed Values | Notes |
+|-------|---------------|-------|
+| `pattern_type` | `"message_queue"`, `"event_bus"`, `"websocket"`, `"sse"`, `"rest_client"`, `"grpc_client"` | Abstract communication pattern. |
+| `technology` | `"kafka"`, `"rabbitmq"`, `"redis_pubsub"`, `"spring_events"`, `"django_signals"`, `"celery"`, `"jms"`, `"zeromq"`, `"mqtt"`, `"angular_http"`, `"rest_template"`, `"webclient"`, `"feign"`, `"requests"`, `"httpx"`, `"aiohttp"`, `"rxjs_websocket"`, `"event_source"`, `"rxjs_subject"`, `"boost_asio"` | Specific technology. |
+| `direction` | `"producer"`, `"consumer"`, `"both"`, `"client"` | Communication direction. |
+
 ### DataModelCollector → `RawEntity`
 
 | Field | Allowed Values | Notes |
@@ -236,6 +283,11 @@ Which dimensions each ecosystem supports:
 | tests | JUnit, Cucumber | Jasmine, Playwright | GoogleTest, Catch2, CTest | pytest, unittest |
 | error_handling | @ExceptionHandler | ErrorHandler, interceptors | — | Custom exceptions, Flask errorhandler |
 | build_system | Gradle, Maven | npm, Angular | CMake, Meson | pyproject.toml, setup.py, tox |
+| configuration | application.yml, @ConfigurationProperties | environment.ts, angular.json | CMake options, .clang-format | settings.py, pyproject.toml |
+| logging_observability | Actuator, SLF4J, Micrometer | ErrorHandler, interceptors | spdlog, glog, boost.log | structlog, prometheus_client |
+| technical_debt | cross-cutting | cross-cutting | cross-cutting | cross-cutting |
+| api_contracts | cross-cutting | cross-cutting | cross-cutting | cross-cutting |
+| communication_patterns | Kafka, RabbitMQ, Spring Events, WebSocket | HttpClient, WebSocket, SSE | ZeroMQ, gRPC, Boost.Asio, MQTT | Celery, Django signals, Redis pub/sub |
 | evidence | cross-cutting | cross-cutting | cross-cutting | cross-cutting |
 
 **—** = No meaningful equivalent in this ecosystem (intentional gap, not missing implementation).

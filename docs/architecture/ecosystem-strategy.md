@@ -40,7 +40,7 @@ Each ecosystem implements `EcosystemDefinition` and provides:
 | Container detection | `detect_container(dir_path, name, ctx)` | `ContainerCollector` |
 | Version collection | `collect_versions(ctx)` | `TechStackVersionCollector` |
 | Component routing | `get_component_technologies()`, `collect_components()` | `ComponentCollector` |
-| **Dimension delegation** | **`collect_dimension(dimension, repo_path, container_id)`** | **All 9 refactored dimension collectors** |
+| **Dimension delegation** | **`collect_dimension(dimension, repo_path, container_id)`** | **All 14 delegating dimension collectors** |
 
 ## EcosystemRegistry
 
@@ -95,16 +95,19 @@ def collect_dimension(self, dimension: str, repo_path: Path, container_id: str =
 # In JavaJvmEcosystem
 def collect_dimension(self, dimension, repo_path, container_id=""):
     dispatch = {
-        "runtime":          self._collect_runtime,
-        "dependencies":     self._collect_dependencies,
-        "tests":            self._collect_tests,
-        "data_model":       self._collect_data_model,
-        "workflows":        self._collect_workflows,
-        "build_system":     self._collect_build_system,
-        "security_details": self._collect_security_details,
-        "validation":       self._collect_validation,
-        "error_handling":   self._collect_error_handling,
-        "interfaces":       self._collect_interfaces,
+        "runtime":                self._collect_runtime,
+        "dependencies":           self._collect_dependencies,
+        "tests":                  self._collect_tests,
+        "data_model":             self._collect_data_model,
+        "workflows":              self._collect_workflows,
+        "build_system":           self._collect_build_system,
+        "security_details":       self._collect_security_details,
+        "validation":             self._collect_validation,
+        "error_handling":         self._collect_error_handling,
+        "interfaces":             self._collect_interfaces,
+        "configuration":          self._collect_configuration,
+        "logging_observability":  self._collect_logging,
+        "communication_patterns": self._collect_communication,
     }
     handler = dispatch.get(dimension)
     return handler(repo_path, container_id) if handler else ([], [])
@@ -155,20 +158,20 @@ Some routers keep **cross-cutting logic** that is not ecosystem-specific:
 
 ```
 collectors/
-    spring/                          15 specialists (5 existing + 10 new)
-    angular/                         13 specialists (6 existing + 7 new)
-    python_eco/                      11 specialists (2 existing + 9 new)
-    cpp/                              6 specialists (2 existing + 4 new)
+    spring/                          18 specialists
+    angular/                         16 specialists
+    python_eco/                      14 specialists
+    cpp/                              9 specialists
 ```
 
 ### Dimensions per ecosystem
 
 | Ecosystem | Dispatch entries |
 |-----------|-----------------|
-| Java/JVM | runtime, dependencies, tests, data_model, workflows, build_system, security_details, validation, error_handling, interfaces |
-| JavaScript/TypeScript | dependencies, tests, workflows, build_system, security_details, validation, error_handling |
-| Python | runtime, dependencies, tests, data_model, workflows, build_system, security_details, validation, error_handling |
-| C/C++ | dependencies, tests, workflows, build_system |
+| Java/JVM | runtime, dependencies, tests, data_model, workflows, build_system, security_details, validation, error_handling, interfaces, configuration, logging_observability, communication_patterns |
+| JavaScript/TypeScript | dependencies, tests, workflows, build_system, security_details, validation, error_handling, configuration, logging_observability, communication_patterns |
+| Python | runtime, dependencies, tests, data_model, workflows, build_system, security_details, validation, error_handling, configuration, logging_observability, communication_patterns |
+| C/C++ | dependencies, tests, workflows, build_system, configuration, logging_observability, communication_patterns |
 
 ## Cross-Cutting Concerns
 
@@ -251,19 +254,22 @@ ComponentCollector
   └─ registry.get_ecosystem_for_technology → route container to ecosystem
   └─ ecosystem.collect_components()       → specialist collectors
 
-9 Dimension Collectors (thin routers)
+14 Dimension Collectors (thin routers)
   └─ registry.detect(repo_path)           → iterate active ecosystems
   └─ ecosystem.collect_dimension(dim)     → specialist collectors
-  ├─ RuntimeCollector        → spring/runtime, python_eco/runtime
-  ├─ DependencyCollector     → spring/dependency, angular/dependency, python_eco/dependency, cpp/dependency
-  ├─ TestCollector           → spring/test, angular/test, python_eco/test, cpp/test
-  ├─ DataModelCollector      → spring/data_model, python_eco/data_model
-  ├─ WorkflowCollector       → spring/workflow, angular/workflow, python_eco/workflow, cpp/workflow
-  ├─ BuildSystemCollector    → spring/build_system, angular/build_system, python_eco/build_system, cpp/build_system
-  ├─ SecurityDetailCollector → spring/security_detail, angular/security_detail, python_eco/security
-  ├─ ValidationCollector     → spring/validation, angular/validation, python_eco/validation
-  ├─ ErrorHandlingCollector  → spring/error, angular/error, python_eco/error
-  └─ InterfaceCollector      → spring/interface_detail (schedulers, listeners)
+  ├─ RuntimeCollector            → spring/runtime, python_eco/runtime
+  ├─ DependencyCollector         → spring/dependency, angular/dependency, python_eco/dependency, cpp/dependency
+  ├─ TestCollector               → spring/test, angular/test, python_eco/test, cpp/test
+  ├─ DataModelCollector          → spring/data_model, python_eco/data_model
+  ├─ WorkflowCollector           → spring/workflow, angular/workflow, python_eco/workflow, cpp/workflow
+  ├─ BuildSystemCollector        → spring/build_system, angular/build_system, python_eco/build_system, cpp/build_system
+  ├─ SecurityDetailCollector     → spring/security_detail, angular/security_detail, python_eco/security
+  ├─ ValidationCollector         → spring/validation, angular/validation, python_eco/validation
+  ├─ ErrorHandlingCollector      → spring/error, angular/error, python_eco/error
+  ├─ InterfaceCollector          → spring/interface_detail
+  ├─ ConfigurationCollector      → spring/configuration, angular/configuration, python_eco/configuration, cpp/configuration
+  ├─ LoggingObservabilityCollector → spring/logging, angular/logging, python_eco/logging, cpp/logging
+  └─ CommunicationPatternsCollector → spring/communication, angular/communication, python_eco/communication, cpp/communication
 
 file_filters.py
   └─ registry.get_all_exclude_extensions  → merged into BINARY_EXTENSIONS

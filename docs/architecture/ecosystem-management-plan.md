@@ -1,12 +1,12 @@
 # Ecosystem Management — Enable/Disable, Priority, Plugin Discovery
 
-> **Status**: PLANNED | **Predecessor**: Collector Delegation Refactoring (completed)
+> **Status**: IMPLEMENTED | **Predecessor**: Collector Delegation Refactoring (completed)
 
 ---
 
 ## Context
 
-Nach dem Collector-Delegation-Refactoring (45 Specialists, 4 Ecosystems) fehlt die Moeglichkeit, Ecosystems ueber die UI zu verwalten. Aktuell sind alle 4 Ecosystems hardcoded in `EcosystemRegistry._register_builtins()` — kein Enable/Disable, keine Priority-Aenderung, kein Plugin-System.
+Nach dem Collector-Delegation-Refactoring (57+ Specialists, 4 Ecosystems) wurde die Moeglichkeit implementiert, Ecosystems ueber die UI zu verwalten. Config-Persistence, Backend-API, Frontend-Controls und Plugin-Discovery sind vollstaendig umgesetzt.
 
 **Ziel:** User/Admin kann Ecosystems per UI aktivieren/deaktivieren, Prioritaeten aendern, und Custom-Ecosystems als Plugins laden. Kein neuer Admin-Bereich noetig — die bestehende Collectors-Page wird erweitert.
 
