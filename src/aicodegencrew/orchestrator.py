@@ -841,8 +841,14 @@ class SDLCOrchestrator:
         # Log token usage summary before final status
         self._log_token_summary()
 
-        # End MLflow run and log key artifacts
+        # End MLflow run and log key artifacts to MinIO
         self._mlflow.log_artifact("knowledge/extract/architecture_facts.json")
+        self._mlflow.log_artifact_dir("knowledge/document/arc42", artifact_path="documents/arc42")
+        self._mlflow.log_artifact_dir("knowledge/document/c4", artifact_path="documents/c4")
+        self._mlflow.log_artifact_dir("knowledge/document/quality", artifact_path="documents/quality")
+        self._mlflow.log_artifact_dir("knowledge/analyze/analysis", artifact_path="analysis")
+        self._mlflow.log_artifact_dir("knowledge/plan", artifact_path="plans")
+        self._mlflow.log_artifact_dir("knowledge/triage", artifact_path="triage")
         self._mlflow.end_run(outcome=run_outcome)
 
         logger.info("=" * 60)

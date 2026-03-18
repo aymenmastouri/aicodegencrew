@@ -86,6 +86,27 @@ class MLflowTracker:
         except Exception as exc:
             logger.debug("[MLflow] log_artifact failed: %s", exc)
 
+    def log_artifact_dir(self, local_dir: str, artifact_path: str | None = None) -> None:
+        """Log an entire directory as MLflow artifacts (stored in MinIO).
+
+        Args:
+            local_dir: Local directory to upload.
+            artifact_path: Optional subdirectory in the artifact store
+                           (e.g., "documents/arc42").
+        """
+        if not self._enabled:
+            return
+        try:
+            from pathlib import Path
+
+            dir_path = Path(local_dir)
+            if dir_path.is_dir() and any(dir_path.iterdir()):
+                self._mlflow.log_artifacts(str(dir_path), artifact_path=artifact_path)
+                file_count = sum(1 for _ in dir_path.rglob("*") if _.is_file())
+                logger.info("[MLflow] Logged %d files from %s → %s", file_count, local_dir, artifact_path or "/")
+        except Exception as exc:
+            logger.warning("[MLflow] log_artifact_dir failed for %s: %s", local_dir, exc)
+
     def end_run(self, outcome: str = "success") -> None:
         """End the current MLflow run."""
         if not self._enabled or self._run is None:
