@@ -215,10 +215,16 @@ class AnalysisReviewer:
         gaps = data.get("gaps", [])
         contradictions = data.get("contradictions", [])
 
-        # Ensure section IDs are zero-padded strings
+        # Ensure section IDs are zero-padded strings (strip "Section " prefix if LLM adds it)
         normalized: dict[str, list[str]] = {}
         for sid, issues in sections_to_redo.items():
-            key = str(sid).zfill(2)
+            key = str(sid).strip()
+            # Strip common LLM prefixes: "Section 04" → "04", "section_04" → "04"
+            for prefix in ("Section ", "section ", "Section_", "section_"):
+                if key.startswith(prefix):
+                    key = key[len(prefix):]
+                    break
+            key = key.zfill(2)
             if isinstance(issues, list) and issues:
                 normalized[key] = [str(i) for i in issues]
         sections_to_redo = normalized
