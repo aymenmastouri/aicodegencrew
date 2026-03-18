@@ -458,6 +458,9 @@ class CCppEcosystem(EcosystemDefinition):
             "dependencies": self._collect_dependencies,
             "tests": self._collect_tests,
             "workflows": self._collect_workflows,
+            "configuration": self._collect_configuration,
+            "logging_observability": self._collect_logging,
+            "communication_patterns": self._collect_communication,
         }
         handler = dispatch.get(dimension)
         return handler(repo_path, container_id) if handler else ([], [])
@@ -480,6 +483,21 @@ class CCppEcosystem(EcosystemDefinition):
     def _collect_workflows(self, repo_path, container_id):
         from ...pipelines.architecture_facts.collectors.cpp.workflow_collector import CppWorkflowCollector
         output = CppWorkflowCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_configuration(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.cpp.configuration_collector import CppConfigurationCollector
+        output = CppConfigurationCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_logging(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.cpp.logging_collector import CppLoggingCollector
+        output = CppLoggingCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_communication(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.cpp.communication_collector import CppCommunicationCollector
+        output = CppCommunicationCollector(repo_path, container_id=container_id).collect()
         return output.facts, output.relations
 
     # ── Component Technologies ──────────────────────────────────────────────

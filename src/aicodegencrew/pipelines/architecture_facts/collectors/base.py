@@ -238,6 +238,61 @@ class RawInfraFact(RawFact):
     category: str = ""  # container, orchestration, ci_cd, configuration
 
 
+@dataclass
+class RawConfigFact(RawFact):
+    """A configuration fact (config files, env vars, profiles, feature flags)."""
+
+    config_type: str = ""  # config_file, env_variable, profile, feature_flag, secret_ref
+    format: str = ""  # yaml, properties, json, toml, env, typescript
+    file_path: str = ""
+    key_count: int = 0  # Number of config keys/entries
+    container_hint: str = ""
+
+
+@dataclass
+class RawLoggingFact(RawFact):
+    """A logging/observability fact (logging config, tracing, metrics, health checks)."""
+
+    observability_type: str = ""  # logging_config, tracing, metrics_endpoint, health_check, log_usage
+    framework: str = ""  # logback, log4j2, spdlog, structlog, python_logging, console
+    file_path: str = ""
+    container_hint: str = ""
+
+
+@dataclass
+class RawTechDebtFact(RawFact):
+    """A technical debt indicator (TODO, FIXME, deprecated usage, suppressed warnings)."""
+
+    debt_type: str = ""  # todo, fixme, hack, deprecated_usage, suppressed_warning
+    message: str = ""  # The comment or warning text
+    file_path: str = ""
+    line_number: int = 0
+    severity: str = "low"  # low, medium, high
+
+
+@dataclass
+class RawApiContractFact(RawFact):
+    """An API contract fact (OpenAPI specs, gRPC protos, GraphQL schemas)."""
+
+    contract_type: str = ""  # openapi, grpc_proto, graphql_schema, asyncapi, wsdl
+    format: str = ""  # json, yaml, proto, graphql, xml
+    file_path: str = ""
+    endpoint_count: int = 0  # Number of endpoints/operations defined
+    version: str = ""  # API version if detectable
+    container_hint: str = ""
+
+
+@dataclass
+class RawCommunicationFact(RawFact):
+    """A communication pattern fact (message queues, events, WebSockets, REST clients)."""
+
+    pattern_type: str = ""  # message_queue, event_bus, websocket, sse, rest_client, grpc_client
+    technology: str = ""  # kafka, rabbitmq, redis_pubsub, spring_events, django_signals, etc.
+    direction: str = ""  # producer, consumer, both, client
+    file_path: str = ""
+    container_hint: str = ""
+
+
 # =============================================================================
 # Collector Output
 # =============================================================================

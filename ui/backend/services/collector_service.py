@@ -70,6 +70,9 @@ def _get_specialist_info() -> dict:
         "routing_collector": "interfaces",
         "openapi_collector": "interfaces",
         "state_collector": "components",
+        "configuration_collector": "configuration",
+        "logging_collector": "logging_observability",
+        "communication_collector": "communication_patterns",
     }
 
     result = {}

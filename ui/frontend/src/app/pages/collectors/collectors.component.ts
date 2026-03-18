@@ -42,6 +42,11 @@ const ALL_DIMENSIONS: string[] = [
   'tests',
   'error_handling',
   'build_system',
+  'configuration',
+  'logging_observability',
+  'technical_debt',
+  'api_contracts',
+  'communication_patterns',
   'evidence',
 ];
 

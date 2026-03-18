@@ -261,6 +261,9 @@ class JavaScriptTypeScriptEcosystem(EcosystemDefinition):
             "error_handling": self._collect_error_handling,
             "tests": self._collect_tests,
             "workflows": self._collect_workflows,
+            "configuration": self._collect_configuration,
+            "logging_observability": self._collect_logging,
+            "communication_patterns": self._collect_communication,
         }
         handler = dispatch.get(dimension)
         return handler(repo_path, container_id) if handler else ([], [])
@@ -298,6 +301,21 @@ class JavaScriptTypeScriptEcosystem(EcosystemDefinition):
     def _collect_workflows(self, repo_path, container_id):
         from ...pipelines.architecture_facts.collectors.angular.workflow_detail_collector import AngularWorkflowDetailCollector
         output = AngularWorkflowDetailCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_configuration(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.angular.configuration_collector import AngularConfigurationCollector
+        output = AngularConfigurationCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_logging(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.angular.logging_collector import AngularLoggingCollector
+        output = AngularLoggingCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_communication(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.angular.communication_collector import AngularCommunicationCollector
+        output = AngularCommunicationCollector(repo_path, container_id=container_id).collect()
         return output.facts, output.relations
 
     # ── Component Technologies ──────────────────────────────────────────────

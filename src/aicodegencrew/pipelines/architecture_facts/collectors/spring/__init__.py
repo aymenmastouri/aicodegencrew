@@ -13,11 +13,14 @@ Each collector extracts ONE specific aspect of Spring applications:
 """
 
 from .build_system_collector import SpringBuildSystemCollector
+from .communication_collector import SpringCommunicationCollector
 from .config_collector import SpringConfigCollector
+from .configuration_collector import SpringConfigurationCollector
 from .data_model_collector import SpringDataModelCollector
 from .dependency_collector import SpringDependencyCollector
 from .error_collector import SpringErrorCollector
 from .interface_detail_collector import SpringInterfaceDetailCollector
+from .logging_collector import SpringLoggingCollector
 from .repository_collector import SpringRepositoryCollector
 from .rest_collector import SpringRestCollector
 from .runtime_collector import SpringRuntimeCollector
@@ -30,11 +33,14 @@ from .workflow_collector import SpringWorkflowCollector
 
 __all__ = [
     "SpringBuildSystemCollector",
+    "SpringCommunicationCollector",
     "SpringConfigCollector",
+    "SpringConfigurationCollector",
     "SpringDataModelCollector",
     "SpringDependencyCollector",
     "SpringErrorCollector",
     "SpringInterfaceDetailCollector",
+    "SpringLoggingCollector",
     "SpringRepositoryCollector",
     "SpringRestCollector",
     "SpringRuntimeCollector",

@@ -14,9 +14,12 @@ Each collector extracts ONE specific aspect of Angular applications:
 """
 
 from .build_system_collector import AngularBuildSystemCollector
+from .communication_collector import AngularCommunicationCollector
 from .component_collector import AngularComponentCollector
+from .configuration_collector import AngularConfigurationCollector
 from .dependency_collector import AngularDependencyCollector
 from .error_detail_collector import AngularErrorDetailCollector
+from .logging_collector import AngularLoggingCollector
 from .module_collector import AngularModuleCollector
 from .openapi_collector import OpenAPICollector
 from .routing_collector import AngularRoutingCollector
@@ -29,9 +32,12 @@ from .workflow_detail_collector import AngularWorkflowDetailCollector
 
 __all__ = [
     "AngularBuildSystemCollector",
+    "AngularCommunicationCollector",
     "AngularComponentCollector",
+    "AngularConfigurationCollector",
     "AngularDependencyCollector",
     "AngularErrorDetailCollector",
+    "AngularLoggingCollector",
     "AngularModuleCollector",
     "AngularRoutingCollector",
     "AngularSecurityDetailCollector",

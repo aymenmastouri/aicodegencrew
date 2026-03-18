@@ -463,6 +463,9 @@ class JavaJvmEcosystem(EcosystemDefinition):
             "data_model": self._collect_data_model,
             "workflows": self._collect_workflows,
             "interfaces": self._collect_interfaces,
+            "configuration": self._collect_configuration,
+            "logging_observability": self._collect_logging,
+            "communication_patterns": self._collect_communication,
         }
         handler = dispatch.get(dimension)
         return handler(repo_path, container_id) if handler else ([], [])
@@ -515,6 +518,21 @@ class JavaJvmEcosystem(EcosystemDefinition):
     def _collect_interfaces(self, repo_path, container_id):
         from ...pipelines.architecture_facts.collectors.spring.interface_detail_collector import SpringInterfaceDetailCollector
         output = SpringInterfaceDetailCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_configuration(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.spring.configuration_collector import SpringConfigurationCollector
+        output = SpringConfigurationCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_logging(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.spring.logging_collector import SpringLoggingCollector
+        output = SpringLoggingCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_communication(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.spring.communication_collector import SpringCommunicationCollector
+        output = SpringCommunicationCollector(repo_path, container_id=container_id).collect()
         return output.facts, output.relations
 
     def collect_components(self, container, repo_path):

@@ -9,17 +9,23 @@ Each collector extracts ONE specific aspect of C/C++ applications:
 """
 
 from .build_system_collector import CppBuildSystemCollector
+from .communication_collector import CppCommunicationCollector
 from .component_collector import CppComponentCollector
+from .configuration_collector import CppConfigurationCollector
 from .dependency_collector import CppDependencyCollector
 from .interface_collector import CppInterfaceCollector
+from .logging_collector import CppLoggingCollector
 from .test_collector import CppTestCollector
 from .workflow_collector import CppWorkflowCollector
 
 __all__ = [
     "CppBuildSystemCollector",
+    "CppCommunicationCollector",
     "CppComponentCollector",
+    "CppConfigurationCollector",
     "CppDependencyCollector",
     "CppInterfaceCollector",
+    "CppLoggingCollector",
     "CppTestCollector",
     "CppWorkflowCollector",
 ]

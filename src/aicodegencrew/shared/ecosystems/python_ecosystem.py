@@ -185,6 +185,9 @@ class PythonEcosystem(EcosystemDefinition):
             "tests": self._collect_tests,
             "data_model": self._collect_data_model,
             "workflows": self._collect_workflows,
+            "configuration": self._collect_configuration,
+            "logging_observability": self._collect_logging,
+            "communication_patterns": self._collect_communication,
         }
         handler = dispatch.get(dimension)
         return handler(repo_path, container_id) if handler else ([], [])
@@ -232,6 +235,21 @@ class PythonEcosystem(EcosystemDefinition):
     def _collect_workflows(self, repo_path, container_id):
         from ...pipelines.architecture_facts.collectors.python_eco.workflow_collector import PythonWorkflowCollector
         output = PythonWorkflowCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_configuration(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.python_eco.configuration_collector import PythonConfigurationCollector
+        output = PythonConfigurationCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_logging(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.python_eco.logging_collector import PythonLoggingCollector
+        output = PythonLoggingCollector(repo_path, container_id=container_id).collect()
+        return output.facts, output.relations
+
+    def _collect_communication(self, repo_path, container_id):
+        from ...pipelines.architecture_facts.collectors.python_eco.communication_collector import PythonCommunicationCollector
+        output = PythonCommunicationCollector(repo_path, container_id=container_id).collect()
         return output.facts, output.relations
 
     # ── Component Technologies ──────────────────────────────────────────────
