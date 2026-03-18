@@ -1348,6 +1348,25 @@ class PipelineExecutor:
                             "sub_phases": [],
                             "total_tokens": 0,
                         }
+                elif event_name == "phase_partial":
+                    phase_id = data.get("phase") or data.get("phase_id", "")
+                    if not phase_id:
+                        continue
+                    if phase_id in progress:
+                        progress[phase_id]["status"] = PHASE_PROGRESS_PARTIAL
+                        progress[phase_id]["duration_seconds"] = data.get("duration_seconds")
+                        progress[phase_id]["skip_reason"] = None
+                    else:
+                        progress[phase_id] = {
+                            "phase_id": phase_id,
+                            "name": data.get("name", phase_id),
+                            "status": PHASE_PROGRESS_PARTIAL,
+                            "started_at": None,
+                            "duration_seconds": data.get("duration_seconds"),
+                            "skip_reason": None,
+                            "sub_phases": [],
+                            "total_tokens": 0,
+                        }
                 elif event_name == "phase_failed":
                     phase_id = data.get("phase") or data.get("phase_id", "")
                     if not phase_id:
