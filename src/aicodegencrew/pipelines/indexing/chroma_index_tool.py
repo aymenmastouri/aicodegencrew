@@ -57,6 +57,7 @@ class ChromaIndexInput(BaseModel):
     collection_metadata: dict[str, Any] = Field(default_factory=dict, description="Collection metadata")
     where: dict[str, Any] = Field(default_factory=dict, description="Metadata filter for get/delete")
     limit: int = Field(default=0, description="Max number of items to return for get (0 = no limit)")
+    offset: int = Field(default=0, description="Number of items to skip for get pagination")
     include: list[str] = Field(default_factory=list, description="Fields to include for get")
 
 
@@ -93,6 +94,7 @@ class ChromaIndexTool(BaseTool):
         collection_metadata: dict[str, Any] = None,
         where: dict[str, Any] = None,
         limit: int = 0,
+        offset: int = 0,
         include: list[str] = None,
     ) -> dict[str, Any]:
         """Execute vector store operation."""
@@ -101,7 +103,7 @@ class ChromaIndexTool(BaseTool):
         elif operation == "query":
             return self._query(query_text, query_embedding, top_k, collection_name)
         elif operation == "get":
-            return self._get(collection_name, where=where or {}, limit=limit, include=include or [])
+            return self._get(collection_name, where=where or {}, limit=limit, offset=offset, include=include or [])
         elif operation == "delete":
             return self._delete(collection_name, where=where or {})
         elif operation == "count":
@@ -220,12 +222,25 @@ class ChromaIndexTool(BaseTool):
         collection_name: str,
         where: dict[str, Any],
         limit: int = 0,
+        offset: int = 0,
         include: list[str] = None,
     ) -> dict[str, Any]:
-        """Get documents by metadata filter."""
+        """Get documents by metadata filter with optional offset-based pagination.
+
+        The underlying vector store may not support offset natively, so we
+        fetch limit+offset items and slice the results client-side.
+        """
         try:
             store = self._get_vector_store()
-            results = store.get(collection_name, where=_normalize_where(where), limit=limit, include=include)
+            # Fetch enough items to satisfy offset + limit
+            fetch_limit = (limit + offset) if limit else 0
+            results = store.get(collection_name, where=_normalize_where(where), limit=fetch_limit, include=include)
+
+            # Apply offset client-side by slicing each result list
+            if offset > 0:
+                for key in ("ids", "documents", "metadatas", "embeddings"):
+                    if key in results and isinstance(results[key], list):
+                        results[key] = results[key][offset:]
 
             ids = results.get("ids", []) or []
             return {

@@ -24,8 +24,11 @@ from typing import Any
 
 from ....shared.utils.logger import logger
 from .base import RawEvidence, RawFact
+from .api_contracts_collector import ApiContractsCollector
 from .build_system_collector import BuildSystemCollector
+from .communication_patterns_collector import CommunicationPatternsCollector
 from .component_collector import ComponentCollector
+from .configuration_collector import ConfigurationCollector
 from .container_collector import ContainerCollector
 from .data_model_collector import DataModelCollector
 from .dependency_collector import DependencyCollector
@@ -33,9 +36,11 @@ from .error_handling_collector import ErrorHandlingCollector
 from .evidence_collector import EvidenceCollector
 from .infrastructure_collector import InfrastructureCollector
 from .interface_collector import InterfaceCollector
+from .logging_observability_collector import LoggingObservabilityCollector
 from .runtime_collector import RuntimeCollector
 from .security_detail_collector import SecurityDetailCollector
 from .system_collector import SystemCollector
+from .technical_debt_collector import TechnicalDebtCollector
 from .techstack_version_collector import TechStackVersionCollector
 from .test_collector import TestCollector
 from .validation_collector import ValidationCollector
@@ -94,6 +99,21 @@ class DimensionResults:
     # Build system (Gradle, Maven, npm, Angular)
     build_system: list[RawFact] = field(default_factory=list)
 
+    # Configuration (config files, env vars, profiles, feature flags)
+    configuration: list[RawFact] = field(default_factory=list)
+
+    # Logging & Observability (logging config, tracing, metrics, health checks)
+    logging_observability: list[RawFact] = field(default_factory=list)
+
+    # Technical Debt (TODO/FIXME/HACK, deprecated, suppressed warnings)
+    technical_debt: list[RawFact] = field(default_factory=list)
+
+    # API Contracts (OpenAPI, gRPC proto, GraphQL, AsyncAPI, WSDL)
+    api_contracts: list[RawFact] = field(default_factory=list)
+
+    # Communication Patterns (message queues, events, WebSockets, REST clients)
+    communication_patterns: list[RawFact] = field(default_factory=list)
+
     # All relations (hints for model builder)
     relation_hints: list[dict] = field(default_factory=list)
 
@@ -120,6 +140,11 @@ class DimensionResults:
             "tests": len(self.tests),
             "error_handling": len(self.error_handling),
             "build_system_facts": len(self.build_system),
+            "configuration": len(self.configuration),
+            "logging_observability": len(self.logging_observability),
+            "technical_debt": len(self.technical_debt),
+            "api_contracts": len(self.api_contracts),
+            "communication_patterns": len(self.communication_patterns),
             "relation_hints": len(self.relation_hints),
             "evidence_items": len(self.evidence),
         }
@@ -286,103 +311,138 @@ class CollectorOrchestrator:
         logger.info("[CollectorOrchestrator] Starting architecture extraction...")
 
         # 1. System facts (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 1/16: System facts...")
+        logger.info("[CollectorOrchestrator] Step 1/21: System facts...")
         self._run_system_collector()
 
         # 2. Container detection (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 2/16: Container detection...")
+        logger.info("[CollectorOrchestrator] Step 2/21: Container detection...")
         self._run_container_collector()
 
         # 3. Component extraction (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 3/16: Component extraction...")
+        logger.info("[CollectorOrchestrator] Step 3/21: Component extraction...")
         self._run_component_collector()
 
         # 4. Interface extraction
         if self._is_enabled("interfaces", collector_config):
-            logger.info("[CollectorOrchestrator] Step 4/16: Interface extraction...")
+            logger.info("[CollectorOrchestrator] Step 4/21: Interface extraction...")
             self._run_interface_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 4/16: Skipping interfaces (disabled)")
+            logger.info("[CollectorOrchestrator] Step 4/21: Skipping interfaces (disabled)")
 
         # 5. Data model extraction
         if self._is_enabled("data_model", collector_config):
-            logger.info("[CollectorOrchestrator] Step 5/16: Data model extraction...")
+            logger.info("[CollectorOrchestrator] Step 5/21: Data model extraction...")
             self._run_data_model_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 5/16: Skipping data_model (disabled)")
+            logger.info("[CollectorOrchestrator] Step 5/21: Skipping data_model (disabled)")
 
         # 6. Runtime extraction
         if self._is_enabled("runtime", collector_config):
-            logger.info("[CollectorOrchestrator] Step 6/16: Runtime extraction...")
+            logger.info("[CollectorOrchestrator] Step 6/21: Runtime extraction...")
             self._run_runtime_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 6/16: Skipping runtime (disabled)")
+            logger.info("[CollectorOrchestrator] Step 6/21: Skipping runtime (disabled)")
 
         # 7. Infrastructure extraction
         if self._is_enabled("infrastructure", collector_config):
-            logger.info("[CollectorOrchestrator] Step 7/16: Infrastructure extraction...")
+            logger.info("[CollectorOrchestrator] Step 7/21: Infrastructure extraction...")
             self._run_infrastructure_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 7/16: Skipping infrastructure (disabled)")
+            logger.info("[CollectorOrchestrator] Step 7/21: Skipping infrastructure (disabled)")
 
         # 8. Dependencies extraction
         if self._is_enabled("dependencies", collector_config):
-            logger.info("[CollectorOrchestrator] Step 8/16: Dependencies extraction...")
+            logger.info("[CollectorOrchestrator] Step 8/21: Dependencies extraction...")
             self._run_dependency_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 8/16: Skipping dependencies (disabled)")
+            logger.info("[CollectorOrchestrator] Step 8/21: Skipping dependencies (disabled)")
 
         # 9. Workflows extraction
         if self._is_enabled("workflows", collector_config):
-            logger.info("[CollectorOrchestrator] Step 9/16: Workflows extraction...")
+            logger.info("[CollectorOrchestrator] Step 9/21: Workflows extraction...")
             self._run_workflow_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 9/16: Skipping workflows (disabled)")
+            logger.info("[CollectorOrchestrator] Step 9/21: Skipping workflows (disabled)")
 
         # 10. Technology versions extraction
         if self._is_enabled("tech_versions", collector_config):
-            logger.info("[CollectorOrchestrator] Step 10/16: Technology versions extraction...")
+            logger.info("[CollectorOrchestrator] Step 10/21: Technology versions extraction...")
             self._run_techstack_version_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 10/16: Skipping tech_versions (disabled)")
+            logger.info("[CollectorOrchestrator] Step 10/21: Skipping tech_versions (disabled)")
 
         # 11. Security details extraction
         if self._is_enabled("security_details", collector_config):
-            logger.info("[CollectorOrchestrator] Step 11/16: Security details extraction...")
+            logger.info("[CollectorOrchestrator] Step 11/21: Security details extraction...")
             self._run_security_detail_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 11/16: Skipping security_details (disabled)")
+            logger.info("[CollectorOrchestrator] Step 11/21: Skipping security_details (disabled)")
 
         # 12. Validation rules extraction
         if self._is_enabled("validation", collector_config):
-            logger.info("[CollectorOrchestrator] Step 12/16: Validation rules extraction...")
+            logger.info("[CollectorOrchestrator] Step 12/21: Validation rules extraction...")
             self._run_validation_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 12/16: Skipping validation (disabled)")
+            logger.info("[CollectorOrchestrator] Step 12/21: Skipping validation (disabled)")
 
         # 13. Tests extraction
         if self._is_enabled("tests", collector_config):
-            logger.info("[CollectorOrchestrator] Step 13/16: Tests extraction...")
+            logger.info("[CollectorOrchestrator] Step 13/21: Tests extraction...")
             self._run_test_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 13/16: Skipping tests (disabled)")
+            logger.info("[CollectorOrchestrator] Step 13/21: Skipping tests (disabled)")
 
         # 14. Error handling extraction
         if self._is_enabled("error_handling", collector_config):
-            logger.info("[CollectorOrchestrator] Step 14/16: Error handling extraction...")
+            logger.info("[CollectorOrchestrator] Step 14/21: Error handling extraction...")
             self._run_error_handling_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 14/16: Skipping error_handling (disabled)")
+            logger.info("[CollectorOrchestrator] Step 14/21: Skipping error_handling (disabled)")
 
         # 15. Build system extraction
         if self._is_enabled("build_system", collector_config):
-            logger.info("[CollectorOrchestrator] Step 15/16: Build system extraction...")
+            logger.info("[CollectorOrchestrator] Step 15/21: Build system extraction...")
             self._run_build_system_collector()
         else:
-            logger.info("[CollectorOrchestrator] Step 15/16: Skipping build_system (disabled)")
+            logger.info("[CollectorOrchestrator] Step 15/21: Skipping build_system (disabled)")
 
-        # 16. Evidence aggregation (core — always runs)
-        logger.info("[CollectorOrchestrator] Step 16/16: Evidence aggregation...")
+        # 16. Configuration extraction
+        if self._is_enabled("configuration", collector_config):
+            logger.info("[CollectorOrchestrator] Step 16/21: Configuration extraction...")
+            self._run_configuration_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 16/21: Skipping configuration (disabled)")
+
+        # 17. Logging & Observability extraction
+        if self._is_enabled("logging_observability", collector_config):
+            logger.info("[CollectorOrchestrator] Step 17/21: Logging & observability extraction...")
+            self._run_logging_observability_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 17/21: Skipping logging_observability (disabled)")
+
+        # 18. Technical Debt extraction
+        if self._is_enabled("technical_debt", collector_config):
+            logger.info("[CollectorOrchestrator] Step 18/21: Technical debt extraction...")
+            self._run_technical_debt_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 18/21: Skipping technical_debt (disabled)")
+
+        # 19. API Contracts extraction
+        if self._is_enabled("api_contracts", collector_config):
+            logger.info("[CollectorOrchestrator] Step 19/21: API contracts extraction...")
+            self._run_api_contracts_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 19/21: Skipping api_contracts (disabled)")
+
+        # 20. Communication Patterns extraction
+        if self._is_enabled("communication_patterns", collector_config):
+            logger.info("[CollectorOrchestrator] Step 20/21: Communication patterns extraction...")
+            self._run_communication_patterns_collector()
+        else:
+            logger.info("[CollectorOrchestrator] Step 20/21: Skipping communication_patterns (disabled)")
+
+        # 21. Evidence aggregation (core — always runs)
+        logger.info("[CollectorOrchestrator] Step 21/21: Evidence aggregation...")
         self._aggregate_evidence()
 
         # Log statistics
@@ -752,6 +812,66 @@ class CollectorOrchestrator:
 
         build_out = [self._fact_to_dict(b) for b in self.results.build_system]
         self._write_json("build_system.json", build_out)
+
+    def _run_configuration_collector(self) -> None:
+        """Run ConfigurationCollector for config files, env vars, profiles."""
+        collector = ConfigurationCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.configuration.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} configuration facts")
+        self._write_json("configuration.json", [self._fact_to_dict(f) for f in self.results.configuration])
+
+    def _run_logging_observability_collector(self) -> None:
+        """Run LoggingObservabilityCollector for logging, tracing, metrics, health checks."""
+        collector = LoggingObservabilityCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.logging_observability.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} logging/observability facts")
+        self._write_json("logging_observability.json", [self._fact_to_dict(f) for f in self.results.logging_observability])
+
+    def _run_technical_debt_collector(self) -> None:
+        """Run TechnicalDebtCollector for TODO/FIXME/HACK, deprecated, suppressed warnings."""
+        collector = TechnicalDebtCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.technical_debt.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} technical debt indicators")
+        self._write_json("technical_debt.json", [self._fact_to_dict(f) for f in self.results.technical_debt])
+
+    def _run_api_contracts_collector(self) -> None:
+        """Run ApiContractsCollector for OpenAPI, gRPC, GraphQL, AsyncAPI, WSDL."""
+        collector = ApiContractsCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.api_contracts.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} API contract facts")
+        self._write_json("api_contracts.json", [self._fact_to_dict(f) for f in self.results.api_contracts])
+
+    def _run_communication_patterns_collector(self) -> None:
+        """Run CommunicationPatternsCollector for message queues, events, WebSockets."""
+        collector = CommunicationPatternsCollector(self.repo_path)
+        output = collector.collect()
+
+        self.results.communication_patterns.extend(output.facts)
+        self.results.relation_hints.extend([r.to_dict() for r in output.relations])
+        self.evidence_collector.add_from_output(output)
+
+        logger.info(f"  Extracted {len(output.facts)} communication pattern facts")
+        self._write_json("communication_patterns.json", [self._fact_to_dict(f) for f in self.results.communication_patterns])
 
     def _aggregate_evidence(self) -> None:
         """Build final evidence map."""
