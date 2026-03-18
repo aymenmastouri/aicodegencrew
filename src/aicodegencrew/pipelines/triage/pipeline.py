@@ -1002,6 +1002,8 @@ RULES:
             "architecture_notes": dev.get("architecture_notes", ""),
         }
         for field_name, field_text in check_fields.items():
+            if not isinstance(field_text, str):
+                field_text = json.dumps(field_text, ensure_ascii=False)
             matches = action_pattern.findall(field_text)
             for match in matches:
                 score -= 5
@@ -1036,28 +1038,72 @@ RULES:
         return {"score": max(0, score), "warnings": warnings}
 
     def _extract_json(self, text: str) -> dict | None:
-        """Extract JSON object from LLM output text."""
-        # Try direct JSON parse first
+        """Extract JSON object from LLM output text.
+
+        Multiple strategies: direct parse, code fence strip, first/last brace,
+        brace-balanced extraction.
+        """
+        if not isinstance(text, str):
+            text = json.dumps(text, ensure_ascii=False) if text else ""
+
+        # Strategy 1: Direct parse
         try:
             return json.loads(text)
         except json.JSONDecodeError:
             pass
 
-        # Try to find JSON block in markdown code fences
-        match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
-        if match:
+        # Strategy 2: Strip code fences
+        cleaned = text.strip()
+        for prefix in ("```json\n", "```json", "```\n", "```"):
+            if cleaned.startswith(prefix):
+                cleaned = cleaned[len(prefix):]
+                break
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        cleaned = cleaned.strip()
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            pass
+
+        # Strategy 3: First { to last }
+        first_brace = cleaned.find("{")
+        last_brace = cleaned.rfind("}")
+        if first_brace >= 0 and last_brace > first_brace:
+            candidate = cleaned[first_brace:last_brace + 1]
             try:
-                return json.loads(match.group(1))
+                return json.loads(candidate)
             except json.JSONDecodeError:
                 pass
 
-        # Try to find first { ... } block
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            try:
-                return json.loads(match.group(0))
-            except json.JSONDecodeError:
-                pass
+        # Strategy 4: Brace-balanced extraction
+        if first_brace >= 0:
+            depth = 0
+            in_string = False
+            escape_next = False
+            for i in range(first_brace, len(cleaned)):
+                ch = cleaned[i]
+                if escape_next:
+                    escape_next = False
+                    continue
+                if ch == "\\":
+                    escape_next = True
+                    continue
+                if ch == '"' and not escape_next:
+                    in_string = not in_string
+                    continue
+                if in_string:
+                    continue
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
+                    if depth == 0:
+                        candidate = cleaned[first_brace:i + 1]
+                        try:
+                            return json.loads(candidate)
+                        except json.JSONDecodeError:
+                            break
 
         logger.warning("[TriagePipeline] Could not parse JSON from LLM output")
         return None
