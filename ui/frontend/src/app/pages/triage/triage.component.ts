@@ -261,7 +261,7 @@ interface TriageDeveloperContext {
                     </ul>
                   </div>
                 }
-                @if (developerContext.context_boundaries?.length) {
+                @if (developerContext.context_boundaries.length) {
                   <div class="brief-section">
                     <h3>Context Boundaries</h3>
                     <div class="boundaries-list">
@@ -274,7 +274,7 @@ interface TriageDeveloperContext {
                             <span class="boundary-category">{{ formatCategory(b.category) }}</span>
                           </div>
                           <div class="boundary-text">{{ b.boundary }}</div>
-                          @if (b.source_facts?.length) {
+                          @if (b.source_facts.length) {
                             <div class="boundary-sources">
                               @for (s of b.source_facts; track s) {
                                 <span class="source-chip">{{ s }}</span>
@@ -292,7 +292,7 @@ interface TriageDeveloperContext {
                     <p>{{ developerContext.architecture_notes }}</p>
                   </div>
                 }
-                @if (developerContext.anticipated_questions?.length) {
+                @if (developerContext.anticipated_questions.length) {
                   <div class="brief-section">
                     <h3>Anticipated Questions</h3>
                     <div class="questions-list">

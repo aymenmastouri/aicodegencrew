@@ -238,8 +238,7 @@ interface PlanStep {
                 <mat-progress-spinner diameter="16" mode="indeterminate" style="display:inline-block;margin-right:6px"></mat-progress-spinner>
                 Resetting...
               } @else {
-                <mat-icon>restart_alt</mat-icon>
-                Reset Task
+                <ng-container><mat-icon>restart_alt</mat-icon> Reset Task</ng-container>
               }
             </button>
           }
@@ -333,7 +332,7 @@ interface PlanStep {
                     </div>
                   }
 
-                  @if (triageDeveloperContext.anticipated_questions?.length) {
+                  @if (triageDeveloperContext.anticipated_questions.length) {
                     <div class="context-section">
                       <h4>Anticipated Questions</h4>
                       <div class="questions-list">
@@ -347,7 +346,7 @@ interface PlanStep {
                     </div>
                   }
 
-                  @if (triageDeveloperContext.context_boundaries?.length) {
+                  @if (triageDeveloperContext.context_boundaries.length) {
                     <div class="context-section">
                       <h4>Context Boundaries</h4>
                       <div class="boundaries-list">
@@ -360,7 +359,7 @@ interface PlanStep {
                               <span class="boundary-category">{{ formatCategory(b.category) }}</span>
                             </div>
                             <div class="boundary-text">{{ b.boundary }}</div>
-                            @if (b.source_facts?.length) {
+                            @if (b.source_facts.length) {
                               <div class="boundary-sources">
                                 @for (s of b.source_facts; track s) {
                                   <span class="source-chip">{{ s }}</span>
@@ -373,7 +372,7 @@ interface PlanStep {
                     </div>
                   }
 
-                  @if (triageDeveloperContext.affected_components?.length) {
+                  @if (triageDeveloperContext.affected_components.length) {
                     <div class="context-section">
                       <h4>Affected Components</h4>
                       <ul class="component-list">
