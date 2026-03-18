@@ -60,22 +60,57 @@ _DEFAULT_TEMPERATURE = 1.0
 _DEFAULT_TOP_P = 0.95
 _DEFAULT_MAX_OUTPUT_TOKENS = 65536
 
+# Phase-specific temperature defaults — deterministic phases use lower
+# temperatures for consistency, creative phases use higher for depth.
+_PHASE_TEMPERATURE_DEFAULTS: dict[str, float] = {
+    "analyze": 0.5,
+    "document": 0.5,
+    "triage": 0.7,
+    "plan": 0.6,
+    "retry": 0.3,
+}
+
+
+def get_phase_temperature(phase_id: str | None = None) -> float:
+    """Resolve LLM temperature for a given phase.
+
+    Resolution order:
+    1. LLM_TEMPERATURE_{PHASE} env var (e.g. LLM_TEMPERATURE_ANALYZE)
+    2. Phase-specific default from _PHASE_TEMPERATURE_DEFAULTS
+    3. LLM_TEMPERATURE env var
+    4. _DEFAULT_TEMPERATURE (1.0)
+    """
+    if phase_id:
+        phase_upper = phase_id.upper()
+        env_val = os.getenv(f"LLM_TEMPERATURE_{phase_upper}")
+        if env_val is not None:
+            return float(env_val)
+        if phase_id.lower() in _PHASE_TEMPERATURE_DEFAULTS:
+            return _PHASE_TEMPERATURE_DEFAULTS[phase_id.lower()]
+    return float(os.getenv("LLM_TEMPERATURE", str(_DEFAULT_TEMPERATURE)))
+
 
 def create_llm(
     *,
-    temperature: float = _DEFAULT_TEMPERATURE,
+    temperature: float | None = None,
     timeout: int = 300,
     model_override: str | None = None,
+    phase_id: str | None = None,
 ) -> LLM:
     """Create a CrewAI LLM instance from environment variables.
 
     Reads: MODEL, API_BASE, MAX_LLM_OUTPUT_TOKENS, LLM_CONTEXT_WINDOW.
 
     Args:
-        temperature: LLM temperature (default 1.0, Qwen3-Coder-Next best practice).
+        temperature: Explicit LLM temperature override. If None, resolved
+            from phase_id-specific env var / default.
         timeout: Request timeout in seconds.
         model_override: If provided, use this model instead of MODEL env var.
+        phase_id: Optional phase identifier for phase-specific temperature
+            (e.g. "analyze", "document", "triage", "plan", "retry").
     """
+    if temperature is None:
+        temperature = get_phase_temperature(phase_id)
     model = model_override or os.getenv("MODEL", _DEFAULT_MODEL)
     api_base = os.getenv("API_BASE", "")
     api_key = os.getenv("OPENAI_API_KEY", "")

@@ -56,6 +56,19 @@ PHASE_CONTRACTS: dict[str, dict] = {
 # Override with PHASE_TIMEOUT_SECONDS env var (default: 3600s = 1 hour).
 _PHASE_TIMEOUT_S: int = int(os.getenv("PHASE_TIMEOUT_SECONDS", "3600"))
 
+# Quality Gate thresholds — retry phase once if below threshold, mark partial if below minimum.
+_QUALITY_GATE_THRESHOLD: int = int(os.getenv("QUALITY_GATE_THRESHOLD", "70"))
+_QUALITY_GATE_MINIMUM: int = int(os.getenv("QUALITY_GATE_MINIMUM", "50"))
+
+# Pipeline Quality Score weights — how much each phase contributes to overall score.
+_QUALITY_WEIGHTS: dict[str, float] = {
+    "extract": 0.10,
+    "analyze": 0.25,
+    "document": 0.35,
+    "triage": 0.15,
+    "deliver": 0.15,
+}
+
 # =============================================================================
 # PROTOCOLS (Interfaces)
 # =============================================================================
@@ -83,17 +96,21 @@ class PhaseResult:
     message: str = ""
     output: Any = None
     duration_seconds: float = 0.0
+    quality_score: int | None = None  # 0-100, None if not applicable
 
     def is_success(self) -> bool:
         return is_phase_result_success(self.status)
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "phase": self.phase_id,
             "status": self.status,
             "message": self.message,
             "duration": f"{self.duration_seconds:.2f}s",
         }
+        if self.quality_score is not None:
+            d["quality_score"] = self.quality_score
+        return d
 
 
 @dataclass
@@ -250,12 +267,60 @@ class SDLCOrchestrator:
             logger.error(f"[Orchestrator] {error_msg}")
             return self._build_result("failed", error_msg)
 
-        # Execute phases sequentially
+        # Execute phases sequentially with Quality Gate checks
         for phase_id in phases_to_run:
             result = self._execute_phase(phase_id)
+
+            # Extract quality_score from phase output
+            if isinstance(result.output, dict):
+                raw_score = result.output.get("quality_score")
+                if raw_score is not None:
+                    result.quality_score = int(raw_score)
+
+            # ── Quality Gate: retry once if below threshold ──
+            if (
+                result.quality_score is not None
+                and result.quality_score < _QUALITY_GATE_THRESHOLD
+                and result.is_success()
+            ):
+                logger.warning(
+                    "[Quality Gate] %s scored %d (threshold: %d) — retrying once",
+                    phase_id, result.quality_score, _QUALITY_GATE_THRESHOLD,
+                )
+                retry_result = self._execute_phase(phase_id)
+                if isinstance(retry_result.output, dict):
+                    retry_score = retry_result.output.get("quality_score")
+                    if retry_score is not None:
+                        retry_result.quality_score = int(retry_score)
+                # Accept retry only if it improved or at least didn't get worse
+                if (
+                    retry_result.is_success()
+                    and (retry_result.quality_score or 0) >= (result.quality_score or 0)
+                ):
+                    result = retry_result
+                    logger.info(
+                        "[Quality Gate] %s retry improved: score=%s",
+                        phase_id, result.quality_score,
+                    )
+
+            # ── Quality Gate: mark partial if still below minimum ──
+            if (
+                result.quality_score is not None
+                and result.quality_score < _QUALITY_GATE_MINIMUM
+                and result.status == "success"
+            ):
+                logger.error(
+                    "[Quality Gate] %s scored %d (minimum: %d) — marking as partial",
+                    phase_id, result.quality_score, _QUALITY_GATE_MINIMUM,
+                )
+                result.status = "partial"
+                result.message = (
+                    f"Quality score {result.quality_score} below minimum {_QUALITY_GATE_MINIMUM}"
+                )
+
             self.results[phase_id] = result
 
-            # Log phase metrics to MLflow
+            # Log phase metrics to MLflow (include quality_score)
             phase_tokens = self._token_usage.get(phase_id, {})
             self._mlflow.log_phase_metrics(
                 phase_id,
@@ -263,6 +328,8 @@ class SDLCOrchestrator:
                 tokens=phase_tokens.get("total_tokens", 0),
                 status=result.status,
             )
+            if result.quality_score is not None:
+                self._mlflow.log_metrics({f"{phase_id}_quality_score": result.quality_score})
 
             if not result.is_success() and stop_on_error:
                 return self._build_result("failed", f"Phase {phase_id} failed: {result.message}")
@@ -827,6 +894,42 @@ class SDLCOrchestrator:
         """
         return compute_run_outcome(result.status for result in self.results.values())
 
+    def _compute_pipeline_quality_score(self) -> int | None:
+        """Compute weighted aggregate quality score across all phases.
+
+        Returns 0-100 score, or None if no phases reported quality scores.
+        Uses configurable weights per phase; phases without scores are skipped
+        and their weight is redistributed proportionally.
+        """
+        scored_phases: dict[str, int] = {}
+        for phase_id, result in self.results.items():
+            if result.quality_score is not None:
+                scored_phases[phase_id] = result.quality_score
+
+        if not scored_phases:
+            return None
+
+        # Compute weighted sum, redistributing weight from unscored phases
+        total_weight = sum(
+            _QUALITY_WEIGHTS.get(pid, 0.0) for pid in scored_phases
+        )
+        if total_weight <= 0:
+            # All scored phases have zero weight — use simple average
+            return round(sum(scored_phases.values()) / len(scored_phases))
+
+        weighted_sum = sum(
+            scored_phases[pid] * _QUALITY_WEIGHTS.get(pid, 0.0)
+            for pid in scored_phases
+        )
+        score = round(weighted_sum / total_weight)
+
+        logger.info(
+            "[Quality] Pipeline quality score: %d (from %d phases: %s)",
+            score, len(scored_phases),
+            {pid: s for pid, s in scored_phases.items()},
+        )
+        return score
+
     def _build_result(self, status: str, message: str) -> PipelineResult:
         """Build final pipeline result."""
         total_duration = ""
@@ -840,6 +943,12 @@ class SDLCOrchestrator:
 
         # Log token usage summary before final status
         self._log_token_summary()
+
+        # Compute and log pipeline quality score
+        pipeline_quality_score = self._compute_pipeline_quality_score()
+        if pipeline_quality_score is not None:
+            self._mlflow.log_metrics({"pipeline_quality_score": pipeline_quality_score})
+            logger.info("[Orchestrator] Pipeline quality score: %d", pipeline_quality_score)
 
         # End MLflow run and log key artifacts to MinIO
         self._mlflow.log_artifact("knowledge/extract/architecture_facts.json")

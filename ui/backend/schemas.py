@@ -239,6 +239,7 @@ class RunHistoryEntry(BaseModel):
     phase_results: list[dict[str, Any]] = []
     deleted_count: int | None = None
     total_tokens: int | None = None
+    quality_score: int | None = None  # 0-100 aggregate pipeline quality score
 
 
 class RunDetail(BaseModel):
@@ -405,3 +406,25 @@ class EcosystemToggleRequest(BaseModel):
 
 class EcosystemPriorityRequest(BaseModel):
     priority: int = Field(ge=1, le=999)
+
+
+# --- Knowledge Versioning (MLflow/MinIO) ---
+
+
+class VersionedRun(BaseModel):
+    mlflow_run_id: str
+    pipeline_run_id: str | None = None
+    started_at: str | None = None
+    status: str = "FINISHED"  # FINISHED | FAILED | RUNNING
+    outcome: str | None = None  # success | partial | failed
+    has_documents: bool = False
+
+
+class VersionedRunList(BaseModel):
+    available: bool = False
+    runs: list[VersionedRun] = []
+
+
+class VersionStatus(BaseModel):
+    available: bool = False
+    total_runs: int = 0

@@ -207,6 +207,12 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
               <th mat-header-cell *matHeaderCellDef>Status</th>
               <td mat-cell *matCellDef="let row">
                 <span class="status-chip" [class]="'status-' + displayStatus(row)">{{ displayStatusLabel(row) }}</span>
+                @if (row.quality_score != null && row.trigger !== 'reset') {
+                  <span class="quality-badge" [class]="'quality-' + qualityLevel(row.quality_score)"
+                        [matTooltip]="'Pipeline quality score: ' + row.quality_score + '/100'">
+                    Q{{ row.quality_score }}
+                  </span>
+                }
               </td>
             </ng-container>
 
@@ -590,6 +596,31 @@ const SECRET_KEY_PATTERNS = [/api[_-]?key/i, /secret/i, /password/i, /token/i, /
         gap: 2px;
         font-size: 11px;
         color: var(--cg-gray-400);
+      }
+      .quality-badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        vertical-align: middle;
+      }
+      .quality-excellent {
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+      }
+      .quality-good {
+        background: rgba(0, 123, 255, 0.15);
+        color: #007bff;
+      }
+      .quality-fair {
+        background: rgba(255, 193, 7, 0.15);
+        color: #e6a800;
+      }
+      .quality-poor {
+        background: rgba(220, 53, 69, 0.15);
+        color: #dc3545;
       }
       .micro-icon {
         font-size: 12px;
@@ -1100,6 +1131,13 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   formatNumber(n: number): string {
     return formatNumberUtil(n);
+  }
+
+  qualityLevel(score: number): string {
+    if (score >= 90) return 'excellent';
+    if (score >= 70) return 'good';
+    if (score >= 50) return 'fair';
+    return 'poor';
   }
 
   shortPhase(phaseId: string): string {

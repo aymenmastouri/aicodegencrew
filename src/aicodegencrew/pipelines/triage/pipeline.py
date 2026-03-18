@@ -47,6 +47,7 @@ from .entry_point_finder import find_entry_points
 from .risk_assessor import assess_risk
 from .schemas import TriageRequest
 from .test_coverage import check_test_coverage
+from .validator import TriageValidator
 
 logger = setup_logger(__name__)
 
@@ -79,7 +80,8 @@ class TriagePipeline(BasePipeline):
         self.output_dir = self.knowledge_dir / "triage"
         self.chroma_dir = chroma_dir or get_discover_dir()
         self._loader = KnowledgeLoader(knowledge_dir)
-        self._generator = LLMGenerator()
+        self._generator = LLMGenerator(phase_id="triage")
+        self._validator = TriageValidator()
 
     # ── Orchestrator interface ──────────────────────────────────────────
 
@@ -186,6 +188,40 @@ class TriagePipeline(BasePipeline):
                     "[TriagePipeline] LLM synthesis FAILED (is LLM server reachable?): %s", e,
                 )
 
+        # ── Structural validation (before scoring) ─────────────────────
+        if llm_result:
+            validation_context = {}
+            facts_path = self.knowledge_dir / "extract" / "architecture_facts.json"
+            if facts_path.exists():
+                try:
+                    validation_context["facts"] = json.loads(facts_path.read_text(encoding="utf-8"))
+                except Exception:
+                    pass
+            validation = self._validator.validate(llm_result, validation_context)
+            if not validation.passed:
+                logger.info(
+                    "[TriagePipeline] Structural validation failed (%d issues) — retrying",
+                    len(validation.issues),
+                )
+                raw_retry = self._generator.retry_with_feedback(
+                    original_messages=[
+                        {"role": "system", "content": "You are a senior software architect."},
+                        {"role": "user", "content": "Fix the structural issues in your triage output."},
+                    ],
+                    previous_output=json.dumps(llm_result, indent=2, ensure_ascii=False),
+                    issues=validation.issues,
+                    attempt=1,
+                )
+                retried = self._extract_json(raw_retry) if hasattr(self, '_extract_json') else None
+                if retried is not None:
+                    retry_validation = self._validator.validate(retried, validation_context)
+                    if retry_validation.score >= validation.score:
+                        llm_result = retried
+                        logger.info(
+                            "[TriagePipeline] Structural retry improved: %d → %d",
+                            validation.score, retry_validation.score,
+                        )
+
         # ── Quality gate ────────────────────────────────────────────────
         quality_threshold = int(os.environ.get("TRIAGE_QUALITY_THRESHOLD", "50"))
         if llm_result:
@@ -290,6 +326,12 @@ class TriagePipeline(BasePipeline):
                 )
             )
 
+        # Compute quality score for pipeline aggregation
+        triage_quality_score = 0
+        if llm_result:
+            triage_quality = self._score_triage_quality(llm_result)
+            triage_quality_score = triage_quality.get("score", 0)
+
         summary = {
             "status": llm_status,  # "success" | "partial" | "failed"
             "phase": "triage",
@@ -301,6 +343,7 @@ class TriagePipeline(BasePipeline):
             "llm_synthesis": llm_status == "success",
             "llm_status": llm_status,
             "duration_seconds": duration,
+            "quality_score": triage_quality_score,
             "triage_context": triage_context,
         }
         if llm_error:
@@ -850,6 +893,7 @@ RULES:
                     original_messages=messages,
                     previous_output=raw,
                     issues=quality["warnings"],
+                    attempt=1,
                 )
                 result2 = self._extract_json(raw2)
                 if result2 is not None:

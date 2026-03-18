@@ -8,6 +8,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
+from ...shared.utils.fact_grounding import FactGrounder
 from .data_recipes import ChapterRecipe
 
 logger = logging.getLogger(__name__)
@@ -161,31 +162,42 @@ class ChapterValidator:
     def _check_fact_grounding(self, content: str, data: dict[str, Any]) -> ValidationCheck:
         """Check that the content references real names from the architecture data.
 
-        Collects names from all data sources (system, containers, components,
-        interfaces, technologies) and checks case-insensitively. Short generic
-        names (< 4 chars) are excluded to avoid false positives.
+        Uses the shared FactGrounder utility for consistent grounding checks
+        across all pipelines. Falls back to legacy name extraction if no
+        architecture_facts are available.
         """
-        all_names: set[str] = set()
+        facts = data.get("facts", {})
 
-        # Extract names recursively from any data structure
+        # Use shared FactGrounder if facts are available
+        if facts and isinstance(facts, dict):
+            grounder = FactGrounder(facts)
+            result = grounder.check(content, min_ratio=0.05)
+            if not result.passed:
+                examples = sorted(grounder.known_components | grounder.known_technologies, key=len, reverse=True)[:5]
+                return ValidationCheck(
+                    "fact_grounding",
+                    False,
+                    f"Low fact grounding: score={result.score}, found={len(result.found)}, "
+                    f"hallucinated={len(result.hallucinated)}. "
+                    f"Use real names from the data, e.g.: {examples}",
+                )
+            return ValidationCheck("fact_grounding", True)
+
+        # Legacy fallback: extract names from all data sources
+        all_names: set[str] = set()
         self._extract_names(data.get("facts", {}), all_names)
         self._extract_names(data.get("components", {}), all_names)
         self._extract_names(data.get("analyzed", {}), all_names)
 
-        # Filter out names too short to be meaningful (e.g., "id", "db")
         all_names = {n for n in all_names if len(n) >= 3}
-
         if not all_names:
             return ValidationCheck("fact_grounding", True)
 
-        # Case-insensitive matching
         content_lower = content.lower()
         found = sum(1 for name in all_names if name.lower() in content_lower)
 
-        # Require at least 3 real names or 5% of known names (whichever is lower)
         min_required = min(3, max(1, len(all_names) // 20))
         if found < min_required:
-            # Pick examples that are most likely to appear in this chapter type
             examples = sorted(all_names, key=lambda n: len(n), reverse=True)[:5]
             return ValidationCheck(
                 "fact_grounding",

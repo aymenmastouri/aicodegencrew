@@ -78,6 +78,7 @@ export interface RunHistoryEntry {
   phase_results: Record<string, unknown>[];
   deleted_count?: number;
   total_tokens?: number;
+  quality_score?: number; // 0-100 aggregate pipeline quality score
   parallel_mode?: boolean;
   task_ids?: string[];
 }

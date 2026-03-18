@@ -86,7 +86,7 @@ class PlanGeneratorStage:
         self.analyzed_architecture = analyzed_architecture or {}
         self.supplementary_context = supplementary_context or {}
         self.extract_facts = extract_facts or {}
-        self._generator = LLMGenerator()
+        self._generator = LLMGenerator(phase_id="plan")
 
     def run(
         self,

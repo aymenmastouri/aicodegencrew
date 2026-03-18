@@ -43,26 +43,29 @@ class LLMGenerator:
         LLM_TOP_P          — nucleus sampling p (default: 0.95)
         LLM_TOP_K          — top-k sampling (default: 40; via extra_body)
         LLM_CHUNK_TIMEOUT  — seconds to wait between stream chunks (default: 60)
+        LLM_TEMPERATURE_{PHASE} — phase-specific temperature override
 
     Note:
         ``use_fast_model`` is accepted for API compatibility but currently
         ignored — all pipelines always use MODEL for quality output.
     """
 
-    def __init__(self, use_fast_model: bool = False):
+    def __init__(self, use_fast_model: bool = False, phase_id: str | None = None):
         # Reserved for future use; see note in class docstring.
         self._use_fast_model = use_fast_model
+        self._phase_id = phase_id
 
     # -------------------------------------------------------------------------
     # Public API
     # -------------------------------------------------------------------------
 
-    def generate(self, messages: list[dict[str, str]]) -> str:
+    def generate(self, messages: list[dict[str, str]], temperature_override: float | None = None) -> str:
         """Execute a single streaming LLM call and return the raw response.
 
         Args:
             messages: Chat-format messages, e.g.
                       [{"role": "system", "content": "..."}, ...].
+            temperature_override: If provided, overrides the phase/env temperature.
 
         Returns:
             Raw LLM output string.  Callers are responsible for any
@@ -74,7 +77,14 @@ class LLMGenerator:
             self._read_config()
         )
 
-        logger.info("[LLMGenerator] Calling %s (max_tokens=%d)", model, max_tokens)
+        # Apply phase-specific temperature
+        if temperature_override is not None:
+            temperature = temperature_override
+        elif self._phase_id:
+            from .utils.llm_factory import get_phase_temperature
+            temperature = get_phase_temperature(self._phase_id)
+
+        logger.info("[LLMGenerator] Calling %s (max_tokens=%d, temperature=%.2f)", model, max_tokens, temperature)
 
         stream = litellm.completion(
             model=model,
@@ -120,28 +130,45 @@ class LLMGenerator:
         original_messages: list[dict[str, str]],
         previous_output: str,
         issues: list[str],
+        attempt: int = 1,
     ) -> str:
-        """Retry generation with specific feedback about what to fix.
+        """Retry generation with escalating feedback about what to fix.
 
         Appends the previous output and a list of issues to the message
-        history and re-generates.  Useful for validation → retry loops.
+        history and re-generates. Higher attempt numbers produce more
+        urgent feedback and lower temperatures for focused fixes.
 
         Args:
             original_messages: The original [system, user] prompt messages.
             previous_output:   The LLM's previous output that had issues.
             issues:            List of specific validation issues to fix.
+            attempt:           Retry attempt number (1-based). Higher = more
+                               urgent feedback + lower temperature.
 
         Returns:
             New raw LLM output string.
         """
+        # Escalating severity messages
+        if attempt <= 1:
+            severity = "Your previous output had these specific issues. Please fix them:"
+        elif attempt == 2:
+            severity = (
+                "CRITICAL: Your previous attempt still had problems. "
+                "Fix ONLY these specific issues — do not change anything else:"
+            )
+        else:
+            severity = (
+                "FINAL ATTEMPT: Focus exclusively on fixing these exact problems. "
+                "Do not change anything else. Every issue listed below MUST be resolved:"
+            )
+
         issues_text = "\n".join(f"- {issue}" for issue in issues)
         feedback_msg = {
             "role": "user",
             "content": (
-                f"<feedback>\n"
-                f"Your previous output had these specific issues:\n"
+                f"<feedback severity='{attempt}'>\n"
+                f"{severity}\n"
                 f"{issues_text}\n\n"
-                f"Please fix ONLY the listed problems. Keep everything that was good.\n"
                 f"Output the complete corrected result.\n"
                 f"</feedback>\n\n"
                 f"<previous_output>\n"
@@ -155,14 +182,24 @@ class LLMGenerator:
             {"role": "assistant", "content": previous_output[:15000]},
             feedback_msg,
         ]
-        logger.info("[LLMGenerator] Retry with %d issues: %s", len(issues), issues[:3])
-        return self.generate(messages)
+
+        # Temperature decreases with each attempt for more focused output
+        from .utils.llm_factory import get_phase_temperature
+        base_temp = get_phase_temperature("retry")
+        retry_temp = max(0.2, base_temp - ((attempt - 1) * 0.05))
+
+        logger.info(
+            "[LLMGenerator] Retry attempt %d with %d issues (temperature=%.2f): %s",
+            attempt, len(issues), retry_temp, issues[:3],
+        )
+        return self.generate(messages, temperature_override=retry_temp)
 
     def retry_with_feedback_text(
         self,
         original_messages: list[dict[str, str]],
         previous_output: str,
         issues: list[str],
+        attempt: int = 1,
     ) -> str:
         """Retry with feedback, stripping markdown code fences from the result.
 
@@ -172,12 +209,13 @@ class LLMGenerator:
             original_messages: The original prompt messages.
             previous_output:   The LLM's previous output that had issues.
             issues:            List of specific validation issues to fix.
+            attempt:           Retry attempt number (1-based).
 
         Returns:
             Improved content string with code fences stripped.
         """
         return self._strip_fences(
-            self.retry_with_feedback(original_messages, previous_output, issues)
+            self.retry_with_feedback(original_messages, previous_output, issues, attempt=attempt)
         )
 
     # -------------------------------------------------------------------------

@@ -24,6 +24,7 @@ from .data_collector import DataCollector
 from .data_recipes import ARC42_RECIPES, C4_RECIPES, MERGE_GROUPS, ChapterRecipe
 from .prompt_builder import PromptBuilder
 from .reviewer import DocumentReviewer
+from .template_builder import TemplateBuilder, check_fact_tables_intact, has_unfilled_placeholders
 from .validator import ChapterValidator
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,14 @@ class PipelineResult:
     degradation_reasons: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
+        # Compute average quality score across chapters
+        scored = [c for c in self.chapters if c.status in ("success", "partial")]
+        if scored:
+            success_count = sum(1 for c in scored if c.status == "success")
+            quality_score = round((success_count / len(scored)) * 100) if scored else 0
+        else:
+            quality_score = 0
+
         return {
             "status": self.status,
             "total_duration": f"{self.total_duration_seconds:.1f}s",
@@ -61,6 +70,7 @@ class PipelineResult:
             "chapters_partial": sum(1 for c in self.chapters if c.status == "partial"),
             "chapters_failed": sum(1 for c in self.chapters if c.status == "failed"),
             "chapters_total": len(self.chapters),
+            "quality_score": quality_score,
             "degradation_reasons": self.degradation_reasons,
         }
 
@@ -90,6 +100,7 @@ class DocumentPipeline(BasePipeline):
             chroma_dir=chroma_dir,
         )
         self.prompt_builder = PromptBuilder()
+        self.template_builder = TemplateBuilder()
         self.validator = ChapterValidator()
         self.reviewer = DocumentReviewer()
         self._checkpoint_path = self.output_dir / ".checkpoint_pipeline.json"
@@ -213,22 +224,43 @@ class DocumentPipeline(BasePipeline):
             # Step 1: Collect data
             data = self.collector.collect(recipe)
 
-            # Step 2: Build prompt
-            messages = self.prompt_builder.build({**data, "recipe": recipe})
+            # Step 1b: Build deterministic template skeleton
+            template = self.template_builder.build_chapter_template(recipe, data)
+
+            # Step 2: Build prompt (with template context for LLM enrichment)
+            prompt_data = {**data, "recipe": recipe, "template": template}
+            messages = self.prompt_builder.build(prompt_data)
 
             # Step 3: Generate with LLM (fences stripped via generate_text)
-            generator = LLMGenerator()
+            generator = LLMGenerator(phase_id="document")
             content = generator.generate_text(messages)
 
-            # Step 4: Validate
+            # Step 4: Validate (includes template integrity checks)
             validation = self.validator.validate(content, recipe, data)
+
+            # Step 4a: Check template integrity (fact tables preserved, placeholders filled)
+            template_issues: list[str] = []
+            unfilled = has_unfilled_placeholders(content)
+            if unfilled:
+                template_issues.append(
+                    f"Unfilled template placeholders: {unfilled}. Fill all LLM_ENRICH sections."
+                )
+            table_issues = check_fact_tables_intact(template, content)
+            template_issues.extend(table_issues)
+
+            if template_issues and validation.passed:
+                # Template integrity failed — add to validation issues for retry
+                validation.passed = False
+                from .validator import ValidationCheck
+                for issue in template_issues:
+                    validation.checks.append(ValidationCheck("template_integrity", False, issue))
 
             # Step 4b: Retry with feedback if validation failed (max 2 attempts)
             attempts = 0
             while not validation.passed and attempts < _MAX_RETRIES:
                 attempts += 1
                 logger.info("[Chapter] %s — retry %d with feedback: %s", recipe.id, attempts, validation.issues)
-                content = generator.retry_with_feedback_text(messages, content, validation.issues)
+                content = generator.retry_with_feedback_text(messages, content, validation.issues, attempt=attempts)
                 validation = self.validator.validate(content, recipe, data)
 
             # Step 4c: Content review — deeper check against source data

@@ -26,6 +26,7 @@ from .stages import (
     PlanGeneratorStage,
     ValidatorStage,
 )
+from .validator_content import PlanContentValidator
 
 logger = setup_logger(__name__)
 
@@ -800,14 +801,32 @@ class PlanPipeline:
             warnings=len(validation.warnings),
         )
 
+        # Stage 5b: Content validation (semantic checks against triage/facts)
+        content_validator = PlanContentValidator(
+            architecture_facts=self.facts,
+            triage_context=effective_triage,
+        )
+        content_result = content_validator.validate(plan)
+        if not content_result.passed:
+            logger.warning(
+                "[Phase4] Content validation warnings for %s: %s",
+                task.task_id, content_result.issues,
+            )
+
         # Write plan to file
         output_file = self.output_dir / f"{task.task_id}_plan.json"
         self._write_plan(plan, output_file)
+
+        # Compute quality score: combine schema + content validation
+        schema_deduction = len(validation.warnings) * 10
+        content_deduction = len(content_result.issues) * 8
+        plan_quality_score = max(0, 100 - schema_deduction - content_deduction)
 
         return {
             "status": "completed",
             "task_id": task.task_id,
             "output_file": str(output_file),
+            "quality_score": plan_quality_score,
             "metrics": {
                 "stage2_duration": stage2_duration,
                 "stage3_duration": stage3_duration,

@@ -109,7 +109,7 @@ class AnalysisPipeline(BasePipeline):
         )
         self._section_prompt_builder = SectionPromptBuilder()
         self._synthesis_prompt_builder = SynthesisPromptBuilder()
-        self._generator = LLMGenerator()
+        self._generator = LLMGenerator(phase_id="analyze")
         self._reviewer = AnalysisReviewer(collector=self._collector, generator=self._generator)
 
     # =========================================================================
@@ -208,10 +208,21 @@ class AnalysisPipeline(BasePipeline):
         )
         logger.info("=" * 60)
 
+        # Read review quality score from report (written by _review_and_redo_sections)
+        analysis_quality_score = 0
+        review_report_path = self._analysis_dir / "_review_report.json"
+        if review_report_path.exists():
+            try:
+                report = json.loads(review_report_path.read_text(encoding="utf-8"))
+                analysis_quality_score = report.get("quality_score", 0)
+            except Exception:
+                pass
+
         return {
             "status": status,
             "phase": "analyze",
             "result": output_path,
+            "quality_score": analysis_quality_score,
         }
 
     # =========================================================================
