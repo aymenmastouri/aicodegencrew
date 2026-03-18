@@ -27,23 +27,35 @@ Every pipeline follows the same pattern: a sequence of stages, each with a singl
 
 ```mermaid
 graph LR
-    S1[Stage 1<br/>Parse Input] --> S2[Stage 2<br/>Collect Context]
+    S1[Stage 1<br/>Parse Input] --> S1b[Stage 1b<br/>Build Template]
+    S1b --> S2[Stage 2<br/>Collect Context]
     S2 --> S3[Stage 3<br/>Transform/Generate]
     S3 --> S4[Stage 4<br/>Validate]
     S4 --> S4b[Stage 4b<br/>Content Review]
-    S4b --> S5[Stage 5<br/>Write Output]
+    S4b --> S4c[Stage 4c<br/>Fact Grounding]
+    S4c --> QG[Quality Gate]
+    QG --> S5[Stage 5<br/>Write Output]
 
     style S1 fill:#e8f5e9
+    style S1b fill:#e8f5e9
     style S2 fill:#e8f5e9
     style S3 fill:#fff3e0
     style S4 fill:#e8f5e9
     style S4b fill:#fff3e0
+    style S4c fill:#e8f5e9
+    style QG fill:#e3f2fd
     style S5 fill:#e8f5e9
 ```
 
-Green = deterministic, Orange = LLM-assisted.
+Green = deterministic, Orange = LLM-assisted, Blue = quality gate.
+
+Stage 1b (Build Template) is used by Document phase — creates a deterministic markdown skeleton with fact tables and LLM enrichment placeholders.
 
 Stage 4b (Content Review) is used by Analyze and Document phases. It runs a second LLM call to check the generated output against source data for gaps, contradictions, and unsupported claims. Non-fatal — if the review fails, the pipeline continues.
+
+Stage 4c (Fact Grounding) uses the shared `FactGrounder` utility to validate that generated text references real components and technologies from `architecture_facts.json`. Detects hallucinated names.
+
+Quality Gate checks the phase's `quality_score` against `QUALITY_GATE_THRESHOLD` (default: 70). Below threshold → auto-retry once with lower temperature and escalating feedback.
 
 Stages pass data forward via a shared `context` dict. Each stage reads what it needs and writes its output key.
 
@@ -75,7 +87,7 @@ Deterministic extraction of 16 architecture dimensions via 45 specialist collect
 
 **Entry point:** `pipelines/document/pipeline.py` → `DocumentPipeline(BasePipeline)`
 
-Per-chapter pipeline: `DataCollector → PromptBuilder → LLMGenerator → ChapterValidator → DocumentReviewer → Write`. Two-phase quality: structural validation (7 checks) + content review LLM call that checks for missing topics, unsupported claims, and contradictions against source data. Retry with specific feedback on validation or review failure.
+Per-chapter pipeline with template-first approach: `DataCollector → TemplateBuilder → PromptBuilder → LLMGenerator → ChapterValidator → FactGrounder → DocumentReviewer → Write`. Three-phase quality: (1) deterministic template with fact tables guarantees structure, (2) structural validation (7 checks) + template integrity checks (placeholders filled, fact tables preserved), (3) content review LLM call. Adaptive retry with escalating feedback (severity increases per attempt, temperature decreases).
 
 ### Phase 4 — Issue Triage (Triage)
 
@@ -83,7 +95,7 @@ Per-chapter pipeline: `DataCollector → PromptBuilder → LLMGenerator → Chap
 
 **Entry point:** `pipelines/triage/pipeline.py` → `TriagePipeline(BasePipeline)`
 
-Deterministic scan (<5s) + single LLM synthesis (~30s). Validate→retry quality loop: if quality score < `TRIAGE_QUALITY_THRESHOLD` (default 50), retries with feedback and accepts the retry only if it scores ≥ original (same pattern as Plan).
+Deterministic scan (<5s) + single LLM synthesis (~30s). Two-level validation: (1) `TriageValidator` with 9 structural checks (developer_context structure, big_picture length ≥80 chars, scope boundaries, context boundaries ≥2, no action steps, anticipated questions ≥2, no file paths, source facts referenced), (2) quality scoring. Validate→retry quality loop: if quality score < `TRIAGE_QUALITY_THRESHOLD` (default 50), retries with adaptive escalating feedback. Returns `quality_score` for Pipeline Quality Score aggregation.
 
 ### Phase 5 — Development Planning (Plan)
 
@@ -91,7 +103,7 @@ Deterministic scan (<5s) + single LLM synthesis (~30s). Validate→retry quality
 
 **Entry point:** `pipelines/plan/pipeline.py` → `PlanPipeline(BasePipeline)`
 
-Hybrid pipeline: 4 deterministic stages + 1 LLM call. 18–40 seconds vs 5–7 min with CrewAI.
+Hybrid pipeline: 4 deterministic stages + 1 LLM call + 2 validators. 18–40 seconds vs 5–7 min with CrewAI. Stage 5 (Pydantic schema) + Stage 5b (`PlanContentValidator` with 6 semantic checks: has steps, steps have details, affected components present, no phantom components, triage components addressed, risk awareness). Returns `quality_score` for Pipeline Quality Score aggregation.
 
 ### Phase 8 — Review (Deliver)
 

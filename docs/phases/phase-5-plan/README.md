@@ -10,7 +10,7 @@
 |-----------|-------|
 | Phase ID | `plan` |
 | Display Name | Development Planning |
-| Type | Pipeline (5 stages: 4 deterministic + 1 LLM call) |
+| Type | Pipeline (5 stages + content validator: 4 deterministic + 1 LLM + 2 validators) |
 | Entry Point | `pipelines/plan/pipeline.py` → `PlanPipeline` |
 | LLM Requirement | Yes (Stage 4 only — 1 call per task) |
 | Output | `knowledge/plan/{task_id}_plan.json` |
@@ -64,6 +64,11 @@ Stage 4: Plan Generator     (LLM, 15-30s) ← ONLY LLM CALL
 
 Stage 5: Validator          (Pydantic, <1s)
   └─ Schema validation, completeness checks
+
+Stage 5b: Content Validator  (Deterministic, <1s)
+  └─ Semantic checks: has steps, steps have details, components present
+  └─ No phantom components (verified against architecture_facts)
+  └─ Triage components addressed, blocking risks mitigated
 
 Total: 18-40 seconds
 ```
@@ -141,9 +146,20 @@ Severities: `BREAKING` · `DEPRECATED` · `RECOMMENDED` · `OPTIONAL`
 ## 7. Quality Gates & Validation
 
 - Stage 5: Pydantic schema validation + completeness checks
+- Stage 5b: `PlanContentValidator` — 6 semantic checks against triage context and architecture facts
 - Upgrade plans: migration_sequence, verification_commands, effort estimates validated
 - Layer compliance checks
 - Failed tasks don't block others — pipeline returns `status: "partial"`
+- Returns `quality_score` in output for orchestrator Quality Gate aggregation
+
+| Check | What it validates |
+|-------|-------------------|
+| `has_implementation_steps` | Plan includes at least one step |
+| `steps_have_details` | Each step has meaningful description (≥10 chars) |
+| `affected_components_present` | Plan lists affected components |
+| `no_phantom_components` | Components exist in architecture_facts |
+| `triage_components_addressed` | All triage-identified components appear in plan |
+| `risk_awareness` | Blocking risks from triage context boundaries addressed |
 
 ## 8. Configuration
 
@@ -153,6 +169,8 @@ Severities: `BREAKING` · `DEPRECATED` · `RECOMMENDED` · `OPTIONAL`
 | `REQUIREMENTS_DIR` | `inputs/requirements/` | Supplementary specs |
 | `LOGS_DIR` | `inputs/logs/` | Error logs |
 | `REFERENCE_DIR` | `inputs/reference/` | Reference materials |
+| `LLM_TEMPERATURE_PLAN` | `0.6` | Phase-specific temperature (medium-low for focused planning) |
+| `QUALITY_GATE_THRESHOLD` | `70` | Orchestrator retries phase if quality score below this |
 
 Task file parsers require: `pip install -e ".[parsers]"` for DOCX/Excel support.
 

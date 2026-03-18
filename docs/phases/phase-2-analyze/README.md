@@ -80,9 +80,10 @@ Both `SectionPromptBuilder` and `SynthesisPromptBuilder` implement `BasePromptBu
 
 ### LLM Generator
 
-All LLM calls go through `shared/llm_generator.py` → `LLMGenerator`:
-- `generate(messages)` — raw LLM response
-- Temperature, `top_p`, `top_k`, `max_tokens`, timeout all configured in one place via env vars
+All LLM calls go through `shared/llm_generator.py` → `LLMGenerator(phase_id="analyze")`:
+- `generate(messages)` — raw LLM response with phase-specific temperature (default: 0.5)
+- `retry_with_feedback(messages, output, issues, attempt=N)` — adaptive retry with escalating severity and decreasing temperature
+- Temperature, `top_p`, `top_k`, `max_tokens`, timeout centralized; per-phase temperature via `LLM_TEMPERATURE_ANALYZE` env var
 
 ### Data Collector
 
@@ -125,7 +126,15 @@ All 16 section outputs are parsed with `_extract_and_repair_json()` which:
 
 ## 8. Configuration
 
-LLM settings via environment variables (`MODEL`, `API_BASE`, `MAX_LLM_OUTPUT_TOKENS`, `LLM_TEMPERATURE`, `LLM_TOP_P`, `LLM_TOP_K`). All centralized in `shared/llm_generator.py`.
+LLM settings via environment variables, all centralized in `shared/llm_generator.py`:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `MODEL` | `openai/code` | LLM model identifier |
+| `LLM_TEMPERATURE_ANALYZE` | `0.5` | Phase-specific temperature (lower = more deterministic analysis) |
+| `MAX_LLM_OUTPUT_TOKENS` | `65536` | Max output tokens per call |
+
+The pipeline returns `quality_score` in its output dict (from the review report's `quality_score` field), enabling orchestrator-level Quality Gate checks.
 
 ## 9. Risks & Open Points
 

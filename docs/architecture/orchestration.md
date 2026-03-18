@@ -18,6 +18,7 @@ The orchestrator is responsible for:
 - Checking dependencies before each phase
 - Executing phases sequentially with fail-fast behavior
 - Tracking state persistently for crash recovery
+- **Quality Gates**: Scoring phase output quality, retrying below threshold, computing aggregate Pipeline Quality Score
 
 ```mermaid
 sequenceDiagram
@@ -33,10 +34,18 @@ sequenceDiagram
         O->>O: check_dependencies(phase_id)
         O->>S: set_phase_running(phase_id)
         O->>P: kickoff(inputs)
-        P-->>O: result
+        P-->>O: result + quality_score
+        alt quality_score < QUALITY_GATE_THRESHOLD
+            O->>P: retry phase (once)
+            P-->>O: retry result
+        end
+        alt quality_score < QUALITY_GATE_MINIMUM
+            O->>O: mark phase as partial
+        end
         O->>S: set_phase_completed(phase_id, duration)
         O->>G: git add knowledge/ && git commit
     end
+    O->>O: compute_pipeline_quality_score()
     O-->>CLI: PipelineResult
 ```
 
@@ -67,6 +76,37 @@ return DependencyChecker(contract, self.results).check(phase_id)
 ARCH-5 contract violations (dependency present in `PHASE_CONTRACTS` but not yet satisfied) are logged as warnings — observational only, never blocking.
 
 If any required dependency fails both tiers, the phase is skipped with status `"failed"`.
+
+### Quality Gates
+
+After each phase completes, the orchestrator checks the phase's `quality_score` (0–100):
+
+1. **Below threshold** (`QUALITY_GATE_THRESHOLD`, default: 70): Retry the phase once. Accept the retry only if it scores equal or better.
+2. **Below minimum** (`QUALITY_GATE_MINIMUM`, default: 50): Mark the phase as `partial` instead of `success`.
+
+After all phases complete, `_compute_pipeline_quality_score()` computes a weighted aggregate:
+
+| Phase | Weight |
+|-------|--------|
+| Extract | 10% |
+| Analyze | 25% |
+| Document | 35% |
+| Triage | 15% |
+| Deliver | 15% |
+
+The score is logged as MLflow metric `pipeline_quality_score` and displayed in the Dashboard history table.
+
+**Files:**
+- Quality Gate logic: `orchestrator.py` (phase execution loop)
+- Phase scoring: Each pipeline returns `quality_score` in its output dict
+- MLflow logging: `shared/utils/mlflow_tracker.py` → `log_metrics()`
+
+**Environment Variables:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `QUALITY_GATE_THRESHOLD` | `70` | Retry phase if quality score below this |
+| `QUALITY_GATE_MINIMUM` | `50` | Mark phase partial if still below this |
 
 ### Protocol-Based Polymorphism
 

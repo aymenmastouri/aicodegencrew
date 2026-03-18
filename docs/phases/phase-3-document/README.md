@@ -10,7 +10,7 @@
 |-----------|-------|
 | Phase ID | `document` |
 | Display Name | Architecture Synthesis |
-| Type | Pipeline (deterministic data collection + LLM generation + content review) |
+| Type | Pipeline (template-first: deterministic skeleton + LLM enrichment + multi-level validation) |
 | Entry Point | `pipelines/document/pipeline.py` → `DocumentPipeline` |
 | Base Class | `shared/base_pipeline.py` → `BasePipeline` (ABC) |
 | LLM Requirement | Yes (2 calls per chapter: generate + content review) |
@@ -53,10 +53,11 @@ DataCollector → PromptBuilder → LLMGenerator → ChapterValidator → Docume
 | Step | Component | Description |
 |------|-----------|-------------|
 | 1. Collect | `DataCollector.collect(recipe)` | Gather facts, RAG results, components per recipe |
-| 2. Build | `PromptBuilder.build(data + recipe)` | Structured prompt with XML tags, Chain-of-Thought |
-| 3. Generate | `LLMGenerator.generate_text(messages)` | Single streaming LLM call (fences stripped) |
-| 4a. Validate | `ChapterValidator.validate()` | 7 structural checks (see Quality Gates) |
-| 4b. Retry | `retry_with_feedback_text()` | Max 2 retries if validation fails |
+| 1b. Template | `TemplateBuilder.build_chapter_template()` | Deterministic markdown skeleton with fact tables + `<!-- LLM_ENRICH -->` placeholders |
+| 2. Build | `PromptBuilder.build(data + recipe + template)` | Structured prompt with template context for enrichment |
+| 3. Generate | `LLMGenerator.generate_text(messages)` | Single streaming LLM call with phase temperature 0.5 |
+| 4a. Validate | `ChapterValidator.validate()` | 7 structural checks + template integrity (placeholders filled, fact tables preserved) |
+| 4b. Retry | `retry_with_feedback_text(attempt=N)` | Max 2 retries with escalating severity + decreasing temperature |
 | 4c. Review | `DocumentReviewer.review()` | Content review LLM call against source data |
 | 4d. Rewrite | `retry_with_feedback_text()` | Rewrite if review score < 65 |
 | 5. Write | `output_path.write_text()` | Write to disk + checkpoint |
@@ -128,6 +129,8 @@ Large chapters are split into parts and merged post-generation:
 | **DataRecipes** | `data_recipes.py` | 22 chapter recipes (4 C4 + 18 Arc42) with per-chapter data requirements |
 | **PromptBuilder** | `prompt_builder.py` | XML-tagged structured prompts with Chain-of-Thought instructions |
 | **ChapterValidator** | `validator.py` | 7 structural validation checks |
+| **TemplateBuilder** | `template_builder.py` | Deterministic markdown skeletons with fact tables and LLM enrichment placeholders |
+| **FactGrounder** | `shared/utils/fact_grounding.py` | Shared fact-grounding validation against known architecture components |
 | **DocumentReviewer** | `reviewer.py` | Content review LLM call against source data |
 | **LLMGenerator** | `shared/llm_generator.py` | Single streaming LLM call + retry with feedback |
 
@@ -161,6 +164,7 @@ Large chapters are split into parts and merged post-generation:
 | `banned_phrases` | No "placeholder", "TODO:", "TBD", "as an AI", etc. |
 | `fact_grounding` | References ≥3 real names from architecture data (case-insensitive) |
 | `code_fence` | Not wrapped in ``` fences |
+| `template_integrity` | LLM_ENRICH placeholders filled, fact tables from template preserved |
 
 ### Content Review (DocumentReviewer)
 
@@ -174,7 +178,7 @@ Large chapters are split into parts and merged post-generation:
 ### Flow
 
 ```
-Generate → Structural Validate → Retry (max 2×) → Content Review → Rewrite (if score < 65) → Write
+Template → Generate → Structural Validate + Template Integrity → Retry (max 2×, escalating) → Content Review → Rewrite (if score < 65) → Write → quality_score
 ```
 
 ## 8. Configuration
@@ -186,7 +190,8 @@ LLM settings via environment variables, all centralized in `shared/llm_generator
 | `MODEL` | `openai/code` | LLM model identifier |
 | `API_BASE` | — | LiteLLM API base URL |
 | `MAX_LLM_OUTPUT_TOKENS` | `65536` | Max output tokens per call |
-| `LLM_TEMPERATURE` | `1.0` | Sampling temperature (Qwen3-Coder-Next best practice) |
+| `LLM_TEMPERATURE_DOCUMENT` | `0.5` | Phase-specific temperature (lower = more consistent documentation) |
+| `LLM_TEMPERATURE_RETRY` | `0.3` | Retry temperature (decreases further per attempt for focused fixes) |
 | `LLM_TOP_P` | `0.95` | Nucleus sampling |
 | `LLM_TOP_K` | `40` | Top-k sampling |
 | `LLM_CHUNK_TIMEOUT` | `60` | Seconds between stream chunks |

@@ -84,6 +84,24 @@ Phase 2 (LLM, ~30s):
 3. Accept retry only if `quality2.score >= quality.score` (never regress)
 4. Env var `TRIAGE_QUALITY_THRESHOLD` controls the threshold
 
+### Structural Validation (New)
+
+Before quality scoring, the `TriageValidator` (9 checks) validates structural integrity:
+
+| Check | What it validates |
+|-------|-------------------|
+| `developer_context_structure` | Must be a dict with required keys |
+| `customer_summary_structure` | Must be a dict with summary + impact_level |
+| `big_picture_length` | Minimum 80 characters |
+| `scope_boundaries_present` | Explicit IN and OUT scope defined |
+| `context_boundaries_count` | Minimum 2 context boundaries |
+| `no_action_steps_leaked` | No imperative verbs in analytical fields |
+| `anticipated_questions` | Minimum 2 anticipated questions |
+| `no_file_paths` | No raw file paths in developer context |
+| `source_facts_referenced` | Context boundaries cite source facts |
+
+Validation failure triggers `retry_with_feedback()` with escalating severity before scoring.
+
 Produces dual output:
 - **Customer summary**: Impact level, ETA category, plain-language summary, workaround
 - **Developer brief**: Root cause hypothesis, affected files/components, action steps, test strategy
@@ -104,6 +122,7 @@ pipelines/triage/
 ├── duplicate_detector.py # ChromaDB similarity search
 ├── test_coverage.py      # Test pattern checker
 ├── risk_assessor.py      # Risk scoring
+├── validator.py          # TriageValidator — 9 structural checks before quality scoring
 └── context_builder.py    # KnowledgeLoader for all phase outputs
 ```
 
@@ -120,6 +139,8 @@ pipelines/triage/
 | `MODEL` | (from .env) | LLM for synthesis (via shared `LLMGenerator`) |
 | `TRIAGE_QUALITY_THRESHOLD` | `50` | Minimum quality score before retry (0–100) |
 | `CHROMA_DIR` | Auto-resolved | ChromaDB path (multi-project aware) |
+| `LLM_TEMPERATURE_TRIAGE` | `0.7` | Phase-specific temperature (medium for analytical depth) |
+| `LLM_TEMPERATURE_RETRY` | `0.3` | Retry temperature (lower for focused fixes) |
 
 ## 8. Execution Modes
 

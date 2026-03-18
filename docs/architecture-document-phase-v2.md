@@ -28,27 +28,35 @@ V1 (AKTUELL — CrewAI Agent):
 │   → 15-30 Iterationen, 5-10 Min pro Chapter     │
 └─────────────────────────────────────────────────┘
 
-V2 (NEU — Pipeline + LLM):
+V2 (NEU — Template-First + LLM Enrichment):
 ┌─────────────────────────────────────────────────┐
 │ 1. DataCollector (Python, deterministisch)       │
 │    → query_facts, rag_query, list_components    │
 │    → Alles in 1 Dict, <2 Sekunden              │
 │                                                  │
+│ 1b. TemplateBuilder (Python, deterministisch)    │
+│    → Markdown-Skelett mit Fakten-Tabellen       │
+│    → LLM_ENRICH Platzhalter fuer Enrichment     │
+│    → 100% Fakten-basiert, 0% LLM               │
+│                                                  │
 │ 2. PromptBuilder (Template + Few-Shot)           │
-│    → Chapter-Template + Daten + Beispiel        │
+│    → Template-Kontext + Daten + Beispiel        │
 │    → 1 strukturierter Prompt                    │
 │                                                  │
-│ 3. LLM Generate (1 Call)                         │
-│    → Chain-of-Thought → Interpretation          │
-│    → Markdown Output                            │
+│ 3. LLM Generate (1 Call, temperature=0.5)        │
+│    → Fuellt NUR die Platzhalter                 │
+│    → Kontrollierter, kleinerer Output           │
 │    → 30-90 Sekunden                             │
 │                                                  │
 │ 4. Validator (Python, deterministisch)            │
-│    → Struktur, Länge, Banned Phrases            │
-│    → Bei Fehler: Retry mit Feedback (max 2x)    │
+│    → Struktur + Template-Integritaet pruefen    │
+│    → FactGrounder: Halluzinationen erkennen     │
+│    → Bei Fehler: Eskalierendes Retry (max 2x)   │
+│    → Temperature sinkt pro Attempt              │
 │                                                  │
 │ 5. Writer (Python, deterministisch)              │
 │    → Datei schreiben, Checkpoint                │
+│    → quality_score fuer Pipeline-Aggregation    │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -57,31 +65,44 @@ V2 (NEU — Pipeline + LLM):
 ```
 ChapterPipeline
 ├── DataCollector          # Sammelt alle Daten pro Chapter
-│   ├── FactsCollector     # query_facts() für jede benötigte Kategorie
-│   ├── RAGCollector       # rag_query() für Code-Evidenz
+│   ├── FactsCollector     # query_facts() fuer jede benoetigte Kategorie
+│   ├── RAGCollector       # rag_query() fuer Code-Evidenz
 │   └── ComponentCollector # list_components_by_stereotype()
+│
+├── TemplateBuilder        # NEU: Deterministisches Markdown-Skelett
+│   ├── build_chapter_template() # Fakten-Tabellen + LLM_ENRICH Platzhalter
+│   ├── _format_containers()     # Markdown-Tabelle aus Containern
+│   ├── _format_interfaces()     # Markdown-Tabelle aus Interfaces
+│   ├── _format_relations()      # Markdown-Tabelle aus Relationen
+│   └── _format_technology_stack() # Technologie-Stack Tabelle
 │
 ├── PromptBuilder          # Baut den LLM-Prompt
 │   ├── ChapterTemplate    # arc42/c4 spezifisches Template
 │   ├── FewShotExamples    # 1-2 Beispiele pro Chapter-Typ
 │   ├── DataFormatter      # Strukturiert die gesammelten Daten
-│   └── InstructionBuilder # Chain-of-Thought + Qualitätskriterien
+│   └── InstructionBuilder # Chain-of-Thought + Qualitaetskriterien
 │
-├── LLMGenerator           # Einzelner LLM-Call
-│   ├── generate()         # litellm.completion() — kein Agent
-│   └── retry_with_feedback() # Bei Validation-Fehler: neuer Call
+├── LLMGenerator           # Einzelner LLM-Call (phase_id="document")
+│   ├── generate()         # litellm.completion() — temperature=0.5
+│   └── retry_with_feedback(attempt=N)  # Eskalierendes Retry
+│       ├── attempt=1: "Please fix..."  (temp=0.30)
+│       ├── attempt=2: "CRITICAL..."    (temp=0.25)
+│       └── attempt=3: "FINAL..."       (temp=0.20)
 │
-├── Validator              # Prüft Output vor dem Schreiben
+├── Validator              # Prueft Output vor dem Schreiben
 │   ├── StructureCheck     # Hat alle erwarteten Sections?
 │   ├── LengthCheck        # Min/Max Zeichenzahl pro Chapter
-│   ├── FactGrounding      # Referenziert echte Komponentennamen?
+│   ├── FactGrounder       # NEU: Shared Utility — prueft gegen architecture_facts
 │   ├── BannedPhraseCheck  # Keine Platzhalter/Halluzinationen?
-│   └── MarkdownCheck      # Valides Markdown?
+│   ├── MarkdownCheck      # Valides Markdown?
+│   ├── TemplateIntegrity  # NEU: Platzhalter gefuellt?
+│   └── FactTablesIntact   # NEU: Fakten-Tabellen erhalten?
 │
 └── Writer                 # Schreibt auf Disk
     ├── write_chapter()    # Markdown-Datei
     ├── write_diagram()    # DrawIO-Datei (deterministisch aus Daten)
-    └── checkpoint()       # Resume-Punkt
+    ├── checkpoint()       # Resume-Punkt
+    └── quality_score      # NEU: Fuer Pipeline Quality Score
 ```
 
 ## Prompt-Strategie
@@ -235,22 +256,35 @@ class ChapterValidator:
 
 ## Retry mit Feedback
 
-Wenn der Validator Probleme findet → **kein neuer Blind-Call**. Stattdessen: Feedback-Prompt:
+Wenn der Validator Probleme findet → **eskalierendes Feedback** (nicht blind wiederholen):
 
+**Attempt 1** (temperature=0.30):
 ```xml
-<feedback>
-Your previous output had these issues:
+<feedback severity='1'>
+Your previous output had these specific issues. Please fix them:
 - Missing section: "## 3.2 Technical Context"
 - Fact grounding only 15% — you mentioned 3 of 20 components
 - Banned phrase found: "TBD"
-
-Please fix these specific issues and regenerate the chapter.
-Keep everything that was good, only fix the listed problems.
+Output the complete corrected result.
 </feedback>
+```
 
-<previous_output>
-{previous_llm_output}
-</previous_output>
+**Attempt 2** (temperature=0.25):
+```xml
+<feedback severity='2'>
+CRITICAL: Your previous attempt still had problems. Fix ONLY these specific issues — do not change anything else:
+- Fact grounding still low
+Output the complete corrected result.
+</feedback>
+```
+
+**Attempt 3** (temperature=0.20):
+```xml
+<feedback severity='3'>
+FINAL ATTEMPT: Focus exclusively on fixing these exact problems. Do not change anything else:
+- Missing section
+Output the complete corrected result.
+</feedback>
 ```
 
 Max 2 Retries. Nach dem 3. Versuch: Output nehmen wie er ist + Degradation markieren.

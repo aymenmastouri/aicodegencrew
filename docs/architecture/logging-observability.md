@@ -68,6 +68,10 @@ Each line is a JSON object with `run_id` for correlation:
 | `phase_complete` | orchestrator | `phase_id`, `duration_seconds`, `status` |
 | `phase_failed` | orchestrator | `phase_id`, `duration_seconds`, `error` |
 | `pipeline_complete` | orchestrator | `status`, `total_duration`, `phases_run`, `phases_succeeded` |
+| `pipeline_token_summary` | orchestrator | `total_tokens`, `prompt_tokens`, `completion_tokens`, `per_phase` |
+| `quality_gate_retry` | orchestrator | `phase_id`, `quality_score`, `threshold` |
+| `quality_gate_partial` | orchestrator | `phase_id`, `quality_score`, `minimum` |
+| `pipeline_quality_score` | orchestrator (MLflow) | Weighted aggregate score (0-100) across all phases |
 | `mini_crew_complete` | base_crew / crew.py | `crew_type`, `crew_name`, `duration_seconds`, `tasks`, `attempts`, `total_tokens`, `estimated` |
 | `mini_crew_failed` | base_crew / crew.py | `crew_type`, `crew_name`, `duration_seconds`, `error_type`, `error` |
 | `guardrail_blocked` | tool_guardrails | `tool_name`, `reason` (`identical_call` / `budget_exhausted`) |

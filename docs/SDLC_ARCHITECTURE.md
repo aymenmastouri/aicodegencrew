@@ -1,6 +1,6 @@
 # SDLC Pilot — Architecture Overview
 
-> **Status**: v0.8.1 | **Author**: Aymen Mastouri | **Updated**: 2026-03-16
+> **Status**: v0.9.0 | **Author**: Aymen Mastouri | **Updated**: 2026-03-18
 
 ---
 
@@ -44,6 +44,7 @@
 | Phase Isolation | Clear inputs/outputs per phase, no cross-phase dependencies |
 | Incremental Adoption | Phases can be executed independently |
 | Mini-Crews | Fresh crew per task, preventing context overflow |
+| Quality-First Pipeline | Phase-specific LLM temperatures, cross-phase Quality Gates, adaptive retry with escalating feedback, aggregated Pipeline Quality Score |
 
 ## 5. Core Modules
 
@@ -55,7 +56,9 @@
 | DependencyChecker | `shared/dependency_checker.py` | Phase dependency resolution (tier 1: session, tier 2: disk) |
 | PhaseGitHandler | `shared/phase_git_handler.py` | Post-phase git auto-commit of `knowledge/` |
 | SchemaVersion | `shared/schema_version.py` | `_schema_version` injection + reader-side mismatch warnings |
-| LLMGenerator | `shared/llm_generator.py` | Single source of truth for all LLM config + `generate()` / `retry_with_feedback()` |
+| LLMGenerator | `shared/llm_generator.py` | Single source of truth for all LLM config + `generate()` / `retry_with_feedback()` / phase-specific temperatures / adaptive retry |
+| FactGrounder | `shared/utils/fact_grounding.py` | Shared fact-grounding utility — validates LLM output against known architecture components |
+| Quality Gates | `orchestrator.py` | Cross-phase quality scoring, auto-retry below threshold, pipeline quality aggregation |
 | Pipelines | `pipelines/` | All pipeline phases (Discover, Extract, Analyze, Triage, Plan, Document, Review) |
 | Crews | `crews/` | AI agent workflows (Implement, Verify) |
 | Shared | `shared/` | Common utilities, models, tools, `BasePipeline`, `BasePromptBuilder` |
@@ -73,6 +76,7 @@
 | [Multi-Project Isolation](architecture/multi-project-isolation.md) | Per-project discover subfolders, slug derivation |
 | [Dashboard](architecture/dashboard.md) | Angular + FastAPI web UI, SSE streaming |
 | [Logging & Observability](architecture/logging-observability.md) | Structured metrics, run correlation |
+| [Quality Architecture](architecture/quality-architecture.md) | Phase temperatures, Quality Gates, adaptive retry, fact grounding, Pipeline Quality Score |
 
 ## 7. Data Flow
 
@@ -139,6 +143,9 @@ Presets are defined in `config/phases_config.yaml` and validated by the CLI.
 | `INDEX_MODE` | Indexing behavior: off/auto/smart/force | `auto` |
 | `LLM_PROVIDER` | LLM provider: local/onprem | `local` |
 | `CODEGEN_MODEL` | Code generation LLM (Developer + Tester agents) | `MODEL` (same as main LLM if unset) |
+| `LLM_TEMPERATURE_{PHASE}` | Per-phase temperature override (ANALYZE, DOCUMENT, TRIAGE, PLAN, RETRY) | Phase-specific (0.3–0.7) |
+| `QUALITY_GATE_THRESHOLD` | Retry phase if quality score below this | `70` |
+| `QUALITY_GATE_MINIMUM` | Mark phase partial if still below this | `50` |
 
 ### Git Repository Support
 
@@ -200,6 +207,7 @@ See [Delivery Guide](guides/DELIVERY_GUIDE.md) for release process.
 | [orchestration-state.drawio](diagrams/orchestration-state.drawio) | Orchestration state machine |
 | [dashboard-architecture.drawio](diagrams/dashboard-architecture.drawio) | Dashboard architecture |
 | [reset-cascade.drawio](diagrams/reset-cascade.drawio) | Reset cascade & archive flow |
+| [quality-architecture.drawio](diagrams/quality-architecture.drawio) | Quality Gates, Pipeline Quality Score, adaptive retry flow |
 
 ### Per-Phase (in `phases/`)
 
@@ -209,7 +217,7 @@ See [Delivery Guide](guides/DELIVERY_GUIDE.md) for release process.
 | 1 — Extract | [phase-1-extract-architecture.drawio](phases/phase-1-extract/phase-1-extract-architecture.drawio) | — |
 | 2 — Analyze | [phase-2-analyze-architecture.drawio](phases/phase-2-analyze/phase-2-analyze-architecture.drawio) | [analysis-crew-schema.drawio](phases/phase-2-analyze/analysis-crew-schema.drawio) |
 | 3 — Document | [phase-3-document-architecture.drawio](phases/phase-3-document/phase-3-document-architecture.drawio) | — |
-| 4 — Triage | *(README only — no .drawio yet)* | — |
+| 4 — Triage | [phase-4-triage-architecture.drawio](phases/phase-4-triage/phase-4-triage-architecture.drawio) | — |
 | 5 — Plan | [phase-5-plan-architecture.drawio](phases/phase-5-plan/phase-5-plan-architecture.drawio) | [upgrade-rules-engine.drawio](phases/phase-5-plan/upgrade-rules-engine.drawio) |
 | 6 — Implement | [phase-6-implement-architecture.drawio](phases/phase-6-implement/phase-6-implement-architecture.drawio) | [code-generation-pipeline.drawio](phases/phase-6-implement/code-generation-pipeline.drawio) · [task-type-strategy.drawio](phases/phase-6-implement/task-type-strategy.drawio) |
 
