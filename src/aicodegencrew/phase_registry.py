@@ -40,7 +40,7 @@ PHASES: dict[str, PhaseDescriptor] = {
         True,
         "knowledge/discover",
         ("knowledge/discover",),
-        resettable=True,
+        resettable=False,  # Index lives in Qdrant + local cache; rebuilding is expensive
     ),
     "extract": PhaseDescriptor(
         "extract",
