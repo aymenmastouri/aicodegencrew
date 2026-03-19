@@ -286,6 +286,25 @@ class DocumentReviewer:
         """Parse the LLM review output into a ReviewResult."""
         data = self._extract_json(raw)
         if data is None:
+            # Fallback: try to extract score from raw text (LLM sometimes writes
+            # prose with "quality_score: 85" instead of JSON)
+            import re
+            score_match = re.search(r"quality_score[\"':\s]+(\d+)", raw)
+            if score_match:
+                fallback_score = int(score_match.group(1))
+                logger.info(
+                    "[DocumentReviewer] %s: extracted score=%d from raw text (no JSON)",
+                    chapter_id, fallback_score,
+                )
+                return ReviewResult(
+                    quality_score=min(fallback_score, 100),
+                    rewrite_needed=fallback_score < 65,
+                    missing_topics=[],
+                    unsupported_claims=[],
+                    contradictions=[],
+                    weak_sections=[],
+                    raw_review=raw,
+                )
             logger.warning("[DocumentReviewer] Could not parse review JSON for %s", chapter_id)
             return ReviewResult(
                 quality_score=-1,

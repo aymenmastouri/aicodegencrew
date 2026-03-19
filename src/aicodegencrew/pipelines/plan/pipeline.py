@@ -357,6 +357,7 @@ class PlanPipeline:
                 "output_file": result["output_file"],
                 "output_files": [result["output_file"]],
                 "duration_seconds": result["duration_seconds"],
+                "quality_score": result.get("quality_score"),
                 "metrics": result["metrics"],
                 "results": [result],
             }
@@ -508,11 +509,16 @@ class PlanPipeline:
 
         output_files = [r["output_file"] for r in results if r.get("output_file")]
 
+        # Aggregate quality_score across all tasks (average of non-None scores)
+        task_scores = [r["quality_score"] for r in results if r.get("quality_score") is not None]
+        avg_quality = round(sum(task_scores) / len(task_scores)) if task_scores else None
+
         return {
             "status": "completed" if failed == 0 else "partial",
             "phase": "plan",
             "output_files": output_files,
             "duration_seconds": total_duration,
+            "quality_score": avg_quality,
             "results": results,
             "metrics": {
                 "tasks_total": len(sorted_tasks),

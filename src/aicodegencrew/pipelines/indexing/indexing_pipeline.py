@@ -1047,23 +1047,40 @@ class IndexingPipeline:
         discover_dir = self._cache_dir
         discover_dir.mkdir(parents=True, exist_ok=True)
 
-        # Write symbols.jsonl
+        # Write symbols.jsonl — only overwrite if we have new symbols,
+        # otherwise preserve existing file (SMART-mode may skip unchanged files)
         try:
             symbols_path = discover_dir / "symbols.jsonl"
-            with open(symbols_path, "w", encoding="utf-8") as f:
-                for sym in self._all_symbols:
-                    f.write(json.dumps(sym.to_dict(), ensure_ascii=False) + "\n")
-            logger.info(f"[Artifacts] Wrote {len(self._all_symbols)} symbols to {symbols_path}")
+            if self._all_symbols:
+                with open(symbols_path, "w", encoding="utf-8") as f:
+                    for sym in self._all_symbols:
+                        f.write(json.dumps(sym.to_dict(), ensure_ascii=False) + "\n")
+                logger.info(f"[Artifacts] Wrote {len(self._all_symbols)} symbols to {symbols_path}")
+            else:
+                existing = symbols_path.stat().st_size if symbols_path.exists() else 0
+                if existing > 0:
+                    logger.info(f"[Artifacts] Keeping existing symbols.jsonl ({existing} bytes, no new symbols)")
+                else:
+                    logger.info("[Artifacts] No symbols to write (no files processed)")
         except Exception as e:
             logger.warning(f"[Artifacts] Failed to write symbols.jsonl: {e}")
 
-        # Write evidence.jsonl
+        # Write evidence.jsonl — only overwrite if we have new evidence,
+        # otherwise preserve existing file (SMART-mode skips unchanged files
+        # so _all_evidence is empty, but the old evidence is still valid)
         try:
             evidence_path = discover_dir / "evidence.jsonl"
-            with open(evidence_path, "w", encoding="utf-8") as f:
-                for ev in self._all_evidence:
-                    f.write(json.dumps(ev.to_dict(), ensure_ascii=False) + "\n")
-            logger.info(f"[Artifacts] Wrote {len(self._all_evidence)} evidence records to {evidence_path}")
+            if self._all_evidence:
+                with open(evidence_path, "w", encoding="utf-8") as f:
+                    for ev in self._all_evidence:
+                        f.write(json.dumps(ev.to_dict(), ensure_ascii=False) + "\n")
+                logger.info(f"[Artifacts] Wrote {len(self._all_evidence)} evidence records to {evidence_path}")
+            else:
+                existing = evidence_path.stat().st_size if evidence_path.exists() else 0
+                if existing > 0:
+                    logger.info(f"[Artifacts] Keeping existing evidence.jsonl ({existing} bytes, no new evidence)")
+                else:
+                    logger.info("[Artifacts] No evidence records to write (no files processed)")
         except Exception as e:
             logger.warning(f"[Artifacts] Failed to write evidence.jsonl: {e}")
 

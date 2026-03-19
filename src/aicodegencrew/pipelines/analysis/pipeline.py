@@ -488,25 +488,52 @@ class AnalysisPipeline(BasePipeline):
                     if attempt >= self._SYNTHESIS_MAX_RETRIES:
                         raise
 
-            # Validate required keys — retry if missing
+            # Validate required keys — supplement missing ones with a targeted call.
+            # The LLM often can't fit all 10 top-level keys in one output (~35K chars).
+            # Instead of retrying the full synthesis, ask for ONLY the missing keys
+            # and merge the result into the existing output.
             missing = self._get_missing_keys(content)
             if missing:
                 logger.warning(
-                    "[AnalysisPipeline] Synthesis missing keys %s — retrying",
+                    "[AnalysisPipeline] Synthesis missing keys %s — supplementing",
                     sorted(missing),
                 )
-                raw_retry = self._generator.retry_with_feedback(
-                    messages, raw, [
-                        "Your output is missing these REQUIRED top-level keys: " + ", ".join(sorted(missing)),
-                        "Add them with real data from the partial results. Do NOT omit any key.",
-                    ],
-                    attempt=1,
-                )
+                supplement_msg = {
+                    "role": "user",
+                    "content": (
+                        f"Your previous synthesis output was good but incomplete. "
+                        f"It is missing these top-level keys: {', '.join(sorted(missing))}.\n\n"
+                        f"Output ONLY a JSON object with these {len(missing)} keys. "
+                        f"Do NOT repeat keys you already provided. "
+                        f"Example format:\n"
+                        f'{{"' + '": {...}, "'.join(sorted(missing)) + '": {...}}'
+                    ),
+                }
+                supplement_messages = [
+                    messages[0],  # system
+                    {"role": "assistant", "content": content[:15000]},
+                    supplement_msg,
+                ]
                 try:
-                    content = self._extract_and_repair_json(raw_retry)
-                    raw = raw_retry
-                except ValueError:
-                    pass  # Keep the previous content
+                    raw_supplement = self._generator.generate(
+                        supplement_messages, temperature_override=0.3,
+                    )
+                    supplement_content = self._extract_and_repair_json(raw_supplement)
+                    # Merge supplement into main content
+                    main_data = json.loads(content)
+                    supplement_data = json.loads(supplement_content)
+                    if isinstance(supplement_data, dict):
+                        for key, value in supplement_data.items():
+                            if key not in main_data:
+                                main_data[key] = value
+                        content = json.dumps(main_data, indent=2, ensure_ascii=False)
+                        still_missing = self._get_missing_keys(content)
+                        logger.info(
+                            "[AnalysisPipeline] Supplement merged: added %d keys, still missing: %s",
+                            len(missing) - len(still_missing), sorted(still_missing) if still_missing else "none",
+                        )
+                except Exception as sup_exc:
+                    logger.warning("[AnalysisPipeline] Supplement call failed: %s", sup_exc)
 
             # Normalize key aliases (LLM often uses shorter names)
             try:
