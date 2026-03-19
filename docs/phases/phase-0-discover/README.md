@@ -22,53 +22,145 @@ The Discover phase is the foundation that every subsequent phase builds on. It t
 
 ## 2. Goals
 
-- Index repository files into a vector store (ChromaDB) for semantic search
+- Index repository files into Qdrant vector store for semantic search (RAG)
 - Extract symbols (classes, methods, endpoints) for deterministic lookups
-- Build evidence traceability from chunks back to source code
-- Create a repository manifest (frameworks, modules, file stats)
+- Store evidence metadata (line numbers, symbols) directly in Qdrant payload
+- Create a repository manifest (frameworks, modules, ecosystems)
 - Prioritize high-value files via budget-based reordering
 
-## 3. Inputs & Outputs
+## 3. How It All Works Together
 
-| Direction | Artifact | Format | Path |
-|-----------|----------|--------|------|
+The Discover phase transforms a raw repository into a **queryable knowledge base**. Every subsequent phase uses this knowledge in different ways. Here is the complete picture:
+
+```
+Source Repository (2800+ files)
+    │
+    ├── Step 1: Discover files ──── Which files exist? (filtering, prioritization)
+    │
+    ├── Step 2: Read + Extract ──── Code content + Symbols (classes, methods, endpoints)
+    │
+    ├── Step 3: Chunk ───────────── Split files into meaningful pieces (~1500 chars each)
+    │
+    ├── Step 4: Embed ───────────── Convert each chunk to a vector (embedding model)
+    │
+    └── Step 5: Store in Qdrant ─── Vector + Text + Metadata (ALL in one place)
+                    │
+                    │  Each point in Qdrant contains:
+                    │  ┌─────────────────────────────────────────┐
+                    │  │ id:         "chunk_abc123"               │
+                    │  │ vector:     [0.12, -0.34, 0.56, ...]    │  ← for semantic search
+                    │  │ text:       "public class AuthContr..."  │  ← the actual code
+                    │  │ file_path:  "src/auth/AuthController.java"│
+                    │  │ start_line: 45                           │  ← evidence
+                    │  │ end_line:   92                           │  ← evidence
+                    │  │ symbols:    "AuthController,login,logout" │  ← evidence
+                    │  │ content_type: "code"                     │
+                    │  │ language:   "java"                       │
+                    │  │ file_hash:  "a1b2c3..."                  │  ← for SMART mode
+                    │  └─────────────────────────────────────────┘
+                    │
+    How downstream phases USE this:
+    │
+    ├── Analyze (Phase 2) ─── RAG Query: "authentication patterns" → finds AuthController
+    │                         Result includes: code + file path + line 45-92 + symbols
+    │
+    ├── Document (Phase 3) ── RAG Query: "REST endpoints" → finds all controllers
+    │                         Uses evidence to cite exact source locations in docs
+    │
+    ├── Triage (Phase 4) ──── RAG Query: "error handling in OrderService"
+    │                         + Symbol lookup: find_entry_points() matches component names
+    │                         + Duplicate detection: semantic similarity search
+    │
+    ├── Plan (Phase 5) ────── 5-signal scoring:
+    │                         • Semantic (30%): Qdrant vector similarity
+    │                         • Name (25%): fuzzy match against component names
+    │                         • Symbol (20%): exact match in symbols.jsonl
+    │                         • Package (15%): label-based filtering
+    │                         • Stereotype (10%): keyword detection
+    │
+    └── Implement (Phase 6) ─ Targeted code extraction: find exact files to modify
+                              Symbol index → precise file:line locations
+```
+
+### Single Source of Truth: Qdrant
+
+All evidence metadata (line numbers, symbols, content type, language) is stored **directly in the Qdrant payload** — not in a separate local file. This means:
+
+- **No sync problems**: one place for everything, no local files that can get deleted or go stale
+- **No "Loaded 0 evidence records"**: evidence comes from the same query that finds the code
+- **Reset-safe**: `Reset All` clears downstream phases but Qdrant data survives (remote server)
+- **One query, full context**: RAG query returns code + file path + line numbers + symbols in a single call
+
+### What is a RAG Query?
+
+RAG = **Retrieval-Augmented Generation**. Instead of asking the LLM to guess, we **find the relevant code first** and inject it into the prompt:
+
+```
+Without RAG:  "How does authentication work?" → LLM guesses (hallucination risk)
+
+With RAG:     "How does authentication work?"
+                → Qdrant finds: AuthController.java (lines 45-92), SecurityConfig.java (lines 10-35)
+                → LLM receives actual code as context → accurate, evidence-based answer
+```
+
+Every phase that calls `RAGQueryTool` gets this benefit automatically.
+
+### What are Symbols?
+
+Symbols are **named code elements** extracted deterministically (regex, no LLM):
+
+| Symbol Type | Example | Used By |
+|-------------|---------|---------|
+| Class | `AuthController` | Plan (component discovery), Triage (entry points) |
+| Method | `login()`, `handleRequest()` | Implement (targeted extraction) |
+| Endpoint | `GET /api/users` | Extract (interface detection), Triage (blast radius) |
+| Annotation | `@RestController`, `@Service` | Extract (stereotype classification) |
+| Interface | `UserRepository` | Extract (relation mapping) |
+
+Symbols enable **deterministic lookups** — no embedding needed, instant exact match.
+
+### What is Evidence?
+
+Evidence = **traceability from a search result back to source code**:
+
+| Field | Example | Purpose |
+|-------|---------|---------|
+| `start_line` | 45 | Cite exact location in generated docs |
+| `end_line` | 92 | Show code range, not just file |
+| `symbols` | `AuthController,login` | Know what's in the chunk without reading it |
+| `content_type` | `code` / `doc` / `config` | Filter search by type |
+| `language` | `java` | Language-specific processing |
+
+Without evidence, a RAG result is just "some text from some file". With evidence, it's "lines 45-92 of AuthController.java containing the login() method".
+
+## 4. Inputs & Outputs
+
+| Direction | Artifact | Format | Storage |
+|-----------|----------|--------|---------|
 | **Input** | Target repository | File system | `PROJECT_PATH` or `GIT_REPO_URL` |
-| **Output** | Vector embeddings | ChromaDB | `knowledge/discover/{slug}/chroma.sqlite3` |
-| **Output** | Symbol index | JSONL | `knowledge/discover/{slug}/symbols.jsonl` |
-| **Output** | Evidence store | JSONL | `knowledge/discover/{slug}/evidence.jsonl` |
-| **Output** | Repository manifest | JSON | `knowledge/discover/{slug}/repo_manifest.json` (includes `ecosystems` field) |
+| **Output** | Vectors + text + evidence | Qdrant points | Remote Qdrant server (single source of truth) |
+| **Output** | Symbol index | JSONL | `knowledge/discover/{slug}/symbols.jsonl` (local) |
+| **Output** | Repository manifest | JSON | `knowledge/discover/{slug}/repo_manifest.json` |
 | **Output** | Indexing state | JSON | `knowledge/discover/{slug}/.indexing_state.json` |
-| **Output** | Active project marker | JSON | `knowledge/discover/.active_project` |
 
 > `{slug}` is derived from the repository folder name (e.g. `C:\uvz` → `uvz`). See [Multi-Project Isolation](../../architecture/multi-project-isolation.md).
 
-## 4. Architecture
+> **Note**: `evidence.jsonl` is a legacy local cache. New indexes store all evidence in Qdrant payload. The RAG query reads from Qdrant first, falls back to `evidence.jsonl` for old indexes.
 
-### The Problem
-
-Enterprise repositories contain thousands of files across multiple languages. Downstream phases need to **find the right code** fast and precise. Loading entire repos into LLM context is impossible (token limits), and naive file-path matching misses semantic relationships.
-
-### The Solution: 4 Complementary Artifacts
-
-| Artifact | Retrieval Type | Problem Solved |
-|----------|---------------|----------------|
-| **ChromaDB** | Semantic (vector similarity) | "Find code related to authentication" |
-| **symbols.jsonl** | Deterministic (exact lookup) | "Where is class `AuthController`?" |
-| **evidence.jsonl** | Structural (chunk-to-source) | "Which lines does this result come from?" |
-| **repo_manifest.json** | Structural (repo overview) | "What frameworks and modules exist?" |
+## 5. Architecture
 
 ### Pipeline Flow
 
 ```
-Step 1:  Discover files              (RepoDiscoveryTool)
-Step 1b: Build repo manifest         (ManifestBuilder → repo_manifest.json)
-Step 2:  Read files                  (RepoReaderTool)
-Step 2b: Extract symbols per file    (SymbolExtractor)
-Step 2c: Apply budget prioritization (BudgetEngine, A/B/C tiers)
-Step 3:  Chunk                       (ChunkerTool + content_type)
-Step 4:  Embed                       (OllamaEmbeddingsTool)
-Step 5:  Store in ChromaDB           (ChromaIndexTool)
-Step 6:  Write artifacts             (symbols.jsonl, evidence.jsonl)
+Step 1:  Discover files              (RepoDiscoveryTool — find all files, apply filters)
+Step 1b: Build repo manifest         (ManifestBuilder → frameworks, modules, ecosystems)
+Step 2:  Read files                  (RepoReaderTool — content + encoding handling)
+Step 2b: Extract symbols per file    (SymbolExtractor — classes, methods, endpoints)
+Step 2c: Apply budget prioritization (BudgetEngine — A/B/C tiers, high-value files first)
+Step 3:  Chunk                       (ChunkerTool — split into ~1500 char pieces + content_type)
+Step 4:  Embed                       (EmbeddingsTool — local embedding model → vectors)
+Step 5:  Store in Qdrant             (ChromaIndexTool — vectors + text + evidence payload)
+Step 6:  Write local artifacts       (symbols.jsonl, repo_manifest.json)
 ```
 
 ### Fingerprinting & Change Detection
@@ -121,9 +213,28 @@ The `ManifestBuilder` runs `EcosystemRegistry.detect(repo_path)` during Step 1b 
 | **Python** | Python | Classes, functions/methods, decorators |
 | **C/C++** | C, C++ | Structs, unions, enums, functions, macros, typedefs, namespaces, classes (C++) |
 
-### Evidence Store
+### Evidence in Qdrant Payload
 
-Each chunk gets traceability: file path, line range, content type (`code`/`doc`/`config`), and linked symbols (overlap-based).
+Each chunk gets traceability stored **directly in Qdrant** as payload metadata:
+
+```
+Qdrant Point Payload:
+{
+    "file_path": "src/auth/AuthController.java",
+    "file_hash": "a1b2c3...",
+    "start_line": 45,          ← evidence
+    "end_line": 92,            ← evidence
+    "symbols": "AuthController,login,logout",  ← evidence (comma-separated)
+    "content_type": "code",    ← evidence
+    "language": "java",        ← evidence
+    "chunk_index": 3,
+    "start_char": 1200,
+    "end_char": 2700,
+    "repo_path": "C:/uvz"
+}
+```
+
+This is the **single source of truth** — RAG queries read evidence directly from the Qdrant result, no local file needed. Legacy `evidence.jsonl` is still supported as fallback for indexes created before this change.
 
 ### Budget Engine
 
@@ -162,23 +273,29 @@ knowledge/discover/
 
 Central module: `shared/project_context.py`. See [Multi-Project Isolation](../../architecture/multi-project-isolation.md) for full architecture.
 
-## 6. Dependencies
+## 7. Dependencies
 
 - **Upstream**: None (first phase)
 - **Downstream**: All phases consume Discover outputs:
-  - Phase 1 (Extract): `repo_manifest.json` for framework context
-  - Phase 2 (Analyze): ChromaDB via `RAGQueryTool`
-  - Phase 3 (Document): ChromaDB via `RAGQueryTool`
-  - Phase 4 (Plan): ChromaDB + `symbols.jsonl` (5-signal scoring)
-  - Phase 5 (Implement): ChromaDB + `symbols.jsonl` (targeted extraction)
 
-## 7. Quality Gates & Validation
+| Phase | What it uses | How |
+|-------|-------------|-----|
+| Extract (1) | `repo_manifest.json` | Framework/ecosystem detection for dimension collectors |
+| Analyze (2) | Qdrant via `RAGQueryTool` | Code context for 16 analysis sections (14973 evidence records) |
+| Document (3) | Qdrant via `RAGQueryTool` | Code evidence for arc42/C4 chapters (line numbers + symbols) |
+| Triage (4) | Qdrant + `symbols.jsonl` | Semantic search for duplicates, symbol-based entry point finding |
+| Plan (5) | Qdrant + `symbols.jsonl` | 5-signal component scoring (semantic 30%, symbol 20%, ...) |
+| Implement (6) | Qdrant + `symbols.jsonl` | Targeted code extraction — find exact files and line ranges to modify |
+
+## 8. Quality Gates & Validation
 
 - Fingerprint-based skip logic prevents unnecessary re-indexing
 - Stale lock recovery (checks if PID is still alive)
-- State file persists across runs — warns on missing ChromaDB instead of silently re-indexing
+- State file persists across runs — warns on missing data instead of silently re-indexing
+- `resettable=False` — Reset All does not delete Discover artifacts (expensive to rebuild, Qdrant data is remote)
+- Empty `evidence.jsonl` or `symbols.jsonl` triggers a WARNING advising `INDEX_MODE=force`
 
-## 8. Configuration
+## 9. Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -194,10 +311,11 @@ Central module: `shared/project_context.py`. See [Multi-Project Isolation](../..
 
 All settings are optional — built-in defaults work without any env vars.
 
-## 9. Risks & Open Points
+## 10. Risks & Open Points
 
-- Embedding model consistency: all consumers must use the same model as indexing (`EMBEDDING_MODEL`)
-- Graceful degradation: every artifact is optional — missing `symbols.jsonl` falls back to 4-signal scoring in Plan, missing `evidence.jsonl` returns results without enrichment
+- Embedding model consistency: all consumers must use the same model as indexing (`EMBED_MODEL`)
+- Graceful degradation: `symbols.jsonl` missing → falls back to 4-signal scoring in Plan; old Qdrant index without payload evidence → falls back to `evidence.jsonl`
+- Qdrant availability: if remote Qdrant is down, all RAG queries return empty results (deterministic fallbacks still work)
 
 ---
 

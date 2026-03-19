@@ -84,7 +84,7 @@
 Source Repository
   │
   ▼
-Phase 0: Discover ─── knowledge/discover/{slug}/ (ChromaDB + symbols + evidence + manifest)
+Phase 0: Discover ─── Qdrant (vectors + code + evidence payload) + symbols.jsonl + manifest
   │
   ▼
 Phase 1: Extract ──── architecture_facts.json + evidence_map.json
