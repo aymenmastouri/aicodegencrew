@@ -1,0 +1,174 @@
+{
+  "_schema_version": "1.0",
+  "issue_id": "BNUVZ-12529",
+  "classification": {
+    "type": "upgrade",
+    "confidence": 0.99,
+    "signals": [
+      "keyword:upgrade"
+    ],
+    "scores": {
+      "bug": 0.0,
+      "feature": 0.0,
+      "upgrade": 1.0,
+      "refactor": 0.0,
+      "investigation": 0.0
+    }
+  },
+  "customer_summary": {
+    "summary": "The UVZ application currently runs on Angular 18 and Pattern Library (PL) 11.3.1, but Angular 18 reached end-of-life for security updates on 21.11.2025. Continuing to use Angular 18 would leave the system exposed to unpatched vulnerabilities unless expensive 'Never-Ending Support' is purchased. This task upgrades Angular to version 19 and PL to 12.6.0, ensuring continued security support, compatibility with modern tooling, and future upgradeability (e.g., to Angular 20/21). Failure to upgrade risks security exposure, loss of vendor support, and technical debt accumulation.",
+    "impact_level": "high",
+    "is_bug": false,
+    "workaround": "",
+    "eta_category": "medium"
+  },
+  "developer_context": {
+    "big_picture": "UVZ (Universeller Verwaltungszugang) is a German federal eGovernment platform used by notaries and public administration to access and manage legal workflows. It relies on Angular for its frontend UI and a custom Pattern Library (ds-ng) for standardized components. This task addresses an urgent need to modernize the core framework stack: Angular 18 is no longer supported for security fixes, and the team must upgrade to Angular 19 (and PL 12.6.0) as the next feasible step before considering Angular 20/21. Without this upgrade, UVZ cannot safely evolve, integrate new features, or meet compliance requirements for long-term maintenance.",
+    "scope_boundary": {
+      "in": [
+        "Upgrade Angular from 18 to 19",
+        "Upgrade Pattern Library (ds-ng) from 11.3.1 to 12.6.0",
+        "Update all listed transitive dependencies (Node.js, TypeScript, ng-bootstrap, ng-select, ag-grid, etc.) as specified in AC2",
+        "Ensure vertical action bar continues to function (per AC3)",
+        "Remove deprecated Angular 18 / PL 11.3.1 artifacts not supported in target versions (per AC4)",
+        "Apply patch for ng-bootstrap referenced in UVZUSLNVV-5824"
+      ],
+      "out": [
+        "Direct upgrade to Angular 20 or 21 (explicitly ruled out per FRM notes)",
+        "Backend changes (Java/Gradle stack remains unchanged per issue)",
+        "Full regression testing suite (assumed covered by existing CI/CD, but not in scope)",
+        "Design/system architecture changes beyond component version alignment"
+      ]
+    },
+    "classification_assessment": "",
+    "classification_confidence": 0.99,
+    "affected_components": [
+      "UVZ Frontend (layer: presentation)",
+      "Pattern Library (ds-ng) integration (layer: shared UI library)",
+      "Dependency resolution layer (layer: build tooling)",
+      "ng-bootstrap & ng-select wrappers (layer: third-party integration)",
+      "ag-grid integration (layer: data grid component)",
+      "Angular CLI & build pipeline (layer: tooling)"
+    ],
+    "context_boundaries": [
+      {
+        "category": "technology_constraint",
+        "boundary": "TypeScript 4.9.5 (current) must be upgraded to a version compatible with Angular 19. Angular 19 requires TypeScript ≥5.4, so this is a hard dependency constraint — the existing TS version cannot remain.",
+        "severity": "blocking",
+        "source_facts": [
+          "Current TypeScript version is 4.9.5"
+        ]
+      },
+      {
+        "category": "dependency_risk",
+        "boundary": "@angular/* packages v18-lts must be upgraded to v19-compatible versions. Since Angular 18 LTS ended 21.11.2025, delaying this upgrade risks dependency drift where newer ng-bootstrap or ag-grid versions may drop v18 support, breaking future upgrades.",
+        "severity": "caution",
+        "source_facts": [
+          "Current @angular/core version is v18-lts"
+        ]
+      },
+      {
+        "category": "integration_boundary",
+        "boundary": "The ng-bootstrap patch referenced in UVZUSLNVV-5824 must be applied *during* this upgrade — it is not optional. This indicates a known incompatibility between current ng-bootstrap and Angular 19, so the patch is a prerequisite for AC1.",
+        "severity": "blocking",
+        "source_facts": [
+          "Issue context: ng-bootstrap patch must be considered"
+        ]
+      },
+      {
+        "category": "pattern_constraint",
+        "boundary": "Vertical action bar is deprecated but still usable until PL 13.2.0. Since target is PL 12.6.0, it *must* remain functional. However, any usage of deprecated APIs in PL 11.3.1 that are removed in 12.6.0 would cause runtime breakage — this requires auditing component usage.",
+        "severity": "caution",
+        "source_facts": [
+          "Issue context: vertical action bar still used; PL 12.6.0 supports it"
+        ]
+      },
+      {
+        "category": "infrastructure_constraint",
+        "boundary": "Node.js version must be upgraded to match Angular 19’s requirements (likely Node 18.x or 20.x). Current Node.js version is not stated, but Angular 18 used Node 16–18; Angular 19 likely requires Node ≥18. Mismatch could break `ng build` or `ng serve`.",
+        "severity": "caution",
+        "source_facts": [
+          "Issue context: node.js must be updated per AC2"
+        ]
+      }
+    ],
+    "architecture_notes": "This task sits at the *foundation layer* of the frontend architecture — it’s a framework migration affecting the entire UI container. UVZ’s frontend is a monolithic Angular app (no micro-frontends yet), built with Webpack 5 and served via Java backend. The upgrade touches the entire dependency tree: all modules (workflow, task, document, etc.) depend on Angular core, CDK, animations, and the custom ds-ng Pattern Library. The build pipeline (CLI/Webpack/Karma/Playwright) must be validated for compatibility. Neighboring components include: (1) backend REST APIs (Java/Gradle), (2) identity providers (PKI auth), and (3) testing infrastructure (Playwright end-to-end tests). The change is *non-functional* but has high ripple potential — every component using Angular APIs, directives, or PL components may need verification.",
+    "anticipated_questions": [
+      {
+        "question": "Do I need to update the backend (Java/Gradle)?",
+        "answer": "No — this is strictly a frontend upgrade. The backend remains on Java 17 and Gradle 8.2.1 per current configuration and issue scope. However, ensure API contracts (e.g., task-module.service.ts) remain compatible with Angular 19’s HttpClient changes (e.g., response type defaults)."
+      },
+      {
+        "question": "Where is the ng-bootstrap patch referenced in UVZUSLNVV-5824, and how do I apply it?",
+        "answer": "The patch is referenced as part of the same Jira ticket (UVZUSLNVV-5824). Since the issue explicitly states it 'must be considered', it is likely a temporary workaround (e.g., custom ng-bootstrap fork or patch-package). You should check the ticket comments or ask Filip Misiorek (assigned in BNUVZ-12529) for the exact patch source — it is not in the current codebase by default."
+      },
+      {
+        "question": "How do I verify the vertical action bar still works after upgrade?",
+        "answer": "Verify that the vertical action bar component is used in workflows (e.g., task completion flows). Since it’s deprecated but supported until PL 13.2.0, ensure ds-ng 12.6.0 includes the necessary exports/directives. Run e2e tests covering workflows that use this component."
+      },
+      {
+        "question": "Is there a migration path documented for Angular 18 → 19?",
+        "answer": "Yes — follow the official Angular update guide (https://update.angular.io/). Since Angular upgrades are incremental, go 18 → 19 first (per FRM decision), then later 19 → 20. Use `ng update @angular/core @angular/cli --migrate-only --migrate=18-19` to auto-fix breaking changes where possible."
+      }
+    ],
+    "linked_tasks": [
+      "BNUVZ-12529",
+      "UVZUSLNVV-5824"
+    ]
+  },
+  "findings": {
+    "classification": {
+      "type": "upgrade",
+      "confidence": 0.99,
+      "signals": [
+        "keyword:upgrade"
+      ],
+      "scores": {
+        "bug": 0.0,
+        "feature": 0.0,
+        "upgrade": 1.0,
+        "refactor": 0.0,
+        "investigation": 0.0
+      }
+    },
+    "entry_points": [],
+    "blast_radius": {
+      "affected": [],
+      "depth": 0,
+      "component_count": 0,
+      "containers_affected": []
+    },
+    "duplicates": [
+      {
+        "chunk_id": "35aa98d2:0000:fcff85e4",
+        "path": "frontend/README.md",
+        "score": 0.647,
+        "snippet": "# UVZ FrontEnd\n\n## Getting Started\n\nThis project was generated with Angular CLI version 7.3.7.\nRoot directory for the frontend is [git-url]\\uvz\\frontend.\n\n## Prerequisites\n\nIn order to install and run..."
+      },
+      {
+        "chunk_id": "2e3cf46a:0009:69b0230c",
+        "path": "frontend/src/app/workflow/services/workflow-rest/api-generated/services/task-module.service.ts",
+        "score": 0.6,
+        "snippet": "ed to be transferred for update. No complete updates expected. This interaction does not finish the running task, even when all work has succeeded.<p>Authorization Rights<ul><li>/UVZ/generelles/oeffne..."
+      },
+      {
+        "chunk_id": "067294a1:0003:3b54ff69",
+        "path": "backend/src/docs/arc42/chapters/02_architecture_constraints.adoc",
+        "score": 0.576,
+        "snippet": "zgl. der nichtfunktionalen Anforderung NF-VVZ-01-04 wird die Datenbankversion auf Oracle 12 festgelegt, die Bundesnotarkammer hat die Möglichkeit Capgemini eine höhere Datenbank-Version zur Umsetzung ..."
+      }
+    ],
+    "test_coverage": {
+      "covered": [],
+      "uncovered": [],
+      "coverage_ratio": 0.0
+    },
+    "risk_assessment": {
+      "risk_level": "low",
+      "security_sensitive": false,
+      "flags": [
+        "quality:low_score(0)"
+      ]
+    }
+  }
+}
