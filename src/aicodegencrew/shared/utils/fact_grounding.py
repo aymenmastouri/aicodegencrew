@@ -13,7 +13,6 @@ Usage::
 """
 
 import logging
-import re
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -51,51 +50,47 @@ class FactGrounder:
             len(self.known_relations),
         )
 
-    def check(self, text: str, min_ratio: float = 0.05) -> GroundingResult:
+    def check(self, text: str, min_references: int = 3) -> GroundingResult:
         """Check if text references enough real facts from the architecture.
+
+        Uses direct lookup: searches for known names in the text rather than
+        extracting proper nouns and classifying them. This avoids false
+        positives from common English words matching proper noun patterns.
 
         Args:
             text: The generated text to check.
-            min_ratio: Minimum ratio of found / (found + hallucinated) names
-                to pass (default 5%).
+            min_references: Minimum number of known names that must appear
+                in the text (default 3, or 5% of known names, whichever is lower).
 
         Returns:
-            GroundingResult with score, found/hallucinated sets, and pass/fail.
+            GroundingResult with score, found names, and pass/fail.
         """
         if not self._all_known or not text:
             return GroundingResult(score=100, passed=True)
 
-        proper_nouns = self._extract_proper_nouns(text)
-        if not proper_nouns:
-            return GroundingResult(score=100, passed=True)
-
+        text_lower = text.lower()
         found: set[str] = set()
-        hallucinated: set[str] = set()
-        all_known_lower = {n.lower() for n in self._all_known}
 
-        for noun in proper_nouns:
-            if noun.lower() in all_known_lower:
-                found.add(noun)
-            else:
-                hallucinated.add(noun)
+        for name in self._all_known:
+            if name.lower() in text_lower:
+                found.add(name)
 
-        total = len(found) + len(hallucinated)
-        ratio = len(found) / max(1, total)
-        score = int(ratio * 100)
-        passed = ratio >= min_ratio
+        total_known = len(self._all_known)
+        # Require at least min_references or 5% of known names (whichever is lower)
+        threshold = min(min_references, max(1, total_known // 20))
+        ratio = len(found) / max(1, total_known)
+        score = min(100, int(ratio * 200))  # Scale: 50% coverage = 100 score
+        passed = len(found) >= threshold
 
         if not passed:
             logger.warning(
-                "[FactGrounder] Low grounding: %d/%d names found (score=%d, threshold=%.0f%%)",
-                len(found), total, score, min_ratio * 100,
+                "[FactGrounder] Low grounding: %d/%d known names found (need %d)",
+                len(found), total_known, threshold,
             )
-        if hallucinated:
-            logger.debug("[FactGrounder] Potentially hallucinated: %s", sorted(hallucinated)[:10])
 
         return GroundingResult(
             score=score,
             found=found,
-            hallucinated=hallucinated,
             passed=passed,
         )
 
@@ -125,42 +120,3 @@ class FactGrounder:
                             names.add(item.strip())
         return names
 
-    @staticmethod
-    def _extract_proper_nouns(text: str) -> set[str]:
-        """Extract likely proper nouns / technical names from text.
-
-        Matches CamelCase words, capitalized multi-word names, and
-        technical identifiers (with dots, hyphens, underscores).
-        Filters out common English words and very short names.
-        """
-        _COMMON_WORDS = {
-            "the", "this", "that", "with", "from", "into", "for", "and", "but",
-            "not", "are", "was", "were", "been", "being", "have", "has", "had",
-            "does", "did", "will", "would", "could", "should", "may", "might",
-            "can", "shall", "must", "need", "each", "every", "all", "any",
-            "both", "few", "more", "most", "other", "some", "such", "than",
-            "too", "very", "just", "also", "only", "own", "same", "how",
-            "what", "which", "who", "whom", "when", "where", "why",
-            "note", "see", "use", "used", "using", "based", "like",
-            "before", "after", "between", "through", "during", "about",
-            "json", "yaml", "xml", "html", "http", "https", "api",
-            "true", "false", "null", "none", "yes", "steps", "step",
-            "example", "section", "chapter", "table", "figure", "list",
-        }
-
-        # Match CamelCase, PascalCase, UPPER_CASE, and dotted names (e.g. Spring.Boot)
-        patterns = [
-            r"\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b",  # CamelCase: ServiceBus, DataStore
-            r"\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})+\b",  # Multi-word: Spring Boot
-            r"\b[A-Z][a-z]{2,}[.-][A-Za-z]{2,}\b",  # Dotted: Spring.Boot, Vue.js
-            r"\b[a-z]+[-_][a-z]+[-_]?[a-z]*\b",  # kebab/snake: vue-router, my_service
-        ]
-
-        found: set[str] = set()
-        for pattern in patterns:
-            for match in re.findall(pattern, text):
-                clean = match.strip()
-                if len(clean) >= 3 and clean.lower() not in _COMMON_WORDS:
-                    found.add(clean)
-
-        return found

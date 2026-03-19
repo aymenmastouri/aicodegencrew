@@ -413,16 +413,6 @@ import { statusIcon } from '../../shared/status';
                 <span class="metric-value">{{ formatDuration(status.elapsed_seconds || 0) }}</span>
                 <span class="metric-label">Elapsed</span>
               </div>
-              <div class="metric-item">
-                <mat-icon>token</mat-icon>
-                <span class="metric-value">{{ (status.live_metrics.total_tokens | number) || '0' }}</span>
-                <span class="metric-label">Tokens</span>
-              </div>
-              <div class="metric-item">
-                <mat-icon>groups</mat-icon>
-                <span class="metric-value">{{ status.live_metrics.crew_completions }}</span>
-                <span class="metric-label">Crews</span>
-              </div>
               @if (status.eta_seconds !== null && status.eta_seconds !== undefined && status.eta_seconds > 0) {
                 <div class="metric-item metric-eta">
                   <mat-icon>schedule</mat-icon>

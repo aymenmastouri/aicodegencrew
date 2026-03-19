@@ -283,6 +283,7 @@ class SDLCOrchestrator:
                 and result.quality_score < _QUALITY_GATE_THRESHOLD
                 and result.is_success()
             ):
+                first_duration = result.duration_seconds
                 logger.warning(
                     "[Quality Gate] %s scored %d (threshold: %d) — retrying once",
                     phase_id, result.quality_score, _QUALITY_GATE_THRESHOLD,
@@ -297,11 +298,16 @@ class SDLCOrchestrator:
                     retry_result.is_success()
                     and (retry_result.quality_score or 0) >= (result.quality_score or 0)
                 ):
+                    # Total duration = first attempt + retry
+                    retry_result.duration_seconds += first_duration
                     result = retry_result
                     logger.info(
-                        "[Quality Gate] %s retry improved: score=%s",
-                        phase_id, result.quality_score,
+                        "[Quality Gate] %s retry improved: score=%s (total %.1fs)",
+                        phase_id, result.quality_score, result.duration_seconds,
                     )
+                else:
+                    # Keep original but add retry duration to total
+                    result.duration_seconds += retry_result.duration_seconds
 
             # ── Quality Gate: mark partial if still below minimum ──
             if (
@@ -319,6 +325,10 @@ class SDLCOrchestrator:
                 )
 
             self.results[phase_id] = result
+
+            # Update phase_state.json with final duration (includes Quality Gate retry time)
+            final_status = phase_result_to_phase_state_status(result.status)
+            set_phase_completed(phase_id, result.duration_seconds, status=final_status)
 
             # Log phase metrics to MLflow (include quality_score)
             phase_tokens = self._token_usage.get(phase_id, {})

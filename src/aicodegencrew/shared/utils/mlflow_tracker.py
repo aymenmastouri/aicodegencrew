@@ -7,7 +7,12 @@ so no direct S3/MinIO credentials are required on the client.
 
 import logging
 import os
+import warnings
 from urllib.parse import urlparse
+
+# Suppress noisy urllib3 InsecureRequestWarning for self-signed certificates.
+# Already handled via MLFLOW_TRACKING_INSECURE_TLS=true — the warnings just spam logs.
+warnings.filterwarnings("ignore", message="Unverified HTTPS request", category=Warning)
 
 logger = logging.getLogger(__name__)
 

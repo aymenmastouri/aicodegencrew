@@ -171,15 +171,14 @@ class ChapterValidator:
         # Use shared FactGrounder if facts are available
         if facts and isinstance(facts, dict):
             grounder = FactGrounder(facts)
-            result = grounder.check(content, min_ratio=0.05)
+            result = grounder.check(content, min_references=3)
             if not result.passed:
                 examples = sorted(grounder.known_components | grounder.known_technologies, key=len, reverse=True)[:5]
                 return ValidationCheck(
                     "fact_grounding",
                     False,
-                    f"Low fact grounding: score={result.score}, found={len(result.found)}, "
-                    f"hallucinated={len(result.hallucinated)}. "
-                    f"Use real names from the data, e.g.: {examples}",
+                    f"Low fact grounding: only {len(result.found)} known names referenced "
+                    f"(need at least 3). Use real names from the data, e.g.: {examples}",
                 )
             return ValidationCheck("fact_grounding", True)
 

@@ -105,16 +105,17 @@ do_stop() {
     kill_port $BACKEND_PORT
     kill_port $FRONTEND_PORT
 
-    # Brute force: kill all python/node if ports still stuck
+    # Second attempt: retry kill_port if still stuck (never kill by image name —
+    # taskkill /IM python.exe would destroy unrelated processes like IDEs, Claude, etc.)
     if port_in_use $BACKEND_PORT; then
-        if is_windows; then
-            cmd.exe //C "taskkill /F /IM python.exe" >/dev/null 2>&1 || true
-        fi
+        echo -e "  ${YELLOW}Port $BACKEND_PORT still occupied — retrying...${NC}"
+        sleep 2
+        kill_port $BACKEND_PORT
     fi
     if port_in_use $FRONTEND_PORT; then
-        if is_windows; then
-            cmd.exe //C "taskkill /F /IM node.exe" >/dev/null 2>&1 || true
-        fi
+        echo -e "  ${YELLOW}Port $FRONTEND_PORT still occupied — retrying...${NC}"
+        sleep 2
+        kill_port $FRONTEND_PORT
     fi
 
     wait_port_free $BACKEND_PORT

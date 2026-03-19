@@ -490,19 +490,21 @@ class AnalysisPipeline(BasePipeline):
 
             # Validate required keys — retry if missing
             missing = self._get_missing_keys(content)
-            if missing and attempt < self._SYNTHESIS_MAX_RETRIES:
+            if missing:
                 logger.warning(
                     "[AnalysisPipeline] Synthesis missing keys %s — retrying",
                     sorted(missing),
                 )
-                raw = self._generator.retry_with_feedback(
-                    messages, content, [
+                raw_retry = self._generator.retry_with_feedback(
+                    messages, raw, [
                         "Your output is missing these REQUIRED top-level keys: " + ", ".join(sorted(missing)),
                         "Add them with real data from the partial results. Do NOT omit any key.",
                     ],
+                    attempt=1,
                 )
                 try:
-                    content = self._extract_and_repair_json(raw)
+                    content = self._extract_and_repair_json(raw_retry)
+                    raw = raw_retry
                 except ValueError:
                     pass  # Keep the previous content
 
