@@ -1061,7 +1061,10 @@ class IndexingPipeline:
                 if existing > 0:
                     logger.info(f"[Artifacts] Keeping existing symbols.jsonl ({existing} bytes, no new symbols)")
                 else:
-                    logger.info("[Artifacts] No symbols to write (no files processed)")
+                    logger.warning(
+                        "[Artifacts] symbols.jsonl is empty — component discovery will lack "
+                        "symbol matching. Run with INDEX_MODE=force to rebuild."
+                    )
         except Exception as e:
             logger.warning(f"[Artifacts] Failed to write symbols.jsonl: {e}")
 
@@ -1080,7 +1083,11 @@ class IndexingPipeline:
                 if existing > 0:
                     logger.info(f"[Artifacts] Keeping existing evidence.jsonl ({existing} bytes, no new evidence)")
                 else:
-                    logger.info("[Artifacts] No evidence records to write (no files processed)")
+                    logger.warning(
+                        "[Artifacts] evidence.jsonl is empty — RAG queries will lack "
+                        "evidence enrichment (line numbers, symbols). Run with "
+                        "INDEX_MODE=force to rebuild."
+                    )
         except Exception as e:
             logger.warning(f"[Artifacts] Failed to write evidence.jsonl: {e}")
 
