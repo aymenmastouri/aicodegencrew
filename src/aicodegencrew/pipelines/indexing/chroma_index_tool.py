@@ -159,6 +159,15 @@ class ChromaIndexTool(BaseTool):
                 }
                 if chunk.get("content_type"):
                     meta["content_type"] = chunk["content_type"]
+                # Evidence fields — stored in Qdrant payload as single source of truth
+                if chunk.get("start_line"):
+                    meta["start_line"] = chunk["start_line"]
+                if chunk.get("end_line"):
+                    meta["end_line"] = chunk["end_line"]
+                if chunk.get("symbols"):
+                    meta["symbols"] = chunk["symbols"]  # comma-separated string
+                if chunk.get("language"):
+                    meta["language"] = chunk["language"]
                 metadatas.append(meta)
                 valid_embeddings.append(embedding)
 

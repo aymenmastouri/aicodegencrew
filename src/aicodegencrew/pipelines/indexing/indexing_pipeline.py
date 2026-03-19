@@ -988,6 +988,13 @@ class IndexingPipeline:
             )
             self._all_evidence.append(evidence)
 
+            # Store evidence fields in chunk dict so they are persisted as
+            # Qdrant payload metadata — single source of truth, no local file needed.
+            chunk["start_line"] = start_line
+            chunk["end_line"] = end_line
+            chunk["symbols"] = ",".join(chunk_symbols) if chunk_symbols else ""
+            chunk["language"] = ext.lstrip(".")
+
         # Embed
         logger.info(f"   Embedding {len(chunks_batch)} chunks...")
         texts_to_embed = [c["text"] for c in chunks_batch]

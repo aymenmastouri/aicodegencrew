@@ -246,13 +246,22 @@ class RAGQueryTool(BaseTool):
                         "content": content,
                     }
 
-                    # Enrich with evidence metadata if available
-                    evidence = evidence_index.get(chunk_id)
-                    if evidence:
-                        result_entry["start_line"] = evidence.get("start_line", 0)
-                        result_entry["end_line"] = evidence.get("end_line", 0)
-                        result_entry["content_type"] = evidence.get("type", "")
-                        result_entry["symbols"] = evidence.get("symbols", [])
+                    # Evidence metadata: read from Qdrant payload (primary)
+                    # or fall back to local evidence.jsonl index (legacy)
+                    if metadata.get("start_line"):
+                        result_entry["start_line"] = metadata.get("start_line", 0)
+                        result_entry["end_line"] = metadata.get("end_line", 0)
+                        result_entry["content_type"] = metadata.get("content_type", "")
+                        symbols_raw = metadata.get("symbols", "")
+                        result_entry["symbols"] = symbols_raw.split(",") if symbols_raw else []
+                    else:
+                        # Legacy fallback: evidence.jsonl
+                        evidence = evidence_index.get(chunk_id)
+                        if evidence:
+                            result_entry["start_line"] = evidence.get("start_line", 0)
+                            result_entry["end_line"] = evidence.get("end_line", 0)
+                            result_entry["content_type"] = evidence.get("type", "")
+                            result_entry["symbols"] = evidence.get("symbols", [])
 
                     formatted_results.append(result_entry)
 
