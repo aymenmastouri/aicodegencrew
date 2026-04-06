@@ -113,7 +113,7 @@ ollama pull nomic-embed-text     # Embedding model for RAG
 git clone https://github.com/aymenmastouri/aicodegencrew.git
 cd aicodegencrew
 
-# Start Qdrant, Langfuse, MLflow, Prometheus, Grafana
+# Start all services (Qdrant, Langfuse, MLflow, Prometheus, Grafana)
 docker-compose -f docker-compose.local.yml up -d
 ```
 
@@ -133,6 +133,32 @@ docker-compose -f docker-compose.local.yml up -d
 > LANGFUSE_SECRET_KEY=sk-lf-...
 > LANGFUSE_HOST=http://localhost:3000
 > ```
+
+### Platform Management
+
+```bash
+# Start all services
+docker-compose -f docker-compose.local.yml up -d
+
+# Stop all services (data is preserved in Docker volumes)
+docker-compose -f docker-compose.local.yml down
+
+# Restart a single service
+docker-compose -f docker-compose.local.yml restart qdrant
+
+# View logs
+docker-compose -f docker-compose.local.yml logs -f          # all services
+docker-compose -f docker-compose.local.yml logs -f mlflow   # single service
+
+# Check status
+docker-compose -f docker-compose.local.yml ps
+
+# Reset everything (WARNING: deletes all data!)
+docker-compose -f docker-compose.local.yml down -v
+```
+
+> **Note:** `down` preserves all data (Qdrant collections, MLflow experiments, Langfuse traces).
+> Only `down -v` deletes the Docker volumes and resets everything.
 
 ### Step 3: Start Dashboard
 
