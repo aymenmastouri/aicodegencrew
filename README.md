@@ -121,7 +121,7 @@ docker-compose -f docker-compose.local.yml up -d
 |---------|-----|-------|---------|
 | **Qdrant** | http://localhost:6333/dashboard | — | Vector store UI (collections, search) |
 | **Langfuse** | http://localhost:3000 | Sign up on first visit | LLM observability (prompt tracing) |
-| **MLflow** | http://localhost:5000 | — | Experiment tracking (pipeline metrics) |
+| **MLflow** | http://localhost:5001 | admin / password1234 | Experiment tracking (pipeline metrics) |
 | **Prometheus** | http://localhost:9090 | — | Runtime metrics |
 | **Grafana** | http://localhost:3001 | admin / admin | Monitoring dashboards |
 | **Ollama** | http://localhost:11434 | — | Local LLM (runs natively, not Docker) |
