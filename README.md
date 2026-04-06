@@ -126,13 +126,18 @@ docker-compose -f docker-compose.local.yml up -d
 | **Grafana** | http://localhost:3001 | admin / admin | Monitoring dashboards |
 | **Ollama** | http://localhost:11434 | — | Local LLM (runs natively, not Docker) |
 
-> **Langfuse first-time setup:** Open http://localhost:3000, click "Sign Up", create an account.
-> Then create a project and copy the API keys into your `.env`:
+> **Langfuse first-time setup:**
+> 1. Open http://localhost:3000
+> 2. Click **"Sign Up"** — create an account (email + password)
+> 3. Click **"New Project"** — name it "SDLC Pilot"
+> 4. Langfuse shows you two API keys: **Public Key** (`pk-lf-...`) and **Secret Key** (`sk-lf-...`)
+> 5. Copy both keys into your `.env`:
 > ```
-> LANGFUSE_PUBLIC_KEY=pk-lf-...
-> LANGFUSE_SECRET_KEY=sk-lf-...
+> LANGFUSE_PUBLIC_KEY=pk-lf-xxxxxxxx
+> LANGFUSE_SECRET_KEY=sk-lf-xxxxxxxx
 > LANGFUSE_HOST=http://localhost:3000
 > ```
+> Without these keys, everything still works — Langfuse tracing is simply skipped.
 
 ### Platform Management
 
