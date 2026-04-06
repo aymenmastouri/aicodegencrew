@@ -117,14 +117,22 @@ cd aicodegencrew
 docker-compose -f docker-compose.local.yml up -d
 ```
 
-| Service | URL | Purpose |
-|---------|-----|---------|
-| **Qdrant** | http://localhost:6333 | Vector store (semantic code search) |
-| **Langfuse** | http://localhost:3000 | LLM observability (prompt tracing) |
-| **MLflow** | http://localhost:5000 | Experiment tracking (pipeline metrics) |
-| **Prometheus** | http://localhost:9090 | Runtime metrics |
-| **Grafana** | http://localhost:3001 | Monitoring dashboards (admin/admin) |
-| **Ollama** | http://localhost:11434 | Local LLM (runs natively) |
+| Service | URL | Login | Purpose |
+|---------|-----|-------|---------|
+| **Qdrant** | http://localhost:6333/dashboard | — | Vector store UI (collections, search) |
+| **Langfuse** | http://localhost:3000 | Sign up on first visit | LLM observability (prompt tracing) |
+| **MLflow** | http://localhost:5000 | — | Experiment tracking (pipeline metrics) |
+| **Prometheus** | http://localhost:9090 | — | Runtime metrics |
+| **Grafana** | http://localhost:3001 | admin / admin | Monitoring dashboards |
+| **Ollama** | http://localhost:11434 | — | Local LLM (runs natively, not Docker) |
+
+> **Langfuse first-time setup:** Open http://localhost:3000, click "Sign Up", create an account.
+> Then create a project and copy the API keys into your `.env`:
+> ```
+> LANGFUSE_PUBLIC_KEY=pk-lf-...
+> LANGFUSE_SECRET_KEY=sk-lf-...
+> LANGFUSE_HOST=http://localhost:3000
+> ```
 
 ### Step 3: Start Dashboard
 
