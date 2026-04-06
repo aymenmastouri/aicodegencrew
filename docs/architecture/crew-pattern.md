@@ -48,7 +48,7 @@ Each agent has a specific role, goal, and backstory that guides LLM behavior:
 Agents interact with the codebase through structured tools, not raw file reads:
 
 - **FactsQueryTool**: Query `architecture_facts.json` by dimension/key (max 50 results)
-- **RAGQueryTool**: Semantic search against ChromaDB vector store
+- **RAGQueryTool**: Semantic search against Qdrant vector store
 - **StereotypeListTool**: List known architectural stereotypes
 - **DocWriterTool**: Write Markdown/AsciiDoc to knowledge directory
 - **DrawioDiagramTool**: Generate draw.io XML for architecture diagrams

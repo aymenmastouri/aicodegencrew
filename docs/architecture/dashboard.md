@@ -10,7 +10,7 @@ The SDLC Dashboard provides a web UI for running pipelines, browsing knowledge, 
 | Layer | Technology | Notes |
 |-------|-----------|-------|
 | Frontend | Angular 21 (zoneless) | Standalone components, no NgModules |
-| UI Framework | Angular Material + Tailwind CSS | Capgemini theme |
+| UI Framework | Angular Material + Tailwind CSS | Custom theme |
 | Backend | FastAPI (Python) | Async, SSE streaming |
 | Communication | REST + SSE | Proxy from :4200 to :8001 |
 

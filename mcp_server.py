@@ -9,7 +9,7 @@ the JSON-RPC STDIO transport.
 Usage:
     python mcp_server.py
     
-For CrewAI integration, use this in mcps=[]:
+For MCP integration:
     MCPServerStdio(command="python", args=["mcp_server.py"])
 """
 

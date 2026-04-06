@@ -55,7 +55,7 @@ import { statusLabel, isTerminal } from '../../shared/status';
     <div class="page-container">
       <!-- Hero -->
       <div class="hero">
-        <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="SDLC Pilot" class="hero-logo-img" />
+        <mat-icon class="hero-logo-icon">rocket_launch</mat-icon>
         <div class="hero-text">
           <h1 class="hero-title"><span class="hero-accent">SDLC</span> Pilot</h1>
           <p class="hero-subtitle">

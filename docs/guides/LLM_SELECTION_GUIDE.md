@@ -1,11 +1,11 @@
 # LLM Selection Guide — AICodeGenCrew
 
-> **Stand**: Capgemini Sovereign AI Platform (`litellm.bnotk.sovai-de.apps.ce.capgemini.com`)
-> Alle Modelle laufen On-Prem / Sovereign (kein Datenschutzproblem).
+> **Platform**: On-Prem AI
+> All models run on-premises. No data leaves the network.
 
 ---
 
-## 1. Verfügbare Modelle auf der Sovereign AI Platform
+## 1. Available Models
 
 | Alias | Modell | Architektur | Parameter | Aktiv | Kontext | Lizenz | Herkunft |
 |-------|--------|------------|-----------|-------|---------|--------|---------|
@@ -15,12 +15,12 @@
 | `vision` | **Mistral-Small-3.1-24B** | Dense | 24B | 24B | 131 071 | Apache 2 | Mistral / EU |
 | `embed` | Platform Embedding | — | — | — | — | — | — |
 
-**API-Endpunkt:** `https://litellm.bnotk.sovai-de.apps.ce.capgemini.com/v1`
-**API-Key:** gemeinsam für alle (in `.env` als `OPENAI_API_KEY`)
+**API-Endpunkt:** `https://your-litellm.example.com/v1`
+**API-Key:** shared for all models (in `.env` als `OPENAI_API_KEY`)
 
 ---
 
-## 2. Modell-Routing im Projekt
+## 2. Model Routing
 
 | Env-Variable | Alias | Modell | Verwendet von |
 |---|---|---|---|
@@ -30,25 +30,25 @@
 | `VISION_MODEL` | `openai/vision` | Mistral-Small-3.1-24B | OCR, Diagramm-Analyse, Screenshot-Verarbeitung |
 | `EMBED_MODEL` | `embed` | Platform Embed | Vektorsuche (ChromaDB, RAG) |
 
-> **Vereinfachung:** MODEL, FAST_MODEL und CODEGEN_MODEL verwenden alle dasselbe Modell
-> (Qwen3-Coder-Next). Die Trennung bleibt als Env-Variablen erhalten, damit bei Bedarf
-> einzelne Phasen auf andere Modelle umgestellt werden können.
+> **Simplification:** MODEL, FAST_MODEL und CODEGEN_MODEL verwenden alle dasselbe Modell
+> (Qwen3-Coder-Next). Die Trennung bleibt als Env-Variablen erhalten, so that if needed
+> individual phases can be switched to different models.
 
 ---
 
-## 3. Modell pro Phase
+## 3. Model per Phase
 
 ### Phase 0 — Discover (Repository-Indexierung)
-- **LLM:** keines
-- **Typ:** deterministisch
+- **LLM:** none
+- **Typ:** deterministic
 - **Was:** Codebase → ChromaDB-Vektorindex, `repo_manifest.json`, `symbols.jsonl`
 - **Output:** `knowledge/discover/`
 
 ---
 
 ### Phase 1 — Extract (Architektur-Fakten)
-- **LLM:** keines
-- **Typ:** deterministisch
+- **LLM:** none
+- **Typ:** deterministic
 - **Was:** Statische Code-Analyse → 17 Dimensions-Dateien (`components.json`, `relations.json`, `interfaces.json`, …)
 - **Output:** `knowledge/extract/architecture_facts.json`
 
@@ -58,7 +58,7 @@
 - **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm()`
 - **Kontext:** 262 144 Tokens
-- **Warum Qwen3-Coder-Next:** 5 parallele Mini-Crews, tiefes Reasoning über Architekturmuster, Domain-Modelle, Qualitätsanalyse; langer Kontext für große Codebasen
+- **Why Qwen3-Coder-Next:** 5 parallele Mini-Crews, tiefes Reasoning über Architekturmuster, Domain-Modelle, Qualitätsanalyse; langer Kontext für große Codebasen
 - **Agents:** `tech_architect`, `func_analyst`, `quality_analyst`, `synthesis_lead`
 - **Mini-Crews (parallel):**
   1. `tech_analysis` — Architekturstil, Design Patterns, Tech-Stack
@@ -74,7 +74,7 @@
 - **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm()` (mit `FAST_MODEL`-Unterstützung für einfache Agents via `use_fast_model=True`)
 - **Kontext:** 262 144 Tokens
-- **Warum Qwen3-Coder-Next:** Arc42-Kapitel = 6–12 Seiten langer strukturierter Output; C4-Diagramme brauchen exaktes Schema-Following; 262K-Kontext für große Codebasen
+- **Why Qwen3-Coder-Next:** Arc42-Kapitel = 6–12 Seiten langer strukturierter Output; C4-Diagramme brauchen exaktes Schema-Following; 262K-Kontext für große Codebasen
 - **Sub-Crews (sequenziell):**
   1. **C4 Crew** — L1 System Context, L2 Container, L3 Component Diagramme (DrawIO)
   2. **Arc42 Crew** — 12 Arc42-Kapitel (~50 Seiten)
@@ -85,11 +85,11 @@
 ### Phase 4 — Triage (Issue-Klassifizierung)
 - **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm(temperature=0.2)`
-- **Typ:** Hybrid (deterministisch + LLM-Synthese)
+- **Typ:** Hybrid (deterministic + LLM-Synthese)
 - **Deterministische Phase (kein LLM, <5 s):**
   - Issue-Klassifizierung, Blast-Radius (BFS), Entry-Points, Duplikat-Erkennung (ChromaDB)
 - **LLM-Phase:**
-  - Agent 1: `Issue Context Analyst` — Synthese aus deterministischen Findings → `customer_summary` + `developer_context`
+  - Agent 1: `Issue Context Analyst` — Synthese aus deterministicen Findings → `customer_summary` + `developer_context`
   - Agent 2: `Triage Quality Reviewer` — Qualitäts-Review (kein Tool-Use)
 - **Output:** `knowledge/triage/` (findings.json, customer.md, developer.md, triage.json)
 
@@ -99,9 +99,9 @@
 - **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`) für Planner, `FAST_MODEL` → **Qwen3-Coder-Next** für Reviewer
 - **Funktion:** `create_llm()` (Planner) + `create_fast_llm()` (Reviewer)
 - **Typ:** Hybrid (5-Stufen-Pipeline, nur Stufe 4 = LLM)
-- **Warum Qwen3-Coder-Next:** JSON-Schema-Compliance kritisch (Pydantic-Validierung); komplexes Reasoning über Abhängigkeitsgraphen; langer strukturierter Output
+- **Why Qwen3-Coder-Next:** JSON-Schema-Compliance kritisch (Pydantic-Validierung); komplexes Reasoning über Abhängigkeitsgraphen; langer strukturierter Output
 - **Pipeline:**
-  1. Input Parser (deterministisch, <1 s) — JIRA XML, DOCX, Excel
+  1. Input Parser (deterministic, <1 s) — JIRA XML, DOCX, Excel
   2. Component Discovery (RAG + Scoring, 2–5 s)
   3. Pattern Matcher (TF-IDF + Rules, 1–3 s)
   4. **Plan Generator (LLM, 15–30 s)** — erzeugt `ImplementationPlan`-JSON
@@ -114,7 +114,7 @@
 - **LLM:** `CODEGEN_MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_codegen_llm()`
 - **Kontext:** 262 144 Tokens
-- **Warum Qwen3-Coder-Next:** Speziell für agentic Coding trainiert; Hybrid Gated DeltaNet + Attention für langen Kontext; exzellentes Tool-Use und Build-Error-Recovery; 10–20× effizienter als vergleichbare Dense-Modelle
+- **Why Qwen3-Coder-Next:** Speziell für agentic Coding trainiert; Hybrid Gated DeltaNet + Attention für langen Kontext; exzellentes Tool-Use und Build-Error-Recovery; 10–20× effizienter als vergleichbare Dense-Modelle
 - **Typ:** Hybrid (Build-Fix-Loop, max. 3 Versuche)
 - **Agent:** `Developer` — liest Plan, schreibt Code, repariert Build-Fehler
 - **Tools:** CodeReader, CodeWriter, FactsQuery, RAG, Symbol, ImportIndex, DependencyLookup, BuildRunner, BuildErrorParser
@@ -126,7 +126,7 @@
 - **LLM:** `CODEGEN_MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_codegen_llm()`
 - **Kontext:** 262 144 Tokens
-- **Warum Qwen3-Coder-Next:** Test-Code ist Code; Framework-spezifische Syntax (JUnit 5 + Mockito, Angular TestBed + Jasmine); gleiche Stärken wie Phase 6
+- **Why Qwen3-Coder-Next:** Test-Code ist Code; Framework-spezifische Syntax (JUnit 5 + Mockito, Angular TestBed + Jasmine); gleiche Stärken wie Phase 6
 - **Agent pro Datei:** `Test Generator` — liest Quell-Datei, schreibt Test-Datei
 - **Sprachen:** Java (JUnit 5 + Mockito), TypeScript (Angular TestBed + Jasmine)
 - **Output:** `knowledge/verify/{task_id}_verify.json` + Test-Dateien im Repo
@@ -136,7 +136,7 @@
 ### Phase 8 — Deliver (Review & Konsistenzprüfung)
 - **LLM:** `MODEL` → **Qwen3-Coder-Next** (`openai/code`)
 - **Funktion:** `create_llm(temperature=0.2)`
-- **Typ:** Hybrid (deterministisch + LLM-Synthese)
+- **Typ:** Hybrid (deterministic + LLM-Synthese)
 - **Deterministische Phase (kein LLM):**
   - C4-Container-Coverage-Check, Arc42-Kapitel-Vollständigkeit, Placeholder-Erkennung (TODO/FIXME/TBD), Quality-Score (0–100)
 - **LLM-Phase:**
@@ -145,12 +145,12 @@
 
 ---
 
-## 4. Kurzübersicht: Phase → Modell
+## 4. Overview: Phase to Model
 
 | Phase | Name | LLM-Funktion | Modell | Kontext |
 |-------|------|-------------|--------|---------|
-| 0 | Discover | — | keines | — |
-| 1 | Extract | — | keines | — |
+| 0 | Discover | — | none | — |
+| 1 | Extract | — | none | — |
 | 2 | Analyze | `create_llm()` | Qwen3-Coder-Next | 262 144 |
 | 3 | Document | `create_llm()` | Qwen3-Coder-Next | 262 144 |
 | 4 | Triage | `create_llm()` | Qwen3-Coder-Next | 262 144 |
@@ -159,15 +159,15 @@
 | 7 | Verify | `create_codegen_llm()` | Qwen3-Coder-Next | 262 144 |
 | 8 | Deliver | `create_llm()` | Qwen3-Coder-Next | 262 144 |
 
-> **Aktuell** verwenden alle Phasen dasselbe Modell (Qwen3-Coder-Next via `openai/code`).
+> **Currently** verwenden alle Phasen dasselbe Modell (Qwen3-Coder-Next via `openai/code`).
 > Die Env-Variablen `MODEL`, `FAST_MODEL`, `CODEGEN_MODEL` bleiben getrennt,
-> damit bei Bedarf einzelne Phasen auf andere Modelle umgestellt werden können.
+> so that if needed individual phases can be switched to different models.
 > `FAST_MODEL` wird automatisch in `architecture_synthesis` (Phase 3)
 > für einfache/formulaische Agents verwendet (`use_fast_model=True` in `base_crew.py`).
 
 ---
 
-## 5. Anforderungsprofil der Pipeline
+## 5. Pipeline Requirements
 
 | Anforderung | Phasen | Modell |
 |---|---|---|
@@ -182,11 +182,11 @@
 
 ---
 
-## 6. Konfiguration (`.env`)
+## 6. Configuration (`.env`)
 
 ```env
-# Sovereign AI Platform — ein Endpunkt, ein API-Key für alle Modelle
-API_BASE=https://litellm.bnotk.sovai-de.apps.ce.capgemini.com/v1
+# On-Prem AI Platform — single endpoint, single API key for all models
+API_BASE=https://your-litellm.example.com/v1
 OPENAI_API_KEY=sk-your-api-key-here
 
 # Qwen3-Coder-Next (80B MoE, 3B active, 262K ctx) — all crews
@@ -204,7 +204,7 @@ VISION_MODEL=openai/vision
 # Embeddings
 EMBED_MODEL=embed
 
-# Kontext-Limit (Qwen3-Coder-Next nativ)
+# Context limit (Qwen3-Coder-Next native)
 LLM_CONTEXT_WINDOW=262144
 MAX_LLM_OUTPUT_TOKENS=65536
 ```

@@ -13,7 +13,7 @@ How architecture knowledge flows through SDLC phases, from raw code to generated
 
 ```mermaid
 graph TD
-    R[Source Repository] --> D[Discover<br/>ChromaDB + symbols + evidence + manifest]
+    R[Source Repository] --> D[Discover<br/>Qdrant + symbols + evidence + manifest]
     R --> E[Extract<br/>architecture_facts.json]
     D --> E
     E --> A[Analyze<br/>analyzed_architecture.json]
@@ -42,7 +42,7 @@ graph TD
     style DEL fill:#e3f2fd
 ```
 
-> **Note:** Discover feeds directly into Triage (ChromaDB similarity), Plan (symbol-based component scoring), and Implement (symbol-targeted context extraction), not just via ChromaDB vectors.
+> **Note:** Discover feeds directly into Triage (Qdrant similarity), Plan (symbol-based component scoring), and Implement (symbol-targeted context extraction), not just via Qdrant vectors.
 
 ## Knowledge Directory Structure
 
@@ -56,7 +56,7 @@ knowledge/
 │   │   ├── evidence.jsonl          # Chunk evidence (line range, type, linked symbols)
 │   │   ├── repo_manifest.json      # Repo stats, frameworks, ecosystems, modules, noise folders
 │   │   ├── .indexing_state.json    # Fingerprint, counts, timestamp
-│   │   └── ...                     # ChromaDB internal files
+│   │   └── ...                     # Qdrant internal files
 │   └── myapp/                  # Artifacts for another project
 │       └── ...
 ├── extract/           # Deterministic facts (single source of truth)

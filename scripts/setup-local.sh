@@ -32,14 +32,14 @@ ok()   { echo -e "${GREEN}  ✓${NC} $*"; }
 warn() { echo -e "${YELLOW}  !${NC} $*"; }
 fail() { echo -e "${RED}  ✗ $*${NC}"; exit 1; }
 
-# ── Configuration — Capgemini Sovereign AI Platform ──────────────────────────
+# ── Configuration — On-Prem AI Platform ──────────────────────────
 # IMPORTANT: Fill in the API key before distributing this script to managers!
 # Everything else is pre-configured — the manager only runs this script.
-GIT_REPO_URL="https://bnotkca.pl.s2-eu.capgemini.com/gitlab/ai-group/aicodegencrew.git"
+GIT_REPO_URL="https://github.com/aymenmastouri/aicodegencrew.git"
 INSTALL_DIR="$HOME/aicodegencrew"
 
 ENV_API_KEY="sk-FILL-IN-BEFORE-DISTRIBUTING"
-ENV_API_BASE="https://litellm.bnotk.sovai-de.apps.ce.capgemini.com/v1"
+ENV_API_BASE="https://litellm.your-platform.example.com/v1"
 ENV_MODEL="openai/code"
 ENV_FAST_MODEL="openai/code"
 ENV_CODEGEN_MODEL="openai/code"
@@ -185,7 +185,7 @@ REQUIREMENTS_DIR=./inputs/requirements
 LOGS_DIR=./inputs/logs
 REFERENCE_DIR=./inputs/reference
 
-# ── LLM Configuration (Capgemini Sovereign AI Platform) ─────────────────────
+# ── LLM Configuration (On-Prem AI Platform) ─────────────────────
 LLM_PROVIDER=onprem
 API_BASE=${ENV_API_BASE}
 OPENAI_API_KEY=${ENV_API_KEY}
@@ -271,10 +271,10 @@ print(f'  {chr(10003) if ok else chr(33)} LLM: {msg}')
 # ============================================================================
 echo ""
 echo -e "${BOLD}${GREEN}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}${GREEN}║                   Setup abgeschlossen!                   ║${NC}"
+echo -e "${BOLD}${GREEN}║                   Setup complete!                   ║${NC}"
 echo -e "${BOLD}${GREEN}╚══════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "  ${BOLD}Verzeichnis:${NC}   $ROOT"
+echo -e "  ${BOLD}Directory:${NC}   $ROOT"
 echo -e "  ${BOLD}Python:${NC}        $(python3.12 --version)"
 echo -e "  ${BOLD}Node:${NC}          $(node --version)"
 echo -e "  ${BOLD}npm:${NC}           $(npm --version)"
@@ -297,7 +297,7 @@ if $SETUP_ONLY; then
 fi
 
 if $RUN_E2E; then
-    [[ -z "$E2E_REPO" ]] && fail "--run-e2e braucht einen Repo-Pfad, z.B.: --run-e2e ~/mein-projekt"
+    [[ -z "$E2E_REPO" ]] && fail "--run-e2e requires a repo path, e.g.: --run-e2e ~/mein-projekt"
     [[ ! -d "$E2E_REPO" ]] && fail "Repository nicht gefunden: $E2E_REPO"
 
     echo -e "${BOLD}${CYAN}━━━ E2E Pipeline: $E2E_REPO ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -326,7 +326,7 @@ if $RUN_E2E; then
         echo ""
     done
 
-    echo -e "${BOLD}${GREEN}━━━ E2E fertig: $((TOTAL - FAILED))/${TOTAL} Phasen erfolgreich ━━━━━━━━━━${NC}"
+    echo -e "${BOLD}${GREEN}━━━ E2E finished: $((TOTAL - FAILED))/${TOTAL} Phasen erfolgreich ━━━━━━━━━━${NC}"
     echo -e "  Ergebnisse: ${CYAN}$ROOT/knowledge/${NC}"
     ls -lh "$ROOT/knowledge/" 2>/dev/null || true
     [[ $FAILED -gt 0 ]] && exit 1

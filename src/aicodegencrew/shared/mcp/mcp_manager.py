@@ -21,7 +21,14 @@ import shutil
 from pathlib import Path
 from typing import Literal
 
-from crewai.mcp import MCPServerStdio
+from dataclasses import dataclass, field
+
+@dataclass
+class MCPServerStdio:
+    command: str = ""
+    args: list = field(default_factory=list)
+    env: dict = None
+    cache_tools_list: bool = True
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +37,7 @@ def _npx_available() -> bool:
     return shutil.which("npx") is not None
 
 # MCP server types
-MCPServerType = Literal["sequential_thinking", "memory", "brave_search", "filesystem", "playwright", "github", "sovai"]
+MCPServerType = Literal["sequential_thinking", "memory", "brave_search", "filesystem", "playwright", "github", "platform_mcp"]
 
 
 class MCPManager:
@@ -167,23 +174,23 @@ class MCPManager:
             cache_tools_list=True,
         )
 
-    def get_sovai_mcp(self) -> MCPServerStdio:
+    def get_platform_mcp(self) -> MCPServerStdio:
         """
-        SovAI MCP for Sovereign AI platform tools.
+        Platform MCP for Sovereign AI platform tools.
 
-        Requires: SOVAI_MCP_URL environment variable
+        Requires: PLATFORM_MCP_URL environment variable
         """
-        sovai_url = os.getenv("SOVAI_MCP_URL", "")
+        platform_mcp_url = os.getenv("PLATFORM_MCP_URL", "")
 
-        if not sovai_url:
+        if not platform_mcp_url:
             raise ValueError(
-                "SOVAI_MCP_URL environment variable required for SovAI MCP."
+                "PLATFORM_MCP_URL environment variable required for Platform MCP."
             )
 
         return MCPServerStdio(
             command="npx",
-            args=["-y", "@sovai/mcp-server"],
-            env={"SOVAI_MCP_URL": sovai_url},
+            args=["-y", "@platform/mcp-server"],
+            env={"PLATFORM_MCP_URL": platform_mcp_url},
             cache_tools_list=True,
         )
 
@@ -226,7 +233,7 @@ class MCPManager:
             "filesystem": self.get_filesystem_mcp,
             "playwright": self.get_playwright_mcp,
             "github": self.get_github_mcp,
-            "sovai": self.get_sovai_mcp,
+            "platform_mcp": self.get_platform_mcp,
         }
 
         for server_type in server_types:

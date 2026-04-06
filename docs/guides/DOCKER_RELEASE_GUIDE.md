@@ -10,7 +10,7 @@ Step-by-step instructions for building, packaging, and distributing the SDLC Pil
 
 - **Docker Engine** installed and running (WSL2, Linux, or Docker Desktop)
 - Working directory: project root (`cd aicodegencrew`)
-- Capgemini CA certificate at `certs/CapgeminiPKIRootCA.crt`
+- Corporate CA certificate at `certs/CorporateRootCA.crt` (optional)
 
 **WSL2 setup (if not yet installed):**
 
@@ -139,7 +139,7 @@ sdlc-pilot-v0.7.3/
 ├── clean.bat                       ← Windows full cleanup
 ├── clean.sh                        ← macOS/Linux full cleanup
 ├── README.md                       ← End-user guide
-├── LICENSE                         ← Capgemini SE proprietary
+├── LICENSE                         ← MIT License
 ├── config/
 │   └── phases_config.yaml          ← Pipeline phase & preset configuration
 ├── sdlc-pilot-backend.tar.gz      ← Backend image (~350 MB)
@@ -282,7 +282,7 @@ Browser (http://localhost)
                        │  Backend (FastAPI)        │  Port 8001 (internal)
                        │  Python 3.12              │
                        │  Bytecode only (.pyc)     │
-                       │  + Capgemini CA           │
+                       │  + Corporate CA           │
                        │  + truststore             │
                        │  /project ──► user repo   │
                        └──────────────────────────┘

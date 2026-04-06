@@ -5,7 +5,16 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any
 
-from crewai.tools import BaseTool
+from pydantic import BaseModel as _BaseModel
+
+class BaseTool(_BaseModel):
+    """Framework-agnostic base tool (replaces crewai.tools.BaseTool)."""
+    name: str = ""
+    description: str = ""
+    args_schema: type | None = None
+    model_config = {"arbitrary_types_allowed": True}
+    def _run(self, **kwargs):
+        raise NotImplementedError
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)

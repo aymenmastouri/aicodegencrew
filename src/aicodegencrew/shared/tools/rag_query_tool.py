@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Any, ClassVar
 
-from crewai.tools import BaseTool
+from .base_tool import BaseTool
 from pydantic import BaseModel, Field
 
 from ..utils.logger import setup_logger

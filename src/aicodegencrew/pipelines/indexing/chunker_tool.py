@@ -3,7 +3,7 @@
 import hashlib
 from typing import Any
 
-from crewai.tools import BaseTool
+from ...shared.tools.base_tool import BaseTool
 from pydantic import BaseModel, Field
 
 from ...shared.utils.logger import setup_logger

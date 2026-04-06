@@ -94,7 +94,7 @@ Legacy `hybrid/` and obsolete crew packages removed. Phase numbers aligned acros
 
 - Make corporate CA certificate optional in Dockerfiles (build no longer fails without cert)
 - Make timezone configurable via `TZ` env var in all docker-compose files
-- Replace hardcoded Capgemini LLM URLs in `.env.example` with generic examples
+- Replace hardcoded internal LLM URLs in `.env.example` with generic examples
 - Fix misleading "Production" comment in `Dockerfile.dev`
 - Remove internal domain reference from `docker-compose.yml` comment
 

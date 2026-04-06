@@ -94,7 +94,7 @@ async function splash(page: Page) {
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-top:24px">
         <span style="font-size:11px;color:rgba(255,255,255,.3);letter-spacing:1.5px;text-transform:uppercase">by</span>
-        <img src="/assets/logos/Capgemini_Primary-logo_Capgemini-white.png" style="height:24px;opacity:.75" alt="Capgemini" />
+        
         <span style="width:1px;height:16px;background:rgba(255,255,255,.15);margin:0 8px"></span>
         <span style="font-size:14px;font-style:italic;color:rgba(255,255,255,.4);letter-spacing:.5px">Make it real</span>
       </div>
@@ -275,7 +275,7 @@ test.describe('Demo Showcase', () => {
     // ═════════════════════════════════════════════════════════
 
     await chapter(page, 1, 'The Platform',
-      'Capgemini SDLC Pilot — nine automated phases from codebase understanding to delivery');
+      'SDLC Pilot — nine automated phases from codebase understanding to delivery');
 
     await expect(page.locator('.hero')).toBeVisible({ timeout: 10_000 });
     await p(page, RP);
@@ -1004,7 +1004,7 @@ test.describe('Demo Showcase', () => {
           100% on-premises — source code and tickets never leave your infrastructure
         </div>
         <div style="display:flex;align-items:center;gap:12px;opacity:.6">
-          <img src="/assets/logos/Capgemini_Primary-logo_Capgemini-white.png" style="height:20px" alt="Capgemini" />
+          
           <span style="width:1px;height:14px;background:rgba(255,255,255,.2)"></span>
           <span style="font-size:14px;font-style:italic;color:rgba(255,255,255,.5);letter-spacing:.5px">Make it real</span>
         </div>`;

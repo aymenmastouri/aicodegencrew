@@ -2,27 +2,27 @@
 
 ## Problem
 
-In Corporate-Netzwerken (z.B. Capgemini) werden HTTPS-Verbindungen durch einen
-**TLS-Inspection-Proxy** terminiert und mit einem internen CA-Zertifikat
-neu signiert. Python nutzt standardmäßig das `certifi`-Bundle, das diese
-internen CAs **nicht** enthält — jeder HTTPS-Call (LLM API, ChromaDB, pip, etc.)
-schlägt dann mit `SSL: CERTIFICATE_VERIFY_FAILED` fehl.
+In corporate networks,  HTTPS connections are terminated by a
+**TLS-Inspection-Proxy** 
+and re-signed with an internal CA certificate. Python uses das `certifi`-Bundle, which does not include these
+internal CAs — jeder HTTPS-Call (LLM API, ChromaDB, pip, etc.)
+resulting in `SSL: CERTIFICATE_VERIFY_FAILED` errors for every HTTPS call (LLM API, Qdrant, pip, etc).
 
-## Lösung: `truststore`
+## Solution: `truststore`
 
-Das Package [`truststore`](https://github.com/sethmlarson/truststore) ersetzt
-Pythons eigenen Zertifikatspeicher durch den des Betriebssystems:
+The package [`truststore`](https://github.com/sethmlarson/truststore) replaces
+Python's certificate store with the OS certificate store:
 
-| OS      | Genutzter Store                        |
+| OS      | Store Used                        |
 |---------|----------------------------------------|
 | Windows | Windows Certificate Store (certmgr)    |
 | macOS   | Keychain Access / System Roots         |
 | Linux   | `/etc/ssl/certs` bzw. distro-spezifisch|
 
-Da die Corporate-CA im OS-Store bereits als vertrauenswürdig hinterlegt ist
-(z.B. per GPO auf Windows), funktionieren alle HTTPS-Verbindungen sofort.
+Since the corporate CA is already trusted in the OS store
+(e.g. via GPO on Windows), all HTTPS connections work immediately.
 
-## Implementierung
+## Implementation
 
 ### 1. Dependency (`pyproject.toml`)
 
@@ -31,7 +31,7 @@ Da die Corporate-CA im OS-Store bereits als vertrauenswürdig hinterlegt ist
 "truststore>=0.9.0",
 ```
 
-### 2. Frühe Injektion (`src/aicodegencrew/__init__.py`)
+### 2. Early Injection (`src/aicodegencrew/__init__.py`)
 
 ```python
 # Inject OS/Windows certificate store FIRST — before any HTTP library loads.
@@ -43,8 +43,8 @@ except ImportError:
     pass  # graceful fallback if truststore is not installed
 ```
 
-**Warum ganz oben in `__init__.py`?**
-`inject_into_ssl()` muss aufgerufen werden **bevor** `urllib3`, `requests`,
+**Why at the top of in `__init__.py`?**
+`inject_into_ssl()` must be called **before** `urllib3`, `requests`,
 `httpx` oder andere HTTP-Libraries ihre SSL-Kontexte initialisieren. Da
 `__init__.py` beim ersten `import aicodegencrew` läuft, ist das der früheste
 sichere Zeitpunkt.
@@ -60,36 +60,36 @@ except ImportError:
     pass  # truststore not installed — fall back to certifi bundle
 ```
 
-Dieser zweite Aufruf ist ein **Sicherheitsnetz** für den Fall, dass
+This second call is a **safety net** für den Fall, dass
 `llm_factory` direkt importiert wird (z.B. in Tests oder Scripts) ohne
 vorher das Package-Level `__init__.py` zu durchlaufen.
-`inject_into_ssl()` ist idempotent — mehrfaches Aufrufen ist harmlos.
+`inject_into_ssl()` is idempotent — multiple calls are harmless.
 
 ## Debugging
 
-### Prüfen ob truststore aktiv ist
+### Check if truststore is active
 
 ```python
 import ssl
 ctx = ssl.create_default_context()
-print(ctx.get_ca_certs())  # Sollte Corporate-CA enthalten
+print(ctx.get_ca_certs())  # Should contain corporate CA
 ```
 
-### Häufige Fehler
+### Common Errors
 
-| Symptom | Ursache | Fix |
+| Symptom | Cause | Fix |
 |---------|---------|-----|
 | `CERTIFICATE_VERIFY_FAILED` | truststore nicht installiert oder nicht injiziert | `pip install truststore` + prüfe Import-Reihenfolge |
 | Fehler nur in Tests | Test importiert `llm_factory` direkt | Fallback in `llm_factory.py` greift — sollte funktionieren |
 | Fehler nur auf Linux CI | Corporate-CA nicht im System-Store | CA-Cert in `/usr/local/share/ca-certificates/` ablegen + `update-ca-certificates` |
 
-## Alternative: `SSL_CERT_FILE` (nicht empfohlen)
+## Alternative: `SSL_CERT_FILE` (not recommended)
 
-Man könnte auch manuell ein Bundle exportieren:
+You could also manually export a bundle:
 
 ```bash
 export SSL_CERT_FILE=/path/to/corporate-bundle.pem
 ```
 
-Das ist **fragil** (Pfad muss auf jedem Rechner stimmen, Bundle muss aktuell
-gehalten werden). `truststore` ist die sauberere Lösung.
+This is fragile (path must match on every machine, bundle must be kept up to date).
+gehalten werden). `truststore` is the cleaner solution.

@@ -45,10 +45,8 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
         <mat-icon class="text-white">{{ sidenavLayout === 'hidden' ? 'menu_open' : 'menu' }}</mat-icon>
       </button>
       <a routerLink="/dashboard" class="brand-link">
-        <img src="assets/logos/Capgemini_Primary-spade_Capgemini-white.png" alt="" class="brand-icon" />
+        <mat-icon class="brand-icon-mat">rocket_launch</mat-icon>
         <span class="brand"> <span class="brand-ai">SDLC</span> Pilot </span>
-        <span class="brand-divider"></span>
-        <img src="assets/logos/Capgemini_Primary-logo_Capgemini-white.png" alt="Capgemini" class="cap-logo" />
       </a>
       <span class="flex-1"></span>
 
@@ -132,7 +130,7 @@ type SidenavMode = 'full' | 'rail' | 'hidden' | 'overlay';
           <router-outlet />
         </div>
         <footer class="page-footer">
-          <span>&copy; 2025–2026 Capgemini. All rights reserved.</span>
+          <span>&copy; 2025–2026 Aymen Mastouri. All rights reserved.</span>
           <span class="page-footer-sep">·</span>
           <span class="page-footer-version">v{{ appVersion }}</span>
         </footer>

@@ -1,4 +1,4 @@
-"""Shared LLM factory - single source of truth for CrewAI LLM creation.
+"""Shared LLM factory - LLM configuration — phase temperatures, provider prefixes, connectivity checks.
 
 All crews import `create_llm()` from here instead of duplicating the logic.
 """
@@ -42,7 +42,6 @@ try:
 except ImportError:
     pass  # truststore not installed — fall back to certifi bundle
 
-from crewai import LLM
 
 logger = logging.getLogger(__name__)
 

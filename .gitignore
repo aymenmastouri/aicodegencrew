@@ -8,6 +8,7 @@
 # =============================================================================
 .env
 .env.*
+CLAUDE.md
 !.env.example
 *.pem
 *.key
@@ -198,3 +199,4 @@ sdlc_overview.png
 # Backend build artifacts
 ui/backend/src_bundle/
 ui/backend/certs/
+certs/

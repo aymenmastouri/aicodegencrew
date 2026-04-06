@@ -1,645 +1,242 @@
 # SDLC Pilot
 
-> **Proprietary Software** — Aymen Mastouri (Capgemini).
-> Keine Nutzung ohne schriftliche Genehmigung.
+**AI-Powered Software Development Lifecycle Automation**
 
-**AI-Powered Development Lifecycle Automation**
-
-[![Version](https://img.shields.io/badge/version-0.7.4-blue.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](#changelog)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![Angular 21](https://img.shields.io/badge/dashboard-Angular%2021-red.svg)](#3-sdlc-dashboard-web-ui)
-[![Tests](https://img.shields.io/badge/tests-745%20passed-brightgreen.svg)](#10-testing)
-[![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#9-deployment)
+[![Angular 21](https://img.shields.io/badge/dashboard-Angular%2021-red.svg)](#dashboard)
+[![Tests](https://img.shields.io/badge/tests-745%20passed-brightgreen.svg)](#testing)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![On-Premises](https://img.shields.io/badge/deployment-on--premises-purple.svg)](#deployment)
 
-SDLC Pilot automatisiert den gesamten Software Development Lifecycle — von
-Architektur-Analyse bis Code-Generierung. Läuft komplett auf eurer Infrastruktur.
-Keine Daten verlassen das Netzwerk.
-
-| Komponente | Beschreibung |
-|------------|-------------|
-| **SDLC Dashboard** (Web UI) | Pipelines starten, Aufgaben hochladen, Ergebnisse ansehen |
-| **Core Pipeline** (CLI) | Kann auch ohne Dashboard über die Kommandozeile laufen |
+SDLC Pilot analyzes existing codebases, generates evidence-based architecture documentation, and automates the full development lifecycle — from repository indexing to delivery review. Runs entirely on your infrastructure. **No data leaves your network.**
 
 ---
 
-## Inhalt
+## The Problem
 
-1. [Quick Start — Docker (empfohlen)](#1-quick-start--docker-empfohlen)
-2. [Quick Start — Entwickler (Python + Node)](#2-quick-start--entwickler-python--node)
-3. [Quick Start — WSL2 Lokal (ohne Docker)](#3-quick-start--wsl2-lokal-ohne-docker)
-4. [Quick Start — Windows Lokal (ohne Docker)](#4-quick-start--windows-lokal-ohne-docker)
-5. [SDLC Dashboard (Web UI)](#5-sdlc-dashboard-web-ui)
-6. [Core Pipeline (CLI)](#6-core-pipeline-cli)
-7. [Konfiguration (.env)](#7-konfiguration-env)
-8. [Architektur & Phasen](#8-architektur--phasen)
-9. [Troubleshooting](#9-troubleshooting)
-9. [Scripts](#9-scripts)
-10. [Deployment](#10-deployment)
-11. [Testing](#11-testing)
-12. [Dokumentation](#12-dokumentation)
+Development teams waste weeks manually analyzing codebases, writing architecture documentation, and planning work. Existing AI tools either send your source code to external APIs or generate hallucinated documentation not grounded in actual code.
+
+## The Solution
+
+SDLC Pilot uses a **9-phase pipeline architecture** that:
+
+1. **Indexes your entire codebase** into a vector store (Qdrant) with full evidence tracking
+2. **Extracts architecture facts deterministically** — 45 collectors, 16 dimensions, zero LLM involvement
+3. **Generates documentation grounded in code** — every claim backed by file path and line number
+4. **Runs 100% on-premises** — your code never leaves your network
+
+> **Key Insight:** LLMs don't guess about your code. They analyze verified facts that were extracted deterministically from your codebase.
 
 ---
 
-## 1. Quick Start — Docker (empfohlen)
+## Architecture
 
-> Für alle die schnell loslegen wollen — Manager, Entwickler, Demo.
-> Kein Python, kein Node, kein npm nötig. Nur **Docker Desktop**.
+```
+KNOWLEDGE (no LLM)          REASONING (Pipeline + LLM)       EXECUTION
+━━━━━━━━━━━━━━━━━━          ━━━━━━━━━━━━━━━━━━━━━━━━━━       ━━━━━━━━━
+Phase 0: Discover    --->   Phase 2: Analyze          --->   Phase 6: Implement *
+Phase 1: Extract     --->   Phase 3: Document         --->   Phase 7: Verify *
+                            Phase 4: Triage           --->   Phase 8: Deliver
+                            Phase 5: Plan
 
-### Voraussetzungen
+* Phases 6-7 are not yet implemented
+```
 
-| Was | Download | Hinweis |
-|-----|----------|---------|
-| **Git** | https://git-scm.com/downloads | Bei Capgemini meist vorinstalliert |
-| **Docker Desktop** | https://www.docker.com/products/docker-desktop | Windows, macOS oder Linux |
+| Phase | LLM | What it does |
+|-------|:---:|-------------|
+| **0 Discover** | No | Index codebase into Qdrant vector store, extract symbols and evidence |
+| **1 Extract** | No | Deterministically extract 16 architecture dimensions via 45 collectors |
+| **2 Analyze** | Yes | 16 parallel LLM calls + cross-section review + synthesis |
+| **3 Document** | Hybrid | Template-first: deterministic skeleton + LLM enrichment (C4 + Arc42) |
+| **4 Triage** | Hybrid | Deterministic scan (<5s) + single LLM synthesis (~30s) |
+| **5 Plan** | Hybrid | 4 deterministic stages + 1 LLM call + 2 validators |
+| **8 Deliver** | Yes | Consistency review + quality synthesis report |
 
-### Docker Desktop installieren
+### Data Flow
 
-<details>
-<summary><strong>Windows</strong></summary>
+```
+Source Repository
+  |
+  v
+Discover --> Qdrant vectors + symbols.jsonl + evidence.jsonl
+Extract  --> architecture_facts.json (16 dimensions, ground truth)
+Analyze  --> analyzed_architecture.json
+Document --> C4 diagrams + Arc42 chapters + DrawIO
+Triage   --> Issue findings + developer briefs
+Plan     --> Implementation plans per task
+Deliver  --> Consistency report + quality synthesis
+```
 
-1. https://www.docker.com/products/docker-desktop → "Download for Windows"
-2. `Docker Desktop Installer.exe` ausführen, Voreinstellungen beibehalten
-3. Falls gefragt: **WSL2 installieren** → Ja
-4. Rechner neu starten (wenn gefordert)
-5. Docker Desktop öffnen (Startmenü → "Docker Desktop")
-6. Warten bis das blaue Wal-Icon in der Taskleiste (unten rechts) erscheint
-</details>
+---
 
-<details>
-<summary><strong>macOS</strong></summary>
+## Key Features
 
-1. https://www.docker.com/products/docker-desktop → "Download for Mac"
-2. Richtige Version wählen: **Apple Silicon** (M1/M2/M3) oder **Intel**
-3. `.dmg` öffnen, Docker in Applications ziehen
-4. Docker aus Applications starten
-5. Warten bis das Wal-Icon in der Menüleiste (oben rechts) erscheint
-</details>
+### Evidence-First AI
+Every LLM claim is backed by code evidence. Phase 0+1 extract facts deterministically (zero LLM). Phase 2+ synthesize only what's been proven.
 
-<details>
-<summary><strong>Linux (Ubuntu/Debian)</strong></summary>
+### Anti-Hallucination
+- **Fact Grounding**: Detects hallucinated component names by matching against known entities
+- **Template-First**: Deterministic markdown skeleton with fact tables — LLM fills only placeholders
+- **Quality Gates**: Auto-retry below threshold with escalating feedback and decreasing temperature
+
+### Pipeline Quality Score
+Weighted aggregate across phases: Extract (10%) + Analyze (25%) + Document (35%) + Triage (15%) + Deliver (15%). Tracked in MLflow, displayed in dashboard.
+
+### Dual Interface
+- **Web Dashboard** — Angular 21 + Material Design. Start pipelines, upload tasks, browse results, view metrics.
+- **CLI** — Full pipeline control from the terminal. Presets, phase selection, Git integration.
+
+### On-Premises Ready
+- LLM via Ollama or any OpenAI-compatible API (self-hosted)
+- Vector store: Qdrant (self-hosted)
+- Observability: Langfuse + MLflow + Prometheus (all self-hosted)
+- SSL: Corporate CA support via `truststore`
+
+---
+
+## Quick Start
+
+### Step 1: Prerequisites
+
+Install [Ollama](https://ollama.com) (local LLM) and [Docker](https://docs.docker.com/get-docker/) (or [Colima](https://github.com/abiosoft/colima) for Mac):
 
 ```bash
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
-# Ausloggen und wieder einloggen, dann:
-docker info
-```
-</details>
-
-### Terminal öffnen
-
-| Betriebssystem | So geht's |
-|----------------|-----------|
-| **Windows 11** | Rechtsklick auf Start-Button → "Terminal" |
-| **Windows 10** | Startmenü → `cmd` eingeben → "Eingabeaufforderung" |
-| **macOS** | Spotlight (Cmd+Leertaste) → `Terminal` eingeben → Enter |
-| **Linux** | Strg+Alt+T |
-
-### Schritt 1: Repository herunterladen
-
-```
-git clone https://bnotkca.pl.s2-eu.capgemini.com/gitlab/ai-group/aicodegencrew.git
-cd aicodegencrew
+# Pull LLM models
+ollama pull qwen3.5              # 9.7B coding model
+ollama pull nomic-embed-text     # Embedding model for RAG
 ```
 
-### Schritt 2: Konfiguration
-
-| Windows (CMD/PowerShell) | macOS / Linux / Git Bash |
-|--------------------------|--------------------------|
-| `copy .env.example .env` | `cp .env.example .env` |
-
-Dann `.env` mit einem Texteditor öffnen:
-
-- **Windows:** Rechtsklick auf `.env` → "Öffnen mit" → Notepad
-- **macOS:** Rechtsklick → "Öffnen mit" → TextEdit
-- **Linux:** `nano .env`
-
-Die Zeile suchen:
-```
-OPENAI_API_KEY=sk-your-api-key-here
-```
-
-`sk-your-api-key-here` durch den echten API-Key ersetzen.
-Speichern (Windows: Strg+S, macOS: Cmd+S) und schließen.
-
-> Den API-Key findest du im internen Wiki oder frage im Team-Channel.
-
-### Schritt 3: Starten
-
-Stelle sicher, dass **Docker Desktop läuft** (Wal-Icon sichtbar).
-
-| Windows CMD / PowerShell | Git Bash / macOS / Linux |
-|--------------------------|--------------------------|
-| `start.bat` | `./start.sh` |
-
-Beim **ersten Mal** dauert es 2-3 Minuten (Docker Images werden gebaut).
-Danach startet es in Sekunden.
-
-### Schritt 4: Dashboard öffnen
-
-Öffne im Browser (Chrome, Edge, Firefox):
-
-**http://localhost**
-
-Fertig!
-
-### Stoppen / Logs / Neustarten
-
-| Aktion | Windows CMD/PowerShell | Git Bash / macOS / Linux |
-|--------|------------------------|--------------------------|
-| Stoppen | `start.bat stop` | `./start.sh stop` |
-| Logs anzeigen | `start.bat logs` | `./start.sh logs` |
-| Neustarten | `start.bat stop` dann `start.bat` | `./start.sh stop` dann `./start.sh` |
-
----
-
-## 2. Quick Start — Entwickler (Python + Node)
-
-> Nur nötig wenn du am **Source-Code** mitarbeiten willst.
-> Für Demo / Testen reicht Docker (siehe oben).
-
-### Voraussetzungen
-
-| Was | Version | Prüfen mit | Wofür |
-|-----|---------|------------|-------|
-| **Python** | 3.10 - 3.12 | `python --version` | Core Pipeline |
-| **Node.js** | 18+ | `node --version` | Dashboard Frontend |
-| **Ollama** | beliebig | `curl http://127.0.0.1:11434/api/tags` | Nur für Pipeline (Embeddings) |
-
-> Ollama und LLM-API werden **nicht** zum Starten des Dashboards gebraucht.
-> Nur für das Ausführen der Pipeline-Phasen.
-
-### Setup — Windows
-
-```powershell
-git clone https://bnotkca.pl.s2-eu.capgemini.com/gitlab/ai-group/aicodegencrew.git
-cd aicodegencrew
-
-python -m venv .venv
-.venv\Scripts\activate
-pip install -e ".[dev,parsers]"
-
-copy .env.example .env
-# .env öffnen und API-Key eintragen
-
-cd ui\frontend
-npm install
-cd ..\..
-npm install
-
-npm run dev
-```
-
-Dashboard: http://localhost:4200
-
-### Setup — macOS / Linux
+### Step 2: Start Platform Services
 
 ```bash
-git clone https://bnotkca.pl.s2-eu.capgemini.com/gitlab/ai-group/aicodegencrew.git
+git clone https://github.com/aymenmastouri/aicodegencrew.git
 cd aicodegencrew
 
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev,parsers]"
+# Start Qdrant, Langfuse, MLflow, Prometheus, Grafana
+docker-compose -f docker-compose.local.yml up -d
+```
 
-cp .env.example .env
-# .env öffnen und API-Key eintragen
+| Service | URL | Purpose |
+|---------|-----|---------|
+| **Qdrant** | http://localhost:6333 | Vector store (semantic code search) |
+| **Langfuse** | http://localhost:3000 | LLM observability (prompt tracing) |
+| **MLflow** | http://localhost:5000 | Experiment tracking (pipeline metrics) |
+| **Prometheus** | http://localhost:9090 | Runtime metrics |
+| **Grafana** | http://localhost:3001 | Monitoring dashboards (admin/admin) |
+| **Ollama** | http://localhost:11434 | Local LLM (runs natively) |
+
+### Step 3: Start Dashboard
+
+```bash
+cp .env.example .env             # Pre-configured for local Ollama + Docker services
+# Edit .env: set PROJECT_PATH to the repo you want to analyze
+
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev,parsers]"
 
 cd ui/frontend && npm install && cd ../..
-npm install
-
-npm run dev
+npm install && npm run dev
 ```
 
-Dashboard: http://localhost:4200
+Dashboard: **http://localhost:4200** | API: **http://localhost:8001/api/health**
 
-### Setup prüfen
-
-Nach `npm run dev`:
-
-| URL | Erwartet |
-|-----|----------|
-| http://localhost:4200 | Dashboard UI |
-| http://localhost:8001/api/health | `{"status":"ok"}` |
-| http://localhost:8001/api/health/setup-status | Setup-Status mit Fehlermeldungen |
-
-### Dashboard starten / stoppen (Entwickler)
-
-| Aktion | Befehl |
-|--------|--------|
-| Starten (Backend + Frontend) | `npm run dev` |
-| Starten (Git Bash) | `./scripts/dev.sh` |
-| Stoppen | Strg+C oder `npm run stop` |
-| Stoppen (Git Bash) | `./scripts/dev.sh stop` |
-| Status prüfen | `./scripts/dev.sh status` |
-
-> **Wichtig:** Immer `npm start` für das Frontend verwenden, nie `ng serve` direkt.
-> `npm start` aktiviert den Proxy (`proxy.conf.json`) der `/api/*` ans Backend weiterleitet.
-> Ohne Proxy kommen API-Anfragen als Angular-HTML zurück.
-
----
-
-## 3. Quick Start — WSL2 Lokal (ohne Docker)
-
-> Für Manager oder Tester die **nur WSL2 Ubuntu** haben — kein Docker, kein Python, kein Node vorinstalliert.
-> Ein einziges Script installiert alles automatisch.
-
-### Voraussetzungen
-
-| Was | Hinweis |
-|-----|---------|
-| **WSL2 + Ubuntu 22.04** | `wsl --install` in PowerShell (Admin), dann Ubuntu aus dem Microsoft Store |
-
-### Setup (ein Befehl)
+### Step 4: Analyze a Repository
 
 ```bash
-# Im Ubuntu-Terminal:
-bash scripts/setup-local.sh
+# Edit .env: PROJECT_PATH=/path/to/your/repo
+
+aicodegencrew run --preset plan          # Discover -> Plan
+aicodegencrew run --preset document      # Discover -> Document (C4 + Arc42)
+aicodegencrew run --preset full          # All phases
+aicodegencrew index --force              # Re-index repository
 ```
 
-Das Script macht automatisch:
-1. Installiert Git, Python 3.12, Node.js 22
-2. Klont das Repository (oder erkennt vorhandenes)
-3. Erstellt Python-venv, installiert alle Dependencies
-4. Konfiguriert `.env` mit API-Key + allen Modell-Settings
-5. Startet das Dashboard → http://localhost:4200
+### Alternative: OpenAI API (no local GPU needed)
 
-### Optionen
+Edit `.env`:
+```env
+LLM_PROVIDER=onprem
+API_BASE=https://api.openai.com/v1
+OPENAI_API_KEY=sk-your-key-here
+MODEL=gpt-4o
+```
+
+---
+
+## Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| **LLM Routing** | LiteLLM (OpenAI, Ollama, Azure, Anthropic) |
+| **Vector Store** | Qdrant (semantic code search) |
+| **Backend** | FastAPI (async, SSE streaming) |
+| **Frontend** | Angular 21 + Material Design + Tailwind |
+| **Validation** | Pydantic (schema enforcement on LLM output) |
+| **Observability** | Langfuse (LLM tracing) + MLflow (experiments) + Prometheus |
+| **Tool Protocol** | MCP (Model Context Protocol) |
+| **Build** | Hatchling (Python wheel) + Docker |
+| **Testing** | pytest (745+ tests) + Playwright (E2E) |
+
+---
+
+## Configuration
+
+Copy `.env.example` to `.env` and configure:
+
+| Variable | Description | Example |
+|----------|------------|---------|
+| `PROJECT_PATH` | Repository to analyze | `/path/to/your/repo` |
+| `MODEL` | Main LLM model | `openai/gpt-4o` |
+| `API_BASE` | LLM API endpoint | `http://localhost:11434/v1` |
+| `OPENAI_API_KEY` | API key | `sk-...` |
+| `EMBED_MODEL` | Embedding model | `nomic-embed-text` |
+
+See [.env.example](.env.example) for all options and [LLM Selection Guide](docs/guides/LLM_SELECTION_GUIDE.md) for model recommendations.
+
+---
+
+## Testing
 
 ```bash
-bash scripts/setup-local.sh --setup-only              # Nur Setup, kein Dashboard-Start
-bash scripts/setup-local.sh --run-e2e ~/mein-projekt   # Setup + E2E-Pipeline ausführen
-```
-
-> **Hinweis:** API-Key und API-URL sind bereits im Script eingetragen.
-> Der Manager muss nichts konfigurieren — nur ausführen.
-
----
-
-## 4. Quick Start — Windows Local (no Docker)
-
-> For managers or testers with **Windows 10/11** — no Docker, no WSL needed.
-> A single script installs Git, Python, Node.js and everything else automatically.
-
-### Prerequisites
-
-| What | Note |
-|------|------|
-| **Windows 10 (1809+) or 11** | `winget` must be available (built into Win 10+) |
-| **Admin rights** | Right-click → "Run as administrator" |
-
-### Setup (one-time, ~10 min)
-
-1. Save both files to your Desktop:
-   - `setup-windows.bat`
-   - `setup-windows.ps1`
-2. `setup-windows.bat` → Right-click → **"Run as administrator"**
-3. When Git asks: enter your **GitLab username + password**
-4. Wait until **"Setup complete!"** appears
-
-The script automatically installs Git, Python 3.12, Node.js 22, clones the repository, creates the Python environment, installs all dependencies and configures `.env`.
-
-### Start Dashboard (every time)
-
-1. Open **Git Bash** (Start menu → "Git Bash")
-2. Enter:
-   ```bash
-   cd ~/aicodegencrew && ./scripts/dev.sh
-   ```
-3. Open browser: **http://localhost:4200**
-
-### Stop Dashboard
-
-In the same Git Bash window:
-```bash
-./scripts/dev.sh stop
-```
-
-> **Note:** API key and API URL are pre-configured in the script.
-> The user does not need to configure anything — just run it.
-
----
-
-## 5. SDLC Dashboard (Web UI)
-
-Das Dashboard besteht aus **FastAPI Backend** (Port 8001) + **Angular Frontend** (Port 4200 dev / Port 80 Docker).
-
-### Seiten
-
-| Seite | Beschreibung |
-|-------|-------------|
-| **Dashboard** | System-Status, Phase-Karten, aktiver Pipeline-Banner |
-| **Run Pipeline** | Preset oder einzelne Phasen starten, Live-Logs (SSE) |
-| **Input Files** | Drag-and-Drop Upload (JIRA XML, DOCX, Excel, PDF) |
-| **Phases** | Phasen-Konfiguration, einzelne Phasen starten/zurücksetzen |
-| **Knowledge** | Ergebnisse durchsuchen (JSON, Markdown, HTML, Confluence, DrawIO) |
-| **Reports** | Plan-Viewer, Code-Diff-Viewer, Git-Branch-Management |
-| **Metrics** | LLM-Nutzung, Token-Verbrauch, Event-Explorer |
-| **Logs** | Echtzeit-Pipeline-Logs mit farbcodierten Levels |
-| **Collectors** | Architektur-Fakten-Collector-Konfiguration |
-| **History** | Vergangene Runs mit Statistiken und KPI-Karten |
-| **Settings** | Umgebungsvariablen konfigurieren |
-| **Onboarding** | Geführte Erstkonfiguration |
-
-### Docker Deployment
-
-```bash
-docker compose -f ui/docker-compose.ui.yml up --build    # http://localhost
+pytest tests/ -q --ignore=tests/test_delivery.py   # All tests (745+)
+pytest tests/ --ignore=tests/e2e                    # Unit + integration only
+ruff check src/ tests/ ui/backend                   # Linting
 ```
 
 ---
 
-## 6. Core Pipeline (CLI)
+## Documentation
 
-Die Pipeline kann **ohne Dashboard** direkt über die Kommandozeile laufen.
-
-### Beispiele
-
-```bash
-aicodegencrew index --force                              # Repository indexieren
-aicodegencrew plan                                       # Entwicklungsplanung
-aicodegencrew codegen                                    # Vollständige Pipeline
-aicodegencrew run --phases plan implement --index-mode off --no-clean
-```
-
-### Befehle
-
-| Befehl | Beschreibung |
-|--------|-------------|
-| `index` | Repository in ChromaDB indexieren |
-| `plan` | Entwicklungsplanung (Discover → Plan) |
-| `codegen` | Code-Generierung (Discover → Implement) |
-| `run --preset <name>` | Preset ausführen |
-| `run --phases <p1> <p2>` | Bestimmte Phasen ausführen |
-| `list` | Verfügbare Phasen und Presets anzeigen |
-
-### Presets
-
-| Preset | Phasen | Anwendungsfall |
-|--------|--------|----------------|
-| `index` | Discover | Nur Indexierung |
-| `scan` | Discover + Extract | Deterministische Fakten (kein LLM) |
-| `analyze` | Discover → Analyze | AI-Analyse |
-| `document` | Discover → Document | C4 + arc42 Dokumentation |
-| `plan` | Discover → Plan | Entwicklungsplanung (häufigster) |
-| `develop` | Discover → Implement | Planung + Code-Generierung |
-| `full` | Alle Phasen | End-to-End |
-
-### Index-Modi
-
-| Modus | Beschreibung |
-|-------|-------------|
-| `auto` | Nur indexieren wenn Repo geändert (Standard) |
-| `off` | Indexierung überspringen |
-| `force` | Komplett neu indexieren |
-| `smart` | Inkrementell — nur geänderte Dateien |
-
-### Optionen
-
-```bash
-aicodegencrew run --preset plan \
-  --repo-path C:\other\repo \         # Anderes Repo analysieren
-  --index-mode off \                  # Indexierung überspringen
-  --no-clean \                        # Vorherige Ergebnisse behalten
-  --git-url https://... \             # Von URL klonen
-  --branch feature/xyz               # Bestimmter Branch
-```
-
-### Pipeline zurücksetzen
-
-```bash
-# Via Dashboard: Phases → Reset All
-# Via API:
-curl -X POST http://localhost:8001/api/reset
-# Archiviert knowledge/ nach knowledge/archive/reset_YYYYMMDD_HHMMSS/
-```
+| Document | Description |
+|----------|------------|
+| [SDLC Architecture](docs/SDLC_ARCHITECTURE.md) | Full system architecture with phase specs |
+| [AI Expertise Reference](docs/AI_EXPERTISE_REFERENCE.md) | AI patterns and decisions in this project |
+| [LLM Selection Guide](docs/guides/LLM_SELECTION_GUIDE.md) | Which model for which phase |
+| [Corporate SSL Guide](docs/guides/CORPORATE_SSL_GUIDE.md) | On-prem certificate setup |
+| [MCP Knowledge Server](docs/guides/MCP_KNOWLEDGE_SERVER.md) | MCP server for LLM tools |
 
 ---
 
-## 7. Konfiguration (.env)
+## Architecture Decisions
 
-`.env.example` → `.env` kopieren und anpassen:
-
-### Wichtigste Variablen
-
-| Variable | Beschreibung | Beispiel |
-|----------|-------------|---------|
-| `PROJECT_PATH` | Zu analysierendes Repository | `C:\repos\my-project` |
-| `TASK_INPUT_DIR` | JIRA/DOCX/Excel Aufgaben | `C:\projects\inputs\tasks` |
-| `LLM_PROVIDER` | `local` (Ollama) oder `onprem` (API) | `onprem` |
-| `MODEL` | LLM-Modell | `openai/code` |
-| `API_BASE` | LLM-API-Endpunkt | `https://litellm.bnotk.sovai-de...` |
-| `OPENAI_API_KEY` | API-Key | `sk-...` |
-| `EMBED_MODEL` | Embedding-Modell | `embed` |
-
-### Modell-Routing
-
-| Variable | Modell | Verwendet für |
-|----------|--------|---------------|
-| `MODEL` | Qwen3-Coder-Next | Analyse, Triage, Docs, Planung, Reviews |
-| `FAST_MODEL` | Qwen3-Coder-Next | Schnelle Tasks (Klassifizierung, Reviews) |
-| `CODEGEN_MODEL` | Qwen3-Coder-Next | Code-Generierung, Tests |
-| `VISION_MODEL` | Mistral-Small-3.1-24B | OCR, Diagramme, Screenshots |
-
-> Vollständige Referenz: [.env.example](.env.example) und [LLM Selection Guide](docs/guides/LLM_SELECTION_GUIDE.md)
-
-### Task Inputs
-
-| Modus | Wie |
-|-------|-----|
-| **Dashboard** | Drag-and-Drop auf der "Input Files"-Seite |
-| **Manuell** | `TASK_INPUT_DIR`, `REQUIREMENTS_DIR`, `LOGS_DIR`, `REFERENCE_DIR` in `.env` setzen |
-
-| Kategorie | Formate |
-|-----------|---------|
-| Tasks | `.xml` `.docx` `.pdf` `.txt` `.json` |
-| Requirements | `.xlsx` `.docx` `.pdf` `.txt` `.csv` |
-| Logs | `.log` `.txt` `.xlsx` `.csv` |
-| Reference | `.png` `.jpg` `.svg` `.pdf` `.drawio` `.md` |
+| Decision | Why |
+|----------|-----|
+| **Pipeline+LLM over Multi-Agent** | CrewAI agents had 30% loop rate, 3x token overhead, unpredictable latency. Single LLM calls are faster, cheaper, reproducible. |
+| **Evidence-First** | LLMs hallucinate when guessing about code. Deterministic extraction (Phase 0+1) provides ground truth. |
+| **Template-First Documents** | Deterministic skeleton + LLM enrichment = guaranteed structure, no hallucinated facts. |
+| **Qdrant over ChromaDB** | Production-grade vector store with payload indexes, quantization, and hybrid search support. |
+| **On-Premises** | Enterprise source code must not leave the network. Zero external API calls. |
 
 ---
 
-## 8. Architektur & Phasen
+## License
 
-```
-KNOWLEDGE (kein LLM)        REASONING (hybrid)           EXECUTION (hybrid)
-Discover                ->  Analyze                  ->  Implement
-Extract                 ->  Document (C4 + arc42)    ->  Verify
-                             Plan                     ->  Deliver (geplant)
-```
-
-| # | Phase | LLM | Beschreibung |
-|---|-------|:---:|-------------|
-| 0 | Discover | Nein | Codebase in ChromaDB indexieren, Symbole extrahieren |
-| 1 | Extract | Nein | 16 Architektur-Dimensionen deterministisch extrahieren |
-| 2 | Analyze | Ja | Multi-Agent-Analyse (Domain, Workflow, Qualität) |
-| 3 | Document | Ja | C4-Diagramme + arc42-Kapitel + DrawIO |
-| 4 | Plan | Hybrid | 4 deterministische Stufen + 1 LLM-Call |
-| 5 | Implement | Hybrid | CrewAI Code-Generierung + Build-Verifikation mit Self-Healing |
-| 6 | Verify | Ja | Test-Generierung pro Datei (JUnit 5 / Angular TestBed) |
-| 7 | Deliver | — | Geplant |
-
-### Datenfluss
-
-```
-Repository --> Discover   --> knowledge/discover/    (ChromaDB + Symbole)
-               Extract    --> knowledge/extract/     (architecture_facts.json)
-               Analyze    --> knowledge/analyze/     (analyzed_architecture.json)
-               Document   --> knowledge/document/    (C4 + arc42 + DrawIO)
-               Plan       --> knowledge/plan/        ({task_id}_plan.json)
-               Implement  --> Git Branch codegen/*   + knowledge/implement/
-               Verify     --> knowledge/verify/      ({task_id}_verify.json)
-```
-
-> Vollständige Spezifikation: [SDLC Architecture](docs/SDLC_ARCHITECTURE.md)
-
----
-
-## 9. Troubleshooting
-
-### Docker-Probleme
-
-| Problem | Lösung |
-|---------|--------|
-| "Docker ist nicht gestartet" | Docker Desktop öffnen, auf Wal-Icon warten |
-| Container startet nicht | `start.bat logs` oder `docker compose logs` prüfen |
-| Port 80 belegt | IIS, XAMPP, Apache, Skype stoppen |
-| Port 8001 belegt | `./scripts/dev.sh stop` oder `node scripts/stop-dev.js` |
-
-### Entwickler-Probleme
-
-| Problem | Lösung |
-|---------|--------|
-| API gibt HTML statt JSON zurück | Frontend mit `npm start` starten (nicht `ng serve`) |
-| LLM-Verbindungsfehler | `curl $API_BASE/v1/models` prüfen (401 = OK, refused = kein Netz) |
-| SSL CERTIFICATE_VERIFY_FAILED | Siehe [Corporate SSL Guide](docs/guides/CORPORATE_SSL_GUIDE.md) |
-| Ollama läuft nicht | `ollama serve` dann `curl http://127.0.0.1:11434/api/tags` |
-| Indexierung hängt | `rm knowledge/discover/.index.lock` |
-| Orphan uvicorn Prozesse | `./scripts/dev.sh stop` (killt auch Orphans) |
-| Pipeline-Crash | Dashboard läuft weiter (Subprocess-Isolation). `logs/current.log` prüfen |
-
----
-
-## 10. Scripts
-
-| Script | Beschreibung |
-|--------|-------------|
-| `start.bat` / `start.sh` | Dashboard starten/stoppen (Docker) |
-| `scripts/setup-windows.bat` | Komplettes Windows-Setup (Git, Python, Node, venv, Dashboard) — Doppelklick |
-| `scripts/setup-local.sh` | Komplettes WSL2-Setup (Git, Python, Node, venv, Dashboard) |
-| `scripts/dev.sh` | Dashboard Dev-Server starten/stoppen |
-| `scripts/stop-dev.js` | Dev-Server stoppen + Orphan-Prozesse killen |
-| `scripts/push-docker-images.sh` | Docker Images bauen + in Registry pushen |
-| `scripts/build_release.py` | Release-Paket erstellen (Wheel + Changelog) |
-
-### dev.sh
-
-```bash
-./scripts/dev.sh              # Neustart (stop + start)
-./scripts/dev.sh start        # Nur starten
-./scripts/dev.sh stop         # Stoppen + Orphans killen
-./scripts/dev.sh status       # Prüfen ob es läuft
-```
-
-### build_release.py
-
-```bash
-python scripts/build_release.py                         # aktuelle Version bauen
-python scripts/build_release.py --bump patch            # 0.7.2 -> 0.7.3
-python scripts/build_release.py --bump minor --tag      # 0.7.2 -> 0.8.0 + Git Tag
-```
-
----
-
-## 11. Deployment
-
-| Modus | Befehl | Source-Code sichtbar |
-|-------|--------|:--------------------:|
-| **Docker** (empfohlen) | `start.bat` / `./start.sh` | Nein |
-| **Docker Release ZIP** | ZIP verteilen, `start.bat` | Nein |
-| **Windows Lokal** | Doppelklick `setup-windows.bat` | Ja |
-| **WSL2 Lokal** | `bash scripts/setup-local.sh` | Ja |
-| **Wheel** | `pip install aicodegencrew-X.Y.Z.whl` | Nein |
-| **Dev** | `pip install -e .` | Ja (intern) |
-
-> Details: [Delivery Guide](docs/guides/DELIVERY_GUIDE.md) und [Docker Release Guide](docs/guides/DOCKER_RELEASE_GUIDE.md)
-
----
-
-## 12. Testing
-
-745+ Tests, kein LLM oder Netzwerk nötig (außer `tests/e2e/`).
-
-```bash
-pip install -e ".[dev]"
-
-# Vollständig (ohne bekannte Langläufer)
-pytest tests/ -q --ignore=tests/test_delivery.py
-
-# Nur Unit + Integration
-pytest tests/ --ignore=tests/e2e
-
-# Nur Collector-Unit-Tests (~5s)
-pytest tests/unit/collectors/ -v
-
-# Linting
-ruff check src/ tests/ ui/backend
-```
-
----
-
-## 13. Dokumentation
-
-| Dokument | Beschreibung |
-|----------|-------------|
-| [SDLC Architecture](docs/SDLC_ARCHITECTURE.md) | Gesamtarchitektur + Links zu allen Phasen |
-| [LLM Selection Guide](docs/guides/LLM_SELECTION_GUIDE.md) | Welches Modell für welche Phase |
-| [Docker Release Guide](docs/guides/DOCKER_RELEASE_GUIDE.md) | Images bauen, verteilen, starten |
-| [Corporate SSL Guide](docs/guides/CORPORATE_SSL_GUIDE.md) | Zertifikate im Corporate-Netzwerk |
-| [Delivery Guide](docs/guides/DELIVERY_GUIDE.md) | Release-Prozess und Deployment |
-| [MCP Knowledge Server](docs/guides/MCP_KNOWLEDGE_SERVER.md) | MCP Server für CrewAI Tools |
-| [Phase 5 — Implement](docs/phases/phase-5-implement/README.md) | Code-Generierung + Build-Verify |
-| [.env.example](.env.example) | Alle konfigurierbaren Variablen |
-
----
-
-## Projektstruktur
-
-```
-aicodegencrew/
-├── start.bat / start.sh            # Dashboard starten (Docker)
-├── ui/                             # SDLC Dashboard
-│   ├── frontend/                   #   Angular 21 (Port 80 Docker / 4200 Dev)
-│   ├── backend/                    #   FastAPI (Port 8001)
-│   └── docker-compose.ui.yml      #   Docker Compose
-├── src/aicodegencrew/              # Core Pipeline
-│   ├── cli.py                      #   CLI Entry Point
-│   ├── orchestrator.py             #   Phasen-Orchestrierung
-│   ├── pipelines/                  #   Discover, Extract
-│   ├── crews/                      #   Analyze, Document, Verify
-│   ├── hybrid/                     #   Plan, Implement
-│   ├── shared/                     #   Utilities, Tools, Validation
-│   │   └── utils/llm_factory.py    #   LLM-Erstellung (alle Modelle)
-│   └── mcp/                        #   MCP Knowledge Server
-├── certs/                          # Capgemini CA-Zertifikat
-├── config/phases_config.yaml       # Phasen-Definitionen + Presets
-├── scripts/                        # Dev-Scripts
-├── tests/                          # 745+ Tests
-├── docs/                           # Architektur-Docs + Guides
-├── knowledge/                      # Pipeline-Ergebnisse (auto-generiert)
-├── dist/                           # Release-Artefakte (Docker Images, ZIP)
-└── .env                            # Konfiguration
-```
-
----
-
-## Lizenz
-
-**Copyright 2026 Aymen Mastouri** — Proprietär und vertraulich.
+[MIT](LICENSE) — Aymen Mastouri
 
 ---
 
 <p align="center">
-  <strong>SDLC Pilot</strong> &mdash; Built with <a href="https://crewai.com/">CrewAI</a> · Powered by Sovereign AI · Made for Enterprise<br>
-  <sub>&copy; 2026 Aymen Mastouri / Capgemini AI Group. All rights reserved.</sub>
+  <strong>SDLC Pilot</strong> — Evidence-First AI Architecture Analysis<br>
+  <sub>&copy; 2025-2026 Aymen Mastouri</sub>
 </p>

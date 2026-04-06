@@ -14,13 +14,13 @@
 
 $ErrorActionPreference = 'Stop'
 
-# -- Configuration -- Capgemini Sovereign AI Platform --------------------------
+# -- Configuration -- On-Prem AI Platform --------------------------
 # IMPORTANT: Fill in the API key before distributing this script to managers!
-$GIT_REPO_URL      = 'https://bnotkca.pl.s2-eu.capgemini.com/gitlab/ai-group/aicodegencrew.git'
+$GIT_REPO_URL      = 'https://github.com/aymenmastouri/aicodegencrew.git'
 $INSTALL_DIR       = Join-Path $env:USERPROFILE 'aicodegencrew'
 
 $ENV_API_KEY          = 'sk-FILL-IN-BEFORE-DISTRIBUTING'
-$ENV_API_BASE         = 'https://litellm.bnotk.sovai-de.apps.ce.capgemini.com/v1'
+$ENV_API_BASE         = 'https://litellm.your-platform.example.com/v1'
 $ENV_MODEL            = 'openai/code'
 $ENV_FAST_MODEL       = 'openai/code'
 $ENV_CODEGEN_MODEL    = 'openai/code'
@@ -282,19 +282,19 @@ $envLines = @(
     "EMBED_MODEL=$ENV_EMBED_MODEL",
     '',
     '# Vector Store (Qdrant)',
-    'QDRANT_URL=https://qdrant.bnotk.sovai-de.apps.ce.capgemini.com',
+    'QDRANT_URL=https://qdrant.your-platform.example.com',
     'QDRANT_API_KEY=6OSFHm0L41VlT9mWtiq1YEjToBbWBPC9Pnq4oUIRTUM395EvYkcIzVgi8hCikWJQ',
     '',
     '# Observability',
     'LANGFUSE_PUBLIC_KEY=pk-lf-fccb418a-450b-4058-b203-6fda8885582d',
     'LANGFUSE_SECRET_KEY=sk-lf-37c7a336-879e-48bc-a20b-90d0b3bd1e5a',
-    'LANGFUSE_HOST=https://langfuse.bnotk.sovai-de.apps.ce.capgemini.com',
-    'MLFLOW_TRACKING_URI=https://mlflow.bnotk.sovai-de.apps.ce.capgemini.com',
+    'LANGFUSE_HOST=https://langfuse.your-platform.example.com',
+    'MLFLOW_TRACKING_URI=https://mlflow.your-platform.example.com',
     'MLFLOW_EXPERIMENT_NAME=aicodegencrew',
     'PROMETHEUS_ENABLED=true',
     '',
     '# Knowledge Graph',
-    'NEO4J_URI=neo4j+s://neo4j-bolt.bnotk.sovai-de.apps.ce.capgemini.com:443',
+    'NEO4J_URI=neo4j+s://neo4j-bolt.your-platform.example.com:443',
     'NEO4J_USER=neo4j',
     'NEO4J_PASSWORD=uYmCSZyv0T1aF1WOjoydNGahp7ZX76RVlbsxk5MlaObtJ88LOHMSmuiSQ5TiuLI',
     '',

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from crewai.tools import BaseTool
+from .base_tool import BaseTool
 from pydantic import BaseModel, Field
 
 from ..models.analysis_schema import ArchitectureAnalysis

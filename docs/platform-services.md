@@ -1,21 +1,21 @@
 # On-Prem Platform Services — Integration Guide
 
-AICodeGenCrew integrates with the Sovereign AI Platform services at `*.bnotk.sovai-de.apps.ce.capgemini.com`. All services are **optional** — disabled by default, enabled via environment variables, with graceful fallback when unavailable.
+AICodeGenCrew integrates with the Sovereign AI Platform services at `*.your-platform.example.com`. All services are **optional** — disabled by default, enabled via environment variables, with graceful fallback when unavailable.
 
 ## Service Overview
 
 | # | Service | Status | URL | Purpose |
 |---|---------|--------|-----|---------|
-| 1 | **Langfuse** | Active | `https://langfuse.bnotk.sovai-de.apps.ce.capgemini.com` | LLM Observability — traces every LLM call (prompts, responses, latency, tokens, costs) |
-| 2 | **Qdrant** | Active | `https://qdrant.bnotk.sovai-de.apps.ce.capgemini.com` | Vector Store — replaces local ChromaDB for semantic search |
-| 3 | **Neo4J** | Active | `neo4j+s://neo4j-bolt.bnotk.sovai-de.apps.ce.capgemini.com:443` | Knowledge Graph — exports architecture facts as nodes/edges |
-| 4 | **MLflow** | Active | `https://mlflow.bnotk.sovai-de.apps.ce.capgemini.com` | Experiment Tracking — tracks pipeline runs, phase metrics, artifacts |
-| 5 | **Grafana** | Active | `https://grafana.bnotk.sovai-de.apps.ce.capgemini.com` | Monitoring Dashboards — visualizes Prometheus metrics |
+| 1 | **Langfuse** | Active | `https://langfuse.your-platform.example.com` | LLM Observability — traces every LLM call (prompts, responses, latency, tokens, costs) |
+| 2 | **Qdrant** | Active | `https://qdrant.your-platform.example.com` | Vector Store — replaces local ChromaDB for semantic search |
+| 3 | **Neo4J** | Active | `neo4j+s://neo4j-bolt.your-platform.example.com:443` | Knowledge Graph — exports architecture facts as nodes/edges |
+| 4 | **MLflow** | Active | `https://mlflow.your-platform.example.com` | Experiment Tracking — tracks pipeline runs, phase metrics, artifacts |
+| 5 | **Grafana** | Active | `https://grafana.your-platform.example.com` | Monitoring Dashboards — visualizes Prometheus metrics |
 | 6 | **Prometheus** | Active | Backend `/metrics` endpoint | Metrics Export — phase duration, status counts, token usage |
-| 7 | **Authentik** | Pending | `https://authentik.bnotk.sovai-de.apps.ce.capgemini.com` | OIDC Authentication — requires admin access to configure |
-| 8 | **MCPO** | Ready | `https://mcpo.bnotk.sovai-de.apps.ce.capgemini.com` | MCP HTTP Proxy — no MCP servers registered yet, using stdio |
+| 7 | **Authentik** | Pending | `https://authentik.your-platform.example.com` | OIDC Authentication — requires admin access to configure |
+| 8 | **MCPO** | Ready | `https://mcpo.your-platform.example.com` | MCP HTTP Proxy — no MCP servers registered yet, using stdio |
 | 9 | **Docling** | Not tested | TBD | Document Conversion (PDF/DOCX/PPTX to Markdown) |
-| 10 | **SovAI-MCP** | Not tested | TBD | Platform MCP tools for architecture analysis |
+| 10 | **Platform-MCP** | Not tested | TBD | Platform MCP tools for architecture analysis |
 
 ---
 
@@ -25,15 +25,15 @@ AICodeGenCrew integrates with the Sovereign AI Platform services at `*.bnotk.sov
 
 **How it works:** On module import, `llm_factory.py` registers `"langfuse"` on `litellm.success_callback` and `litellm.failure_callback`. LiteLLM's native Langfuse integration sends trace data automatically.
 
-**Dashboard:** https://langfuse.bnotk.sovai-de.apps.ce.capgemini.com
-- Organization: `bnotk-aicodegencrew`
+**Dashboard:** https://langfuse.your-platform.example.com
+- Organization: `your-org`
 - Project: `aicodegencrew`
 
 **Env vars:**
 ```env
 LANGFUSE_PUBLIC_KEY=pk-lf-...
 LANGFUSE_SECRET_KEY=sk-lf-...
-LANGFUSE_HOST=https://langfuse.bnotk.sovai-de.apps.ce.capgemini.com
+LANGFUSE_HOST=https://langfuse.your-platform.example.com
 ```
 
 **Disable:** Remove or comment out `LANGFUSE_PUBLIC_KEY`. No code changes needed.
@@ -49,14 +49,14 @@ LANGFUSE_HOST=https://langfuse.bnotk.sovai-de.apps.ce.capgemini.com
 
 **How it works:** `VECTOR_DB=qdrant` activates the Qdrant backend via `vector_store.py` factory. The `QdrantVectorClient` implements the same `VectorStoreProtocol` as the ChromaDB wrapper, so all callers (indexing, RAG queries) work unchanged.
 
-**Dashboard:** https://qdrant.bnotk.sovai-de.apps.ce.capgemini.com/dashboard
+**Dashboard:** https://qdrant.your-platform.example.com/dashboard
 
 **When data is populated:** The `discover` phase (Phase 0) creates the `repo_docs` collection and upserts embeddings on first run. No manual migration needed — just run discover with the new config.
 
 **Env vars:**
 ```env
 VECTOR_DB=qdrant
-QDRANT_URL=https://qdrant.bnotk.sovai-de.apps.ce.capgemini.com
+QDRANT_URL=https://qdrant.your-platform.example.com
 QDRANT_API_KEY=<your-api-key>
 QDRANT_COLLECTION=repo_docs
 ```
@@ -79,8 +79,8 @@ QDRANT_COLLECTION=repo_docs
 
 **How it works:** After the `extract` phase completes successfully, the orchestrator calls `Neo4jClient.export_architecture_facts()` with the cached facts JSON. This creates/updates nodes and edges in Neo4J using Cypher MERGE statements (idempotent).
 
-**Browser:** https://neo4j.bnotk.sovai-de.apps.ce.capgemini.com (Neo4J Browser UI)
-- Connect URL: `neo4j+s://neo4j-bolt.bnotk.sovai-de.apps.ce.capgemini.com:443`
+**Browser:** https://neo4j.your-platform.example.com (Neo4J Browser UI)
+- Connect URL: `neo4j+s://neo4j-bolt.your-platform.example.com:443`
 
 **Graph Model:**
 ```
@@ -105,7 +105,7 @@ MATCH (c:Component)-[r:DEPENDS_ON]->() RETURN c.name, count(r) ORDER BY count(r)
 
 **Env vars:**
 ```env
-NEO4J_URI=neo4j+s://neo4j-bolt.bnotk.sovai-de.apps.ce.capgemini.com:443
+NEO4J_URI=neo4j+s://neo4j-bolt.your-platform.example.com:443
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=<your-password>
 ```
@@ -124,7 +124,7 @@ NEO4J_PASSWORD=<your-password>
 
 **How it works:** The orchestrator creates an `MLflowTracker` on init. On `run()`, it calls `start_run()`. After each phase, it logs metrics. On pipeline completion, it logs artifacts and ends the run.
 
-**Dashboard:** https://mlflow.bnotk.sovai-de.apps.ce.capgemini.com
+**Dashboard:** https://mlflow.your-platform.example.com
 - Experiment: `aicodegencrew`
 
 **What gets logged per run:**
@@ -135,7 +135,7 @@ NEO4J_PASSWORD=<your-password>
 
 **Env vars:**
 ```env
-MLFLOW_TRACKING_URI=https://mlflow.bnotk.sovai-de.apps.ce.capgemini.com
+MLFLOW_TRACKING_URI=https://mlflow.your-platform.example.com
 MLFLOW_EXPERIMENT_NAME=aicodegencrew
 ```
 
@@ -189,7 +189,7 @@ PROMETHEUS_ENABLED=true
 **Env vars (when ready):**
 ```env
 OIDC_ENABLED=true
-OIDC_AUTHORITY=https://authentik.bnotk.sovai-de.apps.ce.capgemini.com/application/o/aicodegencrew
+OIDC_AUTHORITY=https://authentik.your-platform.example.com/application/o/aicodegencrew
 OIDC_CLIENT_ID=<from-authentik>
 OIDC_CLIENT_SECRET=<from-authentik>
 OIDC_SCOPES=openid profile email
@@ -211,7 +211,7 @@ OIDC_SCOPES=openid profile email
 **When MCP servers are registered on the platform**, switch to HTTP transport:
 ```env
 MCP_TRANSPORT=http
-MCPO_URL=https://mcpo.bnotk.sovai-de.apps.ce.capgemini.com
+MCPO_URL=https://mcpo.your-platform.example.com
 ```
 
 **Files:**
