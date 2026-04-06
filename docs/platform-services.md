@@ -1,21 +1,24 @@
-# On-Prem Platform Services — Integration Guide
+# Platform Services — Integration Guide
 
-AICodeGenCrew integrates with the Sovereign AI Platform services at `*.your-platform.example.com`. All services are **optional** — disabled by default, enabled via environment variables, with graceful fallback when unavailable.
+All services are **optional** — disabled by default, enabled via environment variables, with graceful fallback when unavailable. Start locally with `docker-compose -f docker-compose.local.yml up -d`.
 
 ## Service Overview
 
-| # | Service | Status | URL | Purpose |
-|---|---------|--------|-----|---------|
-| 1 | **Langfuse** | Active | `https://langfuse.your-platform.example.com` | LLM Observability — traces every LLM call (prompts, responses, latency, tokens, costs) |
-| 2 | **Qdrant** | Active | `https://qdrant.your-platform.example.com` | Vector Store — replaces local ChromaDB for semantic search |
-| 3 | **Neo4J** | Active | `neo4j+s://neo4j-bolt.your-platform.example.com:443` | Knowledge Graph — exports architecture facts as nodes/edges |
-| 4 | **MLflow** | Active | `https://mlflow.your-platform.example.com` | Experiment Tracking — tracks pipeline runs, phase metrics, artifacts |
-| 5 | **Grafana** | Active | `https://grafana.your-platform.example.com` | Monitoring Dashboards — visualizes Prometheus metrics |
-| 6 | **Prometheus** | Active | Backend `/metrics` endpoint | Metrics Export — phase duration, status counts, token usage |
-| 7 | **Authentik** | Pending | `https://authentik.your-platform.example.com` | OIDC Authentication — requires admin access to configure |
-| 8 | **MCPO** | Ready | `https://mcpo.your-platform.example.com` | MCP HTTP Proxy — no MCP servers registered yet, using stdio |
-| 9 | **Docling** | Not tested | TBD | Document Conversion (PDF/DOCX/PPTX to Markdown) |
-| 10 | **Platform-MCP** | Not tested | TBD | Platform MCP tools for architecture analysis |
+| # | Service | Status | Local URL | Purpose |
+|---|---------|--------|-----------|---------|
+| 1 | **Qdrant** | Active | http://localhost:6333 | Vector store for semantic code search |
+| 2 | **Langfuse** | Active | http://localhost:3000 | LLM observability (prompt/response tracing) |
+| 3 | **MLflow** | Active | http://localhost:5001 | Experiment tracking (pipeline metrics) |
+| 4 | **Prometheus** | Active | http://localhost:9090 | Runtime metrics export |
+| 5 | **Grafana** | Active | http://localhost:3001 | Monitoring dashboards |
+| 6 | **Neo4J** | Disabled | — | Knowledge graph (not in local compose) |
+| 7 | **Authentik** | Disabled | — | OIDC authentication (not implemented) |
+| 8 | **MCPO** | Disabled | — | MCP HTTP proxy (using stdio instead) |
+| 9 | **Docling** | Disabled | — | Document conversion (not tested) |
+| 10 | **Platform-MCP** | Disabled | — | Platform MCP tools (not tested) |
+
+> Services 6-10 are planned integrations. The code supports them via environment variables
+> but they are not included in the local Docker Compose setup.
 
 ---
 

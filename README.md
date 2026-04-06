@@ -117,14 +117,27 @@ cd aicodegencrew
 docker-compose -f docker-compose.local.yml up -d
 ```
 
+**Active services** (included in `docker-compose.local.yml`):
+
 | Service | URL | Login | Purpose |
 |---------|-----|-------|---------|
-| **Qdrant** | http://localhost:6333/dashboard | — | Vector store UI (collections, search) |
+| **Qdrant** | http://localhost:6333/dashboard | — | Vector store (semantic code search) |
 | **Langfuse** | http://localhost:3000 | Sign up on first visit | LLM observability (prompt tracing) |
 | **MLflow** | http://localhost:5001 | admin / password1234 | Experiment tracking (pipeline metrics) |
 | **Prometheus** | http://localhost:9090 | — | Runtime metrics |
 | **Grafana** | http://localhost:3001 | admin / admin | Monitoring dashboards |
 | **Ollama** | http://localhost:11434 | — | Local LLM (runs natively, not Docker) |
+
+**Disabled services** (planned, configure via `.env` if available):
+
+| Service | Purpose | Status |
+|---------|---------|--------|
+| Neo4J | Knowledge graph (architecture as nodes/edges) | Code ready, no local container |
+| Authentik | OIDC authentication for dashboard | Not implemented |
+| MCPO | MCP HTTP proxy | Using stdio transport |
+| Docling | PDF/DOCX to Markdown conversion | Not tested |
+
+> See [Platform Services Guide](docs/platform-services.md) for full configuration details.
 
 > **Langfuse first-time setup:**
 > 1. Open http://localhost:3000
