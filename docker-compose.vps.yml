@@ -1,5 +1,38 @@
 services:
   # ---------------------------------------------------------------------------
+  # Authentik Proxy Outpost — Forward Auth for SSO
+  # ---------------------------------------------------------------------------
+  authentik-proxy:
+    image: ghcr.io/goauthentik/proxy:2025.2
+    container_name: sdlc-authentik-proxy
+    restart: unless-stopped
+    environment:
+      AUTHENTIK_HOST: https://auth.aymenmastouri.io
+      AUTHENTIK_INSECURE: "false"
+      AUTHENTIK_TOKEN: ${AUTHENTIK_OUTPOST_TOKEN}
+    networks:
+      - sdlc_internal
+      - traefik_proxy
+    mem_limit: 256m
+    mem_reservation: 64m
+    labels:
+      - "traefik.enable=true"
+      # Outpost handles /outpost.goauthentik.io/ on the protected domain
+      - "traefik.http.routers.sdlc-outpost.rule=Host(`sdlc.aymenmastouri.io`) && PathPrefix(`/outpost.goauthentik.io/`)"
+      - "traefik.http.routers.sdlc-outpost.entrypoints=websecure"
+      - "traefik.http.routers.sdlc-outpost.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sdlc-outpost.loadbalancer.server.port=9000"
+      # Forward Auth middleware definition
+      - "traefik.http.middlewares.sdlc-auth.forwardauth.address=http://sdlc-authentik-proxy:9000/outpost.goauthentik.io/auth/traefik"
+      - "traefik.http.middlewares.sdlc-auth.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.sdlc-auth.forwardauth.authResponseHeaders=X-authentik-username,X-authentik-groups,X-authentik-email,X-authentik-name,X-authentik-uid"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
   # SDLC Pilot Backend — FastAPI
   # ---------------------------------------------------------------------------
   backend:
@@ -36,6 +69,7 @@ services:
       - "traefik.http.routers.sdlc-api.rule=Host(`sdlc-api.aymenmastouri.io`)"
       - "traefik.http.routers.sdlc-api.entrypoints=websecure"
       - "traefik.http.routers.sdlc-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.sdlc-api.middlewares=sdlc-auth@docker"
       - "traefik.http.services.sdlc-api.loadbalancer.server.port=8001"
     logging:
       driver: json-file
@@ -63,6 +97,7 @@ services:
       - "traefik.http.routers.sdlc.rule=Host(`sdlc.aymenmastouri.io`)"
       - "traefik.http.routers.sdlc.entrypoints=websecure"
       - "traefik.http.routers.sdlc.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.sdlc.middlewares=sdlc-auth@docker"
       - "traefik.http.services.sdlc.loadbalancer.server.port=80"
     logging:
       driver: json-file
