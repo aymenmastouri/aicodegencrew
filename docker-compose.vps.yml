@@ -142,6 +142,8 @@ services:
       NEXTAUTH_URL: https://langfuse.aymenmastouri.io
       NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET}
       SALT: ${LANGFUSE_SALT}
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
     networks:
       - sdlc_internal
       - traefik_proxy

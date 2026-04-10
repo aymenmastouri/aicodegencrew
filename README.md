@@ -282,6 +282,149 @@ ruff check src/ tests/ ui/backend                   # Linting
 
 ---
 
+## VPS Deployment (Production)
+
+SDLC Pilot runs on the VPS alongside the AI Lab stack. Everything is managed via `docker-compose.vps.yml`.
+
+### Architecture
+
+```
+Internet
+   |
+   v
+Traefik (TLS)
+   |
+   +-- sdlc.aymenmastouri.io -----> sdlc-frontend (nginx + Angular)
+   |                                      |
+   |                                      +-- /api/* --> sdlc-backend (FastAPI :8001)
+   |
+   +-- sdlc-api.aymenmastouri.io -> sdlc-backend (FastAPI :8001)
+   |
+   +-- langfuse.aymenmastouri.io -> sdlc-langfuse (Langfuse v2 :3000)
+   |
+   +-- mlflow.aymenmastouri.io ---> sdlc-mlflow (MLflow :5000)
+   |
+   +-- sdlc-authentik-proxy ------> Forward Auth (SSO via Authentik)
+   |
+   |  (Internal, not exposed)
+   +-- sdlc-langfuse-db (Postgres for Langfuse)
+   +-- sdlc-mlflow-db (Postgres for MLflow)
+
+Shared from AI Lab (ai_lab_backend network):
+   +-- litellm:4000  (LLM Gateway — 7 models)
+   +-- qdrant:6333   (Vector DB)
+   +-- ollama:11434  (Local LLM runtime)
+```
+
+### Services Overview
+
+| Container | Image | Purpose | URL |
+|-----------|-------|---------|-----|
+| `sdlc-frontend` | `sdlc-pilot/frontend` | Angular Dashboard | https://sdlc.aymenmastouri.io |
+| `sdlc-backend` | `sdlc-pilot/backend` | FastAPI API | https://sdlc-api.aymenmastouri.io |
+| `sdlc-authentik-proxy` | `goauthentik/proxy` | SSO Forward Auth | (internal) |
+| `sdlc-langfuse` | `langfuse/langfuse:2` | LLM Observability | https://langfuse.aymenmastouri.io |
+| `sdlc-langfuse-db` | `postgres:16-alpine` | Langfuse DB | (internal) |
+| `sdlc-mlflow` | `mlflow/mlflow` | Experiment Tracking | https://mlflow.aymenmastouri.io |
+| `sdlc-mlflow-db` | `postgres:16-alpine` | MLflow DB | (internal) |
+
+### LLM Models (via LiteLLM)
+
+| Env Var | Model | Purpose |
+|---------|-------|---------|
+| `MODEL` | `gpt-oss-120b` | Main analysis + documentation |
+| `FAST_MODEL` | `qwen3.5-9b` | Quick tasks |
+| `CODEGEN_MODEL` | `qwen3-coder` | Code generation |
+| `EMBED_MODEL` | `nomic-embed-text` | RAG embeddings (local) |
+
+### Quick Commands
+
+```bash
+cd /home/aymenmastouri/aicodegencrew
+
+# ── Start everything ──────────────────────────────────────────────────────
+docker compose -f docker-compose.vps.yml up -d
+
+# ── Stop everything ───────────────────────────────────────────────────────
+docker compose -f docker-compose.vps.yml down
+
+# ── Check status ──────────────────────────────────────────────────────────
+docker compose -f docker-compose.vps.yml ps
+
+# ── View logs ─────────────────────────────────────────────────────────────
+docker compose -f docker-compose.vps.yml logs -f backend     # Backend logs
+docker compose -f docker-compose.vps.yml logs -f frontend    # Frontend logs
+docker compose -f docker-compose.vps.yml logs -f langfuse    # Langfuse logs
+
+# ── Restart a single service ─────────────────────────────────────────────
+docker compose -f docker-compose.vps.yml restart backend
+docker compose -f docker-compose.vps.yml restart frontend
+
+# ── Rebuild after code changes ────────────────────────────────────────────
+# 1. Rebuild backend image
+rm -rf ui/backend/src_bundle
+cp -r src/aicodegencrew ui/backend/src_bundle
+cp pyproject.toml ui/backend/src_bundle/pyproject.toml
+docker build -t sdlc-pilot/backend:latest ui/backend/
+rm -rf ui/backend/src_bundle
+
+# 2. Rebuild frontend image
+docker build -f ui/frontend/Dockerfile -t sdlc-pilot/frontend:latest .
+
+# 3. Recreate containers with new images
+docker compose -f docker-compose.vps.yml up -d --force-recreate backend frontend
+```
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `docker-compose.vps.yml` | **Production compose** — all VPS services |
+| `.env` | Secrets + config (gitignored, chmod 600) |
+| `docker-compose.yml` | CLI-only pipeline runner (not for dashboard) |
+| `docker-compose.local.yml` | Local dev platform services (not for VPS) |
+| `deploy.sh` | Build script for release ZIPs (not needed on VPS) |
+
+### AI Lab Integration
+
+SDLC Pilot reuses services from the AI Lab stack at `/home/aymenmastouri/ai-lab/`:
+
+```bash
+# Start AI Lab (must be running for LLM/Qdrant access)
+cd /home/aymenmastouri/ai-lab
+docker compose up -d
+
+# Start SDLC Pilot
+cd /home/aymenmastouri/aicodegencrew
+docker compose -f docker-compose.vps.yml up -d
+
+# Start everything (both stacks)
+cd /home/aymenmastouri/ai-lab && docker compose up -d
+cd /home/aymenmastouri/aicodegencrew && docker compose -f docker-compose.vps.yml up -d
+```
+
+### Troubleshooting
+
+```bash
+# Container keeps restarting?
+docker logs <container-name>
+docker inspect <container-name> --format '{{.RestartCount}} OOM={{.State.OOMKilled}}'
+
+# 502 Bad Gateway?
+# Service is starting up. Wait 10-30 seconds and retry.
+# If persistent: check if container is running and on traefik_proxy network.
+
+# Backend can't reach LiteLLM/Qdrant?
+# Make sure AI Lab is running: cd /home/aymenmastouri/ai-lab && docker compose ps
+# Backend must be on ai_lab_backend network (configured in docker-compose.vps.yml)
+
+# Langfuse shows blank page after DB reset?
+# Sign up again at https://langfuse.aymenmastouri.io
+# Create new project + API keys
+# Update LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env
+# Restart: docker compose -f docker-compose.vps.yml restart backend
+```
+
 ## License
 
 [MIT](LICENSE) — Aymen Mastouri
