@@ -21,6 +21,8 @@ function initAuth(auth: AuthService) {
           clientId: cfg.clientId,
           redirectUri: cfg.redirectUri || window.location.origin,
           scopes: cfg.scopes || 'openid profile email',
+          authorizationEndpoint: cfg.authorizationEndpoint,
+          endSessionEndpoint: cfg.endSessionEndpoint,
         });
       }
     } catch {

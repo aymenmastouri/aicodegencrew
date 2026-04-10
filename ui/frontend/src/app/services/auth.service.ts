@@ -44,16 +44,7 @@ export class AuthService {
       return;
     }
 
-    // Discover OIDC endpoints from well-known configuration
-    try {
-      const disco = await fetch(`${config.authority}/.well-known/openid-configuration`).then(r => r.json());
-      config.authorizationEndpoint = disco.authorization_endpoint;
-      config.tokenEndpoint = disco.token_endpoint;
-      config.endSessionEndpoint = disco.end_session_endpoint;
-    } catch {
-      // Fallback to manual URL construction
-    }
-
+    // Endpoints are provided by /api/auth/config (server-side discovery)
     this.config = config;
 
     // Check for existing token

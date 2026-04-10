@@ -182,16 +182,32 @@ if os.getenv("PROMETHEUS_ENABLED", "").strip().lower() in ("true", "1", "yes"):
 
 @app.get("/api/auth/config")
 def auth_config():
-    """Return OIDC configuration for the frontend."""
+    """Return OIDC configuration for the frontend, including discovered endpoints."""
     enabled = os.getenv("OIDC_ENABLED", "false").strip().lower() in ("true", "1", "yes")
     if not enabled:
         return {"enabled": False}
+
+    authority = os.getenv("OIDC_AUTHORITY", "").strip().rstrip("/")
+
+    # Server-side OIDC discovery (no CORS issues)
+    authorization_endpoint = ""
+    end_session_endpoint = ""
+    try:
+        import httpx
+        disco = httpx.get(f"{authority}/.well-known/openid-configuration", timeout=5).json()
+        authorization_endpoint = disco.get("authorization_endpoint", "")
+        end_session_endpoint = disco.get("end_session_endpoint", "")
+    except Exception:
+        pass
+
     return {
         "enabled": True,
-        "authority": os.getenv("OIDC_AUTHORITY", "").strip().rstrip("/"),
+        "authority": authority,
         "clientId": os.getenv("OIDC_CLIENT_ID", "").strip(),
         "redirectUri": os.getenv("OIDC_REDIRECT_URI", "").strip(),
         "scopes": os.getenv("OIDC_SCOPES", "openid profile email").strip(),
+        "authorizationEndpoint": authorization_endpoint,
+        "endSessionEndpoint": end_session_endpoint,
     }
 
 
