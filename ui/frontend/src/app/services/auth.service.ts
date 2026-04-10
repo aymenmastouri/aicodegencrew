@@ -12,6 +12,9 @@ interface OIDCConfig {
   clientId: string;
   redirectUri: string;
   scopes: string;
+  authorizationEndpoint?: string;
+  tokenEndpoint?: string;
+  endSessionEndpoint?: string;
 }
 
 interface UserInfo {
@@ -39,6 +42,16 @@ export class AuthService {
       // No OIDC configured — allow unauthenticated access
       this._isAuthenticated.next(true);
       return;
+    }
+
+    // Discover OIDC endpoints from well-known configuration
+    try {
+      const disco = await fetch(`${config.authority}/.well-known/openid-configuration`).then(r => r.json());
+      config.authorizationEndpoint = disco.authorization_endpoint;
+      config.tokenEndpoint = disco.token_endpoint;
+      config.endSessionEndpoint = disco.end_session_endpoint;
+    } catch {
+      // Fallback to manual URL construction
     }
 
     this.config = config;
@@ -85,7 +98,8 @@ export class AuthService {
       state: state,
     });
 
-    window.location.href = `${this.config.authority}/authorize?${params.toString()}`;
+    const authUrl = this.config.authorizationEndpoint || `${this.config.authority}/authorize`;
+    window.location.href = `${authUrl}?${params.toString()}`;
   }
 
   logout(): void {
@@ -96,7 +110,8 @@ export class AuthService {
     this._user.next(null);
 
     if (this.config) {
-      window.location.href = `${this.config.authority}/end-session?post_logout_redirect_uri=${encodeURIComponent(this.config.redirectUri)}`;
+      const endSessionUrl = this.config.endSessionEndpoint || `${this.config.authority}/end-session`;
+      window.location.href = `${endSessionUrl}?post_logout_redirect_uri=${encodeURIComponent(this.config.redirectUri)}`;
     }
   }
 
@@ -104,7 +119,7 @@ export class AuthService {
     if (!this.config) return;
 
     try {
-      const tokenUrl = `${this.config.authority}/token`;
+      const tokenUrl = this.config.tokenEndpoint || `${this.config.authority}/token`;
       const response = await fetch(tokenUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -139,7 +154,7 @@ export class AuthService {
     if (!refreshToken) return false;
 
     try {
-      const tokenUrl = `${this.config.authority}/token`;
+      const tokenUrl = this.config.tokenEndpoint || `${this.config.authority}/token`;
       const response = await fetch(tokenUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

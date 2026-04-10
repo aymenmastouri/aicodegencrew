@@ -70,6 +70,118 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # ---------------------------------------------------------------------------
+  # Langfuse — LLM Observability (prompt tracing, cost tracking)
+  # ---------------------------------------------------------------------------
+  langfuse-db:
+    image: postgres:16-alpine
+    container_name: sdlc-langfuse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_DB: langfuse
+      POSTGRES_PASSWORD: ${LANGFUSE_DB_PASSWORD}
+    volumes:
+      - sdlc_langfuse_db:/var/lib/postgresql/data
+    networks:
+      - sdlc_internal
+    mem_limit: 256m
+    mem_reservation: 64m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  langfuse:
+    image: langfuse/langfuse:2
+    container_name: sdlc-langfuse
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://langfuse:${LANGFUSE_DB_PASSWORD}@langfuse-db:5432/langfuse
+      NEXTAUTH_URL: https://langfuse.aymenmastouri.io
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET}
+      SALT: ${LANGFUSE_SALT}
+    networks:
+      - sdlc_internal
+      - traefik_proxy
+    mem_limit: 512m
+    mem_reservation: 128m
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.langfuse.rule=Host(`langfuse.aymenmastouri.io`)"
+      - "traefik.http.routers.langfuse.entrypoints=websecure"
+      - "traefik.http.routers.langfuse.tls.certresolver=letsencrypt"
+      - "traefik.http.services.langfuse.loadbalancer.server.port=3000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # MLflow — Experiment Tracking (pipeline metrics, knowledge versioning)
+  # ---------------------------------------------------------------------------
+  mlflow-db:
+    image: postgres:16-alpine
+    container_name: sdlc-mlflow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_DB: mlflow
+      POSTGRES_PASSWORD: ${MLFLOW_DB_PASSWORD}
+    volumes:
+      - sdlc_mlflow_db:/var/lib/postgresql/data
+    networks:
+      - sdlc_internal
+    mem_limit: 256m
+    mem_reservation: 64m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: sdlc-mlflow
+    restart: unless-stopped
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://mlflow:${MLFLOW_DB_PASSWORD}@mlflow-db:5432/mlflow --default-artifact-root /mlflow/artifacts --allowed-hosts mlflow.aymenmastouri.io,sdlc-mlflow
+    volumes:
+      - sdlc_mlflow_artifacts:/mlflow/artifacts
+    networks:
+      - sdlc_internal
+      - traefik_proxy
+    mem_limit: 1g
+    mem_reservation: 256m
+    depends_on:
+      mlflow-db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mlflow.rule=Host(`mlflow.aymenmastouri.io`)"
+      - "traefik.http.routers.mlflow.entrypoints=websecure"
+      - "traefik.http.routers.mlflow.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mlflow.loadbalancer.server.port=5000"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 # =============================================================================
 # Volumes
 # =============================================================================
@@ -77,6 +189,9 @@ volumes:
   sdlc_knowledge:
   sdlc_architecture_docs:
   sdlc_inputs:
+  sdlc_langfuse_db:
+  sdlc_mlflow_db:
+  sdlc_mlflow_artifacts:
 
 # =============================================================================
 # Networks
