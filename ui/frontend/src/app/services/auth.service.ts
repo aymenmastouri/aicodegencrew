@@ -119,14 +119,13 @@ export class AuthService {
     if (!this.config) return;
 
     try {
-      const tokenUrl = this.config.tokenEndpoint || `${this.config.authority}/token`;
-      const response = await fetch(tokenUrl, {
+      // Exchange code via backend proxy (avoids CORS issues)
+      const response = await fetch('/api/auth/token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           grant_type: 'authorization_code',
           code: code,
-          client_id: this.config.clientId,
           redirect_uri: this.config.redirectUri,
         }),
       });
@@ -154,14 +153,12 @@ export class AuthService {
     if (!refreshToken) return false;
 
     try {
-      const tokenUrl = this.config.tokenEndpoint || `${this.config.authority}/token`;
-      const response = await fetch(tokenUrl, {
+      const response = await fetch('/api/auth/token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           grant_type: 'refresh_token',
           refresh_token: refreshToken,
-          client_id: this.config.clientId,
         }),
       });
 

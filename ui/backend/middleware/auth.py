@@ -27,6 +27,7 @@ _EXEMPT_PATHS: set[str] = {
     "/api/health",
     "/api/health/setup-status",
     "/api/auth/config",
+    "/api/auth/token",
     "/metrics",
 }
 

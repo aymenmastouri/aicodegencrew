@@ -195,6 +195,30 @@ def auth_config():
     }
 
 
+@app.post("/api/auth/token")
+async def auth_token_exchange(request: Request):
+    """Proxy token exchange to OIDC provider (avoids CORS issues)."""
+    import httpx
+
+    body = await request.json()
+    authority = os.getenv("OIDC_AUTHORITY", "").strip().rstrip("/")
+
+    # Discover token endpoint
+    async with httpx.AsyncClient(timeout=10) as client:
+        disco = (await client.get(f"{authority}/.well-known/openid-configuration")).json()
+        token_url = disco.get("token_endpoint", f"{authority}/token")
+
+        resp = await client.post(token_url, data={
+            "grant_type": body.get("grant_type", "authorization_code"),
+            "code": body.get("code", ""),
+            "client_id": os.getenv("OIDC_CLIENT_ID", ""),
+            "redirect_uri": body.get("redirect_uri", ""),
+            "refresh_token": body.get("refresh_token", ""),
+        })
+
+    return JSONResponse(status_code=resp.status_code, content=resp.json())
+
+
 @app.get("/api/auth/userinfo")
 def auth_userinfo(request: Request):
     """Return authenticated user info (set by OIDC middleware)."""
