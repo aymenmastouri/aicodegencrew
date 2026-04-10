@@ -66,12 +66,6 @@ RUN apt-get update && \
     apt-get purge -y curl && apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-# Corporate CA certificate (optional, for TLS proxy environments)
-COPY certs/CapgeminiPKIRootCA.cr[t] /usr/local/share/ca-certificates/
-RUN update-ca-certificates 2>/dev/null || true
-ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
-
 # Non-root user (best practice: never run as root in production)
 RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
 

@@ -17,15 +17,12 @@ from .logger import (
     step_warn,
 )
 from .ollama_client import OllamaClient
-from .tool_guardrails import install_guardrails, uninstall_guardrails
-
 __all__ = [
     "RUN_ID",
     "RunIdFilter",
     "GitRepoManager",
     "OllamaClient",
     "collect_files",
-    "install_guardrails",
     "log_metric",
     "logger",
     "set_run_id",
@@ -37,5 +34,4 @@ __all__ = [
     "step_progress",
     "step_start",
     "step_warn",
-    "uninstall_guardrails",
 ]

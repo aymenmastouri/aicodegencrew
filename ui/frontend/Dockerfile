@@ -11,14 +11,6 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Install corporate CA certificate if present (optional, for TLS proxy environments)
-COPY certs/CapgeminiPKIRootCA.cr[t] /usr/local/share/ca-certificates/
-RUN apk add --no-cache ca-certificates && \
-    if [ -f /usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt ]; then \
-        update-ca-certificates && \
-        export NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/CapgeminiPKIRootCA.crt; \
-    fi
-
 # Install dependencies
 COPY ui/frontend/package.json ui/frontend/package-lock.json* ./
 RUN npm ci --ignore-scripts

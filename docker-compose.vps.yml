@@ -1,0 +1,90 @@
+services:
+  # ---------------------------------------------------------------------------
+  # SDLC Pilot Backend — FastAPI
+  # ---------------------------------------------------------------------------
+  backend:
+    image: sdlc-pilot/backend:latest
+    container_name: sdlc-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      AICODEGENCREW_ROOT: /app
+      PROJECT_PATH: /project
+      DASHBOARD_HOST: "0.0.0.0"
+      DASHBOARD_PORT: "8001"
+      DASHBOARD_CORS_ORIGINS: "https://sdlc.aymenmastouri.io"
+    volumes:
+      - ${PROJECT_PATH:-.}:/project:ro
+      - sdlc_knowledge:/app/knowledge
+      - sdlc_architecture_docs:/app/architecture-docs
+      - sdlc_inputs:/app/inputs
+      - ./config/phases_config.yaml:/app/config/phases_config.yaml:ro
+    networks:
+      - sdlc_internal
+      - traefik_proxy
+      - ai_lab_backend
+    mem_limit: 2g
+    mem_reservation: 512m
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/health')"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sdlc-api.rule=Host(`sdlc-api.aymenmastouri.io`)"
+      - "traefik.http.routers.sdlc-api.entrypoints=websecure"
+      - "traefik.http.routers.sdlc-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sdlc-api.loadbalancer.server.port=8001"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # SDLC Pilot Frontend — Angular via nginx
+  # ---------------------------------------------------------------------------
+  frontend:
+    image: sdlc-pilot/frontend:latest
+    container_name: sdlc-frontend
+    restart: unless-stopped
+    networks:
+      - sdlc_internal
+      - traefik_proxy
+    mem_limit: 128m
+    mem_reservation: 32m
+    depends_on:
+      backend:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sdlc.rule=Host(`sdlc.aymenmastouri.io`)"
+      - "traefik.http.routers.sdlc.entrypoints=websecure"
+      - "traefik.http.routers.sdlc.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sdlc.loadbalancer.server.port=80"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  sdlc_knowledge:
+  sdlc_architecture_docs:
+  sdlc_inputs:
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  sdlc_internal:
+    driver: bridge
+  traefik_proxy:
+    external: true
+  ai_lab_backend:
+    external: true
