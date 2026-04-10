@@ -180,6 +180,21 @@ if os.getenv("PROMETHEUS_ENABLED", "").strip().lower() in ("true", "1", "yes"):
     app.include_router(prometheus_router.router)
 
 
+@app.get("/api/auth/config")
+def auth_config():
+    """Return OIDC configuration for the frontend."""
+    enabled = os.getenv("OIDC_ENABLED", "false").strip().lower() in ("true", "1", "yes")
+    if not enabled:
+        return {"enabled": False}
+    return {
+        "enabled": True,
+        "authority": os.getenv("OIDC_AUTHORITY", "").strip().rstrip("/"),
+        "clientId": os.getenv("OIDC_CLIENT_ID", "").strip(),
+        "redirectUri": os.getenv("OIDC_REDIRECT_URI", "").strip(),
+        "scopes": os.getenv("OIDC_SCOPES", "openid profile email").strip(),
+    }
+
+
 @app.get("/api/auth/userinfo")
 def auth_userinfo(request: Request):
     """Return authenticated user info (set by OIDC middleware)."""
