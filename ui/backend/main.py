@@ -113,6 +113,13 @@ if os.getenv("OIDC_ENABLED", "false").strip().lower() in ("true", "1", "yes"):
     from .middleware.auth import OIDCAuthMiddleware
     app.add_middleware(OIDCAuthMiddleware)
 
+# Authentik ForwardAuth Header Middleware (for k8s deployments behind a
+# Traefik ForwardAuth middleware + Authentik outpost). Rejects requests
+# lacking X-Authentik-Username — defence-in-depth on top of the edge proxy.
+if os.getenv("FORWARD_AUTH_ENABLED", "false").strip().lower() in ("true", "1", "yes"):
+    from .middleware.forward_auth import ForwardAuthMiddleware
+    app.add_middleware(ForwardAuthMiddleware)
+
 # ---------------------------------------------------------------------------
 # In-memory rate limiter for expensive/destructive endpoints (H4)
 # ---------------------------------------------------------------------------
